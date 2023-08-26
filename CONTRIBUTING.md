@@ -127,6 +127,7 @@ Branches and GitHub pull requests are used for tracking features, fixes, and ver
 - `release/x.y` — prepare a next release (beta)
   - Branched off from main branch, rebased periodically
   - Versions set to `x.y.0-dev*`, tag set to `next`
+  - NPM file dependencies replaced with package versions
   - Linked to a (draft) PR that merges into `latest`
   - To close:
     1. Update `CHANGELOG.md`, move Development items to Release
@@ -145,7 +146,4 @@ Branches and GitHub pull requests are used for tracking features, fixes, and ver
     2. Create PR to merge back to `latest`; delete branch
 - `www` — published website (push user-protected)
   - Branched off from `main`
-  - To update website:
-    1. Rebase from `main`
-    2. Build docs (writes to `/_site` folder)
-    3. Commit and push
+  - GitHub action is used to build & deploy website.

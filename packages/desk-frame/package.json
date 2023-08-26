@@ -2,10 +2,17 @@
 	"private": true,
 	"name": "desk-frame",
 	"version": "0.0.0",
-	"description": "",
-	"keywords": [],
-	"author": "",
+	"publishConfig": {
+		"tag": "dev"
+	},
+	"description": "Desk framework: main API package",
+	"author": "Jelmer Cormont",
 	"license": "MIT",
+	"homepage": "https://desk-framework.com",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/desk-framework/desk"
+	},
 	"type": "module",
 	"main": "dist/index.js",
 	"module": "dist/index.js",
@@ -44,7 +51,7 @@
 		"dist-es2020"
 	],
 	"dependencies": {
-		"tslib": "^2.5.0"
+		"tslib": "^2.6.2"
 	},
 	"devDependencies": {
 		"@desk-framework/test": "file:../test"

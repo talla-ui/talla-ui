@@ -1,16 +1,13 @@
 {
-	"name": "@desk-framework/www",
 	"private": true,
-	"prettier": {
-		"useTabs": true,
-		"overrides": [
-			{
-				"files": "*.yaml",
-				"options": {
-					"useTabs": false
-				}
-			}
-		]
+	"name": "@desk-framework/www",
+	"description": "Desk framework: website (not on NPM)",
+	"author": "Jelmer Cormont",
+	"license": "MIT",
+	"homepage": "https://desk-framework.com",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/desk-framework/desk"
 	},
 	"scripts": {
 		"clean": "rimraf build ../../_site",
@@ -23,6 +20,17 @@
 		"debug": "run-s prebuild debug:app build:pipeline premake make debug:copymap",
 		"debug:app": "esbuild app/app.ts --outdir=build/app --bundle --external:desk-frame --external:@desk-framework/webcontext --format=iife --target=es2020 --sourcemap",
 		"debug:copymap": "cp build/app/app.js.map ../../_site/app.js.map"
+	},
+	"prettier": {
+		"useTabs": true,
+		"overrides": [
+			{
+				"files": "*.yaml",
+				"options": {
+					"useTabs": false
+				}
+			}
+		]
 	},
 	"devDependencies": {
 		"@desk-framework/webcontext": "file:../webcontext",
