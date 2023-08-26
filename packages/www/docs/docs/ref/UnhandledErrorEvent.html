@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Typescene - UnhandledErrorEvent</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96048899-3"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-96048899-3');
+    </script>
+    <!-- end GA -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,300i|IBM+Plex+Sans:200,300,500,800,200i,300i,500i" rel="stylesheet">
+    <link rel="canonical" href="https://typescene.dev/docs/ref/UnhandledErrorEvent">
+</head>
+<body>
+    <nav class="topnav">
+        <section class="wrapper">
+            <a href="/" class="logo_link">
+                <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+                <span class="topnav_title">Typescene</span>
+            </a>
+            <ul class="topnav_links">
+                <li><a href="#" onclick="return showDocWidget()"><img src="/assets/icons/search-reverse.svg" alt="" width=16 style="position: relative; top: .125rem">&nbsp; Docs</a></li>
+                <li class="hide_small"><a href="https://github.com/typescene/typescene" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    
+<div id="breadcrumb_bar">
+  <section class="wrapper">
+      <a href="/" class="logo_link" id="breadcrumb_logo" hidden>
+          <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+      </a>
+      <span>
+          <a href="/docs">Documentation</a>
+          &nbsp;|&nbsp;
+          Reference
+      </span>
+  </section>
+</div>
+<article class="wrapper wrapper--page">
+    <div class="wrapper_columns">
+        <div class="wrapper_column">
+            <div class="pagetitle_container">
+                <h1>UnhandledErrorEvent</h1>
+                
+            </div>
+
+            <h2 id="UnhandledErrorEvent" class="spec"><img src="/assets/icons/spec-class.svg" alt="">class UnhandledErrorEvent</h2>
+
+
+
+<p><code>extends </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a></p>
+<p>Event that is emitted by <a href="/docs/ref/UnhandledErrorEmitter"><code>UnhandledErrorEmitter</code></a> for each unhandled error (see <a href="/docs/ref/UnhandledErrorEmitter"><code>UnhandledErrorEmitter</code></a>).</p>
+<h3>Constructor</h3>
+
+
+<p><code>(error: any): UnhandledErrorEvent</code></p>
+<h2 id="UnhandledErrorEvent:error" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.error</h2>
+
+
+
+<p><code>any</code></p>
+<p>The error that occurred.</p>
+<h2 id="UnhandledErrorEvent:name" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.name</h2>
+
+
+
+<p><code>string</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedEvent#ManagedEvent:name"><code>ManagedEvent.name</code></a>.</p>
+<h2 id="UnhandledErrorEvent:freeze" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.freeze()</h2>
+
+
+
+<p><code>(): Readonly&lt;this&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedEvent#ManagedEvent:freeze"><code>ManagedEvent.freeze</code></a>.</p>
+
+        </div>
+
+        <div class="wrapper_column wrapper_column--sidebar wrapper_column--nav">
+            <div class="fixed_cell">
+                <div class="fixed_cell_inner">
+                    <nav id="toc" class="sidebar_nav">
+                        <h4 id="declarations">Declarations</h4>
+<ul>
+<li><a href="#UnhandledErrorEvent"><strong>class UnhandledErrorEvent</strong></a></li>
+<li><a href="#UnhandledErrorEvent:error">.error</a></li>
+</ul>
+<h4 id="inherited">Inherited</h4>
+<ul>
+<li><a href="#UnhandledErrorEvent:name">.name</a></li>
+<li><a href="#UnhandledErrorEvent:freeze">.freeze()</a></li>
+</ul>
+
+                    </nav>
+                </div>
+                <div class="fixed_cell_backtotop">
+                    <a href="#" onclick="backToTop()">↑ Back to top</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<link rel="prefetch" href="/docs/" as="fetch" />
+<script>
+    (function(){document.querySelectorAll(".sidebar_nav ul+h4").forEach(function(it){it.className="closed"})})()
+</script>
+
+
+    <footer class="footer">
+        <section class="wrapper">
+            <div class="wrapper_columns">
+                <div class="wrapper_column">
+                    © Copyright 2021 Typescene contributors
+                </div>
+                <div class="wrapper_column wrapper_column--oppose style--light">
+                    Find Typescene on
+    <a href="https://twitter.com/typescene" target="_blank" rel="noopener">Twitter</a> and
+    <a href="https://github.com/typescene" target="_blank" rel="noopener">Github</a>
+                </div>
+            </div>
+        </section>
+    </footer>
+
+    <script src="/assets/default.js"></script>
+    <script src="/assets/docwidget.js"></script>
+</body>
+</html>

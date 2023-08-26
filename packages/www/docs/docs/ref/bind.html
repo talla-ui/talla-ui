@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Typescene - bind</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96048899-3"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-96048899-3');
+    </script>
+    <!-- end GA -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,300i|IBM+Plex+Sans:200,300,500,800,200i,300i,500i" rel="stylesheet">
+    <link rel="canonical" href="https://typescene.dev/docs/ref/bind">
+</head>
+<body>
+    <nav class="topnav">
+        <section class="wrapper">
+            <a href="/" class="logo_link">
+                <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+                <span class="topnav_title">Typescene</span>
+            </a>
+            <ul class="topnav_links">
+                <li><a href="#" onclick="return showDocWidget()"><img src="/assets/icons/search-reverse.svg" alt="" width=16 style="position: relative; top: .125rem">&nbsp; Docs</a></li>
+                <li class="hide_small"><a href="https://github.com/typescene/typescene" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    
+<div id="breadcrumb_bar">
+  <section class="wrapper">
+      <a href="/" class="logo_link" id="breadcrumb_logo" hidden>
+          <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+      </a>
+      <span>
+          <a href="/docs">Documentation</a>
+          &nbsp;|&nbsp;
+          Reference
+      </span>
+  </section>
+</div>
+<article class="wrapper wrapper--page">
+    <div class="wrapper_columns">
+        <div class="wrapper_column">
+            <div class="pagetitle_container">
+                <h1>bind</h1>
+                
+            </div>
+
+            <h2 id="bind" class="spec"><img src="/assets/icons/spec-function.svg" alt="">bind()</h2>
+
+
+
+<p><code>(propertyName?: string, defaultValue?: any): </code><a href="/docs/ref/Binding"><code>Binding</code></a></p>
+<p>Returns a new binding, which can be used as a component preset (see <a href="/docs/ref/Component#Component:with"><code>Component.with</code></a>) to update components dynamically with the value of an observed property on the bound parent component, such as the <a href="/docs/ref/AppActivity"><code>AppActivity</code></a> for a view, the <a href="/docs/ref/Application"><code>Application</code></a> for an activity, or the <a href="/docs/ref/ViewComponent"><code>ViewComponent</code></a> for nested views.</p>
+<p>The bound property name is specified using the first argument. Nested properties are allowed (e.g. <code>foo.bar</code>), but <em>only</em> the first property will be observed.</p>
+<p>If a nested property does not exist, but a <code>get</code> method does (e.g. <a href="/docs/ref/ManagedMap#ManagedMap:get"><code>ManagedMap.get()</code></a>), then this method is called with the property name as its only argument, and the resulting value used as the bound value.</p>
+<p>The property name may be appended with a <code>|</code> (pipe) character and a <em>filter</em> name: see <a href="/docs/ref/Binding#Binding:addFilter"><code>Binding.addFilter</code></a> for available filters. Multiple filters may be chained together if their names are separated with more pipe characters.</p>
+<p>For convenience, <code>!property</code> is automatically rewritten as <code>property|!</code> to negate property values, and <code>!!property</code> to convert any value to a boolean value.</p>
+<p>A default value may also be specified. This value is used when the bound value itself is undefined.</p>
+<h4 id="see-also">See Also</h4>
+<p><a href="/docs/ref/bindf"><code>bindf</code></a>, <a href="/docs/ref/Binding#Binding:addFilter"><code>Binding.addFilter</code></a> (includes a list of available filters)</p>
+
+        </div>
+
+        <div class="wrapper_column wrapper_column--sidebar wrapper_column--nav">
+            <div class="fixed_cell">
+                <div class="fixed_cell_inner">
+                    <nav id="toc" class="sidebar_nav">
+                        <h4 id="declarations">Declarations</h4>
+<ul>
+<li><a href="#bind">bind()</a></li>
+</ul>
+
+                    </nav>
+                </div>
+                <div class="fixed_cell_backtotop">
+                    <a href="#" onclick="backToTop()">↑ Back to top</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<link rel="prefetch" href="/docs/" as="fetch" />
+<script>
+    (function(){document.querySelectorAll(".sidebar_nav ul+h4").forEach(function(it){it.className="closed"})})()
+</script>
+
+
+    <footer class="footer">
+        <section class="wrapper">
+            <div class="wrapper_columns">
+                <div class="wrapper_column">
+                    © Copyright 2021 Typescene contributors
+                </div>
+                <div class="wrapper_column wrapper_column--oppose style--light">
+                    Find Typescene on
+    <a href="https://twitter.com/typescene" target="_blank" rel="noopener">Twitter</a> and
+    <a href="https://github.com/typescene" target="_blank" rel="noopener">Github</a>
+                </div>
+            </div>
+        </section>
+    </footer>
+
+    <script src="/assets/default.js"></script>
+    <script src="/assets/docwidget.js"></script>
+</body>
+</html>

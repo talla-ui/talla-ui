@@ -1,0 +1,35 @@
+{
+  "name": "typescene-website-3_1",
+  "version": "0.0.0",
+  "private": true,
+  "description": "This is the website served at https://typescene.dev",
+  "main": "pipeline.js",
+  "prettier": {},
+  "scripts": {
+    "build": "npm run build:docgen && npm run build:docwidget && npm run make",
+    "build:docgen": "tsc -p docgen/src",
+    "build:docwidget": "cd docwidget && rollup -c",
+    "watch": "nodemon -e md,js,css --watch content --watch assets --watch templates --exec 'npm run make'",
+    "make": "npm run clean && npm run pipeline",
+    "clean": "rm -rf docs",
+    "pipeline": "markdown-pipeline docs pipeline.js content/en/pipeline.js"
+  },
+  "keywords": [],
+  "author": "Jelmer Cormont",
+  "license": "MIT",
+  "dependencies": {
+    "markdown-pipeline": "^1.0.3"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.0.0",
+    "@rollup/plugin-typescript": "^8.2.1",
+    "@types/marked": "^2.0.3",
+    "@types/node": "^12.7.0",
+    "@typescene/webapp": "^3.1.1",
+    "nodemon": "^2.0.7",
+    "rollup": "^2.50.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescene": "3",
+    "typescript": "*"
+  }
+}

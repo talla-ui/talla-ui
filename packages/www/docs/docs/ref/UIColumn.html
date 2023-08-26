@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Typescene - UIColumn</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96048899-3"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-96048899-3');
+    </script>
+    <!-- end GA -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,300i|IBM+Plex+Sans:200,300,500,800,200i,300i,500i" rel="stylesheet">
+    <link rel="canonical" href="https://typescene.dev/docs/ref/UIColumn">
+</head>
+<body>
+    <nav class="topnav">
+        <section class="wrapper">
+            <a href="/" class="logo_link">
+                <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+                <span class="topnav_title">Typescene</span>
+            </a>
+            <ul class="topnav_links">
+                <li><a href="#" onclick="return showDocWidget()"><img src="/assets/icons/search-reverse.svg" alt="" width=16 style="position: relative; top: .125rem">&nbsp; Docs</a></li>
+                <li class="hide_small"><a href="https://github.com/typescene/typescene" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    
+<div id="breadcrumb_bar">
+  <section class="wrapper">
+      <a href="/" class="logo_link" id="breadcrumb_logo" hidden>
+          <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+      </a>
+      <span>
+          <a href="/docs">Documentation</a>
+          &nbsp;|&nbsp;
+          Reference
+      </span>
+  </section>
+</div>
+<article class="wrapper wrapper--page">
+    <div class="wrapper_columns">
+        <div class="wrapper_column">
+            <div class="pagetitle_container">
+                <h1>UIColumn</h1>
+                <p class="style--pageintro">This container component displays child view components in a vertical arrangement.
+  </p>
+            </div>
+
+            <h2 id="UIColumn" class="spec"><img src="/assets/icons/spec-class.svg" alt="">class UIColumn</h2>
+
+
+
+<p><code>extends </code><a href="/docs/ref/UIContainer"><code>UIContainer</code></a></p>
+<p>Represents a UI component that contains other components, in a vertical arrangement.</p>
+<h3>Constructor</h3>
+
+
+<p><code>(...content: </code><a href="/docs/ref/UIRenderable"><code>UIRenderable</code></a><code>[]): UIColumn</code></p>
+<h2 id="UIColumn:hasComponentSpacing" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.hasComponentSpacing()</h2>
+
+
+
+<p><code>(): boolean</code></p>
+<p>Returns true if spacing between components should be non-zero (used by renderer).</p>
+<h2 id="UIColumn:spacing" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.spacing</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Space between components along vertical axis (in dp or string with unit, defaults to value from <a href="/docs/ref/UITheme"><code>UITheme</code></a>).</p>
+<h2 id="UIColumn:width" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.width</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Column width (in dp or string with unit).</p>
+<h2 id="UIColumn:applyStyle" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.applyStyle() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(style?: </code><a href="/docs/ref/UIStyle"><code>UIStyle</code></a><code>): void</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:applyStyle"><code>UIContainer.applyStyle</code></a>.</p>
+<h2 id="UIColumn:isFocusable" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.isFocusable()</h2>
+
+
+
+<p><code>(): boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:isFocusable"><code>UIContainer.isFocusable</code></a>.</p>
+<h2 id="UIColumn:isKeyboardFocusable" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.isKeyboardFocusable()</h2>
+
+
+
+<p><code>(): boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:isKeyboardFocusable"><code>UIContainer.isKeyboardFocusable</code></a>.</p>
+<h2 id="UIColumn:allowFocus" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.allowFocus</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:allowFocus"><code>UIContainer.allowFocus</code></a>.</p>
+<h2 id="UIColumn:allowKeyboardFocus" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.allowKeyboardFocus</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:allowKeyboardFocus"><code>UIContainer.allowKeyboardFocus</code></a>.</p>
+<h2 id="UIColumn:layout" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.layout</h2>
+
+
+
+<p><code>Readonly&lt;ContainerLayout&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:layout"><code>UIContainer.layout</code></a>.</p>
+<h2 id="UIColumn:asyncContentRendering" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.asyncContentRendering</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:asyncContentRendering"><code>UIContainer.asyncContentRendering</code></a>.</p>
+<h2 id="UIColumn:animatedContentRenderingDuration" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.animatedContentRenderingDuration</h2>
+
+
+
+<p><code>number</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:animatedContentRenderingDuration"><code>UIContainer.animatedContentRenderingDuration</code></a>.</p>
+<h2 id="UIColumn:animatedContentRenderingVelocity" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.animatedContentRenderingVelocity</h2>
+
+
+
+<p><code>number</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:animatedContentRenderingVelocity"><code>UIContainer.animatedContentRenderingVelocity</code></a>.</p>
+<h2 id="UIColumn:content" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.content</h2>
+
+
+
+<p><a href="/docs/ref/ManagedList"><code>ManagedList</code></a><code>&lt;</code><a href="/docs/ref/UIRenderable"><code>UIRenderable</code></a><code>&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:content"><code>UIContainer.content</code></a>.</p>
+<h2 id="UIColumn:propagateComponentEvent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.propagateComponentEvent() <span class="spec_tag spec_tag--deprecated">deprecated</span></h2>
+
+
+
+<p><code>(name: string, inner?: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>, event?: any): void</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:propagateComponentEvent"><code>UIComponent.propagateComponentEvent</code></a>.</p>
+<h2 id="UIColumn:delegateEvent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.delegateEvent() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(e: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>, propertyName: string): true</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:delegateEvent"><code>UIComponent.delegateEvent</code></a>.</p>
+<h2 id="UIColumn:render" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.render()</h2>
+
+
+
+<p><code>(callback: RenderCallback&lt;Output&lt;</code><a href="/docs/ref/UIRenderable"><code>UIRenderable</code></a><code>, any&gt;&gt;): void</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:render"><code>UIComponent.render</code></a>.</p>
+<h2 id="UIColumn:requestFocus" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.requestFocus()</h2>
+
+
+
+<p><code>(): void</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:requestFocus"><code>UIComponent.requestFocus</code></a>.</p>
+<h2 id="UIColumn:requestFocusNext" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.requestFocusNext()</h2>
+
+
+
+<p><code>(): void</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:requestFocusNext"><code>UIComponent.requestFocusNext</code></a>.</p>
+<h2 id="UIColumn:requestFocusPrevious" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.requestFocusPrevious()</h2>
+
+
+
+<p><code>(): void</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:requestFocusPrevious"><code>UIComponent.requestFocusPrevious</code></a>.</p>
+<h2 id="UIColumn:style" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.style</h2>
+
+
+
+<p><a href="/docs/ref/UIStyle"><code>UIStyle</code></a></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:style"><code>UIComponent.style</code></a>.</p>
+<h2 id="UIColumn:hidden" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.hidden</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:hidden"><code>UIComponent.hidden</code></a>.</p>
+<h2 id="UIColumn:dimensions" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.dimensions</h2>
+
+
+
+<p><code>Readonly&lt;Dimensions&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:dimensions"><code>UIComponent.dimensions</code></a>.</p>
+<h2 id="UIColumn:position" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.position</h2>
+
+
+
+<p><code>Readonly&lt;Position&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:position"><code>UIComponent.position</code></a>.</p>
+<h2 id="UIColumn:accessibleRole" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.accessibleRole</h2>
+
+
+
+<p><code>string</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:accessibleRole"><code>UIComponent.accessibleRole</code></a>.</p>
+<h2 id="UIColumn:accessibleLabel" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.accessibleLabel</h2>
+
+
+
+<p><code>string</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:accessibleLabel"><code>UIComponent.accessibleLabel</code></a>.</p>
+<h2 id="UIColumn:lastRenderOutput" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.lastRenderOutput</h2>
+
+
+
+<p><code>Output&lt;this, any&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:lastRenderOutput"><code>UIComponent.lastRenderOutput</code></a>.</p>
+<h2 id="UIColumn:isPresetComponent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.isPresetComponent() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): boolean</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:isPresetComponent"><code>Component.isPresetComponent</code></a>.</p>
+<h2 id="UIColumn:getParentComponent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getParentComponent()</h2>
+
+
+
+<p><code>&lt;TParent extends Component = Component&gt;(ParentClass?: </code><a href="/docs/ref/ComponentConstructor"><code>ComponentConstructor</code></a><code>&lt;TParent&gt;): TParent</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:getParentComponent"><code>Component.getParentComponent</code></a>.</p>
+<h2 id="UIColumn:getBoundParentComponent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getBoundParentComponent()</h2>
+
+
+
+<p><code>&lt;TParent extends Component&gt;(ParentClass?: </code><a href="/docs/ref/ComponentConstructor"><code>ComponentConstructor</code></a><code>&lt;TParent&gt;): TParent</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:getBoundParentComponent"><code>Component.getBoundParentComponent</code></a>.</p>
+<h2 id="UIColumn:emitAction" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.emitAction()</h2>
+
+
+
+<p><code>(name: string, inner?: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>, context?: </code><a href="/docs/ref/ManagedObject"><code>ManagedObject</code></a><code>): void</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:emitAction"><code>Component.emitAction</code></a>.</p>
+<h2 id="UIColumn:managedId" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.managedId</h2>
+
+
+
+<p><code>number</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:managedId"><code>ManagedObject.managedId</code></a>.</p>
+<h2 id="UIColumn:managedState" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.managedState</h2>
+
+
+
+<p><a href="/docs/ref/ManagedState"><code>ManagedState</code></a></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:managedState"><code>ManagedObject.managedState</code></a>.</p>
+<h2 id="UIColumn:getReferenceCount" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getReferenceCount() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): number</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:getReferenceCount"><code>ManagedObject.getReferenceCount</code></a>.</p>
+<h2 id="UIColumn:getManagedReferrers" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getManagedReferrers() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): </code><a href="/docs/ref/ManagedObject"><code>ManagedObject</code></a><code>[]</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:getManagedReferrers"><code>ManagedObject.getManagedReferrers</code></a>.</p>
+<h2 id="UIColumn:getManagedParent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getManagedParent() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>&lt;TParent extends ManagedObject = ManagedObject&gt;(ParentClass?: </code><a href="/docs/ref/ManagedObjectConstructor"><code>ManagedObjectConstructor</code></a><code>&lt;TParent&gt;): TParent</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:getManagedParent"><code>ManagedObject.getManagedParent</code></a>.</p>
+<h2 id="UIColumn:emit" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.emit()</h2>
+
+
+
+<p><code>&lt;TEvent extends ManagedEvent = ManagedEvent, TConstructorArgs extends any[] = any[]&gt;(e: string | TEvent | (new (...args: TConstructorArgs) =&gt; TEvent), ...constructorArgs: TConstructorArgs): this</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:emit"><code>ManagedObject.emit</code></a>.</p>
+<h2 id="UIColumn:emitChange" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.emitChange()</h2>
+
+
+
+<p><code>(name?: string): void</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:emitChange"><code>ManagedObject.emitChange</code></a>.</p>
+<h2 id="UIColumn:propagateChildEvents" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.propagateChildEvents() <span class="spec_tag">protected</span> <span class="spec_tag spec_tag--deprecated">deprecated</span></h2>
+
+
+
+<p><code>(...types: ((new (...args: any[]) =&gt; </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>) | ((e: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>) =&gt; any))[]): this</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:propagateChildEvents"><code>ManagedObject.propagateChildEvents</code></a>.</p>
+<h2 id="UIColumn:activateManagedAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.activateManagedAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;any&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:activateManagedAsync"><code>ManagedObject.activateManagedAsync</code></a>.</p>
+<h2 id="UIColumn:deactivateManagedAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.deactivateManagedAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:deactivateManagedAsync"><code>ManagedObject.deactivateManagedAsync</code></a>.</p>
+<h2 id="UIColumn:destroyManagedAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.destroyManagedAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:destroyManagedAsync"><code>ManagedObject.destroyManagedAsync</code></a>.</p>
+<h2 id="UIColumn:onManagedStateActivatingAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateActivatingAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateActivatingAsync"><code>ManagedObject.onManagedStateActivatingAsync</code></a>.</p>
+<h2 id="UIColumn:onManagedStateActiveAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateActiveAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateActiveAsync"><code>ManagedObject.onManagedStateActiveAsync</code></a>.</p>
+<h2 id="UIColumn:onManagedStateDeactivatingAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateDeactivatingAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateDeactivatingAsync"><code>ManagedObject.onManagedStateDeactivatingAsync</code></a>.</p>
+<h2 id="UIColumn:onManagedStateInactiveAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateInactiveAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateInactiveAsync"><code>ManagedObject.onManagedStateInactiveAsync</code></a>.</p>
+<h2 id="UIColumn:onManagedStateDestroyingAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateDestroyingAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateDestroyingAsync"><code>ManagedObject.onManagedStateDestroyingAsync</code></a>.</p>
+<hr>
+<h2 id="UIColumn:Presets" class="spec"><img src="/assets/icons/spec-interface.svg" alt="">UIColumn.Presets</h2>
+
+
+
+<p><code>extends </code><a href="/docs/ref/UIContainer#UIContainer:Presets"><code>UIContainer.Presets</code></a></p>
+<p>UIColumn presets type, for use with <a href="/docs/ref/Component#Component:with"><code>Component.with</code></a>.</p>
+<h2 id="UIColumn:Presets:spacing" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.spacing</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Space between components along vertical axis (in dp or string with unit, defaults to value from <a href="/docs/ref/UITheme"><code>UITheme</code></a>).</p>
+<h2 id="UIColumn:Presets:width" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.width</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Column width (in dp or string with unit).</p>
+<h2 id="UIColumn:Presets:content" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.content</h2>
+
+
+
+<p><code>Iterable&lt;</code><a href="/docs/ref/UIRenderable"><code>UIRenderable</code></a><code>&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:Presets:content"><code>UIContainer.Presets.content</code></a>.</p>
+<h2 id="UIColumn:Presets:layout" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.layout</h2>
+
+
+
+<p><code>Partial&lt;{} | ContainerLayout&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:Presets:layout"><code>UIContainer.Presets.layout</code></a>.</p>
+<h2 id="UIColumn:Presets:allowFocus" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.allowFocus</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:Presets:allowFocus"><code>UIContainer.Presets.allowFocus</code></a>.</p>
+<h2 id="UIColumn:Presets:allowKeyboardFocus" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.allowKeyboardFocus</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:Presets:allowKeyboardFocus"><code>UIContainer.Presets.allowKeyboardFocus</code></a>.</p>
+<h2 id="UIColumn:Presets:asyncContentRendering" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.asyncContentRendering</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:Presets:asyncContentRendering"><code>UIContainer.Presets.asyncContentRendering</code></a>.</p>
+<h2 id="UIColumn:Presets:animatedContentRenderingDuration" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.animatedContentRenderingDuration</h2>
+
+
+
+<p><code>number</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:Presets:animatedContentRenderingDuration"><code>UIContainer.Presets.animatedContentRenderingDuration</code></a>.</p>
+<h2 id="UIColumn:Presets:animatedContentRenderingVelocity" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.animatedContentRenderingVelocity</h2>
+
+
+
+<p><code>number</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:Presets:animatedContentRenderingVelocity"><code>UIContainer.Presets.animatedContentRenderingVelocity</code></a>.</p>
+<h2 id="UIColumn:Presets:style" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.style</h2>
+
+
+
+<p><code>string | </code><a href="/docs/ref/UIStyle"><code>UIStyle</code></a></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:style"><code>UIComponent.Presets.style</code></a>.</p>
+<h2 id="UIColumn:Presets:hidden" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.hidden</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:hidden"><code>UIComponent.Presets.hidden</code></a>.</p>
+<h2 id="UIColumn:Presets:dimensions" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.dimensions</h2>
+
+
+
+<p><code>Partial&lt;{} | Dimensions&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:dimensions"><code>UIComponent.Presets.dimensions</code></a>.</p>
+<h2 id="UIColumn:Presets:position" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.position</h2>
+
+
+
+<p><code>Partial&lt;{} | Position&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:position"><code>UIComponent.Presets.position</code></a>.</p>
+<h2 id="UIColumn:Presets:accessibleRole" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.accessibleRole</h2>
+
+
+
+<p><code>string</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:accessibleRole"><code>UIComponent.Presets.accessibleRole</code></a>.</p>
+<h2 id="UIColumn:Presets:accessibleLabel" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.accessibleLabel</h2>
+
+
+
+<p><code>string</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:accessibleLabel"><code>UIComponent.Presets.accessibleLabel</code></a>.</p>
+<h2 id="UIColumn:Presets:requestFocus" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.requestFocus</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:requestFocus"><code>UIComponent.Presets.requestFocus</code></a>.</p>
+
+        </div>
+
+        <div class="wrapper_column wrapper_column--sidebar wrapper_column--nav">
+            <div class="fixed_cell">
+                <div class="fixed_cell_inner">
+                    <nav id="toc" class="sidebar_nav">
+                        <h4 id="declarations">Declarations</h4>
+<ul>
+<li><a href="#UIColumn"><strong>class UIColumn</strong></a></li>
+<li><a href="#UIColumn:hasComponentSpacing">.hasComponentSpacing()</a></li>
+<li><a href="#UIColumn:spacing">.spacing</a></li>
+<li><a href="#UIColumn:width">.width</a></li>
+</ul>
+<h4 id="inherited">Inherited</h4>
+<ul>
+<li><a href="#UIColumn:applyStyle">.applyStyle()</a></li>
+<li><a href="#UIColumn:isFocusable">.isFocusable()</a></li>
+<li><a href="#UIColumn:isKeyboardFocusable">.isKeyboardFocusable()</a></li>
+<li><a href="#UIColumn:allowFocus">.allowFocus</a></li>
+<li><a href="#UIColumn:allowKeyboardFocus">.allowKeyboardFocus</a></li>
+<li><a href="#UIColumn:layout">.layout</a></li>
+<li><a href="#UIColumn:asyncContentRendering">.asyncContentRendering</a></li>
+<li><a href="#UIColumn:animatedContentRenderingDuration">.animatedContentRenderingDuration</a></li>
+<li><a href="#UIColumn:animatedContentRenderingVelocity">.animatedContentRenderingVelocity</a></li>
+<li><a href="#UIColumn:content">.content</a></li>
+<li><a href="#UIColumn:propagateComponentEvent">.propagateComponentEvent()</a></li>
+<li><a href="#UIColumn:delegateEvent">.delegateEvent()</a></li>
+<li><a href="#UIColumn:render">.render()</a></li>
+<li><a href="#UIColumn:requestFocus">.requestFocus()</a></li>
+<li><a href="#UIColumn:requestFocusNext">.requestFocusNext()</a></li>
+<li><a href="#UIColumn:requestFocusPrevious">.requestFocusPrevious()</a></li>
+<li><a href="#UIColumn:style">.style</a></li>
+<li><a href="#UIColumn:hidden">.hidden</a></li>
+<li><a href="#UIColumn:dimensions">.dimensions</a></li>
+<li><a href="#UIColumn:position">.position</a></li>
+<li><a href="#UIColumn:accessibleRole">.accessibleRole</a></li>
+<li><a href="#UIColumn:accessibleLabel">.accessibleLabel</a></li>
+<li><a href="#UIColumn:lastRenderOutput">.lastRenderOutput</a></li>
+<li><a href="#UIColumn:isPresetComponent">.isPresetComponent()</a></li>
+<li><a href="#UIColumn:getParentComponent">.getParentComponent()</a></li>
+<li><a href="#UIColumn:getBoundParentComponent">.getBoundParentComponent()</a></li>
+<li><a href="#UIColumn:emitAction">.emitAction()</a></li>
+<li><a href="#UIColumn:managedId">.managedId</a></li>
+<li><a href="#UIColumn:managedState">.managedState</a></li>
+<li><a href="#UIColumn:getReferenceCount">.getReferenceCount()</a></li>
+<li><a href="#UIColumn:getManagedReferrers">.getManagedReferrers()</a></li>
+<li><a href="#UIColumn:getManagedParent">.getManagedParent()</a></li>
+<li><a href="#UIColumn:emit">.emit()</a></li>
+<li><a href="#UIColumn:emitChange">.emitChange()</a></li>
+<li><a href="#UIColumn:propagateChildEvents">.propagateChildEvents()</a></li>
+<li><a href="#UIColumn:activateManagedAsync">.activateManagedAsync()</a></li>
+<li><a href="#UIColumn:deactivateManagedAsync">.deactivateManagedAsync()</a></li>
+<li><a href="#UIColumn:destroyManagedAsync">.destroyManagedAsync()</a></li>
+<li><a href="#UIColumn:onManagedStateActivatingAsync">.onManagedStateActivatingAsync()</a></li>
+<li><a href="#UIColumn:onManagedStateActiveAsync">.onManagedStateActiveAsync()</a></li>
+<li><a href="#UIColumn:onManagedStateDeactivatingAsync">.onManagedStateDeactivatingAsync()</a></li>
+<li><a href="#UIColumn:onManagedStateInactiveAsync">.onManagedStateInactiveAsync()</a></li>
+<li><a href="#UIColumn:onManagedStateDestroyingAsync">.onManagedStateDestroyingAsync()</a></li>
+</ul>
+<h4 id="namespaced">Namespaced</h4>
+<ul>
+<li><a href="#UIColumn:Presets"><strong>UIColumn.Presets</strong></a></li>
+<li><a href="#UIColumn:Presets:spacing">.spacing</a></li>
+<li><a href="#UIColumn:Presets:width">.width</a></li>
+<li><a href="#UIColumn:Presets:content">.content</a></li>
+<li><a href="#UIColumn:Presets:layout">.layout</a></li>
+<li><a href="#UIColumn:Presets:allowFocus">.allowFocus</a></li>
+<li><a href="#UIColumn:Presets:allowKeyboardFocus">.allowKeyboardFocus</a></li>
+<li><a href="#UIColumn:Presets:asyncContentRendering">.asyncContentRendering</a></li>
+<li><a href="#UIColumn:Presets:animatedContentRenderingDuration">.animatedContentRenderingDuration</a></li>
+<li><a href="#UIColumn:Presets:animatedContentRenderingVelocity">.animatedContentRenderingVelocity</a></li>
+<li><a href="#UIColumn:Presets:style">.style</a></li>
+<li><a href="#UIColumn:Presets:hidden">.hidden</a></li>
+<li><a href="#UIColumn:Presets:dimensions">.dimensions</a></li>
+<li><a href="#UIColumn:Presets:position">.position</a></li>
+<li><a href="#UIColumn:Presets:accessibleRole">.accessibleRole</a></li>
+<li><a href="#UIColumn:Presets:accessibleLabel">.accessibleLabel</a></li>
+<li><a href="#UIColumn:Presets:requestFocus">.requestFocus</a></li>
+</ul>
+
+                    </nav>
+                </div>
+                <div class="fixed_cell_backtotop">
+                    <a href="#" onclick="backToTop()">↑ Back to top</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<link rel="prefetch" href="/docs/" as="fetch" />
+<script>
+    (function(){document.querySelectorAll(".sidebar_nav ul+h4").forEach(function(it){it.className="closed"})})()
+</script>
+
+
+    <footer class="footer">
+        <section class="wrapper">
+            <div class="wrapper_columns">
+                <div class="wrapper_column">
+                    © Copyright 2021 Typescene contributors
+                </div>
+                <div class="wrapper_column wrapper_column--oppose style--light">
+                    Find Typescene on
+    <a href="https://twitter.com/typescene" target="_blank" rel="noopener">Twitter</a> and
+    <a href="https://github.com/typescene" target="_blank" rel="noopener">Github</a>
+                </div>
+            </div>
+        </section>
+    </footer>
+
+    <script src="/assets/default.js"></script>
+    <script src="/assets/docwidget.js"></script>
+</body>
+</html>

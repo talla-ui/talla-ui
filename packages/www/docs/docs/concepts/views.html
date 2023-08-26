@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="Description" content="Detailed description of views and UI components">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Typescene - Views</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96048899-3"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-96048899-3');
+    </script>
+    <!-- end GA -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,300i|IBM+Plex+Sans:200,300,500,800,200i,300i,500i" rel="stylesheet">
+    <link rel="canonical" href="https://typescene.dev/docs/concepts/views">
+</head>
+<body>
+    <nav class="topnav">
+        <section class="wrapper">
+            <a href="/" class="logo_link">
+                <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+                <span class="topnav_title">Typescene</span>
+            </a>
+            <ul class="topnav_links">
+                <li><a href="#" onclick="return showDocWidget()"><img src="/assets/icons/search-reverse.svg" alt="" width=16 style="position: relative; top: .125rem">&nbsp; Docs</a></li>
+                <li class="hide_small"><a href="https://github.com/typescene/typescene" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    
+<link rel="preload" href="/assets/icons/chevron.svg" as="image" />
+<div id="breadcrumb_bar">
+  <section class="wrapper">
+      <a href="/" class="logo_link" id="breadcrumb_logo" hidden>
+          <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+      </a>
+      <span>
+          <a href="/docs">Documentation</a>
+          &nbsp;|&nbsp Concepts
+      </span>
+  </section>
+</div>
+<article class="wrapper wrapper--page">
+    <div class="wrapper_columns">
+        <div class="wrapper_column">
+            <div class="pagetitle_container">
+                <h1>Views</h1>
+                <p class="style--pageintro">Views represent the user interface of a Typescene application.
+</p>
+            </div>
+
+            <h2 id="create">Creating views</h2>
+
+
+<p>Views are <em>renderable</em> components that represent (parts of) the user interface of an application.</p>
+<p>Typescene views are <em>platform independent:</em> the code that’s responsible for drawing elements on the screen, or inserting them into a document such as a Web page, is separate from the view component classes themselves.</p>
+<p>As such, views don’t necessarily correspond 1-to-1 with the generated output. Creating views for a Typescene application is certainly not the same as writing HTML code — even if the output gets inserted into the DOM (document object model) of a Web page.</p>
+<h3>Preset constructors</h3>
+
+
+<p>View rendering is initiated by the application’s <a href="/docs/concepts/activities">Activities</a>. Typically, each activity encapsulates exactly one view component, which is created and destroyed as the activity transitions between active and inactive states.</p>
+<p>Even though views are created as <a href="/docs/concepts/components">Component</a> classes, you don’t need to instantiate any of them yourself. Each activity takes care of instantiating its own view — as long as the activity itself is <em>preset</em> with a view constructor.</p>
+<p>For more details on how components are ‘preset’ to create new component constructors, refer to the following page.</p>
+<p><a href="/docs/concepts/components" class="block_link doc"><strong>See also:</strong> Concepts &gt; Components</a></p>
+<pre><code class="language-typescript"><span class="hljs-comment">// UIButton is a view class in itself:</span>
+<span class="hljs-keyword">const</span> simplestView = UIButton;
+
+<span class="hljs-comment">// Preset constructors provide property values,</span>
+<span class="hljs-comment">// bindings, and event handlers:</span>
+<span class="hljs-keyword">const</span> boundView = UIButton.with({
+  <span class="hljs-attr">label</span>: bind(<span class="hljs-string">&quot;buttonLabel&quot;</span>),
+  <span class="hljs-attr">icon</span>: <span class="hljs-string">&quot;warning&quot;</span>,
+  <span class="hljs-attr">onClick</span>: <span class="hljs-string">&quot;sayHi()&quot;</span>
+});
+
+<span class="hljs-comment">// Nested views can also be preset</span>
+<span class="hljs-comment">// (result is still a class, not an object) --</span>
+<span class="hljs-keyword">const</span> cellView = UICell.with(
+  UICenterRow.with(
+    { <span class="hljs-attr">height</span>: <span class="hljs-number">48</span> },
+    UILabel.withText(<span class="hljs-string">&quot;Hello, world!&quot;</span>),
+    UIButton.with({
+      <span class="hljs-attr">label</span>: bind(<span class="hljs-string">&quot;buttonLabel&quot;</span>),
+      <span class="hljs-attr">onClick</span>: <span class="hljs-string">&quot;sayHi()&quot;</span>
+    })
+  )
+);
+
+<span class="hljs-comment">// Activities are also preset, and then extended:</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyActivity</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ViewActivity</span>.<span class="hljs-title">with</span>(<span class="hljs-title">cellView</span>) </span>{
+  path = <span class="hljs-string">&quot;/&quot;</span>;
+  buttonLabel = <span class="hljs-string">&quot;Say hi&quot;</span>;
+  <span class="hljs-function"><span class="hljs-title">sayHi</span>(<span class="hljs-params"></span>)</span> { alert(<span class="hljs-string">&quot;Hello, world!&quot;</span>) }
+}
+</code></pre>
+<p>In the above example, when an instance of <code>MyActivity</code> is activated, it immediately creates an instance of <code>cellView</code>, and assigns it to the <code>view</code> property of the activity object.</p>
+<h3>View objects</h3>
+
+
+<p>You can interact with the instantiated view objects after they are created, for example from an event handler.</p>
+<pre><code class="language-typescript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyActivity</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ViewActivity</span>.<span class="hljs-title">with</span>(<span class="hljs-title">cellView</span>) </span>{
+  <span class="hljs-comment">// ...</span>
+  <span class="hljs-function"><span class="hljs-title">sayHi</span>(<span class="hljs-params">e: UIComponentEvent&lt;UIButton&gt;</span>)</span> {
+    <span class="hljs-keyword">let</span> button = e.source;  <span class="hljs-comment">// &lt;= button instance</span>
+    <span class="hljs-built_in">console</span>.log(button.label);  <span class="hljs-comment">// =&gt; &quot;Say hi&quot;</span>
+  }
+}
+</code></pre>
+<p>You can even create view components on the fly, and add them to containers, although this is largely unnecessary. Also keep in mind that bindings do not work if the view was never preset on its bound parent component.</p>
+<pre><code class="language-typescript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyActivity</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ViewActivity</span>.<span class="hljs-title">with</span>(<span class="hljs-title">cellView</span>) </span>{
+  <span class="hljs-comment">// ...</span>
+  <span class="hljs-function"><span class="hljs-title">sayHi</span>(<span class="hljs-params">e: UIComponentEvent</span>)</span> {
+    <span class="hljs-keyword">let</span> row = e.source.getParentComponent(UIRow)!;
+    row.content.add(<span class="hljs-keyword">new</span> UILabel(<span class="hljs-string">&quot;More hello&quot;</span>));
+  }
+}
+</code></pre>
+<h2 id="jsx">JSX syntax</h2>
+
+
+<p>In addition to the regular JavaScript/TypeScript syntax that includes method calls to the static <code>.with()</code> method (as illustrated above), Typescene supports ‘JSX’ syntax. This syntax was originally created for the <em>React</em> framework, but is now officially supported by non-React tools — importantly, TypeScript and Babel transpilers.</p>
+<p>Conversion from JSX syntax to plain JavaScript/TypeScript is done at build time, by inserting calls to a single function at runtime (exported by the Typescene library as <a href="/docs/ref/JSX"><code>JSX</code></a>). This function simply calls the static <code>with</code> method on a component class, making the following code snippets equivalent:</p>
+<pre><code class="language-jsx"><span class="hljs-comment">// JSX syntax:</span>
+<span class="hljs-keyword">const</span> view = (
+  <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">cell</span> <span class="hljs-attr">onBeforeRender</span>=<span class="hljs-string">&quot;doSomething()&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">centerrow</span> <span class="hljs-attr">height</span>=<span class="hljs-string">{40}</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span>Hello, {bind(&quot;name&quot;)}<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">centerrow</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">cell</span>&gt;</span></span>
+);
+</code></pre>
+<pre><code class="language-typescript"><span class="hljs-comment">// JavaScript syntax without JSX:</span>
+<span class="hljs-keyword">const</span> view = UICell.with(
+  { <span class="hljs-attr">onBeforeRender</span>: <span class="hljs-string">&quot;doSomething()&quot;</span> },
+  UICenterRow.with(
+    { <span class="hljs-attr">height</span>: <span class="hljs-number">40</span> },
+    UILabel.withText(bindf(<span class="hljs-string">&quot;Hello, ${name}&quot;</span>))
+  )
+);
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> Unlike with other frameworks (including React itself), Typescene JSX tags do <em>not</em> result in an object. The ‘value’ of a JSX tag such as <code>&lt;label&gt;...&lt;/label&gt;</code> is still a <em>constructor</em>. You cannot refer to variable values within JSX blocks, since preset values would never change afterwards. However, JSX views may include bindings — just wrap the call to <code>bind</code> in a pair of curly braces as in the example above.</p>
+</blockquote>
+<p>Certain components, such as labels and buttons, can be declared with text within their opening and closing brackets. If there are any bindings within this text (such as in the above example), the surrounding text gets wrapped in a call to <code>bindf</code>.</p>
+<p><a href="/docs/ref/bindf" class="block_link function"><strong>bindf()</strong><br>Create a new binding using a format string</a></p>
+<h2 id="ui-components">UI components</h2>
+
+
+<p>Typescene defines a number of ‘primitive’ components — those that can be rendered using as native controls. A basic user interface can be created using these components alone, and more complex elements can be creates as <a href="#custom">custom views</a> (see below).</p>
+<p>Where several variants of the same type of component are available, a base component class is extended with additional <a href="#styles">styles</a> that change how a UI element looks, but not its behavior.</p>
+<h3>Labels</h3>
+
+
+<p>Label components display plain text or HTML-formatted text, either in a single line, with hard line breaks, or wrapped automatically based on the width of the component.</p>
+<p><a href="/docs/ref/UILabel" class="block_link class"><strong>UILabel</strong><br>Represents a UI component that contains a piece of text</a>
+<a href="/docs/ref/UICloseLabel" class="block_link class"><strong>UICloseLabel</strong><br>A label with reduced vertical spacing</a>
+<a href="/docs/ref/UIExpandedLabel" class="block_link class"><strong>UIExpandedLabel</strong><br>A label that occupies as much space as possible</a>
+<a href="/docs/ref/UIHeading1" class="block_link class"><strong>UIHeading1</strong><br>A heading label, level 1</a>
+<a href="/docs/ref/UIHeading2" class="block_link class"><strong>UIHeading2</strong><br>A heading label, level 2</a>
+<a href="/docs/ref/UIHeading3" class="block_link class"><strong>UIHeading3</strong><br>A heading label, level 3</a>
+<a href="/docs/ref/UIParagraph" class="block_link class"><strong>UIParagraph</strong><br>An expanded label with text that is wrapped across multiple lines when needed</a></p>
+<h3>Buttons</h3>
+
+
+<p>Button components are styled to appear interactive, in a number of different ways. The predefined styles used by each of these variants are customizable using <a href="#styles">styles or themes</a>.</p>
+<p><a href="/docs/ref/UIButton" class="block_link class"><strong>UIButton</strong><br>Represents a button that can be clicked/tapped to perform an action</a>
+<a href="/docs/ref/UIBorderlessButton" class="block_link class"><strong>UIBorderlessButton</strong><br>A button without a border or space around its label text</a>
+<a href="/docs/ref/UIIconButton" class="block_link class"><strong>UIIconButton</strong><br>A button that contains a single icon</a>
+<a href="/docs/ref/UILargeButton" class="block_link class"><strong>UILargeButton</strong><br>A prominent button that is larger in size</a>
+<a href="/docs/ref/UILinkButton" class="block_link class"><strong>UILinkButton</strong><br>A button that is displayed as a hyperlink</a>
+<a href="/docs/ref/UIOutlineButton" class="block_link class"><strong>UIOutlineButton</strong><br>A button that has a colored outline</a>
+<a href="/docs/ref/UIPrimaryButton" class="block_link class"><strong>UIPrimaryButton</strong><br>A prominent button that represents the primary action</a>
+<a href="/docs/ref/UISmallButton" class="block_link class"><strong>UISmallButton</strong><br>A button that is smaller in size</a></p>
+<h3>Input elements</h3>
+
+
+<p>These components interact with a bound <em>form context</em> component (a <a href="/docs/ref/UIFormContext"><code>UIFormContext</code></a> instance) to get and set input values dynamically. The initial value is taken either from a preset property or from the form context. Events are emitted when the user changes the current value, and changes are updated back to the form context instance.</p>
+<p><a href="/docs/ref/UITextField" class="block_link class"><strong>UITextField</strong><br>Represents a text input field or multiline text area</a>
+<a href="/docs/ref/UIBorderlessTextField" class="block_link class"><strong>UIBorderlessTextField</strong><br>A text field without a border or space around its input text</a>
+<a href="/docs/ref/UIToggle" class="block_link class"><strong>UIToggle</strong><br>Represents a check box or toggle switch</a></p>
+<h3>Visual elements</h3>
+
+
+<p><a href="/docs/ref/UIImage" class="block_link class"><strong>UIImage</strong><br>Represents an image element</a>
+<a href="/docs/ref/UISeparator" class="block_link class"><strong>UISeparator</strong><br>Represents a horizontal or vertical line separator</a>
+<a href="/docs/ref/UISpacer" class="block_link class"><strong>UISpacer</strong><br>A blank element, occupying as much space as possible, or a space of specific dimensions</a></p>
+<h2 id="layout-control">Layout and control</h2>
+
+
+<p>UI elements such as buttons and labels can be laid out in two different ways:</p>
+<ul>
+<li>Positioned at a specific position determined by at least two coordinates (similar to CSS absolute positioning), or</li>
+<li>Positioned together with other components along the primary axis of a <em>container</em>, e.g. in a row or a column.</li>
+</ul>
+<p>You can nest different types of containers to build more complex layouts. In addition, you can use <a href="#styles">styles</a> (see below) to specify dimensions and other properties of a container.</p>
+<h3>Cells</h3>
+
+
+<p>Cells are containers that allow for decoration of the space they occupy, using e.g. background colors, borders, and drop shadows.</p>
+<p>By default, cells occupy as much space as possible (except for <code>UIFlowCell</code>), with content arranged top-to-bottom.</p>
+<p><a href="/docs/ref/UICell" class="block_link class"><strong>UICell</strong><br>Cell base class</a>
+<a href="/docs/ref/UICoverCell" class="block_link class"><strong>UICoverCell</strong><br>Cell that is positioned to cover the exact dimensions of its parent container</a>
+<a href="/docs/ref/UIFlowCell" class="block_link class"><strong>UIFlowCell</strong><br>Cell that does <em>not</em> expand within its parent container; allows content to ‘flow’ vertically</a>
+<a href="/docs/ref/UIScrollContainer" class="block_link class"><strong>UIScrollContainer</strong><br>Container that occupies a scrolling area, and emits scroll-related events</a></p>
+<h3>Rows and columns</h3>
+
+
+<p>Rows and columns are containers that arrange their content along a horizontal and vertical axis, respectively.</p>
+<p>Content may be separated using fixed-width/height spacers (an 8-pixel gap is used by default, which is customizable as part of the <a href="#styles">theme</a>), or separated using vertical/horizontal lines. </p>
+<p>By default, rows and columns occupy as little space in the cross-axis direction as possible (i.e. row height, and column width), although a specific height or width can be set.</p>
+<p><a href="/docs/ref/UIRow" class="block_link class"><strong>UIRow</strong><br>Represents a horizontal line of UI elements</a>
+<a href="/docs/ref/UICenterRow" class="block_link class"><strong>UICenterRow</strong><br>A row that positions components in the center, horizontally</a>
+<a href="/docs/ref/UICloseRow" class="block_link class"><strong>UICloseRow</strong><br>A row without spacing between components</a>
+<a href="/docs/ref/UIOppositeRow" class="block_link class"><strong>UIOppositeRow</strong><br>A row that positions components at the end  (the right hand side, for left-to-right languages)</a></p>
+<p><a href="/docs/ref/UIColumn" class="block_link class"><strong>UIColumn</strong><br>Represents a vertical line of UI elements</a>
+<a href="/docs/ref/UICloseColumn" class="block_link class"><strong>UICloseColumn</strong><br>A column without spacing between components</a></p>
+<h3>Controller views</h3>
+
+
+<p>These elements don’t output their own elements on screen directly, but contain other elements that are <em>controlled</em> by these components in different ways.</p>
+<p><a href="/docs/ref/UIConditional" class="block_link class"><strong>UIConditional</strong><br>Controls the display of a child component depending on the state of a boolean property</a>
+<a href="/docs/ref/UIForm" class="block_link class"><strong>UIForm</strong><br>Encapsulates a <code>UICell</code> with child components, bound to a specific <code>UIFormContext</code> instance</a>
+<a href="/docs/ref/UIFormContextController" class="block_link class"><strong>UIFormContextController</strong><br>Controls child components, bound to a specific <code>UIFormContext</code> instance</a>
+<a href="/docs/ref/UIListCellAdapter" class="block_link class"><strong>UIListCellAdapter</strong><br>Encapsulates a <code>UICell</code> with child components, bound to a specific list item</a>
+<a href="/docs/ref/UIListController" class="block_link class"><strong>UIListController</strong><br>Controls a list of components, generated dynamically based on elements in another list</a>
+<a href="/docs/ref/UIMenu" class="block_link class"><strong>UIMenu</strong><br>Generates a dropdown menu based on a list of options</a>
+<a href="/docs/ref/UISelectionController" class="block_link class"><strong>UISelectionController</strong><br>Controls selection state among child components</a>
+<a href="/docs/ref/UIStyleController" class="block_link class"><strong>UIStyleController</strong><br>Applies a style to its child component depending on the state/value of a property</a>
+<a href="/docs/ref/UIViewRenderer" class="block_link class"><strong>UIViewRenderer</strong><br>Renders a referenced view component that is <em>not</em> a direct child component</a></p>
+<h2 id="styles">Styles and themes</h2>
+
+
+<p>View components have a number of properties that can be used to change the appearance of the rendered output element; these can be either preset (using <code>with</code>) or changed dynamically on an existing component instance.</p>
+<ol>
+<li><code>style</code> property — an instance of <a href="/docs/ref/UIStyle"><code>UIStyle</code></a><ul>
+<li>When preset, the styles from a given <code>UIStyle</code> object are <em>mixed into</em> the current style of the preset component.</li>
+<li>When preset as a <em>string</em>, styles from a named style in the current <em>theme</em> (see below) are mixed in.</li>
+<li>When set on an existing view component, the current <code>UIStyle</code> instance is replaced entirely, removing its existing styles.</li>
+</ul>
+</li>
+<li>Style overrides — objects with individual properties that <em>override</em> the styles defined in the current <code>UIStyle</code> instance.<ul>
+<li>When preset <em>or</em> set on an existing view component, the given properties are applied on top of the styles from the current <code>UIStyle</code> instance.</li>
+</ul>
+</li>
+</ol>
+<p>Note that the <code>style</code> property always refers to a <code>UIStyle</code> instance, whereas style overrides are (read-only) plain objects that expose individual settings — whether taken from the current <code>UIStyle</code> instance, or overridden by assigning a <em>new</em> object to these properties.</p>
+<p>Updating any of the individual properties of a style override object on an existing view component has no immediate effect, since only the override properties themselves are <em>observed</em> by the component renderer.</p>
+<p><a href="/docs/ref/UIStyle" class="block_link class"><strong>UIStyle</strong><br>Encapsulates a set of style objects with properties that alter the appearance of a UI element</a></p>
+<pre><code class="language-jsx"><span class="hljs-comment">// define a custom style (name is optional)</span>
+<span class="hljs-keyword">const</span> myStyle = UIStyle.create(<span class="hljs-string">&quot;MyStyle&quot;</span>, {
+  <span class="hljs-attr">textStyle</span>: { <span class="hljs-attr">bold</span>: <span class="hljs-literal">true</span> },
+});
+<span class="hljs-keyword">const</span> view = (
+  <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">row</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span>
+      <span class="hljs-attr">style</span>=<span class="hljs-string">{myStyle}</span>
+      <span class="hljs-attr">decoration</span>=<span class="hljs-string">{{</span> <span class="hljs-attr">background:</span> &quot;@<span class="hljs-attr">yellow</span>&quot; }}
+      <span class="hljs-attr">onBeforeRender</span>=<span class="hljs-string">&quot;setButtonStyle()&quot;</span>
+    &gt;</span>
+      Click me
+    <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">row</span>&gt;</span></span>
+);
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyActivity</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ViewActivity</span>.<span class="hljs-title">with</span>(<span class="hljs-title">view</span>) </span>{
+  <span class="hljs-comment">// ...</span>
+  
+  <span class="hljs-function"><span class="hljs-title">setButtonStyle</span>(<span class="hljs-params">e: UIComponentEvent&lt;UIButton&gt;</span>)</span> {
+    <span class="hljs-keyword">let</span> btn = e.source;  <span class="hljs-comment">// &lt;= the button</span>
+    <span class="hljs-built_in">console</span>.log(btn.textStyle.bold); <span class="hljs-comment">// =&gt; true</span>
+    btn.dimensions = { <span class="hljs-attr">minWidth</span>: <span class="hljs-number">200</span> };
+  }
+}
+</code></pre>
+<p>In this example:</p>
+<ol>
+<li>The <code>myStyle</code> variable is set to a <code>UIStyle</code> instance, which only contains the ‘bold’ text style flag.</li>
+<li>This style is preset on the <code>UIButton</code> constructor (i.e. the <code>&lt;button&gt;</code> JSX tag) — which means the bold flag is <em>mixed in</em> with the regular styles for a button.</li>
+<li>The <code>decoration</code> property is also preset, which means that these settings will be applied <em>on top of</em> the <code>UIStyle</code> settings from <code>style</code> by the button renderer.</li>
+<li>An event handler is added, which gets called right before the button is rendered. The event handler method of the activity is able to find a reference to the <code>UIButton</code> instance (<em>not</em> constructor) and manipulate its properties.</li>
+<li>The value of <code>btn.textStyle.bold</code> is true, because the <code>textStyle</code> object is directly taken from the button’s combined styles (after mixing in <code>myStyle</code>).</li>
+<li>When the <code>dimensions</code> property is set to a new object, its style settings also get applied <em>on top of</em> the <code>UIStyle</code> settings from <code>style</code> by the button renderer.</li>
+<li>As a result, the button becomes yellow, 200px wide, with bold text.</li>
+</ol>
+<h3>Style settings</h3>
+
+
+<p>Refer to the following interface definitions for a list of settings that are available on both <code>UIStyle</code> instances and overrides.</p>
+<p><a href="/docs/ref/UIStyle#UIStyle:Dimensions" class="block_link interface"><strong>UIStyle.Dimensions</strong><br>Options for the dimensions of a view component</a>
+<a href="/docs/ref/UIStyle#UIStyle:Position" class="block_link interface"><strong>UIStyle.Position</strong><br>Options for component positioning within parent component(s)</a>
+<a href="/docs/ref/UIStyle#UIStyle:TextStyle" class="block_link interface"><strong>UIStyle.TextStyle</strong><br>Options for text styles</a>
+<a href="/docs/ref/UIStyle#UIStyle:Decoration" class="block_link interface"><strong>UIStyle.Decoration</strong><br>Options for the appearance of UI elements and cell containers</a>
+<a href="/docs/ref/UIStyle#UIStyle:ContainerLayout" class="block_link interface"><strong>UIStyle.ContainerLayout</strong><br>Options for layout of UI elements within a container</a></p>
+<h3>Measurements</h3>
+
+
+<p>All measurements may either be specified using ‘CSS units’ (i.e. strings that conform with one of the formats allowed by the CSS specification) <em>or</em> using numbers that designate a length in ‘device-dependent pixels’ (dp). These are equivalent to physical pixels on a screen when not zoomed in or out, and may be scaled automatically on high-density displays.</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">const</span> view = UICell.with(
+  { <span class="hljs-attr">dimensions</span>: { <span class="hljs-attr">maxHeight</span>: <span class="hljs-string">&quot;50%&quot;</span> } },  <span class="hljs-comment">// CSS units</span>
+  UIRow.with(
+    { <span class="hljs-attr">height</span>: <span class="hljs-number">48</span> },  <span class="hljs-comment">// value in dp</span>
+    UIButton.with({
+      <span class="hljs-attr">label</span>: <span class="hljs-string">&quot;Click me&quot;</span>,
+      <span class="hljs-attr">dimensions</span>: { <span class="hljs-attr">minWidth</span>: <span class="hljs-number">200</span> }  <span class="hljs-comment">// value in dp</span>
+    })
+  )
+)
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> In Web applications, 1dp is defined as the equivalent of 1/16th of a <code>rem</code> unit. This value can be changed at runtime using the <code>BrowserApplication.setGlobalDpSize()</code> method, which scales all measurements up or down according to a given factor (defaults to 1), or by redefining the <code>font-size</code> CSS property of the <code>html</code> element.</p>
+</blockquote>
+<h3>Colors</h3>
+
+
+<p>Color values may be specified in one of the following formats:</p>
+<ul>
+<li>A CSS value, e.g. <code>&quot;blue&quot;</code>, <code>&quot;#1122AA&quot;</code>, or <code>&quot;rgba(0,0,0,0.5)&quot;</code>.</li>
+<li>The name of a color that is defined in the current <em>theme</em> (see below), preceded with an <code>@</code> sign — e.g. <code>&quot;@blue&quot;</code>, <code>&quot;@yellow&quot;</code>, or <code>&quot;@slate&quot;</code>; or one of the symbolic colors such as <code>&quot;@primary&quot;</code> <code>&quot;@background&quot;</code>, or <code>&quot;@text&quot;</code>.</li>
+<li>A theme color followed by an optional caret sign and a percentage, to darken or brighten the theme color by the given percentage — e.g. <code>&quot;@green-20%&quot;</code> (darken), <code>&quot;@green+20%&quot;</code> (lighten), <code>&quot;@green^-20%&quot;</code> (darken light colors, lighten dark colors), <code>&quot;@green^+20%&quot;</code> (lighten dark colors, darken light colors).</li>
+<li>A theme color followed by a slash and a percentage, to set the opacity of the resulting color — e.g. <code>&quot;@green/80%&quot;</code> for a green color with a transparency level of 20% (i.e. 80% opaque).</li>
+<li>A theme color followed by <code>.text</code>, which is replaced with a suitable text color (nearly black or nearly white) depending on the brightness of the theme color — e.g. <code>&quot;@primary.text&quot;</code>, or <code>&quot;@green-10%.text&quot;</code>.</li>
+</ul>
+<pre><code class="language-typescript"><span class="hljs-keyword">const</span> greenBgStyle = UIStyle.create({
+  <span class="hljs-attr">decoration</span>: {
+    <span class="hljs-attr">background</span>: <span class="hljs-string">&quot;@green&quot;</span>,
+    <span class="hljs-attr">textColor</span>: <span class="hljs-string">&quot;@green.text&quot;</span>
+    <span class="hljs-comment">// ^ same as textStyle.color</span>
+  }
+});
+<span class="hljs-keyword">const</span> view = UICell.with(
+  { <span class="hljs-attr">background</span>: <span class="hljs-string">&quot;@background&quot;</span> },
+  UIRow.with(
+    UIButton.with({
+      <span class="hljs-attr">label</span>: <span class="hljs-string">&quot;Click me&quot;</span>,
+      <span class="hljs-attr">style</span>: greenBgStyle
+    })
+  )
+)
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> All default colors for UI elements are defined using combinations of <code>&quot;@background&quot;</code> and <code>&quot;@text&quot;</code> (which is itself defined as <code>&quot;@background.text&quot;</code>). This makes it possible to implement ‘dark mode’ by simply changing the <code>background</code> color value to a dark color, and a primary color that is relatively bright. Afterwards, call <a href="/docs/ref/UIRenderContext#UIRenderContext:emitRenderChange"><code>app.renderContext.emitRenderChange()</code></a> to re-render all visible view components using the new color values.</p>
+</blockquote>
+<h3>Conditional styles (state)</h3>
+
+
+<p>You can include style settings that change the appearance of a UI element based on its current state without having to add event handlers. Use the <a href="/docs/ref/UIStyle#UIStyle:addState"><code>addState</code></a> method on a UIStyle` object to add <em>conditional</em> styles.</p>
+<p><a href="/docs/ref/UIStyle#UIStyle:addState" class="block_link method"><strong>UIStyle.addState()</strong><br>Add conditional styles to a <code>UIStyle</code> instance</a></p>
+<pre><code class="language-typescript"><span class="hljs-keyword">const</span> myStyle = UIStyle.create({
+  <span class="hljs-attr">textStyle</span>: { <span class="hljs-attr">bold</span>: <span class="hljs-literal">true</span> },
+}).addState(<span class="hljs-string">&quot;hover&quot;</span>, {
+  <span class="hljs-attr">decoration</span>: { <span class="hljs-attr">background</span>: <span class="hljs-string">&quot;@primary&quot;</span> },
+  <span class="hljs-attr">textStyle</span>: { <span class="hljs-attr">italic</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">color</span>: <span class="hljs-string">&quot;@primary.text&quot;</span> }
+});
+</code></pre>
+<p>The following states are available:</p>
+<ul>
+<li><code>pressed</code> — used for buttons that are in ‘pressed’ state (while held down)</li>
+<li><code>hover</code> — used for UI elements and cells that are current under the user’s mouse cursor</li>
+<li><code>focused</code> — used for input elements and buttons (or any other focusable element) that currently has input focus</li>
+<li><code>disabled</code> – used for input elements and buttons for which input has been disabled</li>
+<li><code>selected</code> — used for UI elements and cells that have emitted a <code>Select</code> event, and have not yet emitted a <code>Deselect</code> event (often used together with the <code>UISelectionController</code> class, which emits <code>Deselect</code> events on the currently selected component as soon as another element emits a <code>Select</code> event).</li>
+</ul>
+<h3>Style groups</h3>
+
+
+<p>You can avoid creating separate variables for each <code>UIStyle</code> instance by creating <em>style groups</em>. These are sets of related styles, that are defined using a call to <a href="/docs/ref/UIStyle#UIStyle:group"><code>UIStyle.group</code></a>.</p>
+<p>This method accepts an object with style names as properties, and <code>UIStyle</code> instances <em>or</em> plain objects as values. Additionally, existing groups can be <em>extended</em> by including them as an argument as well.</p>
+<p><a href="/docs/ref/UIStyle#UIStyle:group" class="block_link method"><strong>UIStyle.group()</strong><br>Create a style group with a given set of styles and/or other groups</a></p>
+<pre><code class="language-typescript"><span class="hljs-comment">// create a style group</span>
+<span class="hljs-keyword">const</span> bannerStyles = UIStyle.group({
+  <span class="hljs-attr">banner</span>: {
+    <span class="hljs-attr">decoration</span>: { <span class="hljs-attr">background</span>: <span class="hljs-string">&quot;@primary&quot;</span> }
+  },
+  <span class="hljs-attr">bannerButton</span>: UIStyle.create({
+    <span class="hljs-attr">decoration</span>: { <span class="hljs-attr">background</span>: <span class="hljs-string">&quot;@primary^-20%&quot;</span> }
+  }).addState(<span class="hljs-string">&quot;hover&quot;</span>, {
+    <span class="hljs-attr">decoration</span>: { <span class="hljs-attr">background</span>: <span class="hljs-string">&quot;@primary^-30%&quot;</span> }
+  })
+});
+
+<span class="hljs-comment">// extend this style group</span>
+<span class="hljs-keyword">const</span> fancyBannerStyles = UIStyle.group(
+  bannerStyles,
+  {
+    <span class="hljs-attr">bannerButton</span>: {
+      <span class="hljs-attr">textStyle</span>: { <span class="hljs-attr">fontFamily</span>: <span class="hljs-string">&quot;serif&quot;</span> }
+    }
+  }
+);
+
+<span class="hljs-comment">// use styles from this group</span>
+<span class="hljs-keyword">const</span> view = UIRow.with(
+  { <span class="hljs-attr">style</span>: fancyBannerStyles.banner },
+  UIButton.with({
+    <span class="hljs-attr">label</span>: <span class="hljs-string">&quot;Foo&quot;</span>,
+    <span class="hljs-attr">style</span>: fancyBannerStyles.bannerButton
+  })
+)
+</code></pre>
+<h3>Themes</h3>
+
+
+<p>A <em>theme</em> is an instance of the <a href="/docs/ref/UITheme"><code>UITheme</code></a> class. The current theme is referenced by the static <a href="/docs/ref/UITheme#UITheme:current"><code>UITheme.current</code></a> property.</p>
+<p>To change the default appearance of all components, colors, icons, and other style defaults, set the <code>current</code> property to a new <code>UITheme</code> instance. You can copy the current theme using the <a href="/docs/ref/UITheme#UITheme:clone"><code>clone()</code></a> method.</p>
+<p><a href="/docs/ref/UITheme" class="block_link class"><strong>UITheme</strong><br>Represents a set of default styles and component presets</a></p>
+<pre><code class="language-typescript"><span class="hljs-keyword">const</span> defaultTheme = UITheme.current.clone();
+<span class="hljs-keyword">const</span> darkTheme = UITheme.current.clone();
+darkTheme.colors[<span class="hljs-string">&quot;background&quot;</span>] = <span class="hljs-string">&quot;#222&quot;</span>;
+darkTheme.colors[<span class="hljs-string">&quot;primary&quot;</span>] = <span class="hljs-string">&quot;@green&quot;</span>;
+
+<span class="hljs-keyword">let</span> dark = <span class="hljs-literal">false</span>;
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">switchTheme</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">if</span> (dark) UITheme.current = defaultTheme;
+  <span class="hljs-keyword">else</span> UITheme.current = darkTheme;
+  dark = !dark;
+  
+  <span class="hljs-comment">// trigger re-rendering of all components:</span>
+  Application.active.first()?.renderContext?.emitRenderChange();
+}
+</code></pre>
+<h2 id="custom">Custom views</h2>
+
+
+<p>There are a few different approaches for creating views that can be reused throughout an application.</p>
+<h3>Using a preset constructor</h3>
+
+
+<p>The simplest approach to creating reusable views is to define a preset constructor, and use it as-is.</p>
+<pre><code class="language-typescript"><span class="hljs-comment">// create a special button constructor that can be reused</span>
+<span class="hljs-keyword">const</span> MyButton = UIButton.with({
+  <span class="hljs-attr">style</span>: UIStyle.create(<span class="hljs-string">&quot;FancyButton&quot;</span>, {
+    <span class="hljs-attr">textStyle</span>: { <span class="hljs-attr">fontFamily</span>: <span class="hljs-string">&quot;serif&quot;</span> }
+  })
+});
+
+<span class="hljs-comment">// ...elsewhere:</span>
+<span class="hljs-keyword">const</span> view = UIRow.with(
+  MyButton.withLabel(<span class="hljs-string">&quot;Click me&quot;</span>)
+); 
+</code></pre>
+<p>You can also extend the preset constructor into a class, if needed.</p>
+<pre><code class="language-typescript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyButton</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">UIButton</span>.<span class="hljs-title">with</span>(</span>{ style: myStyle }) {
+  label = <span class="hljs-string">&quot;Click to show the time&quot;</span>;
+  <span class="hljs-function"><span class="hljs-title">updateLabel</span>(<span class="hljs-params"></span>)</span> { <span class="hljs-built_in">this</span>.label = <span class="hljs-built_in">String</span>(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>()) }
+}
+MyButton.addObserver(<span class="hljs-class"><span class="hljs-keyword">class</span> </span>{
+  <span class="hljs-title">constructor</span> (<span class="hljs-params"><span class="hljs-keyword">public</span> button: MyButton</span>) { }
+  <span class="hljs-function"><span class="hljs-title">onClick</span>(<span class="hljs-params"></span>)</span> { <span class="hljs-built_in">this</span>.button.updateLabel() }
+});
+
+<span class="hljs-comment">// ...elsewhere:</span>
+<span class="hljs-keyword">const</span> view = UIRow.with(
+  MyButton
+);
+</code></pre>
+<h3>Using a view activity</h3>
+
+
+<p>Sometimes it may be appropriate to define a new <em>activity</em> class to encapsulate a reusable view. For example, a modal dialog can be displayed independently of other views — in this case, the <a href="/docs/ref/DialogViewActivity"><code>DialogViewActivity</code></a> class provides all of the required functionality.</p>
+<pre><code class="language-jsx"><span class="hljs-keyword">const</span> dialogView = (
+  <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">flowcell</span>
+    <span class="hljs-attr">background</span>=<span class="hljs-string">&quot;@background&quot;</span>
+    <span class="hljs-attr">textColor</span>=<span class="hljs-string">&quot;@text&quot;</span>
+    <span class="hljs-attr">padding</span>=<span class="hljs-string">{16}</span>
+    <span class="hljs-attr">position</span>=<span class="hljs-string">{{</span> <span class="hljs-attr">gravity:</span> &quot;<span class="hljs-attr">center</span>&quot; }}
+  &gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">centerrow</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span>Hello, {bind(&quot;name&quot;)}!<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">centerrow</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">flowcell</span>&gt;</span></span>
+);
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyDialogActivity</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">DialogViewActivity</span>.<span class="hljs-title">with</span>(<span class="hljs-title">dialogView</span>) </span>{
+  public name?: string;
+}
+
+<span class="hljs-keyword">let</span> dialog = <span class="hljs-keyword">new</span> MyDialogActivity();
+dialog.name = <span class="hljs-string">&quot;world&quot;</span>;
+<span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> {
+  Application.active.first()?.showViewActivityAsync(dialog);
+}, <span class="hljs-number">100</span>);
+</code></pre>
+<h3>Using a <code>ViewComponent</code> class</h3>
+
+
+<p>In most other cases, whenever you need custom binding properties but not an entire activity, reusable views can be implemented as a preset <a href="/docs/ref/ViewComponent"><code>ViewComponent</code></a> constructor.</p>
+<p>This has the added advantage of enabling code completion for preset properties, and allowing for nested content — for code in both JSX and native JavaScript syntax.</p>
+<p><a href="/docs/ref/ViewComponent" class="block_link class"><strong>ViewComponent</strong><br>Represents a custom view component</a></p>
+<pre><code class="language-jsx"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyView</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ViewComponent</span>.<span class="hljs-title">with</span>(</span>{
+  <span class="hljs-attr">view</span>: (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">flowcell</span> <span class="hljs-attr">padding</span>=<span class="hljs-string">{16}</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">&quot;cellClicked()&quot;</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">centerrow</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span>Hello, {bind(&quot;name&quot;)}!<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+      <span class="hljs-tag">&lt;/<span class="hljs-name">centerrow</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">separator</span> /&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">viewcontent</span> /&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">flowcell</span>&gt;</span></span>
+  ),
+  <span class="hljs-attr">defaults</span>: {
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&quot;&quot;</span>  <span class="hljs-comment">// this becomes a property</span>
+  }
+}) {
+  <span class="hljs-function"><span class="hljs-title">cellClicked</span>(<span class="hljs-params"></span>)</span> {
+    <span class="hljs-built_in">this</span>.name = <span class="hljs-string">&quot;Clicked&quot;</span>;
+  }
+}
+
+<span class="hljs-comment">// ...elsewhere:</span>
+<span class="hljs-keyword">const</span> view = (
+  <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">cell</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">MyView</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;World&quot;</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">row</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span>Content goes here<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+      <span class="hljs-tag">&lt;/<span class="hljs-name">row</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">MyView</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">cell</span>&gt;</span></span>
+);
+</code></pre>
+<hr>
+<h3>Next steps</h3>
+
+
+<p>Learn more about the other parts of a Typescene application:</p>
+<ul>
+<li><a href="/docs/concepts/activities"><code>Activities</code></a> encapsulate views and display them when activated.</li>
+<li><a href="/docs/concepts/services"><code>Services</code></a> encapsulate global state (data), made available to all other components.</li>
+</ul>
+
+        </div>
+
+        <div class="wrapper_column wrapper_column--sidebar">
+            <div class="fixed_cell">
+                <div class="fixed_cell_inner">
+                    <nav id="toc" class="sidebar_nav">
+                        <h4 class="closed">Overview</h4>
+                              <ul>
+                                  <li><a href="/docs/goals">Why Typescene?</a></li><link rel="prefetch" href="/docs/goals" as="fetch" />
+<li><a href="/docs/introduction">Introduction</a></li><link rel="prefetch" href="/docs/introduction" as="fetch" />
+<li><a href="/docs/installation">Installation</a></li><link rel="prefetch" href="/docs/installation" as="fetch" />
+<li><a href="/docs/js-ts">JavaScript vs TypeScript</a></li><link rel="prefetch" href="/docs/js-ts" as="fetch" />
+                              </ul>
+                              
+<h4 class="open">Concepts</h4>
+                              <ul>
+                                  <li><a href="/docs/concepts/components">Components</a></li><link rel="prefetch" href="/docs/concepts/components" as="fetch" />
+<li><a href="/docs/concepts/lists-maps">Lists and maps</a></li><link rel="prefetch" href="/docs/concepts/lists-maps" as="fetch" />
+<li aria-current="page"><b>Views</b></li><ul>
+<li><a href="#create" class="toc">Creating views</a></li>
+<li><a href="#jsx" class="toc">JSX syntax</a></li>
+<li><a href="#ui-components" class="toc">UI components</a></li>
+<li><a href="#layout-control" class="toc">Layout and control</a></li>
+<li><a href="#styles" class="toc">Styles and themes</a></li>
+<li><a href="#custom" class="toc">Custom views</a></li>
+</ul>
+
+<li><a href="/docs/concepts/activities">Activities</a></li><link rel="prefetch" href="/docs/concepts/activities" as="fetch" />
+<li><a href="/docs/concepts/services">Services</a></li><link rel="prefetch" href="/docs/concepts/services" as="fetch" />
+                              </ul>
+                              
+<h4 class="closed">Guides</h4>
+                              <ul>
+                                  <li><a href="/docs/guides/ui/">UI components</a></li><link rel="prefetch" href="/docs/guides/ui/" as="fetch" />
+<li><a href="/docs/guides/layout/">Layout</a></li><link rel="prefetch" href="/docs/guides/layout/" as="fetch" />
+                              </ul>
+                              
+                    </nav>
+                </div>
+                <div class="fixed_cell_backtotop">
+                    <a href="#" onclick="backToTop()">↑ Back to top</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<link rel="prefetch" href="/docs/" as="fetch" />
+
+    <footer class="footer">
+        <section class="wrapper">
+            <div class="wrapper_columns">
+                <div class="wrapper_column">
+                    © Copyright 2021 Typescene contributors
+                </div>
+                <div class="wrapper_column wrapper_column--oppose style--light">
+                    Find Typescene on
+    <a href="https://twitter.com/typescene" target="_blank" rel="noopener">Twitter</a> and
+    <a href="https://github.com/typescene" target="_blank" rel="noopener">Github</a>
+                </div>
+            </div>
+        </section>
+    </footer>
+
+    <script src="/assets/default.js"></script>
+    <script src="/assets/docwidget.js"></script>
+</body>
+</html>

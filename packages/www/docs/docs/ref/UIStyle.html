@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Typescene - UIStyle</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96048899-3"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-96048899-3');
+    </script>
+    <!-- end GA -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,300i|IBM+Plex+Sans:200,300,500,800,200i,300i,500i" rel="stylesheet">
+    <link rel="canonical" href="https://typescene.dev/docs/ref/UIStyle">
+</head>
+<body>
+    <nav class="topnav">
+        <section class="wrapper">
+            <a href="/" class="logo_link">
+                <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+                <span class="topnav_title">Typescene</span>
+            </a>
+            <ul class="topnav_links">
+                <li><a href="#" onclick="return showDocWidget()"><img src="/assets/icons/search-reverse.svg" alt="" width=16 style="position: relative; top: .125rem">&nbsp; Docs</a></li>
+                <li class="hide_small"><a href="https://github.com/typescene/typescene" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    
+<div id="breadcrumb_bar">
+  <section class="wrapper">
+      <a href="/" class="logo_link" id="breadcrumb_logo" hidden>
+          <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+      </a>
+      <span>
+          <a href="/docs">Documentation</a>
+          &nbsp;|&nbsp;
+          Reference
+      </span>
+  </section>
+</div>
+<article class="wrapper wrapper--page">
+    <div class="wrapper_columns">
+        <div class="wrapper_column">
+            <div class="pagetitle_container">
+                <h1>UIStyle</h1>
+                
+            </div>
+
+            <h2 id="UIStyle" class="spec"><img src="/assets/icons/spec-class.svg" alt="">class UIStyle</h2>
+
+
+
+<p>Encapsulation of a set of styles to be applied to a UI component.</p>
+<h3>Constructor</h3>
+
+
+<p><code>(name?: string, base?: UIStyle, ...styles: Partial&lt;</code><a href="#UIStyle:StyleObjects"><code>StyleObjects</code></a><code>&gt;[]): UIStyle</code></p>
+<h2 id="UIStyle:create" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.create() <span class="spec_tag">static</span></h2>
+
+
+
+<p><code>[1]. (styles?: Partial&lt;</code><a href="#UIStyle:StyleObjects"><code>StyleObjects</code></a><code>&gt;): UIStyle</code><br><code>[2]. (name: string, styles: Partial&lt;</code><a href="#UIStyle:StyleObjects"><code>StyleObjects</code></a><code>&gt;): UIStyle</code></p>
+<p><strong>[1]</strong> Create a new anonymous style set from scratch using given style objects</p>
+<p><strong>[2]</strong> Create a new style set from scratch using given style objects, with given name.</p>
+<h2 id="UIStyle:group" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.group() <span class="spec_tag">static</span></h2>
+
+
+
+<p><code>&lt;PropertyNamesT extends string&gt;(...styles: { [P in PropertyNamesT]?: UIStyle | Partial&lt;</code><a href="#UIStyle:StyleObjects"><code>StyleObjects</code></a><code>&gt;; }[]): { [P in PropertyNamesT]: UIStyle; }</code></p>
+<p>Create an object that contains all of the given styles and/or styles from other groups; if the object contains a property that already existed in a given group, the original style is <em>extended</em> (see <a href="#UIStyle:extend"><code>extend()</code></a>).</p>
+<h2 id="UIStyle:isStyleOverride" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.isStyleOverride() <span class="spec_tag">static</span></h2>
+
+
+
+<p><code>&lt;K extends keyof StyleObjects&gt;(object?: </code><a href="#UIStyle:StyleObjects"><code>StyleObjects</code></a><code>[K], style?: UIStyle): boolean</code></p>
+<p>Returns true if given object does <em>not</em> belong to given instance of <code>UIStyle</code>.</p>
+<h2 id="UIStyle:name" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.name</h2>
+
+
+
+<p><code>string</code></p>
+<p>Human readable name for this style.</p>
+<h2 id="UIStyle:id" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.id</h2>
+
+
+
+<p><code>string</code></p>
+<p>Arbitrary ID for this style, contains sanitized <a href="#UIStyle:name"><code>name</code></a> token.</p>
+<h2 id="UIStyle:ids" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.ids</h2>
+
+
+
+<p><code>readonly string[]</code></p>
+<p>List of IDs which includes the current ID as well as inherited IDs.</p>
+<h2 id="UIStyle:inherited" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.inherited</h2>
+
+
+
+<p><code>readonly UIStyle[]</code></p>
+<p>List of inherited styles.</p>
+<h2 id="UIStyle:conditionalStyles" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.conditionalStyles</h2>
+
+
+
+<p><a href="#UIStyle:ConditionalStyles"><code>ConditionalStyles</code></a></p>
+<p>Referenced conditional styles (should be added using <a href="/docs/ref/UIStyle#UIStyle:addState"><code>UIStyle.addState</code></a>).</p>
+<h2 id="UIStyle:mixin" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.mixin()</h2>
+
+
+
+<p><code>(style: UIStyle): UIStyle</code></p>
+<p>Returns a new style set that contains all current styles as well as the styles from given <code>UIStyle</code> instance; the result is reused when the exact same style sets are mixed again.</p>
+<h2 id="UIStyle:extend" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.extend()</h2>
+
+
+
+<p><code>(objects: Partial&lt;</code><a href="#UIStyle:StyleObjects"><code>StyleObjects</code></a><code>&gt;, </code><a href="#UIStyle:name"><code>name</code></a><code>?: string): UIStyle</code></p>
+<p>Returns a new style set that contains all current styles as well as given styles (objects), with a new ID and optionally a new name. Creates a new instance each time, unlike <a href="#UIStyle:mixin"><code>mixin</code></a>.</p>
+<h2 id="UIStyle:addState" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.addState()</h2>
+
+
+
+<p><code>(name: keyof ConditionalStyles, objects: Partial&lt;</code><a href="#UIStyle:StyleObjects"><code>StyleObjects</code></a><code>&gt;): this</code></p>
+<p>Add or extend a conditional style with given style set.</p>
+<h2 id="UIStyle:getStyles" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getStyles()</h2>
+
+
+
+<p><code>(): Readonly&lt;</code><a href="#UIStyle:StyleObjects"><code>StyleObjects</code></a><code>&gt;</code></p>
+<p>Returns all individual style objects as read-only objects.</p>
+<h2 id="UIStyle:getOwnStyles" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getOwnStyles()</h2>
+
+
+
+<p><code>(): Partial&lt;</code><a href="#UIStyle:StyleObjects"><code>StyleObjects</code></a><code>&gt;</code></p>
+<p>Returns all styles that are unique to this instance, as read-only objects.</p>
+<hr>
+<h2 id="UIStyle:Offsets" class="spec"><img src="/assets/icons/spec-type.svg" alt="">UIStyle.Offsets</h2>
+
+
+
+<p><code>type Offsets = string | number | {</code><br><code>        x?: string | number;</code><br><code>        y?: string | number;</code><br><code>        top?: string | number;</code><br><code>        bottom?: string | number;</code><br><code>        left?: string | number;</code><br><code>        right?: string | number;</code><br><code>    };</code></p>
+<p>Type definition for padding, margin, or border measurements.</p>
+<hr>
+<h2 id="UIStyle:ConditionalStyles" class="spec"><img src="/assets/icons/spec-interface.svg" alt="">UIStyle.ConditionalStyles</h2>
+
+
+
+<p>Type definition for an object with conditional styles.</p>
+<hr>
+<h2 id="UIStyle:StyleObjects" class="spec"><img src="/assets/icons/spec-interface.svg" alt="">UIStyle.StyleObjects</h2>
+
+
+
+<p>Collection of individual objects that represent a (partial) style.</p>
+<h2 id="UIStyle:StyleObjects:dimensions" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.dimensions</h2>
+
+
+
+<p><code>Readonly&lt;</code><a href="#UIStyle:Dimensions"><code>Dimensions</code></a><code>&gt;</code></p>
+<p>Options for the dimensions of a UI component.</p>
+<h2 id="UIStyle:StyleObjects:position" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.position</h2>
+
+
+
+<p><code>Readonly&lt;</code><a href="#UIStyle:Position"><code>Position</code></a><code>&gt;</code></p>
+<p>Options for component positioning within parent component(s).</p>
+<h2 id="UIStyle:StyleObjects:textStyle" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.textStyle</h2>
+
+
+
+<p><code>Readonly&lt;</code><a href="#UIStyle:TextStyle"><code>TextStyle</code></a><code>&gt;</code></p>
+<p>Options for styles of a UI component that shows text.</p>
+<h2 id="UIStyle:StyleObjects:decoration" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.decoration</h2>
+
+
+
+<p><code>Readonly&lt;</code><a href="#UIStyle:Decoration"><code>Decoration</code></a><code>&gt;</code></p>
+<p>Options for the appearance of UI components, including miscellaneous CSS attributes and class names.</p>
+<h2 id="UIStyle:StyleObjects:containerLayout" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.containerLayout</h2>
+
+
+
+<p><code>Readonly&lt;</code><a href="#UIStyle:ContainerLayout"><code>ContainerLayout</code></a><code>&gt;</code></p>
+<p>Options for layout of child components of a container component.</p>
+<hr>
+<h2 id="UIStyle:Dimensions" class="spec"><img src="/assets/icons/spec-interface.svg" alt="">UIStyle.Dimensions</h2>
+
+
+
+<p>Options for the dimensions of a UI component.</p>
+<h2 id="UIStyle:Dimensions:width" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.width</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Outer width of the element, as specified (in dp or string with unit).</p>
+<h2 id="UIStyle:Dimensions:height" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.height</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Outer height of the element, as specified (in dp or string with unit).</p>
+<h2 id="UIStyle:Dimensions:minWidth" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.minWidth</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Minimum width of the element, as specified (in dp or string with unit).</p>
+<h2 id="UIStyle:Dimensions:maxWidth" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.maxWidth</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Maximum width of the element, as specified (in dp or string with unit).</p>
+<h2 id="UIStyle:Dimensions:minHeight" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.minHeight</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Minimum height of the element, as specified (in dp or string with unit).</p>
+<h2 id="UIStyle:Dimensions:maxHeight" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.maxHeight</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Maximum height of the element, as specified (in dp or string with unit).</p>
+<h2 id="UIStyle:Dimensions:grow" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.grow</h2>
+
+
+
+<p><code>number</code></p>
+<p>Growth quotient (0 for no growth, higher values for faster growth when needed).</p>
+<h2 id="UIStyle:Dimensions:shrink" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.shrink</h2>
+
+
+
+<p><code>number</code></p>
+<p>Shrink quotient (0 to never shrink, higher values for faster shrinking when needed).</p>
+<hr>
+<h2 id="UIStyle:Position" class="spec"><img src="/assets/icons/spec-interface.svg" alt="">UIStyle.Position</h2>
+
+
+
+<p>Options for component positioning within parent component(s).</p>
+<h2 id="UIStyle:Position:gravity" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.gravity</h2>
+
+
+
+<p><code>&quot;&quot; | &quot;start&quot; | &quot;stretch&quot; | &quot;end&quot; | &quot;center&quot; | &quot;baseline&quot; | &quot;overlay&quot;</code></p>
+<p>Position of the component in the direction perpendicular to the distribution axis of the parent component, or <code>overlay</code> if the component should be placed on top of other components (i.e. CSS absolute positioning).</p>
+<h2 id="UIStyle:Position:top" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.top</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Top anchor: relative distance, or absolute position if <code>gravity</code> is ‘overlay’ (in dp or string with unit, defaults to <code>auto</code>).</p>
+<h2 id="UIStyle:Position:bottom" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.bottom</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Bottom anchor: relative distance, or absolute position if <code>gravity</code> is ‘overlay’ (in dp or string with unit, defaults to <code>auto</code>).</p>
+<h2 id="UIStyle:Position:left" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.left</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Left anchor: relative distance, or absolute position if <code>gravity</code> is ‘overlay’ (in dp or string with unit, defaults to <code>auto</code>).</p>
+<h2 id="UIStyle:Position:right" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.right</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Right anchor: relative distance, or absolute position if <code>gravity</code> is ‘overlay’ (in dp or string with unit, defaults to <code>auto</code>).</p>
+<hr>
+<h2 id="UIStyle:TextStyle" class="spec"><img src="/assets/icons/spec-interface.svg" alt="">UIStyle.TextStyle</h2>
+
+
+
+<p>Options for styles of a UI component that shows text.</p>
+<h2 id="UIStyle:TextStyle:align" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.align</h2>
+
+
+
+<p><code>string</code></p>
+<p>Text alignment (CSS).</p>
+<h2 id="UIStyle:TextStyle:color" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.color</h2>
+
+
+
+<p><code>string | </code><a href="/docs/ref/UIColor"><code>UIColor</code></a></p>
+<p>Text color (<a href="/docs/ref/UIColor"><code>UIColor</code></a> or string).</p>
+<h2 id="UIStyle:TextStyle:fontFamily" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.fontFamily</h2>
+
+
+
+<p><code>string</code></p>
+<p>Font family (CSS).</p>
+<h2 id="UIStyle:TextStyle:fontSize" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.fontSize</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Font size (dp or string with unit).</p>
+<h2 id="UIStyle:TextStyle:fontWeight" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.fontWeight</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Font weight (CSS).</p>
+<h2 id="UIStyle:TextStyle:letterSpacing" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.letterSpacing</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Letter spacing (dp or string with unit).</p>
+<h2 id="UIStyle:TextStyle:lineHeight" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.lineHeight</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Line height (CSS relative to font size, <em>not</em> in dp).</p>
+<h2 id="UIStyle:TextStyle:lineBreakMode" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.lineBreakMode</h2>
+
+
+
+<p><code>&quot;&quot; | &quot;normal&quot; | &quot;nowrap&quot; | &quot;pre&quot; | &quot;pre-wrap&quot; | &quot;pre-line&quot; | &quot;ellipsis&quot; | &quot;clip&quot;</code></p>
+<p>Line break handling mode (CSS white-space).</p>
+<h2 id="UIStyle:TextStyle:bold" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.bold</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True for bold text (overrides <code>fontWeight</code> value).</p>
+<h2 id="UIStyle:TextStyle:italic" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.italic</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True for italic text.</p>
+<h2 id="UIStyle:TextStyle:uppercase" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.uppercase</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True for all-uppercase text.</p>
+<h2 id="UIStyle:TextStyle:smallCaps" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.smallCaps</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True for text using small caps.</p>
+<h2 id="UIStyle:TextStyle:underline" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.underline</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True for underlined text.</p>
+<h2 id="UIStyle:TextStyle:strikeThrough" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.strikeThrough</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True for struck trough text.</p>
+<hr>
+<h2 id="UIStyle:Decoration" class="spec"><img src="/assets/icons/spec-interface.svg" alt="">UIStyle.Decoration</h2>
+
+
+
+<p>Options for the appearance of UI components, including miscellaneous CSS attributes and class names.</p>
+<h2 id="UIStyle:Decoration:background" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.background</h2>
+
+
+
+<p><code>string | </code><a href="/docs/ref/UIColor"><code>UIColor</code></a></p>
+<p>Background style or color (<a href="/docs/ref/UIColor"><code>UIColor</code></a> or string).</p>
+<h2 id="UIStyle:Decoration:textColor" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.textColor</h2>
+
+
+
+<p><code>string | </code><a href="/docs/ref/UIColor"><code>UIColor</code></a></p>
+<p>Text color (<a href="/docs/ref/UIColor"><code>UIColor</code></a> or string); this may be overridden by <a href="/docs/ref/UIStyle#UIStyle:TextStyle:color"><code>UIStyle.TextStyle.color</code></a> if specified on the same component or a child component.</p>
+<h2 id="UIStyle:Decoration:borderColor" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.borderColor</h2>
+
+
+
+<p><code>string | </code><a href="/docs/ref/UIColor"><code>UIColor</code></a></p>
+<p>Border color (<a href="/docs/ref/UIColor"><code>UIColor</code></a> or string).</p>
+<h2 id="UIStyle:Decoration:borderStyle" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.borderStyle</h2>
+
+
+
+<p><code>string</code></p>
+<p>Border style (CSS), defaults to “solid”.</p>
+<h2 id="UIStyle:Decoration:borderThickness" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.borderThickness</h2>
+
+
+
+<p><a href="#UIStyle:Offsets"><code>Offsets</code></a></p>
+<p>Border thickness (in dp or CSS string, or separate offset values).</p>
+<h2 id="UIStyle:Decoration:borderRadius" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.borderRadius</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Border radius (in dp or CSS string).</p>
+<h2 id="UIStyle:Decoration:padding" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.padding</h2>
+
+
+
+<p><a href="#UIStyle:Offsets"><code>Offsets</code></a></p>
+<p>Padding within control element (in dp or CSS string, or separate offset values).</p>
+<h2 id="UIStyle:Decoration:dropShadow" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.dropShadow</h2>
+
+
+
+<p><code>number</code></p>
+<p>Drop shadow distance (0-1).</p>
+<h2 id="UIStyle:Decoration:opacity" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.opacity</h2>
+
+
+
+<p><code>number</code></p>
+<p>Opacity (0-1).</p>
+<h2 id="UIStyle:Decoration:css" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.css</h2>
+
+
+
+<p><code>Partial&lt;CSSStyleDeclaration&gt;</code></p>
+<p>Miscellaneous CSS attributes.</p>
+<h2 id="UIStyle:Decoration:cssClassNames" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.cssClassNames</h2>
+
+
+
+<p><code>string[]</code></p>
+<p>Miscellaneous CSS class names (array).</p>
+<hr>
+<h2 id="UIStyle:ContainerLayout" class="spec"><img src="/assets/icons/spec-interface.svg" alt="">UIStyle.ContainerLayout</h2>
+
+
+
+<p>Options for layout of child components of a container component (only exists on <a href="/docs/ref/UIContainer"><code>UIContainer</code></a> instances).</p>
+<h2 id="UIStyle:ContainerLayout:axis" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.axis</h2>
+
+
+
+<p><code>&quot;&quot; | &quot;horizontal&quot; | &quot;vertical&quot;</code></p>
+<p>Axis along which content is distributed (defaults to vertical).</p>
+<h2 id="UIStyle:ContainerLayout:distribution" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.distribution</h2>
+
+
+
+<p><code>&quot;&quot; | &quot;start&quot; | &quot;end&quot; | &quot;center&quot; | &quot;fill&quot; | &quot;space-around&quot;</code></p>
+<p>Positioning of content along the distribution axis (defaults to start).</p>
+<h2 id="UIStyle:ContainerLayout:gravity" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.gravity</h2>
+
+
+
+<p><code>&quot;&quot; | &quot;start&quot; | &quot;stretch&quot; | &quot;end&quot; | &quot;center&quot; | &quot;baseline&quot;</code></p>
+<p>Positioning of content perpendicular to the distribution axis (defaults to stretch).</p>
+<h2 id="UIStyle:ContainerLayout:wrapContent" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.wrapContent</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True if content should wrap to new line/column if needed (defaults to false).</p>
+<h2 id="UIStyle:ContainerLayout:clip" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.clip</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True if content should be clipped within this container.</p>
+<h2 id="UIStyle:ContainerLayout:separator" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.separator</h2>
+
+
+
+<p><code>Readonly&lt;</code><a href="#UIStyle:SeparatorOptions"><code>SeparatorOptions</code></a><code>&gt;</code></p>
+<p>Options for separator between each component.</p>
+<hr>
+<h2 id="UIStyle:SeparatorOptions" class="spec"><img src="/assets/icons/spec-interface.svg" alt="">UIStyle.SeparatorOptions</h2>
+
+
+
+<p>Separator style, for use with containers and lists.</p>
+<h2 id="UIStyle:SeparatorOptions:vertical" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.vertical</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True for vertical line, or width-only spacer.</p>
+<h2 id="UIStyle:SeparatorOptions:space" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.space</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Width/height of separator space (CSS length or dp).</p>
+<h2 id="UIStyle:SeparatorOptions:lineThickness" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.lineThickness</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Separator line thickness (CSS length or dp).</p>
+<h2 id="UIStyle:SeparatorOptions:lineColor" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.lineColor</h2>
+
+
+
+<p><code>string | </code><a href="/docs/ref/UIColor"><code>UIColor</code></a></p>
+<p>Line separator color (<a href="/docs/ref/UIColor"><code>UIColor</code></a> or string), defaults to <code>@separator</code>.</p>
+<h2 id="UIStyle:SeparatorOptions:lineMargin" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.lineMargin</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Line separator margin (CSS length or dp).</p>
+
+        </div>
+
+        <div class="wrapper_column wrapper_column--sidebar wrapper_column--nav">
+            <div class="fixed_cell">
+                <div class="fixed_cell_inner">
+                    <nav id="toc" class="sidebar_nav">
+                        <h4 id="declarations">Declarations</h4>
+<ul>
+<li><a href="#UIStyle"><strong>class UIStyle</strong></a></li>
+<li><a href="#UIStyle:create">.create()</a></li>
+<li><a href="#UIStyle:group">.group()</a></li>
+<li><a href="#UIStyle:isStyleOverride">.isStyleOverride()</a></li>
+<li><a href="#UIStyle:name">.name</a></li>
+<li><a href="#UIStyle:id">.id</a></li>
+<li><a href="#UIStyle:ids">.ids</a></li>
+<li><a href="#UIStyle:inherited">.inherited</a></li>
+<li><a href="#UIStyle:conditionalStyles">.conditionalStyles</a></li>
+<li><a href="#UIStyle:mixin">.mixin()</a></li>
+<li><a href="#UIStyle:extend">.extend()</a></li>
+<li><a href="#UIStyle:addState">.addState()</a></li>
+<li><a href="#UIStyle:getStyles">.getStyles()</a></li>
+<li><a href="#UIStyle:getOwnStyles">.getOwnStyles()</a></li>
+</ul>
+<h4 id="namespaced">Namespaced</h4>
+<ul>
+<li><a href="#UIStyle:Offsets">UIStyle.Offsets</a></li>
+<li><a href="#UIStyle:ConditionalStyles"><strong>UIStyle.ConditionalStyles</strong></a></li>
+<li><a href="#UIStyle:StyleObjects"><strong>UIStyle.StyleObjects</strong></a></li>
+<li><a href="#UIStyle:StyleObjects:dimensions">.dimensions</a></li>
+<li><a href="#UIStyle:StyleObjects:position">.position</a></li>
+<li><a href="#UIStyle:StyleObjects:textStyle">.textStyle</a></li>
+<li><a href="#UIStyle:StyleObjects:decoration">.decoration</a></li>
+<li><a href="#UIStyle:StyleObjects:containerLayout">.containerLayout</a></li>
+<li><a href="#UIStyle:Dimensions"><strong>UIStyle.Dimensions</strong></a></li>
+<li><a href="#UIStyle:Dimensions:width">.width</a></li>
+<li><a href="#UIStyle:Dimensions:height">.height</a></li>
+<li><a href="#UIStyle:Dimensions:minWidth">.minWidth</a></li>
+<li><a href="#UIStyle:Dimensions:maxWidth">.maxWidth</a></li>
+<li><a href="#UIStyle:Dimensions:minHeight">.minHeight</a></li>
+<li><a href="#UIStyle:Dimensions:maxHeight">.maxHeight</a></li>
+<li><a href="#UIStyle:Dimensions:grow">.grow</a></li>
+<li><a href="#UIStyle:Dimensions:shrink">.shrink</a></li>
+<li><a href="#UIStyle:Position"><strong>UIStyle.Position</strong></a></li>
+<li><a href="#UIStyle:Position:gravity">.gravity</a></li>
+<li><a href="#UIStyle:Position:top">.top</a></li>
+<li><a href="#UIStyle:Position:bottom">.bottom</a></li>
+<li><a href="#UIStyle:Position:left">.left</a></li>
+<li><a href="#UIStyle:Position:right">.right</a></li>
+<li><a href="#UIStyle:TextStyle"><strong>UIStyle.TextStyle</strong></a></li>
+<li><a href="#UIStyle:TextStyle:align">.align</a></li>
+<li><a href="#UIStyle:TextStyle:color">.color</a></li>
+<li><a href="#UIStyle:TextStyle:fontFamily">.fontFamily</a></li>
+<li><a href="#UIStyle:TextStyle:fontSize">.fontSize</a></li>
+<li><a href="#UIStyle:TextStyle:fontWeight">.fontWeight</a></li>
+<li><a href="#UIStyle:TextStyle:letterSpacing">.letterSpacing</a></li>
+<li><a href="#UIStyle:TextStyle:lineHeight">.lineHeight</a></li>
+<li><a href="#UIStyle:TextStyle:lineBreakMode">.lineBreakMode</a></li>
+<li><a href="#UIStyle:TextStyle:bold">.bold</a></li>
+<li><a href="#UIStyle:TextStyle:italic">.italic</a></li>
+<li><a href="#UIStyle:TextStyle:uppercase">.uppercase</a></li>
+<li><a href="#UIStyle:TextStyle:smallCaps">.smallCaps</a></li>
+<li><a href="#UIStyle:TextStyle:underline">.underline</a></li>
+<li><a href="#UIStyle:TextStyle:strikeThrough">.strikeThrough</a></li>
+<li><a href="#UIStyle:Decoration"><strong>UIStyle.Decoration</strong></a></li>
+<li><a href="#UIStyle:Decoration:background">.background</a></li>
+<li><a href="#UIStyle:Decoration:textColor">.textColor</a></li>
+<li><a href="#UIStyle:Decoration:borderColor">.borderColor</a></li>
+<li><a href="#UIStyle:Decoration:borderStyle">.borderStyle</a></li>
+<li><a href="#UIStyle:Decoration:borderThickness">.borderThickness</a></li>
+<li><a href="#UIStyle:Decoration:borderRadius">.borderRadius</a></li>
+<li><a href="#UIStyle:Decoration:padding">.padding</a></li>
+<li><a href="#UIStyle:Decoration:dropShadow">.dropShadow</a></li>
+<li><a href="#UIStyle:Decoration:opacity">.opacity</a></li>
+<li><a href="#UIStyle:Decoration:css">.css</a></li>
+<li><a href="#UIStyle:Decoration:cssClassNames">.cssClassNames</a></li>
+<li><a href="#UIStyle:ContainerLayout"><strong>UIStyle.ContainerLayout</strong></a></li>
+<li><a href="#UIStyle:ContainerLayout:axis">.axis</a></li>
+<li><a href="#UIStyle:ContainerLayout:distribution">.distribution</a></li>
+<li><a href="#UIStyle:ContainerLayout:gravity">.gravity</a></li>
+<li><a href="#UIStyle:ContainerLayout:wrapContent">.wrapContent</a></li>
+<li><a href="#UIStyle:ContainerLayout:clip">.clip</a></li>
+<li><a href="#UIStyle:ContainerLayout:separator">.separator</a></li>
+<li><a href="#UIStyle:SeparatorOptions"><strong>UIStyle.SeparatorOptions</strong></a></li>
+<li><a href="#UIStyle:SeparatorOptions:vertical">.vertical</a></li>
+<li><a href="#UIStyle:SeparatorOptions:space">.space</a></li>
+<li><a href="#UIStyle:SeparatorOptions:lineThickness">.lineThickness</a></li>
+<li><a href="#UIStyle:SeparatorOptions:lineColor">.lineColor</a></li>
+<li><a href="#UIStyle:SeparatorOptions:lineMargin">.lineMargin</a></li>
+</ul>
+
+                    </nav>
+                </div>
+                <div class="fixed_cell_backtotop">
+                    <a href="#" onclick="backToTop()">↑ Back to top</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<link rel="prefetch" href="/docs/" as="fetch" />
+<script>
+    (function(){document.querySelectorAll(".sidebar_nav ul+h4").forEach(function(it){it.className="closed"})})()
+</script>
+
+
+    <footer class="footer">
+        <section class="wrapper">
+            <div class="wrapper_columns">
+                <div class="wrapper_column">
+                    © Copyright 2021 Typescene contributors
+                </div>
+                <div class="wrapper_column wrapper_column--oppose style--light">
+                    Find Typescene on
+    <a href="https://twitter.com/typescene" target="_blank" rel="noopener">Twitter</a> and
+    <a href="https://github.com/typescene" target="_blank" rel="noopener">Github</a>
+                </div>
+            </div>
+        </section>
+    </footer>
+
+    <script src="/assets/default.js"></script>
+    <script src="/assets/docwidget.js"></script>
+</body>
+</html>

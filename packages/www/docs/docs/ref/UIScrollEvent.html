@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Typescene - UIScrollEvent</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96048899-3"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-96048899-3');
+    </script>
+    <!-- end GA -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,300i|IBM+Plex+Sans:200,300,500,800,200i,300i,500i" rel="stylesheet">
+    <link rel="canonical" href="https://typescene.dev/docs/ref/UIScrollEvent">
+</head>
+<body>
+    <nav class="topnav">
+        <section class="wrapper">
+            <a href="/" class="logo_link">
+                <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+                <span class="topnav_title">Typescene</span>
+            </a>
+            <ul class="topnav_links">
+                <li><a href="#" onclick="return showDocWidget()"><img src="/assets/icons/search-reverse.svg" alt="" width=16 style="position: relative; top: .125rem">&nbsp; Docs</a></li>
+                <li class="hide_small"><a href="https://github.com/typescene/typescene" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    
+<div id="breadcrumb_bar">
+  <section class="wrapper">
+      <a href="/" class="logo_link" id="breadcrumb_logo" hidden>
+          <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+      </a>
+      <span>
+          <a href="/docs">Documentation</a>
+          &nbsp;|&nbsp;
+          Reference
+      </span>
+  </section>
+</div>
+<article class="wrapper wrapper--page">
+    <div class="wrapper_columns">
+        <div class="wrapper_column">
+            <div class="pagetitle_container">
+                <h1>UIScrollEvent</h1>
+                
+            </div>
+
+            <h2 id="UIScrollEvent" class="spec"><img src="/assets/icons/spec-class.svg" alt="">class UIScrollEvent</h2>
+
+
+
+<p><code>extends </code><a href="/docs/ref/UIComponentEvent"><code>UIComponentEvent</code></a><code>&lt;</code><a href="/docs/ref/UIScrollContainer"><code>UIScrollContainer</code></a><code>&gt;</code></p>
+<p>Event that is emitted when the user scrolls up or down in a `UIScrollContainer.</p>
+<h3>Constructor</h3>
+
+
+<p><code>(name: string, source: </code><a href="/docs/ref/UIScrollContainer"><code>UIScrollContainer</code></a><code>, inner?: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>, event?: any): UIScrollEvent</code></p>
+<h2 id="UIScrollEvent:horizontalVelocity" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.horizontalVelocity</h2>
+
+
+
+<p><code>number</code></p>
+<p>Horizontal scrolling velocity (screen widths per second).</p>
+<h2 id="UIScrollEvent:verticalVelocity" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.verticalVelocity</h2>
+
+
+
+<p><code>number</code></p>
+<p>Horizontal scrolling velocity (screen heights per second).</p>
+<h2 id="UIScrollEvent:scrolledDown" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.scrolledDown</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True if (last) scrolled down.</p>
+<h2 id="UIScrollEvent:scrolledUp" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.scrolledUp</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True if (last) scrolled up.</p>
+<h2 id="UIScrollEvent:scrolledLeft" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.scrolledLeft</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True if (last) scrolled left.</p>
+<h2 id="UIScrollEvent:scrolledRight" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.scrolledRight</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True if (last) scrolled right.</p>
+<h2 id="UIScrollEvent:atTop" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.atTop</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True if the <a href="/docs/ref/UIScrollContainer"><code>UIScrollContainer</code></a> is scrolled to the top.</p>
+<h2 id="UIScrollEvent:atBottom" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.atBottom</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True if the <a href="/docs/ref/UIScrollContainer"><code>UIScrollContainer</code></a> is scrolled to the bottom.</p>
+<h2 id="UIScrollEvent:atLeft" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.atLeft</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True if the <a href="/docs/ref/UIScrollContainer"><code>UIScrollContainer</code></a> is scrolled to the left.</p>
+<h2 id="UIScrollEvent:atRight" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.atRight</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>True if the <a href="/docs/ref/UIScrollContainer"><code>UIScrollContainer</code></a> is scrolled to the right.</p>
+<h2 id="UIScrollEvent:event" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.event</h2>
+
+
+
+<p><code>any</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponentEvent#UIComponentEvent:event"><code>UIComponentEvent.event</code></a>.</p>
+<h2 id="UIScrollEvent:source" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.source</h2>
+
+
+
+<p><code>TComponent</code></p>
+<p>Inherited from <a href="/docs/ref/ComponentEvent#ComponentEvent:source"><code>ComponentEvent.source</code></a>.</p>
+<h2 id="UIScrollEvent:inner" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.inner</h2>
+
+
+
+<p><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a></p>
+<p>Inherited from <a href="/docs/ref/ComponentEvent#ComponentEvent:inner"><code>ComponentEvent.inner</code></a>.</p>
+<h2 id="UIScrollEvent:name" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.name</h2>
+
+
+
+<p><code>string</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedEvent#ManagedEvent:name"><code>ManagedEvent.name</code></a>.</p>
+<h2 id="UIScrollEvent:freeze" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.freeze()</h2>
+
+
+
+<p><code>(): Readonly&lt;this&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedEvent#ManagedEvent:freeze"><code>ManagedEvent.freeze</code></a>.</p>
+
+        </div>
+
+        <div class="wrapper_column wrapper_column--sidebar wrapper_column--nav">
+            <div class="fixed_cell">
+                <div class="fixed_cell_inner">
+                    <nav id="toc" class="sidebar_nav">
+                        <h4 id="declarations">Declarations</h4>
+<ul>
+<li><a href="#UIScrollEvent"><strong>class UIScrollEvent</strong></a></li>
+<li><a href="#UIScrollEvent:horizontalVelocity">.horizontalVelocity</a></li>
+<li><a href="#UIScrollEvent:verticalVelocity">.verticalVelocity</a></li>
+<li><a href="#UIScrollEvent:scrolledDown">.scrolledDown</a></li>
+<li><a href="#UIScrollEvent:scrolledUp">.scrolledUp</a></li>
+<li><a href="#UIScrollEvent:scrolledLeft">.scrolledLeft</a></li>
+<li><a href="#UIScrollEvent:scrolledRight">.scrolledRight</a></li>
+<li><a href="#UIScrollEvent:atTop">.atTop</a></li>
+<li><a href="#UIScrollEvent:atBottom">.atBottom</a></li>
+<li><a href="#UIScrollEvent:atLeft">.atLeft</a></li>
+<li><a href="#UIScrollEvent:atRight">.atRight</a></li>
+</ul>
+<h4 id="inherited">Inherited</h4>
+<ul>
+<li><a href="#UIScrollEvent:event">.event</a></li>
+<li><a href="#UIScrollEvent:source">.source</a></li>
+<li><a href="#UIScrollEvent:inner">.inner</a></li>
+<li><a href="#UIScrollEvent:name">.name</a></li>
+<li><a href="#UIScrollEvent:freeze">.freeze()</a></li>
+</ul>
+
+                    </nav>
+                </div>
+                <div class="fixed_cell_backtotop">
+                    <a href="#" onclick="backToTop()">↑ Back to top</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<link rel="prefetch" href="/docs/" as="fetch" />
+<script>
+    (function(){document.querySelectorAll(".sidebar_nav ul+h4").forEach(function(it){it.className="closed"})})()
+</script>
+
+
+    <footer class="footer">
+        <section class="wrapper">
+            <div class="wrapper_columns">
+                <div class="wrapper_column">
+                    © Copyright 2021 Typescene contributors
+                </div>
+                <div class="wrapper_column wrapper_column--oppose style--light">
+                    Find Typescene on
+    <a href="https://twitter.com/typescene" target="_blank" rel="noopener">Twitter</a> and
+    <a href="https://github.com/typescene" target="_blank" rel="noopener">Github</a>
+                </div>
+            </div>
+        </section>
+    </footer>
+
+    <script src="/assets/default.js"></script>
+    <script src="/assets/docwidget.js"></script>
+</body>
+</html>

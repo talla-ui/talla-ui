@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Typescene - bindf</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96048899-3"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-96048899-3');
+    </script>
+    <!-- end GA -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,300i|IBM+Plex+Sans:200,300,500,800,200i,300i,500i" rel="stylesheet">
+    <link rel="canonical" href="https://typescene.dev/docs/ref/bindf">
+</head>
+<body>
+    <nav class="topnav">
+        <section class="wrapper">
+            <a href="/" class="logo_link">
+                <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+                <span class="topnav_title">Typescene</span>
+            </a>
+            <ul class="topnav_links">
+                <li><a href="#" onclick="return showDocWidget()"><img src="/assets/icons/search-reverse.svg" alt="" width=16 style="position: relative; top: .125rem">&nbsp; Docs</a></li>
+                <li class="hide_small"><a href="https://github.com/typescene/typescene" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    
+<div id="breadcrumb_bar">
+  <section class="wrapper">
+      <a href="/" class="logo_link" id="breadcrumb_logo" hidden>
+          <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+      </a>
+      <span>
+          <a href="/docs">Documentation</a>
+          &nbsp;|&nbsp;
+          Reference
+      </span>
+  </section>
+</div>
+<article class="wrapper wrapper--page">
+    <div class="wrapper_columns">
+        <div class="wrapper_column">
+            <div class="pagetitle_container">
+                <h1>bindf</h1>
+                
+            </div>
+
+            <h2 id="bindf" class="spec"><img src="/assets/icons/spec-function.svg" alt="">bindf()</h2>
+
+
+
+<p><code>(format: string, ...bindings: string[]): </code><a href="/docs/ref/StringFormatBinding"><code>StringFormatBinding</code></a></p>
+<p>Returns a new binding, which can be used as a component preset (see <a href="/docs/ref/Component#Component:with"><code>Component.with</code></a>) to update components dynamically with a string that includes property values from the bound parent component, such as the <a href="/docs/ref/AppActivity"><code>AppActivity</code></a> for a view, the <a href="/docs/ref/Application"><code>Application</code></a> for an activity, or the <a href="/docs/ref/ViewComponent"><code>ViewComponent</code></a> for nested views.</p>
+<p>The format string may contain placeholders for bound values; as soon as the value of a binding changes, the formatted string is also updated. Bindings are specified as strings, in the same format as the argument to <a href="/docs/ref/bind"><code>bind()</code></a>, using parameters (e.g. <code>&quot;foo&quot;</code>) OR placeholders such as <code>${foo}</code> which add bindings as if created using <a href="/docs/ref/bind"><code>bind</code></a><code>(&quot;foo&quot;)</code>.</p>
+<p>Strings are translated and following the same rules as <a href="/docs/ref/strf"><code>strf</code></a>, refer to its documentation for a list of available formatting placeholders.</p>
+<h4 id="see-also">See Also</h4>
+<p><a href="/docs/ref/bind"><code>bind</code></a>, <a href="/docs/ref/Binding#Binding:addFilter"><code>Binding.addFilter</code></a> (includes a list of available filters)</p>
+
+        </div>
+
+        <div class="wrapper_column wrapper_column--sidebar wrapper_column--nav">
+            <div class="fixed_cell">
+                <div class="fixed_cell_inner">
+                    <nav id="toc" class="sidebar_nav">
+                        <h4 id="declarations">Declarations</h4>
+<ul>
+<li><a href="#bindf">bindf()</a></li>
+</ul>
+
+                    </nav>
+                </div>
+                <div class="fixed_cell_backtotop">
+                    <a href="#" onclick="backToTop()">↑ Back to top</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<link rel="prefetch" href="/docs/" as="fetch" />
+<script>
+    (function(){document.querySelectorAll(".sidebar_nav ul+h4").forEach(function(it){it.className="closed"})})()
+</script>
+
+
+    <footer class="footer">
+        <section class="wrapper">
+            <div class="wrapper_columns">
+                <div class="wrapper_column">
+                    © Copyright 2021 Typescene contributors
+                </div>
+                <div class="wrapper_column wrapper_column--oppose style--light">
+                    Find Typescene on
+    <a href="https://twitter.com/typescene" target="_blank" rel="noopener">Twitter</a> and
+    <a href="https://github.com/typescene" target="_blank" rel="noopener">Github</a>
+                </div>
+            </div>
+        </section>
+    </footer>
+
+    <script src="/assets/default.js"></script>
+    <script src="/assets/docwidget.js"></script>
+</body>
+</html>

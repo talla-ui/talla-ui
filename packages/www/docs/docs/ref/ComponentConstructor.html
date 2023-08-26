@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Typescene - ComponentConstructor</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96048899-3"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-96048899-3');
+    </script>
+    <!-- end GA -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,300i|IBM+Plex+Sans:200,300,500,800,200i,300i,500i" rel="stylesheet">
+    <link rel="canonical" href="https://typescene.dev/docs/ref/ComponentConstructor">
+</head>
+<body>
+    <nav class="topnav">
+        <section class="wrapper">
+            <a href="/" class="logo_link">
+                <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+                <span class="topnav_title">Typescene</span>
+            </a>
+            <ul class="topnav_links">
+                <li><a href="#" onclick="return showDocWidget()"><img src="/assets/icons/search-reverse.svg" alt="" width=16 style="position: relative; top: .125rem">&nbsp; Docs</a></li>
+                <li class="hide_small"><a href="https://github.com/typescene/typescene" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    
+<div id="breadcrumb_bar">
+  <section class="wrapper">
+      <a href="/" class="logo_link" id="breadcrumb_logo" hidden>
+          <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+      </a>
+      <span>
+          <a href="/docs">Documentation</a>
+          &nbsp;|&nbsp;
+          Reference
+      </span>
+  </section>
+</div>
+<article class="wrapper wrapper--page">
+    <div class="wrapper_columns">
+        <div class="wrapper_column">
+            <div class="pagetitle_container">
+                <h1>ComponentConstructor</h1>
+                
+            </div>
+
+            <h2 id="ComponentConstructor" class="spec"><img src="/assets/icons/spec-type.svg" alt="">type ComponentConstructor</h2>
+
+
+
+<p><code>type ComponentConstructor&lt;TComponent extends Component = Component&gt; = new (...args: never[]) =&gt; TComponent;</code></p>
+<p>Generic constructor type for Component classes.</p>
+<p>This type is used to define parameters of <a href="/docs/ref/Component#Component:preset"><code>Component.preset</code></a>.</p>
+<h4 id="example">Example</h4>
+<pre><code class="language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Application</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{
+  <span class="hljs-keyword">static</span> preset(
+    presets: Application.Presets,
+    ...activities: <span class="hljs-built_in">Array</span>&lt;ComponentConstructor | <span class="hljs-literal">undefined</span>&gt;
+  ): <span class="hljs-built_in">Function</span> {
+    <span class="hljs-comment">// ... use preset activities here</span>
+  }
+  <span class="hljs-comment">// ...</span>
+}
+</code></pre>
+<hr>
+<h2 id="ComponentConstructor:PresetType" class="spec"><img src="/assets/icons/spec-type.svg" alt="">ComponentConstructor.PresetType</h2>
+
+
+
+<p><code>type PresetType&lt;TComponentCtor extends ComponentConstructor&gt; = TComponentCtor extends {</code><br><code>        preset: (presets: infer TPreset) =&gt; void;</code><br><code>    } ? TPreset : any;</code></p>
+<p>Inferred partial type of the argument to <a href="/docs/ref/Component#Component:with"><code>Component.with</code></a> without bindings, for a specific component constructor.</p>
+<hr>
+<h2 id="ComponentConstructor:PresetArgType" class="spec"><img src="/assets/icons/spec-type.svg" alt="">ComponentConstructor.PresetArgType</h2>
+
+
+
+<p><code>type PresetArgType&lt;TComponentCtor extends ComponentConstructor&gt; = {</code><br><code>       [P in keyof PresetType&lt;TComponentCtor&gt;]?:</code><a href="#ComponentConstructor:PresetType"><code>PresetType</code></a><code>&lt;TComponentCtor&gt;[P] | </code><a href="/docs/ref/Binding#Binding:Type"><code>Binding.Type</code></a><code>;</code><br><code>    } &amp; {</code><br><code>        [P: string]: any;</code><br><code>    };</code></p>
+<p>Inferred type of the argument to <a href="/docs/ref/Component#Component:with"><code>Component.with</code></a> for a specific component constructor.</p>
+<hr>
+<h2 id="ComponentConstructor:PresetRestType" class="spec"><img src="/assets/icons/spec-type.svg" alt="">ComponentConstructor.PresetRestType</h2>
+
+
+
+<p><code>type PresetRestType&lt;TComponentCtor extends ComponentConstructor&gt; = TComponentCtor extends {</code><br><code>       preset: (presets:</code><a href="#ComponentConstructor:PresetType"><code>PresetType</code></a><code>&lt;TComponentCtor&gt;, ...rest: infer TRest) =&gt; void;</code><br><code>    } ? TRest : never;</code></p>
+<p>Inferred type of the rest arguments to <a href="/docs/ref/Component#Component:with"><code>Component.with</code></a> for a specific component constructor.</p>
+
+        </div>
+
+        <div class="wrapper_column wrapper_column--sidebar wrapper_column--nav">
+            <div class="fixed_cell">
+                <div class="fixed_cell_inner">
+                    <nav id="toc" class="sidebar_nav">
+                        <h4 id="declarations">Declarations</h4>
+<ul>
+<li><a href="#ComponentConstructor">type ComponentConstructor</a></li>
+</ul>
+<h4 id="namespaced">Namespaced</h4>
+<ul>
+<li><a href="#ComponentConstructor:PresetType">ComponentConstructor.PresetType</a></li>
+<li><a href="#ComponentConstructor:PresetArgType">ComponentConstructor.PresetArgType</a></li>
+<li><a href="#ComponentConstructor:PresetRestType">ComponentConstructor.PresetRestType</a></li>
+</ul>
+
+                    </nav>
+                </div>
+                <div class="fixed_cell_backtotop">
+                    <a href="#" onclick="backToTop()">↑ Back to top</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<link rel="prefetch" href="/docs/" as="fetch" />
+<script>
+    (function(){document.querySelectorAll(".sidebar_nav ul+h4").forEach(function(it){it.className="closed"})})()
+</script>
+
+
+    <footer class="footer">
+        <section class="wrapper">
+            <div class="wrapper_columns">
+                <div class="wrapper_column">
+                    © Copyright 2021 Typescene contributors
+                </div>
+                <div class="wrapper_column wrapper_column--oppose style--light">
+                    Find Typescene on
+    <a href="https://twitter.com/typescene" target="_blank" rel="noopener">Twitter</a> and
+    <a href="https://github.com/typescene" target="_blank" rel="noopener">Github</a>
+                </div>
+            </div>
+        </section>
+    </footer>
+
+    <script src="/assets/default.js"></script>
+    <script src="/assets/docwidget.js"></script>
+</body>
+</html>

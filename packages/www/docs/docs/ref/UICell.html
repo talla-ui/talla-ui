@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Typescene - UICell</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96048899-3"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-96048899-3');
+    </script>
+    <!-- end GA -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,300i|IBM+Plex+Sans:200,300,500,800,200i,300i,500i" rel="stylesheet">
+    <link rel="canonical" href="https://typescene.dev/docs/ref/UICell">
+</head>
+<body>
+    <nav class="topnav">
+        <section class="wrapper">
+            <a href="/" class="logo_link">
+                <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+                <span class="topnav_title">Typescene</span>
+            </a>
+            <ul class="topnav_links">
+                <li><a href="#" onclick="return showDocWidget()"><img src="/assets/icons/search-reverse.svg" alt="" width=16 style="position: relative; top: .125rem">&nbsp; Docs</a></li>
+                <li class="hide_small"><a href="https://github.com/typescene/typescene" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    
+<div id="breadcrumb_bar">
+  <section class="wrapper">
+      <a href="/" class="logo_link" id="breadcrumb_logo" hidden>
+          <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+      </a>
+      <span>
+          <a href="/docs">Documentation</a>
+          &nbsp;|&nbsp;
+          Reference
+      </span>
+  </section>
+</div>
+<article class="wrapper wrapper--page">
+    <div class="wrapper_columns">
+        <div class="wrapper_column">
+            <div class="pagetitle_container">
+                <h1>UICell</h1>
+                <p class="style--pageintro">The <code>UICell</code> component groups other components together within its own boundaries.</p>
+            </div>
+
+            <h2 id="UICell" class="spec"><img src="/assets/icons/spec-class.svg" alt="">class UICell</h2>
+
+
+
+<p><code>extends </code><a href="/docs/ref/UIContainer"><code>UIContainer</code></a></p>
+<p>Represents a UI component that visually groups other components in a rectangular cell.</p>
+<h4 id="see-also">See Also</h4>
+<p><a href="/docs/ref/UICoverCell"><code>UICoverCell</code></a>, <a href="/docs/ref/UIFlowCell"><code>UIFlowCell</code></a>, <a href="/docs/ref/UIListCellAdapter"><code>UIListCellAdapter</code></a>.</p>
+<h3>Constructor</h3>
+
+
+<p><code>(...content: </code><a href="/docs/ref/UIRenderable"><code>UIRenderable</code></a><code>[]): UICell</code></p>
+<h2 id="UICell:isFocusable" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.isFocusable()</h2>
+
+
+
+<p><code>(): boolean</code></p>
+<p>Returns true if this component can be focused directly using mouse or touch, or manually using <a href="/docs/ref/UIComponent#UIComponent:requestFocus"><code>UIComponent.requestFocus</code></a>. This method may be overridden by derived component classes, but the return value must be constant for each instance.</p>
+<h2 id="UICell:isKeyboardFocusable" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.isKeyboardFocusable()</h2>
+
+
+
+<p><code>(): boolean</code></p>
+<p>Returns true if this component can be focused using the keyboard as well as using other methods (rather than direct manipulation only). This method may be overridden by derived component classes, but the return value must be constant for each instance.</p>
+<h2 id="UICell:applyStyle" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.applyStyle() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(style?: </code><a href="/docs/ref/UIStyle"><code>UIStyle</code></a><code>): void</code></p>
+<p>Applies given style set to individual style objects (e.g. <a href="/docs/ref/UIComponent#UIComponent:dimensions"><code>UIComponent.dimensions</code></a>). This method is overridden by derived classes to copy only applicable styles.</p>
+<h2 id="UICell:decoration" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.decoration</h2>
+
+
+
+<p><code>Readonly&lt;Decoration&gt;</code></p>
+<p>Options for the appearance of this cell; most of these are overridden by individual properties.</p>
+<h2 id="UICell:padding" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.padding</h2>
+
+
+
+<p><code>Offsets</code></p>
+<p>Padding around contained elements (in dp or CSS string, or separate offset values).</p>
+<h2 id="UICell:margin" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.margin</h2>
+
+
+
+<p><code>Offsets</code></p>
+<p>Margin around the entire cell (in dp or CSS string, or separate offset values).</p>
+<h2 id="UICell:background" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.background</h2>
+
+
+
+<p><code>string | </code><a href="/docs/ref/UIColor"><code>UIColor</code></a></p>
+<p>Cell background (<a href="/docs/ref/UIColor"><code>UIColor</code></a> or string), defaults to transparent.</p>
+<h2 id="UICell:textColor" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.textColor</h2>
+
+
+
+<p><code>string | </code><a href="/docs/ref/UIColor"><code>UIColor</code></a></p>
+<p>Text color (<a href="/docs/ref/UIColor"><code>UIColor</code></a> or string), defaults to <code>inherit</code> to inherit the text color from a containing cell or background window.</p>
+<h2 id="UICell:borderThickness" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.borderThickness</h2>
+
+
+
+<p><code>Offsets</code></p>
+<p>Border thickness (in dp or string with unit, or separate offset values).</p>
+<h2 id="UICell:borderColor" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.borderColor</h2>
+
+
+
+<p><code>string | </code><a href="/docs/ref/UIColor"><code>UIColor</code></a></p>
+<p>Border color (<a href="/docs/ref/UIColor"><code>UIColor</code></a> or string).</p>
+<h2 id="UICell:borderStyle" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.borderStyle</h2>
+
+
+
+<p><code>string</code></p>
+<p>Border style (CSS), defaults to <code>solid</code>.</p>
+<h2 id="UICell:borderRadius" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.borderRadius</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Border radius (in dp or CSS string).</p>
+<h2 id="UICell:dropShadow" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.dropShadow</h2>
+
+
+
+<p><code>number</code></p>
+<p>Intensity of drop shadow based on visual ‘elevation’ level (0-1).</p>
+<h2 id="UICell:opacity" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.opacity</h2>
+
+
+
+<p><code>number</code></p>
+<p>Opacity (0-1; defaults to fully opaque if undefined).</p>
+<h2 id="UICell:revealTransition" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.revealTransition</h2>
+
+
+
+<p><code>string</code></p>
+<p>Animated transition that plays when this cell is first rendered.</p>
+<h2 id="UICell:exitTransition" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.exitTransition</h2>
+
+
+
+<p><code>string</code></p>
+<p>Animated transition that plays when this cell is removed from a container.</p>
+<h2 id="UICell:css" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.css</h2>
+
+
+
+<p><code>Partial&lt;CSSStyleDeclaration&gt; &amp; { className?: string; }</code></p>
+<p>Other CSS attributes that are applied directly to the container, if supported (plain object).</p>
+<p><strong>Note:</strong> Changes to individual properties are not observed by the renderer.</p>
+<h2 id="UICell:allowFocus" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.allowFocus</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:allowFocus"><code>UIContainer.allowFocus</code></a>.</p>
+<h2 id="UICell:allowKeyboardFocus" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.allowKeyboardFocus</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:allowKeyboardFocus"><code>UIContainer.allowKeyboardFocus</code></a>.</p>
+<h2 id="UICell:layout" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.layout</h2>
+
+
+
+<p><code>Readonly&lt;ContainerLayout&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:layout"><code>UIContainer.layout</code></a>.</p>
+<h2 id="UICell:asyncContentRendering" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.asyncContentRendering</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:asyncContentRendering"><code>UIContainer.asyncContentRendering</code></a>.</p>
+<h2 id="UICell:animatedContentRenderingDuration" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.animatedContentRenderingDuration</h2>
+
+
+
+<p><code>number</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:animatedContentRenderingDuration"><code>UIContainer.animatedContentRenderingDuration</code></a>.</p>
+<h2 id="UICell:animatedContentRenderingVelocity" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.animatedContentRenderingVelocity</h2>
+
+
+
+<p><code>number</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:animatedContentRenderingVelocity"><code>UIContainer.animatedContentRenderingVelocity</code></a>.</p>
+<h2 id="UICell:content" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.content</h2>
+
+
+
+<p><a href="/docs/ref/ManagedList"><code>ManagedList</code></a><code>&lt;</code><a href="/docs/ref/UIRenderable"><code>UIRenderable</code></a><code>&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:content"><code>UIContainer.content</code></a>.</p>
+<h2 id="UICell:propagateComponentEvent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.propagateComponentEvent() <span class="spec_tag spec_tag--deprecated">deprecated</span></h2>
+
+
+
+<p><code>(name: string, inner?: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>, event?: any): void</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:propagateComponentEvent"><code>UIComponent.propagateComponentEvent</code></a>.</p>
+<h2 id="UICell:delegateEvent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.delegateEvent() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(e: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>, propertyName: string): true</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:delegateEvent"><code>UIComponent.delegateEvent</code></a>.</p>
+<h2 id="UICell:render" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.render()</h2>
+
+
+
+<p><code>(callback: RenderCallback&lt;Output&lt;</code><a href="/docs/ref/UIRenderable"><code>UIRenderable</code></a><code>, any&gt;&gt;): void</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:render"><code>UIComponent.render</code></a>.</p>
+<h2 id="UICell:requestFocus" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.requestFocus()</h2>
+
+
+
+<p><code>(): void</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:requestFocus"><code>UIComponent.requestFocus</code></a>.</p>
+<h2 id="UICell:requestFocusNext" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.requestFocusNext()</h2>
+
+
+
+<p><code>(): void</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:requestFocusNext"><code>UIComponent.requestFocusNext</code></a>.</p>
+<h2 id="UICell:requestFocusPrevious" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.requestFocusPrevious()</h2>
+
+
+
+<p><code>(): void</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:requestFocusPrevious"><code>UIComponent.requestFocusPrevious</code></a>.</p>
+<h2 id="UICell:style" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.style</h2>
+
+
+
+<p><a href="/docs/ref/UIStyle"><code>UIStyle</code></a></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:style"><code>UIComponent.style</code></a>.</p>
+<h2 id="UICell:hidden" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.hidden</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:hidden"><code>UIComponent.hidden</code></a>.</p>
+<h2 id="UICell:dimensions" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.dimensions</h2>
+
+
+
+<p><code>Readonly&lt;Dimensions&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:dimensions"><code>UIComponent.dimensions</code></a>.</p>
+<h2 id="UICell:position" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.position</h2>
+
+
+
+<p><code>Readonly&lt;Position&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:position"><code>UIComponent.position</code></a>.</p>
+<h2 id="UICell:accessibleRole" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.accessibleRole</h2>
+
+
+
+<p><code>string</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:accessibleRole"><code>UIComponent.accessibleRole</code></a>.</p>
+<h2 id="UICell:accessibleLabel" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.accessibleLabel</h2>
+
+
+
+<p><code>string</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:accessibleLabel"><code>UIComponent.accessibleLabel</code></a>.</p>
+<h2 id="UICell:lastRenderOutput" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.lastRenderOutput</h2>
+
+
+
+<p><code>Output&lt;this, any&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:lastRenderOutput"><code>UIComponent.lastRenderOutput</code></a>.</p>
+<h2 id="UICell:isPresetComponent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.isPresetComponent() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): boolean</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:isPresetComponent"><code>Component.isPresetComponent</code></a>.</p>
+<h2 id="UICell:getParentComponent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getParentComponent()</h2>
+
+
+
+<p><code>&lt;TParent extends Component = Component&gt;(ParentClass?: </code><a href="/docs/ref/ComponentConstructor"><code>ComponentConstructor</code></a><code>&lt;TParent&gt;): TParent</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:getParentComponent"><code>Component.getParentComponent</code></a>.</p>
+<h2 id="UICell:getBoundParentComponent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getBoundParentComponent()</h2>
+
+
+
+<p><code>&lt;TParent extends Component&gt;(ParentClass?: </code><a href="/docs/ref/ComponentConstructor"><code>ComponentConstructor</code></a><code>&lt;TParent&gt;): TParent</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:getBoundParentComponent"><code>Component.getBoundParentComponent</code></a>.</p>
+<h2 id="UICell:emitAction" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.emitAction()</h2>
+
+
+
+<p><code>(name: string, inner?: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>, context?: </code><a href="/docs/ref/ManagedObject"><code>ManagedObject</code></a><code>): void</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:emitAction"><code>Component.emitAction</code></a>.</p>
+<h2 id="UICell:managedId" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.managedId</h2>
+
+
+
+<p><code>number</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:managedId"><code>ManagedObject.managedId</code></a>.</p>
+<h2 id="UICell:managedState" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.managedState</h2>
+
+
+
+<p><a href="/docs/ref/ManagedState"><code>ManagedState</code></a></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:managedState"><code>ManagedObject.managedState</code></a>.</p>
+<h2 id="UICell:getReferenceCount" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getReferenceCount() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): number</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:getReferenceCount"><code>ManagedObject.getReferenceCount</code></a>.</p>
+<h2 id="UICell:getManagedReferrers" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getManagedReferrers() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): </code><a href="/docs/ref/ManagedObject"><code>ManagedObject</code></a><code>[]</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:getManagedReferrers"><code>ManagedObject.getManagedReferrers</code></a>.</p>
+<h2 id="UICell:getManagedParent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getManagedParent() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>&lt;TParent extends ManagedObject = ManagedObject&gt;(ParentClass?: </code><a href="/docs/ref/ManagedObjectConstructor"><code>ManagedObjectConstructor</code></a><code>&lt;TParent&gt;): TParent</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:getManagedParent"><code>ManagedObject.getManagedParent</code></a>.</p>
+<h2 id="UICell:emit" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.emit()</h2>
+
+
+
+<p><code>&lt;TEvent extends ManagedEvent = ManagedEvent, TConstructorArgs extends any[] = any[]&gt;(e: string | TEvent | (new (...args: TConstructorArgs) =&gt; TEvent), ...constructorArgs: TConstructorArgs): this</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:emit"><code>ManagedObject.emit</code></a>.</p>
+<h2 id="UICell:emitChange" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.emitChange()</h2>
+
+
+
+<p><code>(name?: string): void</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:emitChange"><code>ManagedObject.emitChange</code></a>.</p>
+<h2 id="UICell:propagateChildEvents" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.propagateChildEvents() <span class="spec_tag">protected</span> <span class="spec_tag spec_tag--deprecated">deprecated</span></h2>
+
+
+
+<p><code>(...types: ((new (...args: any[]) =&gt; </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>) | ((e: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>) =&gt; any))[]): this</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:propagateChildEvents"><code>ManagedObject.propagateChildEvents</code></a>.</p>
+<h2 id="UICell:activateManagedAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.activateManagedAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;any&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:activateManagedAsync"><code>ManagedObject.activateManagedAsync</code></a>.</p>
+<h2 id="UICell:deactivateManagedAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.deactivateManagedAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:deactivateManagedAsync"><code>ManagedObject.deactivateManagedAsync</code></a>.</p>
+<h2 id="UICell:destroyManagedAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.destroyManagedAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:destroyManagedAsync"><code>ManagedObject.destroyManagedAsync</code></a>.</p>
+<h2 id="UICell:onManagedStateActivatingAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateActivatingAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateActivatingAsync"><code>ManagedObject.onManagedStateActivatingAsync</code></a>.</p>
+<h2 id="UICell:onManagedStateActiveAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateActiveAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateActiveAsync"><code>ManagedObject.onManagedStateActiveAsync</code></a>.</p>
+<h2 id="UICell:onManagedStateDeactivatingAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateDeactivatingAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateDeactivatingAsync"><code>ManagedObject.onManagedStateDeactivatingAsync</code></a>.</p>
+<h2 id="UICell:onManagedStateInactiveAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateInactiveAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateInactiveAsync"><code>ManagedObject.onManagedStateInactiveAsync</code></a>.</p>
+<h2 id="UICell:onManagedStateDestroyingAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateDestroyingAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateDestroyingAsync"><code>ManagedObject.onManagedStateDestroyingAsync</code></a>.</p>
+<hr>
+<h2 id="UICell:Presets" class="spec"><img src="/assets/icons/spec-interface.svg" alt="">UICell.Presets</h2>
+
+
+
+<p><code>extends </code><a href="/docs/ref/UIContainer#UIContainer:Presets"><code>UIContainer.Presets</code></a></p>
+<p>UICell presets type, for use with <a href="/docs/ref/Component#Component:with"><code>Component.with</code></a>.</p>
+<h2 id="UICell:Presets:decoration" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.decoration</h2>
+
+
+
+<p><code>Decoration</code></p>
+<p>Options for the appearance of this cell; most of these are overridden by individual properties.</p>
+<h2 id="UICell:Presets:padding" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.padding</h2>
+
+
+
+<p><code>Offsets</code></p>
+<p>Padding around contained elements (in dp or CSS string, or separate offset values).</p>
+<h2 id="UICell:Presets:margin" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.margin</h2>
+
+
+
+<p><code>Offsets</code></p>
+<p>Margin around the entire cell (in dp or CSS string, or separate offset values).</p>
+<h2 id="UICell:Presets:background" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.background</h2>
+
+
+
+<p><code>string | </code><a href="/docs/ref/UIColor"><code>UIColor</code></a></p>
+<p>Cell background (<a href="/docs/ref/UIColor"><code>UIColor</code></a> or string).</p>
+<h2 id="UICell:Presets:textColor" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.textColor</h2>
+
+
+
+<p><code>string | </code><a href="/docs/ref/UIColor"><code>UIColor</code></a></p>
+<p>Text color (<a href="/docs/ref/UIColor"><code>UIColor</code></a> or string), defaults to <code>inherit</code> to inherit the text color from a containing cell or background window.</p>
+<h2 id="UICell:Presets:borderThickness" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.borderThickness</h2>
+
+
+
+<p><code>Offsets</code></p>
+<p>Border thickness (in dp or string with unit).</p>
+<h2 id="UICell:Presets:borderColor" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.borderColor</h2>
+
+
+
+<p><code>string | </code><a href="/docs/ref/UIColor"><code>UIColor</code></a></p>
+<p>Border color (<a href="/docs/ref/UIColor"><code>UIColor</code></a> or string).</p>
+<h2 id="UICell:Presets:borderStyle" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.borderStyle</h2>
+
+
+
+<p><code>string</code></p>
+<p>Border style (CSS), defaults to <code>solid</code>.</p>
+<h2 id="UICell:Presets:borderRadius" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.borderRadius</h2>
+
+
+
+<p><code>string | number</code></p>
+<p>Corner radius (in dp or CSS string, defaults to 0).</p>
+<h2 id="UICell:Presets:dropShadow" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.dropShadow</h2>
+
+
+
+<p><code>number</code></p>
+<p>Size of drop shadow based on visual ‘elevation’ (0-1).</p>
+<h2 id="UICell:Presets:opacity" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.opacity</h2>
+
+
+
+<p><code>number</code></p>
+<p>Opacity (0-1).</p>
+<h2 id="UICell:Presets:selectOnFocus" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.selectOnFocus</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Set to true to select cells on focus, implies allowFocus as well.</p>
+<h2 id="UICell:Presets:allowFocus" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.allowFocus</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Set to true to allow this cell <em>itself</em> to receive input focus using mouse, touch, or <a href="/docs/ref/UIComponent#UIComponent:requestFocus"><code>UIComponent.requestFocus</code></a>.</p>
+<h2 id="UICell:Presets:allowKeyboardFocus" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.allowKeyboardFocus</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Set to true to allow this cell <em>itself</em> to receive input focus using the keyboard as well as other methods; implies <code>allowFocus</code>.</p>
+<h2 id="UICell:Presets:revealTransition" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.revealTransition</h2>
+
+
+
+<p><code>string</code></p>
+<p>Animation that plays when this cell is first rendered.</p>
+<h2 id="UICell:Presets:exitTransition" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.exitTransition</h2>
+
+
+
+<p><code>string</code></p>
+<p>Animation that plays when this cell is removed from a container.</p>
+<h2 id="UICell:Presets:css" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.css</h2>
+
+
+
+<p><code>Partial&lt;CSSStyleDeclaration&gt; &amp; { className?: string; }</code></p>
+<p>Other CSS attributes that are applied directly to the container, if supported (plain object).</p>
+<h2 id="UICell:Presets:content" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.content</h2>
+
+
+
+<p><code>Iterable&lt;</code><a href="/docs/ref/UIRenderable"><code>UIRenderable</code></a><code>&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:Presets:content"><code>UIContainer.Presets.content</code></a>.</p>
+<h2 id="UICell:Presets:layout" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.layout</h2>
+
+
+
+<p><code>Partial&lt;{} | ContainerLayout&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:Presets:layout"><code>UIContainer.Presets.layout</code></a>.</p>
+<h2 id="UICell:Presets:asyncContentRendering" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.asyncContentRendering</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:Presets:asyncContentRendering"><code>UIContainer.Presets.asyncContentRendering</code></a>.</p>
+<h2 id="UICell:Presets:animatedContentRenderingDuration" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.animatedContentRenderingDuration</h2>
+
+
+
+<p><code>number</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:Presets:animatedContentRenderingDuration"><code>UIContainer.Presets.animatedContentRenderingDuration</code></a>.</p>
+<h2 id="UICell:Presets:animatedContentRenderingVelocity" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.animatedContentRenderingVelocity</h2>
+
+
+
+<p><code>number</code></p>
+<p>Inherited from <a href="/docs/ref/UIContainer#UIContainer:Presets:animatedContentRenderingVelocity"><code>UIContainer.Presets.animatedContentRenderingVelocity</code></a>.</p>
+<h2 id="UICell:Presets:style" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.style</h2>
+
+
+
+<p><code>string | </code><a href="/docs/ref/UIStyle"><code>UIStyle</code></a></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:style"><code>UIComponent.Presets.style</code></a>.</p>
+<h2 id="UICell:Presets:hidden" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.hidden</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:hidden"><code>UIComponent.Presets.hidden</code></a>.</p>
+<h2 id="UICell:Presets:dimensions" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.dimensions</h2>
+
+
+
+<p><code>Partial&lt;{} | Dimensions&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:dimensions"><code>UIComponent.Presets.dimensions</code></a>.</p>
+<h2 id="UICell:Presets:position" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.position</h2>
+
+
+
+<p><code>Partial&lt;{} | Position&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:position"><code>UIComponent.Presets.position</code></a>.</p>
+<h2 id="UICell:Presets:accessibleRole" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.accessibleRole</h2>
+
+
+
+<p><code>string</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:accessibleRole"><code>UIComponent.Presets.accessibleRole</code></a>.</p>
+<h2 id="UICell:Presets:accessibleLabel" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.accessibleLabel</h2>
+
+
+
+<p><code>string</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:accessibleLabel"><code>UIComponent.Presets.accessibleLabel</code></a>.</p>
+<h2 id="UICell:Presets:requestFocus" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.requestFocus</h2>
+
+
+
+<p><code>boolean</code></p>
+<p>Inherited from <a href="/docs/ref/UIComponent#UIComponent:Presets:requestFocus"><code>UIComponent.Presets.requestFocus</code></a>.</p>
+
+        </div>
+
+        <div class="wrapper_column wrapper_column--sidebar wrapper_column--nav">
+            <div class="fixed_cell">
+                <div class="fixed_cell_inner">
+                    <nav id="toc" class="sidebar_nav">
+                        <h4 id="declarations">Declarations</h4>
+<ul>
+<li><a href="#UICell"><strong>class UICell</strong></a></li>
+<li><a href="#UICell:isFocusable">.isFocusable()</a></li>
+<li><a href="#UICell:isKeyboardFocusable">.isKeyboardFocusable()</a></li>
+<li><a href="#UICell:applyStyle">.applyStyle()</a></li>
+<li><a href="#UICell:decoration">.decoration</a></li>
+<li><a href="#UICell:padding">.padding</a></li>
+<li><a href="#UICell:margin">.margin</a></li>
+<li><a href="#UICell:background">.background</a></li>
+<li><a href="#UICell:textColor">.textColor</a></li>
+<li><a href="#UICell:borderThickness">.borderThickness</a></li>
+<li><a href="#UICell:borderColor">.borderColor</a></li>
+<li><a href="#UICell:borderStyle">.borderStyle</a></li>
+<li><a href="#UICell:borderRadius">.borderRadius</a></li>
+<li><a href="#UICell:dropShadow">.dropShadow</a></li>
+<li><a href="#UICell:opacity">.opacity</a></li>
+<li><a href="#UICell:revealTransition">.revealTransition</a></li>
+<li><a href="#UICell:exitTransition">.exitTransition</a></li>
+<li><a href="#UICell:css">.css</a></li>
+</ul>
+<h4 id="inherited">Inherited</h4>
+<ul>
+<li><a href="#UICell:allowFocus">.allowFocus</a></li>
+<li><a href="#UICell:allowKeyboardFocus">.allowKeyboardFocus</a></li>
+<li><a href="#UICell:layout">.layout</a></li>
+<li><a href="#UICell:asyncContentRendering">.asyncContentRendering</a></li>
+<li><a href="#UICell:animatedContentRenderingDuration">.animatedContentRenderingDuration</a></li>
+<li><a href="#UICell:animatedContentRenderingVelocity">.animatedContentRenderingVelocity</a></li>
+<li><a href="#UICell:content">.content</a></li>
+<li><a href="#UICell:propagateComponentEvent">.propagateComponentEvent()</a></li>
+<li><a href="#UICell:delegateEvent">.delegateEvent()</a></li>
+<li><a href="#UICell:render">.render()</a></li>
+<li><a href="#UICell:requestFocus">.requestFocus()</a></li>
+<li><a href="#UICell:requestFocusNext">.requestFocusNext()</a></li>
+<li><a href="#UICell:requestFocusPrevious">.requestFocusPrevious()</a></li>
+<li><a href="#UICell:style">.style</a></li>
+<li><a href="#UICell:hidden">.hidden</a></li>
+<li><a href="#UICell:dimensions">.dimensions</a></li>
+<li><a href="#UICell:position">.position</a></li>
+<li><a href="#UICell:accessibleRole">.accessibleRole</a></li>
+<li><a href="#UICell:accessibleLabel">.accessibleLabel</a></li>
+<li><a href="#UICell:lastRenderOutput">.lastRenderOutput</a></li>
+<li><a href="#UICell:isPresetComponent">.isPresetComponent()</a></li>
+<li><a href="#UICell:getParentComponent">.getParentComponent()</a></li>
+<li><a href="#UICell:getBoundParentComponent">.getBoundParentComponent()</a></li>
+<li><a href="#UICell:emitAction">.emitAction()</a></li>
+<li><a href="#UICell:managedId">.managedId</a></li>
+<li><a href="#UICell:managedState">.managedState</a></li>
+<li><a href="#UICell:getReferenceCount">.getReferenceCount()</a></li>
+<li><a href="#UICell:getManagedReferrers">.getManagedReferrers()</a></li>
+<li><a href="#UICell:getManagedParent">.getManagedParent()</a></li>
+<li><a href="#UICell:emit">.emit()</a></li>
+<li><a href="#UICell:emitChange">.emitChange()</a></li>
+<li><a href="#UICell:propagateChildEvents">.propagateChildEvents()</a></li>
+<li><a href="#UICell:activateManagedAsync">.activateManagedAsync()</a></li>
+<li><a href="#UICell:deactivateManagedAsync">.deactivateManagedAsync()</a></li>
+<li><a href="#UICell:destroyManagedAsync">.destroyManagedAsync()</a></li>
+<li><a href="#UICell:onManagedStateActivatingAsync">.onManagedStateActivatingAsync()</a></li>
+<li><a href="#UICell:onManagedStateActiveAsync">.onManagedStateActiveAsync()</a></li>
+<li><a href="#UICell:onManagedStateDeactivatingAsync">.onManagedStateDeactivatingAsync()</a></li>
+<li><a href="#UICell:onManagedStateInactiveAsync">.onManagedStateInactiveAsync()</a></li>
+<li><a href="#UICell:onManagedStateDestroyingAsync">.onManagedStateDestroyingAsync()</a></li>
+</ul>
+<h4 id="namespaced">Namespaced</h4>
+<ul>
+<li><a href="#UICell:Presets"><strong>UICell.Presets</strong></a></li>
+<li><a href="#UICell:Presets:decoration">.decoration</a></li>
+<li><a href="#UICell:Presets:padding">.padding</a></li>
+<li><a href="#UICell:Presets:margin">.margin</a></li>
+<li><a href="#UICell:Presets:background">.background</a></li>
+<li><a href="#UICell:Presets:textColor">.textColor</a></li>
+<li><a href="#UICell:Presets:borderThickness">.borderThickness</a></li>
+<li><a href="#UICell:Presets:borderColor">.borderColor</a></li>
+<li><a href="#UICell:Presets:borderStyle">.borderStyle</a></li>
+<li><a href="#UICell:Presets:borderRadius">.borderRadius</a></li>
+<li><a href="#UICell:Presets:dropShadow">.dropShadow</a></li>
+<li><a href="#UICell:Presets:opacity">.opacity</a></li>
+<li><a href="#UICell:Presets:selectOnFocus">.selectOnFocus</a></li>
+<li><a href="#UICell:Presets:allowFocus">.allowFocus</a></li>
+<li><a href="#UICell:Presets:allowKeyboardFocus">.allowKeyboardFocus</a></li>
+<li><a href="#UICell:Presets:revealTransition">.revealTransition</a></li>
+<li><a href="#UICell:Presets:exitTransition">.exitTransition</a></li>
+<li><a href="#UICell:Presets:css">.css</a></li>
+<li><a href="#UICell:Presets:content">.content</a></li>
+<li><a href="#UICell:Presets:layout">.layout</a></li>
+<li><a href="#UICell:Presets:asyncContentRendering">.asyncContentRendering</a></li>
+<li><a href="#UICell:Presets:animatedContentRenderingDuration">.animatedContentRenderingDuration</a></li>
+<li><a href="#UICell:Presets:animatedContentRenderingVelocity">.animatedContentRenderingVelocity</a></li>
+<li><a href="#UICell:Presets:style">.style</a></li>
+<li><a href="#UICell:Presets:hidden">.hidden</a></li>
+<li><a href="#UICell:Presets:dimensions">.dimensions</a></li>
+<li><a href="#UICell:Presets:position">.position</a></li>
+<li><a href="#UICell:Presets:accessibleRole">.accessibleRole</a></li>
+<li><a href="#UICell:Presets:accessibleLabel">.accessibleLabel</a></li>
+<li><a href="#UICell:Presets:requestFocus">.requestFocus</a></li>
+</ul>
+
+                    </nav>
+                </div>
+                <div class="fixed_cell_backtotop">
+                    <a href="#" onclick="backToTop()">↑ Back to top</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<link rel="prefetch" href="/docs/" as="fetch" />
+<script>
+    (function(){document.querySelectorAll(".sidebar_nav ul+h4").forEach(function(it){it.className="closed"})})()
+</script>
+
+
+    <footer class="footer">
+        <section class="wrapper">
+            <div class="wrapper_columns">
+                <div class="wrapper_column">
+                    © Copyright 2021 Typescene contributors
+                </div>
+                <div class="wrapper_column wrapper_column--oppose style--light">
+                    Find Typescene on
+    <a href="https://twitter.com/typescene" target="_blank" rel="noopener">Twitter</a> and
+    <a href="https://github.com/typescene" target="_blank" rel="noopener">Github</a>
+                </div>
+            </div>
+        </section>
+    </footer>
+
+    <script src="/assets/default.js"></script>
+    <script src="/assets/docwidget.js"></script>
+</body>
+</html>

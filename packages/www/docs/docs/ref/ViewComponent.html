@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Typescene - ViewComponent</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96048899-3"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-96048899-3');
+    </script>
+    <!-- end GA -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,300i|IBM+Plex+Sans:200,300,500,800,200i,300i,500i" rel="stylesheet">
+    <link rel="canonical" href="https://typescene.dev/docs/ref/ViewComponent">
+</head>
+<body>
+    <nav class="topnav">
+        <section class="wrapper">
+            <a href="/" class="logo_link">
+                <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+                <span class="topnav_title">Typescene</span>
+            </a>
+            <ul class="topnav_links">
+                <li><a href="#" onclick="return showDocWidget()"><img src="/assets/icons/search-reverse.svg" alt="" width=16 style="position: relative; top: .125rem">&nbsp; Docs</a></li>
+                <li class="hide_small"><a href="https://github.com/typescene/typescene" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    
+<div id="breadcrumb_bar">
+  <section class="wrapper">
+      <a href="/" class="logo_link" id="breadcrumb_logo" hidden>
+          <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+      </a>
+      <span>
+          <a href="/docs">Documentation</a>
+          &nbsp;|&nbsp;
+          Reference
+      </span>
+  </section>
+</div>
+<article class="wrapper wrapper--page">
+    <div class="wrapper_columns">
+        <div class="wrapper_column">
+            <div class="pagetitle_container">
+                <h1>ViewComponent</h1>
+                
+            </div>
+
+            <h2 id="ViewComponent" class="spec"><img src="/assets/icons/spec-class.svg" alt="">class ViewComponent</h2>
+
+
+
+<p><code>extends </code><a href="/docs/ref/AppComponent"><code>AppComponent</code></a><code> </code><code>implements </code><a href="/docs/ref/UIRenderable"><code>UIRenderable</code></a></p>
+<p>Represents an application component that encapsulates a view as a bound component. Bindings in nested view components are bound to the ViewComponent instance itself.</p>
+<p><strong>Note:</strong> This class is similar in functionality to <a href="/docs/ref/ViewActivity"><code>ViewActivity</code></a>, but <code>ViewComponent</code> views are created immediately, whereas view activities need to be activated first before their views are created. View components also propagate (re-emit) events of type <a href="/docs/ref/UIComponentEvent"><code>UIComponentEvent</code></a> for user interactions such as ‘Click’, ‘FocusIn’, etc.</p>
+<h4 id="example">Example</h4>
+<pre><code class="language-typescript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyView</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ViewComponent</span>.<span class="hljs-title">with</span>(</span>{
+  <span class="hljs-comment">// view declaration goes here, JSX is allowed too:</span>
+  <span class="hljs-attr">view</span>: UICell.with(
+    UIRow.with(UIButton.withLabel(<span class="hljs-string">&quot;Click me&quot;</span>, <span class="hljs-string">&quot;+ButtonClicked&quot;</span>)),
+    <span class="hljs-comment">// include content like so:</span>
+    UIViewRenderer.withBoundContent()
+  ),
+
+  <span class="hljs-comment">// optional list of properties that can be preset, and default values:</span>
+  <span class="hljs-attr">defaults</span>: {
+    <span class="hljs-attr">foo</span>: <span class="hljs-string">&quot;bar&quot;</span>,
+  },
+
+  <span class="hljs-comment">// optional list of properties that will contain preset content</span>
+  <span class="hljs-comment">// in the order in which they can be preset (default is &#x27;content&#x27;)</span>
+  <span class="hljs-attr">content</span>: [<span class="hljs-string">&quot;content&quot;</span>],
+
+  <span class="hljs-comment">// optional event handler (useful if not using a class)</span>
+  <span class="hljs-function"><span class="hljs-title">event</span>(<span class="hljs-params">e</span>)</span> {
+    <span class="hljs-comment">// ... handle events here</span>
+  },
+}) {
+  <span class="hljs-function"><span class="hljs-title">onButtonClicked</span>(<span class="hljs-params">e: UIComponentEvent&lt;UIButton&gt;</span>)</span> {
+    <span class="hljs-comment">// ... or handle events individually here</span>
+  }
+
+  <span class="hljs-comment">// any other class methods, constructor etc. can go here ...</span>
+}
+
+<span class="hljs-comment">// use the above class as follows (or use JSX syntax) --</span>
+<span class="hljs-keyword">const</span> view = UICell.with(
+  <span class="hljs-comment">// ...</span>
+  MyView.with({ <span class="hljs-attr">foo</span>: <span class="hljs-string">&quot;xyz&quot;</span> }, UIRow.with(<span class="hljs-comment">/* ... */</span>))
+);
+</code></pre>
+<h3>Constructor</h3>
+
+
+<p><code>(): ViewComponent</code></p>
+<h2 id="ViewComponent:with" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.with() <span class="spec_tag">static</span></h2>
+
+
+
+<p><code>[1]. &lt;T extends typeof ViewComponent, PresetT = object, ContentPropertiesT extends string = &quot;content&quot;&gt;(this: T, options?: { defaults?: PresetT | (() =&gt; PresetT); content?: ContentPropertiesT[]; view: typeof </code><a href="/docs/ref/Component"><code>Component</code></a><code> </code><code>| </code><a href="/docs/ref/ComponentConstructor"><code>ComponentConstructor</code></a><code>&lt;...&gt;; }): </code><a href="#ViewComponent:PresetType"><code>PresetType</code></a><code>&lt;...&gt;</code><br><code>[2]. &lt;T extends typeof ViewComponent&gt;(this: T, presets: PresetArgType&lt;T&gt;): T</code><br><code>[3]. &lt;T extends typeof ViewComponent&gt;(this: T, presets: PresetArgType&lt;T&gt;, content_0: </code><a href="/docs/ref/UIRenderableConstructor"><code>UIRenderableConstructor</code></a><code>, ...content_1: </code><a href="/docs/ref/UIRenderableConstructor"><code>UIRenderableConstructor</code></a><code>[]): T</code><br><code>[4]. &lt;T extends typeof ViewComponent&gt;(this: T, content_0: </code><a href="/docs/ref/UIRenderableConstructor"><code>UIRenderableConstructor</code></a><code>, ...content_1: </code><a href="/docs/ref/UIRenderableConstructor"><code>UIRenderableConstructor</code></a><code>[]): T</code></p>
+<p><strong>[1]</strong> Declare a view component class with given properties and view</p>
+<p><strong>[2]</strong> Declare a view component class with given preset properties</p>
+<p><strong>[3]</strong> Declare a view component class with given preset properties and content</p>
+<p><strong>[4]</strong> Declare a view component class with given view or content.</p>
+<blockquote>
+<p><strong>Note:</strong> The <code>ViewComponent</code> class overrides the standard <a href="/docs/ref/Component#Component:with"><code>Component.with</code></a> method to be able to return a type that is compatible with JSX syntax, while remaining compatible with the original type. Common usage is more straightforward than the type definition suggests – refer to the example above.</p>
+</blockquote>
+<h2 id="ViewComponent:presetChildView" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.presetChildView() <span class="spec_tag">static</span></h2>
+
+
+
+<p><code>&lt;TViewComponent&gt;(this: (new (...args: never[]) =&gt; TViewComponent) &amp; typeof ViewComponent, propertyName: keyof TViewComponent, View: </code><a href="/docs/ref/UIRenderableConstructor"><code>UIRenderableConstructor</code></a><code>, boundProperties?: true | (keyof TViewComponent)[]): void</code></p>
+<ul>
+<li><code>propertyName</code> —  The property that will be set. This property must <em>already</em> be a managed child property, decorated using <a href="/docs/ref/_component"><code>@component</code></a> and optionally <a href="/docs/ref/_delegateEvents"><code>@delegateEvents</code></a> for event handling.</li>
+</ul>
+<ul>
+<li><code>View</code> —  The (preset) constructor for the child view. This constructor will be used to create a child component for each <code>ViewComponent</code> instance.</li>
+</ul>
+<ul>
+<li><code>boundProperties</code> —  A list of properties for which bindings (on the child component) should be bound to the <code>ViewComponent</code> instance, instead of the original parent. Alternatively, set this to <code>true</code> to bind <em>all</em> bindings on the <code>ViewComponent</code> instance.</li>
+</ul>
+<p>Create a child view of given type automatically for each instance of the view component. Bindings for given properties are bound to the ViewComponent instance, others are ignored so that their values will be taken from the containing bound parent instead of the ViewComponent itself.</p>
+<h2 id="ViewComponent:view" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.view</h2>
+
+
+
+<p><a href="/docs/ref/UIRenderable"><code>UIRenderable</code></a></p>
+<p>The root component that makes up the content for this view, as a managed child reference.</p>
+<h2 id="ViewComponent:delegateEvent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.delegateEvent() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(e: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>, propertyName: string): true</code></p>
+<p>Override event delegation, to <em>also</em> propagate events of type <a href="/docs/ref/UIComponentEvent"><code>UIComponentEvent</code></a>.</p>
+<h2 id="ViewComponent:render" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.render()</h2>
+
+
+
+<p><code>(callback?: RenderCallback&lt;Output&lt;</code><a href="/docs/ref/UIRenderable"><code>UIRenderable</code></a><code>, any&gt;&gt;): void</code></p>
+<p>Render the encapsulated view for this component. This method should not be called directly; it is called automatically based on changes to the application render context.</p>
+<h2 id="ViewComponent:beforeRender" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.beforeRender() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): void</code></p>
+<p>Method that is called immediately before the view is rendered; can be overridden.</p>
+<h2 id="ViewComponent:removeViewAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.removeViewAsync()</h2>
+
+
+
+<p><code>(deactivate?: boolean): Promise&lt;void&gt;</code></p>
+<p>Remove the current view output, if any.</p>
+<p>This method is called automatically after the root view component or render context is removed, and should not be called directly.</p>
+<h2 id="ViewComponent:requestFocus" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.requestFocus()</h2>
+
+
+
+<p><code>(): void</code></p>
+<p>Request input focus on the view component, if any.</p>
+<h2 id="ViewComponent:renderContext" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.renderContext</h2>
+
+
+
+<p><a href="/docs/ref/UIRenderContext"><code>UIRenderContext</code></a></p>
+<p>Inherited from <a href="/docs/ref/AppComponent#AppComponent:renderContext"><code>AppComponent.renderContext</code></a>.</p>
+<h2 id="ViewComponent:viewportContext" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.viewportContext</h2>
+
+
+
+<p><code>any</code></p>
+<p>Inherited from <a href="/docs/ref/AppComponent#AppComponent:viewportContext"><code>AppComponent.viewportContext</code></a>.</p>
+<h2 id="ViewComponent:activationContext" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.activationContext</h2>
+
+
+
+<p><a href="/docs/ref/AppActivationContext"><code>AppActivationContext</code></a></p>
+<p>Inherited from <a href="/docs/ref/AppComponent#AppComponent:activationContext"><code>AppComponent.activationContext</code></a>.</p>
+<h2 id="ViewComponent:isPresetComponent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.isPresetComponent() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): boolean</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:isPresetComponent"><code>Component.isPresetComponent</code></a>.</p>
+<h2 id="ViewComponent:getParentComponent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getParentComponent()</h2>
+
+
+
+<p><code>&lt;TParent extends Component = Component&gt;(ParentClass?: </code><a href="/docs/ref/ComponentConstructor"><code>ComponentConstructor</code></a><code>&lt;TParent&gt;): TParent</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:getParentComponent"><code>Component.getParentComponent</code></a>.</p>
+<h2 id="ViewComponent:getBoundParentComponent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getBoundParentComponent()</h2>
+
+
+
+<p><code>&lt;TParent extends Component&gt;(ParentClass?: </code><a href="/docs/ref/ComponentConstructor"><code>ComponentConstructor</code></a><code>&lt;TParent&gt;): TParent</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:getBoundParentComponent"><code>Component.getBoundParentComponent</code></a>.</p>
+<h2 id="ViewComponent:emitAction" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.emitAction()</h2>
+
+
+
+<p><code>(name: string, inner?: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>, context?: </code><a href="/docs/ref/ManagedObject"><code>ManagedObject</code></a><code>): void</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:emitAction"><code>Component.emitAction</code></a>.</p>
+<h2 id="ViewComponent:propagateComponentEvent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.propagateComponentEvent() <span class="spec_tag spec_tag--deprecated">deprecated</span></h2>
+
+
+
+<p><code>(name: string, inner?: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>): void</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:propagateComponentEvent"><code>Component.propagateComponentEvent</code></a>.</p>
+<h2 id="ViewComponent:managedId" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.managedId</h2>
+
+
+
+<p><code>number</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:managedId"><code>ManagedObject.managedId</code></a>.</p>
+<h2 id="ViewComponent:managedState" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.managedState</h2>
+
+
+
+<p><a href="/docs/ref/ManagedState"><code>ManagedState</code></a></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:managedState"><code>ManagedObject.managedState</code></a>.</p>
+<h2 id="ViewComponent:getReferenceCount" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getReferenceCount() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): number</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:getReferenceCount"><code>ManagedObject.getReferenceCount</code></a>.</p>
+<h2 id="ViewComponent:getManagedReferrers" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getManagedReferrers() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): </code><a href="/docs/ref/ManagedObject"><code>ManagedObject</code></a><code>[]</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:getManagedReferrers"><code>ManagedObject.getManagedReferrers</code></a>.</p>
+<h2 id="ViewComponent:getManagedParent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getManagedParent() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>&lt;TParent extends ManagedObject = ManagedObject&gt;(ParentClass?: </code><a href="/docs/ref/ManagedObjectConstructor"><code>ManagedObjectConstructor</code></a><code>&lt;TParent&gt;): TParent</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:getManagedParent"><code>ManagedObject.getManagedParent</code></a>.</p>
+<h2 id="ViewComponent:emit" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.emit()</h2>
+
+
+
+<p><code>&lt;TEvent extends ManagedEvent = ManagedEvent, TConstructorArgs extends any[] = any[]&gt;(e: string | TEvent | (new (...args: TConstructorArgs) =&gt; TEvent), ...constructorArgs: TConstructorArgs): this</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:emit"><code>ManagedObject.emit</code></a>.</p>
+<h2 id="ViewComponent:emitChange" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.emitChange()</h2>
+
+
+
+<p><code>(name?: string): void</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:emitChange"><code>ManagedObject.emitChange</code></a>.</p>
+<h2 id="ViewComponent:propagateChildEvents" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.propagateChildEvents() <span class="spec_tag">protected</span> <span class="spec_tag spec_tag--deprecated">deprecated</span></h2>
+
+
+
+<p><code>(...types: ((new (...args: any[]) =&gt; </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>) | ((e: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>) =&gt; any))[]): this</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:propagateChildEvents"><code>ManagedObject.propagateChildEvents</code></a>.</p>
+<h2 id="ViewComponent:activateManagedAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.activateManagedAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;any&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:activateManagedAsync"><code>ManagedObject.activateManagedAsync</code></a>.</p>
+<h2 id="ViewComponent:deactivateManagedAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.deactivateManagedAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:deactivateManagedAsync"><code>ManagedObject.deactivateManagedAsync</code></a>.</p>
+<h2 id="ViewComponent:destroyManagedAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.destroyManagedAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:destroyManagedAsync"><code>ManagedObject.destroyManagedAsync</code></a>.</p>
+<h2 id="ViewComponent:onManagedStateActivatingAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateActivatingAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateActivatingAsync"><code>ManagedObject.onManagedStateActivatingAsync</code></a>.</p>
+<h2 id="ViewComponent:onManagedStateActiveAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateActiveAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateActiveAsync"><code>ManagedObject.onManagedStateActiveAsync</code></a>.</p>
+<h2 id="ViewComponent:onManagedStateDeactivatingAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateDeactivatingAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateDeactivatingAsync"><code>ManagedObject.onManagedStateDeactivatingAsync</code></a>.</p>
+<h2 id="ViewComponent:onManagedStateInactiveAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateInactiveAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateInactiveAsync"><code>ManagedObject.onManagedStateInactiveAsync</code></a>.</p>
+<h2 id="ViewComponent:onManagedStateDestroyingAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateDestroyingAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateDestroyingAsync"><code>ManagedObject.onManagedStateDestroyingAsync</code></a>.</p>
+<hr>
+<h2 id="ViewComponent:PresetViewComponentConstructor" class="spec"><img src="/assets/icons/spec-interface.svg" alt="">ViewComponent.PresetViewComponentConstructor</h2>
+
+
+
+<p>The result of ViewComponent.with(…), used like any other preset component constructor.</p>
+<h2 id="ViewComponent:PresetViewComponentConstructor:with" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.with()</h2>
+
+
+
+<p><code>(presets: { [P in keyof PresetT]?: Type | PresetT[P]; } | { [eventName: string]: string; }, ...content: </code><a href="/docs/ref/UIRenderableConstructor"><code>UIRenderableConstructor</code></a><code>[]): </code><a href="#ViewComponent:PresetType"><code>PresetType</code></a><code>&lt;PresetT, ContentPropertiesT&gt;</code></p>
+<p>Declare a view component class with given preset properties and content.</p>
+<hr>
+<h2 id="ViewComponent:PresetType" class="spec"><img src="/assets/icons/spec-type.svg" alt="">ViewComponent.PresetType</h2>
+
+
+
+<p><code>type PresetType&lt;PresetT, ContentPropertiesT extends string&gt; = {</code><br><code>        [P in keyof typeof ViewComponent]: typeof ViewComponent[P];</code><br><code>    } &amp; PresetViewComponentConstructor&lt;PresetT, ContentPropertiesT&gt;;</code></p>
+<p>The result of ViewComponent.with(…), used like any other preset component constructor.</p>
+
+        </div>
+
+        <div class="wrapper_column wrapper_column--sidebar wrapper_column--nav">
+            <div class="fixed_cell">
+                <div class="fixed_cell_inner">
+                    <nav id="toc" class="sidebar_nav">
+                        <h4 id="declarations">Declarations</h4>
+<ul>
+<li><a href="#ViewComponent"><strong>class ViewComponent</strong></a></li>
+<li><a href="#ViewComponent:with">.with()</a></li>
+<li><a href="#ViewComponent:presetChildView">.presetChildView()</a></li>
+<li><a href="#ViewComponent:view">.view</a></li>
+<li><a href="#ViewComponent:delegateEvent">.delegateEvent()</a></li>
+<li><a href="#ViewComponent:render">.render()</a></li>
+<li><a href="#ViewComponent:beforeRender">.beforeRender()</a></li>
+<li><a href="#ViewComponent:removeViewAsync">.removeViewAsync()</a></li>
+<li><a href="#ViewComponent:requestFocus">.requestFocus()</a></li>
+</ul>
+<h4 id="inherited">Inherited</h4>
+<ul>
+<li><a href="#ViewComponent:renderContext">.renderContext</a></li>
+<li><a href="#ViewComponent:viewportContext">.viewportContext</a></li>
+<li><a href="#ViewComponent:activationContext">.activationContext</a></li>
+<li><a href="#ViewComponent:isPresetComponent">.isPresetComponent()</a></li>
+<li><a href="#ViewComponent:getParentComponent">.getParentComponent()</a></li>
+<li><a href="#ViewComponent:getBoundParentComponent">.getBoundParentComponent()</a></li>
+<li><a href="#ViewComponent:emitAction">.emitAction()</a></li>
+<li><a href="#ViewComponent:propagateComponentEvent">.propagateComponentEvent()</a></li>
+<li><a href="#ViewComponent:managedId">.managedId</a></li>
+<li><a href="#ViewComponent:managedState">.managedState</a></li>
+<li><a href="#ViewComponent:getReferenceCount">.getReferenceCount()</a></li>
+<li><a href="#ViewComponent:getManagedReferrers">.getManagedReferrers()</a></li>
+<li><a href="#ViewComponent:getManagedParent">.getManagedParent()</a></li>
+<li><a href="#ViewComponent:emit">.emit()</a></li>
+<li><a href="#ViewComponent:emitChange">.emitChange()</a></li>
+<li><a href="#ViewComponent:propagateChildEvents">.propagateChildEvents()</a></li>
+<li><a href="#ViewComponent:activateManagedAsync">.activateManagedAsync()</a></li>
+<li><a href="#ViewComponent:deactivateManagedAsync">.deactivateManagedAsync()</a></li>
+<li><a href="#ViewComponent:destroyManagedAsync">.destroyManagedAsync()</a></li>
+<li><a href="#ViewComponent:onManagedStateActivatingAsync">.onManagedStateActivatingAsync()</a></li>
+<li><a href="#ViewComponent:onManagedStateActiveAsync">.onManagedStateActiveAsync()</a></li>
+<li><a href="#ViewComponent:onManagedStateDeactivatingAsync">.onManagedStateDeactivatingAsync()</a></li>
+<li><a href="#ViewComponent:onManagedStateInactiveAsync">.onManagedStateInactiveAsync()</a></li>
+<li><a href="#ViewComponent:onManagedStateDestroyingAsync">.onManagedStateDestroyingAsync()</a></li>
+</ul>
+<h4 id="namespaced">Namespaced</h4>
+<ul>
+<li><a href="#ViewComponent:PresetViewComponentConstructor"><strong>ViewComponent.PresetViewComponentConstructor</strong></a></li>
+<li><a href="#ViewComponent:PresetViewComponentConstructor:with">.with()</a></li>
+<li><a href="#ViewComponent:PresetType">ViewComponent.PresetType</a></li>
+</ul>
+
+                    </nav>
+                </div>
+                <div class="fixed_cell_backtotop">
+                    <a href="#" onclick="backToTop()">↑ Back to top</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<link rel="prefetch" href="/docs/" as="fetch" />
+<script>
+    (function(){document.querySelectorAll(".sidebar_nav ul+h4").forEach(function(it){it.className="closed"})})()
+</script>
+
+
+    <footer class="footer">
+        <section class="wrapper">
+            <div class="wrapper_columns">
+                <div class="wrapper_column">
+                    © Copyright 2021 Typescene contributors
+                </div>
+                <div class="wrapper_column wrapper_column--oppose style--light">
+                    Find Typescene on
+    <a href="https://twitter.com/typescene" target="_blank" rel="noopener">Twitter</a> and
+    <a href="https://github.com/typescene" target="_blank" rel="noopener">Github</a>
+                </div>
+            </div>
+        </section>
+    </footer>
+
+    <script src="/assets/default.js"></script>
+    <script src="/assets/docwidget.js"></script>
+</body>
+</html>

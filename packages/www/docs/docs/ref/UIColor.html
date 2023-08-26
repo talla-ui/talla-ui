@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Typescene - UIColor</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96048899-3"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-96048899-3');
+    </script>
+    <!-- end GA -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,300i|IBM+Plex+Sans:200,300,500,800,200i,300i,500i" rel="stylesheet">
+    <link rel="canonical" href="https://typescene.dev/docs/ref/UIColor">
+</head>
+<body>
+    <nav class="topnav">
+        <section class="wrapper">
+            <a href="/" class="logo_link">
+                <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+                <span class="topnav_title">Typescene</span>
+            </a>
+            <ul class="topnav_links">
+                <li><a href="#" onclick="return showDocWidget()"><img src="/assets/icons/search-reverse.svg" alt="" width=16 style="position: relative; top: .125rem">&nbsp; Docs</a></li>
+                <li class="hide_small"><a href="https://github.com/typescene/typescene" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    
+<div id="breadcrumb_bar">
+  <section class="wrapper">
+      <a href="/" class="logo_link" id="breadcrumb_logo" hidden>
+          <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+      </a>
+      <span>
+          <a href="/docs">Documentation</a>
+          &nbsp;|&nbsp;
+          Reference
+      </span>
+  </section>
+</div>
+<article class="wrapper wrapper--page">
+    <div class="wrapper_columns">
+        <div class="wrapper_column">
+            <div class="pagetitle_container">
+                <h1>UIColor</h1>
+                
+            </div>
+
+            <h2 id="UIColor" class="spec"><img src="/assets/icons/spec-class.svg" alt="">class UIColor</h2>
+
+
+
+<p>Represents a single color (read-only).</p>
+<h3>Constructor</h3>
+
+
+<p><code>(colorName?: string): UIColor</code></p>
+<h2 id="UIColor:toString" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.toString()</h2>
+
+
+
+<p><code>(): string</code></p>
+<p>Return a CSS-compatible string representation.</p>
+<h2 id="UIColor:text" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.text()</h2>
+
+
+
+<p><code>(): UIColor</code></p>
+<p>Return a new <code>UIColor</code> instance for a contrasting text color.</p>
+<h2 id="UIColor:alpha" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.alpha()</h2>
+
+
+
+<p><code>(alpha: number): UIColor</code></p>
+<p>Return a new <code>UIColor</code> instance with given alpha value (0-1) applied, for higher transparency.</p>
+<h2 id="UIColor:lum" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.lum()</h2>
+
+
+
+<p><code>(lum: number, contrast?: boolean): UIColor</code></p>
+<p>Return a new <code>UIColor</code> instance with given luminosity value (between -1 and 1) applied, for darker or lighter colors; set <code>contrast</code> parameter to true to invert the scale for dark colors (i.e. move closer to/away from mid-grey instead of strictly lower and higher luminosity).</p>
+
+        </div>
+
+        <div class="wrapper_column wrapper_column--sidebar wrapper_column--nav">
+            <div class="fixed_cell">
+                <div class="fixed_cell_inner">
+                    <nav id="toc" class="sidebar_nav">
+                        <h4 id="declarations">Declarations</h4>
+<ul>
+<li><a href="#UIColor"><strong>class UIColor</strong></a></li>
+<li><a href="#UIColor:toString">.toString()</a></li>
+<li><a href="#UIColor:text">.text()</a></li>
+<li><a href="#UIColor:alpha">.alpha()</a></li>
+<li><a href="#UIColor:lum">.lum()</a></li>
+</ul>
+
+                    </nav>
+                </div>
+                <div class="fixed_cell_backtotop">
+                    <a href="#" onclick="backToTop()">↑ Back to top</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<link rel="prefetch" href="/docs/" as="fetch" />
+<script>
+    (function(){document.querySelectorAll(".sidebar_nav ul+h4").forEach(function(it){it.className="closed"})})()
+</script>
+
+
+    <footer class="footer">
+        <section class="wrapper">
+            <div class="wrapper_columns">
+                <div class="wrapper_column">
+                    © Copyright 2021 Typescene contributors
+                </div>
+                <div class="wrapper_column wrapper_column--oppose style--light">
+                    Find Typescene on
+    <a href="https://twitter.com/typescene" target="_blank" rel="noopener">Twitter</a> and
+    <a href="https://github.com/typescene" target="_blank" rel="noopener">Github</a>
+                </div>
+            </div>
+        </section>
+    </footer>
+
+    <script src="/assets/default.js"></script>
+    <script src="/assets/docwidget.js"></script>
+</body>
+</html>

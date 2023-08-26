@@ -1,0 +1,54 @@
+{
+  "name": "@typescene/webapp",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Typescene framework",
+  "author": "Jelmer Cormont",
+  "license": "MIT",
+  "publishConfig": {
+    "tag": "next"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/typescene/typescene-webapp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/typescene/typescene-webapp/issues"
+  },
+  "homepage": "http://typescene.dev/",
+  "main": "./index.js",
+  "module": "./index.js",
+  "typings": "./index.d.ts",
+  "files": [
+    "dist",
+    "dist-es6",
+    "dist-es8",
+    "umd",
+    "index.js",
+    "index.d.ts"
+  ],
+  "scripts": {
+    "clean": "rimraf dist dist-es6 dist-es8",
+    "prepublishOnly": "npm run build",
+    "prebuild": "npm run clean && tsc -p src --declaration",
+    "build-es8": "tsc -p src --target es2017 --outDir dist-es8 --removeComments",
+    "build-es6": "tsc -p src --target es2015 --outDir dist-es6 --removeComments",
+    "build-es5": "tsc -p src --removeComments",
+    "build": "npm run build-es5 && npm run build-es6 && npm run build-es8",
+    "postbuild": "rollup -c"
+  },
+  "dependencies": {
+    "typescene": "file:../typescene",
+    "tslib": "^2.3.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-alias": "^3.1.2",
+    "@rollup/plugin-multi-entry": "^4.0.0",
+    "@rollup/plugin-node-resolve": "^11.2.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.45.2",
+    "rollup-plugin-gzip": "^2.5.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "4.4"
+  }
+}

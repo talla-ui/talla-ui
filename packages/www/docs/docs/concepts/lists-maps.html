@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="Description" content="Detailed description of lists and maps">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Typescene - Lists and maps</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96048899-3"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-96048899-3');
+    </script>
+    <!-- end GA -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,300i|IBM+Plex+Sans:200,300,500,800,200i,300i,500i" rel="stylesheet">
+    <link rel="canonical" href="https://typescene.dev/docs/concepts/lists-maps">
+</head>
+<body>
+    <nav class="topnav">
+        <section class="wrapper">
+            <a href="/" class="logo_link">
+                <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+                <span class="topnav_title">Typescene</span>
+            </a>
+            <ul class="topnav_links">
+                <li><a href="#" onclick="return showDocWidget()"><img src="/assets/icons/search-reverse.svg" alt="" width=16 style="position: relative; top: .125rem">&nbsp; Docs</a></li>
+                <li class="hide_small"><a href="https://github.com/typescene/typescene" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    
+<link rel="preload" href="/assets/icons/chevron.svg" as="image" />
+<div id="breadcrumb_bar">
+  <section class="wrapper">
+      <a href="/" class="logo_link" id="breadcrumb_logo" hidden>
+          <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+      </a>
+      <span>
+          <a href="/docs">Documentation</a>
+          &nbsp;|&nbsp Concepts
+      </span>
+  </section>
+</div>
+<article class="wrapper wrapper--page">
+    <div class="wrapper_columns">
+        <div class="wrapper_column">
+            <div class="pagetitle_container">
+                <h1>Lists and maps</h1>
+                <p class="style--pageintro">Components are frequently stored in list and map structures, especially when referenced by other components.
+</p>
+            </div>
+
+            <h2 id="overview">Overview</h2>
+
+
+<p>In JavaScript, creating a list of values is a simple task. Arrays hold any type of data, and they are easily created using the <code>[</code> and <code>]</code> operators, so they are usually the best solution if you need to iterate (loop) over a set of values.</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">let</span> data = [<span class="hljs-string">&quot;a&quot;</span>, <span class="hljs-string">&quot;b&quot;</span>, <span class="hljs-string">&quot;c&quot;</span>];
+data.forEach(<span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> { <span class="hljs-built_in">console</span>.log(d) });
+</code></pre>
+<p>In a front-end framework however, JavaScript arrays cause some issues. For one, their values are not checked: they might include a mix of strings, numbers, objects, and other types of values. Any value can be assigned to <em>any</em> array index at any time. This means that they may include duplicates, undefined values, and <em>gaps</em> (which occur when a certain array index is not set at all, which is not the same as setting the array property to <code>undefined</code>).</p>
+<p>Therefore, Typescene implements two different types of lists of its own, which are much stricter about their contents than regular JavaScript arrays and objects.</p>
+<p><a href="/docs/ref/ManagedList" class="block_link class"><strong>ManagedList</strong><br>Represents an ordered set of components</a>
+<a href="/docs/ref/ManagedList" class="block_link class"><strong>ManagedMap</strong><br>Represents a set of components that are indexed using a string value</a></p>
+<pre><code class="language-typescript"><span class="hljs-keyword">let</span> list = <span class="hljs-keyword">new</span> ManagedList(
+  <span class="hljs-keyword">new</span> Component(),
+  <span class="hljs-keyword">new</span> Component(),
+  <span class="hljs-keyword">new</span> Component()
+);
+<span class="hljs-keyword">let</span> first = list.first();
+<span class="hljs-keyword">let</span> second = list.get(<span class="hljs-number">1</span>);
+<span class="hljs-keyword">let</span> third = list.last();
+
+<span class="hljs-keyword">let</span> map = <span class="hljs-keyword">new</span> ManagedMap()
+map.set(<span class="hljs-string">&quot;One&quot;</span>, <span class="hljs-keyword">new</span> ManagedList());
+<span class="hljs-keyword">let</span> one = map.get(<span class="hljs-string">&quot;One&quot;</span>);
+</code></pre>
+<p>By design, managed lists and maps circumvent issues with duplicates and gaps: once an item is removed from the list other items take its place, and the same item cannot be included in the same list more than once. Internally, both <code>ManagedList</code> and <code>ManagedObject</code> are implemented in a way that’s very efficient, and doesn’t require looping over the entire list to add or remove items.</p>
+<h3>Restricting item types</h3>
+
+
+<p>The <code>restrict</code> method on both lists and maps restricts the type of component objects that can be added to the list — ensuring that all items in the list/map are instantiated by a particular class (or sub class).</p>
+<p><a href="/docs/ref/ManagedList#ManagedList:restrict" class="block_link method"><strong>ManagedList.restrict()</strong><br>Restrict objects within this list to be of a given type (class)</a>
+<a href="/docs/ref/ManagedMap#ManagedMap:restrict" class="block_link method"><strong>ManagedMap.restrict()</strong><br>Restrict objects within this map to be of a given type (class)</a></p>
+<pre><code class="language-typescript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyComponent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{ }
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SameComponent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">MyComponent</span> </span>{ }
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">OtherComponent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{ }
+
+<span class="hljs-keyword">let</span> list = <span class="hljs-keyword">new</span> ManagedList().restrict(MyComponent);
+list.add(<span class="hljs-keyword">new</span> MyComponent());  <span class="hljs-comment">// OK</span>
+list.add(<span class="hljs-keyword">new</span> SameComponent());  <span class="hljs-comment">// OK</span>
+list.add(<span class="hljs-keyword">new</span> OtherComponent());  <span class="hljs-comment">// ERROR</span>
+</code></pre>
+<h3>Nested lists/maps</h3>
+
+
+<p>Both lists and maps (instances of <code>ManagedList</code> and <code>ManagedMap</code>) may directly contain <em>other</em> lists and maps. They may even refer to themselves in a circular pattern, directly or indirectly — <em>unless</em> the <code>restrict</code> method has been used to limit the particular object type that can be added.</p>
+<p>This is because by default, lists and maps may contain instances of the <a href="/docs/ref/ManagedObject"><code>ManagedObject</code></a> class, a superclass of <a href="/docs/ref/Component"><code>Component</code></a> as well as <a href="/docs/ref/ManagedList"><code>ManagedList</code></a>, <a href="/docs/ref/ManagedMap"><code>ManagedMap</code></a>, and <a href="/docs/ref/ManagedReference"><code>ManagedReference</code></a>.</p>
+<h3>Managed record references</h3>
+
+
+<p>The <a href="/docs/ref/ManagedRecord"><code>ManagedRecord</code></a> class implements several methods that are useful for use with records that are stored in a list — a common way to model ordered or indexed ‘record’ data.</p>
+<p><a href="/docs/ref/ManagedRecord" class="block_link class"><strong>ManagedRecord</strong><br>Represents data that is managed as a component, often within a list structure</a></p>
+<ul>
+<li><a href="/docs/ref/ManagedRecord#ManagedRecord:getParentRecord"><code>record.getParentRecord()</code></a> — retrieves the ‘parent’ instance (containing a property that has been marked with the <code>@managedChild</code> decorator which indirectly references the record) of the <code>ManagedRecord</code> class itself, even if the parent record references a list/map that <em>contains</em> this record.</li>
+<li><a href="/docs/ref/ManagedRecord#ManagedRecord:getNextSibling"><code>record.getNextSibling()</code></a> — retrieves the next record in a parent list (i.e. a list that is assigned to a property marked with <code>@managedChild</code> in another record).</li>
+<li><a href="/docs/ref/ManagedRecord#ManagedRecord:getNextSibling"><code>record.getPreviousSibling()</code></a> — retrieves the previous record in a parent list.</li>
+</ul>
+<h3>Parent-child references</h3>
+
+
+<p>Often, components within a list should be considered to be fully ‘contained’ by the component that includes the list itself — for example in the case of a row of buttons on screen, the buttons certainly belong to the row; moving or removing the row should also move the buttons within. Similarly, a list of addresses may ‘belong’ to a contact record.</p>
+<p>For this reason, component lists/maps extend parent-child relationships to all components within the list, <em>if</em> the list itself is assigned to a property marked with <a href="/docs/ref/managedChild"><code>@managedChild</code></a> (refer to  <a href="/docs/concepts/components">Components</a> for details on how this property decorator works).</p>
+<pre><code class="language-typescript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PersonAddress</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ManagedRecord</span> </span>{
+  <span class="hljs-attr">street</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-comment">// ... etc. </span>
+}
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PersonContact</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ManagedRecord</span> </span>{
+  <span class="hljs-attr">name</span>: <span class="hljs-built_in">string</span>;
+  <span class="hljs-comment">// ... etc.</span>
+  
+  <span class="hljs-meta">@managedChild</span>
+  addresses = <span class="hljs-keyword">new</span> ManagedList().restrict(PersonAddress);
+}
+
+<span class="hljs-keyword">let</span> contact = <span class="hljs-keyword">new</span> PersonContact();
+<span class="hljs-keyword">let</span> address = <span class="hljs-keyword">new</span> PersonAddress(); <span class="hljs-comment">//  ... etc  </span>
+contact.addresses.add(address);
+contact.addresses.first().getParentComponent()  <span class="hljs-comment">// contact</span>
+</code></pre>
+<h3>Weak parent-child references</h3>
+
+
+<p>To mark a property containing a list or map as parent-child reference, but <em>not</em> the contained components, use the <code>weakRef</code> method:</p>
+<p><a href="/docs/ref/ManagedList#ManagedList:weakRef" class="block_link method"><strong>ManagedList.weakRef()</strong><br>Stop newly referenced objects from becoming child objects</a></p>
+<pre><code class="language-typescript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PersonContact</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ManagedRecord</span> </span>{
+  <span class="hljs-comment">// ...</span>
+  <span class="hljs-meta">@managedChild</span>
+  colleagues = <span class="hljs-keyword">new</span> ManagedList()
+    .restrict(PersonContact)
+    .weakRef();
+}
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> The use case for this pattern is relatively limited. You may only need to mark the list as a child component (but not its items) if you notice a memory leak when new lists are created frequently, containing many of the <em>same</em> items. Using a child reference, the list itself will be destroyed as soon as a new list is assigned to the same property, even if the contained items are not.</p>
+</blockquote>
+<h2 id="lists">Lists</h2>
+
+
+<p><a href="/docs/ref/ManagedList" class="block_link class"><strong>ManagedList</strong><br>Represents an ordered set of components</a></p>
+<p>Lists of components can be created using the <a href="/docs/ref/ManagedList"><code>ManagedList</code></a> constructor. This constructor accepts an initial set of objects, which are added to the list immediately.</p>
+<p>Afterwards, the list’s methods can be used to add objects:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">let</span> a = <span class="hljs-keyword">new</span> MyComponent();
+<span class="hljs-keyword">let</span> b = <span class="hljs-keyword">new</span> MyComponent();
+<span class="hljs-keyword">let</span> list = <span class="hljs-keyword">new</span> ManagedList(a, b);
+
+<span class="hljs-comment">// add an item to the back of the list:</span>
+list.add(<span class="hljs-keyword">new</span> MyComponent());
+
+<span class="hljs-comment">// insert an item *before* `b`</span>
+list.insert(<span class="hljs-keyword">new</span> MyComponent(), b);
+</code></pre>
+<p><a href="/docs/ref/ManagedList#ManagedList:add" class="block_link method"><strong>ManagedList.add()</strong><br>Add one or more objects (or managed lists or maps) to the end of this list</a>
+<a href="/docs/ref/ManagedList#ManagedList:insert" class="block_link method"><strong>ManagedList.insert()</strong><br>Insert an object before another object in this list</a>
+<a href="/docs/ref/ManagedList#ManagedList:remove" class="block_link method"><strong>ManagedList.remove()</strong><br>Remove an object from this list</a>
+<a href="/docs/ref/ManagedList#ManagedList:clear" class="block_link method"><strong>ManagedList.clear()</strong><br>Remove all objects from this list</a>
+<a href="/docs/ref/ManagedList#ManagedList:splice" class="block_link method"><strong>ManagedList.splice()</strong><br>Add and/or remove objects at the same time</a>
+<a href="/docs/ref/ManagedList#ManagedList:replace" class="block_link method"><strong>ManagedList.replace()</strong><br>Replace <em>all</em> items in this list with a given set of new items, in one go</a></p>
+<h3>Iteration</h3>
+
+
+<p>You can loop over all objects in a list using a standard <code>for...of</code> statement.</p>
+<pre><code class="language-typescript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SomeComponent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{
+  <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">public</span> s: <span class="hljs-built_in">string</span></span>)</span> { <span class="hljs-built_in">super</span>() }
+}
+<span class="hljs-keyword">let</span> list = <span class="hljs-keyword">new</span> ManagedList(
+  <span class="hljs-keyword">new</span> SomeComponent(<span class="hljs-string">&quot;a&quot;</span>),
+  <span class="hljs-keyword">new</span> SomeComponent(<span class="hljs-string">&quot;b&quot;</span>),
+  <span class="hljs-keyword">new</span> SomeComponent(<span class="hljs-string">&quot;c&quot;</span>)
+);
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> component <span class="hljs-keyword">of</span> list) {
+  <span class="hljs-built_in">console</span>.log(component.s);
+}
+</code></pre>
+<p>Alternatively, you can use the following methods to iterate over the objects in a list.</p>
+<p><a href="/docs/ref/ManagedList#ManagedList:forEach" class="block_link method"><strong>ManagedList.forEach()</strong><br>Invoke a callback function for each object in this list</a>
+<a href="/docs/ref/ManagedList#ManagedList:map" class="block_link method"><strong>ManagedList.map()</strong><br>Invoke a callback function to each object, and return an Array with all results</a>
+<a href="/docs/ref/ManagedList#ManagedList:pluck" class="block_link method"><strong>ManagedList.pluck()</strong><br>Take a given property from each object, and return an Array with all values</a>
+<a href="/docs/ref/ManagedList#ManagedList:some" class="block_link method"><strong>ManagedList.some()</strong><br>Returns true if a given callback function returns <code>true</code> for at least one object in this list</a>
+<a href="/docs/ref/ManagedList#ManagedList:every" class="block_link method"><strong>ManagedList.every()</strong><br>Returns true if a given callback function returns <code>true</code> for all objects in this list</a>
+<a href="/docs/ref/ManagedList#ManagedList:toArray" class="block_link method"><strong>ManagedList.toArray()</strong><br>Returns an Array with all objects in this list</a></p>
+<h3>Events</h3>
+
+
+<p>Lists emit a <a href="/docs/ref/ManagedListChangeEvent"><code>ManagedListChangeEvent</code></a> event when objects are added, removed, or moved.</p>
+<ul>
+<li>When an object is added, the object itself is referenced by the <code>object</code> property of the <a href="/docs/ref/ManagedObjectAddedEvent"><code>ManagedObjectAddedEvent</code></a> event.</li>
+<li>When an object has been removed, the removed object is referenced by the <code>object</code> property of the <a href="/docs/ref/ManagedObjectRemovedEvent"><code>ManagedObjectRemovedEvent</code></a> event.</li>
+</ul>
+<p>Furthermore, lists can be made to ‘propagate’ (i.e. re-emit) all events that are emitted by objects within the list, using the <a href="/docs/ref/ManagedList#ManagedList:propagateEvents"><code>propagateEvents</code></a> method.</p>
+<p><a href="/docs/ref/ManagedList#ManagedList:propagateEvents" class="block_link method"><strong>ManagedList.propagateEvents()</strong><br>Propagate events from all objects in this list</a></p>
+<pre><code class="language-typescript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PersonContact</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ManagedRecord</span> </span>{
+  <span class="hljs-meta">@managed</span>
+  friends = <span class="hljs-keyword">new</span> ManagedList()
+    .restrict(PersonContact)
+    .propagateEvents();
+}
+PersonContact.addObserver(<span class="hljs-class"><span class="hljs-keyword">class</span> </span>{
+  <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">public</span> contact: PersonContact</span>)</span> { }
+  <span class="hljs-function"><span class="hljs-title">onFriendsChange</span>(<span class="hljs-params"></span>)</span> {
+    <span class="hljs-comment">// ...[1] </span>
+  }
+})
+</code></pre>
+<p>In the code above, the <code>onFriendsChange</code> method [1] is called when:</p>
+<ul>
+<li>the friends list is assigned the first time (an empty list),</li>
+<li>any objects are added to, removed from, or moved within the friends list,</li>
+<li>any object <em>within</em> the friends list emits a change event — since those events are immediately also emitted by the list itself.</li>
+</ul>
+<h3>Views and bindings</h3>
+
+
+<p><code>ManagedList</code> instances are frequently used to manage lists of objects that need to be displayed in the application UI. The <a href="/docs/ref/UIListController"><code>UIListController</code></a> view component can be used for this purpose. Its <code>items</code> property refers to a <code>ManagedList</code> instance, which are turned into views using a ‘view adapter’ — a component that takes an object and produces a view component. The generic <a href="/docs/ref/UIListCellAdapter"><code>UIListCellAdapter</code></a> component usually serves this purpose well.</p>
+<p><a href="/docs/concepts/views" class="block_link doc"><strong>See also:</strong> Concepts &gt; Views</a></p>
+<p>Note that Typescene will <em>automatically</em> convert arrays to objects in a managed list when updating a binding.</p>
+<ul>
+<li>If the existing property value of a bound property (e.g. the <code>items</code> property of a <code>UIListController</code> view component) is <em>already</em> an instance of <code>ManagedList</code>, <strong>and</strong></li>
+<li>if the bound value (i.e. the value of the bound parent’s property) is a <code>ManagedList</code>, <strong>then</strong> the list reference itself is copied to the target component.</li>
+<li>if the bound value is <code>undefined</code>, <strong>then</strong> the list is cleared.</li>
+<li>if the bound value is an array of <code>ManagedObject</code> instances (e.g. components), <strong>then</strong> all objects in the list are replaced with the objects from the array.</li>
+<li>if the bound value is an array of other values (e.g. strings), <strong>then</strong> those values are encapsulated in an anonymous component type first, whose <code>valueOf()</code> method returns the original value.</li>
+</ul>
+<p>This makes it possible to bind the <code>items</code> property of a list view either to a ‘real’ list of components, or to a simple array:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">const</span> view = UICell.with(
+  UIListController.with(
+    <span class="hljs-comment">// items is actually a ManagedList:</span>
+    { <span class="hljs-attr">items</span>: bind(<span class="hljs-string">&quot;items&quot;</span>) },
+    UIListCellAdapter.with(
+      UIRow.with(
+        UILabel.with(bind(<span class="hljs-string">&quot;value&quot;</span>))  <span class="hljs-comment">// a, b, c</span>
+      )
+    )
+  )
+)
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyActivity</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">PageViewActivity</span>.<span class="hljs-title">with</span>(<span class="hljs-title">view</span>) </span>{
+  <span class="hljs-comment">// ...</span>
+  
+  <span class="hljs-comment">// plain array elements get converted:</span>
+  items = [<span class="hljs-string">&quot;a&quot;</span>, <span class="hljs-string">&quot;b&quot;</span>, <span class="hljs-string">&quot;c&quot;</span>]
+}
+</code></pre>
+<h2 id="maps">Maps</h2>
+
+
+<p><a href="/docs/ref/ManagedList" class="block_link class"><strong>ManagedMap</strong><br>Represents a set of components that are indexed using a string value</a></p>
+<p>Indexed sets of components can be created using the <a href="/docs/ref/ManagedMap"><code>ManagedMap</code></a> constructor. This constructor does not accept any arguments.</p>
+<p>Afterwards, the map’s methods can be used to add objects:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">let</span> map = <span class="hljs-keyword">new</span> ManagedMap();
+map.set(<span class="hljs-string">&quot;one&quot;</span>, <span class="hljs-keyword">new</span> MyComponent());
+map.set(<span class="hljs-string">&quot;two&quot;</span>, <span class="hljs-keyword">new</span> MyComponent());
+</code></pre>
+<p><a href="/docs/ref/ManagedMap#ManagedMap:set" class="block_link method"><strong>ManagedMap.set()</strong><br>Add an object (or managed list or map) to this map using given string index (key)</a>
+<a href="/docs/ref/ManagedMap#ManagedMap:unset" class="block_link method"><strong>ManagedMap.unset()</strong><br>Remove an object from this map using a given string index (key)</a>
+<a href="/docs/ref/ManagedMap#ManagedMap:remove" class="block_link method"><strong>ManagedMap.remove()</strong><br>Remove an object from this map</a>
+<a href="/docs/ref/ManagedMap#ManagedMap:clear" class="block_link method"><strong>ManagedMap.clear()</strong><br>Remove all objects from this map</a></p>
+<h3>Iteration</h3>
+
+
+<p>Unlike with the <code>ManagedList</code> class, you <em>cannot</em> loop over objects in a map using a <code>for...of</code> statement.</p>
+<p>Instead, you can use the following methods to iterate over the indexes (keys) or objects in a list.</p>
+<p><a href="/docs/ref/ManagedMap#ManagedMap:forEach" class="block_link method"><strong>ManagedMap.forEach()</strong><br>Invoke a callback function for each key and object in this map</a>
+<a href="/docs/ref/ManagedMap#ManagedMap:keys" class="block_link method"><strong>ManagedMap.objects()</strong><br>Returns an Array with all objects in this map</a>
+<a href="/docs/ref/ManagedMap#ManagedMap:keys" class="block_link method"><strong>ManagedMap.keys()</strong><br>Returns an Array with all keys in this map</a>
+<a href="/docs/ref/ManagedMap#ManagedMap:toObject" class="block_link method"><strong>ManagedMap.toObject()</strong><br>Returns a plain JavaScript object with all objects in this map, with keys as property names</a></p>
+<pre><code class="language-typescript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SomeComponent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{
+  <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">public</span> s: <span class="hljs-built_in">string</span></span>)</span> { <span class="hljs-built_in">super</span>() }
+}
+<span class="hljs-keyword">let</span> map = <span class="hljs-keyword">new</span> ManagedMap();
+map.set(<span class="hljs-string">&quot;1&quot;</span>, <span class="hljs-keyword">new</span> SomeComponent(<span class="hljs-string">&quot;One&quot;</span>));
+map.set(<span class="hljs-string">&quot;2&quot;</span>, <span class="hljs-keyword">new</span> SomeComponent(<span class="hljs-string">&quot;Two&quot;</span>));
+map.set(<span class="hljs-string">&quot;3&quot;</span>, <span class="hljs-keyword">new</span> SomeComponent(<span class="hljs-string">&quot;Three&quot;</span>));
+map.forEach(<span class="hljs-function">(<span class="hljs-params">key, component</span>) =&gt;</span> {
+  <span class="hljs-built_in">console</span>.log(key + <span class="hljs-string">&quot;: &quot;</span> + component.s);
+  <span class="hljs-comment">// =&gt; 1: One</span>
+  <span class="hljs-comment">// ...etc </span>
+}
+</code></pre>
+<h3>Events</h3>
+
+
+<p>Maps emit a <a href="/docs/ref/ManagedListChangeEvent"><code>ManagedListChangeEvent</code></a> event when objects are added, removed, or moved — similar to lists.</p>
+<ul>
+<li>When an object is added, the object itself is referenced by the <code>object</code> property of the <a href="/docs/ref/ManagedObjectAddedEvent"><code>ManagedObjectAddedEvent</code></a> event, and the key is stored in the <code>key</code> property.</li>
+<li>When an object has been removed, the removed object is referenced by the <code>object</code> property of the <a href="/docs/ref/ManagedObjectRemovedEvent"><code>ManagedObjectRemovedEvent</code></a> event, and the key is stored in the <code>key</code> property.</li>
+</ul>
+<p>Furthermore, maps can also be made to ‘propagate’ (i.e. re-emit) all events that are emitted by objects within the map, using the <a href="/docs/ref/ManagedList#ManagedList:propagateEvents"><code>propagateEvents</code></a> method (see Lists above for an example).</p>
+<p><a href="/docs/ref/ManagedMap#ManagedMap:propagateEvents" class="block_link method"><strong>ManagedMap.propagateEvents()</strong><br>Propagate events from all objects in this map</a></p>
+<hr>
+<h3>Next steps</h3>
+
+
+<p>Find out how lists and maps are used by Typescene to store application components.</p>
+<ul>
+<li>Learn more about <a href="/docs/concepts/views">views</a>, which represent the user interface as a tree structure of components.</li>
+<li>Learn more about <a href="/docs/concepts/activities">activities</a>, which encapsulate views and represent the possible states of an application.</li>
+<li>Learn more about <a href="/docs/concepts/services">services</a>, which encapsulate the application’s global state, available from within all other components.</li>
+</ul>
+
+        </div>
+
+        <div class="wrapper_column wrapper_column--sidebar">
+            <div class="fixed_cell">
+                <div class="fixed_cell_inner">
+                    <nav id="toc" class="sidebar_nav">
+                        <h4 class="closed">Overview</h4>
+                              <ul>
+                                  <li><a href="/docs/goals">Why Typescene?</a></li><link rel="prefetch" href="/docs/goals" as="fetch" />
+<li><a href="/docs/introduction">Introduction</a></li><link rel="prefetch" href="/docs/introduction" as="fetch" />
+<li><a href="/docs/installation">Installation</a></li><link rel="prefetch" href="/docs/installation" as="fetch" />
+<li><a href="/docs/js-ts">JavaScript vs TypeScript</a></li><link rel="prefetch" href="/docs/js-ts" as="fetch" />
+                              </ul>
+                              
+<h4 class="open">Concepts</h4>
+                              <ul>
+                                  <li><a href="/docs/concepts/components">Components</a></li><link rel="prefetch" href="/docs/concepts/components" as="fetch" />
+<li aria-current="page"><b>Lists and maps</b></li><ul>
+<li><a href="#overview" class="toc">Overview</a></li>
+<li><a href="#lists" class="toc">Lists</a></li>
+<li><a href="#maps" class="toc">Maps</a></li>
+</ul>
+
+<li><a href="/docs/concepts/views">Views</a></li><link rel="prefetch" href="/docs/concepts/views" as="fetch" />
+<li><a href="/docs/concepts/activities">Activities</a></li><link rel="prefetch" href="/docs/concepts/activities" as="fetch" />
+<li><a href="/docs/concepts/services">Services</a></li><link rel="prefetch" href="/docs/concepts/services" as="fetch" />
+                              </ul>
+                              
+<h4 class="closed">Guides</h4>
+                              <ul>
+                                  <li><a href="/docs/guides/ui/">UI components</a></li><link rel="prefetch" href="/docs/guides/ui/" as="fetch" />
+<li><a href="/docs/guides/layout/">Layout</a></li><link rel="prefetch" href="/docs/guides/layout/" as="fetch" />
+                              </ul>
+                              
+                    </nav>
+                </div>
+                <div class="fixed_cell_backtotop">
+                    <a href="#" onclick="backToTop()">↑ Back to top</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<link rel="prefetch" href="/docs/" as="fetch" />
+
+    <footer class="footer">
+        <section class="wrapper">
+            <div class="wrapper_columns">
+                <div class="wrapper_column">
+                    © Copyright 2021 Typescene contributors
+                </div>
+                <div class="wrapper_column wrapper_column--oppose style--light">
+                    Find Typescene on
+    <a href="https://twitter.com/typescene" target="_blank" rel="noopener">Twitter</a> and
+    <a href="https://github.com/typescene" target="_blank" rel="noopener">Github</a>
+                </div>
+            </div>
+        </section>
+    </footer>
+
+    <script src="/assets/default.js"></script>
+    <script src="/assets/docwidget.js"></script>
+</body>
+</html>

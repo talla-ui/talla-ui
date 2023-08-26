@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Typescene - AppActivityList</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-96048899-3"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-96048899-3');
+    </script>
+    <!-- end GA -->
+    <link rel="stylesheet" href="/assets/style.css">
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:400,300i|IBM+Plex+Sans:200,300,500,800,200i,300i,500i" rel="stylesheet">
+    <link rel="canonical" href="https://typescene.dev/docs/ref/AppActivityList">
+</head>
+<body>
+    <nav class="topnav">
+        <section class="wrapper">
+            <a href="/" class="logo_link">
+                <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+                <span class="topnav_title">Typescene</span>
+            </a>
+            <ul class="topnav_links">
+                <li><a href="#" onclick="return showDocWidget()"><img src="/assets/icons/search-reverse.svg" alt="" width=16 style="position: relative; top: .125rem">&nbsp; Docs</a></li>
+                <li class="hide_small"><a href="https://github.com/typescene/typescene" target="_blank" rel="noopener">Github</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    
+<div id="breadcrumb_bar">
+  <section class="wrapper">
+      <a href="/" class="logo_link" id="breadcrumb_logo" hidden>
+          <img src="/assets/logo_small.png" alt="Typescene logo" class="topnav_logo">
+      </a>
+      <span>
+          <a href="/docs">Documentation</a>
+          &nbsp;|&nbsp;
+          Reference
+      </span>
+  </section>
+</div>
+<article class="wrapper wrapper--page">
+    <div class="wrapper_columns">
+        <div class="wrapper_column">
+            <div class="pagetitle_container">
+                <h1>AppActivityList</h1>
+                
+            </div>
+
+            <h2 id="AppActivityList" class="spec"><img src="/assets/icons/spec-class.svg" alt="">class AppActivityList</h2>
+
+
+
+<p><code>extends </code><a href="/docs/ref/Component"><code>Component</code></a></p>
+<p>Component that encapsulates a list of child activities; emits change events when the list changes (propagated from <a href="/docs/ref/ManagedList"><code>ManagedList</code></a>) and when one of the activities becomes active or inactive.</p>
+<p><strong>Note:</strong> This class is used internally to represent ‘preset’ activities of an <a href="/docs/ref/Application"><code>Application</code></a> constructor. An instance of this class is available as <a href="/docs/ref/Application#Application:activities"><code>Application.activities</code></a>.</p>
+<h3>Constructor</h3>
+
+
+<p><code>(): AppActivityList</code></p>
+<h2 id="AppActivityList:count" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.count</h2>
+
+
+
+<p><code>number</code></p>
+<p>The number of activities currently in the list.</p>
+<h2 id="AppActivityList:add" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.add()</h2>
+
+
+
+<p><code>(...activities: </code><a href="/docs/ref/AppActivity"><code>AppActivity</code></a><code>[]): this</code></p>
+<p>Add one or more child activities to the list.</p>
+<h2 id="AppActivityList:remove" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.remove()</h2>
+
+
+
+<p><code>(activity: </code><a href="/docs/ref/AppActivity"><code>AppActivity</code></a><code>): this</code></p>
+<p>Remove given activity from the list. Does not throw an error if the activity was not included in the list.</p>
+<h2 id="AppActivityList:clear" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.clear()</h2>
+
+
+
+<p><code>(): this</code></p>
+<p>Clear the list by removing all activities in one go.</p>
+<h2 id="AppActivityList:get" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.get()</h2>
+
+
+
+<p><code>(index: number): </code><a href="/docs/ref/AppActivity"><code>AppActivity</code></a></p>
+<p>Returns the activity at given position in the list.</p>
+<h2 id="AppActivityList:includes" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.includes()</h2>
+
+
+
+<p><code>(activity: </code><a href="/docs/ref/AppActivity"><code>AppActivity</code></a><code>): boolean</code></p>
+<p>Returns true if the list includes given activity.</p>
+<h2 id="AppActivityList:forEach" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.forEach()</h2>
+
+
+
+<p><code>(callback: (target: </code><a href="/docs/ref/AppActivity"><code>AppActivity</code></a><code>) =&gt; void): void</code></p>
+<ul>
+<li><code>callback</code> —  the function to be called, with a single activity as the only argument.</li>
+</ul>
+<p>Iterates over the activities in this list and invokes given callback for each activity.</p>
+<h2 id="AppActivityList:map" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.map()</h2>
+
+
+
+<p><code>&lt;TResult&gt;(callback: (target: </code><a href="/docs/ref/AppActivity"><code>AppActivity</code></a><code>) =&gt; TResult): TResult[]</code></p>
+<ul>
+<li><code>callback</code> —  the function to be called, with a single activity as the only argument.</li>
+</ul>
+<p>Iterates over the activities in this list and invokes given callback for each activity, then returns an array with all callback return values.</p>
+<p><strong>Note:</strong> The behavior of this method is undefined if the activity list is changed while running.</p>
+<h2 id="AppActivityList:toArray" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.toArray()</h2>
+
+
+
+<p><code>(): </code><a href="/docs/ref/AppActivity"><code>AppActivity</code></a><code>[]</code></p>
+<p>Returns an array with all activities currently in this list.</p>
+<h2 id="AppActivityList:delegateEvent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.delegateEvent()</h2>
+
+
+
+<p><code>(e: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>): void</code></p>
+<p>Re-emits given event on this component; called for each event that is emitted by the encapsulated list (which also propagates events of type <a href="/docs/ref/ActionEvent"><code>ActionEvent</code></a> from all contained activities).</p>
+<h2 id="AppActivityList:isPresetComponent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.isPresetComponent() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): boolean</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:isPresetComponent"><code>Component.isPresetComponent</code></a>.</p>
+<h2 id="AppActivityList:getParentComponent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getParentComponent()</h2>
+
+
+
+<p><code>&lt;TParent extends Component = Component&gt;(ParentClass?: </code><a href="/docs/ref/ComponentConstructor"><code>ComponentConstructor</code></a><code>&lt;TParent&gt;): TParent</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:getParentComponent"><code>Component.getParentComponent</code></a>.</p>
+<h2 id="AppActivityList:getBoundParentComponent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getBoundParentComponent()</h2>
+
+
+
+<p><code>&lt;TParent extends Component&gt;(ParentClass?: </code><a href="/docs/ref/ComponentConstructor"><code>ComponentConstructor</code></a><code>&lt;TParent&gt;): TParent</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:getBoundParentComponent"><code>Component.getBoundParentComponent</code></a>.</p>
+<h2 id="AppActivityList:emitAction" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.emitAction()</h2>
+
+
+
+<p><code>(name: string, inner?: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>, context?: </code><a href="/docs/ref/ManagedObject"><code>ManagedObject</code></a><code>): void</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:emitAction"><code>Component.emitAction</code></a>.</p>
+<h2 id="AppActivityList:propagateComponentEvent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.propagateComponentEvent() <span class="spec_tag spec_tag--deprecated">deprecated</span></h2>
+
+
+
+<p><code>(name: string, inner?: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>): void</code></p>
+<p>Inherited from <a href="/docs/ref/Component#Component:propagateComponentEvent"><code>Component.propagateComponentEvent</code></a>.</p>
+<h2 id="AppActivityList:managedId" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.managedId</h2>
+
+
+
+<p><code>number</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:managedId"><code>ManagedObject.managedId</code></a>.</p>
+<h2 id="AppActivityList:managedState" class="spec"><img src="/assets/icons/spec-property.svg" alt="">.managedState</h2>
+
+
+
+<p><a href="/docs/ref/ManagedState"><code>ManagedState</code></a></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:managedState"><code>ManagedObject.managedState</code></a>.</p>
+<h2 id="AppActivityList:getReferenceCount" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getReferenceCount() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): number</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:getReferenceCount"><code>ManagedObject.getReferenceCount</code></a>.</p>
+<h2 id="AppActivityList:getManagedReferrers" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getManagedReferrers() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): </code><a href="/docs/ref/ManagedObject"><code>ManagedObject</code></a><code>[]</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:getManagedReferrers"><code>ManagedObject.getManagedReferrers</code></a>.</p>
+<h2 id="AppActivityList:getManagedParent" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.getManagedParent() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>&lt;TParent extends ManagedObject = ManagedObject&gt;(ParentClass?: </code><a href="/docs/ref/ManagedObjectConstructor"><code>ManagedObjectConstructor</code></a><code>&lt;TParent&gt;): TParent</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:getManagedParent"><code>ManagedObject.getManagedParent</code></a>.</p>
+<h2 id="AppActivityList:emit" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.emit()</h2>
+
+
+
+<p><code>&lt;TEvent extends ManagedEvent = ManagedEvent, TConstructorArgs extends any[] = any[]&gt;(e: string | TEvent | (new (...args: TConstructorArgs) =&gt; TEvent), ...constructorArgs: TConstructorArgs): this</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:emit"><code>ManagedObject.emit</code></a>.</p>
+<h2 id="AppActivityList:emitChange" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.emitChange()</h2>
+
+
+
+<p><code>(name?: string): void</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:emitChange"><code>ManagedObject.emitChange</code></a>.</p>
+<h2 id="AppActivityList:propagateChildEvents" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.propagateChildEvents() <span class="spec_tag">protected</span> <span class="spec_tag spec_tag--deprecated">deprecated</span></h2>
+
+
+
+<p><code>(...types: ((new (...args: any[]) =&gt; </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>) | ((e: </code><a href="/docs/ref/ManagedEvent"><code>ManagedEvent</code></a><code>) =&gt; any))[]): this</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:propagateChildEvents"><code>ManagedObject.propagateChildEvents</code></a>.</p>
+<h2 id="AppActivityList:activateManagedAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.activateManagedAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;any&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:activateManagedAsync"><code>ManagedObject.activateManagedAsync</code></a>.</p>
+<h2 id="AppActivityList:deactivateManagedAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.deactivateManagedAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:deactivateManagedAsync"><code>ManagedObject.deactivateManagedAsync</code></a>.</p>
+<h2 id="AppActivityList:destroyManagedAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.destroyManagedAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:destroyManagedAsync"><code>ManagedObject.destroyManagedAsync</code></a>.</p>
+<h2 id="AppActivityList:onManagedStateActivatingAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateActivatingAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateActivatingAsync"><code>ManagedObject.onManagedStateActivatingAsync</code></a>.</p>
+<h2 id="AppActivityList:onManagedStateActiveAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateActiveAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateActiveAsync"><code>ManagedObject.onManagedStateActiveAsync</code></a>.</p>
+<h2 id="AppActivityList:onManagedStateDeactivatingAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateDeactivatingAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateDeactivatingAsync"><code>ManagedObject.onManagedStateDeactivatingAsync</code></a>.</p>
+<h2 id="AppActivityList:onManagedStateInactiveAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateInactiveAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateInactiveAsync"><code>ManagedObject.onManagedStateInactiveAsync</code></a>.</p>
+<h2 id="AppActivityList:onManagedStateDestroyingAsync" class="spec"><img src="/assets/icons/spec-method.svg" alt="">.onManagedStateDestroyingAsync() <span class="spec_tag">protected</span></h2>
+
+
+
+<p><code>(): Promise&lt;void&gt;</code></p>
+<p>Inherited from <a href="/docs/ref/ManagedObject#ManagedObject:onManagedStateDestroyingAsync"><code>ManagedObject.onManagedStateDestroyingAsync</code></a>.</p>
+
+        </div>
+
+        <div class="wrapper_column wrapper_column--sidebar wrapper_column--nav">
+            <div class="fixed_cell">
+                <div class="fixed_cell_inner">
+                    <nav id="toc" class="sidebar_nav">
+                        <h4 id="declarations">Declarations</h4>
+<ul>
+<li><a href="#AppActivityList"><strong>class AppActivityList</strong></a></li>
+<li><a href="#AppActivityList:count">.count</a></li>
+<li><a href="#AppActivityList:add">.add()</a></li>
+<li><a href="#AppActivityList:remove">.remove()</a></li>
+<li><a href="#AppActivityList:clear">.clear()</a></li>
+<li><a href="#AppActivityList:get">.get()</a></li>
+<li><a href="#AppActivityList:includes">.includes()</a></li>
+<li><a href="#AppActivityList:forEach">.forEach()</a></li>
+<li><a href="#AppActivityList:map">.map()</a></li>
+<li><a href="#AppActivityList:toArray">.toArray()</a></li>
+<li><a href="#AppActivityList:delegateEvent">.delegateEvent()</a></li>
+</ul>
+<h4 id="inherited">Inherited</h4>
+<ul>
+<li><a href="#AppActivityList:isPresetComponent">.isPresetComponent()</a></li>
+<li><a href="#AppActivityList:getParentComponent">.getParentComponent()</a></li>
+<li><a href="#AppActivityList:getBoundParentComponent">.getBoundParentComponent()</a></li>
+<li><a href="#AppActivityList:emitAction">.emitAction()</a></li>
+<li><a href="#AppActivityList:propagateComponentEvent">.propagateComponentEvent()</a></li>
+<li><a href="#AppActivityList:managedId">.managedId</a></li>
+<li><a href="#AppActivityList:managedState">.managedState</a></li>
+<li><a href="#AppActivityList:getReferenceCount">.getReferenceCount()</a></li>
+<li><a href="#AppActivityList:getManagedReferrers">.getManagedReferrers()</a></li>
+<li><a href="#AppActivityList:getManagedParent">.getManagedParent()</a></li>
+<li><a href="#AppActivityList:emit">.emit()</a></li>
+<li><a href="#AppActivityList:emitChange">.emitChange()</a></li>
+<li><a href="#AppActivityList:propagateChildEvents">.propagateChildEvents()</a></li>
+<li><a href="#AppActivityList:activateManagedAsync">.activateManagedAsync()</a></li>
+<li><a href="#AppActivityList:deactivateManagedAsync">.deactivateManagedAsync()</a></li>
+<li><a href="#AppActivityList:destroyManagedAsync">.destroyManagedAsync()</a></li>
+<li><a href="#AppActivityList:onManagedStateActivatingAsync">.onManagedStateActivatingAsync()</a></li>
+<li><a href="#AppActivityList:onManagedStateActiveAsync">.onManagedStateActiveAsync()</a></li>
+<li><a href="#AppActivityList:onManagedStateDeactivatingAsync">.onManagedStateDeactivatingAsync()</a></li>
+<li><a href="#AppActivityList:onManagedStateInactiveAsync">.onManagedStateInactiveAsync()</a></li>
+<li><a href="#AppActivityList:onManagedStateDestroyingAsync">.onManagedStateDestroyingAsync()</a></li>
+</ul>
+
+                    </nav>
+                </div>
+                <div class="fixed_cell_backtotop">
+                    <a href="#" onclick="backToTop()">↑ Back to top</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<link rel="prefetch" href="/docs/" as="fetch" />
+<script>
+    (function(){document.querySelectorAll(".sidebar_nav ul+h4").forEach(function(it){it.className="closed"})})()
+</script>
+
+
+    <footer class="footer">
+        <section class="wrapper">
+            <div class="wrapper_columns">
+                <div class="wrapper_column">
+                    © Copyright 2021 Typescene contributors
+                </div>
+                <div class="wrapper_column wrapper_column--oppose style--light">
+                    Find Typescene on
+    <a href="https://twitter.com/typescene" target="_blank" rel="noopener">Twitter</a> and
+    <a href="https://github.com/typescene" target="_blank" rel="noopener">Github</a>
+                </div>
+            </div>
+        </section>
+    </footer>
+
+    <script src="/assets/default.js"></script>
+    <script src="/assets/docwidget.js"></script>
+</body>
+</html>
