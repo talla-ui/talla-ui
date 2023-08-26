@@ -1,0 +1,29 @@
+name: www-build
+on:
+  push:
+    branches:
+      - www
+jobs:
+  deploy:
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+      - run: npm install
+      - run: npm run build
+      - run: npm run www
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: "_site"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
