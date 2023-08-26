@@ -1,83 +1,68 @@
-import { Binding } from "../../core";
-import { UIComponent, UIComponentEventHandler } from "../UIComponent";
-import { UIStyle } from "../UIStyle";
+import { UIStyle } from "../UIStyle.js";
+import { UIComponent } from "../UIComponent.js";
 
-/** Represents an interactive UI control component (abstract) */
+/** Empty array, used for findViewContent */
+const _emptyArray: any[] = Object.freeze([]) as any;
+
+/**
+ * A base view class that represents a UI control
+ *
+ * @online_docs Refer to the Desk website for more documentation on using this UI component class.
+ */
 export abstract class UIControl extends UIComponent {
-  static preset(presets: UIControl.Presets): Function {
-    let decoration = presets.decoration;
-    let textStyle = presets.textStyle;
-    delete presets.decoration;
-    delete presets.textStyle;
-    let origDecoration: Readonly<UIStyle.Decoration>;
-    let origTextStyle: Readonly<UIStyle.TextStyle>;
-    if (Binding.isBinding(decoration)) {
-      (this as any).presetBinding(
-        "decoration",
-        decoration,
-        function (this: UIControl, v: any) {
-          this.decoration = v ? { ...origDecoration!, ...v } : origDecoration;
-        }
-      );
-      decoration = undefined;
-    }
-    if (Binding.isBinding(textStyle)) {
-      (this as any).presetBinding(
-        "textStyle",
-        textStyle,
-        function (this: UIControl, v: any) {
-          this.textStyle = v ? { ...origTextStyle!, ...v } : origTextStyle;
-        }
-      );
-      textStyle = undefined;
-    }
-    let f = super.preset(presets);
-    return function (this: UIControl) {
-      f.call(this);
-      if (decoration) this.decoration = { ...this.decoration, ...decoration };
-      else origDecoration = this.decoration;
-      if (textStyle) this.textStyle = { ...this.textStyle, ...textStyle };
-      else origTextStyle = this.textStyle;
-    };
-  }
+	/**
+	 * Applies the provided preset properties to this object
+	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 */
+	override applyViewPreset(
+		preset: UIComponent.ViewPreset<
+			UIComponent,
+			this,
+			"disabled" | "shrinkwrap"
+		> & {
+			/** Text style options (overrides) */
+			textStyle?: UIStyle.Definition.TextStyle;
+			/** Options for the appearance of this control (overrides) */
+			decoration?: UIStyle.Definition.Decoration;
+		}
+	) {
+		let textStyle = preset.textStyle;
+		delete preset.textStyle;
+		let decoration = preset.decoration;
+		delete preset.decoration;
 
-  protected applyStyle(style?: UIStyle) {
-    if (!style) return;
-    super.applyStyle(style);
-    this.decoration = style.getStyles().decoration;
-    this.textStyle = style.getStyles().textStyle;
-  }
+		super.applyViewPreset(preset);
 
-  /** Text style options */
-  textStyle!: Readonly<UIStyle.TextStyle>;
+		// apply style overrides
+		if (textStyle) this.textStyle = { ...this.textStyle, ...textStyle };
+		if (decoration) this.decoration = { ...this.decoration, ...decoration };
+	}
 
-  /** Options for the appearance of this control */
-  decoration!: Readonly<UIStyle.Decoration>;
+	protected override applyStyle(style: UIStyle) {
+		super.applyStyle(style);
+		this.decoration = style.getStyles().decoration;
+		this.textStyle = style.getStyles().textStyle;
+	}
 
-  /** Set to true to disable this control */
-  disabled?: boolean;
+	/** Style definitions related to the appearance of text */
+	textStyle!: Readonly<UIStyle.Definition.TextStyle>;
 
-  /** Set to true to shrink this element to use as little space as possible within its container, set to false to expand; defaults to true but may be overridden by individual components, e.g. `UIExpandedLabel`. Overrides `grow` property of `UIComponent.dimensions`, unless set to `"auto"`. */
-  shrinkwrap: boolean | "auto" = true;
-}
+	/** Style definitions related to the appearance of this control */
+	decoration!: Readonly<UIStyle.Definition.Decoration>;
 
-export namespace UIControl {
-  /** UIControl presets type, for use with `Component.with` */
-  export interface Presets extends UIComponent.Presets {
-    /** Text style options (overrides) */
-    textStyle?: Partial<UIStyle.TextStyle | {}>;
-    /** Options for the appearance of this control (overrides) */
-    decoration?: Partial<UIStyle.Decoration | {}>;
-    /** Disable this control */
-    disabled?: boolean;
-    /** Shrink or grow this control */
-    shrinkwrap?: boolean | "auto";
+	/** True if user input should be disabled on this control */
+	disabled = false;
 
-    // control element event handlers
-    onChange?: UIComponentEventHandler<UIControl>;
-    onInput?: UIComponentEventHandler<UIControl>;
-    onCopy?: UIComponentEventHandler<UIControl>;
-    onCut?: UIComponentEventHandler<UIControl>;
-    onPaste?: UIComponentEventHandler<UIControl>;
-  }
+	/**
+	 * True if this control should be shrunk along the primary axis of the container to occupy as little space as possible
+	 * - Set this property to false to expand the control along the primary axis of the container.
+	 * - Set this property to `"auto"` to respect the `grow` property of {@link UIComponent.dimensions}.
+	 * - This property defaults to true on {@link UIControl} but may be overridden by individual controls.
+	 */
+	shrinkwrap: boolean | "auto" = true;
+
+	/** Implementation of {@link View.findViewContent()} that always returns an empty array */
+	override findViewContent() {
+		return _emptyArray;
+	}
 }

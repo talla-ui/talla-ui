@@ -1,137 +1,124 @@
-import { ComponentConstructor } from "../core";
+import { Binding } from "../core/index.js";
 import {
-  UIBorderlessButton,
-  UIBorderlessTextField,
-  UIButton,
-  UICell,
-  UICenterRow,
-  UICloseColumn,
-  UICloseLabel,
-  UICloseRow,
-  UIColumn,
-  UIConditional,
-  UICoverCell,
-  UIExpandedLabel,
-  UIFlowCell,
-  UIForm,
-  UIFormContextController,
-  UIHeading1,
-  UIHeading2,
-  UIHeading3,
-  UIIconButton,
-  UIImage,
-  UILabel,
-  UILargeButton,
-  UILinkButton,
-  UIListCellAdapter,
-  UIListController,
-  UIMenu,
-  UIModalController,
-  UIOppositeRow,
-  UIOutlineButton,
-  UIParagraph,
-  UIPrimaryButton,
-  UIRow,
-  UIScrollContainer,
-  UISelectionController,
-  UISeparator,
-  UISmallButton,
-  UISpacer,
-  UIStyleController,
-  UITextField,
-  UIToggle,
-  UIViewRenderer,
-} from "../ui/";
+	UIAnimatedCell,
+	UIAnimationController,
+	UIBorderlessButton,
+	UIBorderlessTextField,
+	UIButton,
+	UICell,
+	UICenterRow,
+	UICloseLabel,
+	UIColumn,
+	UIComponent,
+	UIConditional,
+	UIExpandedLabel,
+	UIForm,
+	UIFormController,
+	UIHeading1,
+	UIHeading2,
+	UIHeading3,
+	UIIconButton,
+	UIImage,
+	UILabel,
+	UILinkButton,
+	UIList,
+	UIOppositeRow,
+	UIOutlineButton,
+	UIParagraph,
+	UIPrimaryButton,
+	UIRow,
+	UIScrollContainer,
+	UISelectionController,
+	UISeparator,
+	UISpacer,
+	UIStyleController,
+	UITextField,
+	UIToggle,
+	UIViewRenderer,
+} from "../ui/index.js";
 
 // add all intrinsics to an object so that JSX(...) can find the correct classes
+/** @internal NOTE: documentation maintained on JSX function */
 export const tags = {
-  cell: UICell,
-  covercell: UICoverCell,
-  flowcell: UIFlowCell,
-  form: UIForm,
-  row: UIRow,
-  closerow: UICloseRow,
-  centerrow: UICenterRow,
-  oppositerow: UIOppositeRow,
-  column: UIColumn,
-  closecolumn: UICloseColumn,
-  scrollcontainer: UIScrollContainer,
-  button: UIButton,
-  iconbutton: UIIconButton,
-  largebutton: UILargeButton,
-  smallbutton: UISmallButton,
-  linkbutton: UILinkButton,
-  outlinebutton: UIOutlineButton,
-  borderlessbutton: UIBorderlessButton,
-  primarybutton: UIPrimaryButton,
-  label: UILabel,
-  closelabel: UICloseLabel,
-  expandedlabel: UIExpandedLabel,
-  p: UIParagraph,
-  h1: UIHeading1,
-  h2: UIHeading2,
-  h3: UIHeading3,
-  textfield: UITextField,
-  borderlesstextfield: UIBorderlessTextField,
-  img: UIImage,
-  toggle: UIToggle,
-  separator: UISeparator,
-  spacer: UISpacer,
-  conditional: UIConditional,
-  formcontext: UIFormContextController,
-  list: UIListController,
-  listcell: UIListCellAdapter,
-  menu: UIMenu,
-  modal: UIModalController,
-  selection: UISelectionController,
-  style: UIStyleController,
-  view: UIViewRenderer,
-  viewcontent: UIViewRenderer.withBoundContent(),
+	cell: UICell,
+	form: UIForm,
+	row: UIRow,
+	centerrow: UICenterRow,
+	oppositerow: UIOppositeRow,
+	column: UIColumn,
+	scrollcontainer: UIScrollContainer,
+	animatedcell: UIAnimatedCell,
+	button: UIButton,
+	iconbutton: UIIconButton,
+	linkbutton: UILinkButton,
+	outlinebutton: UIOutlineButton,
+	borderlessbutton: UIBorderlessButton,
+	primarybutton: UIPrimaryButton,
+	label: UILabel,
+	closelabel: UICloseLabel,
+	expandedlabel: UIExpandedLabel,
+	p: UIParagraph,
+	h1: UIHeading1,
+	h2: UIHeading2,
+	h3: UIHeading3,
+	textfield: UITextField,
+	borderlesstextfield: UIBorderlessTextField,
+	img: UIImage,
+	toggle: UIToggle,
+	separator: UISeparator,
+	spacer: UISpacer,
+	conditional: UIConditional,
+	formcontext: UIFormController,
+	list: UIList,
+	selection: UISelectionController,
+	style: UIStyleController,
+	animation: UIAnimationController,
+	view: UIViewRenderer,
 };
 
-export interface Elements {
-  cell: ComponentConstructor.PresetArgType<typeof UICell>;
-  covercell: ComponentConstructor.PresetArgType<typeof UICoverCell>;
-  flowcell: ComponentConstructor.PresetArgType<typeof UIFlowCell>;
-  form: ComponentConstructor.PresetArgType<typeof UIForm>;
-  row: ComponentConstructor.PresetArgType<typeof UIRow>;
-  closerow: ComponentConstructor.PresetArgType<typeof UICloseRow>;
-  centerrow: ComponentConstructor.PresetArgType<typeof UICenterRow>;
-  oppositerow: ComponentConstructor.PresetArgType<typeof UIOppositeRow>;
-  column: ComponentConstructor.PresetArgType<typeof UIColumn>;
-  closecolumn: ComponentConstructor.PresetArgType<typeof UICloseColumn>;
-  scrollcontainer: ComponentConstructor.PresetArgType<typeof UIScrollContainer>;
-  button: ComponentConstructor.PresetArgType<typeof UIButton>;
-  iconbutton: ComponentConstructor.PresetArgType<typeof UIIconButton>;
-  largebutton: ComponentConstructor.PresetArgType<typeof UILargeButton>;
-  smallbutton: ComponentConstructor.PresetArgType<typeof UISmallButton>;
-  linkbutton: ComponentConstructor.PresetArgType<typeof UILinkButton>;
-  outlinebutton: ComponentConstructor.PresetArgType<typeof UIOutlineButton>;
-  borderlessbutton: ComponentConstructor.PresetArgType<typeof UIBorderlessButton>;
-  primarybutton: ComponentConstructor.PresetArgType<typeof UIPrimaryButton>;
-  label: ComponentConstructor.PresetArgType<typeof UILabel>;
-  closelabel: ComponentConstructor.PresetArgType<typeof UICloseLabel>;
-  expandedlabel: ComponentConstructor.PresetArgType<typeof UIExpandedLabel>;
-  p: ComponentConstructor.PresetArgType<typeof UIParagraph>;
-  h1: ComponentConstructor.PresetArgType<typeof UIHeading1>;
-  h2: ComponentConstructor.PresetArgType<typeof UIHeading2>;
-  h3: ComponentConstructor.PresetArgType<typeof UIHeading3>;
-  textfield: ComponentConstructor.PresetArgType<typeof UITextField>;
-  borderlesstextfield: ComponentConstructor.PresetArgType<typeof UIBorderlessTextField>;
-  img: ComponentConstructor.PresetArgType<typeof UIImage>;
-  toggle: ComponentConstructor.PresetArgType<typeof UIToggle>;
-  separator: ComponentConstructor.PresetArgType<typeof UISeparator>;
-  spacer: ComponentConstructor.PresetArgType<typeof UISpacer>;
-  conditional: ComponentConstructor.PresetArgType<typeof UIConditional>;
-  formcontext: ComponentConstructor.PresetArgType<typeof UIFormContextController>;
-  list: ComponentConstructor.PresetArgType<typeof UIListController>;
-  listcell: ComponentConstructor.PresetArgType<typeof UIListCellAdapter>;
-  menu: ComponentConstructor.PresetArgType<typeof UIMenu>;
-  modal: ComponentConstructor.PresetArgType<typeof UIModalController>;
-  selection: ComponentConstructor.PresetArgType<typeof UISelectionController>;
-  style: ComponentConstructor.PresetArgType<typeof UIStyleController>;
-  /** Renderable component that encapsulates a referenced view, see `UIViewRenderer` */
-  view: ComponentConstructor.PresetArgType<typeof UIViewRenderer>;
-  /** UIViewRenderer that displays a view bound to the `content` property; for use within view components */
-  viewcontent: ComponentConstructor.PresetArgType<typeof UIViewRenderer>;
+export namespace JSX {
+	export namespace JSX {
+		/** An interface defining all JSX intrinsic elements, refer to JSX function for details */
+		export interface IntrinsicElements {
+			// containers
+			cell: UIComponent.ViewPreset<UICell>;
+			form: UIComponent.ViewPreset<UIForm>;
+			row: UIComponent.ViewPreset<UIRow>;
+			centerrow: UIComponent.ViewPreset<UICenterRow>;
+			oppositerow: UIComponent.ViewPreset<UIOppositeRow>;
+			column: UIComponent.ViewPreset<UIColumn>;
+			scrollcontainer: UIComponent.ViewPreset<UIScrollContainer>;
+			animatedcell: UIComponent.ViewPreset<UIAnimatedCell>;
+
+			// controls
+			button: UIComponent.ViewPreset<UIButton>;
+			iconbutton: UIComponent.ViewPreset<UIIconButton>;
+			linkbutton: UIComponent.ViewPreset<UILinkButton>;
+			outlinebutton: UIComponent.ViewPreset<UIOutlineButton>;
+			borderlessbutton: UIComponent.ViewPreset<UIBorderlessButton>;
+			primarybutton: UIComponent.ViewPreset<UIPrimaryButton>;
+			label: UIComponent.ViewPreset<UILabel>;
+			closelabel: UIComponent.ViewPreset<UICloseLabel>;
+			expandedlabel: UIComponent.ViewPreset<UIExpandedLabel>;
+			p: UIComponent.ViewPreset<UIParagraph>;
+			h1: UIComponent.ViewPreset<UIHeading1>;
+			h2: UIComponent.ViewPreset<UIHeading2>;
+			h3: UIComponent.ViewPreset<UIHeading3>;
+			textfield: UIComponent.ViewPreset<UITextField>;
+			borderlesstextfield: UIComponent.ViewPreset<UIBorderlessTextField>;
+			img: UIComponent.ViewPreset<UIImage>;
+			toggle: UIComponent.ViewPreset<UIToggle>;
+			separator: UIComponent.ViewPreset<UISeparator>;
+			spacer: UIComponent.ViewPreset<UISpacer>;
+
+			// composites
+			conditional: Parameters<(typeof UIConditional)["with"]>[0];
+			formcontext: { formContext?: Binding };
+			list: Parameters<(typeof UIList)["with"]>[0];
+			selection: {};
+			style: Parameters<(typeof UIStyleController)["with"]>[0];
+			animation: Parameters<(typeof UIAnimationController)["with"]>[0];
+			view: Parameters<(typeof UIViewRenderer)["with"]>[0];
+		}
+	}
 }

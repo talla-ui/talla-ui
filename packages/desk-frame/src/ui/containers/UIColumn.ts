@@ -1,42 +1,34 @@
-import { UIRenderable, UIRenderableConstructor } from "../UIComponent";
-import { UITheme } from "../UITheme";
-import { UIContainer } from "./UIContainer";
+import { View } from "../../app/index.js";
+import { UIComponent } from "../UIComponent.js";
+import { UIStyle } from "../UIStyle.js";
+import { UIContainer } from "./UIContainer.js";
 
-/** Represents a UI component that contains other components, in a vertical arrangement */
+/**
+ * A view class that represents a column container component
+ *
+ * @description A column container lays out its contained components vertically.
+ *
+ * **JSX tag:** `<column>`
+ *
+ * @online_docs Refer to the Desk website for more documentation on using this UI component class.
+ */
 export class UIColumn extends UIContainer {
-  static preset(
-    presets: UIColumn.Presets,
-    ...components: Array<UIRenderableConstructor | undefined>
-  ): Function {
-    return super.preset(presets, ...components);
-  }
+	/** Creates a new column container view object with the provided view content */
+	constructor(...content: View[]) {
+		super(...content);
+		this.style = UIStyle.Column;
+	}
 
-  constructor(...content: UIRenderable[]) {
-    super(...content);
-    this.style = UITheme.getStyle("container", "column");
-  }
+	/**
+	 * Applies the provided preset properties to this object
+	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 */
+	override applyViewPreset(
+		preset: UIComponent.ViewPreset<UIContainer, this, "width">
+	) {
+		super.applyViewPreset(preset);
+	}
 
-  /** Returns true if spacing between components should be non-zero (used by renderer) */
-  hasComponentSpacing() {
-    return !!this.spacing;
-  }
-
-  /** Space between components along vertical axis (in dp or string with unit, defaults to value from `UITheme`) */
-  spacing?: string | number = UITheme.current.spacing;
-
-  /** Column width (in dp or string with unit) */
-  width?: string | number;
-}
-
-/** Shortcut for `UIColumn` constructor with spacing preset to zero */
-export let UICloseColumn = UIColumn.with({ spacing: 0 });
-
-export namespace UIColumn {
-  /** UIColumn presets type, for use with `Component.with` */
-  export interface Presets extends UIContainer.Presets {
-    /** Space between components along vertical axis (in dp or string with unit, defaults to value from `UITheme`) */
-    spacing?: string | number;
-    /** Column width (in dp or string with unit) */
-    width?: string | number;
-  }
+	/** Column width, in pixels or CSS length with unit */
+	width?: string | number;
 }

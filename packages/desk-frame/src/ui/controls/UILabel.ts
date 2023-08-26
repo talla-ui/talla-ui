@@ -1,124 +1,211 @@
-import { Binding, strf } from "../../core";
-import { Stringable } from "../UIComponent";
-import { UIStyle } from "../UIStyle";
-import { UITheme, UIColor } from "../UITheme";
-import { UIControl } from "./UIControl";
+import { Binding, strf, StringConvertible } from "../../core/index.js";
+import type { UIColor } from "../UIColor.js";
+import { UIComponent } from "../UIComponent.js";
+import { UIIcon } from "../UIIcon.js";
+import { UIStyle } from "../UIStyle.js";
+import { UIControl } from "./UIControl.js";
 
-/** Represents a UI component that contains a piece of text */
+/**
+ * A view class that represents a label control
+ *
+ * @description A label component is rendered on-screen as a stand-alone piece of text.
+ *
+ * **JSX tag:** `<label>`
+ *
+ * @online_docs Refer to the Desk website for more documentation on using this UI component class.
+ */
 export class UILabel extends UIControl {
-  /** Create a preset label class with given text (localized using `strf`) and style override, if any */
-  static withText(
-    text: Stringable | Binding,
-    style?: UIStyle.TextStyle | UIStyle | string
-  ) {
-    if (typeof text === "string") text = strf(text);
-    return style instanceof UIStyle || typeof style === "string"
-      ? this.with({ text, style })
-      : style
-      ? this.with({ text, textStyle: style })
-      : this.with({ text });
-  }
+	/**
+	 * Creates a preset label class with the specified text and style
+	 * - The specified text is localized using {@link strf} before being set as {@link UILabel.text}.
+	 * @param text The label text
+	 * @param style Style definitions to be applied, as an instance of {@link UIStyle} or the name of a dynamic theme style prefixed with the `@` character, **or** an object with {@link UIStyle.Definition.TextStyle} properties
+	 * @returns A class that can be used to create instances of this label class with the provided text and style
+	 */
+	static withText(
+		text?: StringConvertible | Binding,
+		style?: UIStyle.Definition.TextStyle | UIStyle | `@${string}`
+	) {
+		if (typeof text === "string") text = strf(text);
+		return style instanceof UIStyle || typeof style === "string"
+			? this.with({ text, style })
+			: style
+			? this.with({ text, textStyle: style })
+			: this.with({ text });
+	}
 
-  /** Create a preset label class with given icon *only* */
-  static withIcon(
-    icon: string | Binding,
-    size?: string | number,
-    color?: UIColor | string
-  ) {
-    return this.with({ icon, iconSize: size, iconColor: color });
-  }
+	/**
+	 * Creates a preset label class with the specified icon
+	 * @param icon The label icon
+	 * @param size The size of the icon, in pixels or CSS length with unit
+	 * @param color The icon foreground color
+	 * @returns A class that can be used to create instances of this label class with the specified icon
+	 */
+	static withIcon(
+		icon?: UIIcon | `@${string}` | Binding,
+		size?: string | number,
+		color?: UIColor | string
+	) {
+		return this.with({ icon, iconSize: size, iconColor: color });
+	}
 
-  static preset(presets: UILabel.Presets): Function {
-    if (presets.allowKeyboardFocus) presets.allowFocus = presets.allowKeyboardFocus;
-    return super.preset(presets);
-  }
+	/** Creates a new label view object with the specified text */
+	constructor(text?: StringConvertible) {
+		super();
+		this.style = UIStyle.Label;
+		if (text !== undefined) this.text = text;
+	}
 
-  /** Create a new label view component with given text */
-  constructor(text?: Stringable) {
-    super();
-    this.style = UITheme.getStyle("control", "label");
-    if (text !== undefined) this.text = text;
-  }
+	override applyViewPreset(
+		preset: UIComponent.ViewPreset<
+			UIControl,
+			this,
+			| "headingLevel"
+			| "htmlFormat"
+			| "text"
+			| "icon"
+			| "iconSize"
+			| "iconMargin"
+			| "iconColor"
+			| "iconAfter"
+		> & {
+			/** True if this label may receive input focus */
+			allowFocus?: boolean;
+			/** True if this label may receive input focus using the keyboard; implies `allowFocus` */
+			allowKeyboardFocus?: boolean;
+		}
+	) {
+		if (preset.allowKeyboardFocus) preset.allowFocus = true;
 
-  isFocusable() {
-    return !!(this.allowFocus || this.allowKeyboardFocus);
-  }
+		super.applyViewPreset(preset);
+	}
 
-  isKeyboardFocusable() {
-    return !!this.allowKeyboardFocus;
-  }
+	/** The label text to be displayed */
+	text?: StringConvertible;
 
-  /** True if this label may receive direct input focus using the mouse, touch, or using `UIComponent.requestFocus` (cannot be changed after rendering this component), defaults to false */
-  allowFocus?: boolean;
+	/** The label icon to be displayed */
+	icon?: UIIcon | `@${string}`;
 
-  /** True if this label may receive input focus using the keyboard and all other methods (cannot be changed after rendering this component), defaults to false */
-  allowKeyboardFocus?: boolean;
+	/** Icon size (in pixels or string with unit) */
+	iconSize?: string | number;
 
-  /** Heading level (1 = largest) */
-  headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
+	/** Margin between the icon and label text (in pixels or string with unit) */
+	iconMargin?: string | number;
 
-  /** True if text should be rendered as HTML instead of plain text */
-  htmlFormat = false;
+	/** Icon color (`UIColor` or string) */
+	iconColor?: UIColor | string;
 
-  /** Label text */
-  text?: Stringable;
+	/** True if the icon should appear _after_ the text instead of before */
+	iconAfter?: boolean;
 
-  /** Icon name (platform and build system dependent) */
-  icon?: string;
+	/**
+	 * Text heading level
+	 * - Heading level 1 refers to the most prominent heading, i.e. `<h1>` HTML element.
+	 * - This property can't be changed after rendering.
+	 */
+	headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
 
-  /** Icon size (in dp or string with unit) */
-  iconSize?: string | number;
+	/** True if text should be rendered as HTML instead of plain text */
+	htmlFormat?: boolean;
 
-  /** Margin between icon and label text (in dp or string with unit) */
-  iconMargin?: string | number;
+	/**
+	 * True if this label may receive input focus
+	 * - This property isn't observed, and can't be changed after rendering.
+	 */
+	allowFocus?: boolean;
 
-  /** Icon color (`UIColor` or string) */
-  iconColor?: UIColor | string;
-
-  /** Set to true to make the icon appear after the text instead of before */
-  iconAfter?: boolean;
+	/**
+	 * True if this label may receive input focus using the keyboard (e.g. Tab key)
+	 * - This property isn't observed, and can't be changed after rendering.
+	 * - If this property is set to true, allowFocus is assumed to be true as well and no longer checked.
+	 */
+	allowKeyboardFocus?: boolean;
 }
 
-/** Shortcut for `UILabel` constructor preset with the `heading1` style set, and `UILabel.headingLevel` set to 1 */
-export let UIHeading1 = UILabel.with({ headingLevel: 1, style: "heading1" });
+/**
+ * A view class that represents a label control with heading level 1
+ * - Refer to {@link UILabel} for information on label components.
+ * - This class uses the {@link UIStyle.Heading1} style, and sets {@link UILabel.headingLevel} to 1.
+ *
+ * **JSX tag:** `<h1>`
+ */
+export class UIHeading1 extends UILabel {
+	constructor(text?: StringConvertible) {
+		super(text);
+		this.style = UIStyle.Heading1;
+		this.headingLevel = 1;
+	}
+}
 
-/** Shortcut for `UILabel` constructor preset with the `heading2` style set, and `UILabel.headingLevel` set to 2 */
-export let UIHeading2 = UILabel.with({ headingLevel: 2, style: "heading2" });
+/**
+ * A view class that represents a label control with heading level 2
+ * - Refer to {@link UILabel} for information on label components.
+ * - This class uses the {@link UIStyle.Heading2} style, and sets {@link UILabel.headingLevel} to 2.
+ *
+ * **JSX tag:** `<h2>`
+ */
+export class UIHeading2 extends UILabel {
+	constructor(text?: StringConvertible) {
+		super(text);
+		this.style = UIStyle.Heading2;
+		this.headingLevel = 2;
+	}
+}
 
-/** Shortcut for `UILabel` constructor preset with the `heading3` style set, and `UILabel.headingLevel` set to 3 */
-export let UIHeading3 = UILabel.with({ headingLevel: 3, style: "heading3" });
+/**
+ * A view class that represents a label control with heading level 3
+ * - Refer to {@link UILabel} for information on label components.
+ * - This class uses the {@link UIStyle.Heading3} style, and sets {@link UILabel.headingLevel} to 3.
+ *
+ * **JSX tag:** `<h3>`
+ */
+export class UIHeading3 extends UILabel {
+	constructor(text?: StringConvertible) {
+		super(text);
+		this.style = UIStyle.Heading3;
+		this.headingLevel = 3;
+	}
+}
 
-/** Shortcut for `UILabel` constructor preset with the `paragraph` style set, which automatically wraps text across multiple lines */
-export let UIParagraph = UILabel.with({ style: "paragraph" });
+/**
+ * A view class that represents a paragraph label control
+ * - Refer to {@link UILabel} for information on label components.
+ * - This class uses the {@link UIStyle.Paragraph} style.
+ * - Text in paragraph labels is wrapped using the `pre-wrap` style.
+ *
+ * **JSX tag:** `<p>`
+ */
+export class UIParagraph extends UILabel {
+	constructor(text?: StringConvertible) {
+		super(text);
+		this.style = UIStyle.Paragraph;
+	}
+}
 
-/** Shortcut for `UILabel` constructor preset with the `label_close` style set, which removes any margin or padding */
-export let UICloseLabel = UILabel.with({ style: "label_close" });
+/**
+ * A view class that represents a label control with reduced vertical padding
+ * - Refer to {@link UILabel} for information on label components.
+ * - This class uses the {@link UIStyle.CloseLabel} style.
+ *
+ * **JSX tag:** `<closelabel>`
+ */
+export class UICloseLabel extends UILabel {
+	constructor(text?: StringConvertible) {
+		super(text);
+		this.style = UIStyle.CloseLabel;
+	}
+}
 
-/** Shortcut for `UILabel` constructor preset such that the label takes up as much space as possible */
-export let UIExpandedLabel = UILabel.with({ shrinkwrap: false });
-
-export namespace UILabel {
-  /** UILabel presets type, for use with `Component.with` */
-  export interface Presets extends UIControl.Presets {
-    /** Heading level (1-6, or undefined for no heading) */
-    headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
-    /** True if text should be rendered as HTML instead of plain text */
-    htmlFormat?: boolean;
-    /** Label text */
-    text?: Stringable;
-    /** Icon name (platform and build system dependent) */
-    icon?: string;
-    /** Icon size (in dp or string with unit) */
-    iconSize?: string | number;
-    /** Margin between icon and label text (in dp or string with unit) */
-    iconMargin?: string | number;
-    /** Icon color (`UIColor` or string) */
-    iconColor?: UIColor | string;
-    /** Set to true to make the icon appear after the text instead of before */
-    iconAfter?: boolean;
-    /** Set to true to allow this label to receive input focus using mouse, touch, or `UIComponent.requestFocus` */
-    allowFocus?: boolean;
-    /** Set to true to allow this label to receive input focus using the keyboard as well as other methods; implies `allowFocus` */
-    allowKeyboardFocus?: boolean;
-  }
+/**
+ * A view class that represents a label control that's expanded as much as possible
+ * - Refer to {@link UILabel} for information on label components.
+ * - The label is expanded along the primary axis of the containing component; see {@link UIControl.shrinkwrap}.
+ *
+ * **JSX tag:** `<expandedlabel>`
+ */
+export class UIExpandedLabel extends UILabel {
+	constructor(text?: StringConvertible) {
+		super(text);
+	}
+	override shrinkwrap = false;
 }

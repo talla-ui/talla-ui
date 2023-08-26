@@ -1,41 +1,47 @@
-import { UITheme, UIColor } from "../UITheme";
-import { UIControl } from "./UIControl";
+import { UIColor } from "../UIColor.js";
+import { UIComponent } from "../UIComponent.js";
+import { UIStyle } from "../UIStyle.js";
+import { UIControl } from "./UIControl.js";
 
-/** Control that shows a horizontal or vertical separator */
+/**
+ * A view class that represents a horizontal or vertical line separator
+ *
+ * @description A separator component is rendered on-screen as a single horizontal or vertical line.
+ *
+ * **JSX tag:** `<separator>`
+ *
+ * @online_docs Refer to the Desk website for more documentation on using this UI component class.
+ */
 export class UISeparator extends UIControl {
-  static preset(presets: UISeparator.Presets) {
-    return super.preset(presets);
-  }
+	/** Creates a new separator view object */
+	constructor() {
+		super();
+		this.style = UIStyle.Separator;
+	}
 
-  /** Create a new separator view component */
-  constructor() {
-    super();
-    this.style = UITheme.getStyle("control", "separator");
-  }
+	/**
+	 * Applies the provided preset properties to this object
+	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 */
+	override applyViewPreset(
+		preset: UIComponent.ViewPreset<
+			UIControl,
+			this,
+			"thickness" | "margin" | "color" | "vertical"
+		>
+	) {
+		super.applyViewPreset(preset);
+	}
 
-  /** Separator line thickness (in dp, or string with unit) */
-  thickness: string | number = 1;
+	/** Separator line thickness, in pixels or CSS length with unit */
+	thickness: string | number = 1;
 
-  /** Margin in the direction perpendicular to the separator (in dp, or string with unit) */
-  margin?: string | number;
+	/** Separator line color, defaults to the theme separator color */
+	color: UIColor | string = "@Separator";
 
-  /** Separator line color (`UIColor` or string), defaults to `@separator` */
-  color: UIColor | string = "@separator";
+	/** The amount of space to be added perpendicular to the separator, in pixels or CSS length with unit */
+	margin?: string | number;
 
-  /** True if separator should be vertical instead of horizontal */
-  vertical?: boolean;
-}
-
-export namespace UISeparator {
-  /** UISpacer presets type, for use with `Component.with` */
-  export interface Presets extends UIControl.Presets {
-    /** Separator line thickness (in dp, or string with unit) */
-    thickness: string | number;
-    /** Margin in the direction perpendicular to the separator (in dp, or string with unit), defaults to 0 */
-    margin: string | number;
-    /** Separator line color (`UIColor` or string), defaults to `@separator` */
-    color?: UIColor | string;
-    /** True if separator should be vertical instead of horizontal */
-    vertical?: boolean;
-  }
+	/** True if the separator should be drawn as a vertical line instead of a horizontal line */
+	vertical?: boolean;
 }

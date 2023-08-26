@@ -1,280 +1,376 @@
-import { err, ERROR } from "../errors";
+import { ManagedObject } from "./ManagedObject.js";
 import {
-  ManagedEvent,
-  ManagedObjectAddedEvent,
-  ManagedObjectRemovedEvent,
-} from "./ManagedEvent";
-import { ManagedObject, ManagedObjectConstructor } from "./ManagedObject";
-import { HIDDEN } from "./util";
-import * as util from "./util";
+	addTrap,
+	attachObject,
+	$_origin,
+	$_get,
+	unlinkObject,
+} from "./object_util.js";
+import { ManagedChangeEvent, ManagedEvent } from "./ManagedEvent.js";
+import { err, ERROR, invalidArgErr } from "../errors.js";
+import { Observer } from "./Observer.js";
 
-/** Represents an _unordered_ list of managed objects that are indexed using unique key strings */
-export class ManagedMap<T extends ManagedObject = ManagedObject> extends ManagedObject {
-  /** Create an empty map */
-  constructor() {
-    super();
-  }
+/** Symbol property that's used to store map */
+const $_map = Symbol("map");
 
-  /**
-   * Propagate events from all objects in this map by emitting the same events on the map object itself.
-   * If a function is specified, the function can be used to transform one event to one or more others, or stop propagation if the function returns undefined. The function is called with the event itself as its only argument.
-   * @note Calling this method a second time _replaces_ the current propagation rule/function.
-   */
-  propagateEvents(
-    f?: (this: this, e: ManagedEvent) => ManagedEvent | ManagedEvent[] | undefined | void
-  ): this;
-  /**
-   * Propagate events from all objects in this map by emitting the same events on the map object itself.
-   * If one or more event classes are specified, only events that extend given event types are propagated.
-   * @note Calling this method a second time _replaces_ the current propagation rule/function.
-   */
-  propagateEvents(
-    ...types: Array<ManagedEvent | { new (...args: any[]): ManagedEvent }>
-  ): this;
-  propagateEvents(...types: any[]) {
-    util.propagateEvents(this, false, ...types);
-    return this;
-  }
+/**
+ * A data structure that contains a key-value map of managed objects
+ *
+ * @description
+ * Similar to managed lists (see {@link ManagedList}), the ManagedMap data structure allows objects that inherit from {@link ManagedObject} to be grouped together in a way that's more restrictive than a plain object or even a `Map` object. A managed map is useful in the following cases:
+ *
+ * - The map should only contain instances of a certain type, or at least only ManagedObject instances.
+ * - The map shouldn't contain any undefined values.
+ * - The map should be observable: actions can be taken when items are added, removed, or reordered.
+ * - Events from (attached) map items should be 'propagated' on the map, to avoid having to add event listeners for all items — see {@link ManagedEvent}.
+ * - Objects in the map should be able to bind to the object containing the (attached) map — see {@link Binding}.
+ *
+ * Managed maps are used in many places throughout the framework, such as to contain named services (see {@link ServiceContext}). Managed maps can also be used by application code to efficiently represent key-value data models.
+ *
+ * **Attaching items to a map** — By default, objects aren't attached to the map, so they could be attached to other objects themselves and still be part of a managed map. However, you can enable auto-attaching of objects in a map using the {@link ManagedMap.autoAttach()} method — **or** by attaching the map itself to another object. This ensures that objects in a map are only attached to the map itself, and are unlinked when they're removed from the map (and removed from the map when they're no longer attached to it, e.g. when moved to another auto-attaching map or list).
+ *
+ * Maps may contain the same object twice, for different keys, _unless_ auto-attach is enabled, since objects can't be attached to the same map twice.
+ *
+ * **Events** — Since ManagedMap itself inherits from ManagedObject, a map can emit events, too. When any objects are added, moved, or removed, a {@link ManagedMap.ChangeEvent} is emitted. In addition, for auto-attaching maps (see {@link ManagedMap.autoAttach()}) any events that are emitted by an object are re-emitted on the map itself. The {@link ManagedEvent.source} property can be used to find the object that originally emitted the event.
+ *
+ * **Nested lists and maps** — Managed maps can contain (and even attach to) other managed maps and lists (see {@link ManagedList}), which allows for building nested or recursive data structures that fully support bindings and events.
+ *
+ * @example
+ * // Create a map, add and remove objects
+ * let map = new ManagedMap();
+ * let a = ManagedRecord.create({ foo: "a" });
+ * map.set("a", a);
+ * let b = ManagedRecord.create({ foo: "b" });
+ * map.set("b", b);
+ * map.count // => 2
+ *
+ * map.unset("a");
+ * map.remove(b);
+ * list.count // => 0
+ *
+ * // Maps can be iterated using for...of, too
+ * for (let [key, value] of map) {
+ *   // ...do something for each key-value pair
+ * }
+ */
+export class ManagedMap<
+	K extends any = string,
+	T extends ManagedObject = ManagedObject
+> extends ManagedObject {
+	/** Creates a new, empty managed map */
+	constructor() {
+		super();
 
-  /**
-   * Ensure that objects in this map are all instances of given class (or a sub class), and restrict newly mapped objects to instances of given class. Given class must be a sub class of `ManagedObject`.
-   * @exception Throws an error if any object is not an instance of given class, or of a sub class.
-   */
-  restrict<T extends ManagedObject>(classType: ManagedObjectConstructor<T>): ManagedMap<T> {
-    if (this.objects().some(o => !(o instanceof classType))) {
-      throw err(ERROR.Map_Type);
-    }
-    this._managedClassRestriction = classType;
-    return this as any;
-  }
-  private _managedClassRestriction?: ManagedObjectConstructor<any>;
+		// automatically attach objects once map itself is attached
+		addTrap(
+			this,
+			$_origin,
+			(t, p, v) => {
+				if (v && this._attach === undefined) this.autoAttach(true);
+			},
+			() => {
+				// ... and clear the map when unlinked
+				this.clear();
+			}
+		);
+	}
 
-  /** Returns the current object mapped to given key, if any */
-  get(key: string): T | undefined {
-    if (!this[HIDDEN.STATE_PROPERTY]) return undefined;
-    let ref = this[HIDDEN.REF_PROPERTY][HIDDEN.MANAGED_MAP_REF_PREFIX + String(key)];
-    return ref && ref.b;
-  }
+	/** The number of keys in the map */
+	get count() {
+		return this[$_map].size;
+	}
 
-  /** Returns true if any object is currently mapped to given key */
-  has(key: string) {
-    if (!this[HIDDEN.STATE_PROPERTY]) return false;
-    return !!this[HIDDEN.REF_PROPERTY][HIDDEN.MANAGED_MAP_REF_PREFIX + String(key)];
-  }
+	/** @internal Property getter for non-observable property bindings */
+	[$_get](propertyName: string) {
+		if (propertyName === "count") return this.count;
+		if (propertyName.startsWith("#"))
+			return this.get(propertyName.slice(1) as any);
+	}
 
-  /**
-   * Remove the mapping for given key.
-   * @note Does not throw an error if given key was not mapped to any object at all.
-   */
-  unset(key: string) {
-    // unlink existing reference, if any
-    let cur = this[HIDDEN.REF_PROPERTY][HIDDEN.MANAGED_MAP_REF_PREFIX + String(key)];
-    let target = cur && cur.b;
-    if (cur && ManagedObject._discardRefLink(cur)) {
-      if (this.managedState) {
-        this.emit(ManagedObjectRemovedEvent, this, target, key);
-      }
-    }
-    return this;
-  }
+	/**
+	 * Iterator symbol, enables managed maps to work with 'for...of' statements
+	 * @example
+	 * // Iterate over a ManagedMap instance
+	 * for (let [key, value] of map) {
+	 *   // ...do something for every key-value pair
+	 * }
+	 */
+	[Symbol.iterator]() {
+		return this[$_map][Symbol.iterator]();
+	}
 
-  /**
-   * Map given object (or managed list or map) to given key, removing the existing mapping between the same key and any other object, if any.
-   * Objects may be mapped to multiple keys at the same time, unless the `ManagedMap` instance itself is a child object of a managed object or list (see `@managedChild` decorator).
-   * @param key
-   *  The key to be mapped to given object
-   * @param target
-   *  The managed object (or list, or map) to be mapped to given key
-   * @exception Throws an error if the map itself has been destroyed (see `ManagedObject.managedState`).
-   */
-  set(key: string, target?: T) {
-    if (!this[HIDDEN.STATE_PROPERTY]) {
-      throw err(ERROR.Map_Destroyed);
-    }
-    let refs = this[HIDDEN.REF_PROPERTY];
-    key = String(key);
+	/**
+	 * Adds the provided object to the map, with the specified key
+	 * @param key The key to set or update
+	 * @param target The object to add to the map
+	 * @error This method throws an error if the object can't be added to the map.
+	 */
+	set(key: K, target: T) {
+		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
+		if (!target || target.isUnlinked()) throw invalidArgErr("target");
+		if (!(target instanceof (this._restriction || ManagedObject)))
+			throw err(ERROR.List_Restriction);
 
-    // check given value first
-    ManagedObject._validateReferenceAssignment(
-      this,
-      target,
-      this._managedClassRestriction,
-      key
-    );
-    if (!target) return this.unset(key);
+		// check for duplicates if attaching object
+		if (this._attach && target[$_origin] === this) {
+			if (this[$_map].get(key) !== target) throw err(ERROR.List_Duplicate);
+		}
 
-    // unlink existing reference, if any
-    let propId = HIDDEN.MANAGED_MAP_REF_PREFIX + key;
-    let cur = refs[propId];
-    if (cur) {
-      if (target && cur.b === target) return this;
-      ManagedObject._discardRefLink(cur);
-    }
+		// set map reference, save old one
+		let old = this[$_map].get(key);
+		if (old === target) return this;
+		this._add(key, target);
 
-    // create new reference and update target count
-    let ref = ManagedObject._createRefLink(
-      this,
-      target,
-      propId,
-      e => {
-        if (this[HIDDEN.NONCHILD_EVENT_HANDLER]) {
-          this[HIDDEN.NONCHILD_EVENT_HANDLER]!(e, "");
-        } else if (
-          this[HIDDEN.CHILD_EVENT_HANDLER] &&
-          ManagedObject._isManagedChildRefLink(ref)
-        ) {
-          this[HIDDEN.CHILD_EVENT_HANDLER]!(e, "");
-        }
-      },
-      target => {
-        // handle target moved/destroyed
-        if (this.managedState) {
-          this.emit(ManagedObjectRemovedEvent, this, target, key);
-        }
-      }
-    );
+		// emit event for removing object, and unlink if needed
+		// (event handler could move object to other origin so we check)
+		if (old) {
+			this.emitChange("ManagedObjectRemoved", {
+				key,
+				object: old,
+			});
+			if (this._attach && old[$_origin] === this) unlinkObject(old);
+		}
 
-    // set/move parent-child link if needed, and emit change event
-    if (refs.parent && !this._isWeakRef) {
-      ManagedObject._makeManagedChildRefLink(ref);
-    }
-    this.emit(ManagedObjectAddedEvent, this, target, key);
-    return this;
-  }
+		// emit event for adding objects
+		this.emitChange("ManagedObjectAdded", { key, object: target });
+		return this;
+	}
 
-  /** Remove given object from this map (same as calling `unset(...)` on all keys that refer to given object) */
-  remove(target: T) {
-    let refs = this[HIDDEN.REF_PROPERTY];
-    let removed: boolean | undefined;
-    let key: string | undefined;
-    for (let propId in refs) {
-      if (refs[propId] && refs[propId]!.b === target) {
-        if (ManagedObject._discardRefLink(refs[propId]!)) {
-          key = propId.slice(1);
-          removed = true;
-        }
-      }
-    }
-    if (removed && this.managedState) {
-      this.emit(ManagedObjectRemovedEvent, this, target, key);
-    }
-    return this;
-  }
+	/**
+	 * Clears the specified key in the map, removing the associated object (if any)
+	 * - If the key isn't included in the map, this method simply does nothing.
+	 */
+	unset(key: K) {
+		if (this.isUnlinked()) return this;
+		let old = this[$_map].get(key);
+		if (old) {
+			this[$_map].delete(key);
+			if (this._attach && old[$_origin] === this) {
+				unlinkObject(old);
+			}
+			this.emitChange("ManagedObjectRemoved", {
+				key,
+				object: old,
+			});
+		}
+		return this;
+	}
 
-  /** Remove all objects from this map */
-  clear() {
-    let refs = this[HIDDEN.REF_PROPERTY];
-    let removed: boolean | undefined;
-    for (let propId in refs) {
-      if (propId[0] === HIDDEN.MANAGED_MAP_REF_PREFIX) {
-        let ref = refs[propId];
-        if (ManagedObject._discardRefLink(ref)) {
-          removed = true;
-        }
-      }
-    }
-    if (removed) this.emitChange();
-    return this;
-  }
+	/**
+	 * Removes the specified object from the map
+	 * - If the object is included with multiple keys, all of the keys are unset
+	 * - If the object isn't included in the list, this method simply does nothing.
+	 * @param target The object to remove
+	 */
+	remove(target: T) {
+		if (this.isUnlinked()) return this;
+		let data: { key: K; object: T }[] = [];
+		for (let [key, object] of this[$_map]) {
+			if (object === target) {
+				data.push({ key, object });
+				this[$_map].delete(key);
+				if (this._attach && object[$_origin] === this) {
+					unlinkObject(object);
+				}
+			}
+		}
 
-  /** Returns a list of all (unique) objects in this map */
-  objects() {
-    let result: T[] = [];
-    if (!this[HIDDEN.STATE_PROPERTY]) return result;
-    let seen: boolean[] = Object.create(null);
-    let refs = this[HIDDEN.REF_PROPERTY];
-    for (let propId in refs) {
-      if (propId[0] === HIDDEN.MANAGED_MAP_REF_PREFIX) {
-        let target: T = refs[propId] && refs[propId]!.b;
-        if (target && !seen[target.managedId]) {
-          seen[target.managedId] = true;
-          result.push(target);
-        }
-      }
-    }
-    return result;
-  }
+		// emit all ManagedObjectRemovedEvent(s)
+		if (data.length) {
+			for (let d of data) this.emitChange("ManagedObjectRemoved", d);
+		}
+		return this;
+	}
 
-  /** Returns a list of all keys in this map */
-  keys() {
-    let result: string[] = [];
-    let refs = this[HIDDEN.REF_PROPERTY];
-    if (!refs) return result;
-    for (let propId in refs) {
-      if (propId[0] === HIDDEN.MANAGED_MAP_REF_PREFIX && refs[propId]) {
-        result.push(propId.slice(1));
-      }
-    }
-    return result;
-  }
+	/** Removes all keys and objects from the map */
+	clear() {
+		if (this[$_map].size) {
+			// clear internal map, and unlink all objects if needed
+			let objects = this._attach ? [...this[$_map].values()] : undefined;
+			this[$_map].clear();
+			if (objects) {
+				for (let object of objects) {
+					if (object[$_origin] === this) unlinkObject(object);
+				}
+			}
 
-  /**
-   * Iterates over the keys in this list and invokes given callback for each key and object.
-   * @param callback
-   *  the function to be called, with a key and a single object as the only argument
-   * @note The behavior of this method is undefined if objects are inserted by the callback function.
-   */
-  forEach(callback: (key: string, target: T) => void) {
-    let refs = this[HIDDEN.REF_PROPERTY];
-    if (!refs) return;
-    for (let propId in refs) {
-      if (propId[0] === HIDDEN.MANAGED_MAP_REF_PREFIX && refs[propId]) {
-        let key = propId.slice(1);
-        let target: T = refs[propId] && refs[propId]!.b;
-        if (target) callback(key, target);
-      }
-    }
-  }
+			// update count and emit single event
+			this.emitChange("ManagedMapChange");
+		}
+		return this;
+	}
 
-  /** Returns true if given object is currently contained in this map */
-  includes(target: T) {
-    // check if map is included as reference source on target
-    // (not the other way around)
-    if (target instanceof ManagedObject) {
-      return target[HIDDEN.REF_PROPERTY].some(
-        ref => ref.a === this && ref.p[0] === HIDDEN.MANAGED_MAP_REF_PREFIX
-      );
-    }
-    return false;
-  }
+	/** Returns the object that's referenced by the specified key */
+	get(key: K) {
+		return this[$_map].get(key);
+	}
 
-  /** Returns an object with properties for all keys and objects in this map */
-  toObject() {
-    let result: { [index: string]: T } = Object.create(null);
-    if (!this[HIDDEN.STATE_PROPERTY]) return result;
-    let refs = this[HIDDEN.REF_PROPERTY];
-    for (let propId in refs) {
-      if (propId[0] === HIDDEN.MANAGED_MAP_REF_PREFIX && refs[propId]) {
-        result[propId.slice(1)] = refs[propId]!.b;
-      }
-    }
-    return result;
-  }
+	/** Returns true if any object is included in the map with the specified key */
+	has(key: K) {
+		return this[$_map].has(key);
+	}
 
-  /** Returns an object representation of this map (alias of `toObject` method) */
-  toJSON(): any {
-    return this.toObject();
-  }
+	/** Returns true if this map contains the specified object */
+	includes(target: T) {
+		for (let object of this[$_map].values()) {
+			if (object === target) return true;
+		}
+		return false;
+	}
 
-  /** Stop newly referenced objects from becoming child objects _even if_ this `ManagedMap` instance itself is held through a child reference (by a parent object); this can be used to automatically dereference objects when the parent object is destroyed */
-  weakRef() {
-    this._isWeakRef = true;
-    return this;
-  }
+	/**
+	 * Returns an iterable list of all objects in the map
+	 * @note The result of this method isn't an array, but can be iterated using for...of. Alternatively, turn the result into an array using `[...map.objects()]`.
+	 */
+	objects() {
+		return this[$_map].values();
+	}
 
-  /** @internal Helper function that fixes existing objects in this list as managed children */
-  [HIDDEN.MAKE_REF_MANAGED_PARENT_FN]() {
-    if (this._isWeakRef) return;
-    let refs = this[HIDDEN.REF_PROPERTY];
-    for (let propId in refs) {
-      if (refs[propId] && refs[propId]!.a === this) {
-        ManagedObject._makeManagedChildRefLink(refs[propId]!);
-      }
-    }
-  }
+	/**
+	 * Returns an iterable list of all keys in the map
+	 * @note The result of this method isn't an array, but can be iterated using for...of. Alternatively, turn the result into an array using `[...map.keys()]`.
+	 */
+	keys() {
+		return this[$_map].keys();
+	}
 
-  /** @internal */
-  private [HIDDEN.NONCHILD_EVENT_HANDLER]: (e: ManagedEvent, name: string) => void;
+	/** Returns an object representation of this map, with properties for all key-object pairs */
+	toObject() {
+		let result = Object.create(null);
+		for (let [key, object] of this[$_map]) {
+			result[key] = object;
+		}
+		return result;
+	}
 
-  private _isWeakRef?: boolean;
+	/** Returns an object representation of this map, with properties for all key-object pairs */
+	toJSON() {
+		return this.toObject();
+	}
+
+	/**
+	 * Restricts the type of objects that can be added to this map
+	 * @summary This method can be used to limit the type of objects that can be added to the map: all new objects should inherit from the specified class, otherwise they can't be added.
+	 * @param ManagedObjectClass The class that all objects in this map should inherit from
+	 * @returns The map itself, typed using the specified class.
+	 * @error This method throws an error if the map currently already contains any objects that don't inherit from the specified class.
+	 */
+	restrict<R extends T>(ManagedObjectClass: {
+		new (...args: any[]): R;
+	}): ManagedMap<K, R> {
+		if (this[$_map].size) {
+			// check existing objects
+			for (let object of this[$_map].values()) {
+				if (!(object instanceof ManagedObjectClass))
+					throw err(ERROR.List_Restriction);
+			}
+		}
+		this._restriction = ManagedObjectClass;
+		return this as any;
+	}
+
+	/**
+	 * Enable (or disable) attaching of new objects to the map itself
+	 * @summary This method can be used to make the map contain all of its (current and new) objects by attaching them. After enabling auto-attachment, adding an object to the map automatically attaches it; removing an object from the map automatically unlinks it (since it's no longer attached); attaching an object to another object (or map or list) automatically removes it from the map (since it can no longer be attached) — but the object won't be unlinked.
+	 *
+	 * When enabled, if the map currently contains any objects, they're immediately attached. Note that the feature can't be disabled once it has been enabled and there are any objects in the map.
+	 *
+	 * When enabled, events emitted on any object in the map are automatically re-emitted on the map itself (propagating the event) — unless the `noEventPropagation` argument is set to true.
+	 *
+	 * @note Objects in a map that's itself attached to another object are also automatically attached. On a map that's itself attached, you may use this method to _disable_ this feature before adding any objects.
+	 *
+	 * @param set True if all new objects should be attached to the map
+	 * @param noEventPropagation True if events should _not_ be re-emitted on the map itself
+	 *
+	 * @error This method throws an error if the feature can't be enabled or disabled.
+	 */
+	autoAttach(set: boolean, noPropagation?: boolean) {
+		// set property to false ONLY if no attached objects
+		if (!set && this._attach && this[$_map].size)
+			throw err(ERROR.List_AttachState);
+
+		if (set) {
+			// don't allow enabling more than once
+			if (this._attach) throw invalidArgErr("set");
+
+			// check for duplicates first: not allowed if attached
+			let seen = new Map<T, boolean>();
+			for (let object of this[$_map].values()) {
+				if (seen.has(object)) throw err(ERROR.List_Duplicate);
+				seen.set(object, true);
+			}
+		}
+
+		// set property to automatically attach new objects
+		this._attach = set;
+		this._noPropagation = noPropagation;
+
+		if (set) {
+			// attach existing objects
+			for (let [key, object] of this[$_map]) {
+				this._add(key, object);
+			}
+		}
+		return this;
+	}
+
+	/** Internal setter that's used when objects are added, also takes care of attachment and automatic unlinking */
+	private _add(key: K, target: T) {
+		// add object to map
+		this[$_map].set(key, target);
+
+		if (this._attach) {
+			// attach object, check for unlink/move and events
+			attachObject(
+				this,
+				target,
+				new AttachObserver(this, key, target, !this._noPropagation)
+			);
+		}
+	}
+
+	/** True if objects should be attached to this map when added (and no duplicates allowed) */
+	private _attach?: boolean;
+
+	/** True if attached object events should NOT be propagated */
+	private _noPropagation?: boolean;
+
+	/** Class reference, if objects are restricted using `restrict()` method */
+	private _restriction: any;
+
+	/** @internal Map containing all objects */
+	private [$_map] = new Map<K, T>();
+}
+
+export namespace ManagedMap {
+	/** Type definition for an event that's emitted when elements are added to, moved within, or removed from a map */
+	export type ChangeEvent<
+		TKey extends any = string,
+		TObject extends ManagedObject = ManagedObject
+	> = ManagedChangeEvent<
+		ManagedMap<TKey, TObject>,
+		{ key: TKey; object: TObject },
+		"ManagedObjectAdded" | "ManagedObjectRemoved" | "ManagedMapChange"
+	>;
+}
+
+/** @internal Observer that's used for attached objects in a map */
+class AttachObserver<K> extends Observer<ManagedMap> {
+	constructor(
+		public map: ManagedMap<K>,
+		public key: K,
+		public target: ManagedObject,
+		public propagate?: boolean
+	) {
+		super();
+	}
+	override stop() {
+		// if observer stops, object is moved or unlinked,
+		// so remove from this list if needed
+		if (this.map.get(this.key) === this.target) this.map.unset(this.key);
+		super.stop();
+	}
+	protected override handleEvent(event: ManagedEvent) {
+		if (this.propagate) this.map.emit(event);
+	}
 }

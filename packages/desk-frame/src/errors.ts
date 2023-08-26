@@ -1,109 +1,52 @@
+/** @internal Reference to error handler, set by global context; this variable is used to break circular dependencies */
+export let errorHandler: (err: any) => void = () => {};
+
+/** @internal Update the error handler referenced by `errorHandler` (called by global context) */
+export function setErrorHandler(handler: (err: any) => void) {
+	errorHandler = handler;
+}
+
+/** @internal Helper function to create an error object with a predefined message (indexed by {@link ERROR}) and an optional parameter */
 export function err(error: ERROR, s?: any) {
-  let msg = errors[error] || "Unknown error";
-  if (s !== undefined) msg += ": " + s;
-  return Error(msg);
+	return Error((messages[error] || "Unknown error") + (s ? ": " + s : ""));
 }
 
+/** @internal Helper function to create an error object for an invalid argument */
+export function invalidArgErr(name: string) {
+	return Error("Invalid argument: " + name);
+}
+
+/** @internal Error types used with `err()` */
 export const enum ERROR {
-  ActivationContext_InvalidPath,
-  ViewActivity_NoRenderContext,
-  ViewActivity_NoApplication,
-  ViewActivity_NoDialogBuilder,
-  ViewComponent_InvalidChild,
-  ViewComponent_NoRenderCtx,
-  Binding_UnknownFilter,
-  Binding_NotFound,
-  Binding_ParentNotFound,
-  Binding_NoComponent,
-  Format_ObjectType,
-  Format_Type,
-  Component_NotAHandler,
-  Component_InvalidEventHandler,
-  List_Symbol,
-  List_Type,
-  List_Destroyed,
-  List_Duplicate,
-  List_NotFound,
-  List_OutOfBounds,
-  Map_Type,
-  Map_Destroyed,
-  Object_Base,
-  Object_NotEvent,
-  Object_Recursion,
-  Object_CannotDeactivate,
-  Object_Destroyed,
-  Object_StateCancelled,
-  Object_InvalidRef,
-  Object_RefDestroyed,
-  Object_PropNotManaged,
-  Object_PropGetSet,
-  Object_NotWritable,
-  Record_Serializable,
-  Ref_Type,
-  Service_NoName,
-  Service_BlankName,
-  Observe_ObserveParent,
-  Observe_ShadowGetter,
-  Observe_RateLimitNonAsync,
-  Observe_ObserverRecursion,
-  Util_NoSync,
-  Util_AlreadyManaged,
-  UIStyle_Invalid,
-  UIMenu_NoBuilder,
-  UIModalController_Binding,
+	Object_Unlinked,
+	Object_NoAttach,
+	Object_NoObserve,
+	List_AttachState,
+	List_Restriction,
+	List_Duplicate,
+	Format_Invalid,
+	Format_Type,
+	Activity_Cancelled,
+	GlobalContext_NoRenderer,
+	GlobalContext_NoModal,
+	UIComponent_NoRenderer,
+	UIList_Invalid,
+	JSX_InvalidTag,
 }
 
-const errors: { [error: number]: string } = {
-  [ERROR.ActivationContext_InvalidPath]: "[ActivationContext] Invalid path",
-  [ERROR.ViewActivity_NoRenderContext]:
-    "[ViewActivity] Render context not found (not a child component?)",
-  [ERROR.ViewActivity_NoApplication]: "[ViewActivity] Application instance not found",
-  [ERROR.ViewActivity_NoDialogBuilder]: "[ViewActivity] Dialog builder not found",
-  [ERROR.ViewComponent_InvalidChild]: "Invalid ViewComponent child component",
-  [ERROR.ViewComponent_NoRenderCtx]:
-    "[ViewComponent] Render context not found (not a child component?)",
-  [ERROR.Binding_UnknownFilter]: "[Binding] Unknown binding filter",
-  [ERROR.Binding_NotFound]: "[Binding] Binding not found for",
-  [ERROR.Binding_ParentNotFound]: "[Binding] Bound parent binding not found for",
-  [ERROR.Binding_NoComponent]: "[Binding] Component not bound",
-  [ERROR.Format_ObjectType]: "[Format] Cannot convert object value to string",
-  [ERROR.Format_Type]: "[Format] Invalid format type",
-  [ERROR.Component_NotAHandler]: "[Component] Not an event handler method",
-  [ERROR.Component_InvalidEventHandler]: "[Component] Invalid event handler preset",
-  [ERROR.List_Symbol]: "[List] Symbol not supported",
-  [ERROR.List_Type]: "[List] Existing objects are not of given type",
-  [ERROR.List_Destroyed]: "[List] Cannot add objects to a destroyed list",
-  [ERROR.List_Duplicate]: "[List] Cannot insert object that is already in this list",
-  [ERROR.List_NotFound]: "[List] Object not found",
-  [ERROR.List_OutOfBounds]: "[List] Index out of bounds",
-  [ERROR.Map_Type]: "[Map] Existing objects are not of given type",
-  [ERROR.Map_Destroyed]: "[Map] Cannot add objects to a destroyed map",
-  [ERROR.Object_Base]: "[Object] Cannot add event handler to base class",
-  [ERROR.Object_NotEvent]: "[Object] Argument is not a managed event",
-  [ERROR.Object_Recursion]: "[Object] Event recursion limit reached",
-  [ERROR.Object_CannotDeactivate]: "[Object] Cannot deactivate managed object",
-  [ERROR.Object_Destroyed]: "[Object] Managed object is already destroyed",
-  [ERROR.Object_StateCancelled]: "[Object] State transition cancelled",
-  [ERROR.Object_InvalidRef]: "[Object] Invalid object reference",
-  [ERROR.Object_RefDestroyed]: "[Object] Referenced object has been destroyed",
-  [ERROR.Object_PropNotManaged]:
-    "[Object] Can only create managed properties on managed object instances",
-  [ERROR.Object_PropGetSet]:
-    "[Object] Cannot turn properties with getters and/or setters into managed references",
-  [ERROR.Object_NotWritable]: "[Object] Property is not writable",
-  [ERROR.Record_Serializable]: "[Record] Property is not serializable",
-  [ERROR.Ref_Type]: "[Object] Existing reference is not of given type",
-  [ERROR.Service_NoName]: "[Service] Missing property name",
-  [ERROR.Service_BlankName]: "[Service] Service name cannot be blank",
-  [ERROR.Observe_ObserveParent]: "[Object] Cannot observe events on parent reference",
-  [ERROR.Observe_ShadowGetter]:
-    "[Object] Shadow observable can only be added to properties with getters",
-  [ERROR.Observe_RateLimitNonAsync]:
-    "[Object] Rate limit can only be applied to async handlers",
-  [ERROR.Observe_ObserverRecursion]: "[Object] Recursion in observer constructor detected",
-  [ERROR.Util_NoSync]: "[Object] Synchronous observers are not allowed for property",
-  [ERROR.Util_AlreadyManaged]: "[Object] Property is already managed in a base class",
-  [ERROR.UIStyle_Invalid]: "[Style] Invalid style set instance",
-  [ERROR.UIMenu_NoBuilder]: "[Menu] Builder not found",
-  [ERROR.UIModalController_Binding]: "[Modal] modal property cannot be bound",
-};
+const messages = [
+	"Object already unlinked",
+	"Object cannot be attached",
+	"Property not observable",
+	"Cannot change attached state",
+	"Unmatched object restriction",
+	"Duplicate object",
+	"Invalid format result",
+	"Invalid format type",
+	"Activity transition cancelled",
+	"No renderer available",
+	"No modal controller available",
+	"No renderer for this component",
+	"Invalid list type",
+	"Invalid JSX tag",
+] as const;

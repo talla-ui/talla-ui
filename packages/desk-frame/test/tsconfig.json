@@ -1,15 +1,26 @@
 {
-  "compilerOptions": {
-    "target": "esnext",
-    "module": "es2015",
-    "moduleResolution": "node",
-    "lib": ["es2015", "dom"],
-    "outDir": "../build-temp",
-    "downlevelIteration": true,
-    "strict": true,
-    "experimentalDecorators": true,
-    "noImplicitAny": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true
-  }
+	"compilerOptions": {
+		"stripInternal": true,
+		"useDefineForClassFields": true,
+		"experimentalDecorators": true,
+		"strict": true,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noImplicitOverride": true,
+		"noUncheckedIndexedAccess": true,
+		"importHelpers": true,
+		"module": "esnext",
+		"moduleResolution": "node",
+		"target": "esnext",
+		"lib": ["dom", "esnext"],
+		"jsx": "react",
+		"jsxFactory": "JSX",
+		"outDir": "../.test-run",
+		"sourceMap": true,
+		"pretty": true,
+		"paths": {
+			"desk-frame": ["../dist"]
+		}
+	},
+	"files": ["index.ts"]
 }

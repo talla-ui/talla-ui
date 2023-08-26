@@ -1,49 +1,65 @@
-import { UIRenderable, UIRenderableConstructor } from "../UIComponent";
-import { UITheme } from "../UITheme";
-import { UIContainer } from "./UIContainer";
+import { View } from "../../app/index.js";
+import { UIComponent } from "../UIComponent.js";
+import { UIStyle } from "../UIStyle.js";
+import { UITheme } from "../UITheme.js";
+import { UIContainer } from "./UIContainer.js";
 
-/** Represents a UI component that contains other components, in a horizontal arrangement */
+/**
+ * A view class that represents a row container component
+ *
+ * @description A row container lays out its contained components horizontally.
+ *
+ * **JSX tag:** `<row>`
+ *
+ * @online_docs Refer to the Desk website for more documentation on using this UI component class.
+ */
 export class UIRow extends UIContainer {
-  static preset(
-    presets: UIRow.Presets,
-    ...components: Array<UIRenderableConstructor | undefined>
-  ): Function {
-    return super.preset(presets, ...components);
-  }
+	/** Creates a new row container view object with the provided view content */
+	constructor(...content: View[]) {
+		super(...content);
+		this.style = UIStyle.Row;
+		this.spacing = UITheme.getRowSpacing();
+	}
 
-  /** Create a new row view component */
-  constructor(...content: UIRenderable[]) {
-    super(...content);
-    this.style = UITheme.getStyle("container", "row");
-  }
+	/**
+	 * Applies the provided preset properties to this object
+	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 */
+	override applyViewPreset(
+		preset: UIComponent.ViewPreset<UIContainer, this, "height">
+	) {
+		super.applyViewPreset(preset);
+	}
 
-  /** Returns true if spacing between components should be non-zero (used by renderer) */
-  hasComponentSpacing() {
-    return !!this.spacing;
-  }
-
-  /** Space between components along horizontal axis (in dp or string with unit, defaults to value from `UITheme`) */
-  spacing?: string | number = UITheme.current.spacing;
-
-  /** Row height (in dp or string with unit) */
-  height?: string | number;
+	/** Row height, in pixels or CSS length with unit */
+	height?: string | number;
 }
 
-/** Represents a row (see `UIRow`) with all components aligned to the right (or left for RTL text direction) */
-export let UIOppositeRow = UIRow.with({ style: "row_opposite" });
+/**
+ * A view class that represents a row with all contained components aligned to the right (or left for RTL text direction)
+ * - Refer to {@link UIRow} for information on row containers.
+ * - This class sets {@link UIContainer.distribution} to `end`.
+ * @see UIRow
+ *
+ * **JSX tag:** `<oppositerow>`
+ */
+export class UIOppositeRow extends UIRow {
+	constructor(...content: View[]) {
+		super(...content);
+		this.distribution = "end";
+	}
+}
 
-/** Represents a row (see `UIRow`) with all components aligned in the center */
-export let UICenterRow = UIRow.with({ style: "row_center" });
-
-/** Shortcut for `UIRow` constructor with spacing preset to zero */
-export let UICloseRow = UIRow.with({ spacing: 0 });
-
-export namespace UIRow {
-  /** UIRow presets type, for use with `Component.with` */
-  export interface Presets extends UIContainer.Presets {
-    /** Space between components along horizontal axis (in dp or string with unit, defaults to value from `UITheme`) */
-    spacing?: string | number;
-    /** Row height (in dp or string with unit) */
-    height?: string | number;
-  }
+/**
+ * A view class that represents a row with all contained components aligned in the center
+ * - Refer to {@link UIRow} for information on row containers.
+ * - This class sets {@link UIContainer.distribution} to `center`.
+ *
+ * **JSX tag:** `<centerrow>`
+ */
+export class UICenterRow extends UIRow {
+	constructor(...content: View[]) {
+		super(...content);
+		this.distribution = "center";
+	}
 }

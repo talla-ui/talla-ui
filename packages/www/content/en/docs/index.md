@@ -1,38 +1,29 @@
 ---
-template: columns
-output: docs/index.html
-description: Typescene documentation start page. Read the guides, or search for detailed information on any of the API exports.
-title: Documentation
+template: en/docpage
+require:
+  - introduction.md
+  - using.md
+  - build.md
+  - examples.md
 ---
 
-### Overview
+<!--{{breadcrumb}}-->
 
-If you’re new to Typescene, read these short articles to understand what Typescene is and what it can be used for.
+# Documentation
 
-- {{nav:content/en/docs/overview/}}
+## Getting started
 
-### Concepts
+<!--{{html-attr class="pagerefblock_list"}}-->
 
-These articles describe important concepts in detail. Read this to understand the primary concepts that make a Typescene application work.
+- <!--{{pagerefblock path="content/en/docs/introduction"}}-->
+- <!--{{pagerefblock path="content/en/docs/build"}}-->
+- <!--{{pagerefblock path="content/en/docs/examples"}}-->
+- <!--{{pagerefblock path="content/en/docs/using"}}-->
 
-- {{nav:content/en/docs/concepts/}}
+## Reference
 
-### Guides
+<!--{{html-attr class="pagerefblock_list"}}-->
 
-Choose one of these sections for short and to-the-point guides, with code examples that demonstrate common app development tasks (in development).
-
-- {{nav:content/en/docs/guides/}}
-
----
-
-_Documentation generated for Typescene version {{version}}_
-
-<col>
-
-### API Reference
-
-**Tip:** use the “Docs” link at the top or hit the <code>/</code> key on any page to search.
-
-<table class="table--ref">
-  <tr><td>{{refdoc:docs/ref/}}</td></tr>
-</table>
+- <!--{{pagerefblock path="content/en/docs/main/index"}}-->
+- <!--{{pagerefblock path="content/en/docs/webcontext/index"}}-->
+- <!--{{pagerefblock path="content/en/docs/test/index"}}-->

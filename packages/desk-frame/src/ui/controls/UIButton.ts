@@ -1,133 +1,212 @@
-import type { NavigationTarget } from "../../app";
-import { Binding, strf } from "../../core";
-import { Stringable } from "../UIComponent";
-import { UITheme, UIColor } from "../UITheme";
-import { UIControl } from "./UIControl";
+import { Binding, strf, StringConvertible } from "../../core/index.js";
+import type { NavigationTarget } from "../../app/index.js";
+import type { UIColor } from "../UIColor.js";
+import { UIControl } from "./UIControl.js";
+import { UIStyle } from "../UIStyle.js";
+import { UIIcon } from "../UIIcon.js";
+import { UIComponent } from "../UIComponent.js";
 
-// NOTE: button click handlers are defined in the platform package, not here.
-// This is to accomodate special cases like right-click, ctrl-click, etc.
-// The click handler emits a 'Navigate' action event (if the button is not disabled),
-// which is handled by `AppActivity` unless overridden, which uses the
-// getNavigationTarget method defined here.
-
-/** Represents a button component */
+/**
+ * A view class that represents a button control
+ *
+ * @description A button component is rendered on-screen as a button control.
+ *
+ * **JSX tag:** `<button>`
+ *
+ * @online_docs Refer to the Desk website for more documentation on using this UI component class.
+ */
 export class UIButton extends UIControl {
-  static preset(presets: UIButton.Presets): Function {
-    // quietly change 'text' to label to support JSX tag content
-    if ("text" in (presets as any)) presets.label = (presets as any).text;
+	/**
+	 * Creates a preset button class with the specified label and click event
+	 * - The specified label is localized using {@link strf} before being set as {@link UIButton.label}.
+	 * @param label The button label
+	 * @param onClick The name of the event to be emitted instead of (or in addition to, if starting with `+`) the Click event
+	 * @returns A class that can be used to create instances of this button class with the provided label and click event handler
+	 */
+	static withLabel(label?: StringConvertible | Binding, onClick?: string) {
+		if (typeof label === "string") label = strf(label);
+		return this.with({ label, onClick });
+	}
 
-    // use a 'link' role automatically if navigation target is specified
-    if ((presets.navigateTo || presets.navigationTarget) && !presets.accessibleRole) {
-      presets.accessibleRole = "link";
-    }
-    return super.preset(presets);
-  }
+	/**
+	 * Creates a preset button class with the specified icon and click event
+	 * @param icon The button icon
+	 * @param onClick The name of the event to be emitted instead of (or in addition to, if starting with `+`) the Click event
+	 * @param size The size of the icon, in pixels or CSS length with unit
+	 * @param color The icon foreground color
+	 * @returns A class that can be used to create instances of this button class with the provided icon and click event handler
+	 */
+	static withIcon(
+		icon: UIIcon | `@${string}` | Binding,
+		onClick?: string,
+		size?: string | number,
+		color?: UIColor | string
+	) {
+		return this.with({ icon, iconSize: size, iconColor: color, onClick });
+	}
 
-  /** Create a preset button class with given label (localized using `strf`) and onClick handler, if any */
-  static withLabel(label: Stringable | Binding, onClick?: string) {
-    if (typeof label === "string") label = strf(label);
-    return this.with({ label, onClick });
-  }
+	/** Creates a new button view object with the specified label */
+	constructor(label?: StringConvertible) {
+		super();
+		this.style = UIStyle.Button;
+		if (label !== undefined) this.label = label;
 
-  /** Create a preset button class with given icon *only*, and onClick handler, if any */
-  static withIcon(
-    icon: string,
-    onClick?: string,
-    size?: string | number,
-    color?: UIColor | string
-  ) {
-    return this.with({ icon, iconSize: size, iconColor: color, onClick });
-  }
+		// set selection state automatically
+		this.listen((e) => {
+			if (e.source === this) {
+				if (e.name === "Select") {
+					this.selected = true;
+				} else if (e.name === "Deselect") {
+					this.selected = false;
+				}
+			}
+		});
+	}
 
-  /** Create a new button view component with given label */
-  constructor(label?: Stringable) {
-    super();
-    this.style = UITheme.getStyle("control", "button");
-    if (label !== undefined) this.label = label;
-  }
+	/**
+	 * Applies the provided preset properties to this object
+	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 */
+	override applyViewPreset(
+		preset: UIComponent.ViewPreset<
+			UIControl,
+			this,
+			| "label"
+			| "icon"
+			| "iconSize"
+			| "iconMargin"
+			| "iconColor"
+			| "iconAfter"
+			| "navigateTo"
+		> & {
+			/** True if keyboard focus should be disabled this button */
+			disableKeyboardFocus?: boolean | Binding<boolean>;
+			/** Event that's emitted when the button is selected */
+			onSelect?: string;
+			/** Event that's emitted when the button is deselected */
+			onDeselect?: string;
+		}
+	) {
+		// quietly change 'text' to label to support JSX tag content
+		if ("text" in (preset as any)) {
+			preset.label = (preset as any).text;
+			delete (preset as any).text;
+		}
 
-  isFocusable() {
-    return true;
-  }
+		// use a 'link' role automatically if navigation target is specified
+		if (preset.navigateTo && !preset.accessibleRole) {
+			preset.accessibleRole = "link";
+		}
 
-  isKeyboardFocusable() {
-    return !this.disableKeyboardFocus;
-  }
+		super.applyViewPreset(preset);
+	}
 
-  /** Set to true to disable keyboard focus for this button */
-  disableKeyboardFocus?: boolean;
+	/** The button label to be displayed */
+	label?: StringConvertible;
 
-  /** Label text */
-  label?: Stringable;
+	/** The button icon to be displayed */
+	icon?: UIIcon | `@${string}`;
 
-  /** Icon name (platform and build system dependent) */
-  icon?: string;
+	/** Icon size (in pixels or string with unit) */
+	iconSize?: string | number;
 
-  /** Icon size (in dp or string with unit) */
-  iconSize?: string | number;
+	/** Margin between icon and label text (in pixels or string with unit) */
+	iconMargin?: string | number;
 
-  /** Margin between icon and label text (in dp or string with unit) */
-  iconMargin?: string | number;
+	/** Icon color */
+	iconColor?: UIColor | string;
 
-  /** Icon color */
-  iconColor?: UIColor | string;
+	/** True if the icon should appear _after_ the text instead of before */
+	iconAfter?: boolean;
 
-  /** Set to true to make the icon appear after the text instead of before */
-  iconAfter?: boolean;
+	/**
+	 * Path or navigation target to navigate to when this button is clicked
+	 * - Set this property to `:back` to go navigate back in the location history stack.
+	 */
+	navigateTo?: StringConvertible | NavigationTarget;
 
-  /** Path to navigate to automatically when clicked, if not blank; use `:back` to go back in history */
-  navigateTo?: string;
+	/** Current selection state, set automatically based on Select and Deselect events */
+	selected?: boolean;
 
-  /** Navigation target, can be bound to an `AppActivity.navigationTarget` property, if set */
-  navigationTarget?: NavigationTarget;
+	/** True to disable keyboard focus (e.g. Tab key) for this button */
+	disableKeyboardFocus?: boolean;
 
-  /** Returns the navigation target for this button (as a string or `NavigationTarget` instance), if either `navigateTo` or `navigationTarget` properties have been set */
-  getNavigationTarget() {
-    return this.navigationTarget || this.navigateTo;
-  }
+	/**
+	 * Returns the navigation target for this button
+	 * - This method only returns a path (or {@link NavigationTarget} instance) if the {@link UIButton.navigateTo} property is set.
+	 * - This method is called automatically by {@link ViewActivity}.
+	 */
+	getNavigationTarget() {
+		return this.navigateTo;
+	}
 }
 
-/** Shortcut for `UIButton` constructor preset with the `button_primary` named style from the current theme (see `UITheme`) */
-export let UIPrimaryButton = UIButton.with({ style: "button_primary" });
+/**
+ * A view class that represents a primary button control
+ * - Refer to {@link UIButton} for information on button controls.
+ * - This class uses the {@link UIStyle.PrimaryButton} style.
+ *
+ * **JSX tag:** `<primarybutton>`
+ */
+export class UIPrimaryButton extends UIButton {
+	constructor(label?: StringConvertible) {
+		super(label);
+		this.style = UIStyle.PrimaryButton;
+	}
+}
 
-/** Shortcut for `UIButton` constructor preset with the `button_borderless` named style from the current theme (see `UITheme`) */
-export let UIBorderlessButton = UIButton.with({ style: "button_borderless" });
+/**
+ * A view class that represents a button control without any visible borders
+ * - Refer to {@link UIButton} for information on button controls.
+ * - This class uses the {@link UIStyle.BorderlessButton} style.
+ *
+ * **JSX tag:** `<borderlessbutton>`
+ */
+export class UIBorderlessButton extends UIButton {
+	constructor(label?: StringConvertible) {
+		super(label);
+		this.style = UIStyle.BorderlessButton;
+	}
+}
 
-/** Shortcut for `UIButton` constructor preset with the `button_outline` named style from the current theme (see `UITheme`) */
-export let UIOutlineButton = UIButton.with({ style: "button_outline" });
+/**
+ * A view class that represents a button control with a visible border
+ * - Refer to {@link UIButton} for information on button controls.
+ * - This class uses the {@link UIStyle.OutlineButton} style.
+ *
+ * **JSX tag:** `<outlinebutton>`
+ */
+export class UIOutlineButton extends UIButton {
+	constructor(label?: StringConvertible) {
+		super(label);
+		this.style = UIStyle.OutlineButton;
+	}
+}
 
-/** Shortcut for `UIButton` constructor preset with the `button_link` named style from the current theme (see `UITheme`) */
-export let UILinkButton = UIButton.with({ style: "button_link" });
+/**
+ * A view class that represents a button control that appears as a hyperlink
+ * - Refer to {@link UIButton} for information on button controls.
+ * - This class uses the {@link UIStyle.LinkButton} style.
+ *
+ * **JSX tag:** `<linkbutton>`
+ */
+export class UILinkButton extends UIButton {
+	constructor(label?: StringConvertible) {
+		super(label);
+		this.style = UIStyle.LinkButton;
+	}
+}
 
-/** Shortcut for `UIButton` constructor preset with the `button_large` named style from the current theme (see `UITheme`) */
-export let UILargeButton = UIButton.with({ style: "button_large" });
-
-/** Shortcut for `UIButton` constructor preset with the `button_small` named style from the current theme (see `UITheme`) */
-export let UISmallButton = UIButton.with({ style: "button_small" });
-
-/** Shortcut for `UIButton` constructor preset with the `button_icon` named style from the current theme (see `UITheme`) */
-export let UIIconButton = UIButton.with({ style: "button_icon" });
-
-export namespace UIButton {
-  /** UIButton presets type, for use with `Component.with` */
-  export interface Presets extends UIControl.Presets {
-    /** Button label text */
-    label?: Stringable;
-    /** Icon name (platform and build system dependent) */
-    icon?: string;
-    /** Icon size (in dp or string with unit) */
-    iconSize?: string | number;
-    /** Margin between icon and text (in dp or string with unit) */
-    iconMargin?: string | number;
-    /** Icon color (`UIColor` or string) */
-    iconColor?: UIColor | string;
-    /** Set to true to make the icon appear after the text instead of before */
-    iconAfter?: boolean;
-    /** Path to navigate to automatically when clicked, if not blank; use `:back` to go back in history */
-    navigateTo?: string;
-    /** Navigation target, can be bound to an `AppActivity.navigationTarget` property, if set */
-    navigationTarget?: NavigationTarget;
-    /** Set to true to disable keyboard focus for this button */
-    disableKeyboardFocus?: boolean;
-  }
+/**
+ * A view class that represents a button control containing only a single icon
+ * - Refer to {@link UIButton} for information on button controls.
+ * - This class uses the {@link UIStyle.IconButton} style.
+ *
+ * **JSX tag:** `<iconbutton>`
+ */
+export class UIIconButton extends UIButton {
+	constructor(label?: StringConvertible) {
+		super(label);
+		this.style = UIStyle.IconButton;
+	}
 }

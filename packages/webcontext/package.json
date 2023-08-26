@@ -1,54 +1,43 @@
 {
-  "name": "@typescene/webapp",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Typescene framework",
-  "author": "Jelmer Cormont",
-  "license": "MIT",
-  "publishConfig": {
-    "tag": "next"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/typescene/typescene-webapp.git"
-  },
-  "bugs": {
-    "url": "https://github.com/typescene/typescene-webapp/issues"
-  },
-  "homepage": "http://typescene.dev/",
-  "main": "./index.js",
-  "module": "./index.js",
-  "typings": "./index.d.ts",
-  "files": [
-    "dist",
-    "dist-es6",
-    "dist-es8",
-    "umd",
-    "index.js",
-    "index.d.ts"
-  ],
-  "scripts": {
-    "clean": "rimraf dist dist-es6 dist-es8",
-    "prepublishOnly": "npm run build",
-    "prebuild": "npm run clean && tsc -p src --declaration",
-    "build-es8": "tsc -p src --target es2017 --outDir dist-es8 --removeComments",
-    "build-es6": "tsc -p src --target es2015 --outDir dist-es6 --removeComments",
-    "build-es5": "tsc -p src --removeComments",
-    "build": "npm run build-es5 && npm run build-es6 && npm run build-es8",
-    "postbuild": "rollup -c"
-  },
-  "dependencies": {
-    "typescene": "file:../typescene",
-    "tslib": "^2.3.1"
-  },
-  "devDependencies": {
-    "@rollup/plugin-alias": "^3.1.2",
-    "@rollup/plugin-multi-entry": "^4.0.0",
-    "@rollup/plugin-node-resolve": "^11.2.1",
-    "rimraf": "^3.0.2",
-    "rollup": "^2.45.2",
-    "rollup-plugin-gzip": "^2.5.0",
-    "rollup-plugin-terser": "^7.0.2",
-    "typescript": "4.4"
-  }
+	"private": true,
+	"name": "@desk-framework/webcontext",
+	"version": "0.0.0",
+	"description": "",
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"type": "module",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"clean": "run-p clean:*",
+		"clean:build": "rimraf dist dist-* lib",
+		"clean:test": "rimraf test/esbuild/public/dist test/esm/dist test/esm/lib test/esm/node_modules test/parcel/.parcel-cache test/parcel/dist test/parcel/node_modules",
+		"prebuild": "npm run clean",
+		"build": "run-p build:*",
+		"build:esnext": "tsc -p src --declaration",
+		"build:es2020": "tsc -p src --target es2020 --outdir dist-es2020",
+		"build:es2018": "tsc -p src --target es2018 --outdir dist-es2018",
+		"build:es2015": "tsc -p src --target es2015 --outdir dist-es2015",
+		"postbuild": "node esbuild-lib",
+		"test-iife": "npx open-cli test/iife/test-iife.html",
+		"test-esbuild": "cd test/esbuild && node esbuild",
+		"test-esbuild-es2015": "cd test/esbuild-es2015 && node esbuild",
+		"test-esm": "cd test/esm && npm install && npm run test",
+		"test-parcel": "cd test/parcel && npm install && npm run test"
+	},
+	"prettier": {
+		"useTabs": true
+	},
+	"files": [
+		"dist",
+		"dist-es2015",
+		"dist-es2018",
+		"dist-es2020",
+		"lib"
+	],
+	"dependencies": {
+		"desk-frame": "file:../desk-frame",
+		"tslib": "^2.5.0"
+	}
 }

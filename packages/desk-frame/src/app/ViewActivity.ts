@@ -1,328 +1,319 @@
-import {
-  ComponentEvent,
-  delegateEvents,
-  logUnhandledException,
-  managed,
-  managedChild,
-  ManagedEvent,
-  observe,
-} from "../core";
-import { err, ERROR } from "../errors";
-import {
-  UIComponent,
-  UIRenderable,
-  UIRenderableConstructor,
-  UIRenderContext,
-  UIRenderPlacement,
-  UITheme,
-  Stringable,
-} from "../ui";
-import { AppActivity } from "./AppActivity";
-import { Application } from "./Application";
+import { bound, ManagedEvent, ManagedObject, Observer } from "../core/index.js";
+import { errorHandler } from "../errors.js";
+import { Activity } from "./Activity.js";
+import { app } from "./GlobalContext.js";
+import { NavigationTarget } from "./NavigationTarget.js";
+import { RenderContext } from "./RenderContext.js";
+import { View, ViewClass } from "./View.js";
+
+const _boundRenderer = bound("renderer");
+
+/** Global list of activity instances for (old) activity class, for HMR */
+const _hmrInstances = new WeakMap<typeof Activity, ViewActivity[]>();
 
 /**
- * View activity base class. Represents an application activity with content that can be rendered when activated.
- * @note Nothing is rendered if the `placement` property is undefined (default). Make sure this property is set to a `UIRenderPlacement` value before rendering, or use a specific view activity class such as `PageViewActivity`.
+ * A class that represents a part of the application that can be activated to display an accompanying view
+ *
+ * @description
+ * View activities represent a possible 'place' for the user in an application, with an accompanying view — a screen, dialog, or a view that's displayed as part of a containing view activity.
+ *
+ * Views are linked to view activities using the **static** {@link ViewActivity.ViewBody ViewBody} property. Using the constructor referenced by this property, views are created and rendered automatically when the activity becomes active. Views are also automatically removed again when the activity is deactivated. Alternatively, override the {@link ViewActivity.createViewAsync()} method to change the way views are created for a particular type of activity.
+ *
+ * The base ViewActivity class doesn't specify how views should be rendered; use the {@link PageViewActivity} or {@link DialogViewActivity} classes instead for main view activities, or set the {@link ViewActivity.renderPlacement renderPlacement} object in the constructor with options defined by {@link RenderContext.PlacementOptions}.
+ *
+ * View activities can also be nested (attached to a containing view activity), and rendered using {@link UIViewRenderer}.
+ *
+ * Finally, view activities may be able to re-render dynamically in 'hot reload' scenarios; refer to {@link GlobalContext.hotReload app.hotReload()} for details.
+ *
+ * @see {@link PageViewActivity}
+ * @see {@link DialogViewActivity}
+ *
+ * @example
+ * // Create a view activity and activate it:
+ * import MyView from "./MyView.js";
+ * class MyActivity extends ViewActivity {
+ *   static override ViewBody = MyView;
+ *   constructor() {
+ *     super();
+ *     this.renderPlacement = { mode: "mount", mountId: "app" };
+ *   }
+ *   override protected async afterActiveAsync() {
+ *     console.log("MyActivity is now active");
+ *   }
+ * }
+ *
+ * app.addActivity(new MyActivity(), true);
  */
-export class ViewActivity extends AppActivity implements UIRenderable {
-  /**
-   * Register this activity class with the application auto-update handler (for automatic reload/hot module update). When possible, updates to the module trigger updates to any existing activity instances, with new methods and a new view instance.
-   * @param module
-   *  Reference to the module that should be watched for updates (build system-specific)
-   */
-  static autoUpdate(module: any) {
-    Application.registerAutoUpdate(module, this, "@reload");
-  }
+export class ViewActivity extends Activity implements RenderContext.Renderable {
+	/** @internal Update prototype for given class with newer prototype, and rebuild view */
+	static override _$hotReload(
+		Old: undefined | typeof Activity,
+		Updated: typeof ViewActivity
+	) {
+		super._$hotReload(Old, Updated);
+		Updated.prototype._hotReload = true;
+		_hmrInstances.set(Updated, []);
+		if (Old && Updated.prototype instanceof ViewActivity) {
+			if ((Old as typeof ViewActivity).ViewBody && Updated.ViewBody) {
+				(Old as typeof ViewActivity).ViewBody = Updated.ViewBody;
+			}
+			let instances = _hmrInstances.get(Old);
+			if (instances) {
+				for (let activity of instances) {
+					if (activity.view) activity.createViewAsync().catch(errorHandler);
+				}
+			}
+		}
+	}
 
-  /** @internal Update prototype for given class with newer prototype */
-  static ["@reload"](Old: typeof ViewActivity, Updated: typeof ViewActivity) {
-    if (Old.prototype._OrigClass) Old = Old.prototype._OrigClass;
-    Updated.prototype._OrigClass = Old;
-    let desc = (Object as any).getOwnPropertyDescriptors(Updated.prototype);
-    for (let p in desc) Object.defineProperty(Old.prototype, p, desc[p]);
-    let View = (Old.prototype._ViewClass = Updated.prototype._ViewClass);
-    if (View && Old.prototype._PresetClass) {
-      Old.prototype._PresetClass.presetBoundComponent("view", View, AppActivity);
-      for (var id in Old.prototype._allActive) {
-        var activity = Old.prototype._allActive[id];
-        if (activity.isActive()) activity.view = new View();
-      }
-    }
-  }
+	/**
+	 * A constructor that will be used to create the view object when the activity becomes active
+	 * - In practice, this property is overridden by an activity class to refer to the view preset (a constructor created using `.with()` methods or using JSX syntax), imported from a separate view file.
+	 */
+	declare static ViewBody?: ViewClass;
 
-  static preset(presets: ViewActivity.Presets, View?: UIRenderableConstructor): Function {
-    if (View) {
-      this.presetBoundComponent("view", View, AppActivity);
-      if (!this.prototype._allActive) this.prototype._allActive = Object.create(null);
-      this.prototype._ViewClass = View;
-      this.prototype._PresetClass = this;
-    }
-    return super.preset(presets);
-  }
+	/** Creates an instance of this view activity, without an active view */
+	constructor() {
+		super();
 
-  /** The root component that makes up the content for this view, as a child component */
-  @delegateEvents
-  @managedChild
-  view?: UIRenderable;
+		_boundRenderer.bindTo(this, "renderer");
 
-  /** View placement mode, determines if and how view is rendered when activated */
-  placement = UIRenderPlacement.NONE;
+		// auto-attach view and delegate events
+		class ViewObserver extends Observer<View> {
+			constructor(public activity: ViewActivity) {
+				super();
+			}
+			protected override handleEvent(event: ManagedEvent<any>) {
+				if (this.activity.isActive()) {
+					this.activity.delegateViewEvent(event);
+					if (
+						event.name === "FocusIn" &&
+						typeof event.source.requestFocus === "function"
+					) {
+						this.activity._lastFocused = event.source;
+					}
+				}
+			}
+		}
+		this.observeAttach("view", new ViewObserver(this));
 
-  /** Modal shade backdrop opacity behind content (0-1), if supported by placement mode */
-  modalShadeOpacity?: number;
+		// observe properties (async) to render/remove automatically
+		class ViewActivityObserver extends Observer<ViewActivity> {
+			override observe(observed: ViewActivity) {
+				return super
+					.observe(observed)
+					.observePropertyAsync("renderer", "view", "renderPlacement");
+			}
+			protected override async handlePropertyChange() {
+				this.observed && this.observed.render();
+			}
+			onActive() {
+				this.observed && this.observed.render();
+			}
+			protected override handleUnlink() {
+				this.observed &&
+					this.observed._renderWrapper &&
+					this.observed._renderWrapper.removeAsync();
+				super.handleUnlink();
+			}
+		}
+		new ViewActivityObserver().observe(this);
+	}
 
-  /**
-   * Render the view for this activity and display it, if it is not currently visible.
-   * This method is called automatically after the root view component is created and/or when an application render context is made available or emits a change event, and should not be called directly.
-   */
-  render(callback?: UIRenderContext.RenderCallback) {
-    if (this._cbContext !== this.renderContext) {
-      // remember this render context and invalidate
-      // previous callback if context changed
-      this._renderCallback = undefined;
-      this._cbContext = this.renderContext;
-    }
-    if (callback && callback !== this._renderCallback) {
-      if (this._renderCallback) this._renderCallback(undefined);
-      this._renderCallback = callback;
-    }
-    if (!this._renderCallback) {
-      if (!this.placement) return;
-      if (!this.renderContext) {
-        throw err(ERROR.ViewActivity_NoRenderContext);
-      }
-      let placement = this.placement;
-      let rootCallback = this.renderContext.getRenderCallback();
-      let rootProxy: NonNullable<typeof callback> = (output, afterRender) => {
-        if (output) {
-          output.placement = placement;
-          output.modalShadeOpacity = this.modalShadeOpacity;
-        }
-        rootCallback = rootCallback(output as any, afterRender) as NonNullable<
-          typeof callback
-        >;
-        return rootProxy;
-      };
-      this._renderCallback = rootProxy;
-    }
-    this._renderer.render(this.view, this._renderCallback);
-  }
+	/** A (bound) reference to the application render context */
+	readonly renderer?: RenderContext;
 
-  /**
-   * Remove the view output that was rendered by `ViewActivity.render`, if any.
-   * This method is called automatically after the root view component or render context is removed, and should not be called directly.
-   */
-  async removeViewAsync() {
-    await this._renderer.removeAsync();
-  }
+	/**
+	 * The view to be rendered
+	 * - The view is rendered automatically when this property is set. However, there's no need to set this property manually: a view instance is created automatically when the activity becomes active.
+	 */
+	declare view?: View;
 
-  /** Request input focus on the last (or first) focused UI component, if any */
-  restoreFocus(firstFocused?: boolean) {
-    if (firstFocused) this.firstFocused && this.firstFocused.requestFocus();
-    else this.lastFocused && this.lastFocused.requestFocus();
-  }
+	/** Placement options for root view output */
+	renderPlacement?: RenderContext.PlacementOptions = undefined;
 
-  /** Handle FocusIn UI event, remember first/last focused component */
-  protected onFocusIn(e: ComponentEvent): boolean | void {
-    if (e.source instanceof UIComponent) {
-      if (!this.firstFocused) this.firstFocused = e.source;
-      this.lastFocused = e.source;
-    }
-  }
+	/**
+	 * Searches the view hierarchy for view objects of the provided type
+	 * @summary This method looks for matching view objects in the current view structure — including the activity's view itself. If a component is an instance of the provided class, it's added to the list. Components _within_ matching components aren't searched for further matches.
+	 * @param type A view class
+	 * @returns An array with instances of the provided view class; may be empty but never undefined.
+	 */
+	findViewContent<T extends View>(type: ViewClass<T>): T[] {
+		return this.view
+			? this.view instanceof type
+				? [this.view]
+				: this.view.findViewContent(type)
+			: [];
+	}
 
-  /** The UI component that was focused first, if any */
-  @managed
-  firstFocused?: UIComponent;
+	/** Requests input focus on the current view element, or the last focused view element, if any */
+	requestFocus() {
+		(this._lastFocused && this._lastFocused.requestFocus()) ||
+			(this.view && this.view.requestFocus());
+		return this;
+	}
 
-  /** The UI component that was most recently focused, if any */
-  @managed
-  lastFocused?: UIComponent;
+	/**
+	 * Delegates events from the current view
+	 * - This method is called automatically when an event is emitted by the current view object.
+	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true`, undefined, or a promise (which is awaited just to be able to handle any errors).
+	 * - This method may be overridden to handle events in any other way, e.g. to propagate them by emitting the same event on the ViewActivity instance itself.
+	 * @param event The event to be delegated (from the view)
+	 * @returns True if an event handler was found, and it returned true; false otherwise.
+	 */
+	protected delegateViewEvent(event: ManagedEvent) {
+		// find own handler method
+		let method = (this as any)["on" + event.name];
+		if (typeof method === "function") {
+			let result = method.call(this, event);
 
-  /**
-   * Create a modal view activity based on the given view component, and activate it immediately. If an event handler is not specified, the activity responds to the CloseModal event (by destroying the activity and view).
-   * @param View
-   *  A view component constructor
-   * @param eventHandler
-   *  A function that is invoked for all events that are emitted by the view
-   * @param BaseActivity
-   *  Base activity class that will be preset with given view, defaults to ModalViewActivity
-   * @returns A promise that resolves to the view activity instance after it has been activated.
-   * @see `ModalViewActivity`
-   */
-  async showModalAsync<ActivityT extends ModalViewActivity>(
-    View: UIRenderableConstructor,
-    eventHandler?: (this: DialogViewActivity, e: ManagedEvent) => void,
-    BaseActivity?: typeof ModalViewActivity & {
-      new (): ActivityT;
-    }
-  ) {
-    let app = this.getApplication();
-    if (!app) throw err(ERROR.ViewActivity_NoApplication);
+			// return true or promise result, otherwise false below
+			if (result === true) return true;
+			if (result && result.then && result.catch) {
+				return (result as Promise<void>).catch(errorHandler);
+			}
+		}
+		return false;
+	}
 
-    // create a singleton activity constructor with event handler
-    class SingletonActivity extends (BaseActivity ?? ModalViewActivity).with(View) {}
-    if (eventHandler) {
-      SingletonActivity.prototype.delegateEvent = eventHandler;
-    }
+	/**
+	 * Creates a view using {@link createViewAsync()}, overridden from Activity
+	 * - When overriding this method further, make sure to invoke and await `super.afterActiveAsync()` — otherwise the view won't be created.
+	 */
+	protected override async afterActiveAsync() {
+		if (!this.view) this.createViewAsync();
+		if (this._hotReload) {
+			let instances = _hmrInstances.get(this.constructor as any);
+			if (instances) instances.push(this);
+		}
+	}
 
-    // add the view activity to the application and activate it
-    return app.showViewActivityAsync<ActivityT>(new SingletonActivity() as any);
-  }
+	/** Removes the current view, overridden from Actviity */
+	protected override async beforeInactiveAsync() {
+		if (this.view) this.view = undefined;
+	}
 
-  /**
-   * Create a dialog view activity based on the given view component, and activate it immediately. If an event handler is not specified, the activity responds to the CloseModal event (by destroying the activity and view).
-   * @param View
-   *  A view component constructor
-   * @param eventHandler
-   *  A function that is invoked for all events that are emitted by the view
-   * @returns A promise that resolves to the dialog view activity instance after it has been activated.
-   * @see `DialogViewActivity`
-   */
-  async showDialogAsync(
-    View: UIRenderableConstructor,
-    eventHandler?: (this: DialogViewActivity, e: ManagedEvent) => void
-  ): Promise<DialogViewActivity> {
-    return this.showModalAsync(View, eventHandler, DialogViewActivity);
-  }
+	/** Creates a view and sets the {@link ViewActivity.view view} property, may be overridden */
+	protected async createViewAsync() {
+		let ViewBody = (this.constructor as typeof ViewActivity).ViewBody;
+		if (ViewBody) this.view = new ViewBody();
+	}
 
-  /**
-   * Display a confirmation/alert dialog with given content. If the 'cancel' button label is not provided, the dialog will only contain a 'confirm' button. All strings are automatically translated to the current locale using the `strf` function.
-   * @param message
-   *  The message to be displayed, or multiple message paragraphs (for arrays)
-   * @param title
-   *  The dialog title, displayed at the top of the dialog (optional)
-   * @param confirmButtonLabel
-   *  The label for the 'confirm' button
-   * @param cancelButtonLabel
-   *  The label for the 'cancel' button, if any
-   * @returns A promise that resolves to true if the OK button was clicked, false otherwise.
-   */
-  showConfirmationDialogAsync(
-    message: Stringable | Stringable[],
-    title?: Stringable,
-    confirmButtonLabel?: Stringable,
-    cancelButtonLabel?: Stringable
-  ) {
-    let Builder = UITheme.current.ConfirmationDialogBuilder;
-    if (!Builder) {
-      throw err(ERROR.ViewActivity_NoDialogBuilder);
-    }
-    let builder = new Builder();
-    if (Array.isArray(message)) message.forEach(m => builder.addMessage(m));
-    else builder.addMessage(message);
-    if (title) builder.setTitle(title);
-    if (confirmButtonLabel) builder.setConfirmButtonLabel(confirmButtonLabel);
-    if (cancelButtonLabel) builder.setCancelButtonLabel(cancelButtonLabel);
-    let Dialog = builder.build();
-    return new Promise<boolean>(resolve => {
-      this.showDialogAsync(Dialog, function (e) {
-        if (e.name === "Confirm") {
-          resolve(true);
-          this.destroyAsync();
-        }
-        if (e.name === "CloseModal" && cancelButtonLabel) {
-          resolve(false);
-          this.destroyAsync();
-        }
-      });
-    });
-  }
+	/**
+	 * Renders the current view, if any
+	 * - This method is called automatically whenever required. It should not be necessary to invoke this method from an application.
+	 */
+	render(callback?: RenderContext.RenderCallback) {
+		let view = this.isActive() ? this.view : undefined;
+		if (this._renderWrapper) {
+			this._renderWrapper.render(view, callback, this.renderPlacement);
+		} else if (this.renderer && (view || callback)) {
+			this._renderWrapper = this.renderer.render(
+				view,
+				callback,
+				this.renderPlacement
+			);
+		}
+		return this;
+	}
 
-  private _renderCallback?: UIRenderContext.RenderCallback;
-  private _cbContext?: UIRenderContext;
-  private _renderer = new UIComponent.DynamicRendererWrapper();
+	/**
+	 * Handles the `Navigate` event
+	 * - This method is called automatically when a view object emits the `Navigate` event. Such events are emitted from views that include a `getNavigationTarget` method, such as {@link UIButton}.
+	 * - This method calls {@link handleNavigateAsync} in turn, which may be overridden.
+	 */
+	protected onNavigate(
+		e: ManagedEvent<
+			ManagedObject & { getNavigationTarget?: () => NavigationTarget }
+		>
+	) {
+		if (
+			this.activationPath &&
+			typeof e.source.getNavigationTarget === "function"
+		) {
+			return this.handleNavigateAsync(e.source.getNavigationTarget());
+		}
+	}
 
-  // these references are set on the prototype instead (by static `preset()`):
-  private _allActive?: { [managedId: string]: ViewActivity };
-  private _ViewClass?: UIRenderableConstructor;
-  private _PresetClass?: typeof ViewActivity;
-  private _OrigClass?: typeof ViewActivity;
+	/**
+	 * Handles navigation to a provided navigation target
+	 * - This method is called automatically by {@link onNavigate} when a view object emits the `Navigate` event. It may be overridden to handle navigation differently, e.g. for master-detail view activities.
+	 */
+	protected async handleNavigateAsync(target: NavigationTarget) {
+		if (this.activationPath) {
+			await this.activationPath.navigateAsync(String(target));
+		}
+	}
 
-  /** @internal Observe view activities to create views and render when needed */
-  @observe
-  protected static ViewActivityObserver = class {
-    constructor(public activity: ViewActivity) {}
-    onActive() {
-      if (this.activity._allActive) {
-        this.activity._allActive[this.activity.managedId] = this.activity;
-      }
-      if (this.activity._ViewClass) {
-        this.activity.view = new this.activity._ViewClass();
-      }
-    }
-    onInactive() {
-      if (this.activity._allActive) {
-        delete this.activity._allActive[this.activity.managedId];
-      }
-      this.activity.view = undefined;
-    }
-    async onRenderContextChange() {
-      if (this.activity.isActive() && this.activity._ViewClass) {
-        this.activity.view = undefined;
-        if (this.activity.renderContext) {
-          // introduce a delay artificially to clear the old view
-          await Promise.resolve();
-          setTimeout(() => {
-            if (
-              !this.activity.view &&
-              this.activity.renderContext &&
-              this.activity.isActive() &&
-              this.activity._ViewClass
-            ) {
-              this.activity.view = new this.activity._ViewClass();
-            }
-          }, 1);
-        }
-      }
-    }
-    onViewChangeAsync() {
-      this.checkAndRender();
-    }
-    checkAndRender() {
-      if (this.activity.renderContext && this.activity.view) this.activity.render();
-      else this.activity.removeViewAsync().catch(logUnhandledException);
-    }
-  };
+	private declare _hotReload?: boolean;
+
+	private _renderWrapper?: RenderContext.DynamicRendererWrapper;
+	private _lastFocused?: View;
 }
 
-/** Represents an application activity with a view that is rendered as a full page (when active) */
+/**
+ * A {@link ViewActivity} class with a view that will be rendered as a full-screen page
+ * - This class sets {@link ViewActivity.renderPlacement} to `{ mode: "page" }` in its constructor, causing the view to be rendered full-screen.
+ *
+ * @example
+ * // Create a page view activity and activate it:
+ * import MyView from "./MyView.js";
+ * class MyActivity extends PageViewActivity {
+ *   static override ViewBody = MyView;
+ *   override protected async afterActiveAsync() {
+ *     console.log("MyActivity is now active");
+ *   }
+ * }
+ *
+ * app.addActivity(new MyActivity(), true);
+ */
 export class PageViewActivity extends ViewActivity {
-  placement = UIRenderPlacement.PAGE;
-}
-
-/** Represents an application activity with a view that is rendered as a modal cell (when active); margins can be used to position the view. The activity is destroyed automatically when a `CloseModal` event is emitted on the view instance. */
-export class ModalViewActivity extends ViewActivity {
-  /** Create a new modal view activity */
-  constructor() {
-    super();
-    this.placement = UIRenderPlacement.MODAL;
-    this.modalShadeOpacity = UITheme.current.modalDialogShadeOpacity;
-  }
-
-  /** Handle CloseModal event by destroying this activity; stops propagation of the event */
-  protected onCloseModal(): boolean | void {
-    this.destroyAsync();
-    return true;
-  }
+	constructor() {
+		super();
+		this.renderPlacement = { mode: "page" };
+	}
 }
 
 /**
- * Represents an application activity with a view that is rendered as a modal dialog (when active); `UIComponent.dimensions` and `UIComponent.position` (gravity) can be used to position the view. The activity is destroyed automatically when a `CloseModal` event is emitted on the view instance.
- */
-export class DialogViewActivity extends ModalViewActivity {
-  /** Create a new activity that is rendered as a modal dialog */
-  constructor() {
-    super();
-    this.placement = UIRenderPlacement.DIALOG;
-  }
-}
+ * A {@link ViewActivity} class with a view that will be rendered as a modal dialog
+ * - This class sets {@link ViewActivity.renderPlacement} to `{ mode: "dialog", ... }` in its constructor, causing the view to be rendered as a modal dialog. The backdrop shader opacity and animations (`show-dialog` and `hide-dialog`) from the current theme are also used.
 
-export namespace ViewActivity {
-  /** View activity presets type, for use with `Component.with` */
-  export interface Presets extends AppActivity.Presets {
-    /** View placement mode */
-    placement?: UIRenderPlacement;
-    /** Modal shade backdrop opacity behind content (0-1), if supported by placement mode */
-    modalShadeOpacity?: number;
-  }
+ * @example
+ * // Create a dialog view activity, use it from another activity:
+ * import MyView from "./MyView.js";
+ * class MyActivity extends DialogViewActivity {
+ *   static override ViewBody = MyView;
+ *   override protected async afterActiveAsync() {
+ *     console.log("MyActivity is now active");
+ *   }
+ * 
+ *   // Handle a `Close` event from the view: unlink the activity
+ *   onClose() {
+ *     this.unlink();
+ *   }
+ * }
+ * 
+ * class MyParentActivity extends Activity {
+ *   // ...
+ * 
+ *   async showDialogAsync() {
+ *     let dialog = this.attach(new MyDialog());
+ *     await dialog.activateAsync();
+ *     // ... use dialog here, or observe it
+ *   }
+ * }
+ *
+ */
+export class DialogViewActivity extends ViewActivity {
+	constructor() {
+		super();
+		let shade = app.theme?.modalDialogShadeOpacity;
+		let show = app.theme?.animations?.["show-dialog"];
+		let hide = app.theme?.animations?.["hide-dialog"];
+		this.renderPlacement = {
+			mode: "dialog",
+			shade,
+			transform: { show, hide },
+		};
+	}
 }

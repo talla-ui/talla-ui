@@ -1,57 +1,84 @@
-import { UITheme } from "../UITheme";
-import { UIStyle } from "../UIStyle";
-import { UIControl } from "./UIControl";
+import { UIComponent } from "../UIComponent.js";
+import { UIStyle } from "../UIStyle.js";
+import { UIControl } from "./UIControl.js";
 
-/** Control that has no content, but expands in both directions when needed */
+/**
+ * A view class that represents a flexible control without any content
+ *
+ * @description A spacer component is rendered on-screen as an empty placeholder.
+ *
+ * **JSX tag:** `<spacer>`
+ *
+ * @online_docs Refer to the Desk website for more documentation on using this UI component class.
+ */
 export class UISpacer extends UIControl {
-  static preset(presets: UISpacer.Presets) {
-    if (presets.height !== undefined) {
-      let dimensions: UIStyle.Dimensions = presets.dimensions || (presets.dimensions = {});
-      dimensions.minHeight = presets.height;
-      presets.shrinkwrap = true;
-    }
-    if (presets.width !== undefined) {
-      let dimensions: UIStyle.Dimensions = presets.dimensions || (presets.dimensions = {});
-      dimensions.minWidth = presets.width;
-      presets.shrinkwrap = true;
-    }
-    return super.preset(presets);
-  }
+	/**
+	 * Creates a preset spacer class with the specified height
+	 * @param height The spacer height, in pixels or CSS length with unit
+	 * @param shrinkwrap False if the spacer should expand beyond the specified height, where possible, within a vertical container component; defaults to true
+	 * @returns A class that can be used to create instances of this spacer class with the provided height
+	 */
+	static withHeight(height?: string | number, shrinkwrap = true) {
+		return this.with({ height, shrinkwrap });
+	}
 
-  /** Create a preset spacer class with given height (in dp or string with unit), shrinkwrapped by default */
-  static withHeight(minHeight: string | number, shrinkwrap = true) {
-    return this.with({ dimensions: { minHeight }, shrinkwrap });
-  }
+	/**
+	 * Creates a preset spacer class with the specified width
+	 * @param height The spacer width, in pixels or CSS length with unit
+	 * @param shrinkwrap False if the spacer should expand beyond the specified width, where possible, within a horizontal container component; defaults to true
+	 * @returns A class that can be used to create instances of this spacer class with the provided width
+	 */
+	static withWidth(width?: string | number, shrinkwrap = true) {
+		return this.with({ width, shrinkwrap });
+	}
 
-  /** Create a preset spacer class with given width (in dp or string with unit), shrinkwrapped by default */
-  static withWidth(minWidth: string | number, shrinkwrap = true) {
-    return this.with({ dimensions: { minWidth }, shrinkwrap });
-  }
+	/**
+	 * Applies the provided preset properties to this object
+	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 */
+	override applyViewPreset(
+		preset: UIComponent.ViewPreset<UIControl> & {
+			/** Spacer width (in pixels or string with unit) */
+			width?: string | number;
+			/** Spacer height (in pixels or string with unit) */
+			height?: string | number;
+		}
+	) {
+		if (preset.height !== undefined) {
+			preset = {
+				...preset,
+				height: undefined,
+				shrinkwrap: preset.shrinkwrap == null ? true : preset.shrinkwrap,
+				dimensions: {
+					...preset.dimensions,
+					grow: 0,
+					minHeight: preset.height,
+				},
+			};
+			delete preset.height;
+		}
+		if (preset.width !== undefined) {
+			preset = {
+				...preset,
+				width: undefined,
+				shrinkwrap: preset.shrinkwrap == null ? true : preset.shrinkwrap,
+				dimensions: {
+					...preset.dimensions,
+					grow: 0,
+					minWidth: preset.width,
+				},
+			};
+			delete preset.width;
+		}
+		super.applyViewPreset(preset);
+	}
 
-  /** Create a new spacer view component with given (maximum) width and height */
-  constructor(width?: string | number, height?: string | number, shrink?: boolean) {
-    super();
-    this.style = UITheme.getStyle("control", "spacer");
-    if (width !== undefined || height !== undefined) {
-      this.dimensions = {
-        ...this.dimensions,
-        width: width !== undefined ? width : this.dimensions.width,
-        height: height !== undefined ? height : this.dimensions.height,
-        grow: 0,
-        shrink: shrink ? 1 : 0,
-      };
-    } else {
-      this.shrinkwrap = false;
-    }
-  }
-}
+	/** Creates a new spacer view object */
+	constructor() {
+		super();
+		this.style = UIStyle.Control;
 
-export namespace UISpacer {
-  /** UISpacer presets type, for use with `Component.with` */
-  export interface Presets extends UIControl.Presets {
-    /** Spacer width (in dp or string with unit) */
-    width: string | number;
-    /** Spacer height (in dp or string with unit) */
-    height: string | number;
-  }
+		// default shrinkwrap to false
+		this.shrinkwrap = false;
+	}
 }

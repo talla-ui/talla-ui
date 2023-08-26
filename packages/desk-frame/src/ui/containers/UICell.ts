@@ -1,181 +1,154 @@
-import { Binding } from "../../core";
-import {
-  UIComponentEventHandler,
-  UIRenderable,
-  UIRenderableConstructor,
-} from "../UIComponent";
-import { UIStyle } from "../UIStyle";
-import { UITheme, UIColor } from "../UITheme";
-import { UIContainer } from "./UIContainer";
+import type { View } from "../../app/index.js";
+import { UIColor } from "../UIColor.js";
+import { UIComponent } from "../UIComponent.js";
+import { UIStyle } from "../UIStyle.js";
+import { UIContainer } from "./UIContainer.js";
 
-/** Basic animated transition types, used for `UICell.revealTransition` and `UICell.exitTransition`. More transitions may be available depending on platform and cell type. */
-export enum UICellTransition {
-  right = "right",
-  left = "left",
-  up = "up",
-  down = "down",
-  fade = "fade",
-  rightFast = "right-fast",
-  leftFast = "left-fast",
-  upFast = "up-fast",
-  downFast = "down-fast",
-  fadeFast = "fade-fast",
-}
-
-/** Represents a UI component that visually groups other components in a rectangular cell */
+/**
+ * A view class that represents a cell container component
+ *
+ * @description A cell container functions like a regular container component, and lays out other components either vertically (default) or horizontally.
+ *
+ * **JSX tag:** `<cell>`
+ *
+ * @online_docs Refer to the Desk website for more documentation on using this UI component class.
+ */
 export class UICell extends UIContainer {
-  static preset(
-    presets: UICell.Presets,
-    ...components: Array<UIRenderableConstructor | undefined>
-  ): Function {
-    let decoration = presets.decoration;
-    delete presets.decoration;
-    let origDecoration: Readonly<UIStyle.Decoration> | undefined;
-    if (Binding.isBinding(decoration)) {
-      (this as any).presetBinding(
-        "decoration",
-        decoration,
-        function (this: UICell, v: any) {
-          this.decoration = v ? { ...origDecoration!, ...v } : origDecoration;
-        }
-      );
-      decoration = undefined;
-    }
+	/** Creates a new cell container view object with the provided view content */
+	constructor(...content: View[]) {
+		super(...content);
+		this.style = UIStyle.Cell;
 
-    if (presets.allowKeyboardFocus) presets.allowFocus = presets.allowKeyboardFocus;
-    if (presets.selectOnFocus) {
-      presets.allowFocus = true;
-      presets.onFocusIn = "Select";
-      delete presets.selectOnFocus;
-    }
-    let f = super.preset(presets, ...components);
-    return function (this: UICell) {
-      f.call(this);
-      if (decoration) this.decoration = { ...this.decoration, ...decoration };
-    };
-  }
+		// set selection state automatically
+		this.listen((e) => {
+			if (e.source === this) {
+				if (e.name === "Select") {
+					this.selected = true;
+				} else if (e.name === "Deselect") {
+					this.selected = false;
+				}
+			}
+		});
+	}
 
-  /** Create a new cell view component */
-  constructor(...content: UIRenderable[]) {
-    super(...content);
-    this.style = UITheme.getStyle("container", "cell");
-  }
+	/**
+	 * Applies the provided preset properties to this object
+	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 */
+	override applyViewPreset(
+		preset: UIComponent.ViewPreset<
+			UIContainer,
+			this,
+			| "margin"
+			| "background"
+			| "textDirection"
+			| "textColor"
+			| "borderThickness"
+			| "borderColor"
+			| "borderStyle"
+			| "borderRadius"
+			| "dropShadow"
+			| "opacity"
+		> & {
+			/** Options for the appearance of this cell; most of these are overridden by individual properties */
+			decoration?: UIStyle.Definition.Decoration;
+			/** Event that's emitted when the mouse cursor enters the cell area */
+			onMouseEnter?: string;
+			/** Event that's emitted when the mouse cursor leaves the cell area */
+			onMouseLeave?: string;
+			/** Event that's emitted when the cell is selected */
+			onSelect?: string;
+			/** Event that's emitted when the cell is deselected */
+			onDeselect?: string;
+		}
+	) {
+		let decoration = preset.decoration;
+		delete preset.decoration;
 
-  isFocusable() {
-    return !!(this.allowFocus || this.allowKeyboardFocus);
-  }
+		super.applyViewPreset(preset);
 
-  isKeyboardFocusable() {
-    return !!this.allowKeyboardFocus;
-  }
+		// apply style overrides
+		if (decoration) this.decoration = { ...this.decoration, ...decoration };
+	}
 
-  protected applyStyle(style?: UIStyle) {
-    if (!style) return;
-    super.applyStyle(style);
-    this.decoration = style.getStyles().decoration;
-  }
+	protected override applyStyle(style: UIStyle) {
+		super.applyStyle(style);
+		this.decoration = style.getStyles().decoration;
+	}
 
-  /** Options for the appearance of this cell; most of these are overridden by individual properties */
-  decoration!: Readonly<UIStyle.Decoration>;
+	/**
+	 * The current selection state
+	 * - This property is set automatically, based on Select and Deselect events.
+	 */
+	selected = false;
 
-  /** Padding around contained elements (in dp or CSS string, or separate offset values) */
-  padding?: UIStyle.Offsets;
+	/**
+	 * Style definitions related to the appearance of this cell
+	 * - Most of the properties of this style definition object can also be overridden by individual properties of the {@link UICell} object.
+	 */
+	decoration!: Readonly<UIStyle.Definition.Decoration>;
 
-  /** Margin around the entire cell (in dp or CSS string, or separate offset values) */
-  margin?: UIStyle.Offsets;
+	/** Additional space to be added around the entire cell, in pixels or CSS length with unit, **or** an object with separate offset values */
+	margin?: UIStyle.Offsets;
 
-  /** Cell background (`UIColor` or string), defaults to transparent */
-  background?: UIColor | string;
+	/** Cell background color, defaults to undefined (no fill) */
+	background?: UIColor | string;
 
-  /** Text direction (rtl or ltr) for all components within this cell */
-  textDirection?: "ltr" | "rtl";
+	/** Text color, defaults to undefined (no change of color) */
+	textColor?: UIColor | string;
 
-  /** Text color (`UIColor` or string), defaults to `inherit` to inherit the text color from a containing cell or background window */
-  textColor?: UIColor | string;
+	/** Text direction (rtl or ltr) for all components within this cell */
+	textDirection?: "ltr" | "rtl";
 
-  /** Border thickness (in dp or string with unit, or separate offset values) */
-  borderThickness?: UIStyle.Offsets;
+	/** Border color */
+	borderColor?: UIColor | string;
 
-  /** Border color (`UIColor` or string) */
-  borderColor?: UIColor | string;
+	/** Border style (CSS style name), defaults to undefined (solid) */
+	borderStyle?: string;
 
-  /** Border style (CSS), defaults to `solid` */
-  borderStyle?: string;
+	/** Border thickness, in pixels or CSS length with unit, **or** an object with separate thickness values */
+	borderThickness?: UIStyle.Offsets;
 
-  /** Border radius (in dp or CSS string) */
-  borderRadius?: string | number;
+	/** Border radius, in pixels or CSS length with unit */
+	borderRadius?: string | number;
 
-  /** Intensity of drop shadow based on visual 'elevation' level (0-1) */
-  dropShadow?: number;
+	/** Drop shadow elevation level (0–1), defaults to undefined (no dropshadow) */
+	dropShadow?: number;
 
-  /** Opacity (0-1; defaults to fully opaque if undefined) */
-  opacity?: number;
-
-  /** Animated transition that plays when this cell is first rendered */
-  revealTransition?: UICellTransition | string;
-
-  /** Animated transition that plays when this cell is removed from a container */
-  exitTransition?: UICellTransition | string;
-
-  /**
-   * Other CSS attributes that are applied directly to the container, if supported (plain object)
-   * @note Changes to individual properties are not observed by the renderer.
-   */
-  css?: Partial<CSSStyleDeclaration> & { className?: string };
+	/** Opacity level (0–1), defaults to undefined (opaque) */
+	opacity?: number;
 }
 
-/** Represents a cell (see `UICell`) that grows and shrinks along with its content, instead of taking up all available space */
-export let UIFlowCell = UICell.with({ style: "cell_flow" });
+/**
+ * A view class that represents a cell with animated style updates
+ *
+ * @description An animated cell container functions like a regular cell container (see {@link UICell}), but shows animations for all style-related updates where possible.
+ *
+ * **JSX tag:** `<animatedcell>`
+ *
+ * @online_docs Refer to the Desk website for more documentation on using this UI component class.
+ */
+export class UIAnimatedCell extends UICell {
+	/**
+	 * Applies the provided preset properties to this object
+	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 */
+	override applyViewPreset(
+		preset: UIComponent.ViewPreset<
+			UICell,
+			this,
+			"animationDuration" | "animationTiming"
+		>
+	) {
+		super.applyViewPreset(preset);
+	}
 
-/** Represents a cell (see `UICell`) that overlays the entire available area within its parent container */
-export let UICoverCell = UICell.with({ style: "cell_cover" });
+	/** Duration of _all_ style update animations */
+	animationDuration?: number;
 
-export namespace UICell {
-  /** UICell presets type, for use with `Component.with` */
-  export interface Presets extends UIContainer.Presets {
-    /** Options for the appearance of this cell; most of these are overridden by individual properties */
-    decoration?: UIStyle.Decoration;
-    /** Padding around contained elements (in dp or CSS string, or separate offset values) */
-    padding?: UIStyle.Offsets;
-    /** Margin around the entire cell (in dp or CSS string, or separate offset values) */
-    margin?: UIStyle.Offsets;
-    /** Cell background (`UIColor` or string) */
-    background?: UIColor | string;
-    /** Text direction (rtl or ltr) for all components within this cell */
-    textDirection?: "ltr" | "rtl";
-    /** Text color (`UIColor` or string), defaults to `inherit` to inherit the text color from a containing cell or background window */
-    textColor?: UIColor | string;
-    /** Border thickness (in dp or string with unit) */
-    borderThickness?: UIStyle.Offsets;
-    /** Border color (`UIColor` or string) */
-    borderColor?: UIColor | string;
-    /** Border style (CSS), defaults to `solid` */
-    borderStyle?: string;
-    /** Corner radius (in dp or CSS string, defaults to 0) */
-    borderRadius?: string | number;
-    /** Size of drop shadow based on visual 'elevation' (0-1) */
-    dropShadow?: number;
-    /** Opacity (0-1) */
-    opacity?: number;
-
-    /** Set to true to select cells on focus, implies allowFocus as well */
-    selectOnFocus?: boolean;
-    /** Set to true to allow this cell *itself* to receive input focus using mouse, touch, or `UIComponent.requestFocus` */
-    allowFocus?: boolean;
-    /** Set to true to allow this cell *itself* to receive input focus using the keyboard as well as other methods; implies `allowFocus` */
-    allowKeyboardFocus?: boolean;
-
-    /** Animation that plays when this cell is first rendered */
-    revealTransition?: UICellTransition | string;
-    /** Animation that plays when this cell is removed from a container */
-    exitTransition?: UICellTransition | string;
-
-    /** Other CSS attributes that are applied directly to the container, if supported (plain object). */
-    css?: Partial<CSSStyleDeclaration> & { className?: string };
-
-    onMouseEnter?: UIComponentEventHandler<UICell>;
-    onMouseLeave?: UIComponentEventHandler<UICell>;
-    onSelect?: UIComponentEventHandler<UICell>;
-    onDeselect?: UIComponentEventHandler<UICell>;
-  }
+	/**
+	 * Timing curve of _all_ style update animations
+	 * - This property may be set to `linear`, `ease`, or an array with cubic bezier curve parameters.
+	 */
+	animationTiming?: "linear" | "ease" | [number, number, number, number];
 }

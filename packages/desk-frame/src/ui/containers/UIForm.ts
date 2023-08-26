@@ -1,39 +1,46 @@
-import { ComponentEventHandler, managed, ManagedRecord, bind } from "../../core";
-import { UIRenderableConstructor } from "../UIComponent";
-import { UICell } from "./UICell";
-import { UIRenderableController } from "../UIRenderableController";
-import { UIFormContext } from "../UIFormContext";
-
-/** Base class for encapsulated cell */
-const _FormCell = UICell.with({ style: "form", accessibleRole: "form" });
+import { ManagedEvent } from "../../core/index.js";
+import type { View } from "../../app/index.js";
+import { UIFormContext } from "../UIFormContext.js";
+import { UIColumn } from "./UIColumn.js";
+import { UIComponent } from "../UIComponent.js";
 
 /**
- * Represents a UI component that groups form controls and other content in a cell.
- * @note This component encapsulates content in a `UICell` component. To set a form context binding without grouping content, use `UIFormContextController`.
+ * A view class for a column container that can be used to bind form controls to a single {@link UIFormContext}
+ *
+ * @description A form container functions like a regular column container component, but includes a {@link formContext} property that's used to manage input values.
+ *
+ * **JSX tag:** `<form>`
+ *
+ * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
-export class UIForm extends UIRenderableController {
-  static preset(
-    presets: UIForm.Presets,
-    ...components: Array<UIRenderableConstructor | undefined>
-  ) {
-    let formContextPreset = presets.formContext || bind("formContext");
-    delete presets.formContext;
-    let CellClass = _FormCell.with(presets, ...components);
-    this.presetBoundComponent("content", CellClass).limitBindings("formContext");
-    return super.preset({ formContext: formContextPreset }, CellClass);
-  }
+export class UIForm extends UIColumn {
+	/** Creates a new form container (column) view object with the provided view content */
+	constructor(...content: View[]) {
+		super(...content);
+		this.accessibleRole = "form";
+	}
 
-  /** Form state context; should be bound to a `UIFormContext` component */
-  @managed
-  formContext?: UIFormContext;
-}
+	/**
+	 * Applies the provided preset properties to this object
+	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 */
+	override applyViewPreset(
+		preset: UIComponent.ViewPreset<UIColumn, this, "formContext"> & {
+			/** Event that's emitted when the form is submitted */
+			onSubmit?: string;
+		}
+	) {
+		super.applyViewPreset(preset);
+	}
 
-export namespace UIForm {
-  /** UIForm presets type, for use with `Component.with` */
-  export interface Presets extends UICell.Presets {
-    /** Form state context; should be bound to a `UIFormContext` component. If not set, automatically binds to a 'formContext' property on the bound parent component */
-    formContext?: ManagedRecord;
-    /** Event handler for form submissions */
-    onSubmit: ComponentEventHandler<UIForm>;
-  }
+	/**
+	 * Form state context object
+	 * - This object is used by contained input elements, to get and set input values.
+	 * - This property defaults to an empty {@link UIFormContext} object, but can be bound to a property of a containing view or view activity object.
+	 */
+	formContext? = new UIFormContext();
+
+	protected override delegateContentEvent(event: ManagedEvent) {
+		return super.delegateContentEvent(event, true);
+	}
 }

@@ -1,0 +1,14 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noImplicitOverride": true,
+		"noUncheckedIndexedAccess": true,
+		"module": "NodeNext",
+		"moduleResolution": "node",
+		"resolveJsonModule": true,
+		"target": "ES2018",
+		"outDir": "../build/pipeline"
+	}
+}

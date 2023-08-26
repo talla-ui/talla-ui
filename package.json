@@ -1,0 +1,45 @@
+{
+  "name": "desk",
+  "description": "Desk framework: repository root",
+  "version": "0.0.0",
+  "publishConfig": {
+    "tag": "dev"
+  },
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "postinstall": "run-s install:desk-frame install:test install:webcontext install:www",
+    "install:desk-frame": "cd packages/desk-frame && npm install",
+    "install:test": "cd packages/test && npm install",
+    "install:webcontext": "cd packages/webcontext && npm install",
+    "install:www": "cd packages/www && npm install",
+    "build": "run-s build:desk-frame build:test build:webcontext build:www",
+    "build:desk-frame": "cd packages/desk-frame && npm run build",
+    "build:test": "cd packages/test && npm run build",
+    "build:webcontext": "cd packages/webcontext && npm run build",
+    "build:www": "cd packages/www && npm run build",
+    "clean": "run-s clean:desk-frame clean:test clean:webcontext clean:www",
+    "clean:desk-frame": "cd packages/desk-frame && npm run clean",
+    "clean:test": "cd packages/test && npm run clean",
+    "clean:webcontext": "cd packages/webcontext && npm run clean",
+    "clean:www": "cd packages/www && npm run clean",
+    "test": "run-s test:test test:desk-frame",
+    "test:desk-frame": "cd packages/desk-frame && npm test",
+    "test:test": "cd packages/test && npm test",
+    "www": "cd packages/www && npm run make",
+    "www-build": "cd packages/www && npm run build && npm run make"
+  },
+  "devDependencies": {
+    "@types/node": "^18.13.0",
+    "@types/glob": "^8.0.1",
+    "c8": "^7.12.0",
+    "esbuild": "^0.17.7",
+    "glob": "^8.1.0",
+    "http-server": "^14.1.1",
+    "markdown-pipeline": "^3.0.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^4.1.2",
+    "tslib": "^2.4.1",
+    "typescript": "latest"
+  }
+}

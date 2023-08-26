@@ -1,48 +1,52 @@
 {
-  "name": "typescene",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Typescene framework",
-  "author": "Jelmer Cormont",
-  "license": "MIT",
-  "publishConfig": {
-    "tag": "next"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/typescene/typescene.git"
-  },
-  "bugs": {
-    "url": "https://github.com/typescene/typescene/issues"
-  },
-  "homepage": "http://typescene.dev/",
-  "main": "./index.js",
-  "module": "./index.js",
-  "typings": "./index.d.ts",
-  "files": [
-    "dist",
-    "dist-es6",
-    "dist-es8",
-    "index.js",
-    "index.d.ts"
-  ],
-  "scripts": {
-    "clean": "rimraf dist dist-es6 dist-es8",
-    "prepublishOnly": "npm run build",
-    "prebuild": "npm run clean && tsc -p src --declaration",
-    "build-es8": "tsc -p src --target es2017 --outDir dist-es8 --removeComments",
-    "build-es6": "tsc -p src --target es2015 --outDir dist-es6 --removeComments",
-    "build-es5": "tsc -p src --removeComments",
-    "build": "npm run build-es5 && npm run build-es6 && npm run build-es8",
-    "postbuild": "node test/run",
-    "test": "node test/run"
-  },
-  "dependencies": {
-    "tslib": "^2.3.1"
-  },
-  "devDependencies": {
-    "esm": "^3.2.25",
-    "rimraf": "^3.0.2",
-    "typescript": "4.4"
-  }
+	"private": true,
+	"name": "desk-frame",
+	"version": "0.0.0",
+	"description": "",
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"type": "module",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"clean": "rimraf coverage dist dist-* .test-run",
+		"prebuild": "npm run clean",
+		"build": "run-p build:*",
+		"build:esnext": "tsc -p src --declaration",
+		"build:es2020": "tsc -p src --target es2020 --outdir dist-es2020",
+		"build:es2018": "tsc -p src --target es2018 --outdir dist-es2018",
+		"build:es2015": "tsc -p src --target es2015 --outdir dist-es2015",
+		"dts": "tsc -p src --declaration --emitDeclarationOnly",
+		"pretest": "tsc -p test",
+		"test": "node .test-run",
+		"posttest": "rimraf .test-run",
+		"pretest-c8": "tsc -p test",
+		"test-c8": "c8 node .test-run",
+		"posttest-c8": "rimraf .test-run"
+	},
+	"prettier": {
+		"useTabs": true
+	},
+	"c8": {
+		"reporter": [
+			"html"
+		],
+		"exclude": [
+			".test-run"
+		]
+	},
+	"files": [
+		"dist",
+		"dist-es2015",
+		"dist-es2018",
+		"dist-es2020"
+	],
+	"dependencies": {
+		"tslib": "^2.5.0"
+	},
+	"devDependencies": {
+		"@desk-framework/test": "file:../test"
+	}
 }

@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"experimentalDecorators": true,
+		"strict": true,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noImplicitOverride": true,
+		"noUncheckedIndexedAccess": true,
+		"module": "esnext",
+		"moduleResolution": "node",
+		"target": "esnext",
+		"lib": ["dom", "esnext"],
+		"outDir": "../.test-run"
+	}
+}

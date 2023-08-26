@@ -1,353 +1,303 @@
-import {
-  Component,
-  ComponentConstructor,
-  ComponentEvent,
-  ManagedEvent,
-  Binding,
-} from "../core";
-import { err, ERROR } from "../errors";
-import { UIContainer } from "./containers";
-import { UIRenderContext } from "./UIRenderContext";
-import { UIStyle } from "./UIStyle";
-import { UITheme } from "./UITheme";
-
-/** String type or object with toString method */
-export type Stringable = string | { toString(): string };
+import { app, RenderContext, View } from "../app/index.js";
+import { Binding, ManagedEvent } from "../core/index.js";
+import { err, ERROR, invalidArgErr } from "../errors.js";
+import { UIStyle } from "./UIStyle.js";
 
 /** Empty style instance, used on plain UIComponent instances */
 const _emptyStyle = new UIStyle();
 
-/** Event handler type (see `Component.with`), as a string or function */
-export type UIComponentEventHandler<TComponent = UIComponent, TEvent = UIComponentEvent> =
-  | string
-  | ((this: TComponent, e: TEvent) => void);
+/** Type definition for an event that's emitted on UI components */
+export type UIComponentEvent<
+	TSource extends UIComponent = UIComponent,
+	TData extends unknown = unknown,
+	TName extends string = string
+> = ManagedEvent<TSource, TData, TName>;
 
-/** Event that is emitted on a particular UI component */
-export class UIComponentEvent<
-  TSource extends UIComponent = UIComponent
-> extends ComponentEvent<TSource> {
-  constructor(name: string, source: TSource, inner?: ManagedEvent, event?: any) {
-    super(name, source, inner);
-    this.event = event;
-  }
+/**
+ * Base class for built-in UI components
+ *
+ * @description
+ * This class provides common infrastructure for UI components such as {@link UIButton} and {@link UIColumn}. The UIComponent class is an abstract class and can't be instantiated or rendered on its own.
+ *
+ * UI components can be constructed directly using `new`, but are often created as part of a 'preset' view hierarchy that's defined using the static {@link UIComponent.with with()} method on view classes, e.g. `UIButton.with({ ... })` or `UIColumn.with({ ... }, ...)`.
+ *
+ * @online_docs Refer to the Desk website for more documentation on using UI components.
+ *
+ * @see {@link UIComponent.with()}
+ * @hideconstructor
+ */
+export abstract class UIComponent extends View {
+	/**
+	 * Creates a preset view class for a UI component
+	 *
+	 * @summary This static method returns a new constructor, that applies the provided property values, bindings, and event handlers to all instances of the resulting view class.
+	 *
+	 * Note that this method should be called on UIComponent subclasses rather than UIComponent itself, and is further overridden by {@link UIContainer} to also accept a list of constructors for contained content, see {@link UIContainer.with()}.
+	 *
+	 * For convenience, several subclasses define shortcut `with...` methods for frequently used preset properties. For example, the {@link UILabel} class includes a static {@link UILabel.withText()} method, which takes a string argument instead of an object.
+	 *
+	 * @online_docs Refer to the Desk website for more documentation on properties and events that can be preset using the `with` method for every UI component.
+	 *
+	 * @param preset Property values, bindings, and event handlers, specific to the type of component.
+	 * @returns A class that can be used to create instances of this control class with the provided property values, bindings, and event handlers.
+	 */
+	static with<TViewClass, TComponent extends UIComponent>(
+		this: TViewClass & (new (...args: any[]) => TComponent),
+		preset: UIComponent.ViewPreset<TComponent>
+	): TViewClass {
+		return class PresetUIComponent extends (this as any) {
+			constructor(...args: any[]) {
+				super(...args);
+				this.applyViewPreset({ ...preset });
+			}
+		} as any;
+	}
 
-  /** Platform event, if any */
-  readonly event?: any;
-}
+	/** Creates a new instance of this UI component class */
+	constructor() {
+		super();
 
-/** Event that is emitted on a particular UI component before it is fist rendered, __only once__. Instances should not be reused. */
-export class UIBeforeRenderEvent<TSource extends UIComponent> extends ManagedEvent {
-  /** Create a new event to be emitted before given component is rendered */
-  constructor(source: TSource) {
-    super("BeforeRender");
-    this.source = source;
-  }
+		// set style property accessor (observable)
+		this._style = _emptyStyle;
+		Object.defineProperty(this, "style", {
+			configurable: true,
+			get(this: UIComponent) {
+				return this._style;
+			},
+			set(this: UIComponent, v) {
+				if (v !== this._style) this.applyStyle(v || _emptyStyle);
+			},
+		});
+	}
 
-  /** Event source UI component */
-  readonly source: TSource;
-}
+	/**
+	 * Applies the provided preset properties to this object
+	 * - This method is called automatically. Don't call this method after constructing a UI component.
+	 */
+	override applyViewPreset(preset: {
+		/** Style instance or theme style name starting with `@` */
+		style?: UIStyle | `@${string}` | Binding<UIStyle>;
+		/** True if this component should be hidden from view (doesn't stop the component from being rendered) */
+		hidden?: boolean | Binding<boolean>;
+		/** Options for the dimensions of this component (overrides) */
+		dimensions?: UIStyle.Definition.Dimensions;
+		/** Options for the positioning of this component within parent component(s) (overrides) */
+		position?: UIStyle.Definition.Position;
+		/** WAI-ARIA role for this component, if applicable */
+		accessibleRole?: string | Binding<string>;
+		/** WAI-ARIA label text for this component (not tooltip), if applicable */
+		accessibleLabel?: string | Binding<string>;
+		/** True if this component should be focused immediately after rendering for the first time */
+		requestFocus?: boolean;
+		/** Event that's emitted before rendering the component the first time */
+		onBeforeRender?: string;
+		/** Event that's emitted by the renderer after rendering the component */
+		onRendered?: string;
+		/** Event that's emitted when the component gained input focus */
+		onFocusIn?: string;
+		/** Event that's emitted when the component lost input focus */
+		onFocusOut?: string;
+		/** Event that's emitted when the component has been clicked or otherwise activated */
+		onClick?: string;
+		/** Event that's emitted when the component has been double-clicked */
+		onDoubleClick?: string;
+		/** Event that's emitted when a context menu has been requested on the output element */
+		onContextMenu?: string;
+		/** Event that's emitted when a mouse button has been released */
+		onMouseUp?: string;
+		/** Event that's emitted when a mouse button has been pressed down */
+		onMouseDown?: string;
+		/** Event that's emitted when a key button has been released */
+		onKeyUp?: string;
+		/** Event that's emitted when a key button has been pressed down */
+		onKeyDown?: string;
+		/** Event that's emitted when a key button has been pressed */
+		onKeyPress?: string;
+		/** Event that's emitted when the Enter key button has been pressed */
+		onEnterKeyPress?: string;
+		/** Event that's emitted when the space bar button has been pressed */
+		onSpacebarPress?: string;
+		/** Event that's emitted when the Backspace key has been pressed */
+		onBackspaceKeyPress?: string;
+		/** Event that's emitted when the Delete key has been pressed */
+		onDeleteKeyPress?: string;
+		/** Event that's emitted when the Escape key has been pressed */
+		onEscapeKeyPress?: string;
+		/** Event that's emitted when the left arrow key has been pressed */
+		onArrowLeftKeyPress?: string;
+		/** Event that's emitted when the right arrow key has been pressed */
+		onArrowRightKeyPress?: string;
+		/** Event that's emitted when the up arrow key has been pressed */
+		onArrowUpKeyPress?: string;
+		/** Event that's emitted when the down arrow key has been pressed */
+		onArrowDownKeyPress?: string;
+	}) {
+		// make sure style is set first, before overrides
+		if (typeof preset.style === "string") {
+			preset.style = new UIStyle(preset.style);
+		}
+		let position = preset.position;
+		delete preset.position;
+		let dimensions = preset.dimensions;
+		delete preset.dimensions;
 
-/** Event that is emitted on a particular UI component when it is rendered, to be handled by a platform specific renderer (observer). Instances should not be reused. */
-export class UIRenderEvent<TSource extends UIComponent> extends ManagedEvent {
-  /** Create a new event that encapsulates given render callback (from the application level `UIRenderContext`, or from a containing UI component) */
-  constructor(source: TSource, renderCallback: UIRenderContext.RenderCallback) {
-    super("UIRender");
-    this.source = source;
-    this.renderCallback = renderCallback;
-  }
+		// request focus (renderer will remember)
+		if (preset.requestFocus) {
+			setTimeout(() => this.requestFocus(), 1);
+			delete preset.requestFocus;
+		}
 
-  /** Event source UI component */
-  readonly source: TSource;
+		// apply all other property values, bindings, and event handlers
+		super.applyViewPreset(preset);
 
-  /** Initial render callback, to be called only once. The callback always returns a new callback that can be used for further updates. */
-  readonly renderCallback: UIRenderContext.RenderCallback;
-}
+		if (this._style === _emptyStyle) this.applyStyle(_emptyStyle);
+		if (position) this.position = { ...this.position, ...position };
+		if (dimensions) this.dimensions = { ...this.dimensions, ...dimensions };
+	}
 
-/** Focus request type, used by `UIComponent.requestFocus` */
-export enum UIFocusRequestType {
-  SELF = 0,
-  FORWARD = 1,
-  REVERSE = -1,
-}
+	/**
+	 * Style definitions applied to this component, as a {@link UIStyle} object
+	 * - This property is set by the UI component constructor, for example {@link UILabel} sets its style property to `UIStyle.Label`.
+	 * - When set again, the definitions from the new {@link UIStyle} object replace all existing styles, setting properties such as {@link UIComponent.dimensions}, {@link UIComponent.position}, and {@link UIControl.decoration}.
+	 * - Hence, the final style of a component depends on the order in which the {@link UIComponent.style style} and other properties are set. For preset component classes (i.e. using {@link UIComponent.with with()}), the {@link UIComponent.style style} property is always set first, before any overriding style definition objects on the same preset object; refer to the example below.
+	 *
+	 * @example
+	 * // Preset dimensions are applied after style
+	 * const MyLabel = UILabel.with({
+	 *   text: "I'm tall and red",
+	 *   dimensions: { height: 300 }, // applied
+	 *   style: UIStyle.Label.extend({
+	 *     textStyle: { color: UIColor.Red }, // applied
+	 *     dimensions: { height: 32 } // overridden
+	 *   })
+	 * });
+	 * let label = new MyLabel();
+	 * label.dimensions.height // => 300
+	 * label.textStyle.color // => UIColor.Red
+	 *
+	 * @example
+	 * // Setting `style` overwrites all existing definitions
+	 * label.dimensions = { ...label.dimensions, height: 200 };
+	 * label.dimensions.height // => 200
+	 *
+	 * label.style = UIStyle.Label.extend({
+	 *   textStyle: { color: UIColor.Red },
+	 *   dimensions: { height: 32 }
+	 * });
+	 * label.dimensions.height // => 32
+	 */
+	declare style: UIStyle;
 
-/** Event that is emitted on a particular UI component when it requests focus for itself or a sibling component; handled by the component renderer if possible. Instances should not be reused or re-emitted. */
-export class UIFocusRequestEvent<TSource extends UIComponent> extends ManagedEvent {
-  /** Create a new event for a focus request for given component and/or direction (self/reverse/forward, defaults to self) */
-  constructor(source: TSource, direction: UIFocusRequestType = UIFocusRequestType.SELF) {
-    super("UIFocusRequest");
-    this.source = source;
-    this.direction = direction;
-  }
+	/**
+	 * True if the component should be hidden from view
+	 * - UI components may still be rendered even if they're hidden. However, container component isn't rendered while containers themselves are hidden.
+	 * - Alternatively, use {@link UIConditional} to show and hide content dynamically.
+	 * @see UIConditional
+	 */
+	hidden?: boolean;
 
-  /** Event source UI component */
-  readonly source: TSource;
+	/**
+	 * Style definitions related to the dimensions of this component
+	 * - This object is taken from {@link UIComponent.style} when set, but can be assigned directly to override definitions from {@link UIStyle}.
+	 * - Refer to {@link UIStyle.Definition.Dimensions} for a list of properties on this object.
+	 */
+	dimensions!: Readonly<UIStyle.Definition.Dimensions>;
 
-  /** Focus direction */
-  readonly direction: UIFocusRequestType;
-}
+	/**
+	 * Style definitions related to the positioning of this component within parent component(s)
+	 * - This object is taken from {@link UIComponent.style} when set, but can be assigned directly to override definitions from {@link UIStyle}.
+	 * - Refer to {@link UIStyle.Definition.Position} for a list of properties on this object.
+	 */
+	position!: Readonly<UIStyle.Definition.Position>;
 
-/** Type definition for a component that can be rendered on its own */
-export interface UIRenderable extends Component {
-  /** Trigger asynchronous rendering for this component, and all contained components (if any) */
-  render: UIComponent["render"];
-}
+	/** WAI-ARIA role for this component, if applicable */
+	accessibleRole?: string;
 
-/** Type definition for a constructor of a component that can be instantiated and rendered on its own (see `UIRenderable`) */
-export type UIRenderableConstructor = ComponentConstructor<UIRenderable> &
-  (new () => UIRenderable);
+	/** WAI-ARIA label text for this component (not tooltip), if applicable */
+	accessibleLabel?: string;
 
-/** Represents a visible part of the user interface. */
-export abstract class UIComponent extends Component implements UIRenderable {
-  static preset(presets: UIComponent.Presets, ...components: unknown[]): Function {
-    // replace `requestFocus` with event handler
-    if (presets.requestFocus) {
-      delete presets.requestFocus;
-      presets.onRendered = function () {
-        if (!this._requestedFocusBefore) {
-          this._requestedFocusBefore = true;
-          this.requestFocus();
-        }
-      };
-    }
+	/**
+	 * Requests input focus on this component
+	 * - This method emits an event, which is handled by the renderer if and when possible.
+	 */
+	requestFocus() {
+		this.emit(new RenderContext.RendererEvent("RequestFocus", this));
+		return this;
+	}
 
-    // preset style properties, remove from preset object itself
-    let style: UIStyle | undefined, styleName: string | undefined;
-    if (typeof presets.style === "string") styleName = presets.style;
-    else style = presets.style;
-    let dimensions = presets.dimensions;
-    let position = presets.position;
-    delete presets.style;
-    delete presets.dimensions;
-    delete presets.position;
-    let origStyle: UIStyle | undefined;
-    let origDimensions: Readonly<UIStyle.Dimensions> | undefined;
-    let origPosition: Readonly<UIStyle.Position> | undefined;
-    if (Binding.isBinding(style)) {
-      (this as any).presetBinding("style", style, function (this: UIComponent, v: any) {
-        this.style = v ? origStyle!.mixin(v) : origStyle!;
-      });
-      style = undefined;
-    }
-    if (Binding.isBinding(dimensions)) {
-      (this as any).presetBinding(
-        "dimensions",
-        dimensions,
-        function (this: UIComponent, v: any) {
-          this.dimensions = v ? { ...origDimensions!, ...v } : origDimensions;
-        }
-      );
-      dimensions = undefined;
-    }
-    if (Binding.isBinding(position)) {
-      (this as any).presetBinding(
-        "position",
-        position,
-        function (this: UIComponent, v: any) {
-          this.position = v ? { ...origPosition!, ...v } : origPosition;
-        }
-      );
-      position = undefined;
-    }
+	/**
+	 * Requests input focus for the next sibling component
+	 * - This method emits an event, which is handled by the renderer if and when possible.
+	 */
+	requestFocusNext() {
+		this.emit(new RenderContext.RendererEvent("RequestFocusNext", this));
+		return this;
+	}
 
-    // return preset function
-    let f = super.preset(presets, ...components);
-    return function (this: UIContainer) {
-      f.call(this);
-      let mixin = style || (styleName && UITheme.current.styles[styleName]);
-      if (mixin) {
-        if (this._style === _emptyStyle) this.style = mixin;
-        else this.style = this._style.mixin(mixin);
-      } else origStyle = this.style;
-      if (dimensions) this.dimensions = { ...this.dimensions, ...dimensions };
-      else origDimensions = this.dimensions;
-      if (position) this.position = { ...this.position, ...position };
-      else origPosition = this.position;
-    };
-  }
+	/**
+	 * Requests input focus for the previous sibling component
+	 * - This method emits an event, which is handled by the renderer if and when possible.
+	 */
+	requestFocusPrevious() {
+		this.emit(new RenderContext.RendererEvent("RequestFocusPrevious", this));
+		return this;
+	}
 
-  /** Create and emit a UI event with given name and a reference to this component, as well as an optional platform event.
-   * @deprecated in v3.1 */
-  propagateComponentEvent(name: string, inner?: ManagedEvent, event?: any) {
-    if (!this.managedState) return;
-    if (!event && inner instanceof UIComponentEvent) {
-      event = inner.event;
-    }
-    this.emit(UIComponentEvent, name, this, inner, event);
-  }
+	/**
+	 * Applies all style definitions from the provided {@link UIStyle} object
+	 * - Do not use this method directly, simply assign to {@link UIComponent.style} if needed, or use one of the individual override properties instead.
+	 * - This method is overridden by subclasses to copy applicable styles to individual properties, such as `dimensions`, `layout`, and `decoration`.
+	 */
+	protected applyStyle(style: UIStyle) {
+		if (!(style instanceof UIStyle)) {
+			throw invalidArgErr("style"); // Invalid style
+		}
+		this._style = style;
+		this.dimensions = style.getStyles().dimensions;
+		this.position = style.getStyles().position;
+	}
 
-  /** Override event delegation, to _also_ propagate events of type `UIComponentEvent` */
-  protected delegateEvent(e: ManagedEvent, propertyName: string) {
-    if (super.delegateEvent(e, propertyName) !== true && e instanceof UIComponentEvent) {
-      this.emit(e);
-      return true;
-    }
-  }
+	/**
+	 * Triggers asynchronous rendering for this component, and all contained components, if any
+	 * - This method is invoked automatically, and should not be called by application code. However, it may be overridden to implement a UI component with custom platform-specific rendering code.
+	 * @param callback A render callback, usually provided by a container or the application {@link RenderContext} instance
+	 */
+	render(callback: RenderContext.RenderCallback) {
+		if (!this._renderer) {
+			let renderer = (this._renderer =
+				app.renderer && app.renderer.createObserver(this));
+			if (!renderer) throw err(ERROR.UIComponent_NoRenderer);
+			renderer.observe(this);
+			this.emit(new RenderContext.RendererEvent("BeforeRender", this));
+		}
+		let event = new RenderContext.RendererEvent("Render", this);
+		event.render = callback;
+		this.emit(event);
+		return this;
+	}
 
-  /** Trigger asynchronous rendering for this component, and all contained components (if any). Rendered output is passed to given callback (from the application level `UIRenderContext`, or from a containing UI component). */
-  render(callback: UIRenderContext.RenderCallback) {
-    if (!this._firstRendered) {
-      this._firstRendered = true;
-      this.emit(UIBeforeRenderEvent, this);
-    }
-    this.emit(UIRenderEvent, this, callback);
-  }
+	/** Last rendered output, if any; set by the UI component renderer */
+	lastRenderOutput?: RenderContext.Output;
 
-  private _firstRendered?: boolean;
-
-  /** Returns true if this component can be focused directly using mouse or touch, or manually using `UIComponent.requestFocus`. This method may be overridden by derived component classes, but the return value must be constant for each instance. */
-  isFocusable() {
-    return false;
-  }
-
-  /** Returns true if this component can be focused using the keyboard as well as using other methods (rather than direct manipulation only). This method may be overridden by derived component classes, but the return value must be constant for each instance. */
-  isKeyboardFocusable() {
-    return false;
-  }
-
-  /**
-   * Request input focus on this component.
-   * @note Not all components can be focused. Components can only be focused after they are rendered, so consider using this method inside of a `Rendered` event handler.
-   */
-  requestFocus() {
-    this.emit(UIFocusRequestEvent, this);
-  }
-
-  /** Request input focus for the next sibling component */
-  requestFocusNext() {
-    this.emit(UIFocusRequestEvent, this, UIFocusRequestType.FORWARD);
-  }
-
-  /** Request input focus for the previous sibling component */
-  requestFocusPrevious() {
-    this.emit(UIFocusRequestEvent, this, UIFocusRequestType.REVERSE);
-  }
-
-  /** Applies given style set to individual style objects (e.g. `UIComponent.dimensions`). This method is overridden by derived classes to copy only applicable styles */
-  protected applyStyle(style?: UIStyle) {
-    if (!style) return;
-    this.dimensions = style.getStyles().dimensions;
-    this.position = style.getStyles().position;
-  }
-
-  /**
-   * Combined style set, as an instance of `UIStyle`; individual style object properties can be overridden, which will not affect the `style` property.
-   * @note When this property is preset (using `.with(...)`), the preset value is _mixed in_ to the current style set, rather than replacing it altogether. The result is always applied before individual style objects such as `dimensions` and `position`. However, setting this property directly on a component instance will completely remove existing styles.
-   */
-  get style() {
-    return this._style;
-  }
-  set style(v) {
-    if (v === this._style) return;
-    if (!(v instanceof UIStyle)) {
-      throw err(ERROR.UIStyle_Invalid);
-    }
-    this.applyStyle((this._style = v));
-  }
-  private _style = _emptyStyle;
-
-  /** Set to true to hide this component from view (does not stop the component from being rendered) */
-  hidden?: boolean;
-
-  /** Options for the dimensions of this component */
-  dimensions!: Readonly<UIStyle.Dimensions>;
-
-  /** Options for the positioning of this component within parent component(s) */
-  position!: Readonly<UIStyle.Position>;
-
-  /** WAI-ARIA role for this component, if applicable */
-  accessibleRole?: string;
-
-  /** WAI-ARIA label text for this component (not tooltip), if applicable */
-  accessibleLabel?: string;
-
-  /** Last rendered output, if any; set by the renderer */
-  lastRenderOutput?: UIRenderContext.Output<this>;
-
-  private _requestedFocusBefore?: boolean;
+	private _style: UIStyle;
+	private _renderer?: any;
 }
 
 export namespace UIComponent {
-  /** UIComponent base presets type, for use with `Component.with` */
-  export interface Presets {
-    /** Style set (either an instance of `UIStyle` *or* the name of a style set defined in `UITheme.current`), which is *mixed into* the current style set on the component, before setting any other style properties */
-    style?: UIStyle | string;
-    /** Set to true to hide this component from view (does not stop the component from being rendered) */
-    hidden?: boolean;
-    /** Options for the dimensions of this component (overrides) */
-    dimensions?: Partial<UIStyle.Dimensions | {}>;
-    /** Options for the positioning of this component within parent component(s) (overrides) */
-    position?: Partial<UIStyle.Position | {}>;
-    /** WAI-ARIA role for this component, if applicable */
-    accessibleRole?: string;
-    /** WAI-ARIA label text for this component (not tooltip), if applicable */
-    accessibleLabel?: string;
-    /** Set to true to request focus immediately after rendering for the first time; cannot be used together with `onRendered` */
-    requestFocus?: boolean;
-
-    // general event handlers
-    onRendered?: string | ((this: UIComponent) => void);
-    onBeforeRender?: UIComponentEventHandler;
-    onFocusIn?: UIComponentEventHandler;
-    onFocusOut?: UIComponentEventHandler;
-    onClick?: UIComponentEventHandler;
-    onDoubleClick?: UIComponentEventHandler;
-    onContextMenu?: UIComponentEventHandler;
-    onMouseUp?: UIComponentEventHandler;
-    onMouseDown?: UIComponentEventHandler;
-    onKeyUp?: UIComponentEventHandler;
-    onKeyDown?: UIComponentEventHandler;
-    onKeyPress?: UIComponentEventHandler;
-    onEnterKeyPress?: UIComponentEventHandler;
-    onSpacebarPress?: UIComponentEventHandler;
-    onBackspaceKeyPress?: UIComponentEventHandler;
-    onDeleteKeyPress?: UIComponentEventHandler;
-    onEscapeKeyPress?: UIComponentEventHandler;
-    onArrowLeftKeyPress?: UIComponentEventHandler;
-    onArrowRightKeyPress?: UIComponentEventHandler;
-    onArrowUpKeyPress?: UIComponentEventHandler;
-    onArrowDownKeyPress?: UIComponentEventHandler;
-  }
-
-  /** Stateful renderer for dynamic content (used by `UIRenderableController`, `ViewComponent`, etc.) */
-  export class DynamicRendererWrapper {
-    constructor() {}
-
-    /** Render given content using given callback, or previously stored callback */
-    render(content?: UIRenderable, callback?: UIRenderContext.RenderCallback) {
-      this._seq++;
-      if (!content && this._renderCallback) {
-        // content went missing, use old callback to remove output
-        this._renderCallback = this._renderCallback(undefined);
-      }
-      if (callback && callback !== this._renderCallback) {
-        // save callback first
-        if (this._renderCallback) this._renderCallback(undefined);
-        this._renderCallback = callback;
-      }
-      if (content && this._renderCallback) {
-        // render content now
-        let seq = this._seq;
-        let renderProxy: UIRenderContext.RenderCallback = (output, afterRender) => {
-          if (seq === this._seq) {
-            this._renderCallback = this._renderCallback!(output, afterRender);
-            seq = ++this._seq;
-          }
-          return renderProxy;
-        };
-        content.render(renderProxy);
-      }
-    }
-
-    /** Remove previously rendered output */
-    removeAsync() {
-      if (!this._renderCallback) return;
-      return new Promise(resolve => {
-        this._renderCallback = this._renderCallback!(undefined, resolve);
-        this._seq++;
-      });
-    }
-
-    private _renderCallback?: UIRenderContext.RenderCallback;
-    private _seq = 0;
-  }
+	/**
+	 * Type definition for the object that can be used to preset a UIComponent view constructor
+	 * @summary This type is used to put together the object type for e.g. `.with()` on a UIComponent subclass, based on the provided type parameters.
+	 * - TBase is used to infer the type of the parameter accepted by {@link View.applyViewPreset()} on a subclass.
+	 * - TView is used to infer the type of a property.
+	 * - K is a string type containing all properties to take from TView.
+	 */
+	export type ViewPreset<
+		TBase extends View,
+		TView = any,
+		K extends keyof TView = never
+	> = TBase extends {
+		applyViewPreset(preset: infer P): void;
+	}
+		? P & { [P in K]?: TView[P] | Binding<TView[P]> }
+		: never;
 }

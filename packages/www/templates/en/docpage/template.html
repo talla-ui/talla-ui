@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link
+			href="https://fonts.googleapis.com/css?family=Material+Icons&display=block"
+			rel="stylesheet"
+		/>
+		<link
+			href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono:300,500,400i|IBM+Plex+Sans:300,500,800,300i,500i&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="/style.css?t=<!--{{timestamp}}-->" />
+		<title>
+			<!--{{html-insert prop="title" default="Documentation"}}--> - Desk
+			framework
+		</title>
+	</head>
+	<body class="docpage">
+		<div class="docpage_header">
+			<a href="/">
+				<img
+					src="/assets/logo.png"
+					class="docpage_header_logo"
+					alt="Desk logo"
+				/>
+			</a>
+			<div class="header_links">
+				<a href="/en/about.html">About</a>
+				<a href="/en/docs/index.html">Docs</a>
+				<a href="https://github.com/desk-framework/desk" target="_blank">
+					<img src="/assets/github-mark-white.svg" alt="GitHub" />
+				</a>
+			</div>
+		</div>
+		<div class="docpage_wrapper">
+			<div id="docpage-searchbar" class="docpage_searchbar"></div>
+			<section id="docpage-navbar" class="docpage_navbar">
+				<!--{{html-insert prop="navbar_html" raw}}-->
+			</section>
+			<div class="docpage_content">
+				<article class="docpage">
+					<!--{{template-content}}-->
+				</article>
+			</div>
+		</div>
+		<div class="docpage_footer">
+			<span class="style--dim">
+				&copy; Copyright 2023 — Desk framework contributors
+			</span>
+		</div>
+	</body>
+	<script src="/desk-framework-web.es2018.iife.min.js?t=<!--{{timestamp}}-->"></script>
+	<script src="/app.js?t=<!--{{timestamp}}-->" defer></script>
+</html>

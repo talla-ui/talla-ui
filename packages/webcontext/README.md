@@ -1,15 +1,25 @@
-# @typescene/webapp
+# Desk framework: Web app context
 
-This package contains Web platform specific code for the Typescene framework.
+## Getting started
 
-### Typescene
+This package is part of the **Desk framework**, a robust JavaScript front-end toolkit for highly maintainable applications.
 
-Typescene is a no-nonsense strongly typed front-end framework written in TypeScript.
+Visit [desk-framework.com](https://desk-framework.com) to learn more and get started.
 
-For more information, refer to the [main package](/typescene/typescene).
+## Questions & issues
 
-### Contribute
+Have questions? Found an issue? Feel free to reach out! Just be respectful. 🙏
 
-Your help is much appreciated! Most of the issues/projects are managed in the main package repository, take a look over there to find out how you can help.
+- Questions: [Reddit](https://www.reddit.com/r/desk_framework/)
+- Issues: [GitHub issues](https://github.com/desk-framework/desk/issues)
+- Pleasantries: Twitter & Mastodon
 
-Copyright © 2019 - Jelmer Cormont. Source code released under the MIT license.
+## Development
+
+For information related to developing the framework itself, refer to `README.md` in the [main repository](https://github.com/desk-framework/desk)
+
+## License
+
+This code is free and open source. Copyright and [MIT](https://opensource.org/licenses/MIT) license terms still apply.
+
+Copyright &copy; 2023 Jelmer Cormont

@@ -1,0 +1,25 @@
+{
+	"private": true,
+	"name": "@desk-framework/test",
+	"version": "0.0.0",
+	"description": "",
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"type": "module",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"clean": "rimraf dist .test-run",
+		"prebuild": "npm run clean",
+		"build": "tsc -p src",
+		"test": "tsc -p test && node .test-run/test"
+	},
+	"prettier": {
+		"useTabs": true
+	},
+	"dependencies": {
+		"desk-frame": "file:../desk-frame"
+	}
+}
