@@ -340,6 +340,31 @@ export class Assertion<T> {
 	}
 
 	/**
+	 * Asserts that the value is an object that includes the same properties with the same values (strict equals) as the specified object
+	 * - This method only checks for properties that strictly equal the specified property values. To check for nested properties, use a separate call for the properties of each object value.
+	 * @see {@link toHaveProperty()}
+	 * @example
+	 * let obj = {
+	 *   foo: "foo",
+	 *   bar: 123,
+	 *   baz: { x: 1, y: 2 }
+	 * };
+	 *
+	 * // assert foo and bar property values
+	 * expect(obj).toHaveProperties({ foo: "foo", bar: 123 });
+	 *
+	 * // assert baz property with x and y property values
+	 * expect(obj)
+	 *   .toHaveProperty("baz")
+	 *   .toHaveProperties({ x: 1, y: 2 })
+	 */
+	toHaveProperties(object: any) {
+		for (let p in object) {
+			this.toHaveProperty(p).toBe(object[p]);
+		}
+	}
+
+	/**
 	 * Asserts that the value is an object that includes a function property with given name
 	 * @returns A new assertion for the method, bound to the object, which can be evaluated using further {@link Assertion} methods such as {@link toThrowError()}.
 	 * @see {@link toHaveProperty()}
@@ -559,6 +584,21 @@ export class NegatedAssertion<T> extends Assertion<T> {
 			: "property " + propertyName;
 		if (!(propertyName in this.value)) return new Assertion(undefined, name);
 		throw Error(msgInv[ASSERT.toHaveProperty](this.name, propertyName));
+	}
+
+	/**
+	 * Asserts that the value is an object that doesn't include the same properties with the same values (strict equals) as the specified object
+	 * @see {@link Assertion.toHaveProperties()}
+	 */
+	override toHaveProperties(object: any) {
+		let checkAssert = new Assertion(this.value, "object with properties");
+		checkAssert.not.toBeUndefined();
+		checkAssert.not.toBeNull();
+		for (let p in object) {
+			if (!(p in this.value)) continue;
+			let assert = new Assertion(this.value[p], "property " + p);
+			assert.not.toBe(object[p]);
+		}
 	}
 
 	/**

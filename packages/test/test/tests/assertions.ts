@@ -83,6 +83,15 @@ describe("Assertions", () => {
 		expect(o).toHaveProperty("b").not.toBeTypeOf("string");
 	});
 
+	test("Object properties (multiple)", () => {
+		let o = { a: 1, b: 2, c: { x: 1, y: 2 } };
+		expect(o).toHaveProperties({ a: 1, b: 2 });
+		expect(o).not.toHaveProperties({ c: 3 });
+		expect(o).toHaveProperty("c").toHaveProperties({ x: 1, y: 2 });
+		expect({ foo: 1 }).not.toHaveProperties({ bar: 1 });
+		expect({ foo: 1 }).not.toHaveProperties({ foo: 2 });
+	});
+
 	test("Object methods", () => {
 		let o = {
 			foo: "bar",
