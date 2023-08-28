@@ -17,10 +17,7 @@ class CountActivity extends PageViewActivity {
 		UITextField.with({ value: bound("count"), onInput: "SetCount" }),
 		UIOutlineButton.withLabel("+", "CountUp")
 	);
-	constructor() {
-		super();
-		this.path = "count";
-	}
+	override path = "count";
 	count = 0;
 	onCountUp() {
 		this.count++;

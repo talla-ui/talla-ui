@@ -155,34 +155,25 @@ describe("ActivationPath and ActivationContext", () => {
 				.toBe(app.activities.activationPath);
 		});
 
-		test("Activity path matches immediately", () => {
+		test("Activity path matches (async)", async () => {
 			let activity = new Activity();
 			activity.path = "foo";
 			app.activities.activationPath.path = "foo";
 			app.activities.root.add(activity);
+			await Promise.resolve();
 			expect(activity).toHaveProperty("pathMatch").toBeDefined();
 		});
 
-		test("Activity path matches when app path changed", () => {
+		test("Activity path matches when app path changed (async)", async () => {
 			let activity = new Activity();
 			activity.path = "foo";
 			app.activities.activationPath.path = "bar";
 			app.activities.root.add(activity);
+			await Promise.resolve();
 			expect(activity).toHaveProperty("pathMatch").toBeUndefined();
 			app.activities.activationPath.path = "foo";
+			await Promise.resolve();
 			expect(activity).toHaveProperty("pathMatch").toBeDefined();
-		});
-
-		test("Activity path matches when activity path changed", () => {
-			let activity = new Activity();
-			activity.path = "foo";
-			app.activities.activationPath.path = "bar";
-			app.activities.root.add(activity);
-			expect(activity).toHaveProperty("pathMatch").toBeUndefined();
-			activity.path = "bar";
-			expect(activity).toHaveProperty("pathMatch").toBeDefined();
-			activity.path = "foo";
-			expect(activity).toHaveProperty("pathMatch").toBeUndefined();
 		});
 
 		test("Path match handler called (async)", async (t) => {
@@ -196,7 +187,7 @@ describe("ActivationPath and ActivationContext", () => {
 			let activity = new MyActivity();
 			app.activities.activationPath.path = "foo";
 			app.activities.root.add(activity);
-			await t.sleep(1);
+			await Promise.resolve();
 			t.expectCount("handler").toBe(1);
 		});
 

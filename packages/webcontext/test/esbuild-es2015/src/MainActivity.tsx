@@ -25,11 +25,7 @@ const ViewBody = (
 export class MainActivity extends PageViewActivity {
 	static ViewBody = ViewBody;
 
-	constructor() {
-		super();
-		this.path = "/main";
-	}
-
+	path = "/main";
 	countActivity = this.attach(new CountActivity());
 
 	protected override async afterActiveAsync() {

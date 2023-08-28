@@ -28,11 +28,8 @@ const _boundActivationPath = bound("activationPath");
  * @example
  * // Create an activity and activate it:
  * class MyActivity extends Activity {
- *   constructor() {
- *     super();
- *     this.path = "foo";
- *   }
- *   override protected async afterActiveAsync() {
+ *   path = "foo";
+ *   protected async afterActiveAsync() {
  *     console.log("MyActivity is now active");
  *   }
  * }
@@ -176,7 +173,7 @@ export class Activity extends ManagedObject {
 
 	/**
 	 * Activates or deactivates the activity based on a change to {@link Activity.pathMatch}, can be overridden
-	 * - This method is called automatically when the {@link Activity.pathMatch} property is changed. It can be overridden to implement additional checks before automatic activation or deactivation.
+	 * - This method is called automatically after updating the {@link Activity.pathMatch} property. It can be overridden to implement additional checks before automatic activation or deactivation.
 	 * @param match Data related to the matched path, if any
 	 * @returns A promise that's resolved when the activity is activated or deactivated, if necessary
 	 */
@@ -245,45 +242,29 @@ export class Activity extends ManagedObject {
 	/** Observer class for activities, to watch for path matches */
 	private static _ActivityObserver = class extends Observer<Activity> {
 		override observe(activity: Activity) {
-			return super
-				.observe(activity)
-				.observeProperty("path", "activationPath")
-				.observePropertyAsync("pathMatch" as any);
+			return super.observe(activity).observePropertyAsync("activationPath");
 		}
-		onActivationPathChange() {
-			this.onPathChange();
-		}
-		onPathChange() {
+		async onActivationPathChange() {
 			let activity = this.observed;
 			if (
 				activity &&
-				activity.activationPath &&
 				typeof activity.path === "string" &&
 				!activity.isUnlinked()
 			) {
-				activity.pathMatch = activity.activationPath.match(
-					activity.path,
-					activity
-				);
-			}
-		}
-		async onPathMatchChange(match?: ActivationPath.Match) {
-			if (
-				this.observed &&
-				!this.observed.isUnlinked() &&
-				this.observed.pathMatch === match
-			) {
-				let activationPath = this.observed.activationPath;
+				let activationPath = activity.activationPath;
 				try {
-					// call back into activity method to handle (de)activation
-					await this.observed.handlePathMatchAsync(match);
+					// set pathMatch and call handler
+					let match = activationPath?.match(activity.path, activity);
+					if (activity.pathMatch !== match) {
+						activity.pathMatch = match;
+						await activity.handlePathMatchAsync(match);
+					}
 				} catch (err) {
 					// path change might be cancelled for good reasons,
 					// don't leak unhandled error unnecessarily
 					if (
-						!this.observed.isUnlinked() &&
-						activationPath &&
-						this.observed.activationPath === activationPath
+						!activity.isUnlinked() &&
+						activity.activationPath === activationPath
 					) {
 						throw err;
 					}
