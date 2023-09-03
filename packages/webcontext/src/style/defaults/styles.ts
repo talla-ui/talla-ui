@@ -60,7 +60,7 @@ export function makeStyles(styles: { [id: string]: UIStyle }) {
 					},
 				},
 			},
-		}
+		},
 	);
 
 	return {
@@ -107,7 +107,7 @@ export function makeStyles(styles: { [id: string]: UIStyle }) {
 						borderColor: PrimaryBackground.contrast(0.3),
 					},
 				},
-			}
+			},
 		),
 		BorderlessButton: buttonStyle.extend(
 			"BorderlessButton",
@@ -129,7 +129,7 @@ export function makeStyles(styles: { [id: string]: UIStyle }) {
 						textColor: Primary,
 					},
 				},
-			}
+			},
 		),
 		OutlineButton: buttonStyle.extend(
 			"OutlineButton",
@@ -144,7 +144,7 @@ export function makeStyles(styles: { [id: string]: UIStyle }) {
 						borderColor: Primary,
 					},
 				},
-			}
+			},
 		),
 		LinkButton: buttonStyle.extend(
 			"LinkButton",
@@ -174,7 +174,7 @@ export function makeStyles(styles: { [id: string]: UIStyle }) {
 						textColor: Primary,
 					},
 				},
-			}
+			},
 		),
 		IconButton: styles.IconButton!.extend(
 			"IconButton",
@@ -205,7 +205,7 @@ export function makeStyles(styles: { [id: string]: UIStyle }) {
 						textColor: Primary,
 					},
 				},
-			}
+			},
 		),
 
 		// text field styles:
@@ -236,7 +236,7 @@ export function makeStyles(styles: { [id: string]: UIStyle }) {
 				focused: {
 					decoration: { css: { outline: "none", boxShadow: "none" } },
 				},
-			}
+			},
 		),
 
 		// toggle style (decoration for checkbox itself)

@@ -80,7 +80,7 @@ describe("UIForm and UIFormContext", () => {
 		let ctx = new UIFormContext({ foo: "bar", baz: 123 })
 			.addRequired("baz")
 			.addTest("foo", (t) =>
-				t.assert(String(t.value).length >= 3, "Too short")
+				t.assert(String(t.value).length >= 3, "Too short"),
 			);
 		let counter = new ChangeCounter().observe(ctx);
 		ctx.set("baz", 123, true); // nothing happens
@@ -149,8 +149,8 @@ describe("UIForm and UIFormContext", () => {
 		let MyComp = UIFormController.with(
 			UIRow.with(
 				UILabel.withText(bound("formContext.errors.foo")),
-				UITextField.withField("foo")
-			)
+				UITextField.withField("foo"),
+			),
 		);
 		let view = new MyComp();
 		view.render();
@@ -182,12 +182,12 @@ describe("UIForm and UIFormContext", () => {
 			static override ViewBody = UIRow.with(
 				UIForm.with(
 					{ formContext: bound("form1") },
-					UITextField.withField("text")
+					UITextField.withField("text"),
 				),
 				UIForm.with(
 					{ formContext: bound("form2") },
-					UITextField.withField("text")
-				)
+					UITextField.withField("text"),
+				),
 			);
 			form1 = new UIFormContext({ text: "foo" });
 			form2 = new UIFormContext({ text: "bar" });

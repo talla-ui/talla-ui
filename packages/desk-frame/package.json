@@ -20,21 +20,23 @@
 	"scripts": {
 		"clean": "rimraf coverage dist dist-* .test-run",
 		"prebuild": "npm run clean",
-		"build": "run-p build:*",
+		"build": "concurrently npm:build:*",
 		"build:esnext": "tsc -p src --declaration",
 		"build:es2020": "tsc -p src --target es2020 --outdir dist-es2020",
 		"build:es2018": "tsc -p src --target es2018 --outdir dist-es2018",
 		"build:es2015": "tsc -p src --target es2015 --outdir dist-es2015",
-		"dts": "tsc -p src --declaration --emitDeclarationOnly",
 		"pretest": "tsc -p test",
 		"test": "node .test-run",
 		"posttest": "rimraf .test-run",
 		"pretest-c8": "tsc -p test",
 		"test-c8": "c8 node .test-run",
-		"posttest-c8": "rimraf .test-run"
+		"posttest-c8": "rimraf .test-run",
+		"check-format": "prettier --check \"{src,test}/**/*.{ts,tsx}\""
 	},
 	"prettier": {
-		"useTabs": true
+		"useTabs": true,
+		"trailingComma": "all",
+		"endOfLine": "lf"
 	},
 	"c8": {
 		"reporter": [

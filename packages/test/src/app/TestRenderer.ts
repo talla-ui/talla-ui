@@ -25,7 +25,7 @@ export class TestRenderer extends RenderContext {
 			(queueOptions) => {
 				queueOptions.maxSyncTime = MAX_SCHED_RUNTIME;
 				queueOptions.throttleDelay = options.renderFrequency;
-			}
+			},
 		);
 	}
 
@@ -86,7 +86,7 @@ export class TestRenderer extends RenderContext {
 
 	/** Attaches a renderer to the the provided UI component (called internally) */
 	createObserver<T extends RenderContext.Renderable>(
-		target: T
+		target: T,
 	): Observer<T> | undefined {
 		return makeObserver(target);
 	}
@@ -168,8 +168,8 @@ export class TestRenderer extends RenderContext {
 						return reject(
 							new Error(
 								"expectOutputAsync timeout: " +
-									select.map((s) => val2str(s)).join(" ")
-							)
+									select.map((s) => val2str(s)).join(" "),
+							),
 						);
 					}
 					poll();

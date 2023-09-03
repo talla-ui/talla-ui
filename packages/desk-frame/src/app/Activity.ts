@@ -41,7 +41,7 @@ export class Activity extends ManagedObject {
 	/** @internal Update prototype for given class with newer prototype */
 	static _$hotReload(
 		Old: undefined | typeof Activity,
-		Updated: typeof Activity
+		Updated: typeof Activity,
 	) {
 		if (Old) {
 			// check if need to recurse for previous versions
@@ -107,7 +107,7 @@ export class Activity extends ManagedObject {
 	 */
 	getNavigationTarget(
 		capture?: { [captureId: string]: string },
-		rest?: string
+		rest?: string,
 	) {
 		return new NavigationTarget(this).setCapture(capture, rest);
 	}
@@ -145,7 +145,7 @@ export class Activity extends ManagedObject {
 			() => {
 				this.emitChange("Active");
 				return this.afterActiveAsync();
-			}
+			},
 		);
 	}
 
@@ -167,7 +167,7 @@ export class Activity extends ManagedObject {
 			() => {
 				this.emitChange("Inactive");
 				return this.afterInactiveAsync();
-			}
+			},
 		);
 	}
 
@@ -194,7 +194,7 @@ export class Activity extends ManagedObject {
 	 * @error This method throws an error if the activity has been unlinked.
 	 */
 	protected createActiveTaskQueue(
-		configure?: (options: AsyncTaskQueue.Options) => void
+		configure?: (options: AsyncTaskQueue.Options) => void,
 	) {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 
@@ -293,7 +293,7 @@ class ActivationQueue {
 	async waitAndSetAsync(
 		set: boolean,
 		before: () => Promise<void>,
-		after: () => void
+		after: () => void,
 	) {
 		// if latest transition does/did the same, then return same promise
 		if (this._set === set) return this._result;

@@ -93,7 +93,7 @@ export class Assertion<T> {
 		if (this instanceof NegatedAssertion) throw TypeError();
 		return new Assertion(
 			Array.from(this.value),
-			"Array.from(" + this.name + ")"
+			"Array.from(" + this.name + ")",
 		);
 	}
 
@@ -101,7 +101,7 @@ export class Assertion<T> {
 	asBoolean() {
 		return new Assertion(
 			Boolean(this instanceof NegatedAssertion ? !this.value : this.value),
-			"Boolean(" + this.name + ")"
+			"Boolean(" + this.name + ")",
 		);
 	}
 
@@ -130,7 +130,7 @@ export class Assertion<T> {
 		if (this instanceof NegatedAssertion) throw TypeError();
 		return new Assertion(
 			JSON.stringify(this.value, replacer, space),
-			"JSON of " + this.name
+			"JSON of " + this.name,
 		);
 	}
 
@@ -138,7 +138,7 @@ export class Assertion<T> {
 	toBe(value?: T) {
 		if (this.value === value) return;
 		throw Error(
-			msg[ASSERT.toBe](this.name, val2str(value), val2str(this.value))
+			msg[ASSERT.toBe](this.name, val2str(value), val2str(this.value)),
 		);
 	}
 
@@ -149,8 +149,8 @@ export class Assertion<T> {
 			msg[ASSERT.toBe](
 				this.name,
 				"one of " + val2str(values),
-				val2str(this.value)
-			)
+				val2str(this.value),
+			),
 		);
 	}
 
@@ -158,7 +158,7 @@ export class Assertion<T> {
 	toEqual(value: any) {
 		if (this.value == value) return;
 		throw Error(
-			msg[ASSERT.toEqual](this.name, val2str(value), val2str(this.value))
+			msg[ASSERT.toEqual](this.name, val2str(value), val2str(this.value)),
 		);
 	}
 
@@ -169,8 +169,8 @@ export class Assertion<T> {
 			msg[ASSERT.toEqual](
 				this.name,
 				"one of " + val2str(values),
-				val2str(this.value)
-			)
+				val2str(this.value),
+			),
 		);
 	}
 
@@ -178,7 +178,7 @@ export class Assertion<T> {
 	toBeLessThan(value: number) {
 		if ((this.value as any) < value) return;
 		throw Error(
-			msg[ASSERT.toBeLessThan](this.name, value, val2str(this.value))
+			msg[ASSERT.toBeLessThan](this.name, value, val2str(this.value)),
 		);
 	}
 
@@ -186,7 +186,7 @@ export class Assertion<T> {
 	toBeGreaterThan(value: number) {
 		if ((this.value as any) > value) return;
 		throw Error(
-			msg[ASSERT.toBeGreaterThan](this.name, value, val2str(this.value))
+			msg[ASSERT.toBeGreaterThan](this.name, value, val2str(this.value)),
 		);
 	}
 
@@ -194,7 +194,7 @@ export class Assertion<T> {
 	toBeLessThanOrEqualTo(value: number) {
 		if ((this.value as any) <= value) return;
 		throw Error(
-			msgInv[ASSERT.toBeGreaterThan](this.name, value, val2str(this.value))
+			msgInv[ASSERT.toBeGreaterThan](this.name, value, val2str(this.value)),
 		);
 	}
 
@@ -202,7 +202,7 @@ export class Assertion<T> {
 	toBeGreaterThanOrEqualTo(value: number) {
 		if ((this.value as any) >= value) return;
 		throw Error(
-			msgInv[ASSERT.toBeLessThan](this.name, value, val2str(this.value))
+			msgInv[ASSERT.toBeLessThan](this.name, value, val2str(this.value)),
 		);
 	}
 
@@ -295,8 +295,8 @@ export class Assertion<T> {
 			msg[ASSERT.toBeInstanceOf](
 				this.name,
 				C.name || "Unknown class",
-				val2str(this.value)
-			)
+				val2str(this.value),
+			),
 		);
 	}
 
@@ -327,7 +327,7 @@ export class Assertion<T> {
 	toHaveProperty(propertyName: string) {
 		let checkAssert = new Assertion(
 			this.value,
-			"object with property " + propertyName
+			"object with property " + propertyName,
 		);
 		checkAssert.not.toBeUndefined();
 		checkAssert.not.toBeNull();
@@ -376,7 +376,7 @@ export class Assertion<T> {
 	toHaveMethod(methodName: string) {
 		let checkAssert = new Assertion(
 			this.value,
-			"object with property " + methodName
+			"object with property " + methodName,
 		);
 		checkAssert.not.toBeUndefined();
 		checkAssert.not.toBeNull();
@@ -483,7 +483,7 @@ export class NegatedAssertion<T> extends Assertion<T> {
 	override toBeLessThan(value: number) {
 		if (!((this.value as any) < value)) return;
 		throw Error(
-			msgInv[ASSERT.toBeLessThan](this.name, value, val2str(this.value))
+			msgInv[ASSERT.toBeLessThan](this.name, value, val2str(this.value)),
 		);
 	}
 
@@ -491,7 +491,7 @@ export class NegatedAssertion<T> extends Assertion<T> {
 	override toBeGreaterThan(value: number) {
 		if (!((this.value as any) > value)) return;
 		throw Error(
-			msgInv[ASSERT.toBeGreaterThan](this.name, value, val2str(this.value))
+			msgInv[ASSERT.toBeGreaterThan](this.name, value, val2str(this.value)),
 		);
 	}
 
@@ -499,7 +499,7 @@ export class NegatedAssertion<T> extends Assertion<T> {
 	override toBeLessThanOrEqualTo(value: number) {
 		if (!((this.value as any) <= value)) return;
 		throw Error(
-			msg[ASSERT.toBeGreaterThan](this.name, value, val2str(this.value))
+			msg[ASSERT.toBeGreaterThan](this.name, value, val2str(this.value)),
 		);
 	}
 
@@ -507,7 +507,7 @@ export class NegatedAssertion<T> extends Assertion<T> {
 	override toBeGreaterThanOrEqualTo(value: number) {
 		if (!((this.value as any) >= value)) return;
 		throw Error(
-			msg[ASSERT.toBeLessThan](this.name, value, val2str(this.value))
+			msg[ASSERT.toBeLessThan](this.name, value, val2str(this.value)),
 		);
 	}
 
@@ -544,7 +544,7 @@ export class NegatedAssertion<T> extends Assertion<T> {
 	override toBeInstanceOf(C: any) {
 		if (!(this.value instanceof C)) return;
 		throw Error(
-			msgInv[ASSERT.toBeInstanceOf](this.name, C.name || "Unknown class")
+			msgInv[ASSERT.toBeInstanceOf](this.name, C.name || "Unknown class"),
 		);
 	}
 
@@ -564,7 +564,7 @@ export class NegatedAssertion<T> extends Assertion<T> {
 		this.not.toBeTypeOf("string");
 		if (!re.test(this.value)) return;
 		throw Error(
-			msgInv[ASSERT.toMatchRegExp](this.name, val2str(this.value), re)
+			msgInv[ASSERT.toMatchRegExp](this.name, val2str(this.value), re),
 		);
 	}
 
@@ -575,7 +575,7 @@ export class NegatedAssertion<T> extends Assertion<T> {
 	override toHaveProperty(propertyName: string) {
 		let checkAssert = new Assertion(
 			this.value,
-			"object with property " + propertyName
+			"object with property " + propertyName,
 		);
 		checkAssert.not.toBeUndefined();
 		checkAssert.not.toBeNull();
@@ -608,7 +608,7 @@ export class NegatedAssertion<T> extends Assertion<T> {
 	override toHaveMethod(methodName: string) {
 		let checkAssert = new Assertion(
 			this.value,
-			"object with method " + methodName
+			"object with method " + methodName,
 		);
 		checkAssert.not.toBeUndefined();
 		checkAssert.not.toBeNull();
@@ -632,7 +632,7 @@ export class NegatedAssertion<T> extends Assertion<T> {
 		try {
 			return new Assertion(
 				this.value.apply(undefined, args),
-				"[call " + this.name + "]"
+				"[call " + this.name + "]",
 			);
 		} catch {
 			throw Error(msgInv[ASSERT.toThrowError](this.name));
@@ -654,7 +654,7 @@ export class NegatedAssertion<T> extends Assertion<T> {
 		try {
 			return new Assertion(
 				await this.value.apply(undefined, args),
-				"[call " + this.name + "]"
+				"[call " + this.name + "]",
 			);
 		} catch {
 			throw Error(msgInv[ASSERT.toThrowError](this.name + " (async)"));

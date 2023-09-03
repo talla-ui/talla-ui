@@ -53,8 +53,8 @@ export default UICell.with(
 		UIButton.with({
 			style: styles.brandedButton,
 			label: "Click me",
-		})
-	)
+		}),
+	),
 );
 ```
 
@@ -108,8 +108,8 @@ const view = UICell.with(
 			label: "Large button",
 			textStyle: { fontSize: 32 },
 			dimensions: { height: 60, width: "50%" },
-		})
-	)
+		}),
+	),
 );
 ```
 
@@ -129,7 +129,7 @@ The {@link UICell} view component exposes many styles conveniently as properties
 
 ```ts
 const view = UICell.with(
-	{ background: UIColor.Green }
+	{ background: UIColor.Green },
 	// ... cell contents ...
 );
 ```
@@ -177,7 +177,7 @@ const view = UICell.with(
 	UILabel.with({ text: "foo", style: "@FadedLabel" }),
 
 	// or even using withText
-	UILabel.withText("foo", "@FadedLabel")
+	UILabel.withText("foo", "@FadedLabel"),
 );
 ```
 
@@ -204,7 +204,7 @@ const view = UICell.with(
 		background: UIColor.Green,
 		textColor: UIColor.Green.text(),
 	},
-	UILabel.withText("Text")
+	UILabel.withText("Text"),
 );
 ```
 
@@ -233,7 +233,7 @@ const view = UICell.with(
 	UIPrimaryButton.with({
 		label: "Close",
 		icon: UIIcon.Close, // a UIIcon instance
-	})
+	}),
 );
 ```
 
@@ -272,8 +272,8 @@ const view = UICell.with(
 				// this could be an import, const, or theme style:
 				UIStyle.Label.extend({ textStyle: { color: UIColor.Red } }),
 		},
-		UILabel.withText("Hello, world!")
-	)
+		UILabel.withText("Hello, world!"),
+	),
 );
 
 const view = UICell.with(
@@ -282,8 +282,8 @@ const view = UICell.with(
 		{
 			textStyle: bound.boolean("someValue").select({ color: UIColor.Red }),
 		},
-		UILabel.withText("Hello, world!")
-	)
+		UILabel.withText("Hello, world!"),
+	),
 );
 ```
 

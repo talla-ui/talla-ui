@@ -13,11 +13,11 @@ export abstract class RenderContext extends ManagedObject {
 	abstract getRenderCallback(): RenderContext.RenderCallback;
 	/** Creates a new renderer observer for the provided view object; do not use directly */
 	abstract createObserver<T extends RenderContext.Renderable>(
-		target: T
+		target: T,
 	): Observer<T> | undefined;
 	/** Creates a new transformation object for the provided output, if supported */
 	abstract transform(
-		out: RenderContext.Output
+		out: RenderContext.Output,
 	): RenderContext.OutputTransform | undefined | void;
 	/** Schedules execution of the provided function in the render queue */
 	abstract schedule(f: () => void, lowPriority?: boolean): void;
@@ -30,12 +30,12 @@ export abstract class RenderContext extends ManagedObject {
 	render(
 		view?: RenderContext.Renderable,
 		callback?: RenderContext.RenderCallback,
-		place?: RenderContext.PlacementOptions
+		place?: RenderContext.PlacementOptions,
 	) {
 		return new RenderContext.DynamicRendererWrapper().render(
 			view,
 			callback || this.getRenderCallback(),
-			place || { mode: "none" }
+			place || { mode: "none" },
 		);
 	}
 }
@@ -63,7 +63,7 @@ export namespace RenderContext {
 	 */
 	export type RenderCallback = (
 		output?: Output,
-		afterRender?: (out?: Output) => void
+		afterRender?: (out?: Output) => void,
 	) => RenderCallback;
 
 	/**
@@ -115,7 +115,7 @@ export namespace RenderContext {
 	 * @see {@link RenderContext.OutputTransform}
 	 */
 	export type OutputTransformer = (
-		transform: OutputTransform
+		transform: OutputTransform,
 	) => Promise<unknown>;
 
 	/**
@@ -173,7 +173,7 @@ export namespace RenderContext {
 			origin?: [number, number],
 			refOrigin?: [number, number],
 			scaleX?: number,
-			scaleY?: number
+			scaleY?: number,
 		): this;
 		/**
 		 * Adds a smooth offset transition to the current step
@@ -211,7 +211,7 @@ export namespace RenderContext {
 		constructor(
 			source: Renderable,
 			element: TElement,
-			place?: PlacementOptions
+			place?: PlacementOptions,
 		) {
 			this.source = source;
 			this.element = element;
@@ -261,7 +261,7 @@ export namespace RenderContext {
 		render(
 			content?: Renderable,
 			callback?: RenderCallback,
-			place?: PlacementOptions
+			place?: PlacementOptions,
 		) {
 			let isNewCallback = callback && callback !== this.callback;
 

@@ -27,9 +27,9 @@ describe("UIConditional", () => {
 						state: bound("condition"),
 					},
 					// label should only be rendered when condition is true
-					UILabel.withText("foo")
-				)
-			)
+					UILabel.withText("foo"),
+				),
+			),
 		).with({ condition: false });
 
 		t.log("Creating view");

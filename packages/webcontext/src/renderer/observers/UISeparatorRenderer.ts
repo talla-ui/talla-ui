@@ -17,7 +17,7 @@ export class UISeparatorRenderer extends BaseObserver<UISeparator> {
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {

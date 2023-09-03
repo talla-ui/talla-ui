@@ -106,7 +106,7 @@ describe("TestContext", () => {
 			});
 			let path = app.activities.activationPath;
 			await expect(async () =>
-				path.navigateAsync("", { back: true })
+				path.navigateAsync("", { back: true }),
 			).toThrowErrorAsync();
 		});
 
@@ -233,10 +233,10 @@ describe("TestContext", () => {
 						allowFocus: true,
 						requestFocus: true,
 						onFocusIn: "+CellFocused",
-					})
+					}),
 				);
 				protected override delegateViewEvent(
-					event: ManagedEvent<ManagedObject, unknown, string>
+					event: ManagedEvent<ManagedObject, unknown, string>,
 				): boolean | Promise<void> {
 					return super.delegateViewEvent(event);
 				}
@@ -289,7 +289,7 @@ describe("TestContext", () => {
 				"This is a test",
 				"Test",
 				"Foo",
-				"Bar"
+				"Bar",
 			);
 			(await t.expectOutputAsync(500, { type: "button", text: "Bar" }))
 				.getSingle()
@@ -310,7 +310,7 @@ describe("TestContext", () => {
 					{ key: "one", text: "One" },
 					{ key: "two", text: "Two" },
 				],
-				button
+				button,
 			);
 			(await t.expectOutputAsync(500, { text: "Two" })).getSingle().click();
 			let result = await p;

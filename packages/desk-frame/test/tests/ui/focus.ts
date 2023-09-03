@@ -48,7 +48,7 @@ describe("Focus management", (scope) => {
 	test("Focus requests", async (t) => {
 		let MyCell = UICell.with(
 			UIButton.withLabel("first").with({ requestFocus: true }),
-			UIButton.withLabel("second")
+			UIButton.withLabel("second"),
 		);
 
 		t.log("Focusing first");
@@ -78,7 +78,7 @@ describe("Focus management", (scope) => {
 				onBeforeRender: "Cell2Ref",
 				onFocusIn: "+Done",
 				allowFocus: true,
-			})
+			}),
 		);
 		class MyView extends ViewComposite {
 			protected override createView() {

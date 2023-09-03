@@ -24,7 +24,7 @@ export class UILabel extends UIControl {
 	 */
 	static withText(
 		text?: StringConvertible | Binding,
-		style?: UIStyle.Definition.TextStyle | UIStyle | `@${string}`
+		style?: UIStyle.Definition.TextStyle | UIStyle | `@${string}`,
 	) {
 		if (typeof text === "string") text = strf(text);
 		return style instanceof UIStyle || typeof style === "string"
@@ -44,7 +44,7 @@ export class UILabel extends UIControl {
 	static withIcon(
 		icon?: UIIcon | `@${string}` | Binding,
 		size?: string | number,
-		color?: UIColor | string
+		color?: UIColor | string,
 	) {
 		return this.with({ icon, iconSize: size, iconColor: color });
 	}
@@ -73,7 +73,7 @@ export class UILabel extends UIControl {
 			allowFocus?: boolean;
 			/** True if this label may receive input focus using the keyboard; implies `allowFocus` */
 			allowKeyboardFocus?: boolean;
-		}
+		},
 	) {
 		if (preset.allowKeyboardFocus) preset.allowFocus = true;
 

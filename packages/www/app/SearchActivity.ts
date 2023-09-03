@@ -26,7 +26,7 @@ export class SearchActivity extends ViewActivity {
 		false,
 		(options) => {
 			options.throttleDelay = 30;
-		}
+		},
 	);
 
 	clear() {
@@ -40,17 +40,17 @@ export class SearchActivity extends ViewActivity {
 			await this.search.loadJsonAsync(
 				1000,
 				"/en/docs/main/index.json",
-				"/en/docs/main"
+				"/en/docs/main",
 			);
 			await this.search.loadJsonAsync(
 				500,
 				"/en/docs/webcontext/index.json",
-				"/en/docs/webcontext"
+				"/en/docs/webcontext",
 			);
 			await this.search.loadJsonAsync(
 				0,
 				"/en/docs/test/index.json",
-				"/en/docs/test"
+				"/en/docs/test",
 			);
 			this.loading = undefined;
 		})();

@@ -44,7 +44,10 @@ export type IndexEntry = {
 };
 
 export class Indexer {
-	constructor(public parsed: ParsedNode, public options: DocGenOptions) {}
+	constructor(
+		public parsed: ParsedNode,
+		public options: DocGenOptions,
+	) {}
 
 	getIndex() {
 		return this._index;
@@ -82,12 +85,12 @@ export class Indexer {
 		node: ParsedNode,
 		prefix = "",
 		parent?: IndexEntry,
-		isStatic?: boolean
+		isStatic?: boolean,
 	) {
 		let warnings: string[] = [];
 		if (!!node.name !== !!node.signature && this.options.warn) {
 			warnings.push(
-				"Name/signature mismatch: " + node.name + " / " + node.signature
+				"Name/signature mismatch: " + node.name + " / " + node.signature,
 			);
 		}
 		let id: string | undefined;
@@ -314,13 +317,13 @@ export class Indexer {
 					break;
 				case "note":
 					(inDescription ? description : inSummary ? summary : notes).push(
-						"\n> " + content + "\n"
+						"\n> " + content + "\n",
 					);
 					break;
 				default:
 					if (!tag) {
 						(inDescription ? description : inSummary ? summary : notes).push(
-							content
+							content,
 						);
 					}
 			}

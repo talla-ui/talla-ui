@@ -132,7 +132,7 @@ export class ContentUpdater {
 			this.container,
 			{
 				output: output || this.content.map((c) => this._output.get(c)),
-			}
+			},
 		);
 		this.container.emit(event);
 	}

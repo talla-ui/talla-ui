@@ -16,7 +16,7 @@ import { describe, test, expect, useTestContext } from "../../dist/index.js";
 class CountActivity extends PageViewActivity {
 	static override ViewBody = UICell.with(
 		UITextField.with({ value: bound("count"), onInput: "SetCount" }),
-		UIOutlineButton.withLabel("+", "CountUp")
+		UIOutlineButton.withLabel("+", "CountUp"),
 	);
 	override path = "count";
 	count = 0;
@@ -42,7 +42,7 @@ describe("App test", (scope) => {
 
 	test("Single view is rendered", async (t) => {
 		const MyView = ViewComposite.define<{ title?: StringConvertible }>((p) =>
-			UILabel.withText(p.title)
+			UILabel.withText(p.title),
 		).with({ title: "TEST" });
 		let view = new MyView();
 		app.render(view);

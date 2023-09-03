@@ -39,7 +39,7 @@ const view = UIRow.with(
 	{ padding: 8 },
 	UIPrimaryButton.withLabel("UIPrimaryButton"),
 	UIExpandedLabel.withText("UIExpandedLabel"),
-	UILabel.withText("UILabel")
+	UILabel.withText("UILabel"),
 );
 ```
 

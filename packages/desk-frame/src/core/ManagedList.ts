@@ -99,7 +99,7 @@ class ManagedListIterator<T extends ManagedObject> implements Iterator<T> {
  * }
  */
 export class ManagedList<
-	T extends ManagedObject = ManagedObject
+	T extends ManagedObject = ManagedObject,
 > extends ManagedObject {
 	/** Creates a new managed list containing the provided objects */
 	constructor(...objects: T[]) {
@@ -116,7 +116,7 @@ export class ManagedList<
 			() => {
 				// ... and clear the list when unlinked
 				this.clear();
-			}
+			},
 		);
 
 		// add initial list of objects, if any
@@ -656,7 +656,10 @@ export namespace ManagedList {
 
 /** @internal Observer that's used for attached objects in a list */
 class AttachObserver extends Observer<ManagedList> {
-	constructor(public list: ManagedList, public propagate?: boolean) {
+	constructor(
+		public list: ManagedList,
+		public propagate?: boolean,
+	) {
 		super();
 	}
 	override stop() {

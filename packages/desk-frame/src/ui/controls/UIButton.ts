@@ -40,7 +40,7 @@ export class UIButton extends UIControl {
 		icon: UIIcon | `@${string}` | Binding,
 		onClick?: string,
 		size?: string | number,
-		color?: UIColor | string
+		color?: UIColor | string,
 	) {
 		return this.with({ icon, iconSize: size, iconColor: color, onClick });
 	}
@@ -85,7 +85,7 @@ export class UIButton extends UIControl {
 			onSelect?: string;
 			/** Event that's emitted when the button is deselected */
 			onDeselect?: string;
-		}
+		},
 	) {
 		// quietly change 'text' to label to support JSX tag content
 		if ("text" in (preset as any)) {

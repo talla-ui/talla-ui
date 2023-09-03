@@ -65,7 +65,7 @@ describe("UIRow and UIColumn", (scope) => {
 	test("Rendered with height and width", async (t) => {
 		let Preset = UIRow.with(
 			{ height: 123 },
-			UIColumn.with({ width: 123 }, UILabel.withText("foo"))
+			UIColumn.with({ width: 123 }, UILabel.withText("foo")),
 		);
 		app.render(new Preset());
 

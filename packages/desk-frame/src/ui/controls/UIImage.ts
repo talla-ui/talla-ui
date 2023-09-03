@@ -21,7 +21,7 @@ export class UIImage extends UIControl {
 	 */
 	static withUrl(
 		url?: StringConvertible | Binding,
-		style?: UIStyle | `@${string}`
+		style?: UIStyle | `@${string}`,
 	) {
 		return this.with({ url, style });
 	}
@@ -43,7 +43,7 @@ export class UIImage extends UIControl {
 			allowKeyboardFocus?: boolean;
 			/** Event that's emitted when the image couldn't be loaded */
 			onLoadError?: string;
-		}
+		},
 	) {
 		if (preset.allowKeyboardFocus) preset.allowFocus = true;
 		super.applyViewPreset(preset);

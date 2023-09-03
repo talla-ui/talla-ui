@@ -42,7 +42,7 @@ export class OutputMount {
 		autoCloseModal?: boolean,
 		shadeOpacity?: number,
 		refElt?: HTMLElement,
-		reducedMotion?: boolean
+		reducedMotion?: boolean,
 	) {
 		let shader = (this._outer = this._shader = document.createElement("div"));
 		shader.className = CLASS_MODAL_SHADER;
@@ -106,7 +106,7 @@ export class OutputMount {
 				(e) => {
 					if (e.key === "Escape") checkAndClose(e);
 				},
-				true
+				true,
 			);
 		}
 

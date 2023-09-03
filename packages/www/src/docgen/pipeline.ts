@@ -28,7 +28,7 @@ import { PackageDocs } from "./PackageDocs.js";
 export function start(
 	pipeline: Pipeline,
 	options: DocGenOptions,
-	callback?: (packageDocs: PackageDocs) => void
+	callback?: (packageDocs: PackageDocs) => void,
 ) {
 	// use a spawned pipeline for generated content, and add all pages
 	let docgenPipeline = pipeline.spawn("", "", async () => {

@@ -13,14 +13,14 @@ export class UIToggleRenderer extends TestRenderObserver<UIToggle> {
 				"textStyle",
 				"decoration",
 				"disabled",
-				"shrinkwrap"
+				"shrinkwrap",
 			);
 	}
 
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -49,7 +49,7 @@ export class UIToggleRenderer extends TestRenderObserver<UIToggle> {
 
 	override handlePlatformEvent(
 		name: TestOutputElement.PlatformEvent,
-		data?: any
+		data?: any,
 	) {
 		// update 'state' first, reflecting element checked state
 		if (this.element && this.observed) {
@@ -73,7 +73,7 @@ export class UIToggleRenderer extends TestRenderObserver<UIToggle> {
 				textStyle: toggle.textStyle,
 				decoration: toggle.decoration,
 			},
-			toggle.shrinkwrap
+			toggle.shrinkwrap,
 		);
 	}
 

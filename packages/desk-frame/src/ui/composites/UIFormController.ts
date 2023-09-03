@@ -21,12 +21,12 @@ export class UIFormController extends ViewComposite {
 	 */
 	static with(
 		preset: { formContext?: Binding<any> },
-		Body: ViewClass
+		Body: ViewClass,
 	): typeof UIFormController;
 	static with(Body: ViewClass): typeof UIFormController;
 	static with(
 		preset?: ViewClass | { formContext?: Binding<any> },
-		Body?: ViewClass
+		Body?: ViewClass,
 	) {
 		if (typeof preset === "function") {
 			Body = preset;
@@ -57,7 +57,7 @@ export class UIFormController extends ViewComposite {
 		return (
 			super.delegateViewEvent(event) ||
 			!!this.emit(
-				new ManagedEvent(event.name, event.source, event.data, this, event)
+				new ManagedEvent(event.name, event.source, event.data, this, event),
 			)
 		);
 	}

@@ -119,10 +119,10 @@ export class OutputAssertion {
 	 * @error This method throws an error if the current selection consists of more than one element, or none at all.
 	 */
 	getSingleComponent<TRenderable extends RenderContext.Renderable>(
-		type: RenderContext.RenderableClass<TRenderable>
+		type: RenderContext.RenderableClass<TRenderable>,
 	): TRenderable {
 		let elements = this.elements.filter(
-			(elt) => elt.output?.source instanceof type
+			(elt) => elt.output?.source instanceof type,
 		);
 		if (!elements.length) throw Error("Component does not match");
 		if (elements.length > 1)
@@ -138,7 +138,7 @@ export class OutputAssertion {
 	toBeRendered(description?: string) {
 		if (!this.elements.length) {
 			throw Error(
-				"Output isn't rendered" + (description ? ": " + description : "")
+				"Output isn't rendered" + (description ? ": " + description : ""),
 			);
 		}
 		return this;
@@ -152,7 +152,7 @@ export class OutputAssertion {
 	toBeEmpty(description?: string) {
 		if (this.elements.length) {
 			throw Error(
-				"Output isn't empty" + (description ? ": " + description : "")
+				"Output isn't empty" + (description ? ": " + description : ""),
 			);
 		}
 		return this;

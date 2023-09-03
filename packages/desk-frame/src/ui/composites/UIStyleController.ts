@@ -33,7 +33,7 @@ export class UIStyleController extends ViewComposite {
 		> & {
 			style?: UIStyle | `@${string}`;
 		},
-		Body: ViewClass
+		Body: ViewClass,
 	): typeof UIStyleController {
 		return class PresetView extends this {
 			constructor() {
@@ -114,7 +114,7 @@ class UIStyleControllerObserver extends Observer<UIStyleController> {
 					"position",
 					"textStyle",
 					"containerLayout",
-					"decoration"
+					"decoration",
 				);
 			}
 		}

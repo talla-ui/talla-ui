@@ -4,7 +4,7 @@ import { AppException } from "./AppException.js";
 /** Helper function that puts together event data for a log message */
 function makeEventData(
 	severity: number,
-	message: unknown
+	message: unknown,
 ): LogWriter.LogMessageData {
 	let data: any[] | undefined;
 	let error: Error | undefined;

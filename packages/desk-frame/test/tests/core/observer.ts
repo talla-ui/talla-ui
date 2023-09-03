@@ -73,7 +73,7 @@ describe("Observers", () => {
 			class MyObserver extends Observer {}
 			expect(() => new MyObserver().observe({} as any)).toThrowError();
 			expect(() =>
-				new MyObserver().observe(new MyObject()).observe(null as any)
+				new MyObserver().observe(new MyObject()).observe(null as any),
 			).toThrowError();
 		});
 
@@ -440,8 +440,8 @@ describe("Observers", () => {
 			let o = new MyObject();
 			expect(() =>
 				(new Observer<MyObject>().observe(o) as any).observeProperty(
-					"nonExistent"
-				)
+					"nonExistent",
+				),
 			).not.toThrowError();
 		});
 
@@ -449,8 +449,8 @@ describe("Observers", () => {
 			let o = new MyObject();
 			expect(() =>
 				(new Observer<MyObject>().observe(o) as any).observeProperty(
-					"notObservable"
-				)
+					"notObservable",
+				),
 			).toThrowError();
 		});
 	});
@@ -955,7 +955,7 @@ describe("Observers", () => {
 					this.foo.emit("Foo");
 					expect(
 						// move object, check that it is no longer attached
-						ManagedObject.whence(new MyObject().attach(this.foo))
+						ManagedObject.whence(new MyObject().attach(this.foo)),
 					).not.toBe(this);
 					expect(this.foo).toBeUndefined();
 					this.foo = new MyObject();
@@ -980,7 +980,7 @@ describe("Observers", () => {
 					this.foo.emitChange();
 					expect(
 						// move object, check that it is no longer attached
-						ManagedObject.whence(new MyObject().attach(this.foo))
+						ManagedObject.whence(new MyObject().attach(this.foo)),
 					).not.toBe(this);
 					expect(this.foo).toBeUndefined();
 					this.foo = new MyObject();

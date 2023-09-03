@@ -98,7 +98,7 @@ export class Binding<T = any> {
 					register(
 						path,
 						(value, bound) => update(value ?? defaultValue, bound),
-						this._events
+						this._events,
 					);
 
 		// parse source path
@@ -127,7 +127,7 @@ export class Binding<T = any> {
 		target: TObject,
 		propertyOrFunction:
 			| keyof TObject
-			| ((value?: T, bound?: boolean, forced?: boolean) => void)
+			| ((value?: T, bound?: boolean, forced?: boolean) => void),
 	) {
 		if (target[$_unlinked]) return;
 
@@ -154,8 +154,8 @@ export class Binding<T = any> {
 			_apply(register, (value, bound) =>
 				update(
 					format ? LazyString.formatValue(format, value) : String(value ?? ""),
-					bound
-				)
+					bound,
+				),
 			);
 		return this as any;
 	}
@@ -185,8 +185,8 @@ export class Binding<T = any> {
 					value && typeof value === "object" && Symbol.iterator in value
 						? value
 						: undefined,
-					bound
-				)
+					bound,
+				),
 			);
 		return this as any;
 	}
@@ -245,7 +245,7 @@ export class Binding<T = any> {
 		let str = new LazyString(() => String(format)).translate();
 		this._apply = (register, update) =>
 			_apply(register, (value, bound) =>
-				update(str.format(value).cache(), bound)
+				update(str.format(value).cache(), bound),
 			);
 		if (this._source) this._source += ".strf()";
 		return this as any;
@@ -268,7 +268,7 @@ export class Binding<T = any> {
 		let _apply = this._apply;
 		this._apply = (register, update) =>
 			_apply(register, (value, bound) =>
-				update(LazyString.local(value, ...type), bound)
+				update(LazyString.local(value, ...type), bound),
 			);
 		if (this._source) this._source += ".local()";
 		return this as any;
@@ -294,7 +294,7 @@ export class Binding<T = any> {
 		let _apply = this._apply;
 		this._apply = (register, update) =>
 			_apply(register, (value, bound) =>
-				update(value ? trueValue : falseValue, bound)
+				update(value ? trueValue : falseValue, bound),
 			);
 		if (this._source) this._source += ".select()";
 		return this as any;
@@ -319,7 +319,7 @@ export class Binding<T = any> {
 		let _apply = this._apply;
 		this._apply = (register, update) =>
 			_apply(register, (value, bound) =>
-				update(value || (falseValue as any), bound)
+				update(value || (falseValue as any), bound),
 			);
 		if (this._source) this._source += ".else()";
 		return this as any;
@@ -357,8 +357,8 @@ export class Binding<T = any> {
 			_apply(register, (value, bound) =>
 				update(
 					values.some((a) => a === value),
-					bound
-				)
+					bound,
+				),
 			);
 		if (this._source) this._source += ".matches()";
 		return this as any;
@@ -478,9 +478,9 @@ export class Binding<T = any> {
 		register: (
 			path: readonly string[],
 			callback: (value: any, bound: boolean) => void,
-			watchChangeEvents?: boolean
+			watchChangeEvents?: boolean,
 		) => void,
-		update: (value: any, bound: boolean) => void
+		update: (value: any, bound: boolean) => void,
 	) => void;
 
 	/** Implementation for `.and()`, `.or()`, and `.equals()` */
@@ -505,10 +505,10 @@ export class Binding<T = any> {
 			let value1: any = undefined;
 			let value2: any = undefined;
 			_apply(register, (value, bound) =>
-				set((value1 = value), value2, (flags &= 2), bound)
+				set((value1 = value), value2, (flags &= 2), bound),
 			);
 			binding._apply(register, (value, bound) =>
-				set(value1, (value2 = value), (flags &= 1), bound)
+				set(value1, (value2 = value), (flags &= 1), bound),
 			);
 		};
 	}
@@ -555,7 +555,7 @@ Binding.prototype.isManagedBinding = _isManagedBinding;
  * )
  */
 export class StringFormatBinding<
-	S extends string = string
+	S extends string = string,
 > extends Binding<LazyString> {
 	/**
 	 * Creates a new string-formatted binding using; use {@link bound.strf()} instead
@@ -569,7 +569,7 @@ export class StringFormatBinding<
 
 		// create bindings for string arguments
 		let bindings = args.map((a) =>
-			typeof a === "string" ? new Binding(a) : a
+			typeof a === "string" ? new Binding(a) : a,
 		);
 
 		// handle object as first argument, create bindings
@@ -693,7 +693,7 @@ export namespace Binding {
  */
 export function bound<S>(
 	source: Binding.ValidPathString<S>,
-	defaultValue?: any
+	defaultValue?: any,
 ) {
 	return new Binding<any>(source, defaultValue);
 }
@@ -708,7 +708,7 @@ export namespace bound {
 	 */
 	export function number<S>(
 		source: Binding.ValidPathString<S>,
-		defaultValue?: number
+		defaultValue?: number,
 	) {
 		return new Binding(source, defaultValue).asNumber();
 	}
@@ -722,7 +722,7 @@ export namespace bound {
 	 */
 	export function string<S>(
 		source: Binding.ValidPathString<S>,
-		defaultValue?: string
+		defaultValue?: string,
 	) {
 		return new Binding(source, defaultValue).asString();
 	}
@@ -736,7 +736,7 @@ export namespace bound {
 	 */
 	export function boolean<S>(
 		source: Binding.ValidPathString<S>,
-		defaultValue?: boolean
+		defaultValue?: boolean,
 	) {
 		return new Binding(source, defaultValue).asBoolean();
 	}
@@ -757,7 +757,7 @@ export namespace bound {
 	 */
 	export function not<S>(
 		source: Binding.ValidPathString<S>,
-		defaultValue?: boolean
+		defaultValue?: boolean,
 	) {
 		return new Binding(source, defaultValue).not();
 	}

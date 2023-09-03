@@ -86,8 +86,8 @@ const view = UICell.with(
 			label: "I agree",
 			state: bound.string("userAgreed"),
 			onChange: "SampleToggleChange",
-		})
-	)
+		}),
+	),
 );
 
 export class MyActivity extends ViewActivity {

@@ -152,10 +152,10 @@ export abstract class ViewComposite extends View {
 	static define<
 		TPreset extends {},
 		TContent extends ViewClass[] = [],
-		TView extends ViewComposite = ViewComposite & TPreset
+		TView extends ViewComposite = ViewComposite & TPreset,
 	>(
 		view: ViewClass | ((preset: TPreset, ...content: TContent) => ViewClass),
-		ViewCompositeClass: new () => TView = ViewComposite as any
+		ViewCompositeClass: new () => TView = ViewComposite as any,
 	): ViewComposite.Builder<[TPreset, ...TContent], TView> {
 		if (this !== ViewComposite) throw invalidArgErr("this");
 
@@ -165,7 +165,7 @@ export abstract class ViewComposite extends View {
 				return (
 					super.delegateViewEvent(event) ||
 					!!this.emit(
-						new ManagedEvent(event.name, event.source, event.data, this, event)
+						new ManagedEvent(event.name, event.source, event.data, this, event),
 					)
 				);
 			}

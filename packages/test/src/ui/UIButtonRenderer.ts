@@ -18,14 +18,14 @@ export class UIButtonRenderer extends TestRenderObserver<UIButton> {
 				"textStyle",
 				"decoration",
 				"disabled",
-				"shrinkwrap"
+				"shrinkwrap",
 			);
 	}
 
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -58,7 +58,7 @@ export class UIButtonRenderer extends TestRenderObserver<UIButton> {
 
 	override handlePlatformEvent(
 		name: TestOutputElement.PlatformEvent,
-		data?: any
+		data?: any,
 	) {
 		super.handlePlatformEvent(name, data);
 		let button = this.observed;
@@ -94,7 +94,7 @@ export class UIButtonRenderer extends TestRenderObserver<UIButton> {
 				textStyle: button.textStyle,
 				decoration: button.decoration,
 			},
-			button.shrinkwrap
+			button.shrinkwrap,
 		);
 	}
 

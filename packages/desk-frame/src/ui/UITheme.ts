@@ -123,7 +123,7 @@ export class UITheme {
 	 */
 	colors: { [name: string]: UIColor } = Object.assign(
 		Object.create(null),
-		getDefaultColors()
+		getDefaultColors(),
 	);
 
 	/**
@@ -157,7 +157,7 @@ export class UITheme {
 	 */
 	styles: { [name: string]: UIStyle } = Object.assign(
 		Object.create(null),
-		getDefaultStyles()
+		getDefaultStyles(),
 	);
 
 	/**
@@ -231,7 +231,7 @@ export namespace UITheme {
 		setButtonLabel(label: StringConvertible): this;
 		/** Display the dialog */
 		showAsync(
-			place?: Partial<RenderContext.PlacementOptions>
+			place?: Partial<RenderContext.PlacementOptions>,
 		): Promise<unknown>;
 	}
 
@@ -250,7 +250,7 @@ export namespace UITheme {
 		setCancelButtonLabel(label: StringConvertible): this;
 		/** Display the dialog and get the result */
 		showAsync(
-			place?: Partial<RenderContext.PlacementOptions>
+			place?: Partial<RenderContext.PlacementOptions>,
 		): Promise<{ confirmed: boolean }>;
 	}
 
@@ -265,13 +265,13 @@ export namespace UITheme {
 		addItemGroup(
 			items: MenuItem[],
 			selectedKey?: string,
-			textStyle?: UIStyle.Definition.TextStyle
+			textStyle?: UIStyle.Definition.TextStyle,
 		): this;
 		/** Set the target width of the menu, if possible */
 		setWidth(width: number): this;
 		/** Display the menu and get the result */
 		showAsync(
-			place?: Partial<RenderContext.PlacementOptions>
+			place?: Partial<RenderContext.PlacementOptions>,
 		): Promise<{ key?: string }>;
 	}
 

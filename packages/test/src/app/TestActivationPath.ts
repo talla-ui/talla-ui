@@ -38,7 +38,7 @@ export class TestActivationPath extends ActivationPath {
 	 */
 	override async navigateAsync(
 		path: string,
-		mode?: ActivationPath.NavigationMode
+		mode?: ActivationPath.NavigationMode,
 	) {
 		// go back first, if needed
 		if (mode && mode.back) {

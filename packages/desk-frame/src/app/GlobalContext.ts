@@ -181,7 +181,7 @@ export class GlobalContext extends ManagedObject {
 			| StringConvertible
 			| NavigationTarget
 			| { getNavigationTarget(): NavigationTarget },
-		mode?: ActivationPath.NavigationMode
+		mode?: ActivationPath.NavigationMode,
 	) {
 		if (this.activities.activationPath) {
 			if (typeof (target as any).getNavigationTarget === "function") {
@@ -232,7 +232,7 @@ export class GlobalContext extends ManagedObject {
 	 */
 	render(
 		view: RenderContext.Renderable,
-		place?: RenderContext.PlacementOptions
+		place?: RenderContext.PlacementOptions,
 	) {
 		if (!this.renderer) throw err(ERROR.GlobalContext_NoRenderer);
 		return this.renderer.render(view, undefined, place || { mode: "default" });
@@ -251,7 +251,7 @@ export class GlobalContext extends ManagedObject {
 	 */
 	async animateAsync(
 		out?: RenderContext.Output,
-		animation?: RenderContext.OutputTransformer | string
+		animation?: RenderContext.OutputTransformer | string,
 	) {
 		if (!this.renderer) throw err(ERROR.GlobalContext_NoRenderer);
 		let t = out && this.renderer.transform(out);
@@ -277,7 +277,7 @@ export class GlobalContext extends ManagedObject {
 	async showAlertDialogAsync(
 		message: StringConvertible | StringConvertible[],
 		title?: StringConvertible,
-		buttonLabel?: StringConvertible
+		buttonLabel?: StringConvertible,
 	) {
 		let controller = this.theme?.modalFactory?.createAlertDialog?.();
 		if (!controller) throw err(ERROR.GlobalContext_NoModal);
@@ -311,7 +311,7 @@ export class GlobalContext extends ManagedObject {
 		message: StringConvertible | StringConvertible[],
 		title?: StringConvertible,
 		confirmButtonLabel?: StringConvertible,
-		cancelButtonLabel?: StringConvertible
+		cancelButtonLabel?: StringConvertible,
 	) {
 		let controller = this.theme?.modalFactory?.createConfirmationDialog?.();
 		if (!controller) throw err(ERROR.GlobalContext_NoModal);
@@ -363,7 +363,7 @@ export class GlobalContext extends ManagedObject {
 	async showModalMenuAsync(
 		items: UITheme.MenuItem[],
 		ref: { lastRenderOutput?: RenderContext.Output },
-		width?: number
+		width?: number,
 	) {
 		let controller = this.theme?.modalFactory?.createMenu?.();
 		if (!controller) throw err(ERROR.GlobalContext_NoModal);
@@ -385,7 +385,7 @@ export class GlobalContext extends ManagedObject {
 	 */
 	addLogHandler(
 		minLevel: number,
-		f: (message: LogWriter.LogMessageData) => void
+		f: (message: LogWriter.LogMessageData) => void,
 	) {
 		this.log.emitter.listen((e) => {
 			if (e.data.severity >= minLevel) f(e.data);

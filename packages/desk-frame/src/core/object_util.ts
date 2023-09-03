@@ -69,7 +69,7 @@ export type TrapRef = {
 type TrapFunction = (
 	target: ManagedObject,
 	p: string | number | symbol,
-	value: any
+	value: any,
 ) => void;
 
 /** Object that contains traps that are set for different properties */
@@ -90,13 +90,13 @@ export function addTrap(
 	p: string | number | symbol,
 	trap?: TrapFunction,
 	unlinked?: () => void,
-	init?: boolean
+	init?: boolean,
 ) {
 	let list = getTrapList(target, p);
 	if (!list) {
 		throw err(
 			ERROR.Object_NoObserve,
-			typeof p === "symbol" ? p.description : p
+			typeof p === "symbol" ? p.description : p,
 		);
 	}
 	let t = trap ? guard(trap) : NOP;
@@ -128,7 +128,7 @@ export function removeTrap(trap?: TrapRef) {
 export function invokeTrap(
 	managedObject: ManagedObject,
 	p: string | number | symbol,
-	value: any
+	value: any,
 ) {
 	let list = _traps.get(managedObject);
 	if (list && list[p]) {
@@ -143,7 +143,7 @@ export function invokeTrap(
 /** @internal Returns true if there are any traps for given property on given object */
 export function hasTraps(
 	managedObject: ManagedObject,
-	p: string | number | symbol
+	p: string | number | symbol,
 ) {
 	return !!_traps.get(managedObject)?.[p]?.length;
 }
@@ -151,7 +151,7 @@ export function hasTraps(
 /** @internal Returns true if given property can be observed on given object */
 export function canTrap(
 	managedObject: ManagedObject,
-	p: string | number | symbol
+	p: string | number | symbol,
 ) {
 	return p in managedObject && !!getTrapList(managedObject, p);
 }
@@ -159,7 +159,7 @@ export function canTrap(
 /** Returns or creates the current list of traps for given property on given object, may initialize traps for the object altogether, and make (own) properties observable by adding a getter and setter */
 function getTrapList(
 	managedObject: ManagedObject,
-	p: string | number | symbol
+	p: string | number | symbol,
 ) {
 	// happy path first: find lookup and return traps list
 	let lookup = _traps.get(managedObject)!;
@@ -196,7 +196,7 @@ function getTrapList(
 function setTrapDescriptor(
 	managedObject: ManagedObject,
 	p: string | number | symbol,
-	desc: PropertyDescriptor
+	desc: PropertyDescriptor,
 ) {
 	if (desc.set) {
 		// override property with new setter that calls old one
@@ -278,7 +278,7 @@ export function unlinkObject(managedObject: ManagedObject) {
 export function attachObject(
 	origin: ManagedObject,
 	target: ManagedObject,
-	observer?: Observer
+	observer?: Observer,
 ): ManagedObject | undefined {
 	// check for circular references
 	for (let p = origin; p; p = p[$_origin]!) {
@@ -308,7 +308,7 @@ export function attachObject(
 	function updateWatched(
 		target: ManagedObject,
 		origin: ManagedObject,
-		nestingLevel: number
+		nestingLevel: number,
 	) {
 		if (target[$_unlinked]) return;
 
@@ -343,7 +343,7 @@ function detachObject(origin: ManagedObject, target: ManagedObject) {
 		function updateWatched(
 			target: ManagedObject,
 			origin: ManagedObject,
-			nestingLevel: number
+			nestingLevel: number,
 		) {
 			// clear bindings from given nesting level
 			let bindings = _bindings.get(target);
@@ -387,7 +387,7 @@ function detachObject(origin: ManagedObject, target: ManagedObject) {
 export function watchAttachProperty(
 	managedObject: ManagedObject,
 	propertyName: string | number | symbol,
-	observer?: Observer
+	observer?: Observer,
 ) {
 	let trap: TrapRef | undefined;
 	let attached: ManagedObject | undefined = undefined;
@@ -419,7 +419,7 @@ export function watchAttachProperty(
 								// check if target has been moved
 								if (value[$_origin] !== managedObject) detach();
 							},
-							detach // if unlinked
+							detach, // if unlinked
 						));
 						function detach() {
 							if (myTrap === trap) trap = undefined;
@@ -459,7 +459,7 @@ export function watchAttachProperty(
 			}
 			(managedObject as any)[propertyName] = undefined;
 		},
-		true
+		true,
 	);
 }
 
@@ -481,7 +481,7 @@ export type BindRef = {
 export function watchBinding(
 	managedObject: ManagedObject,
 	path: ReadonlyArray<string>,
-	f: (value: any, bound: boolean) => void
+	f: (value: any, bound: boolean) => void,
 ) {
 	if (!managedObject || !path.length) throw TypeError();
 	f = guard(f);
@@ -507,7 +507,7 @@ function tryWatchFromOrigin(
 	managedObject: ManagedObject,
 	origin: ManagedObject | undefined,
 	bindRef: BindRef,
-	nestingLevel = 0
+	nestingLevel = 0,
 ): void {
 	if (origin && !origin[$_unlinked]) {
 		// if the linked origin object is a list/map, skip it right away
@@ -517,7 +517,7 @@ function tryWatchFromOrigin(
 				managedObject,
 				origin[$_origin],
 				bindRef,
-				nestingLevel + 1
+				nestingLevel + 1,
 			);
 		} else {
 			// watch all properties along path if possible
@@ -536,7 +536,7 @@ function tryWatchFromOrigin(
 					managedObject,
 					origin[$_origin],
 					bindRef,
-					nestingLevel + 1
+					nestingLevel + 1,
 				);
 			}
 		}
@@ -551,7 +551,7 @@ function tryWatchFromOrigin(
 function watchFromOrigin(
 	managedObject: ManagedObject,
 	origin: ManagedObject,
-	bindRef: BindRef
+	bindRef: BindRef,
 ) {
 	let pathLen = bindRef.p.length;
 	let lastInvokedWith = NO_VALUE;
@@ -636,11 +636,11 @@ function watchFromOrigin(
 						: tryWatchFromOrigin(
 								managedObject,
 								managedObject[$_origin],
-								bindRef
+								bindRef,
 						  );
 				}
 			},
-			true
+			true,
 		));
 	}
 

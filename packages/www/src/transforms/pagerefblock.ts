@@ -24,7 +24,7 @@ export function start(pipeline: Pipeline) {
 							item.path +
 							" => " +
 							attr.path +
-							(page ? " (no output information)" : "")
+							(page ? " (no output information)" : ""),
 					);
 					return "???";
 				}
@@ -32,7 +32,7 @@ export function start(pipeline: Pipeline) {
 				if (!title) {
 					if (!item.data.warnings) item.data.warnings = [];
 					item.data.warnings.push(
-						"Page ref has no title: " + item.path + " => " + attr.path
+						"Page ref has no title: " + item.path + " => " + attr.path,
 					);
 					title = "???";
 				}
@@ -42,13 +42,13 @@ export function start(pipeline: Pipeline) {
 					page.output?.path ||
 					page.pipeline.outputPath + "/" + page.data.output;
 				let doctags = Object.keys(page.data.doctags || {}).filter(
-					(id) => page?.data.doctags[id]
+					(id) => page?.data.doctags[id],
 				);
 				let type = (TYPES as any)[page.data.type] || "doc";
 				return (
 					`<div class="pagerefblock pagerefblock--${type}">` +
 					`<a href="/${pipeline.escapeHtml(
-						encodeURI(url)
+						encodeURI(url),
 					)}">${pipeline.escapeHtml(title)}</a> ` +
 					doctags
 						.map((id) => `<span class="doctag doctag--${id}">${id}</span>`)

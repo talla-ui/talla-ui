@@ -28,7 +28,7 @@ export class UIForm extends UIColumn {
 		preset: UIComponent.ViewPreset<UIColumn, this, "formContext"> & {
 			/** Event that's emitted when the form is submitted */
 			onSubmit?: string;
-		}
+		},
 	) {
 		super.applyViewPreset(preset);
 	}

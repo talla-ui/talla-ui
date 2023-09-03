@@ -162,7 +162,7 @@ function handleObserverEvent(observer: BaseObserver<UIComponent>, e: Event) {
 					window.removeEventListener("touchmove", _touchMoveHandler);
 					_touchMoveHandler = undefined;
 					_lastTouchObserver = undefined;
-				})
+				}),
 			);
 		}
 		component.emit("MouseDown", { event: e });

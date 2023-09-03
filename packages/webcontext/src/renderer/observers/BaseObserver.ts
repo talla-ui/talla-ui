@@ -12,7 +12,7 @@ import { applyElementCSS } from "../../style/DOMStyle.js";
 
 /** @internal Abstract observer class for all `UIComponent` instances, to create output and call render callback; implemented for all types of UI components */
 export abstract class BaseObserver<
-	TUIComponent extends UIComponent
+	TUIComponent extends UIComponent,
 > extends Observer<TUIComponent> {
 	override observe(observed: TUIComponent) {
 		return super
@@ -24,7 +24,7 @@ export abstract class BaseObserver<
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -33,7 +33,7 @@ export abstract class BaseObserver<
 					if (this.updateCallback) {
 						this.updateCallback = this.updateCallback.call(
 							undefined,
-							this.hidden ? undefined : this.output
+							this.hidden ? undefined : this.output,
 						);
 					}
 					return;
@@ -95,7 +95,7 @@ export abstract class BaseObserver<
 	updateStyle(
 		element: HTMLElement,
 		styles: Partial<UIStyle.Definition> = {},
-		shrinkwrap?: boolean | "auto"
+		shrinkwrap?: boolean | "auto",
 	) {
 		let component = this.observed;
 		if (!component) return;
@@ -142,10 +142,10 @@ export abstract class BaseObserver<
 					// emit Rendered event
 					if (this.observed && !this.observed.isUnlinked()) {
 						this.observed.emit(
-							new RenderContext.RendererEvent("Rendered", this.observed)
+							new RenderContext.RendererEvent("Rendered", this.observed),
 						);
 					}
-				}
+				},
 			);
 		}
 	}
@@ -222,7 +222,7 @@ export abstract class BaseObserver<
 			if (parentElement) {
 				// find focusable elements and focus closest before/after
 				return Array.from(
-					parentElement.querySelectorAll("[tabIndex]")
+					parentElement.querySelectorAll("[tabIndex]"),
 				) as HTMLElement[];
 			}
 		}

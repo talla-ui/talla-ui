@@ -53,7 +53,7 @@ export class UIStyle {
 	 * */
 	static isStyleOverride<K extends keyof UIStyle.Definition>(
 		object?: UIStyle.Definition[K],
-		style?: UIStyle
+		style?: UIStyle,
 	): object is UIStyle.Definition[K] {
 		let ownStyle =
 			style && style.name[0] === "@" ? style.getBaseStyle() : style;
@@ -107,11 +107,11 @@ export class UIStyle {
 	extend(
 		name: string,
 		styles?: Partial<UIStyle.Definition>,
-		conditional?: UIStyle.ConditionalStyles
+		conditional?: UIStyle.ConditionalStyles,
 	): UIStyle;
 	extend(
 		styles?: Partial<UIStyle.Definition>,
-		conditional?: UIStyle.ConditionalStyles
+		conditional?: UIStyle.ConditionalStyles,
 	): UIStyle;
 	// implementation:
 	extend(...args: any[]) {
@@ -143,27 +143,27 @@ export class UIStyle {
 			dimensions: new StyleDefinitionObject(
 				this,
 				baseStyles && baseStyles.dimensions,
-				styles.dimensions
+				styles.dimensions,
 			) as any,
 			position: new StyleDefinitionObject(
 				this,
 				baseStyles && baseStyles.position,
-				styles.position
+				styles.position,
 			) as any,
 			textStyle: new StyleDefinitionObject(
 				this,
 				baseStyles && baseStyles.textStyle,
-				styles.textStyle
+				styles.textStyle,
 			) as any,
 			containerLayout: new StyleDefinitionObject(
 				this,
 				baseStyles && baseStyles.containerLayout,
-				styles.containerLayout
+				styles.containerLayout,
 			) as any,
 			decoration: new StyleDefinitionObject(
 				this,
 				baseStyles && baseStyles.decoration,
-				styles.decoration
+				styles.decoration,
 			) as any,
 		};
 	}

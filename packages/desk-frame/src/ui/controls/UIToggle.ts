@@ -54,7 +54,7 @@ export class UIToggle extends UIControl {
 		> & {
 			/** Event that's emitted when the toggle state has changed */
 			onChange?: string;
-		}
+		},
 	) {
 		// quietly change 'text' to label to support JSX tag content
 		if ("text" in (preset as any)) {

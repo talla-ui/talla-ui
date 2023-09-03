@@ -44,7 +44,7 @@ If no preset properties are specified, the separator appears as a thin horizonta
 const view = UIColumn.with(
 	UIRow.with(UILabel.withText("...")),
 	UISeparator, // a grey line
-	UIRow.with(UILabel.withText("..."))
+	UIRow.with(UILabel.withText("...")),
 );
 ```
 

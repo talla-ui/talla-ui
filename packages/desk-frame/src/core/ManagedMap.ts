@@ -55,7 +55,7 @@ const $_map = Symbol("map");
  */
 export class ManagedMap<
 	K extends any = string,
-	T extends ManagedObject = ManagedObject
+	T extends ManagedObject = ManagedObject,
 > extends ManagedObject {
 	/** Creates a new, empty managed map */
 	constructor() {
@@ -71,7 +71,7 @@ export class ManagedMap<
 			() => {
 				// ... and clear the map when unlinked
 				this.clear();
-			}
+			},
 		);
 	}
 
@@ -324,7 +324,7 @@ export class ManagedMap<
 			attachObject(
 				this,
 				target,
-				new AttachObserver(this, key, target, !this._noPropagation)
+				new AttachObserver(this, key, target, !this._noPropagation),
 			);
 		}
 	}
@@ -346,7 +346,7 @@ export namespace ManagedMap {
 	/** Type definition for an event that's emitted when elements are added to, moved within, or removed from a map */
 	export type ChangeEvent<
 		TKey extends any = string,
-		TObject extends ManagedObject = ManagedObject
+		TObject extends ManagedObject = ManagedObject,
 	> = ManagedChangeEvent<
 		ManagedMap<TKey, TObject>,
 		{ key: TKey; object: TObject },
@@ -360,7 +360,7 @@ class AttachObserver<K> extends Observer<ManagedMap> {
 		public map: ManagedMap<K>,
 		public key: K,
 		public target: ManagedObject,
-		public propagate?: boolean
+		public propagate?: boolean,
 	) {
 		super();
 	}

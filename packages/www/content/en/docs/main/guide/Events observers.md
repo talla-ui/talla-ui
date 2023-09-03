@@ -272,8 +272,8 @@ As illustrated by the example below, handling UI events is easy — thanks to th
 const body = UICell.with(
 	UIRow.with(
 		UITextField.with({ onChange: "SearchFieldChange" }),
-		UIPrimaryButton.withLabel("Search", "GoSearch")
-	)
+		UIPrimaryButton.withLabel("Search", "GoSearch"),
+	),
 );
 
 class MyActivity extends PageViewActivity {

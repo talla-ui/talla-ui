@@ -9,7 +9,10 @@ import path from "path";
 
 /** Represents source documentation in a language (from .d.ts file, may be translated) */
 export class PackageDocs {
-	constructor(public pipeline: Pipeline, public options: DocGenOptions) {}
+	constructor(
+		public pipeline: Pipeline,
+		public options: DocGenOptions,
+	) {}
 
 	/** Returns a promise for the index, which contains all entries from the .d.ts files (after running `addPagesAsync()`) */
 	async getIndexAsync() {
@@ -28,7 +31,7 @@ export class PackageDocs {
 			let tokenizer = new Tokenizer(
 				path.resolve(this.pipeline.path, fileName),
 				dtsSource,
-				this.options
+				this.options,
 			);
 			let parser = new Parser(tokenizer.tokenize(), this.options);
 			let indexer = new Indexer(parser.parse(), this.options);
@@ -44,9 +47,9 @@ export class PackageDocs {
 					this.pipeline,
 					index,
 					id,
-					this.options
-				).createEntryPageAsync()
-			)
+					this.options,
+				).createEntryPageAsync(),
+			),
 		);
 
 		// fulfill index promise (unblocks parent pipeline)
@@ -71,7 +74,7 @@ export class PackageDocs {
 			this.pipeline,
 			index,
 			"_toc",
-			this.options
+			this.options,
 		);
 		tocBuilder.createTocAsync();
 	}
@@ -88,8 +91,8 @@ export class PackageDocs {
 				await this.pipeline.parseAsync(
 					(it.abstract || "").replace(
 						/\{\@link\s+([^\}\s]+)([^\}]*)\}/g,
-						(s, name, title) => title || name
-					)
+						(s, name, title) => title || name,
+					),
 				),
 			]);
 		}

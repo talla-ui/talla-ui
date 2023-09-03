@@ -47,7 +47,7 @@ export class ManagedRecord extends ManagedObject {
 	 */
 	static create<
 		TRecord extends ManagedRecord,
-		T extends ManagedRecord.PartialProperties<TRecord> | {}
+		T extends ManagedRecord.PartialProperties<TRecord> | {},
 	>(this: { new (): TRecord }, properties?: T): TRecord & T {
 		let result = new this() as any;
 		if (properties) {
@@ -63,7 +63,7 @@ export class ManagedRecord extends ManagedObject {
 	 * - If no class is provided, the closest ManagedRecord parent is returned, if any.
 	 */
 	getParentRecord<T extends ManagedRecord>(
-		ParentClass?: ManagedObject.Constructor<T>
+		ParentClass?: ManagedObject.Constructor<T>,
 	): T | undefined {
 		return ManagedRecord.whence.call(ParentClass || ManagedRecord, this) as any;
 	}

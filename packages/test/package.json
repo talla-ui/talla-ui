@@ -21,10 +21,13 @@
 		"clean": "rimraf dist .test-run",
 		"prebuild": "npm run clean",
 		"build": "tsc -p src",
-		"test": "tsc -p test && node .test-run/test"
+		"test": "tsc -p test && node .test-run/test",
+		"check-format": "prettier --check \"{src,test}/**/*.{ts,tsx}\""
 	},
 	"prettier": {
-		"useTabs": true
+		"useTabs": true,
+		"trailingComma": "all",
+		"endOfLine": "lf"
 	},
 	"dependencies": {
 		"desk-frame": "file:../desk-frame"

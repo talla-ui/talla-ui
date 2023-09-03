@@ -46,13 +46,13 @@ export const alertDialogStyles = {
 		"AlertDialog_CancelButton",
 		{
 			dimensions: { grow: 0 },
-		}
+		},
 	),
 	AlertDialog_ConfirmButton: UIStyle.PrimaryButton.extend(
 		"AlertDialog_ConfirmButton",
 		{
 			dimensions: { grow: 0 },
-		}
+		},
 	),
 };
 
@@ -76,13 +76,13 @@ const DialogBody = UICell.with(
 			iconColor: "currentColor",
 			textStyle: { color: "inherit" },
 			disableKeyboardFocus: true,
-		})
+		}),
 	),
 	UICell.with(
 		{ padding: 16 },
 		UIList.with(
 			{ items: bound("messages") },
-			UIParagraph.withText(bound("item"))
+			UIParagraph.withText(bound("item")),
 		),
 		UISpacer.withHeight(24),
 		UIRow.with(
@@ -102,9 +102,9 @@ const DialogBody = UICell.with(
 				label: bound("confirmButtonLabel"),
 				onClick: "+Confirm",
 				requestFocus: true,
-			})
-		)
-	)
+			}),
+		),
+	),
 );
 
 /** @internal Default modal message dialog view; shown asynchronously and resolves a promise */
@@ -116,7 +116,7 @@ export class AlertDialog
 {
 	constructor(
 		confirmButtonLabel: StringConvertible = strf("Dismiss"),
-		cancelButtonLabel?: StringConvertible
+		cancelButtonLabel?: StringConvertible,
 	) {
 		super();
 		this.confirmButtonLabel = confirmButtonLabel;

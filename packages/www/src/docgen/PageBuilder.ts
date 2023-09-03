@@ -36,7 +36,7 @@ export class PageBuilder {
 		public pipeline: Pipeline,
 		public index: Map<string, IndexEntry>,
 		public id: string,
-		public options: DocGenOptions
+		public options: DocGenOptions,
 	) {}
 
 	/** Creates a page for an index entry with the current ID */
@@ -103,7 +103,7 @@ export class PageBuilder {
 		// add page header
 		page.source.unshift(
 			`# ${page.data.title || "???"}\n`,
-			`<!--{{abstract}}-->\n`
+			`<!--{{abstract}}-->\n`,
 		);
 
 		// add breadcrumb
@@ -111,17 +111,17 @@ export class PageBuilder {
 			page.data.nav_uplink =
 				this._format(page.data.nav_uplink || "") || undefined;
 			page.source.unshift(
-				`<!--{{breadcrumb name="${this.options.strings.GuideBacklinks}"}}-->\n`
+				`<!--{{breadcrumb name="${this.options.strings.GuideBacklinks}"}}-->\n`,
 			);
 		} else {
 			let uplink = this.pipeline.escapeHtml(
-				page.data.breadcrumb_uplink || "[Docs](../)"
+				page.data.breadcrumb_uplink || "[Docs](../)",
 			);
 			let name = this.pipeline.escapeHtml(
-				page.data.breadcrumb_name || "Reference"
+				page.data.breadcrumb_name || "Reference",
 			);
 			page.source.unshift(
-				`<!--{{breadcrumb uplink="${uplink}" name="${name}"}}-->\n`
+				`<!--{{breadcrumb uplink="${uplink}" name="${name}"}}-->\n`,
 			);
 		}
 
@@ -156,11 +156,11 @@ export class PageBuilder {
 
 		// add page header
 		let uplink = this.pipeline.escapeHtml(
-			this._makeParentLink(entry) || `<a href="./">${strings.Exports}</a>`
+			this._makeParentLink(entry) || `<a href="./">${strings.Exports}</a>`,
 		);
 		let content =
 			`<!--{{breadcrumb uplink="${uplink}" name="${this._getTypeString(
-				entry
+				entry,
 			)}"}}-->\n\n` +
 			`# ${title}\n\n` +
 			(entry.abstract ? `<!--{{abstract}}-->\n\n` : "");
@@ -247,7 +247,7 @@ export class PageBuilder {
 		const makeMemberSection = (
 			title: string,
 			id: string,
-			entries: IndexEntry[]
+			entries: IndexEntry[],
 		) =>
 			`\n## ${title} {#${id}}\n\n` +
 			entries.map((entry) => `- {@ref ${entry.id}}`).join("\n") +
@@ -268,28 +268,28 @@ export class PageBuilder {
 			content += makeMemberSection(
 				strings.StaticMembers,
 				"#static",
-				members.static
+				members.static,
 			);
 		}
 		if (members.nonstatic?.length) {
 			content += makeMemberSection(
 				strings.InstanceMembers,
 				"#instance",
-				members.nonstatic
+				members.nonstatic,
 			);
 		}
 		if (members.inherited?.length) {
 			content += makeMemberSection(
 				strings.InheritedMembers,
 				"#inherited",
-				members.inherited
+				members.inherited,
 			);
 		}
 		if (members.deprecated?.length) {
 			content += makeMemberSection(
 				strings.DeprecatedMembers,
 				"#deprecated",
-				members.deprecated
+				members.deprecated,
 			);
 		}
 
@@ -320,7 +320,7 @@ export class PageBuilder {
 			if (!foundInIndex) ancestor = this._parentIndex?.get(parent.inherits);
 			if (ancestor?.members) {
 				let members = ancestor.members.map((id) =>
-					(foundInIndex ? this.index : this._parentIndex)!.get(id)
+					(foundInIndex ? this.index : this._parentIndex)!.get(id),
 				);
 				let overridden = members.filter((m) => m && m.name === entry.name)[0];
 				if (overridden && overridden.abstract && overridden.isPage)
@@ -333,7 +333,7 @@ export class PageBuilder {
 	/** Returns a list of members of given index entry, if any (i.e. class, interface, namespace) */
 	private _getMembers(
 		entry: IndexEntry,
-		noDedupRemove?: boolean
+		noDedupRemove?: boolean,
 	): {
 		construct: IndexEntry;
 		static: IndexEntry[];
@@ -356,7 +356,7 @@ export class PageBuilder {
 		let deprecated: IndexEntry[] = [];
 		let members: IndexEntry[] = (
 			entry.members?.map(
-				(id) => this.index.get(id)! || this._parentIndex?.get(id)!
+				(id) => this.index.get(id)! || this._parentIndex?.get(id)!,
 			) || []
 		).filter((a) => {
 			if (!a) return false;
@@ -388,11 +388,11 @@ export class PageBuilder {
 		// combine inherited members and remove overrides with no jsdoc
 		let staticInherited = dedup(
 			...(inherited.static || []),
-			...(inherited.staticInherited || [])
+			...(inherited.staticInherited || []),
 		);
 		let nonstaticInherited = dedup(
 			...(inherited.nonstatic || []),
-			...(inherited.inherited || [])
+			...(inherited.inherited || []),
 		);
 
 		// return lists of (inherited) member entries
@@ -404,17 +404,17 @@ export class PageBuilder {
 					a?.isStatic &&
 					a.type !== IndexEntryType.TypeEntry &&
 					a.type !== IndexEntryType.InterfaceEntry &&
-					a.type !== IndexEntryType.ClassEntry
+					a.type !== IndexEntryType.ClassEntry,
 			),
 			types: members.filter(
 				(a) =>
 					a?.isStatic &&
 					(a.type === IndexEntryType.TypeEntry ||
 						a.type === IndexEntryType.InterfaceEntry ||
-						a.type === IndexEntryType.ClassEntry)
+						a.type === IndexEntryType.ClassEntry),
 			),
 			nonstatic: members.filter(
-				(a) => a && a.name !== "constructor" && !a.isStatic
+				(a) => a && a.name !== "constructor" && !a.isStatic,
 			),
 			inherited: nonstaticInherited,
 			staticInherited,
@@ -468,7 +468,7 @@ export class PageBuilder {
 					} else {
 						return `- **${ref.title}**`;
 					}
-				}
+				},
 			)
 			.replace(/\{\@link\s+([^\}\s]+)([^\}]*)\}/g, (s, name, title) => {
 				let id = name.trim().replace(/\(\)$/, "").replace(/\:/g, ".");

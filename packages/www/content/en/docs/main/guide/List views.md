@@ -58,9 +58,9 @@ const view = UICell.with(
 		UIRow.with(
 			// within the row, a name label and button
 			UILabel.withText(bound.string("item.name")),
-			UIOutlineButton.withLabel("Remove", "RemoveItem")
-		)
-	)
+			UIOutlineButton.withLabel("Remove", "RemoveItem"),
+		),
+	),
 );
 ```
 
@@ -98,8 +98,8 @@ const view = UICell.with(
 		UILabel.withText(bound.string("item.name")),
 
 		// override the default container type:
-		UIRow
-	)
+		UIRow,
+	),
 );
 ```
 
@@ -123,8 +123,8 @@ const view = UICell.with(
 		// when there are no items at all
 		UIConditional.with(
 			{ state: bound.not("someList.count") },
-			UICenterRow.with(UILabel.withText("The list is empty"))
-		)
-	)
+			UICenterRow.with(UILabel.withText("The list is empty")),
+		),
+	),
 );
 ```

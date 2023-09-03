@@ -62,7 +62,7 @@ export class WebHashActivationPath extends ActivationPath {
 	 */
 	override async navigateAsync(
 		path: string,
-		mode?: ActivationPath.NavigationMode
+		mode?: ActivationPath.NavigationMode,
 	): Promise<void> {
 		path = String(path);
 		if (mode && mode.back) {

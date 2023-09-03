@@ -52,7 +52,7 @@ export class NavigationTarget {
 		if (this._capture) {
 			result = result.replace(
 				/(^|\/)\:([^\/]+)/g,
-				(s, prefix, id) => prefix + (this._capture![id] || "")
+				(s, prefix, id) => prefix + (this._capture![id] || ""),
 			);
 		}
 		if (this._rest) {

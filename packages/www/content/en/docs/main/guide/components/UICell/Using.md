@@ -37,7 +37,7 @@ const view = UICell.with(
 		borderThickness: 2,
 		dropShadow: 1,
 	},
-	UILabel.withText("Hello, world!")
+	UILabel.withText("Hello, world!"),
 );
 ```
 
@@ -107,7 +107,7 @@ const cellStyle = UIStyle.Cell.extend(
 		selected: {
 			decoration: { dropShadow: 0.5 },
 		},
-	}
+	},
 );
 
 const myCell = UICell.with(
@@ -118,13 +118,13 @@ const myCell = UICell.with(
 	},
 	UILabel.withText(
 		// bind to `selected` property of the surrounding cell:
-		bound.boolean("selected").select("Selected", "Not selected")
-	)
+		bound.boolean("selected").select("Selected", "Not selected"),
+	),
 );
 
 // use a UISelectionController to emit Deselect events too
 const view = desk.UISelectionController.with(
-	desk.UIColumn.with({ padding: 8, spacing: 8 }, myCell, myCell, myCell)
+	desk.UIColumn.with({ padding: 8, spacing: 8 }, myCell, myCell, myCell),
 );
 ```
 

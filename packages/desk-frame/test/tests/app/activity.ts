@@ -234,7 +234,7 @@ describe("Activity", () => {
 			let activity = new Activity();
 			app.addActivity(activity);
 			expect(ManagedObject.whence.call(GlobalContext as any, activity)).toBe(
-				app
+				app,
 			);
 		});
 
@@ -248,7 +248,10 @@ describe("Activity", () => {
 			expect(Activity.whence(activity)).toBeUndefined();
 			expect(Activity.whence(activity.nested.first())).toBe(activity);
 			expect(
-				ManagedObject.whence.call(GlobalContext as any, activity.nested.first())
+				ManagedObject.whence.call(
+					GlobalContext as any,
+					activity.nested.first(),
+				),
 			).toBe(app);
 		});
 

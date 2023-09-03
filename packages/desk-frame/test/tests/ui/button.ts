@@ -93,7 +93,7 @@ describe("UIButton", (scope) => {
 	test("Click event propagation", async (t) => {
 		class MyActivity extends PageViewActivity {
 			static override ViewBody = UICell.with(
-				UIButton.withLabel("Button", "ButtonClicked")
+				UIButton.withLabel("Button", "ButtonClicked"),
 			);
 			onButtonClicked() {
 				t.count("clicked");
@@ -124,8 +124,8 @@ describe("UIButton", (scope) => {
 		let Preset = UISelectionController.with(
 			UICell.with(
 				UIButton.with({ label: "one", onClick: "Select" }),
-				UIButton.with({ label: "two", onClick: "Select" })
-			)
+				UIButton.with({ label: "two", onClick: "Select" }),
+			),
 		);
 
 		t.log("Rendering view");

@@ -24,7 +24,7 @@ export class UIColumn extends UIContainer {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: UIComponent.ViewPreset<UIContainer, this, "width">
+		preset: UIComponent.ViewPreset<UIContainer, this, "width">,
 	) {
 		super.applyViewPreset(preset);
 	}

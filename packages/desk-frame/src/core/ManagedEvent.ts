@@ -64,7 +64,7 @@ import type { ManagedObject } from "./ManagedObject.js";
 export class ManagedEvent<
 	TSource extends ManagedObject = ManagedObject,
 	TData extends unknown = unknown,
-	TName extends string = string
+	TName extends string = string,
 > {
 	/**
 	 * Creates a new event with the specified name
@@ -79,7 +79,7 @@ export class ManagedEvent<
 		source: TSource,
 		data: Readonly<TData> = undefined as any,
 		delegate?: ManagedObject,
-		inner?: ManagedEvent
+		inner?: ManagedEvent,
 	) {
 		this.name = name;
 		this.source = source;
@@ -108,7 +108,7 @@ export class ManagedEvent<
 export class ManagedChangeEvent<
 	TSource extends ManagedObject = ManagedObject,
 	TData = unknown,
-	TName extends string = string
+	TName extends string = string,
 > extends ManagedEvent<TSource, TData, TName> {
 	/** A method that always returns true, can be used for duck-typing this type of events */
 	isChangeEvent(): true {
@@ -124,7 +124,7 @@ export type DelegatedEvent<
 	TDelegate extends ManagedObject,
 	TSource extends ManagedObject = ManagedObject,
 	TData extends unknown = unknown,
-	TName extends string = string
+	TName extends string = string,
 > = ManagedEvent<TSource, TData, TName> & {
 	/** The object that delegated the event, e.g. {@link UIForm}, {@link UIFormController}, or {@link UIList.ItemAdapter} */
 	readonly delegate: TDelegate;

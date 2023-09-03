@@ -67,7 +67,7 @@ export class UITextField extends UIControl {
 			onCut?: string;
 			/** Event that's emitted when the user performs a clipboard paste action */
 			onPaste?: string;
-		}
+		},
 	) {
 		// quietly change 'text' to placeholder to support JSX tag content
 		if ("text" in (preset as any)) {

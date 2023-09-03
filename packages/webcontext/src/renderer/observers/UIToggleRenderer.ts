@@ -16,14 +16,14 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 				"textStyle",
 				"decoration",
 				"disabled",
-				"shrinkwrap"
+				"shrinkwrap",
 			);
 	}
 
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -81,7 +81,7 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 				textStyle: toggle.textStyle,
 				decoration: { cssClassNames: [CLASS_TOGGLE] },
 			},
-			toggle.shrinkwrap
+			toggle.shrinkwrap,
 		);
 	}
 

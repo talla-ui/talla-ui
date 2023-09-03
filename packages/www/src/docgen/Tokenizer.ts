@@ -60,7 +60,7 @@ export class Tokenizer {
 	constructor(
 		public fileName: string,
 		public input: string,
-		public options: DocGenOptions
+		public options: DocGenOptions,
 	) {}
 
 	tokenize() {
@@ -128,7 +128,7 @@ export class Tokenizer {
 						line +
 						":" +
 						(pos - orig.lastIndexOf("\n", pos)) +
-						")"
+						")",
 				);
 			}
 		}

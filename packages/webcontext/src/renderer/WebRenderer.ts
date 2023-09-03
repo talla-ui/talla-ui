@@ -22,7 +22,7 @@ export class WebRenderer extends RenderContext {
 			(queueOptions) => {
 				queueOptions.maxSyncTime = options.missedFrameTime * 0.75;
 				queueOptions.throttleDelay = options.missedFrameTime * 1.5;
-			}
+			},
 		);
 		if (options.reducedMotion) this.setReducedMotion(true);
 	}
@@ -93,7 +93,7 @@ export class WebRenderer extends RenderContext {
 									autoCloseModal,
 									output.place.shade,
 									output.place.ref && (output.place.ref.element as any),
-									this._reducedMotion
+									this._reducedMotion,
 								);
 								break;
 							default:
@@ -145,14 +145,14 @@ export class WebRenderer extends RenderContext {
 
 	/** Attaches a renderer to given UI component */
 	createObserver<T extends RenderContext.Renderable>(
-		target: T
+		target: T,
 	): Observer<T> | undefined {
 		return makeObserver(target);
 	}
 
 	/** Returns an `OutputTransform` instance for the specified output */
 	transform(
-		out: RenderContext.Output
+		out: RenderContext.Output,
 	): RenderContext.OutputTransform | undefined {
 		if (
 			out &&

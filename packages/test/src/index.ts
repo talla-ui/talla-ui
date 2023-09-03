@@ -43,7 +43,7 @@ export function expect<T>(value: T, name?: string) {
  */
 export function test(
 	name: string,
-	f: (test: TestCase) => void | Promise<void>
+	f: (test: TestCase) => void | Promise<void>,
 ) {
 	TestScope.getScope().addTest(name, f);
 }
@@ -62,7 +62,7 @@ export namespace test {
 	 */
 	export function skip(
 		name: string,
-		f: (test: TestCase) => void | Promise<void>
+		f: (test: TestCase) => void | Promise<void>,
 	) {
 		TestScope.getScope().addTest(name, f, false, { state: "skip" });
 	}
@@ -83,7 +83,7 @@ export namespace test {
 	 */
 	export function todo(
 		name: string,
-		f?: (test: TestCase) => void | Promise<void>
+		f?: (test: TestCase) => void | Promise<void>,
 	) {
 		if (!f) f = () => {};
 		TestScope.getScope().addTest(name, f, false, { state: "todo" });
@@ -105,7 +105,7 @@ export namespace test {
 	 */
 	export function only(
 		name: string,
-		f: (test: TestCase) => void | Promise<void>
+		f: (test: TestCase) => void | Promise<void>,
 	) {
 		TestScope.getScope().addTest(name, f, true);
 	}

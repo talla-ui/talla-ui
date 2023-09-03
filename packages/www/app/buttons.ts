@@ -4,7 +4,7 @@ function showSearch() {
 	// use querySelector and focus instead of using requestFocus
 	// because otherwise this doesn't work on mobile
 	let input = document.querySelector(
-		"#docpage-searchbar input"
+		"#docpage-searchbar input",
 	) as HTMLInputElement;
 	input.value = "";
 	input.focus();

@@ -98,7 +98,7 @@ export abstract class UIContainer extends UIComponent {
 			asyncContentRendering?: boolean;
 			/** Event that's emitted by the container renderer when content is being rendered */
 			onContentRendering?: string;
-		}
+		},
 	) {
 		let layout = preset.layout;
 		delete preset.layout;
@@ -150,7 +150,7 @@ export abstract class UIContainer extends UIComponent {
 					event.source,
 					event.data,
 					this,
-					event
+					event,
 				);
 			}
 			this.emit(event);
@@ -207,7 +207,7 @@ export abstract class UIContainer extends UIComponent {
 export namespace UIContainer {
 	/** Type definition for an event that's emitted (only) on a container when content is being rendered */
 	export type ContentRenderingEvent<
-		TContainer extends UIContainer = UIContainer
+		TContainer extends UIContainer = UIContainer,
 	> = RenderContext.RendererEvent &
 		UIComponentEvent<
 			TContainer,

@@ -46,7 +46,7 @@ describe("UICell", (scope) => {
 		let MyCell = UICell.with(
 			{ hidden: true },
 			UILabel.withText("foo"),
-			UILabel.withText("bar")
+			UILabel.withText("bar"),
 		);
 		let cell = new MyCell();
 		expect(cell).toHaveProperty("hidden").toBeTruthy();
@@ -76,7 +76,7 @@ describe("UICell", (scope) => {
 		let MyCell = UICell.with(
 			{ layout: { gravity: "end" } },
 			UILabel.withText("foo"),
-			UILabel.withText("bar")
+			UILabel.withText("bar"),
 		);
 		app.render(new MyCell());
 		let out = await t.expectOutputAsync(100, {
@@ -94,7 +94,7 @@ describe("UICell", (scope) => {
 				borderThickness: 1,
 				decoration: { borderColor: "@Green" },
 			},
-			UILabel.withText("foo")
+			UILabel.withText("foo"),
 		);
 		app.render(new MyCell());
 		await t.expectOutputAsync(100, {
@@ -151,7 +151,7 @@ describe("UICell", (scope) => {
 		let out1 = await t.expectOutputAsync(
 			100,
 			{ source: cell1 },
-			{ text: "foo" }
+			{ text: "foo" },
 		);
 		let uid = out1.getSingle().uid;
 
@@ -160,7 +160,7 @@ describe("UICell", (scope) => {
 		let out2 = await t.expectOutputAsync(
 			100,
 			{ source: cell2 },
-			{ text: "foo" }
+			{ text: "foo" },
 		);
 
 		expect(out2.getSingle().uid).toBe(uid);
@@ -169,7 +169,7 @@ describe("UICell", (scope) => {
 	test("Rendered and selected using FocusIn", async (t) => {
 		let MyCell = UICell.with(
 			{ allowFocus: true, onFocusIn: "Select" },
-			UILabel.with({ allowFocus: true, text: "foo" })
+			UILabel.with({ allowFocus: true, text: "foo" }),
 		);
 		let cell = new MyCell();
 		app.render(cell);

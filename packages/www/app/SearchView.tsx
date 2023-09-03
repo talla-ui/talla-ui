@@ -20,7 +20,7 @@ const styles = {
 			focused: {
 				decoration: { borderColor: UIColor.Primary },
 			},
-		}
+		},
 	),
 	result: UIStyle.Cell.extend(
 		{
@@ -43,7 +43,7 @@ const styles = {
 					borderThickness: 2,
 				},
 			},
-		}
+		},
 	),
 };
 

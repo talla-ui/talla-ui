@@ -33,7 +33,7 @@ export class ServiceContext extends ManagedMap<string, ManagedObject> {
 		name: string,
 		observer:
 			| ServiceObserver<TService>
-			| ManagedObject.AttachObserverFunction<TService> = new ServiceObserver()
+			| ManagedObject.AttachObserverFunction<TService> = new ServiceObserver(),
 	) {
 		if (typeof observer === "function") {
 			observer = ServiceObserver.fromChangeHandler<
@@ -51,7 +51,7 @@ export class ServiceContext extends ManagedMap<string, ManagedObject> {
  * - Creating multiple observers for the same service may cause a memory leak. If you're creating new observers as part of your application (e.g. in a data model) be sure to use the {@link Observer.stop stop()} method when the observer is no longer needed.
  */
 export class ServiceObserver<
-	TService extends ManagedObject
+	TService extends ManagedObject,
 > extends Observer<TService> {
 	/** The current service, updated automatically when services are added, updated, or removed */
 	get service() {
@@ -66,7 +66,7 @@ export class ServiceObserver<
 		this._serviceContextObserver?.stop();
 		this._serviceContextObserver = new ServiceContextObserver(
 			name,
-			this
+			this,
 		).observe(context);
 		return this;
 	}
@@ -88,9 +88,12 @@ export class ServiceObserver<
 
 /** @internal Context observer used by a ServiceObserver */
 class ServiceContextObserver<
-	TService extends ManagedObject
+	TService extends ManagedObject,
 > extends Observer<ServiceContext> {
-	constructor(public name: string, public observer: ServiceObserver<TService>) {
+	constructor(
+		public name: string,
+		public observer: ServiceObserver<TService>,
+	) {
 		super();
 	}
 	override observe(observed: ServiceContext) {

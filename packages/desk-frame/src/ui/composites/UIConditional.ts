@@ -19,7 +19,7 @@ export class UIConditional extends ViewComposite {
 	 */
 	static with(
 		preset: UIComponent.ViewPreset<ViewComposite, UIConditional, "state">,
-		Body: ViewClass
+		Body: ViewClass,
 	): typeof UIConditional {
 		return class PresetView extends this {
 			constructor() {

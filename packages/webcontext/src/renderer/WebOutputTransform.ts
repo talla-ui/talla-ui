@@ -57,9 +57,12 @@ export class WebOutputTransform implements RenderContext.OutputTransform {
 			// set DOM handlers and timeout if needed
 			if (!startT) {
 				startT = Date.now();
-				setTimeout(() => {
-					resolve(removeHandlers(applied));
-				}, this._delay + this._duration + 200);
+				setTimeout(
+					() => {
+						resolve(removeHandlers(applied));
+					},
+					this._delay + this._duration + 200,
+				);
 				if (this._duration) {
 					elt.addEventListener("transitionstart", addHandlers);
 				}
@@ -121,7 +124,7 @@ export class WebOutputTransform implements RenderContext.OutputTransform {
 			let newRect = elt.getBoundingClientRect();
 			this.offset(
 				(rect.x - newRect.x) / (newRect.width || 1),
-				(rect.y - newRect.y) / (newRect.height || 1)
+				(rect.y - newRect.y) / (newRect.height || 1),
 			);
 			return true;
 		};
@@ -187,7 +190,7 @@ export class WebOutputTransform implements RenderContext.OutputTransform {
 		origin: [number, number] = [0.5, 0.5],
 		refOrigin: [number, number] = [0.5, 0.5],
 		scaleX?: number | undefined,
-		scaleY?: number | undefined
+		scaleY?: number | undefined,
 	) {
 		if (!this._origin) this._origin = origin;
 		let updated = false;
@@ -217,7 +220,7 @@ export class WebOutputTransform implements RenderContext.OutputTransform {
 			// adjust offset based on difference
 			this.offset(
 				rect.width > 0 ? (refX - rectX) / rect.width : 0,
-				rect.height > 0 ? (refY - rectY) / rect.height : 0
+				rect.height > 0 ? (refY - rectY) / rect.height : 0,
 			);
 			return true;
 		};

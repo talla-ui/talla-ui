@@ -6,7 +6,7 @@ export class SearchResult extends ManagedRecord {
 		public id: string,
 		public title: string,
 		public abstract: string,
-		public url: string
+		public url: string,
 	) {
 		super();
 		this.lcId = id.toLowerCase();
@@ -37,8 +37,8 @@ export class Search {
 						it[0],
 						it[1],
 						it[2],
-						base + "/" + it[0] + ".html"
-					)
+						base + "/" + it[0] + ".html",
+					),
 				);
 			}
 			this._baseQuery = new Query("", this.index);
@@ -61,7 +61,10 @@ export class Search {
 }
 
 export class Query {
-	constructor(public readonly filter: string, index?: SearchResult[]) {
+	constructor(
+		public readonly filter: string,
+		index?: SearchResult[],
+	) {
 		this._results = index ? index.slice() : [];
 	}
 
@@ -84,16 +87,16 @@ export class Query {
 		let parts = lcSearch.split(/[\. ]+/);
 		let index =
 			this._results?.filter((it) =>
-				parts.every((p) => it.lcId.indexOf(p) >= 0)
+				parts.every((p) => it.lcId.indexOf(p) >= 0),
 			) || [];
 		index.sort((a, b) => {
 			let a0 = parts.reduce(
 				(cur, p) => cur + this._pointsFor(a, lcSearch, p),
-				0
+				0,
 			);
 			let b0 = parts.reduce(
 				(cur, p) => cur + this._pointsFor(b, lcSearch, p),
-				0
+				0,
 			);
 			if (a.lcId.indexOf(lcSearch) === 0) a0 += 100;
 			if (b.lcId.indexOf(lcSearch) === 0) b0 += 100;

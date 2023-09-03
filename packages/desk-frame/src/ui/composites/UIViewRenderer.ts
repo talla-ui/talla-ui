@@ -113,8 +113,8 @@ class UIViewRendererObserver extends Observer<UIViewRenderer> {
 							event.source,
 							event.data,
 							viewRenderer,
-							event
-						)
+							event,
+						),
 					);
 				}
 			}

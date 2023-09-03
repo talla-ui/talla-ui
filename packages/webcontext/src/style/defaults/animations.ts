@@ -24,7 +24,7 @@ export const animations: {
 function _anim(
 	offset: [[number?, number?], [number?, number?]],
 	fade: [number, number],
-	async?: boolean
+	async?: boolean,
 ): RenderContext.OutputTransformer {
 	return async function (t: RenderContext.OutputTransform) {
 		let p = t

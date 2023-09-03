@@ -47,7 +47,7 @@ When used without any preset dimensions, the {@link UIControl.shrinkwrap shrinkw
 const view = UIRow.with(
 	UILabel.withText("A row with..."),
 	UISpacer,
-	UILabel.withText("...a spacer")
+	UILabel.withText("...a spacer"),
 );
 ```
 

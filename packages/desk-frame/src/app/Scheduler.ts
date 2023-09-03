@@ -19,7 +19,7 @@ export class Scheduler {
 	createQueue(
 		name: string | symbol,
 		replace?: boolean,
-		configure?: (options: AsyncTaskQueue.Options) => void
+		configure?: (options: AsyncTaskQueue.Options) => void,
 	) {
 		// stop all and remove queues with the same name first, if required
 		if (replace) {
@@ -125,7 +125,7 @@ export class AsyncTaskQueue {
 	addOrReplace(
 		handle: any,
 		f: (t: AsyncTaskQueue.Task) => Promise<void> | void,
-		priority = 0
+		priority = 0,
 	) {
 		// remove existing task(s), if any
 		for (let q of this._tasks) {
@@ -348,13 +348,13 @@ export namespace AsyncTaskQueue {
 	/** An error that's used to reject the promise returned by {@link AsyncTaskQueue.waitAsync()} */
 	export const QueueStoppedError = AppException.type(
 		"AsyncQueueStopped",
-		"Tasks stopped"
+		"Tasks stopped",
 	);
 
 	/** An error that's thrown when a task has timed out */
 	export const TaskTimeoutError = AppException.type(
 		"AsyncTaskTimeout",
-		"Task timed out"
+		"Task timed out",
 	);
 }
 
@@ -362,7 +362,7 @@ export namespace AsyncTaskQueue {
 class AsyncQueueTask {
 	constructor(
 		queue: AsyncTaskQueue,
-		f: (t: AsyncTaskQueue.Task) => Promise<void> | void
+		f: (t: AsyncTaskQueue.Task) => Promise<void> | void,
 	) {
 		this.queue = queue;
 		this.run = () => f(this);

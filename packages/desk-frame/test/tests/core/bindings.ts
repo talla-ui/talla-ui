@@ -339,16 +339,16 @@ describe("Bindings", () => {
 				list = new ManagedList().restrict(ListItem);
 				map = new ManagedMap().restrict(ListItem);
 				readonly boundIndex = this.attach(
-					new BoundObject().bindNumber("list.0.n")
+					new BoundObject().bindNumber("list.0.n"),
 				);
 				readonly boundFirst = this.attach(
-					new BoundObject().bindNumber("list.#first.n")
+					new BoundObject().bindNumber("list.#first.n"),
 				);
 				readonly boundLast = this.attach(
-					new BoundObject().bindNumber("list.#last.n")
+					new BoundObject().bindNumber("list.#last.n"),
 				);
 				readonly boundMap = this.attach(
-					new BoundObject().bindNumber("map.#a.n")
+					new BoundObject().bindNumber("map.#a.n"),
 				);
 			}
 			let p = new Parent();
@@ -413,7 +413,7 @@ describe("Bindings", () => {
 						child = this.attach(new Child());
 					}
 					new Parent();
-				})
+				}),
 			)
 				.asString()
 				.toMatchRegExp(/observable/);
@@ -870,7 +870,7 @@ describe("Bindings", () => {
 		test("Multiple value string binding", () => {
 			let { parent } = setup();
 			parent.child.bindValue(
-				bound.strf("Value: %.2f %s: %i", "value1", "str", "value1").asString()
+				bound.strf("Value: %.2f %s: %i", "value1", "str", "value1").asString(),
 			);
 			parent.child.expectValue().toBe("Value: 1.00 ABC: 1");
 		});
@@ -895,8 +895,8 @@ describe("Bindings", () => {
 					{
 						value: "value1",
 						str: "str",
-					}
-				)
+					},
+				),
 			);
 			parent.child.expectValue().asString().toBe("Value: 1.00 ABC: 1 a");
 		});

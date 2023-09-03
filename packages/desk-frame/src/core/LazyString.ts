@@ -183,7 +183,7 @@ export class LazyString extends String {
 	 */
 	translate() {
 		return new LazyString(() =>
-			_i18n ? _i18n.getText(String(this)) : String(this)
+			_i18n ? _i18n.getText(String(this)) : String(this),
 		);
 	}
 
@@ -227,7 +227,7 @@ export class LazyString extends String {
 					? (s, pos, opts) =>
 							_i18n!.getPlural(+args[pos ? pos - 1 : 0] || 0, opts.split("/"))
 					: (s, pos, opts) =>
-							opts.split("/")[args[pos ? pos - 1 : 0] == 1 ? 0 : 1]
+							opts.split("/")[args[pos ? pos - 1 : 0] == 1 ? 0 : 1],
 			);
 
 			// replace all value placeholders
@@ -255,7 +255,7 @@ export class LazyString extends String {
 					// return formatted result as a string
 					fmt = fmt.replace(/\*/g, () => String(args[idx++]));
 					return LazyString.formatValue(fmt, value);
-				}
+				},
 			);
 		});
 		clone._formatArgs = args;
@@ -381,7 +381,7 @@ export namespace LazyString {
 				w,
 				leftAlign,
 				positivePrefix,
-				padPrefix
+				padPrefix,
 			);
 		}
 	}
@@ -393,7 +393,7 @@ export namespace LazyString {
 		width: number,
 		leftAlign?: boolean,
 		positivePrefix?: string,
-		padPrefix?: string
+		padPrefix?: string,
 	) {
 		let sign = neg ? "-" : positivePrefix || "";
 		if (leftAlign) return _align(true, sign, s, width);
@@ -410,7 +410,7 @@ export namespace LazyString {
 		sign: string,
 		str: string,
 		width: number,
-		prefix?: string
+		prefix?: string,
 	) {
 		if (alignLeft) {
 			str = sign + str;

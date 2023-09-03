@@ -17,7 +17,7 @@ export class GlobalEmitter<TEvent extends ManagedEvent> extends ManagedObject {
 	 * @param handler A function that will be called for every event that's emitted, with the event as the only argument
 	 */
 	override listen(
-		handler: (this: unknown, event: TEvent) => void | Promise<void>
+		handler: (this: unknown, event: TEvent) => void | Promise<void>,
 	): this {
 		return super.listen(handler as any);
 	}

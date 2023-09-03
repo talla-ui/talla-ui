@@ -100,7 +100,7 @@ export function JSX(f: any, presets: any, ...rest: any[]): ViewClass {
 						nBindings++;
 					}
 					return "%[" + id;
-				}
+				},
 			);
 			hasText = true;
 		} else if (r instanceof Binding) {

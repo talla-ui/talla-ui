@@ -24,8 +24,8 @@ describe("UIList", (scope) => {
 			String(
 				c instanceof UIList.ItemAdapter
 					? c.body instanceof UILabel && c.body.text
-					: c instanceof UILabel && c.text
-			)
+					: c instanceof UILabel && c.text,
+			),
 		);
 	}
 
@@ -68,7 +68,7 @@ describe("UIList", (scope) => {
 		let MyList = UIList.with(
 			{ items: list },
 			UILabel.withText(bound("item.name")),
-			UIRow
+			UIRow,
 		);
 		let instance = new MyList();
 
@@ -99,7 +99,7 @@ describe("UIList", (scope) => {
 		let MyList = UIList.with(
 			{ items: bound("array") },
 			UILabel.withText(bound("item")),
-			UIRow
+			UIRow,
 		);
 		let instance = new MyList();
 		let parent = new ArrayProvider();
@@ -119,7 +119,7 @@ describe("UIList", (scope) => {
 		let MyList = UIList.with(
 			{ items: list, animation: { duration: 100 } },
 			UILabel.withText(bound("item.name")),
-			UIRow
+			UIRow,
 		);
 		let instance = new MyList();
 
@@ -141,8 +141,8 @@ describe("UIList", (scope) => {
 			UIList.with(
 				{ items: new ManagedList(...getObjects()) },
 				UILabel.with({ text: bound("item.name"), onClick: "Foo" }),
-				UIRow
-			)
+				UIRow,
+			),
 		);
 
 		t.log("Creating view");
@@ -173,7 +173,7 @@ describe("UIList", (scope) => {
 			{ items: new ManagedList(...getObjects()) },
 			UILabel.withText(bound("item.name")),
 			UIRow,
-			UILabel.withText("end")
+			UILabel.withText("end"),
 		);
 		let instance = new MyList();
 
@@ -193,7 +193,7 @@ describe("UIList", (scope) => {
 		let MyList = UIList.with(
 			{ items: new ManagedList(...getObjects()), maxItems: 2 },
 			UILabel.withText(bound("item.name")),
-			UIRow
+			UIRow,
 		);
 		let instance = new MyList();
 
@@ -227,7 +227,7 @@ describe("UIList", (scope) => {
 	test("Get indices for components", async (t) => {
 		let Preset = UIList.with(
 			{ items: new ManagedList(...getObjects()) },
-			UILabel.with({ text: bound("item.name"), allowFocus: true })
+			UILabel.with({ text: bound("item.name"), allowFocus: true }),
 		);
 		let list = new Preset();
 		app.render(list);
@@ -243,8 +243,8 @@ describe("UIList", (scope) => {
 			UIButton.withLabel("button"),
 			UIList.with(
 				{ items: new ManagedList(...getObjects()), allowKeyboardFocus: true },
-				UILabel.with({ text: bound("item.name"), allowFocus: true })
-			)
+				UILabel.with({ text: bound("item.name"), allowFocus: true }),
+			),
 		);
 		app.render(new Preset());
 		let out = await t.expectOutputAsync(50, { text: "a" });
@@ -271,7 +271,7 @@ describe("UIList", (scope) => {
 				allowFocus: true,
 				onArrowDownKeyPress: "FocusNext",
 				onArrowUpKeyPress: "FocusPrevious",
-			})
+			}),
 		);
 		let list = new Preset();
 		app.render(list);

@@ -11,7 +11,7 @@ export class UIRowRenderer extends UIContainerRenderer<UIRow> {
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			if (property === "height") {

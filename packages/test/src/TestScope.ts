@@ -66,7 +66,7 @@ export class TestScope {
 		name: string,
 		f?: (scope: TestScope) => void,
 		private readonly _parallel?: boolean,
-		private readonly _exclusive?: boolean
+		private readonly _exclusive?: boolean,
 	) {
 		this.scope = scope;
 		this.name = name;
@@ -106,7 +106,7 @@ export class TestScope {
 		let time = (this._stopT || Date.now()) - (this._startT || 0);
 		let results = this._res.reduce(
 			(all: TestResult[], r) => all.concat(r()),
-			[]
+			[],
 		);
 		let totals: any = {
 			wait: 0,
@@ -201,7 +201,7 @@ export class TestScope {
 		name: string,
 		f: (test: TestCase) => void | Promise<void>,
 		exclusive?: boolean,
-		initResult?: Partial<TestResult>
+		initResult?: Partial<TestResult>,
 	) {
 		let test = new TestCase(this, name, f);
 		if (exclusive) {
@@ -280,14 +280,14 @@ export class TestScope {
 		name: string,
 		f: (scope: TestScope) => void,
 		parallel?: boolean,
-		exclusive?: boolean
+		exclusive?: boolean,
 	) {
 		let scope = new TestScope(
 			this,
 			this.name ? this.name + " :: " + name : name,
 			f,
 			parallel,
-			exclusive || this._exclusive
+			exclusive || this._exclusive,
 		);
 		this._runners.push(async (timeout?: number) => {
 			await scope.runTestsAsync(timeout);

@@ -16,7 +16,7 @@ import {
 class TestDialogController implements UITheme.ConfirmationDialogController {
 	constructor(
 		confirmLabel: StringConvertible = strf("Dismiss"),
-		cancelLabel?: StringConvertible
+		cancelLabel?: StringConvertible,
 	) {
 		this._confirmLabel = confirmLabel;
 		this._cancelLabel = cancelLabel;
@@ -50,11 +50,11 @@ class TestDialogController implements UITheme.ConfirmationDialogController {
 			...controller._messages.map((m) => UILabel.withText(m)),
 			UIButton.withLabel(
 				controller._confirmLabel || strf("Dismiss"),
-				"Confirm"
+				"Confirm",
 			),
 			controller._cancelLabel
 				? UIButton.withLabel(controller._cancelLabel, "Cancel")
-				: undefined
+				: undefined,
 		);
 		class DialogView extends ViewComposite {
 			protected override createView() {
@@ -99,7 +99,7 @@ class TestMenuController implements UITheme.MenuController {
 				text: item.text,
 				icon: item.icon,
 				textStyle: item.textStyle,
-			})
+			}),
 		);
 		this._items.push(
 			class extends ViewComposite {
@@ -109,14 +109,14 @@ class TestMenuController implements UITheme.MenuController {
 				onClick() {
 					controller._resolve?.(item.key);
 				}
-			}
+			},
 		);
 		return this;
 	}
 	addItemGroup(
 		items: UITheme.MenuItem[],
 		selectedKey?: string | undefined,
-		textStyle?: UIStyle.Definition.TextStyle
+		textStyle?: UIStyle.Definition.TextStyle,
 	) {
 		for (let item of items) {
 			this.addItem({

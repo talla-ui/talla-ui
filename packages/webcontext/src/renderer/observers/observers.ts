@@ -27,7 +27,7 @@ import { UIToggleRenderer } from "./UIToggleRenderer.js";
 
 /** @internal Helper function to create the appropriate renderer for given object */
 export function makeObserver<T extends RenderContext.Renderable>(
-	target: T
+	target: T,
 ): Observer<T> | undefined {
 	return (
 		target instanceof UIRow

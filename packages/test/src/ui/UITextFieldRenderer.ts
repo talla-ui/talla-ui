@@ -13,14 +13,14 @@ export class UITextFieldRenderer extends TestRenderObserver<UITextField> {
 				"textStyle",
 				"decoration",
 				"disabled",
-				"shrinkwrap"
+				"shrinkwrap",
 			);
 	}
 
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -51,7 +51,7 @@ export class UITextFieldRenderer extends TestRenderObserver<UITextField> {
 
 	override handlePlatformEvent(
 		name: TestOutputElement.PlatformEvent,
-		data?: any
+		data?: any,
 	) {
 		// update 'value' first, reflecting the element value
 		if (this.element && this.observed) {
@@ -75,7 +75,7 @@ export class UITextFieldRenderer extends TestRenderObserver<UITextField> {
 				textStyle: textField.textStyle,
 				decoration: textField.decoration,
 			},
-			textField.shrinkwrap
+			textField.shrinkwrap,
 		);
 	}
 

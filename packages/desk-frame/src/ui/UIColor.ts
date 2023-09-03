@@ -68,7 +68,7 @@ export class UIColor {
 		color1: UIColor | string,
 		color2: UIColor | string,
 		ratio: number,
-		ignoreAlpha?: boolean
+		ignoreAlpha?: boolean,
 	) {
 		function parse(color: string) {
 			if (color[0] === "#") {
@@ -79,7 +79,7 @@ export class UIColor {
 						.map((s) => parseInt(s + s, 16));
 				else
 					return [color.slice(1, 3), color.slice(3, 5), color.slice(5, 7)].map(
-						(s) => parseInt(s, 16)
+						(s) => parseInt(s, 16),
 					);
 			} else if (color.slice(0, 5) === "rgba(") {
 				return color
@@ -181,7 +181,7 @@ export class UIColor {
 				this,
 				v > 0 ? "#fff" : "#000",
 				Math.abs(v),
-				true
+				true,
 			);
 		};
 		return result;

@@ -21,14 +21,14 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 				"textStyle",
 				"decoration",
 				"disabled",
-				"shrinkwrap"
+				"shrinkwrap",
 			);
 	}
 
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -50,7 +50,7 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 	getOutput() {
 		if (!this.observed) throw ReferenceError();
 		let elt = document.createElement(
-			this.observed.headingLevel ? "h" + this.observed.headingLevel : "span"
+			this.observed.headingLevel ? "h" + this.observed.headingLevel : "span",
 		);
 		let output = new RenderContext.Output(this.observed, elt);
 
@@ -75,7 +75,7 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 				textStyle: label.textStyle,
 				decoration: label.decoration,
 			},
-			label.shrinkwrap
+			label.shrinkwrap,
 		);
 	}
 
@@ -98,7 +98,7 @@ type TextContentProperties = {
 /** @internal Helper function to set the (text or html) content for given element */
 export function setTextOrHtmlContent(
 	element: HTMLElement,
-	content: TextContentProperties
+	content: TextContentProperties,
 ) {
 	let text = content.text == null ? "" : String(content.text);
 	if (!content.icon) {

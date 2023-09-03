@@ -24,14 +24,14 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 				"textStyle",
 				"decoration",
 				"disabled",
-				"shrinkwrap"
+				"shrinkwrap",
 			);
 	}
 
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -79,7 +79,7 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 				| undefined;
 			if (activationPath && typeof activationPath.getPathHref === "function") {
 				(elt as HTMLAnchorElement).href = activationPath.getPathHref(
-					String(this.observed.getNavigationTarget())
+					String(this.observed.getNavigationTarget()),
 				);
 			}
 		}
@@ -124,7 +124,7 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 				textStyle: button.textStyle,
 				decoration: button.decoration,
 			},
-			button.shrinkwrap
+			button.shrinkwrap,
 		);
 	}
 

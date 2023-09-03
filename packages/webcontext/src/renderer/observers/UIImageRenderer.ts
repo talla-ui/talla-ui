@@ -12,7 +12,7 @@ export class UIImageRenderer extends BaseObserver<UIImage> {
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -52,7 +52,7 @@ export class UIImageRenderer extends BaseObserver<UIImage> {
 		super.updateStyle(
 			element,
 			{ decoration: image.decoration },
-			image.shrinkwrap
+			image.shrinkwrap,
 		);
 	}
 

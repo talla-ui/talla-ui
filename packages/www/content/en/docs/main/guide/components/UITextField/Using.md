@@ -64,8 +64,8 @@ const view = UICell.with(
 		UIBorderlessTextField.with({
 			placeholder: "Search...",
 		}),
-		UIIconButton.withIcon(UIIcon.ExpandDown)
-	)
+		UIIconButton.withIcon(UIIcon.ExpandDown),
+	),
 );
 ```
 
@@ -111,8 +111,8 @@ const view = UICell.with(
 			placeholder: "Enter text",
 			value: bound.string("textValue"),
 			onInput: "SampleTextInput",
-		})
-	)
+		}),
+	),
 );
 
 export class MyActivity extends ViewActivity {

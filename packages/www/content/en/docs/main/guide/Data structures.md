@@ -213,7 +213,7 @@ This pattern is not just reserved for UI components and views, but can also be u
 class Customer extends ManagedRecord {
 	// ...
 	readonly contacts = this.attach(
-		new ManagedList().restrict(Contact).autoAttach(true)
+		new ManagedList().restrict(Contact).autoAttach(true),
 	);
 }
 
@@ -246,7 +246,7 @@ class Customer extends ManagedRecord {
 		(list, changeEvent) => {
 			// ... handle a change to OR within the list
 			// (use changeEvent.source to find the object)
-		}
+		},
 	);
 }
 

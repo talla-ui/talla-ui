@@ -32,7 +32,7 @@ export class TestCase {
 	constructor(
 		scope: TestScope,
 		name: string,
-		private readonly _function: (test: TestCase) => void | Promise<void>
+		private readonly _function: (test: TestCase) => void | Promise<void>,
 	) {
 		this.scope = scope;
 		this.name = name;
@@ -95,7 +95,7 @@ export class TestCase {
 	 */
 	log(...values: any[]) {
 		this._logs.push(
-			values.map((v, i) => (!i && typeof v === "string" ? v : val2str(v)))
+			values.map((v, i) => (!i && typeof v === "string" ? v : val2str(v))),
 		);
 	}
 
@@ -212,7 +212,7 @@ export class TestCase {
 		poll: () => true | any,
 		interval?: number,
 		timeout?: number,
-		onTimeout?: () => Error | void
+		onTimeout?: () => Error | void,
 	) {
 		let startT = Date.now();
 		this._awaiting++;
@@ -340,8 +340,8 @@ export class TestCase {
 			timeout,
 			() =>
 				Error(
-					`Expected path ${val2str(path)} but it is ${val2str(app.getPath())}`
-				)
+					`Expected path ${val2str(path)} but it is ${val2str(app.getPath())}`,
+				),
 		);
 	}
 
@@ -369,7 +369,7 @@ export class TestCase {
 		try {
 			return await (app.renderer as TestRenderer).expectOutputAsync(
 				timeout,
-				...select
+				...select,
 			);
 		} catch (err) {
 			this.fail(err);
@@ -410,7 +410,7 @@ export class TestCase {
 					if (this._awaiting > 0) {
 						throw Error(
 							"Test function returned but still running async. " +
-								"Forgot to await result?"
+								"Forgot to await result?",
 						);
 					}
 				} catch (err) {

@@ -53,7 +53,7 @@ export const modalMenuStyles = {
 					textColor: UIColor.PrimaryBackground.text(),
 				},
 			},
-		}
+		},
 	),
 	ModalMenu_Label: UIStyle.Label.extend("ModalMenu_Label", {}),
 	ModalMenu_Hint: UIStyle.Label.extend("ModalMenu_Hint", {
@@ -72,7 +72,7 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 	addItemGroup(
 		items: UITheme.MenuItem[],
 		selectedKey?: string,
-		textStyle?: UIStyle.Definition.TextStyle
+		textStyle?: UIStyle.Definition.TextStyle,
 	) {
 		for (let item of items) {
 			this.addItem({

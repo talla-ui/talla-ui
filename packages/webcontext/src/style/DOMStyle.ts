@@ -113,7 +113,7 @@ export function setControlTextStyle(textStyle: UIStyle.Definition.TextStyle) {
 export function applyElementCSS(
 	element: HTMLElement,
 	styles: Partial<UIStyle.Definition>,
-	component: UIComponent
+	component: UIComponent,
 ) {
 	// if element is hidden, stop early
 	if (element.hidden) {
@@ -166,7 +166,7 @@ export function applyElementCSS(
 /** @internal Applies decoration styles from given object to an element, using CSS overrides only */
 export function applyDecorationCSS(
 	element: HTMLElement,
-	decoration: Partial<UIStyle.Definition.Decoration>
+	decoration: Partial<UIStyle.Definition.Decoration>,
 ) {
 	let inline: Partial<CSSStyleDeclaration> & { className?: string } = {};
 	addDecorationCSS(inline, decoration);
@@ -192,7 +192,7 @@ export function getCSSColor(color: string | UIColor) {
 /** @internal Helper method to convert a CSS length unit *or* pixels number to a CSS string or given default string (e.g. `auto`) */
 export function getCSSLength(
 	length?: UIStyle.Offsets,
-	defaultValue: any = "auto"
+	defaultValue: any = "auto",
 ): string {
 	if (typeof length === "string") return length;
 	if (typeof length === "number") return length / LOGICAL_PX_PER_REM + "rem";
@@ -255,7 +255,7 @@ function defineStyleClass(style: UIStyle) {
 /** Helper function to append CSS styles to given object for a given `Dimensions` object */
 function addDimensionsCSS(
 	result: Partial<CSSStyleDeclaration>,
-	dimensions: UIStyle.Definition.Dimensions
+	dimensions: UIStyle.Definition.Dimensions,
 ) {
 	let width = dimensions.width;
 	if (width !== undefined) result.width = getCSSLength(width);
@@ -278,7 +278,7 @@ function addDimensionsCSS(
 /** Helper function to append CSS styles to given object for a given `Position` object */
 function addPositionCSS(
 	result: Partial<CSSStyleDeclaration>,
-	position: UIStyle.Definition.Position
+	position: UIStyle.Definition.Position,
 ) {
 	let alignSelf = position.gravity;
 	let hasHorizontalPosition: boolean | undefined;
@@ -319,7 +319,7 @@ function addPositionCSS(
 /** Helper function to append CSS styles to given object for a given `TextStyle` object */
 function addTextStyleCSS(
 	result: Partial<CSSStyleDeclaration>,
-	textStyle: UIStyle.Definition.TextStyle
+	textStyle: UIStyle.Definition.TextStyle,
 ) {
 	let direction = textStyle.direction;
 	if (direction !== undefined) result.direction = direction;
@@ -368,7 +368,7 @@ function addTextStyleCSS(
 /** Helper function to append CSS styles to given object for a given `Decoration` object */
 function addDecorationCSS(
 	result: Partial<CSSStyleDeclaration> & { className?: string },
-	decoration: UIStyle.Definition.Decoration
+	decoration: UIStyle.Definition.Decoration,
 ) {
 	let background = decoration.background;
 	if (background !== undefined) result.background = getCSSColor(background);
@@ -407,7 +407,7 @@ function addDecorationCSS(
 /** Helper function to append CSS styles to given object for a given `ContainerLayout` object */
 function addContainerLayoutCSS(
 	result: Partial<CSSStyleDeclaration>,
-	layout: UIStyle.Definition.ContainerLayout
+	layout: UIStyle.Definition.ContainerLayout,
 ) {
 	let axis = layout.axis;
 	if (axis !== undefined)

@@ -12,17 +12,20 @@
 	"scripts": {
 		"clean": "rimraf build ../../_site",
 		"prebuild": "rimraf build",
-		"build": "run-p build:*",
+		"build": "concurrently npm:build:*",
 		"build:pipeline": "esbuild src/pipeline.ts --bundle --outdir=build/pipeline --format=cjs --packages=external",
 		"build:app": "esbuild app/app.ts --outdir=build/app --bundle --external:desk-frame --external:@desk-framework/webcontext --format=iife --target=es2020 --minify",
 		"premake": "rimraf ../../_site",
 		"make": "markdown-pipeline ../../_site build/pipeline/pipeline.js",
-		"debug": "run-s prebuild debug:app build:pipeline premake make debug:copymap",
+		"debug": "npm run prebuild && npm run debug:app && npm run build:pipeline && npm run premake && npm run make && npm run debug:copymap",
 		"debug:app": "esbuild app/app.ts --outdir=build/app --bundle --external:desk-frame --external:@desk-framework/webcontext --format=iife --target=es2020 --sourcemap",
-		"debug:copymap": "cp build/app/app.js.map ../../_site/app.js.map"
+		"debug:copymap": "cp build/app/app.js.map ../../_site/app.js.map",
+		"check-format": "prettier --check \"{src,content,app,templates}/**/*.{ts,tsx}\""
 	},
 	"prettier": {
 		"useTabs": true,
+		"trailingComma": "all",
+		"endOfLine": "lf",
 		"overrides": [
 			{
 				"files": "*.yaml",

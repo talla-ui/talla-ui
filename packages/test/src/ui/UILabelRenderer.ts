@@ -13,14 +13,14 @@ export class UILabelRenderer extends TestRenderObserver<UILabel> {
 				"textStyle",
 				"decoration",
 				"disabled",
-				"shrinkwrap"
+				"shrinkwrap",
 			);
 	}
 
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -61,7 +61,7 @@ export class UILabelRenderer extends TestRenderObserver<UILabel> {
 				textStyle: label.textStyle,
 				decoration: label.decoration,
 			},
-			label.shrinkwrap
+			label.shrinkwrap,
 		);
 	}
 

@@ -24,7 +24,7 @@ export abstract class UIControl extends UIComponent {
 			textStyle?: UIStyle.Definition.TextStyle;
 			/** Options for the appearance of this control (overrides) */
 			decoration?: UIStyle.Definition.Decoration;
-		}
+		},
 	) {
 		let textStyle = preset.textStyle;
 		delete preset.textStyle;

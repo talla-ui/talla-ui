@@ -44,7 +44,7 @@ export class Observer<T extends ManagedObject = ManagedObject> {
 	/** @internal Create an observer that calls a single function on change/unlink */
 	static fromChangeHandler<TObserver extends Observer, T extends ManagedObject>(
 		this: typeof Observer & (new () => TObserver),
-		f: (target?: T, event?: any) => void
+		f: (target?: T, event?: any) => void,
 	): TObserver {
 		// FIXME(low prio, performance): Note this implementation creates a new class each time;
 		// definitely not the most performant implementation.
@@ -125,7 +125,7 @@ export class Observer<T extends ManagedObject = ManagedObject> {
 					() => {
 						this._removeTraps();
 						this.handleUnlink();
-					}
+					},
 				),
 				addTrap(observed, $_origin, (t, p, v: ManagedObject) => {
 					if (v) this.handleAttachedChange(v);
@@ -242,7 +242,7 @@ export class Observer<T extends ManagedObject = ManagedObject> {
 	protected handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	): Promise<void> | void {
 		if (!property) return;
 		let methodName =
@@ -315,7 +315,7 @@ export class Observer<T extends ManagedObject = ManagedObject> {
 						this._callbacks[p]!(p, target, event);
 					}
 				},
-				removeEventTrap
+				removeEventTrap,
 			);
 			this._traps.push(eventTrap);
 		};
@@ -346,8 +346,8 @@ export class Observer<T extends ManagedObject = ManagedObject> {
 						this._callbacks[p]!(p, v);
 					}
 				},
-				removeEventTrap
-			)
+				removeEventTrap,
+			),
 		);
 
 		// check if property already contains an object

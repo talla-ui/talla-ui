@@ -42,7 +42,7 @@ export class UISpacer extends UIControl {
 			width?: string | number;
 			/** Spacer height (in pixels or string with unit) */
 			height?: string | number;
-		}
+		},
 	) {
 		if (preset.height !== undefined) {
 			preset = {

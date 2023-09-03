@@ -14,7 +14,7 @@ const switchButtonStyle = UIStyle.OutlineButton.extend(
 				textColor: UIColor.Primary.text(),
 			},
 		},
-	}
+	},
 );
 
 export default ViewComposite.define(
@@ -35,5 +35,5 @@ export default ViewComposite.define(
 				Dark
 			</outlinebutton>
 		</row>
-	</selection>
+	</selection>,
 );

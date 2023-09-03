@@ -65,7 +65,7 @@ describe("JSX", () => {
 
 	test("Custom view composite with column content", (t) => {
 		const MyColumn = ViewComposite.define<{ spacing?: number }>(
-			(p, ...content) => <column spacing={p.spacing}>{content}</column>
+			(p, ...content) => <column spacing={p.spacing}>{content}</column>,
 		);
 		let MyCell = (
 			<cell>
@@ -115,7 +115,7 @@ describe("JSX", () => {
 				<label>bar='%[bar.foo]'</label>
 				<label>baz='%[baz=bar.baz:uc]'</label>
 				<label>nope_bound='{bound("nope", "Nothing")}'</label>
-			</row>
+			</row>,
 		);
 		useTestContext((options) => {
 			options.renderFrequency = 5;
@@ -137,7 +137,7 @@ describe("JSX", () => {
 		const Comp = ViewComposite.define<{ emails: any }>(
 			<label>
 				You have %[numEmails=emails.count:n] %[numEmails:plural|email|emails]
-			</label>
+			</label>,
 		);
 		const Preset1 = Comp.with({ emails: { count: 1 } });
 		const Preset2 = Comp.with({ emails: { count: 2 } });

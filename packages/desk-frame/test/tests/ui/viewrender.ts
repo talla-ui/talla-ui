@@ -63,7 +63,7 @@ describe("UIViewRenderer", (scope) => {
 
 	test("Set view using view composite, and render", async (t) => {
 		const CompView = ViewComposite.define((p: { text: string }) =>
-			UILabel.withText(p.text)
+			UILabel.withText(p.text),
 		);
 		const Preset = CompView.with({ text: "foo" });
 		class MyActivity extends PageViewActivity {
@@ -87,7 +87,7 @@ describe("UIViewRenderer", (scope) => {
 		// activity that will be rendered as nested view
 		class MySecondActivity extends ViewActivity {
 			static override ViewBody = UICell.with(
-				UIButton.withLabel("foo", "+ButtonPress")
+				UIButton.withLabel("foo", "+ButtonPress"),
 			);
 			onButtonPress() {
 				this.emit("Foo");
@@ -98,7 +98,7 @@ describe("UIViewRenderer", (scope) => {
 		class MyActivity extends PageViewActivity {
 			static override ViewBody = UICell.with(
 				{ accessibleLabel: "outer" },
-				UIViewRenderer.with({ view: bound("second") })
+				UIViewRenderer.with({ view: bound("second") }),
 			);
 			constructor() {
 				super();
@@ -124,7 +124,7 @@ describe("UIViewRenderer", (scope) => {
 		out = await t.expectOutputAsync(
 			50,
 			{ accessibleLabel: "outer" },
-			{ text: "foo" }
+			{ text: "foo" },
 		);
 
 		// clicking the button should propagate all events

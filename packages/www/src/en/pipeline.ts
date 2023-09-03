@@ -35,7 +35,7 @@ export function start(pipeline: Pipeline) {
 				},
 				(docs) => {
 					mainApiDocs = docs;
-				}
+				},
 			);
 		});
 

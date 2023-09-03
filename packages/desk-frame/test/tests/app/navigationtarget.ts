@@ -44,7 +44,7 @@ describe("NavigationTarget", () => {
 	test("Set captures and rest", () => {
 		let t = new NavigationTarget("foo/:bar/*baz").setCapture(
 			{ bar: "1" },
-			"123"
+			"123",
 		);
 		expect(t.toString()).toBe("foo/1/123");
 	});

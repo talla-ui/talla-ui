@@ -31,7 +31,7 @@ export class UIAnimationController extends ViewComposite {
 			UIAnimationController,
 			"showAnimation" | "hideAnimation" | "repeatAnimation"
 		>,
-		Body: ViewClass
+		Body: ViewClass,
 	): typeof UIAnimationController {
 		return class PresetView extends this {
 			constructor() {
@@ -47,7 +47,7 @@ export class UIAnimationController extends ViewComposite {
 	/** Plays the specified animation on the last output element rendered by the content view */
 	async playAsync(
 		animation?: string | RenderContext.OutputTransformer,
-		repeat?: boolean
+		repeat?: boolean,
 	) {
 		// prepare everything in advance
 		let renderer = app.renderer;
@@ -76,7 +76,7 @@ export class UIAnimationController extends ViewComposite {
 			let orig = callback;
 			let result: RenderContext.RenderCallback = (callback = (
 				output,
-				afterRender
+				afterRender,
 			) => {
 				let hiding = this._lastOutput && !output;
 				let showing = !this._lastOutput && output;
@@ -98,7 +98,7 @@ export class UIAnimationController extends ViewComposite {
 					if (this.showAnimation && showing) {
 						// new output: play 'show' animation
 						this.playAsync(this.showAnimation).catch((err) =>
-							app.log.error(err)
+							app.log.error(err),
 						);
 					}
 					orig = orig(output, afterRender);

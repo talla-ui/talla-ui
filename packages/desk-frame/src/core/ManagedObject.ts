@@ -68,7 +68,7 @@ export class ManagedObject {
 	 */
 	static whence<T extends ManagedObject>(
 		this: ManagedObject.Constructor<T>,
-		object?: ManagedObject
+		object?: ManagedObject,
 	): T | undefined {
 		let parent = object ? object[$_origin] : undefined;
 		while (parent && !(parent instanceof this)) {
@@ -188,7 +188,7 @@ export class ManagedObject {
 	 */
 	protected attach<T extends ManagedObject>(
 		target: T,
-		observer?: Observer<T> | ManagedObject.AttachObserverFunction<T>
+		observer?: Observer<T> | ManagedObject.AttachObserverFunction<T>,
 	): T {
 		if (typeof observer === "function")
 			observer = Observer.fromChangeHandler(observer) as Observer<T>;
@@ -231,10 +231,10 @@ export class ManagedObject {
 	 */
 	protected observeAttach<
 		K extends keyof this,
-		T extends NonNullable<this[K]> & ManagedObject
+		T extends NonNullable<this[K]> & ManagedObject,
 	>(
 		propertyName: K,
-		observer?: Observer<T> | ManagedObject.AttachObserverFunction<T>
+		observer?: Observer<T> | ManagedObject.AttachObserverFunction<T>,
 	) {
 		if (typeof observer === "function")
 			observer = Observer.fromChangeHandler(observer) as Observer<T>;
@@ -251,6 +251,6 @@ export namespace ManagedObject {
 	/** Type definition for the callback function argument passed to {@link ManagedObject.attach()} and {@link ManagedObject.observeAttach()} */
 	export type AttachObserverFunction<T extends ManagedObject> = (
 		target?: T,
-		event?: ManagedChangeEvent<T>
+		event?: ManagedChangeEvent<T>,
 	) => void;
 }

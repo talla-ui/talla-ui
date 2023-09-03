@@ -13,7 +13,7 @@ export class UIImageRenderer extends TestRenderObserver<UIImage> {
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -45,7 +45,7 @@ export class UIImageRenderer extends TestRenderObserver<UIImage> {
 		super.updateStyle(
 			element,
 			{ decoration: image.decoration },
-			image.shrinkwrap
+			image.shrinkwrap,
 		);
 	}
 

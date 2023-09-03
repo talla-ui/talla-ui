@@ -143,7 +143,7 @@ describe("ActivationPath and ActivationContext", () => {
 			t.log("Checking activationPath");
 			expect(app.activities.activationPath).toBeInstanceOf(ActivationPath);
 			expect(ManagedObject.whence(app.activities.activationPath)).toBe(
-				app.activities
+				app.activities,
 			);
 		});
 

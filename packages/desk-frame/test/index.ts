@@ -18,9 +18,9 @@ await fs.writeFile(
 			(r) =>
 				`[${r.state}] ${r.name}` +
 				(r.logs ? "\n" + r.logs : "") +
-				(r.stack ? "\n---\n" + r.stack : "")
+				(r.stack ? "\n---\n" + r.stack : ""),
 		)
-		.join("\n\n")
+		.join("\n\n"),
 );
 
 if (details.failed) process.exit(1);

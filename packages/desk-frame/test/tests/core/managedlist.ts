@@ -64,7 +64,7 @@ describe("ManagedList", () => {
 
 			// can't add before non-existent items
 			expect(() =>
-				list.insert(new NamedObject(""), new NamedObject(""))
+				list.insert(new NamedObject(""), new NamedObject("")),
 			).toThrowError();
 		});
 
@@ -348,7 +348,7 @@ describe("ManagedList", () => {
 			return [list1, list2, objects] as [
 				typeof list1,
 				typeof list2,
-				typeof objects
+				typeof objects,
 			];
 		}
 
@@ -643,7 +643,7 @@ describe("ManagedList", () => {
 			}
 			class MyParent extends ManagedObject {
 				list = this.attach(
-					new ManagedList(new MyChild(), new MyChild(), new MyChild())
+					new ManagedList(new MyChild(), new MyChild(), new MyChild()),
 				);
 			}
 			let p = new MyParent();

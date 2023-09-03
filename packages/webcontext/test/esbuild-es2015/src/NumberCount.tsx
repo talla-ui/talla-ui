@@ -16,5 +16,5 @@ export default ViewComposite.define<{ count: number }>(
 	<column>
 		<label>Count:</label>
 		<label style={styles.counter}>{bound.number("count")}</label>
-	</column>
+	</column>,
 );

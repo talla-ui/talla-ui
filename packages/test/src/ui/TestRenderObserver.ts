@@ -29,7 +29,7 @@ const _eventNames: { [p in TestOutputElement.PlatformEvent]?: string } = {
 
 /** @internal Abstract observer class for all `UIComponent` instances, to create output and call render callback; implemented for all types of UI components */
 export abstract class TestRenderObserver<
-	TUIComponent extends UIComponent
+	TUIComponent extends UIComponent,
 > extends Observer<TUIComponent> {
 	override observe(observed: TUIComponent) {
 		return super
@@ -41,7 +41,7 @@ export abstract class TestRenderObserver<
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -50,7 +50,7 @@ export abstract class TestRenderObserver<
 					if (this.updateCallback) {
 						this.updateCallback = this.updateCallback.call(
 							undefined,
-							this.hidden ? undefined : this.output
+							this.hidden ? undefined : this.output,
 						);
 					}
 					return;
@@ -84,7 +84,7 @@ export abstract class TestRenderObserver<
 	/** Schedule asynchronous update (content and/or style); gets cancelled if `update` is called synchronously in the meantime */
 	scheduleUpdate(
 		updateContent?: TestOutputElement,
-		updateStyle?: TestOutputElement
+		updateStyle?: TestOutputElement,
 	) {
 		if (updateContent) this._asyncContentUp = updateContent;
 		if (updateStyle) this._asyncStyleUp = updateStyle;
@@ -111,7 +111,7 @@ export abstract class TestRenderObserver<
 	updateStyle(
 		element: TestOutputElement,
 		styles: Partial<UIStyle.Definition> = {},
-		shrinkwrap?: boolean | "auto"
+		shrinkwrap?: boolean | "auto",
 	) {
 		let component = this.observed;
 		if (!component) return;
@@ -171,10 +171,10 @@ export abstract class TestRenderObserver<
 					// emit Rendered event
 					if (this.observed && !this.observed.isUnlinked()) {
 						this.observed.emit(
-							new RenderContext.RendererEvent("Rendered", this.observed)
+							new RenderContext.RendererEvent("Rendered", this.observed),
 						);
 					}
-				}
+				},
 			);
 		}
 	}
@@ -199,7 +199,7 @@ export abstract class TestRenderObserver<
 			let current = this.element;
 			if (current.parent) {
 				let focusable = current.parent.querySelect(
-					(elt) => elt === current || elt.focusable
+					(elt) => elt === current || elt.focusable,
 				);
 				for (let i = 0; i < focusable.length - 1; i++) {
 					if (focusable[i] === current) {
@@ -217,7 +217,7 @@ export abstract class TestRenderObserver<
 			let current = this.element;
 			if (current.parent) {
 				let focusable = current.parent.querySelect(
-					(elt) => elt === current || elt.focusable
+					(elt) => elt === current || elt.focusable,
 				);
 				for (let i = focusable.length - 1; i > 0; i--) {
 					if (focusable[i] === current) {

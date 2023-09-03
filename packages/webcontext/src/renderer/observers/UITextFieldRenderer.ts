@@ -12,14 +12,14 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 				"textStyle",
 				"decoration",
 				"disabled",
-				"shrinkwrap"
+				"shrinkwrap",
 			);
 	}
 
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -46,7 +46,7 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 	getOutput() {
 		if (!this.observed) throw ReferenceError();
 		let elt = document.createElement(
-			this.observed.multiline ? "textarea" : "input"
+			this.observed.multiline ? "textarea" : "input",
 		);
 		elt.tabIndex = 0;
 		let output = new RenderContext.Output(this.observed, elt);
@@ -67,7 +67,7 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 				textStyle: textField.textStyle,
 				decoration: textField.decoration,
 			},
-			textField.shrinkwrap
+			textField.shrinkwrap,
 		);
 	}
 

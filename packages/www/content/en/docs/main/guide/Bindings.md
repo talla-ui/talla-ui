@@ -30,8 +30,8 @@ To use a binding, assign the binding to a property in a call to `.with()` or a r
 const view = UICell.with(
 	UIConditional.with(
 		{ state: bound("showHello") },
-		UILabel.withText(bound("helloText"))
-	)
+		UILabel.withText(bound("helloText")),
+	),
 );
 
 // or use them in JSX code:
@@ -135,9 +135,9 @@ const view = UICell.with(
 		bound.strf(
 			"Hello, %s. You have %i new #{email/emails}",
 			"username",
-			"numEmails"
-		)
-	)
+			"numEmails",
+		),
+	),
 );
 ```
 
@@ -148,9 +148,9 @@ const view = UICell.with(
 	UILabel.withText(
 		bound.strf(
 			"Hello, %[name]. You have %[num] new %[num:plural|email|emails]",
-			{ name: bound.string("username"), num: bound.number("numEmails") }
-		)
-	)
+			{ name: bound.string("username"), num: bound.number("numEmails") },
+		),
+	),
 );
 ```
 

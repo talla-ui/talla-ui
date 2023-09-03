@@ -19,7 +19,7 @@ export function start(pipeline: Pipeline) {
 
 				// load template text
 				let promise = pipeline.readTextFileAsync(
-					"templates/" + template + "/template.html"
+					"templates/" + template + "/template.html",
 				);
 				loadTemplates.set(template, promise);
 				text = await promise;

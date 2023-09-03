@@ -38,7 +38,7 @@ export class UIScrollContainer extends UIContainer {
 			onScroll?: string;
 			/** Event that's emitted after the visible area has been scrolled */
 			onScrollEnd?: string;
-		}
+		},
 	) {
 		super.applyViewPreset(preset);
 	}
@@ -67,7 +67,7 @@ export class UIScrollContainer extends UIContainer {
 			new RenderContext.RendererEvent("UIScrollTarget", this, {
 				yOffset,
 				xOffset,
-			})
+			}),
 		);
 	}
 
@@ -77,7 +77,9 @@ export class UIScrollContainer extends UIContainer {
 	 */
 	scrollToTop() {
 		this.emit(
-			new RenderContext.RendererEvent("UIScrollTarget", this, { target: "top" })
+			new RenderContext.RendererEvent("UIScrollTarget", this, {
+				target: "top",
+			}),
 		);
 	}
 
@@ -89,7 +91,7 @@ export class UIScrollContainer extends UIContainer {
 		this.emit(
 			new RenderContext.RendererEvent("UIScrollTarget", this, {
 				target: "bottom",
-			})
+			}),
 		);
 	}
 }

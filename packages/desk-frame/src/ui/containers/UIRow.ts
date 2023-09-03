@@ -26,7 +26,7 @@ export class UIRow extends UIContainer {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: UIComponent.ViewPreset<UIContainer, this, "height">
+		preset: UIComponent.ViewPreset<UIContainer, this, "height">,
 	) {
 		super.applyViewPreset(preset);
 	}

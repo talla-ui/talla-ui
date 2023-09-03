@@ -17,11 +17,11 @@
 	"module": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"clean": "run-p clean:*",
+		"clean": "concurrently npm:clean:*",
 		"clean:build": "rimraf dist dist-* lib",
 		"clean:test": "rimraf test/esbuild/public/dist test/esm/dist test/esm/lib test/esm/node_modules test/parcel/.parcel-cache test/parcel/dist test/parcel/node_modules",
 		"prebuild": "npm run clean",
-		"build": "run-p build:*",
+		"build": "concurrently npm:build:*",
 		"build:esnext": "tsc -p src --declaration",
 		"build:es2020": "tsc -p src --target es2020 --outdir dist-es2020",
 		"build:es2018": "tsc -p src --target es2018 --outdir dist-es2018",
@@ -31,10 +31,13 @@
 		"test-esbuild": "cd test/esbuild && node esbuild",
 		"test-esbuild-es2015": "cd test/esbuild-es2015 && node esbuild",
 		"test-esm": "cd test/esm && npm install && npm run test",
-		"test-parcel": "cd test/parcel && npm install && npm run test"
+		"test-parcel": "cd test/parcel && npm install && npm run test",
+		"check-format": "prettier --check \"src/**/*.{ts,tsx}\" \"test/*/src/**/*.{ts,tsx}\""
 	},
 	"prettier": {
-		"useTabs": true
+		"useTabs": true,
+		"trailingComma": "all",
+		"endOfLine": "lf"
 	},
 	"files": [
 		"dist",

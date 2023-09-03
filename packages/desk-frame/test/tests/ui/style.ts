@@ -146,7 +146,7 @@ describe("UIStyle and UIStyleController", (scope) => {
 					dimensions: { width: 123 },
 					layout: { gravity: "stretch" },
 					position: { top: 123 },
-				})
+				}),
 			);
 			let instance = new Preset();
 			instance.render();
@@ -179,7 +179,7 @@ describe("UIStyle and UIStyleController", (scope) => {
 			});
 			let Preset = UIStyleController.with(
 				{ style: "@testItalic" },
-				UILabel.withText("foo", "@testBold")
+				UILabel.withText("foo", "@testBold"),
 			);
 			let instance = new Preset();
 			instance.render();
@@ -197,7 +197,7 @@ describe("UIStyle and UIStyleController", (scope) => {
 		test("With style overrides, rendered, then updated", async (t) => {
 			let Preset = UIStyleController.with(
 				{ textStyle: { bold: true } },
-				UILabel.withText("foo")
+				UILabel.withText("foo"),
 			);
 			let instance = new Preset();
 			app.render(instance);

@@ -48,7 +48,7 @@ export class ViewActivity extends Activity implements RenderContext.Renderable {
 	/** @internal Update prototype for given class with newer prototype, and rebuild view */
 	static override _$hotReload(
 		Old: undefined | typeof Activity,
-		Updated: typeof ViewActivity
+		Updated: typeof ViewActivity,
 	) {
 		super._$hotReload(Old, Updated);
 		Updated.prototype._hotReload = true;
@@ -211,7 +211,7 @@ export class ViewActivity extends Activity implements RenderContext.Renderable {
 			this._renderWrapper = this.renderer.render(
 				view,
 				callback,
-				this.renderPlacement
+				this.renderPlacement,
 			);
 		}
 		return this;
@@ -225,7 +225,7 @@ export class ViewActivity extends Activity implements RenderContext.Renderable {
 	protected onNavigate(
 		e: ManagedEvent<
 			ManagedObject & { getNavigationTarget?: () => NavigationTarget }
-		>
+		>,
 	) {
 		if (
 			this.activationPath &&

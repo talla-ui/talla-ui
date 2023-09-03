@@ -25,7 +25,7 @@ export class UIScrollContainerRenderer extends UIContainerRenderer<UIScrollConta
 		e: ManagedEvent<
 			UIScrollContainer,
 			{ target?: string; xOffset: any; yOffset: any }
-		>
+		>,
 	) {
 		let element = this.element;
 		if (!element) return;

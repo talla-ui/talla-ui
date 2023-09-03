@@ -31,7 +31,7 @@ export class AppException extends Error {
 	 */
 	static type(
 		name: string,
-		format: StringConvertible
+		format: StringConvertible,
 	): { new (...args: any[]): AppException } {
 		let message = new LazyString(() => String(format));
 		return class AppExceptionType extends this {

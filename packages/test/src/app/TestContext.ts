@@ -48,7 +48,7 @@ export class TestContextOptions {
  * });
  */
 export function useTestContext(
-	configure?: (options: TestContextOptions) => void
+	configure?: (options: TestContextOptions) => void,
 ) {
 	let options = new TestContextOptions();
 	configure?.(options);

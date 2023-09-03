@@ -10,7 +10,7 @@ const _emptyStyle = new UIStyle();
 export type UIComponentEvent<
 	TSource extends UIComponent = UIComponent,
 	TData extends unknown = unknown,
-	TName extends string = string
+	TName extends string = string,
 > = ManagedEvent<TSource, TData, TName>;
 
 /**
@@ -43,7 +43,7 @@ export abstract class UIComponent extends View {
 	 */
 	static with<TViewClass, TComponent extends UIComponent>(
 		this: TViewClass & (new (...args: any[]) => TComponent),
-		preset: UIComponent.ViewPreset<TComponent>
+		preset: UIComponent.ViewPreset<TComponent>,
 	): TViewClass {
 		return class PresetUIComponent extends (this as any) {
 			constructor(...args: any[]) {
@@ -294,7 +294,7 @@ export namespace UIComponent {
 	export type ViewPreset<
 		TBase extends View,
 		TView = any,
-		K extends keyof TView = never
+		K extends keyof TView = never,
 	> = TBase extends {
 		applyViewPreset(preset: infer P): void;
 	}

@@ -76,7 +76,7 @@ describe("ManagedService", (scope) => {
 				if (event) t.count("event");
 				if (service) t.count("service");
 				else t.count("unlink");
-			}
+			},
 		);
 		expect(observed.service).toBeUndefined();
 		app.services.set("Test.Observed", svc);
@@ -114,7 +114,7 @@ describe("ManagedService", (scope) => {
 		app.services.set("Test.Observed", svc);
 		let observer = app.services.observeService(
 			"Test.Observed",
-			new ObservedServiceObserver()
+			new ObservedServiceObserver(),
 		);
 
 		// trigger observer handlers
@@ -145,7 +145,7 @@ describe("ManagedService", (scope) => {
 		}
 		let observer = app.services.observeService(
 			"Test.Observed",
-			new ObservedServiceObserver()
+			new ObservedServiceObserver(),
 		);
 
 		// trigger observer handlers

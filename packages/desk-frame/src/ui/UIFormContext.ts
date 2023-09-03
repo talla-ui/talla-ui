@@ -4,7 +4,7 @@ import { AppException } from "../app/index.js";
 /** Error that's used when a required property is missing */
 const REQUIRED_ERROR = AppException.type(
 	"FORM_REQUIRED",
-	"This field is required"
+	"This field is required",
 );
 
 /** @internal Binding for path "formContext" */
@@ -228,7 +228,7 @@ export class UIFormContext<TData = any> extends ManagedObject {
 	 */
 	addTest<K extends keyof TData>(
 		name: K,
-		f: (test: UIFormContext.ValidationTest<TData[K]>) => void
+		f: (test: UIFormContext.ValidationTest<TData[K]>) => void,
 	) {
 		this._tests[name] = f;
 		return this;
@@ -276,7 +276,7 @@ export class UIFormContext<TData = any> extends ManagedObject {
 
 	private _tests: {
 		[name in keyof TData]: (
-			test: UIFormContext.ValidationTest<TData[name]>
+			test: UIFormContext.ValidationTest<TData[name]>,
 		) => void;
 	} = Object.create(null);
 }

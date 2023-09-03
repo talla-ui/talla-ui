@@ -28,7 +28,7 @@ export class UISeparator extends UIControl {
 			UIControl,
 			this,
 			"thickness" | "margin" | "color" | "vertical"
-		>
+		>,
 	) {
 		super.applyViewPreset(preset);
 	}

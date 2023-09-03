@@ -22,7 +22,7 @@ let _dragStart = 0;
 
 /** @internal */
 export class UIContainerRenderer<
-	TContainer extends UIContainer
+	TContainer extends UIContainer,
 > extends BaseObserver<TContainer> {
 	override observe(observed: UIContainer) {
 		let result = super
@@ -32,7 +32,7 @@ export class UIContainerRenderer<
 				"layout",
 				"padding",
 				"spacing",
-				"distribution"
+				"distribution",
 			);
 		return result;
 	}
@@ -46,7 +46,7 @@ export class UIContainerRenderer<
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -137,7 +137,7 @@ export class UIContainerRenderer<
 		if (!this.contentUpdater) {
 			this.contentUpdater = new ContentUpdater(
 				container,
-				element
+				element,
 			).setAsyncRendering(container.asyncContentRendering);
 			this.updateSeparator();
 		}
@@ -159,7 +159,7 @@ export class UIContainerRenderer<
 
 	override updateStyle(
 		element: HTMLElement,
-		styles?: Partial<UIStyle.Definition>
+		styles?: Partial<UIStyle.Definition>,
 	) {
 		let container = this.observed;
 		if (!container) return;
@@ -197,7 +197,7 @@ export class UIContainerRenderer<
 				this.lastSeparator = options;
 				this.contentUpdater.setSeparator(
 					options,
-					this.observed.layout.axis === "horizontal"
+					this.observed.layout.axis === "horizontal",
 				);
 			}
 		}
@@ -328,7 +328,7 @@ export class ContentUpdater {
 	/** Set separator details; possibly update rendered separators */
 	setSeparator(
 		options?: UIStyle.Definition.SeparatorOptions,
-		defaultVertical?: boolean
+		defaultVertical?: boolean,
 	) {
 		let sep: HTMLElement | undefined;
 		let vertical = (options && options.vertical) ?? defaultVertical;
@@ -553,14 +553,14 @@ export class ContentUpdater {
 
 	/** Emit ContentRendering event on container, when deleting or replacing an element */
 	private _emitRendering(
-		output?: Array<RenderContext.Output<Node> | undefined>
+		output?: Array<RenderContext.Output<Node> | undefined>,
 	) {
 		let event = new RenderContext.RendererEvent(
 			"ContentRendering",
 			this.container,
 			{
 				output: output || this.content.map((c) => this._output.get(c)),
-			}
+			},
 		);
 		this.container.emit(event);
 	}

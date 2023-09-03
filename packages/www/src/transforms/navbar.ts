@@ -55,7 +55,7 @@ export function start(pipeline: Pipeline, nav: NavStructure) {
 								: "") +
 							'<li class="current"><a href="#">' +
 							pipeline.escapeHtml(
-								item.data.nav_title || item.data.title || ""
+								item.data.nav_title || item.data.title || "",
 							) +
 							"</a>" +
 							(toc ? '<ul class="navbar_toclist">' + toc + "</ul>" : "") +

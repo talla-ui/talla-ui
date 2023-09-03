@@ -81,7 +81,7 @@ The {@link UICloseLabel} class can be used to add a label view that has less (ve
 ```ts
 const view = UIColumn.with(
 	UICloseLabel.withText("Label one"),
-	UICloseLabel.withText("Label two")
+	UICloseLabel.withText("Label two"),
 );
 ```
 
@@ -104,7 +104,7 @@ Note that expanded labels should _only_ be used in row layout containers, since 
 ```ts
 const view = UIRow.with(
 	UIExpandedLabel.withText("Expanded label"),
-	UIOutlineButton.withLabel("Button")
+	UIOutlineButton.withLabel("Button"),
 );
 ```
 
@@ -128,7 +128,7 @@ Since these styles are very dependent on the overall look of your application, i
 const view = UIColumn.with(
 	UIHeading1.withText("Heading 1"),
 	UIHeading2.withText("Heading 2"),
-	UIParagraph.withText("Regular text")
+	UIParagraph.withText("Regular text"),
 );
 ```
 
@@ -152,7 +152,7 @@ Since the on-screen text displayed by the label component is determined by the {
 ```ts
 const myView = UICell.with(
 	// Use a binding for the 'text' property:
-	UILabel.withText(bound.string("myValue"))
+	UILabel.withText(bound.string("myValue")),
 );
 
 export class MyActivity extends PageViewActivity {
@@ -173,7 +173,7 @@ To embed dynamic values in a predefined message, use the {@link bound.strf()} me
 ```ts
 const myView = UICell.with(
 	// Use a binding for the 'text' property:
-	UILabel.withText(bound.string("I say: %s", "myValue"))
+	UILabel.withText(bound.string("I say: %s", "myValue")),
 );
 ```
 

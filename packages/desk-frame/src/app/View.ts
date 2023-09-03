@@ -100,7 +100,7 @@ export abstract class View
 
 				// emit intercept event with original event as `inner`
 				return this.emit(
-					new ManagedEvent(v, this, event.data, undefined, event)
+					new ManagedEvent(v, this, event.data, undefined, event),
 				);
 			};
 		}

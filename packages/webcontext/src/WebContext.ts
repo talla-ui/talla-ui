@@ -75,7 +75,7 @@ export class WebContextOptions {
  * app.addService("MyService", new MyService())
  */
 export function useWebContext(
-	configure?: (options: WebContextOptions) => void
+	configure?: (options: WebContextOptions) => void,
 ) {
 	let options = new WebContextOptions();
 	configure && configure(options);

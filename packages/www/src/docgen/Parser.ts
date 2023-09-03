@@ -50,7 +50,7 @@ type ParseResult =
 export class Parser {
 	constructor(
 		public input: ReadonlyArray<TokenInfo>,
-		public options: DocGenOptions
+		public options: DocGenOptions,
 	) {}
 
 	parse() {
@@ -59,7 +59,7 @@ export class Parser {
 		if (result.next < this.input.length) {
 			let token = this.input[result.next];
 			throw Error(
-				"Unexpected token: " + token?.content + " " + Tokenizer.locate(token)
+				"Unexpected token: " + token?.content + " " + Tokenizer.locate(token),
 			);
 		}
 		return result.node;
@@ -268,7 +268,7 @@ export class Parser {
 			let parsedType = this.expectType(cur + 1);
 			if (!parsedType) return this._throwParseError(cur, "extends type");
 			extendsNames.push(
-				Tokenizer.toSource(this.input.slice(cur, parsedType.next))
+				Tokenizer.toSource(this.input.slice(cur, parsedType.next)),
 			);
 			cur = parsedType.next;
 		}
@@ -802,7 +802,7 @@ export class Parser {
 					", but found " +
 					content +
 					" " +
-					Tokenizer.locate(token)
+					Tokenizer.locate(token),
 			);
 		}
 		throw Error("Unexpected token: " + content + " " + Tokenizer.locate(token));
@@ -813,7 +813,7 @@ export class Parser {
 			cur,
 			"ACCEPT " +
 				NodeType[node.type] +
-				(node.signature ? "\n  " + node.signature : "")
+				(node.signature ? "\n  " + node.signature : ""),
 		);
 		return { next: cur, node };
 	}

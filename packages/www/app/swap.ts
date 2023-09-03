@@ -42,7 +42,7 @@ function initPage() {
 
 	// add iframe HTML source dynamically
 	let iframes: Iterable<HTMLIFrameElement> = document.querySelectorAll(
-		"iframe[data-samplejs]"
+		"iframe[data-samplejs]",
 	);
 	for (let iframe of iframes) {
 		let jsUrl = iframe.dataset.samplejs;
@@ -101,7 +101,7 @@ function saveCurrent() {
 			_scroll: window.scrollY,
 		},
 		"",
-		location.href
+		location.href,
 	);
 }
 

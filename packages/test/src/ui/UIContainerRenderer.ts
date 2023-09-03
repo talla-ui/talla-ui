@@ -10,7 +10,7 @@ import { TestRenderObserver } from "./TestRenderObserver.js";
 
 /** @internal */
 export class UIContainerRenderer<
-	TContainer extends UIContainer
+	TContainer extends UIContainer,
 > extends TestRenderObserver<TContainer> {
 	override observe(observed: UIContainer) {
 		let result = super
@@ -20,7 +20,7 @@ export class UIContainerRenderer<
 				"layout",
 				"padding",
 				"spacing",
-				"distribution"
+				"distribution",
 			);
 		return result;
 	}
@@ -34,7 +34,7 @@ export class UIContainerRenderer<
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -65,7 +65,7 @@ export class UIContainerRenderer<
 		if (!this.contentUpdater) {
 			this.contentUpdater = new ContentUpdater(
 				this.observed,
-				element
+				element,
 			).setAsyncRendering(this.observed.asyncContentRendering);
 		}
 
@@ -81,7 +81,7 @@ export class UIContainerRenderer<
 
 	override updateStyle(
 		element: TestOutputElement,
-		styles?: Partial<UIStyle.Definition>
+		styles?: Partial<UIStyle.Definition>,
 	) {
 		let container = this.observed;
 		if (!container) return;

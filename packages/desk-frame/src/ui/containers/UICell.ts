@@ -60,7 +60,7 @@ export class UICell extends UIContainer {
 			onSelect?: string;
 			/** Event that's emitted when the cell is deselected */
 			onDeselect?: string;
-		}
+		},
 	) {
 		let decoration = preset.decoration;
 		delete preset.decoration;
@@ -138,7 +138,7 @@ export class UIAnimatedCell extends UICell {
 			UICell,
 			this,
 			"animationDuration" | "animationTiming"
-		>
+		>,
 	) {
 		super.applyViewPreset(preset);
 	}

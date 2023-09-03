@@ -138,48 +138,48 @@ The following example shows the use of JSDoc tags to populate the appropriate se
  * @see {@link SomeOtherClass}
  */
 class MyClass {
-  /**
-   * Performs a task described here
-   *
-   * @summary This summary will be displayed _above_ parameters,
-   * exceptions, and return type. It should not be too long.
-   *
-   * @param num The input for this method
-   * @returns The result of this method
-   * @error Throws an error when the number is too large
-   * @error Throws another error when the number is too small
-   *
-   * @description
-   * This is a longer description that appears below the
-   * param/returns/error sections. It can be used to provide
-   * details about specific conditions.
-   *
-   * @see {@link otherMethod()}
-   */
-  myMethod(num: number): string {
-    // ...
-  }
+	/**
+	 * Performs a task described here
+	 *
+	 * @summary This summary will be displayed _above_ parameters,
+	 * exceptions, and return type. It should not be too long.
+	 *
+	 * @param num The input for this method
+	 * @returns The result of this method
+	 * @error Throws an error when the number is too large
+	 * @error Throws another error when the number is too small
+	 *
+	 * @description
+	 * This is a longer description that appears below the
+	 * param/returns/error sections. It can be used to provide
+	 * details about specific conditions.
+	 *
+	 * @see {@link otherMethod()}
+	 */
+	myMethod(num: number): string {
+		// ...
+	}
 
-  /**
-   * Returns a magic number.
-   * This text appears under the Notes section.
-   * @param x The original number
-   * @returns The magic number
-   * @note This note also appears in the Notes section.
-   */
-  otherMethod(x: number): number {}
+	/**
+	 * Returns a magic number.
+	 * This text appears under the Notes section.
+	 * @param x The original number
+	 * @returns The magic number
+	 * @note This note also appears in the Notes section.
+	 */
+	otherMethod(x: number): number {}
 
-  /**
-   * Creates trouble for the user
-   * @deprecated This method is deprecated in favor of
-   * {@link someOtherMethod()}
-   */
-  isDeprecated() {}
+	/**
+	 * Creates trouble for the user
+	 * @deprecated This method is deprecated in favor of
+	 * {@link someOtherMethod()}
+	 */
+	isDeprecated() {}
 
-  /** Returns a daily quote from the internet */
-  dailyQuote(): string {
-    // One-liners may be acceptable in some cases,
-    // resulting in _only_ an abstract and declaration
-  }
+	/** Returns a daily quote from the internet */
+	dailyQuote(): string {
+		// One-liners may be acceptable in some cases,
+		// resulting in _only_ an abstract and declaration
+	}
 }
 ```

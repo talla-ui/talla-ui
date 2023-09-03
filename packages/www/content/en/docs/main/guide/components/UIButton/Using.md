@@ -84,7 +84,7 @@ const styles = {
 					borderColor: UIColor.Red.brighten(0.2),
 				},
 			},
-		}
+		},
 	),
 };
 
@@ -142,7 +142,7 @@ const buttonStyle = UIStyle.OutlineButton.extend(
 				textColor: UIColor.PrimaryBackground.text(),
 			},
 		},
-	}
+	},
 );
 
 const myButton = UIButton.with({
@@ -154,7 +154,7 @@ const myButton = UIButton.with({
 
 // use a UISelectionController to emit Deselect events too
 const view = UISelectionController.with(
-	UIRow.with({ padding: 8, spacing: 8 }, myButton, myButton, myButton)
+	UIRow.with({ padding: 8, spacing: 8 }, myButton, myButton, myButton),
 );
 ```
 
@@ -200,7 +200,7 @@ const view = UICell.with(
 	UIButton.with({
 		label: "Button",
 		onClick: "SampleClick",
-	})
+	}),
 );
 
 export class MyActivity extends ViewActivity {

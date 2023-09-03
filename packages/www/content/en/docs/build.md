@@ -203,7 +203,7 @@ Now, let's add a `src` folder to contain all of our source code. You can do this
 Within the `src` folder, create a file `index.html` with the following contents:
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />

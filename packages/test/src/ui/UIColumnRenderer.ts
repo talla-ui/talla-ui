@@ -11,7 +11,7 @@ export class UIColumnRenderer extends UIContainerRenderer<UIColumn> {
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent
+		event?: ManagedChangeEvent,
 	) {
 		if (this.observed && this.element) {
 			if (property === "width") {

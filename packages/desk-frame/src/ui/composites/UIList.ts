@@ -51,7 +51,7 @@ export class UIList extends ViewComposite {
 		},
 		ItemBody: ViewClass,
 		ContainerBody?: ViewClass<UIContainer>,
-		BookEnd?: ViewClass
+		BookEnd?: ViewClass,
 	): typeof UIList {
 		// Define a view class to be used for each item
 		class Adapter extends UIList.ItemAdapter<any> {
@@ -280,7 +280,7 @@ export class UIList extends ViewComposite {
 	/** Update the container with (existing or new) components, one for each list item */
 	private _updateItems(
 		Adapter: ViewClass<UIList.ItemAdapter<ManagedObject>>,
-		BookEnd?: ViewClass
+		BookEnd?: ViewClass,
 	) {
 		if (this.isUnlinked()) return;
 
@@ -295,7 +295,7 @@ export class UIList extends ViewComposite {
 				? list.count > 0 && firstIndex < list.count
 					? list.take(
 							maxItems! >= 0 ? maxItems! : list.count,
-							list.get(firstIndex)
+							list.get(firstIndex),
 					  )
 					: undefined
 				: list);
@@ -346,8 +346,8 @@ export class UIList extends ViewComposite {
 	private _makeList(v: any[]) {
 		return new ManagedList(
 			...v.map((it) =>
-				it instanceof ManagedObject ? it : new UIList.ItemValueWrapper(it)
-			)
+				it instanceof ManagedObject ? it : new UIList.ItemValueWrapper(it),
+			),
 		);
 	}
 
@@ -421,7 +421,7 @@ export namespace UIList {
 		protected override delegateViewEvent(event: ManagedEvent) {
 			if (!super.delegateViewEvent(event)) {
 				this.emit(
-					new ManagedEvent(event.name, event.source, event.data, this, event)
+					new ManagedEvent(event.name, event.source, event.data, this, event),
 				);
 			}
 			return true;
@@ -436,6 +436,6 @@ export namespace UIList {
 	 */
 	export type ItemEvent<
 		TItem,
-		TSource extends ManagedObject = ManagedObject
+		TSource extends ManagedObject = ManagedObject,
 	> = DelegatedEvent<ItemAdapter<TItem>, TSource>;
 }

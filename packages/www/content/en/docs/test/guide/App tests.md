@@ -27,7 +27,7 @@ class CountActivity extends PageViewActivity {
 	// show the current count, and a plus button:
 	static override BodyView = UICell.with(
 		UILabel.withText(bound.number("counter")),
-		UIOutlineButton.withLabel("+", "CountUp")
+		UIOutlineButton.withLabel("+", "CountUp"),
 	);
 
 	// activate on path /count
@@ -146,7 +146,7 @@ await test.expectOutputAsync(
 	100,
 	{ type: "cell" },
 	{ type: "row" },
-	{ type: "button", text: "Click me" }
+	{ type: "button", text: "Click me" },
 );
 ```
 
