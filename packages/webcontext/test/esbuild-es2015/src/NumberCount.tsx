@@ -2,7 +2,7 @@ import {
 	bound,
 	JSX,
 	UIStyle,
-	View,
+	ViewComposite,
 } from "../../../lib/desk-framework-web.es2015.esm.min";
 
 const styles = {
@@ -12,9 +12,9 @@ const styles = {
 	}),
 };
 
-export default View.compose<{ count: number }>(() => (
+export default ViewComposite.define<{ count: number }>(
 	<column>
 		<label>Count:</label>
 		<label style={styles.counter}>{bound.number("count")}</label>
 	</column>
-));
+);

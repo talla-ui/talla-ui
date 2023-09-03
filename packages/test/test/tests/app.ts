@@ -2,12 +2,13 @@ import {
 	app,
 	bound,
 	PageViewActivity,
+	StringConvertible,
 	UICell,
 	UIComponentEvent,
 	UILabel,
 	UIOutlineButton,
 	UITextField,
-	View,
+	ViewComposite,
 } from "desk-frame";
 import { describe, test, expect, useTestContext } from "../../dist/index.js";
 // ... from "@desk-framework/test"
@@ -40,7 +41,7 @@ describe("App test", (scope) => {
 	});
 
 	test("Single view is rendered", async (t) => {
-		const MyView = View.compose<{ title?: string }>((p) =>
+		const MyView = ViewComposite.define<{ title?: StringConvertible }>((p) =>
 			UILabel.withText(p.title)
 		).with({ title: "TEST" });
 		let view = new MyView();

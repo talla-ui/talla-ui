@@ -1,5 +1,5 @@
 import { ManagedEvent, ManagedObject, Observer } from "../core/index.js";
-import { errorHandler } from "../errors.js";
+import { errorHandler, invalidArgErr } from "../errors.js";
 import { RenderContext } from "./RenderContext.js";
 import { View, ViewClass } from "./View.js";
 
@@ -18,11 +18,11 @@ import { View, ViewClass } from "./View.js";
  * View composites are primarily used in two different ways:
  *
  * - As a way to _control_ an encapsulated view. Refer to e.g. {@link UIConditional}, {@link UIStyleController}, and {@link UIList}, all of which are built-in ViewComposite classes.
- * - As a way to create reusable view structures. Refer to {@link View.compose()} which can be used to create a ViewComposite class using a function and a set of event handler methods.
+ * - As a way to create reusable view structures. Refer to the static {@link define()} method which can be used to create a ViewComposite class using a function and/or a class.
  *
  * Note the similarities with the {@link ViewActivity} class, which also encapsulates a single view object. As a rule, use view _activities_ if event handlers or other class methods include business logic. Use view _composites_ if the class is only concerned with the look and feel of a set of UI components, and all content can be preset, bound, or provided by a view model.
  *
- * @note A custom ViewComposite class (such as in the example below) can't be used as a JSX tag using TypeScript. Use the {@link View.compose()} method instead, which produces a builder function that can be used from JSX code while also exposing a typed `.with()` method for non-JSX code.
+ * @note A custom ViewComposite class (such as in the example below) can't be used as a JSX tag using TypeScript. Use the {@link ViewComposite.define()} method instead, which produces a builder function that can be used from JSX code while also exposing a typed `.with()` method for non-JSX code.
  *
  * @example
  * // A custom view composite
@@ -43,6 +43,156 @@ import { View, ViewClass } from "./View.js";
  * }
  */
 export abstract class ViewComposite extends View {
+	/**
+	 * Creates a reusable view composite class factory
+	 *
+	 * @summary This method can be used to define a reusable view, containing built-in UI components or other views. The result can be used as a tag in JSX code, and also has a `.with()` method for use in non-JSX code.
+	 *
+	 * Common use cases for view composites include complex field inputs such as date and time pickers, containers such as cards, accordions, tabs, and split views, and application layout templates.
+	 *
+	 * @param view A view class, or a function that returns a view class; an instance of this view will be encapsulated by each view composite object — moreover, if a function is provided, it is also used to define parameters for the resulting `.with()` method, and properties of the JSX tag
+	 * @param ViewCompositeClass A custom {@link ViewComposite} class that will be extended by the resulting view composite class; can be used to define event handlers and other properties or methods
+	 * @returns A view component class factory function (see below)
+	 * @see {@link ViewComposite}
+	 *
+	 * @description
+	 * This method wraps the provided function (or view) into a class factory function. The resulting function passes all of its arguments to the provided function, and creates a new class each time. The type of the class and the encapsulated view are determined by the provided function arguments and return value (or explicit type arguments).
+	 *
+	 * **Function arguments** — The provided function (if any) should take a single object argument (the preset object), along with any number of view class arguments (optional).
+	 *
+	 * - For each instance created, the preset object gets passed to {@link View.applyViewPreset()}, which sets properties, applies bindings, and adds event handlers. Presets _may_ also be used by the provided function itself.
+	 * - The view class argument(s) may be used to add inner view content, e.g. by passing them to `UICell.with(...)` inside of the provided function, and returning the result. These view classes are taken from JSX content, or the remaining arguments to the `.with()` method.
+	 *
+	 * **Function return value** (or provided view) — The provided function should return a view constructor, e.g. the result of `UICell.with(...)`, another view composite, or any other view. This view will be instantiated for each view composite instance. For example, if the function returns a UICell constructor (class), the view composite object will end up rendering a cell.
+	 *
+	 * **Result object** — While this method returns a function, the declared parameters and return type of this function are mostly used for TypeScript JSX code. The returned function object includes two additional properties:
+	 *
+	 * - A `.with()` method, which can be used to create a preset class, just like e.g. `UILabel.with({ ... })` or `UICell.with(...)`.
+	 * - A `Base` property, which refers to a unique class that's extended each time `.with()` is called. This allows view composites to be identified using `instanceof`, and found using {@link View.findViewContent()}. (Do **not** instantiate this class manually, that won't actually create the expected view composite instance).
+	 *
+	 * @note Note that while view _composites_ and view _activities_ are very similar, as a rule, view composites should not include any business logic (in event handlers or other methods). Hence, use the {@link ViewComposite.define()} method only to define groups of UI components and determine their look and feel. In cases where more code is required, consider either view activities, or view models that can be passed around in your code.
+	 *
+	 * @example
+	 * // A view composite that uses preset properties and content
+	 * const Card = ViewComposite.define(
+	 *   (
+	 *     p: { title?: StringConvertible | Binding<StringConvertible> },
+	 *     ...content: ViewClass[]
+	 *   ) => (
+	 *     <cell style={myStyles.cardCell}>
+	 *       <row>
+	 *         <h3>{p.title}</h3>
+	 *       </row>
+	 *       {content}
+	 *     </cell>
+	 *   )
+	 * );
+	 *
+	 * // Use like this in JSX:
+	 * <Card title="Foo"> ... </Card>
+	 *
+	 * // Or like this outside of JSX:
+	 * Card.with(
+	 *   { title: "Foo" },
+	 *   // ... content
+	 * )
+	 *
+	 * @example
+	 * // A view composite that only uses preset properties
+	 * const BadgeButton = ViewComposite.define<{
+	 *   label?: StringConvertible | Binding<StringConvertible>
+	 *   badge?: StringConvertible | Binding<StringConvertible>
+	 * }>(
+	 *   UICell.with(
+	 *     { dimensions: { grow: 0 }, layout: { clip: false } },
+	 *     UIOutlineButton.withLabel(bound.string("label")),
+	 *     UILabel.withText(bound("badge"), myStyles.badge)
+	 *   )
+	 * );
+	 *
+	 * @example
+	 * const CollapsingBlock = ViewComposite.define<{
+	 *   title?: StringConvertible | Binding<StringConvertible>;
+	 *   show?: boolean;
+	 * }>(
+	 *   (p, ...content) => (
+	 *     <column>
+	 *       <row onClick="RowClicked">
+	 *         <h3>{p.title}</h3>
+	 *       </row>
+	 *       <column hidden={bound.not("show")}>
+	 *         {content}
+	 *       </column>
+	 *     </column>
+	 *   ),
+	 *   class extends ViewComposite {
+	 *     show = true;
+	 *     onRowClicked() {
+	 *       this.show = !this.show;
+	 *     }
+	 *   }
+	 * );
+	 *
+	 * @example
+	 * // A view composite that adds an event handler
+	 * const SelectOnClick = ViewComposite.define(
+	 *   (p, content) => content,
+	 *   class extends ViewComposite {
+	 *     onClick() {
+	 *       this.body?.emit("Select");
+	 *     }
+	 *   }
+	 * );
+	 *
+	 * // Use like this in JSX:
+	 * <SelectOnClick>
+	 *   <cell> ... </cell>
+	 * </SelectOnClick>
+	 */
+	static define<
+		TPreset extends {},
+		TContent extends ViewClass[] = [],
+		TView extends ViewComposite = ViewComposite & TPreset
+	>(
+		view: ViewClass | ((preset: TPreset, ...content: TContent) => ViewClass),
+		ViewCompositeClass: new () => TView = ViewComposite as any
+	): ViewComposite.Builder<[TPreset, ...TContent], TView> {
+		if (this !== ViewComposite) throw invalidArgErr("this");
+
+		// prepare base class
+		class Base extends (ViewCompositeClass as any as typeof ViewComposite) {
+			protected override delegateViewEvent(event: any) {
+				return (
+					super.delegateViewEvent(event) ||
+					!!this.emit(
+						new ManagedEvent(event.name, event.source, event.data, this, event)
+					)
+				);
+			}
+		}
+
+		// prepare builder function and return it
+		function compose(preset: any) {
+			const BodyView: ViewClass =
+				view.prototype instanceof View
+					? view
+					: (view as Function).apply(undefined, arguments as any);
+			class ComposedView extends Base {
+				constructor() {
+					super();
+					this.applyViewPreset(preset);
+				}
+				protected override createView() {
+					return new BodyView();
+				}
+			}
+			return ComposedView;
+		}
+		(compose as any).Base = Base;
+		(compose as any).with = compose;
+		return compose as any;
+	}
+
 	/**
 	 * Creates a new instance of this view composite
 	 * - View composites should not be instantiated directly by an application; instead, they should be used as part of the (static) view hierarchy.
@@ -158,38 +308,15 @@ export abstract class ViewComposite extends View {
 	private _renderer = new RenderContext.DynamicRendererWrapper();
 }
 
-// Set View.compose function implementation here, now that ViewComposite is available:
-View.compose = function (f, extend) {
-	// prepare base class, with event delegation method and extended prototype
-	class Base extends ViewComposite {
-		protected override delegateViewEvent(event: any) {
-			return (
-				super.delegateViewEvent(event) ||
-				!!this.emit(
-					new ManagedEvent(event.name, event.source, event.data, this, event)
-				)
-			);
-		}
-	}
-	if (extend) Object.assign(Base.prototype, extend);
-
-	// prepare builder function and return it
-	function compose(preset: any, ...content: any[]) {
-		const BodyView = f.apply(undefined, arguments as any) || content[0];
-		class ComposedView extends Base {
-			constructor() {
-				super();
-				this.applyViewPreset(preset);
-				this.initialize?.();
-			}
-			declare initialize?: () => void;
-			protected override createView() {
-				return new BodyView();
-			}
-		}
-		return ComposedView;
-	}
-	(compose as any).Base = Base;
-	(compose as any).with = compose;
-	return compose as any;
-};
+export namespace ViewComposite {
+	/**
+	 * Type definition for the result of {@link ViewComposite.define()}
+	 * - This type accommodates usage within JSX code as well as non-JSX code using `.with()` calls. In practice, {@link ViewComposite.define()} returns a function that has a `with` property that refers to _itself_.
+	 * - The `Base` property refers to a base class that's unique to the {@link ViewComposite.define} result, hence all {@link ViewComposite} instances created using this result extend the `Base` class. This can be used with e.g. {@link View.findViewContent()} to find instances within a view hierarchy.
+	 */
+	export type Builder<TArgs extends any[], TView extends View> = {
+		(...args: TArgs): ViewClass<TView>;
+		with(...args: TArgs): ViewClass<TView>;
+		Base: ViewClass<TView>;
+	};
+}

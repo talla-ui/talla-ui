@@ -6,7 +6,7 @@ import { Binding, ManagedEvent, Observer } from "../../core/index.js";
  *
  * @description An view renderer component renders unattached view content within its parent view component.
  *
- * **JSX tag:** `<view>`
+ * **JSX tag:** `<render>`
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  *

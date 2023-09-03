@@ -65,7 +65,7 @@ function flatten(a: any[]): any {
  * |`<selection>` |{@link UISelectionController}
  * |`<style>` |{@link UIStyleController}
  * |`<animation>` |{@link UIAnimationController}
- * |`<view>` |{@link UIViewRenderer}
+ * |`<render>` |{@link UIViewRenderer}
  *
  * @example
  * // example.tsx

@@ -73,7 +73,7 @@ export const tags = {
 	selection: UISelectionController,
 	style: UIStyleController,
 	animation: UIAnimationController,
-	view: UIViewRenderer,
+	render: UIViewRenderer,
 };
 
 export namespace JSX {
@@ -118,7 +118,7 @@ export namespace JSX {
 			selection: {};
 			style: Parameters<(typeof UIStyleController)["with"]>[0];
 			animation: Parameters<(typeof UIAnimationController)["with"]>[0];
-			view: Parameters<(typeof UIViewRenderer)["with"]>[0];
+			render: Parameters<(typeof UIViewRenderer)["with"]>[0];
 		}
 	}
 }

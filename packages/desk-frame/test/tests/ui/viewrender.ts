@@ -9,7 +9,7 @@ import {
 	UIViewRenderer,
 	ViewActivity,
 	UITextField,
-	View,
+	ViewComposite,
 } from "../../../dist/index.js";
 import {
 	describe,
@@ -62,7 +62,7 @@ describe("UIViewRenderer", (scope) => {
 	});
 
 	test("Set view using view composite, and render", async (t) => {
-		const CompView = View.compose((p: { text: string }) =>
+		const CompView = ViewComposite.define((p: { text: string }) =>
 			UILabel.withText(p.text)
 		);
 		const Preset = CompView.with({ text: "foo" });

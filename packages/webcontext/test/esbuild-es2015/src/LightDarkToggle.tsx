@@ -2,7 +2,7 @@ import {
 	JSX,
 	UIColor,
 	UIStyle,
-	View,
+	ViewComposite,
 } from "../../../lib/desk-framework-web.es2015.esm.min";
 
 const switchButtonStyle = UIStyle.OutlineButton.extend(
@@ -17,7 +17,7 @@ const switchButtonStyle = UIStyle.OutlineButton.extend(
 	}
 );
 
-export default View.compose(() => (
+export default ViewComposite.define(
 	<selection>
 		<row>
 			<outlinebutton
@@ -36,4 +36,4 @@ export default View.compose(() => (
 			</outlinebutton>
 		</row>
 	</selection>
-));
+);

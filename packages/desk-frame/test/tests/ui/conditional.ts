@@ -5,7 +5,7 @@ import {
 	UICell,
 	UIConditional,
 	UILabel,
-	View,
+	ViewComposite,
 } from "../../../dist/index.js";
 import { describe, expect, test, useTestContext } from "@desk-framework/test";
 
@@ -20,7 +20,7 @@ describe("UIConditional", () => {
 	});
 
 	test("Rendering content using bound state", async (t) => {
-		const MyView = View.compose<{ condition: boolean }>(() =>
+		const MyView = ViewComposite.define<{ condition: boolean }>(
 			UICell.with(
 				UIConditional.with(
 					{

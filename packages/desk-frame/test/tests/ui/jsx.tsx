@@ -5,7 +5,8 @@ import {
 	UICell,
 	UIColor,
 	ManagedObject,
-	View,
+	ViewComposite,
+	UIColumn,
 } from "../../../dist/index.js";
 import { describe, expect, test, useTestContext } from "@desk-framework/test";
 
@@ -48,10 +49,10 @@ describe("JSX", () => {
 	});
 
 	test("Custom view composite", () => {
-		const MyView = View.compose<{
+		const MyView = ViewComposite.define<{
 			/** A single property, not used in view */
 			foo?: number;
-		}>(() => <label>foo</label>);
+		}>(<label>test</label>);
 		let MyCell = (
 			<cell>
 				<MyView foo={123} />
@@ -62,11 +63,44 @@ describe("JSX", () => {
 		expect(cell.content.first()).toHaveProperty("foo").toBe(123);
 	});
 
+	test("Custom view composite with column content", (t) => {
+		const MyColumn = ViewComposite.define<{ spacing?: number }>(
+			(p, ...content) => <column spacing={p.spacing}>{content}</column>
+		);
+		let MyCell = (
+			<cell>
+				<MyColumn spacing={20}>
+					<label>foo</label>
+					<label>bar</label>
+				</MyColumn>
+			</cell>
+		);
+		let cell = new MyCell() as UICell;
+
+		t.log("Spacing on view composite itself");
+		let viewComposite = cell.content.first() as ViewComposite;
+		expect(viewComposite).toHaveProperty("spacing").toBe(20);
+
+		t.log("Render content of view composite");
+		viewComposite.render();
+		let column = viewComposite.findViewContent(UIColumn)[0];
+		expect(column).toBe(viewComposite.body);
+
+		t.log("Spacing on column inside view composite");
+		expect(column).toHaveProperty("spacing").toBe(20);
+
+		t.log("Label content inside column");
+		let labels = column!.content.toArray();
+		expect(labels).toBeArray(2);
+		expect(labels[0]).toHaveProperty("text").asString().toBe("foo");
+		expect(labels[1]).toHaveProperty("text").asString().toBe("bar");
+	});
+
 	test("Component with bound content", async (t) => {
-		const MyView = View.compose<{
+		const MyView = ViewComposite.define<{
 			/** A single property, bound in view */
 			foo?: number;
-		}>(() => <label>{bound("foo")}</label>);
+		}>(<label>{bound("foo")}</label>);
 		useTestContext((options) => {
 			options.renderFrequency = 5;
 		});
@@ -75,14 +109,14 @@ describe("JSX", () => {
 	});
 
 	test("Component with bound content and text", async (t) => {
-		const MyView = View.compose<{ foo?: number; bar?: any }>(() => (
+		const MyView = ViewComposite.define<{ foo?: number; bar?: any }>(
 			<row>
 				<label>foo='{bound("foo")}'</label>
 				<label>bar='%[bar.foo]'</label>
 				<label>baz='%[baz=bar.baz:uc]'</label>
 				<label>nope_bound='{bound("nope", "Nothing")}'</label>
 			</row>
-		));
+		);
 		useTestContext((options) => {
 			options.renderFrequency = 5;
 		});
@@ -100,11 +134,11 @@ describe("JSX", () => {
 	});
 
 	test("Component with bound content and text, translated", async (t) => {
-		const Comp = View.compose<{ emails: any }>(() => (
+		const Comp = ViewComposite.define<{ emails: any }>(
 			<label>
 				You have %[numEmails=emails.count:n] %[numEmails:plural|email|emails]
 			</label>
-		));
+		);
 		const Preset1 = Comp.with({ emails: { count: 1 } });
 		const Preset2 = Comp.with({ emails: { count: 2 } });
 

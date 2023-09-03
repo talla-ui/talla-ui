@@ -18,7 +18,7 @@ const ViewBody = (
 			<spacer width={16} />
 		</row>
 		<separator />
-		<view view={bound("countActivity")} />
+		<render view={bound("countActivity")} />
 	</cell>
 );
 
