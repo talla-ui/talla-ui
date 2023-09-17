@@ -24,8 +24,6 @@ Row and column containers are represented by the {@link UIRow} and {@link UIColu
 
 Row containers contain other components which are arranged along the horizontal axis. By default, a row container places all components at the start of the available space (the left, for LTR text direction).
 
-When controls such as buttons and labels are added to a row, they take up only as much horizontal space as they need if {@link UIControl.shrinkwrap} is true, otherwise expand to fill the available space.
-
 <!--{{iframesample js="./sample-row.js" short}}-->
 
 Column containers do the same, but arrange content vertically, starting from the top. The layout of textual controls such as buttons and labels isn't as intuitive within a column, so it may be necessary to use nested containers to lay these out horizontally.
@@ -77,34 +75,31 @@ On row and column containers, the following properties can be used to control sp
 - {@ref UIContainer.padding}
 - {@ref UIContainer.spacing}
 
-To move components within the available space, along the primary axis of the component, use the following property.
+To move components within the available space, adding a separator between components, or changing the default gravity, use the following property.
 
-- {@ref UIContainer.distribution}
+- {@ref UIContainer.layout}
 
-For more options, such as for adding a separator between components or changing their default gravity (alignment along perpendicular axis), use the {@link UIContainer.layout layout} or {@link UIComponent.style style} properties to apply predefined styles.
+For more options, such as for adding a separator between components or changing their default gravity (alignment along perpendicular axis), use the {@link UIContainer.layout layout} or style class to apply predefined styles.
 
 ## Preset properties {#presets}
 
 The following properties can be preset using `UIRow.with({ ... })`, `UIColumn.with({ ... })`, or JSX `<row ...>` and `<column ...>`.
 
-| Property                                                        | Type                                                                 |
-| :-------------------------------------------------------------- | :------------------------------------------------------------------- |
-| {@link UIComponent.style style}                                 | Instance of {@link UIStyle} or a theme style name starting with `@`  |
-| {@link UIComponent.dimensions dimensions}                       | An object with {@link UIStyle.Definition.Dimensions} properties      |
-| {@link UIComponent.position position}                           | An object with {@link UIStyle.Definition.Position} properties        |
-| {@link UIContainer.layout layout}                               | An object with {@link UIStyle.Definition.ContainerLayout} properties |
-| {@link UIComponent.hidden hidden}                               | Boolean, or binding                                                  |
-| {@link UIComponent.accessibleRole accessibleRole}               | String, or binding                                                   |
-| {@link UIComponent.accessibleLabel accessibleLabel}             | String, or binding                                                   |
-| {@link UIContainer.distribution distribution}                   | String, or binding                                                   |
-| {@link UIContainer.padding padding}                             | Number, string with CSS unit, {@link UIStyle.Offsets}, or binding    |
-| {@link UIContainer.spacing spacing}                             | Number, string with CSS unit, or binding                             |
-| {@link UIRow.height height}                                     | **UIRow only:** Number, string with CSS unit, or binding             |
-| {@link UIColumn.width width}                                    | **UIColumn only:** Number, string with CSS unit, or binding          |
-| {@link UIContainer.asyncContentRendering asyncContentRendering} | True if content may be rendered asynchronously                       |
-| {@link UIContainer.allowFocus allowFocus}                       | True if this component may receive input focus                       |
-| {@link UIContainer.allowKeyboardFocus allowKeyboardFocus}       | True if keyboard focus should be enabled                             |
-| requestFocus                                                    | True to request focus immediately after first render                 |
+| Property                                                        | Type                                                                  |
+| :-------------------------------------------------------------- | :-------------------------------------------------------------------- |
+| {@link UIComponent.hidden hidden}                               | Boolean, or binding                                                   |
+| {@link UIComponent.position position}                           | {@link UIComponent.Position}, or binding                              |
+| {@link UIComponent.accessibleRole accessibleRole}               | String, or binding                                                    |
+| {@link UIComponent.accessibleLabel accessibleLabel}             | String, or binding                                                    |
+| {@link UIContainer.padding padding}                             | Number, string with CSS unit, {@link UIComponent.Offsets}, or binding |
+| {@link UIContainer.spacing spacing}                             | Number, string with CSS unit, or binding                              |
+| {@link UIRow.height height}                                     | **UIRow only:** Number, string with CSS unit, or binding              |
+| {@link UIColumn.width width}                                    | **UIColumn only:** Number, string with CSS unit, or binding           |
+| {@link UIRow.align align}                                       | String, or binding                                                    |
+| {@link UIContainer.asyncContentRendering asyncContentRendering} | True if content may be rendered asynchronously                        |
+| {@link UIContainer.allowFocus allowFocus}                       | True if this component may receive input focus                        |
+| {@link UIContainer.allowKeyboardFocus allowKeyboardFocus}       | True if keyboard focus should be enabled                              |
+| requestFocus                                                    | True to request focus immediately after first render                  |
 
 ## Events {#events}
 

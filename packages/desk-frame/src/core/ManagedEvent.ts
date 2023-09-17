@@ -94,7 +94,7 @@ export class ManagedEvent<
 	readonly source: TSource;
 	/** Object that contains arbitrary event data */
 	readonly data: Readonly<TData> = undefined as any;
-	/** An object that delegated the event, if any, e.g. {@link UIForm}, {@link UIFormController}, or {@link UIList.ItemAdapter} */
+	/** An object that delegated the event, if any, e.g. {@link UIForm}, {@link UIFormController}, or {@link UIList.ItemController} */
 	readonly delegate?: ManagedObject;
 	/** The original event, if the event was intercepted or propagated */
 	readonly inner?: ManagedEvent;
@@ -118,7 +118,7 @@ export class ManagedChangeEvent<
 
 /**
  * A generic type definition for an event that has been propagated by a delegate object
- * - The `source` property refers to the object that originally emitted (or intercepted) the event; however, the `delegate` property can be used to find the object that delegated the event, e.g. {@link UIForm}, {@link UIFormController}, or {@link UIList.ItemAdapter}.
+ * - The `source` property refers to the object that originally emitted (or intercepted) the event; however, the `delegate` property can be used to find the object that delegated the event, e.g. {@link UIForm}, {@link UIFormController}, or {@link UIList.ItemController}.
  */
 export type DelegatedEvent<
 	TDelegate extends ManagedObject,
@@ -126,6 +126,6 @@ export type DelegatedEvent<
 	TData extends unknown = unknown,
 	TName extends string = string,
 > = ManagedEvent<TSource, TData, TName> & {
-	/** The object that delegated the event, e.g. {@link UIForm}, {@link UIFormController}, or {@link UIList.ItemAdapter} */
+	/** The object that delegated the event, e.g. {@link UIForm}, {@link UIFormController}, or {@link UIList.ItemController} */
 	readonly delegate: TDelegate;
 };

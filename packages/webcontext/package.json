@@ -32,6 +32,7 @@
 		"test-esbuild-es2015": "cd test/esbuild-es2015 && node esbuild",
 		"test-esm": "cd test/esm && npm install && npm run test",
 		"test-parcel": "cd test/parcel && npm install && npm run test",
+		"test-perf": "cd test/perf && node esbuild",
 		"check-format": "prettier --check \"src/**/*.{ts,tsx}\" \"test/*/src/**/*.{ts,tsx}\""
 	},
 	"prettier": {

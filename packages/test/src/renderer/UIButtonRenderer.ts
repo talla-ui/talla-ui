@@ -2,23 +2,28 @@ import {
 	ManagedChangeEvent,
 	RenderContext,
 	UIButton,
+	UIButtonStyle,
 	UIComponentEvent,
 } from "desk-frame";
 import { TestOutputElement } from "../app/TestOutputElement.js";
-import { TestRenderObserver } from "./TestRenderObserver.js";
+import {
+	TestBaseObserver,
+	applyElementStyle,
+	getBaseStyleClass,
+} from "./TestBaseObserver.js";
 
 /** @internal */
-export class UIButtonRenderer extends TestRenderObserver<UIButton> {
+export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 	override observe(observed: UIButton) {
 		return super
 			.observe(observed)
 			.observePropertyAsync(
 				"label",
 				"icon",
-				"textStyle",
-				"decoration",
+				"chevron",
 				"disabled",
-				"shrinkwrap",
+				"width",
+				"buttonStyle",
 			);
 	}
 
@@ -31,12 +36,12 @@ export class UIButtonRenderer extends TestRenderObserver<UIButton> {
 			switch (property) {
 				case "label":
 				case "icon":
+				case "chevron":
 					this.scheduleUpdate(this.element);
 					return;
-				case "textStyle":
-				case "decoration":
 				case "disabled":
-				case "shrinkwrap":
+				case "width":
+				case "buttonStyle":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -77,31 +82,37 @@ export class UIButtonRenderer extends TestRenderObserver<UIButton> {
 		let elt = new TestOutputElement("button");
 		let output = new RenderContext.Output(this.observed, elt);
 		elt.output = output;
+		elt.focusable = true;
 		return output;
 	}
 
 	override updateStyle(element: TestOutputElement) {
 		let button = this.observed;
-		if (!button) return;
+		if (button) {
+			// set disabled state
+			element.disabled = button.disabled;
 
-		// set disabled state
-		element.disabled = button.disabled;
-
-		// set style objects
-		super.updateStyle(
-			element,
-			{
-				textStyle: button.textStyle,
-				decoration: button.decoration,
-			},
-			button.shrinkwrap,
-		);
+			// set styles
+			element.styleClass =
+				getBaseStyleClass(button.buttonStyle) || UIButtonStyle;
+			applyElementStyle(
+				element,
+				[
+					button.buttonStyle,
+					button.width !== undefined
+						? { width: button.width, minWidth: 0 }
+						: undefined,
+				],
+				button.position,
+			);
+		}
 	}
 
 	updateContent(element: TestOutputElement) {
 		if (!this.observed) return;
 		element.text = String(this.observed.label || "");
 		element.icon = String(this.observed.icon || "");
+		element.chevron = String(this.observed.chevron || "");
 		element.focusable = true;
 	}
 }

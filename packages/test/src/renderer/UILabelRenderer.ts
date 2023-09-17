@@ -1,19 +1,29 @@
-import { ManagedChangeEvent, RenderContext, UILabel } from "desk-frame";
+import {
+	ManagedChangeEvent,
+	RenderContext,
+	UILabel,
+	UILabelStyle,
+} from "desk-frame";
 import { TestOutputElement } from "../app/TestOutputElement.js";
-import { TestRenderObserver } from "./TestRenderObserver.js";
+import {
+	TestBaseObserver,
+	applyElementStyle,
+	getBaseStyleClass,
+} from "./TestBaseObserver.js";
 
 /** @internal */
-export class UILabelRenderer extends TestRenderObserver<UILabel> {
+export class UILabelRenderer extends TestBaseObserver<UILabel> {
 	override observe(observed: UILabel) {
 		return super
 			.observe(observed)
 			.observePropertyAsync(
 				"text",
 				"icon",
-				"textStyle",
-				"decoration",
-				"disabled",
-				"shrinkwrap",
+				"bold",
+				"italic",
+				"color",
+				"width",
+				"labelStyle",
 			);
 	}
 
@@ -28,10 +38,11 @@ export class UILabelRenderer extends TestRenderObserver<UILabel> {
 				case "icon":
 					this.scheduleUpdate(this.element);
 					return;
-				case "textStyle":
-				case "decoration":
-				case "disabled":
-				case "shrinkwrap":
+				case "bold":
+				case "italic":
+				case "color":
+				case "width":
+				case "labelStyle":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -44,32 +55,34 @@ export class UILabelRenderer extends TestRenderObserver<UILabel> {
 		let elt = new TestOutputElement("label");
 		let output = new RenderContext.Output(this.observed, elt);
 		elt.output = output;
+		if (this.observed.allowFocus || this.observed.allowKeyboardFocus)
+			elt.focusable = true;
 		return output;
 	}
 
 	override updateStyle(element: TestOutputElement) {
 		let label = this.observed;
-		if (!label) return;
-
-		// set disabled state
-		element.disabled = label.disabled;
-
-		// set style objects
-		super.updateStyle(
-			element,
-			{
-				textStyle: label.textStyle,
-				decoration: label.decoration,
-			},
-			label.shrinkwrap,
-		);
+		if (label) {
+			element.styleClass = getBaseStyleClass(label.labelStyle) || UILabelStyle;
+			applyElementStyle(
+				element,
+				[
+					label.labelStyle,
+					{
+						width: label.width,
+						bold: label.bold,
+						italic: label.italic,
+						textColor: label.color,
+					},
+				],
+				label.position,
+			);
+		}
 	}
 
 	updateContent(element: TestOutputElement) {
 		if (!this.observed) return;
 		element.text = String(this.observed.text);
 		element.icon = String(this.observed.icon);
-		element.focusable =
-			this.observed.allowFocus || this.observed.allowKeyboardFocus;
 	}
 }

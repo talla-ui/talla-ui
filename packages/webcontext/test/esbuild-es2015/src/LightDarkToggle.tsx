@@ -1,39 +1,41 @@
 import {
 	JSX,
+	UIButtonStyle,
 	UIColor,
-	UIStyle,
+	UITheme,
 	ViewComposite,
 } from "../../../lib/desk-framework-web.es2015.esm.min";
 
-const switchButtonStyle = UIStyle.OutlineButton.extend(
-	{},
+const SwitchButtonStyle = UIButtonStyle.extend(
 	{
-		selected: {
-			decoration: {
-				background: UIColor.Primary,
-				textColor: UIColor.Primary.text(),
-			},
-		},
+		[UITheme.STATE_SELECTED]: true,
+		background: UIColor["@primary"],
+		textColor: UIColor["@primary"].text(),
+	},
+	{
+		[UITheme.STATE_SELECTED]: true,
+		[UITheme.STATE_HOVERED]: true,
+		background: UIColor["@primary"].contrast(0.1),
 	},
 );
 
 export default ViewComposite.define(
 	<selection>
 		<row>
-			<outlinebutton
-				style={switchButtonStyle}
+			<button
+				buttonStyle={SwitchButtonStyle}
 				onClick="Select"
 				onSelect="+SetLightMode"
 			>
 				Light
-			</outlinebutton>
-			<outlinebutton
-				style={switchButtonStyle}
+			</button>
+			<button
+				buttonStyle={SwitchButtonStyle}
 				onClick="Select"
 				onSelect="+SetDarkMode"
 			>
 				Dark
-			</outlinebutton>
+			</button>
 		</row>
 	</selection>,
 );

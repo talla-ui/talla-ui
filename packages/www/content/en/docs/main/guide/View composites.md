@@ -51,7 +51,7 @@ The static `.with(...)` method is used to create a _preset_ view constructor. Th
 
 ```ts
 const myView = UICell.with(
-	{ background: UIColor.Yellow },
+	{ background: UIColor["@yellow"] },
 	UIRow.with(UILabel.withText("Hello, world!")),
 );
 ```
@@ -59,7 +59,7 @@ const myView = UICell.with(
 Since the result of `.with(...)` is of the same class type, the resulting constructor can be used to define reusable view components.
 
 ```ts
-const YellowCell = UICell.with({ background: UIColor.Yellow });
+const YellowCell = UICell.with({ background: UIColor["@yellow"] });
 
 const myView = YellowCell.with(
 	// content can only be preset once,

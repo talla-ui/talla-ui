@@ -81,6 +81,20 @@ export function registerHandlers(elt: HTMLElement) {
 /** Helper function that handles DOM events on all UI components, max 2 levels up from target element */
 function eventHandler(this: HTMLElement, e: Event) {
 	let target = e.target as Node | null;
+
+	// don't handle any events if before (last) active modal
+	// (these may happen with e.g. screen readers)
+	let shaders = document.querySelectorAll("." + CLASS_MODAL_SHADER);
+	let lastShader = shaders.item(shaders.length - 1);
+	if (
+		lastShader &&
+		target &&
+		lastShader.compareDocumentPosition(target) &
+			Node.DOCUMENT_POSITION_PRECEDING
+	)
+		return;
+
+	// handle events on target element using observer
 	let observer: BaseObserver<any> | undefined;
 	while (target && !(target instanceof HTMLElement))
 		target = target.parentElement;

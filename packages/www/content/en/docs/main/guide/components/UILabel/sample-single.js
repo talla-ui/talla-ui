@@ -4,8 +4,8 @@ const view = desk.UICell.with(
 		{ padding: 8 },
 		desk.UILabel.with({
 			text: "This is a label",
-			icon: "@ExpandRight",
-		})
-	)
+			icon: "@expandRight",
+		}),
+	),
 );
 app.render(new view(), { mode: "page" });

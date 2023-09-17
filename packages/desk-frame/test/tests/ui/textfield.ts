@@ -1,9 +1,4 @@
-import {
-	UITextField,
-	UIFormContext,
-	app,
-	UIBorderlessTextField,
-} from "../../../dist/index.js";
+import { UITextField, UIFormContext, app } from "../../../dist/index.js";
 import { describe, expect, test, useTestContext } from "@desk-framework/test";
 
 describe("UITextField", (scope) => {
@@ -18,11 +13,6 @@ describe("UITextField", (scope) => {
 		expect(tf).toHaveProperty("type").toBe("text");
 	});
 
-	test("Borderless type constructor", () => {
-		let tf = new UIBorderlessTextField();
-		expect(tf.style.name).toMatchRegExp(/Borderless/);
-	});
-
 	test("Preset with properties", () => {
 		let MyTF = UITextField.with({ placeholder: "foo" });
 		let tf = new MyTF();
@@ -30,9 +20,10 @@ describe("UITextField", (scope) => {
 	});
 
 	test("Preset using withField and form context", () => {
-		let MyTF = UITextField.withField("foo");
+		let MyTF = UITextField.withField("foo", "Placeholder");
 		let tf = new MyTF();
 		expect(tf).toHaveProperty("formField").toBe("foo");
+		expect(tf).toHaveProperty("placeholder").asString().toBe("Placeholder");
 		let formCtx = new UIFormContext({ foo: "" });
 		tf.formContext = formCtx;
 		formCtx.set("foo", "bar");
@@ -42,14 +33,10 @@ describe("UITextField", (scope) => {
 	});
 
 	test("Rendered with placeholder", async (t) => {
-		let MyTF = UITextField.with({
-			placeholder: "foo",
-			accessibleLabel: "My text field",
-		});
-		app.render(new MyTF());
+		app.render(new UITextField("foo", "bar"));
 		await t.expectOutputAsync(100, {
 			text: "foo",
-			accessibleLabel: "My text field",
+			value: "bar",
 		});
 	});
 

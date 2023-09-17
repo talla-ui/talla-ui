@@ -16,6 +16,7 @@ describe("UICell", (scope) => {
 			.toHaveProperty("content")
 			.asArray()
 			.toBeArray([label1, label2]);
+		expect(cell.findViewContent(UILabel)).toBeArray(2);
 	});
 
 	test("Preset with properties", () => {
@@ -81,7 +82,7 @@ describe("UICell", (scope) => {
 		app.render(new MyCell());
 		let out = await t.expectOutputAsync(100, {
 			type: "cell",
-			style: { containerLayout: { gravity: "end" } },
+			styles: { gravity: "end" },
 		});
 		out.containing({ type: "label", text: "foo" }).toBeRendered();
 	});
@@ -90,24 +91,19 @@ describe("UICell", (scope) => {
 		let MyCell = UICell.with(
 			{
 				padding: 16,
-				distribution: "start",
-				borderThickness: 1,
-				decoration: { borderColor: "@Green" },
+				cellStyle: { borderColor: "@green", borderThickness: 1 },
+				layout: { distribution: "start" },
 			},
 			UILabel.withText("foo"),
 		);
 		app.render(new MyCell());
 		await t.expectOutputAsync(100, {
 			type: "cell",
-			style: {
-				containerLayout: {
-					distribution: "start",
-				},
-				decoration: {
-					padding: 16,
-					borderColor: "@Green",
-					borderThickness: 1,
-				},
+			styles: {
+				distribution: "start",
+				padding: 16,
+				borderColor: "@green",
+				borderThickness: 1,
 			},
 		});
 	});
@@ -117,11 +113,11 @@ describe("UICell", (scope) => {
 		app.render(cell);
 		await t.expectOutputAsync(100, { type: "cell" });
 		cell.borderRadius = 8;
-		cell.distribution = "start";
+		cell.layout = { distribution: "start" };
 		await t.expectOutputAsync(100, {
-			style: {
-				decoration: { borderRadius: 8 },
-				containerLayout: { distribution: "start" },
+			styles: {
+				borderRadius: 8,
+				distribution: "start",
 			},
 		});
 	});

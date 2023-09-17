@@ -1,247 +1,274 @@
-import { UIStyle, UIColor } from "desk-frame";
+import {
+	UIButtonStyle,
+	UICloseLabelStyle,
+	UIColor,
+	UIComponent,
+	UIHeading1LabelStyle,
+	UIHeading2LabelStyle,
+	UIHeading3LabelStyle,
+	UIIconButtonStyle,
+	UIImageStyle,
+	UILabelStyle,
+	UIParagraphLabelStyle,
+	UIPlainButtonStyle,
+	UIPrimaryButtonStyle,
+	UITextFieldStyle,
+	UITheme,
+	UIToggleLabelStyle,
+	UIToggleStyle,
+} from "desk-frame";
+
+type CombinedStyleType = UIComponent.DimensionsStyleType &
+	UIComponent.DecorationStyleType &
+	UIComponent.TextStyleType &
+	UITheme.StyleStateOptions;
 
 /** @internal Defaults used for control text style */
-export const defaultControlTextStyle = {
+export const defaultControlTextStyle: CombinedStyleType = {
 	fontFamily:
 		'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, "Helvetica Neue", Arial, sans-serif',
 	fontSize: "0.875rem",
+	lineHeight: "1.25",
 };
 
-/** @internal Returns an object with default styles, extending the provided base style set */
-export function makeStyles(styles: { [id: string]: UIStyle }) {
-	let {
-		Transparent,
-		Primary,
-		PrimaryBackground,
-		ControlBase,
-		Background,
-		Text,
-	} = UIColor;
+const controlBase = UIColor["@controlBase"];
 
-	// prepare button style to reuse
-	let buttonStyle = styles.Button!.extend(
-		"Button",
-		{
-			dimensions: { minWidth: 104 },
-			decoration: {
-				borderThickness: 1,
-				borderColor: Transparent,
-				textColor: Primary,
-				borderRadius: 6,
-				padding: { y: 8, x: 16 },
+const baseButtonStyle: CombinedStyleType = {
+	padding: { y: 4, x: 12 },
+	borderRadius: 12,
+	borderThickness: 1,
+	borderColor: UIColor["@clear"],
+	background: controlBase,
+	textColor: controlBase.text(),
+	fontWeight: 600,
+	textAlign: "center",
+	lineBreakMode: "ellipsis",
+	minWidth: 112,
+	minHeight: 40,
+	shrink: 0,
+	css: {
+		position: "relative",
+		overflow: "hidden",
+		userSelect: "none",
+		cursor: "pointer",
+		transition: "background 0.1s ease, border-color 0.1s ease",
+	},
+};
+
+const baseLabelStyle: CombinedStyleType = {
+	maxWidth: "100%",
+	lineBreakMode: "ellipsis",
+	css: { cursor: "inherit" },
+};
+
+const disabledStyle: CombinedStyleType = {
+	[UITheme.STATE_DISABLED]: true,
+	opacity: 0.5,
+	css: { cursor: "default" },
+};
+
+const hoveredNotDisabled: CombinedStyleType = {
+	[UITheme.STATE_HOVERED]: true,
+	[UITheme.STATE_DISABLED]: false,
+};
+
+const pressedNotDisabled: CombinedStyleType = {
+	[UITheme.STATE_PRESSED]: true,
+	[UITheme.STATE_DISABLED]: false,
+};
+
+/** @internal Default styles for `UITheme.styles` */
+export const styles: [
+	styleClass: new () => UITheme.BaseStyle<string, any>,
+	styles: UITheme.StyleSelectorList<CombinedStyleType>,
+][] = [
+	[
+		UIButtonStyle,
+		[
+			baseButtonStyle,
+			{
+				...hoveredNotDisabled,
+				background: controlBase.contrast(-0.1),
+			},
+			{
+				...pressedNotDisabled,
+				background: controlBase.contrast(0.1),
+			},
+			disabledStyle,
+		],
+	],
+	[
+		UIPrimaryButtonStyle,
+		[
+			{
+				...baseButtonStyle,
+				background: UIColor["@primaryBackground"],
+				textColor: UIColor["@primaryBackground"].text(),
+			},
+			{
+				...hoveredNotDisabled,
+				background: UIColor["@primaryBackground"].contrast(0.2),
+			},
+			{
+				...pressedNotDisabled,
+				background: UIColor["@primaryBackground"].contrast(-0.1),
+			},
+			disabledStyle,
+		],
+	],
+	[
+		UIPlainButtonStyle,
+		[
+			{
+				...baseButtonStyle,
+				background: UIColor["@clear"],
+				textColor: UIColor["@text"],
+				minWidth: 0,
+			},
+			{
+				...hoveredNotDisabled,
+				background: controlBase,
+			},
+			{
+				...pressedNotDisabled,
+				background: controlBase.contrast(-0.1),
+			},
+			disabledStyle,
+		],
+	],
+	[
+		UIIconButtonStyle,
+		[
+			{
+				minWidth: 32,
+				minHeight: 32,
+				padding: 4,
+				shrink: 0,
+				borderRadius: "50%",
+				background: UIColor["@clear"],
+				textColor: UIColor["@text"],
+				lineHeight: 1,
+				fontSize: "0",
 				css: {
 					cursor: "pointer",
+					transition: "background 0.2s ease, border-color 0.2s ease",
 				},
 			},
-		},
-		{
-			pressed: {
-				decoration: {
-					css: {
-						transition: "all 200ms ease",
-					},
-				},
+			{
+				...hoveredNotDisabled,
+				background: controlBase,
 			},
-			hover: {
-				decoration: {
-					css: {
-						transition: "all 200ms ease",
-					},
-				},
+			{
+				...pressedNotDisabled,
+				background: controlBase.contrast(-0.1),
 			},
-			disabled: {
-				decoration: {
-					background: ControlBase,
-					textColor: UIColor.Text,
-					css: {
-						opacity: ".5",
-						cursor: "inherit",
-						transition: "all 200ms ease",
-					},
-				},
+			disabledStyle,
+		],
+	],
+	[
+		UILabelStyle,
+		[
+			{
+				...baseLabelStyle,
+				lineHeight: 1.5,
+				padding: { y: 6 },
 			},
-		},
-	);
-
-	return {
-		// paragraph style (to set cursor):
-		Paragraph: styles.Paragraph!.extend("Paragraph", {
-			decoration: { css: { cursor: "text" } },
-		}),
-
-		// heading styles:
-		Heading1: styles.Heading1!.extend("Heading1", {
-			textStyle: {
-				fontSize: "2.75em",
-				fontWeight: 500,
+		],
+	],
+	[
+		UICloseLabelStyle,
+		[
+			{
+				...baseLabelStyle,
+				padding: 0,
+			},
+		],
+	],
+	[
+		UIHeading1LabelStyle,
+		[
+			{
+				...baseLabelStyle,
+				fontSize: "2em",
+				fontWeight: 600,
 				letterSpacing: -0.5,
 			},
-		}),
-		Heading2: styles.Heading2!.extend("Heading2", {
-			textStyle: {
-				fontSize: "1.5em",
-			},
-		}),
-		Heading3: styles.Heading3!.extend("Heading3", {
-			textStyle: {
-				fontSize: "1.125em",
-				bold: true,
-			},
-		}),
-
-		// button styles:
-		Button: buttonStyle,
-		PrimaryButton: buttonStyle.extend(
-			"PrimaryButton",
+		],
+	],
+	[
+		UIHeading2LabelStyle,
+		[{ ...baseLabelStyle, fontSize: "1.75em", bold: true }],
+	],
+	[
+		UIHeading3LabelStyle,
+		[{ ...baseLabelStyle, fontSize: "1.375em", bold: true }],
+	],
+	[
+		UIParagraphLabelStyle,
+		[
 			{
-				decoration: {
-					background: PrimaryBackground,
-					textColor: PrimaryBackground.text(),
-					borderColor: PrimaryBackground,
-				},
-			},
-			{
-				hover: {
-					decoration: {
-						background: PrimaryBackground.contrast(0.3),
-						borderColor: PrimaryBackground.contrast(0.3),
-					},
-				},
-			},
-		),
-		BorderlessButton: buttonStyle.extend(
-			"BorderlessButton",
-			{
-				dimensions: { minWidth: 16, minHeight: 16 },
-				decoration: { background: Transparent },
-			},
-			{
-				pressed: {
-					decoration: {
-						background: PrimaryBackground.contrast(0.3),
-						borderColor: PrimaryBackground.contrast(0.3),
-						textColor: PrimaryBackground.text(),
-					},
-				},
-				hover: {
-					decoration: {
-						background: ControlBase.contrast(-0.5).alpha(0.3),
-						textColor: Primary,
-					},
-				},
-			},
-		),
-		OutlineButton: buttonStyle.extend(
-			"OutlineButton",
-			{
-				decoration: {
-					borderColor: Primary.alpha(0.3),
-				},
-			},
-			{
-				hover: {
-					decoration: {
-						borderColor: Primary,
-					},
-				},
-			},
-		),
-		LinkButton: buttonStyle.extend(
-			"LinkButton",
-			{
-				dimensions: { minWidth: 16, minHeight: 16 },
-				textStyle: { align: "start||left" },
-				decoration: { background: Transparent },
-			},
-			{
-				pressed: {
-					decoration: {
-						background: PrimaryBackground.contrast(0.3),
-						borderColor: PrimaryBackground.contrast(0.3),
-						textColor: PrimaryBackground.text(),
-					},
-				},
-				hover: {
-					textStyle: { underline: true },
-					decoration: {
-						background: Transparent,
-						textColor: Primary,
-					},
-				},
-				disabled: {
-					decoration: {
-						background: "transparent",
-						textColor: Primary,
-					},
-				},
-			},
-		),
-		IconButton: styles.IconButton!.extend(
-			"IconButton",
-			{
-				dimensions: { minWidth: 32, minHeight: 32 },
-				position: { gravity: "center" },
-				decoration: {
-					borderThickness: 0,
-					background: Transparent,
-					borderRadius: "50%",
-					padding: 0,
-					css: {
-						cursor: "pointer",
-					},
-				},
-			},
-			{
-				pressed: {
-					decoration: {
-						background: PrimaryBackground.contrast(0.3),
-						borderColor: PrimaryBackground.contrast(0.3),
-						textColor: PrimaryBackground.text(),
-					},
-				},
-				hover: {
-					decoration: {
-						background: ControlBase.contrast(-0.5).alpha(0.3),
-						textColor: Primary,
-					},
-				},
-			},
-		),
-
-		// text field styles:
-		TextField: styles.TextField!.extend("TextField", {
-			decoration: {
-				background: Background,
-				textColor: Text,
-				borderColor: ControlBase.contrast(-0.2),
-				borderThickness: 1,
-				borderRadius: 6,
-				padding: 8,
+				lineBreakMode: "pre-wrap",
+				lineHeight: 1.5,
+				padding: { y: 6 },
 				css: { cursor: "text" },
 			},
-		}),
-		BorderlessTextField: styles.BorderlessTextField!.extend(
-			"BorderlessTextField",
+		],
+	],
+	[UIImageStyle, [{ maxWidth: "100%" }]],
+	[
+		UITextFieldStyle,
+		[
 			{
-				decoration: {
-					background: Transparent,
-					textColor: Text,
-					borderThickness: 0,
-					borderRadius: 0,
-					padding: 0,
-					css: { cursor: "text" },
-				},
+				background: UIColor["@background"],
+				textColor: UIColor["@text"],
+				borderThickness: 1,
+				borderColor: controlBase.contrast(-0.1),
+				borderRadius: 5,
+				minWidth: 96,
+				padding: 8,
+				lineBreakMode: "pre-wrap",
+				lineHeight: 1.5,
+				css: { cursor: "text" },
 			},
 			{
-				focused: {
-					decoration: { css: { outline: "none", boxShadow: "none" } },
-				},
+				...hoveredNotDisabled,
+				[UITheme.STATE_READONLY]: false,
+				borderColor: controlBase.contrast(-0.2),
 			},
-		),
+			{
+				[UITheme.STATE_READONLY]: true,
+				background: UIColor["@background"].contrast(-0.1),
+				borderColor: UIColor["@background"].contrast(-0.1),
+			},
+			disabledStyle,
+		],
+	],
+	[
+		UIToggleStyle,
+		[
+			{
+				padding: { y: 8 },
+				css: { userSelect: "none", cursor: "pointer" },
+			},
+			disabledStyle,
+		],
+	],
+	[
+		UIToggleLabelStyle,
+		[
+			{
+				lineBreakMode: "pre-wrap",
+				lineHeight: 1.5,
+				padding: { y: 6, x: 8 },
+				css: { display: "inline" },
+			},
+		],
+	],
+];
 
-		// toggle style (decoration for checkbox itself)
-		Toggle: styles.Toggle!.extend("Toggle", {
-			decoration: { borderColor: Text },
-		}),
-	};
+// freeze all reused styles above so they can't be modified
+for (let entry of styles) {
+	for (let object of entry[1]) {
+		Object.freeze(object);
+	}
 }

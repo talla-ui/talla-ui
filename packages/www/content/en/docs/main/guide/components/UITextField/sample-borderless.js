@@ -3,7 +3,7 @@ const view = desk.UICell.with(
 	{
 		dimensions: { maxWidth: 200 },
 		margin: 8,
-		borderColor: desk.UIColor.Separator,
+		borderColor: desk.UIColor["@separator"],
 		borderThickness: { bottom: 1 },
 	},
 	desk.UICenterRow.with(
@@ -11,7 +11,7 @@ const view = desk.UICell.with(
 		desk.UIBorderlessTextField.with({
 			placeholder: "Search...",
 		}),
-		desk.UIIconButton.withIcon(desk.UIIcon.ExpandDown)
-	)
+		desk.UIIconButton.withIcon(desk.UIIconResource["@expandDown"]),
+	),
 );
 app.render(new view(), { mode: "page" });

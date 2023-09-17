@@ -37,6 +37,7 @@ describe("UIViewRenderer", (scope) => {
 		viewRenderer.view = new MyCell();
 		app.render(viewRenderer);
 		await t.expectOutputAsync(50, { text: "foo" });
+		expect(viewRenderer.findViewContent(UILabel)).toBeArray(1);
 	});
 
 	test("Change view after rendering", async (t) => {
@@ -90,6 +91,7 @@ describe("UIViewRenderer", (scope) => {
 				UIButton.withLabel("foo", "+ButtonPress"),
 			);
 			onButtonPress() {
+				t.count("foo-second");
 				this.emit("Foo");
 			}
 		}
@@ -107,19 +109,22 @@ describe("UIViewRenderer", (scope) => {
 			}
 			declare second?: MySecondActivity;
 			onFoo(e: ManagedEvent) {
-				t.count("foo");
+				t.count("foo-outer");
 				if (e.delegate instanceof UIViewRenderer) t.count("delegate");
 			}
 		}
+		t.log("Adding activity...");
 		let activity = new MyActivity();
 		app.addActivity(activity, true);
 
 		// view should only show up when `second` is activated
+		t.log("Testing without `second`...");
 		let out = await t.expectOutputAsync(50, {
 			type: "cell",
 			accessibleLabel: "outer",
 		});
 		out.containing({ text: "foo" }).toBeEmpty();
+		t.log("Activating `second`...");
 		await activity.second!.activateAsync();
 		out = await t.expectOutputAsync(
 			50,
@@ -128,11 +133,14 @@ describe("UIViewRenderer", (scope) => {
 		);
 
 		// clicking the button should propagate all events
+		t.log("Clicking button...");
 		out.getSingle().click();
-		t.expectCount("foo").toBe(1);
+		t.expectCount("foo-second").toBe(1);
+		t.expectCount("foo-outer").toBe(1);
 		t.expectCount("delegate").toBe(1);
 
 		// destroying the second activity should clear the view
+		t.log("Destroying `second`...");
 		activity.second!.unlink();
 		expect(activity).toHaveProperty("second").toBeUndefined();
 		out = await t.expectOutputAsync(50, {

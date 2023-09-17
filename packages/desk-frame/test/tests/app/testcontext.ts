@@ -14,6 +14,12 @@ import {
 	ManagedObject,
 	UIPrimaryButton,
 	ViewComposite,
+	UITheme,
+	MessageDialogOptions,
+	strf,
+	UIIconResource,
+	UIButtonStyle,
+	UIColor,
 } from "../../../dist/index.js";
 
 describe("TestContext", () => {
@@ -143,7 +149,7 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			app.render(view);
-			await app.renderer.expectOutputAsync(500, { source: view });
+			await app.renderer.expectOutputAsync(100, { source: view });
 		});
 
 		test("Cell view from single composite", async () => {
@@ -155,7 +161,7 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			app.render(view);
-			await app.renderer.expectOutputAsync(500, { source: view.body! });
+			await app.renderer.expectOutputAsync(100, { source: view.body! });
 		});
 
 		test("Cell view from single controller, handle events", async (t) => {
@@ -192,7 +198,7 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			let rendered = app.render(view);
-			await app.renderer.expectOutputAsync(500, { source: view.body! });
+			await app.renderer.expectOutputAsync(100, { source: view.body! });
 			await rendered.removeAsync();
 			app.renderer.expectOutput({ type: "cell" }).toBeEmpty();
 		});
@@ -206,7 +212,7 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			app.addActivity(activity, true);
-			await app.renderer.expectOutputAsync(500, { source: activity.view! });
+			await app.renderer.expectOutputAsync(100, { source: activity.view! });
 		});
 
 		test("Remove view by deactivating activity", async (t) => {
@@ -237,7 +243,7 @@ describe("TestContext", () => {
 				);
 				protected override delegateViewEvent(
 					event: ManagedEvent<ManagedObject, unknown, string>,
-				): boolean | Promise<void> {
+				) {
 					return super.delegateViewEvent(event);
 				}
 				onCellFocused() {
@@ -271,34 +277,99 @@ describe("TestContext", () => {
 			t.expectCount("focus").toBe(2);
 		});
 
-		test("Simple alert dialog", async (t) => {
+		test("Show alert dialog", async (t) => {
 			let app = useTestContext();
-			let p = app.showAlertDialogAsync("This is a test", "Test", "OK");
-			(await t.expectOutputAsync(500, { type: "button", text: "OK" }))
+			let p = app.showAlertDialogAsync("This is a test", "OK");
+			(await t.expectOutputAsync(100, { type: "button", text: "OK" }))
 				.getSingle()
 				.click();
 			let result = await p;
 			expect(result).toBeUndefined();
 		});
 
-		test("Simple confirmation dialog", async (t) => {
+		test("Show confirmation dialog", async (t) => {
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
-			let p = app.showConfirmationDialogAsync(
-				"This is a test",
-				"Test",
-				"Foo",
-				"Bar",
-			);
-			(await t.expectOutputAsync(500, { type: "button", text: "Bar" }))
+			let p = app.showConfirmDialogAsync("This is a test", "Foo", "Bar");
+			(await t.expectOutputAsync(100, { type: "button", text: "Bar" }))
 				.getSingle()
 				.click();
 			let result = await p;
 			expect(result).toBe(false);
 		});
 
-		test("Simple modal menu", async (t) => {
+		test("Show confirmation dialog using config class", async (t) => {
+			let app = useTestContext((options) => {
+				options.renderFrequency = 5;
+			});
+			let myDialog = new MessageDialogOptions(
+				["This is a test", "Another line goes here"],
+				"Go ahead",
+				"No, cancel",
+				"Maybe",
+				"question",
+			);
+			expect(myDialog).toHaveProperty("messages").toBeArray(2);
+			expect(myDialog).toHaveProperties({
+				type: "question",
+				confirmLabel: "Go ahead",
+				cancelLabel: "No, cancel",
+				otherLabel: "Maybe",
+			});
+
+			t.log("Showing dialog and clicking confirm");
+			let p = app.showConfirmDialogAsync(myDialog);
+			let expectDialog = await t.expectOutputAsync(50, {
+				accessibleRole: "alertdialog",
+			});
+			expectDialog.containing({ text: "This is a test" }).toBeRendered();
+			expectDialog
+				.containing({ text: "Another line goes here" })
+				.toBeRendered();
+			(await t.expectOutputAsync(100, { type: "button", text: "Go ahead" }))
+				.getSingle()
+				.click();
+			let result = await p;
+			expect(result).toBe(true);
+
+			t.log("Showing dialog and clicking cancel");
+			p = app.showConfirmDialogAsync(myDialog);
+			(await t.expectOutputAsync(100, { type: "button", text: "No, cancel" }))
+				.getSingle()
+				.click();
+			result = await p;
+			expect(result).toBe(false);
+
+			t.log("Showing dialog and clicking other");
+			p = app.showConfirmDialogAsync(myDialog);
+			(await t.expectOutputAsync(100, { type: "button", text: "Maybe" }))
+				.getSingle()
+				.click();
+			result = await p;
+			expect(result).toBe(0);
+		});
+
+		test("Show confirm dialog, formatted", async (t) => {
+			let app = useTestContext((options) => {
+				options.renderFrequency = 5;
+			});
+			let myDialog = new MessageDialogOptions(
+				strf("This is a test, foo = %[foo]"),
+				strf("OK"),
+				strf("Foo: %[foo]"),
+			);
+			let formatted = myDialog.format({ foo: 123 });
+			let p = app.showConfirmDialogAsync(formatted);
+			await t.expectOutputAsync(100, { text: /foo = 123/ });
+			(await t.expectOutputAsync(100, { type: "button", text: "Foo: 123" }))
+				.getSingle()
+				.click();
+			let result = await p;
+			expect(result).toBe(false);
+		});
+
+		test("Show modal menu", async (t) => {
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
@@ -306,15 +377,113 @@ describe("TestContext", () => {
 			app.render(button);
 			await t.expectOutputAsync(100, { type: "button" });
 			let p = app.showModalMenuAsync(
-				[
+				new UITheme.MenuOptions([
 					{ key: "one", text: "One" },
 					{ key: "two", text: "Two" },
-				],
+				]),
 				button,
 			);
-			(await t.expectOutputAsync(500, { text: "Two" })).getSingle().click();
+			(await t.expectOutputAsync(100, { text: "Two" })).getSingle().click();
 			let result = await p;
 			expect(result).toBe("two");
+		});
+
+		test("Show modal menu, using configuration function", async (t) => {
+			let app = useTestContext((options) => {
+				options.renderFrequency = 5;
+			});
+			let p = app.showModalMenuAsync((options) => {
+				options.items.push({ key: "one", text: "One", hint: "1" });
+				options.items.push({ separate: true });
+				options.items.push({ key: "two", text: "Two", hint: "2" });
+				options.width = 200;
+			});
+			(await t.expectOutputAsync(100, { text: "Two" })).getSingle().click();
+			let result = await p;
+			expect(result).toBe("two");
+		});
+	});
+
+	describe("Theme and base styles", () => {
+		test("Clone theme", () => {
+			let app = useTestContext();
+			expect(app).toHaveProperty("theme").toBeInstanceOf(UITheme);
+			expect(app.theme!.darkTextColor).toBe("#000000");
+			app.theme!.darkTextColor = "#111111";
+			let clone = app.theme!.clone();
+			expect(clone).not.toBe(app.theme);
+			expect(clone.colors).not.toBe(app.theme!.colors);
+			expect(clone.icons).not.toBe(app.theme!.icons);
+			expect(clone.animations).not.toBe(app.theme!.animations);
+			expect(clone.styles).not.toBe(app.theme!.styles);
+			expect(clone.darkTextColor).toBe(app.theme!.darkTextColor);
+			app = useTestContext();
+			expect(clone.darkTextColor).not.toBe(app.theme!.darkTextColor);
+		});
+
+		test("Select icons are mirrored in RTL", () => {
+			let icon = new UIIconResource("test").setMirrorRTL();
+			expect(icon.isMirrorRTL()).toBe(true);
+
+			// check on standard icons
+			let app = useTestContext();
+			expect(app.theme!.icons.get("chevronNext")!.isMirrorRTL()).toBe(true);
+			expect(app.theme!.icons.get("chevronBack")!.isMirrorRTL()).toBe(true);
+			expect(app.theme!.icons.get("chevronUp")!.isMirrorRTL()).toBe(false);
+			expect(app.theme!.icons.get("chevronDown")!.isMirrorRTL()).toBe(false);
+		});
+
+		describe("Base styles", () => {
+			test("Extend base style using static method", () => {
+				let MyStyle = UIButtonStyle.extend({
+					textColor: UIColor["@green"],
+				});
+				let expectStyles = expect(new MyStyle())
+					.toHaveMethod("getStyles")
+					.not.toThrowError();
+				expectStyles.toBeArray();
+				let styles = new MyStyle().getStyles();
+				expect(styles[styles.length - 1])
+					.toHaveProperty("textColor")
+					.toBe(UIColor["@green"]);
+			});
+
+			test("Extend base style using class", () => {
+				class MyStyle extends UIButtonStyle {
+					override getStyles() {
+						return [...super.getStyles(), { textColor: UIColor["@green"] }];
+					}
+				}
+				expect(() => new MyStyle()).not.toThrowError();
+			});
+
+			test("Override base style", () => {
+				let override = UIButtonStyle.override({
+					textColor: UIColor["@green"],
+				});
+				expect(override.overrides).toBeArray(1);
+				expect(override.overrides[0])
+					.toHaveProperty("textColor")
+					.toBe(UIColor["@green"]);
+			});
+
+			test("Styles cache is cleared on context clear", (t) => {
+				let app = useTestContext();
+				app.theme!.styles.set(UIButtonStyle, [
+					{ textColor: UIColor["@green"] },
+				]);
+				let MyButtonStyle = UIButtonStyle.extend({ padding: 8 });
+				let styles = new MyButtonStyle().getStyles().slice(-2);
+				expect(styles[0]).toHaveProperty("textColor").toBe(UIColor["@green"]);
+				expect(styles[1]).toHaveProperty("padding").toBe(8);
+
+				t.log("Clearing test context");
+				app = useTestContext();
+				app.theme!.styles.set(UIButtonStyle, [{ padding: 0 }]);
+				styles = new MyButtonStyle().getStyles().slice(-2);
+				expect(styles[0]).not.toHaveProperty("textColor");
+				expect(styles[1]).toHaveProperty("padding").toBe(8);
+			});
 		});
 	});
 });

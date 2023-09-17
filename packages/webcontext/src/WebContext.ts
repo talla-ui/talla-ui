@@ -1,9 +1,17 @@
-import { ActivationContext, app, GlobalContext, UIStyle } from "desk-frame";
-import { WebTheme } from "./style/WebTheme.js";
-import { WebRenderer } from "./renderer/WebRenderer.js";
-import { WebViewportContext } from "./renderer/WebViewportContext.js";
+import {
+	ActivationContext,
+	app,
+	ConfigOptions,
+	GlobalContext,
+	UIComponent,
+} from "desk-frame";
 import { WebHashActivationPath } from "./path/WebHashActivationPath.js";
 import { WebHistoryActivationPath } from "./path/WebHistoryActivationPath.js";
+import { WebRenderer } from "./renderer/WebRenderer.js";
+import { WebViewportContext } from "./renderer/WebViewportContext.js";
+import { MessageDialog, MessageDialogStyles } from "./style/MessageDialog.js";
+import { ModalMenu, ModalMenuStyles } from "./style/ModalMenu.js";
+import { WebTheme } from "./style/WebTheme.js";
 
 /**
  * Type definition for the global {@link app} context with web-specific render and activation contexts, set by the {@link useWebContext} function
@@ -19,7 +27,7 @@ export type WebContext = GlobalContext & {
  * A class that contains options for the web context
  * - These options should be set in a configuration callback passed to {@link useWebContext}.
  */
-export class WebContextOptions {
+export class WebContextOptions extends ConfigOptions {
 	/** The application base path */
 	basePath = "";
 
@@ -33,10 +41,30 @@ export class WebContextOptions {
 	importCSS: string[] = [];
 
 	/** Control text styles, defaults to system font at 14 logical pixels if not set */
-	controlTextStyle?: UIStyle.Definition.TextStyle;
+	controlTextStyle?: UIComponent.TextStyleType;
 
 	/** Custom focus (outline) decoration styles, if any */
-	focusDecoration?: UIStyle.Definition.Decoration;
+	focusDecoration?: UIComponent.DecorationStyleType;
+
+	/**
+	 * Options for the appearance of the default modal menu view
+	 * - These styles can be changed directly on this object. Refer to {@link ModalMenuStyles} for details.
+	 * @see {@link ModalMenuStyles}
+	 */
+	modalMenuStyles: ModalMenuStyles = ModalMenu.styles;
+
+	/**
+	 * Options for the appearance of the default modal message dialog view
+	 * - These styles can be changed directly on this object. Refer to {@link MessageDialogStyles} for details.
+	 * @see {@link MessageDialogStyles}
+	 */
+	messageDialogStyles: MessageDialogStyles = MessageDialog.styles;
+
+	/** Breakpoint (in logical pixels) below which {@link ViewportContext.narrow} and {@link ViewportContext.short} are set */
+	smallBreakpoint = 590;
+
+	/** Breakpoint (in logical pixels) above which {@link ViewportContext.wide} and {@link ViewportContext.tall} are set */
+	largeBreakpoint = 1150;
 
 	/** True if all anumations should be disabled */
 	reducedMotion = false;
@@ -46,12 +74,6 @@ export class WebContextOptions {
 
 	/** Time (in ms) between frame renders if animation frame doesn't trigger */
 	missedFrameTime = 30;
-
-	/** Breakpoint (in logical pixels) below which {@link ViewportContext.narrow} and {@link ViewportContext.short} are set */
-	smallBreakpoint = 590;
-
-	/** Breakpoint (in logical pixels) above which {@link ViewportContext.wide} and {@link ViewportContext.tall} are set */
-	largeBreakpoint = 1150;
 }
 
 /**
@@ -59,7 +81,7 @@ export class WebContextOptions {
  * - This method must be used to set up a Desk web application. It can also be used to clear the state of the current application, e.g. after logging out the current user or applying global settings.
  * - Before initializing a new context, the {@link GlobalContext.clear()} method is used to reset the current context, if any.
  *
- * @param configure A callback function that sets options on a provided {@link WebContextOptions} object
+ * @param config A {@link WebContextOptions} object, or a callback function to set options
  * @returns The {@link app} global context, typed as {@link WebContext}.
  *
  * @example
@@ -68,17 +90,14 @@ export class WebContextOptions {
  *   options.logicalPxScale = 1.5;
  *   options.theme.styles.LinkButton =
  *     options.theme.styles.LinkButton.extend({
- *       decoration: { borderColor: UIColor.Primary },
+ *       decoration: { borderColor: UIColor["@primary"] },
  *     });
  * });
  * app.addActivity(new MyActivity())
  * app.addService("MyService", new MyService())
  */
-export function useWebContext(
-	configure?: (options: WebContextOptions) => void,
-) {
-	let options = new WebContextOptions();
-	configure && configure(options);
+export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
+	let options = WebContextOptions.init(config);
 
 	// clear the current app properties first
 	app.clear();
@@ -96,6 +115,10 @@ export function useWebContext(
 	// apply theme
 	WebTheme.initializeCSS(options);
 	app.theme = options.theme;
+
+	// update modal styles
+	ModalMenu.styles = options.modalMenuStyles;
+	MessageDialog.styles = options.messageDialogStyles;
 
 	// create viewport context and update
 	let viewport = new WebViewportContext(options);

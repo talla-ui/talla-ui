@@ -4,9 +4,8 @@ import {
 	ViewClass,
 	ViewComposite,
 } from "../../app/index.js";
-import { ManagedEvent } from "../../core/ManagedEvent.js";
-import { UIComponent } from "../UIComponent.js";
-import { UITheme } from "../UITheme.js";
+import type { ManagedEvent } from "../../core/ManagedEvent.js";
+import type { UIComponent } from "../UIComponent.js";
 
 let _nextUpdateId = 1;
 
@@ -46,14 +45,14 @@ export class UIAnimationController extends ViewComposite {
 
 	/** Plays the specified animation on the last output element rendered by the content view */
 	async playAsync(
-		animation?: string | RenderContext.OutputTransformer,
+		animation?: `@${string}` | RenderContext.OutputTransformer,
 		repeat?: boolean,
 	) {
 		// prepare everything in advance
 		let renderer = app.renderer;
 		let f =
 			typeof animation === "string"
-				? UITheme.getAnimation(animation)
+				? app.theme?.animations.get(animation.slice(1))
 				: animation;
 		let output = this._lastOutput;
 		if (!f || !output || !renderer) return;
@@ -119,13 +118,13 @@ export class UIAnimationController extends ViewComposite {
 	}
 
 	/** Animation that will be played automatically when the content view is shown */
-	showAnimation?: string | RenderContext.OutputTransformer;
+	showAnimation?: `@${string}` | RenderContext.OutputTransformer;
 
 	/** Animation that will be played when the content view is hidden (through `UIComponent.hidden` property or `UIConditional` view) */
-	hideAnimation?: string | RenderContext.OutputTransformer;
+	hideAnimation?: `@${string}` | RenderContext.OutputTransformer;
 
 	/** Animation that will be played repeatedly after the content view is shown */
-	repeatAnimation?: string | RenderContext.OutputTransformer;
+	repeatAnimation?: `@${string}` | RenderContext.OutputTransformer;
 
 	private _lastOutput?: RenderContext.Output;
 	private _lastUpdate?: number;

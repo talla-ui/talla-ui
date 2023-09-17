@@ -10,6 +10,8 @@
 		"moduleResolution": "node",
 		"target": "esnext",
 		"lib": ["dom", "esnext"],
-		"outDir": "../.test-run"
+		"outDir": "../.test-run",
+		"sourceMap": true,
+		"pretty": true
 	}
 }

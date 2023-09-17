@@ -11,10 +11,9 @@ assets:
 
 ## Definition {#definition}
 
-Toggle controls are represented by the {@link UIToggle} class, which inherits functionality from the {@link UIControl} and {@link UIComponent} abstract classes.
+Toggle controls are represented by the {@link UIToggle} class, which inherits functionality from the {@link UIComponent} abstract class.
 
 - {@ref UIToggle}
-- {@ref UIControl}
 - {@ref UIComponent}
 
 ## Appearance {#appearance}
@@ -42,7 +41,8 @@ const view = UIToggle.with({
 
 Toggle control decorations, dimensions, position, and text styles can be changed using {@link UITheme} styles or any of the style properties of the control itself.
 
-The {@link UIControl.decoration} style object is applied to the toggle control _itself_ (checkbox, where applicable), while other styles are applied to the entire component.
+<!-- TODO: update for styles -->
+<!-- The decoration style object is applied to the toggle control _itself_ (checkbox, where applicable), while other styles are applied to the entire component. -->
 
 <!--{{html-attr class="pagerefblock_list"}}-->
 
@@ -54,22 +54,19 @@ The {@link UIControl.decoration} style object is applied to the toggle control _
 
 The following properties can be preset using `UIToggle.with({ ... })` or JSX `<toggle ...>`.
 
-| Property                                            | Type                                                                |
-| :-------------------------------------------------- | :------------------------------------------------------------------ |
-| {@link UIComponent.style style}                     | Instance of {@link UIStyle} or a theme style name starting with `@` |
-| {@link UIComponent.dimensions dimensions}           | An object with {@link UIStyle.Definition.Dimensions} properties     |
-| {@link UIComponent.position position}               | An object with {@link UIStyle.Definition.Position} properties       |
-| {@link UIControl.textStyle textStyle}               | An object with {@link UIStyle.Definition.TextStyle} properties      |
-| {@link UIControl.decoration decoration}             | An object with {@link UIStyle.Definition.Decoration} properties     |
-| {@link UIComponent.hidden hidden}                   | Boolean, or binding                                                 |
-| {@link UIComponent.accessibleRole accessibleRole}   | String, or binding                                                  |
-| {@link UIComponent.accessibleLabel accessibleLabel} | String, or binding                                                  |
-| {@link UIControl.disabled disabled}                 | Boolean, or binding                                                 |
-| {@link UIControl.shrinkwrap shrinkwrap}             | Boolean, or binding                                                 |
-| {@link UIToggle.label label}                        | String, {@link LazyString}, or binding                              |
-| {@link UIToggle.state state}                        | Boolean, or binding                                                 |
-| {@link UIToggle.formField formField}                | String                                                              |
-| requestFocus                                        | True to request focus immediately after first render                |
+| Property                                            | Type                                                    |
+| :-------------------------------------------------- | :------------------------------------------------------ |
+| {@link UIComponent.hidden hidden}                   | Boolean, or binding                                     |
+| {@link UIComponent.position position}               | {@link UIComponent.Position}, or binding                |
+| {@link UIComponent.accessibleRole accessibleRole}   | String, or binding                                      |
+| {@link UIComponent.accessibleLabel accessibleLabel} | String, or binding                                      |
+| {@link UIToggle.label label}                        | String, {@link LazyString}, or binding                  |
+| {@link UIToggle.state state}                        | Boolean, or binding                                     |
+| {@link UIToggle.formField formField}                | String                                                  |
+| {@link UIToggle.disabled disabled}                  | Boolean, or binding                                     |
+| {@link UIToggle.toggleStyle toggleStyle}            | {@link UIToggleStyle} class, overrides, or binding      |
+| {@link UIToggle.labelStyle labelStyle}              | {@link UIToggleLabelStyle} class, overrides, or binding |
+| requestFocus                                        | True to request focus immediately after first render    |
 
 Note that {@link UIToggle} also provides the following methods.
 

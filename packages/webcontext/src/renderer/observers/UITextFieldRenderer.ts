@@ -1,5 +1,14 @@
-import { ManagedChangeEvent, RenderContext, UITextField } from "desk-frame";
-import { BaseObserver } from "./BaseObserver.js";
+import {
+	ManagedChangeEvent,
+	RenderContext,
+	UITextField,
+	UITextFieldStyle,
+} from "desk-frame";
+import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
+import {
+	applyElementClassName,
+	applyElementStyle,
+} from "../../style/DOMStyle.js";
 
 /** @internal */
 export class UITextFieldRenderer extends BaseObserver<UITextField> {
@@ -9,10 +18,10 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 			.observePropertyAsync(
 				"placeholder",
 				"value",
-				"textStyle",
-				"decoration",
 				"disabled",
-				"shrinkwrap",
+				"readOnly",
+				"width",
+				"textFieldStyle",
 			);
 	}
 
@@ -27,10 +36,10 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 				case "value":
 					this.scheduleUpdate(this.element);
 					return;
-				case "textStyle":
-				case "decoration":
 				case "disabled":
-				case "shrinkwrap":
+				case "readOnly":
+				case "width":
+				case "textFieldStyle":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -55,20 +64,31 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 
 	override updateStyle(element: HTMLInputElement) {
 		let textField = this.observed;
-		if (!textField) return;
+		if (textField) {
+			// set state
+			element.disabled = !!textField.disabled;
+			element.readOnly = !!textField.readOnly;
 
-		// set disabled state
-		element.disabled = !!textField.disabled;
-
-		// set style objects
-		super.updateStyle(
-			element,
-			{
-				textStyle: textField.textStyle,
-				decoration: textField.decoration,
-			},
-			textField.shrinkwrap,
-		);
+			// apply other CSS styles
+			applyElementClassName(
+				element,
+				getBaseStyleClass(textField.textFieldStyle) || UITextFieldStyle,
+				undefined,
+				true,
+			);
+			applyElementStyle(
+				element,
+				[
+					textField.textFieldStyle,
+					textField.width !== undefined
+						? { width: textField.width, minWidth: 0 }
+						: undefined,
+				],
+				textField.position,
+				undefined,
+				true,
+			);
+		}
 	}
 
 	updateContent(element: HTMLInputElement) {

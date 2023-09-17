@@ -6,9 +6,7 @@ nav_uplink: {@link UIButton}
 applies_to:
   - UIButton
   - UIPrimaryButton
-  - UIOutlineButton
-  - UIBorderlessButton
-  - UILinkButton
+  - UIPlainButton
   - UIIconButton
 assets:
   - sample-single.js
@@ -20,10 +18,9 @@ assets:
 
 ## Definition {#definition}
 
-Buttons are represented by the {@link UIButton} class, which inherits functionality from the {@link UIControl} and {@link UIComponent} abstract classes.
+Buttons are represented by the {@link UIButton} class, which inherits functionality from the {@link UIComponent} abstract class.
 
 - {@ref UIButton}
-- {@ref UIControl}
 - {@ref UIComponent}
 
 ## Appearance {#appearance}
@@ -35,15 +32,15 @@ A button appears as a clickable element containing a text label and/or icon.
 Like all views, button components are often defined statically, rather than being instantiated directly using the {@link UIButton} constructor.
 
 ```ts
-const view = UIOutlineButton.with({
+const view = UIButton.with({
 	label: "Button",
-	icon: UIIcon.Plus,
+	icon: UIIconResource["@plus"],
 });
 ```
 
 ```jsx
 // or, using JSX syntax:
-<button icon={UIIcon.Plus}>Button</button>
+<button icon={UIIconResource["@plus"]}>Button</button>
 ```
 
 Button decorations, dimensions, position, and text styles are highly customizable, either using {@link UITheme} styles or using any of the style properties of the button itself.
@@ -52,36 +49,37 @@ Button decorations, dimensions, position, and text styles are highly customizabl
 
 - <!--{{pagerefblock path="content/en/docs/main/guide/Styles"}}-->
 
-The base {@link UIButton} class doesn't add any decorations or hover/click styles. To add default styles, use one of the predefined button types: {@link UIPrimaryButton}, {@link UIOutlineButton}, {@link UIBorderlessButton}, {@link UILinkButton}, and {@link UIIconButton}, _or_ set the {@link UIComponent.style style} property.
-
 The default appearance of these button types is shown below.
 
 <!--{{iframesample js="./sample-types.js"}}-->
 
-Buttons are best customized using style objects (see {@link UIStyle.extend()}), since most button styles include hover and click states. For example, a red button may turn a slightly different shade of red when hovered and clicked with the mouse.
+Buttons are best customized using style classes, since most button styles include hover and click states. For example, a red button may turn a slightly different shade of red when hovered and clicked with the mouse.
+
+<!-- TODO: explain style classes -->
 
 <!--{{iframesample js="./sample-style.js" short}}-->
 
 ```ts
+// TODO: Update this example
 const styles = {
 	dangerousButton: UIStyle.PrimaryButton.extend(
 		{
 			decoration: {
-				background: UIColor.Red,
-				borderColor: UIColor.Red,
+				background: UIColor["@red"],
+				borderColor: UIColor["@red"],
 			},
 		},
 		{
 			hover: {
 				decoration: {
-					background: UIColor.Red.brighten(-0.2),
-					borderColor: UIColor.Red.brighten(-0.2),
+					background: UIColor["@red"].brighten(-0.2),
+					borderColor: UIColor["@red"].brighten(-0.2),
 				},
 			},
 			pressed: {
 				decoration: {
-					background: UIColor.Red.brighten(0.2),
-					borderColor: UIColor.Red.brighten(0.2),
+					background: UIColor["@red"].brighten(0.2),
+					borderColor: UIColor["@red"].brighten(0.2),
 				},
 			},
 		},
@@ -127,19 +125,20 @@ const view = UIPrimaryButton.with({
 
 ## Selection state {#selection}
 
-Button controls automatically keep track of `Select` and `Deselect` events, and set the {@link UIButton.selected selected} property accordingly. These events aren't emitted automatically — use an event preset and/or a {@link UISelectionController} to manage selection state. You can also use the `selected` state for {@link UIStyle} objects as illustrated below.
+Button controls automatically keep track of `Select` and `Deselect` events, and set the {@link UIButton.selected selected} property accordingly. These events aren't emitted automatically — use an event preset and/or a {@link UISelectionController} to manage selection state. You can also use the selected state for extended style classes as illustrated below.
 
 <!--{{iframesample js="./sample-select.js" short}}-->
 
 ```ts
+// TODO: Update this example
 const buttonStyle = UIStyle.OutlineButton.extend(
 	{},
 	{
 		// use the selected state to switch styles automatically:
 		selected: {
 			decoration: {
-				background: UIColor.PrimaryBackground,
-				textColor: UIColor.PrimaryBackground.text(),
+				background: UIColor["@primaryBackground"],
+				textColor: UIColor["@primaryBackground"].text(),
 			},
 		},
 	},
@@ -162,27 +161,25 @@ const view = UISelectionController.with(
 
 The following properties can be preset using `UIButton.with({ ... })` or JSX `<button ...>`.
 
-| Property                                            | Type                                                                  |
-| :-------------------------------------------------- | :-------------------------------------------------------------------- |
-| {@link UIComponent.style style}                     | Instance of {@link UIStyle} or a theme style name starting with `@`   |
-| {@link UIComponent.dimensions dimensions}           | An object with {@link UIStyle.Definition.Dimensions} properties       |
-| {@link UIComponent.position position}               | An object with {@link UIStyle.Definition.Position} properties         |
-| {@link UIControl.textStyle textStyle}               | An object with {@link UIStyle.Definition.TextStyle} properties        |
-| {@link UIControl.decoration decoration}             | An object with {@link UIStyle.Definition.Decoration} properties       |
-| {@link UIComponent.hidden hidden}                   | Boolean, or binding                                                   |
-| {@link UIComponent.accessibleRole accessibleRole}   | String, or binding                                                    |
-| {@link UIComponent.accessibleLabel accessibleLabel} | String, or binding                                                    |
-| {@link UIControl.disabled disabled}                 | Boolean, or binding                                                   |
-| {@link UIControl.shrinkwrap shrinkwrap}             | Boolean, or binding                                                   |
-| {@link UIButton.label label}                        | String, {@link LazyString}, or binding                                |
-| {@link UIButton.icon icon}                          | String, {@link UIIcon}, theme icon name starting with `@`, or binding |
-| {@link UIButton.iconSize iconSize}                  | Number, or binding                                                    |
-| {@link UIButton.iconMargin iconMargin}              | Number, or binding                                                    |
-| {@link UIButton.iconColor iconColor}                | String, {@link UIColor} instance, or binding                          |
-| {@link UIButton.iconAfter iconAfter}                | Boolean, or binding                                                   |
-| {@link UIButton.navigateTo navigateTo}              | String, or binding                                                    |
-| disableKeyboardFocus                                | True if keyboard focus should be disabled                             |
-| requestFocus                                        | True to request focus immediately after first render                  |
+| Property                                            | Type                                                                          |
+| :-------------------------------------------------- | :---------------------------------------------------------------------------- |
+| {@link UIComponent.hidden hidden}                   | Boolean, or binding                                                           |
+| {@link UIComponent.position position}               | {@link UIComponent.Position}, or binding                                      |
+| {@link UIComponent.accessibleRole accessibleRole}   | String, or binding                                                            |
+| {@link UIComponent.accessibleLabel accessibleLabel} | String, or binding                                                            |
+| {@link UIButton.label label}                        | String, {@link LazyString}, or binding                                        |
+| {@link UIButton.icon icon}                          | String, {@link UIIconResource}, theme icon name starting with `@`, or binding |
+| {@link UIButton.iconSize iconSize}                  | Number, or binding                                                            |
+| {@link UIButton.iconMargin iconMargin}              | Number, or binding                                                            |
+| {@link UIButton.iconColor iconColor}                | String, {@link UIColor} instance, or binding                                  |
+| {@link UIButton.chevron chevron}                    | String, or binding                                                            |
+| {@link UIButton.chevronSize chevronSize}            | Number, or binding                                                            |
+| {@link UIButton.navigateTo navigateTo}              | String, or binding                                                            |
+| {@link UIButton.disabled disabled}                  | Boolean, or binding                                                           |
+| {@link UIButton.width width}                        | Number, string with CSS unit, or binding                                      |
+| {@link UIButton.buttonStyle buttonStyle}            | {@link UIButtonStyle} class, overrides, or binding                            |
+| disableKeyboardFocus                                | True if keyboard focus should be disabled                                     |
+| requestFocus                                        | True to request focus immediately after first render                          |
 
 Note that {@link UIButton} also provides the following methods.
 

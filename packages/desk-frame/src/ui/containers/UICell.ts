@@ -1,7 +1,7 @@
 import type { View } from "../../app/index.js";
 import { UIColor } from "../UIColor.js";
 import { UIComponent } from "../UIComponent.js";
-import { UIStyle } from "../UIStyle.js";
+import { UITheme } from "../UITheme.js";
 import { UIContainer } from "./UIContainer.js";
 
 /**
@@ -17,7 +17,6 @@ export class UICell extends UIContainer {
 	/** Creates a new cell container view object with the provided view content */
 	constructor(...content: View[]) {
 		super(...content);
-		this.style = UIStyle.Cell;
 
 		// set selection state automatically
 		this.listen((e) => {
@@ -39,19 +38,15 @@ export class UICell extends UIContainer {
 		preset: UIComponent.ViewPreset<
 			UIContainer,
 			this,
+			| "textDirection"
 			| "margin"
 			| "background"
-			| "textDirection"
 			| "textColor"
-			| "borderThickness"
-			| "borderColor"
-			| "borderStyle"
 			| "borderRadius"
 			| "dropShadow"
 			| "opacity"
+			| "cellStyle"
 		> & {
-			/** Options for the appearance of this cell; most of these are overridden by individual properties */
-			decoration?: UIStyle.Definition.Decoration;
 			/** Event that's emitted when the mouse cursor enters the cell area */
 			onMouseEnter?: string;
 			/** Event that's emitted when the mouse cursor leaves the cell area */
@@ -62,18 +57,7 @@ export class UICell extends UIContainer {
 			onDeselect?: string;
 		},
 	) {
-		let decoration = preset.decoration;
-		delete preset.decoration;
-
 		super.applyViewPreset(preset);
-
-		// apply style overrides
-		if (decoration) this.decoration = { ...this.decoration, ...decoration };
-	}
-
-	protected override applyStyle(style: UIStyle) {
-		super.applyStyle(style);
-		this.decoration = style.getStyles().decoration;
 	}
 
 	/**
@@ -82,41 +66,43 @@ export class UICell extends UIContainer {
 	 */
 	selected = false;
 
-	/**
-	 * Style definitions related to the appearance of this cell
-	 * - Most of the properties of this style definition object can also be overridden by individual properties of the {@link UICell} object.
-	 */
-	decoration!: Readonly<UIStyle.Definition.Decoration>;
+	/** Text direction (rtl or ltr) for all components within this cell */
+	textDirection?: "ltr" | "rtl" = undefined;
 
 	/** Additional space to be added around the entire cell, in pixels or CSS length with unit, **or** an object with separate offset values */
-	margin?: UIStyle.Offsets;
-
-	/** Cell background color, defaults to undefined (no fill) */
-	background?: UIColor | string;
-
-	/** Text color, defaults to undefined (no change of color) */
-	textColor?: UIColor | string;
-
-	/** Text direction (rtl or ltr) for all components within this cell */
-	textDirection?: "ltr" | "rtl";
-
-	/** Border color */
-	borderColor?: UIColor | string;
-
-	/** Border style (CSS style name), defaults to undefined (solid) */
-	borderStyle?: string;
-
-	/** Border thickness, in pixels or CSS length with unit, **or** an object with separate thickness values */
-	borderThickness?: UIStyle.Offsets;
+	margin?: UIComponent.Offsets = undefined;
 
 	/** Border radius, in pixels or CSS length with unit */
-	borderRadius?: string | number;
+	borderRadius?: string | number = undefined;
 
-	/** Drop shadow elevation level (0–1), defaults to undefined (no dropshadow) */
-	dropShadow?: number;
+	/** Cell background color, defaults to undefined (no fill) */
+	background?: UIColor | string = undefined;
+
+	/** Text color for labels within this cell */
+	textColor?: UIColor | string = undefined;
 
 	/** Opacity level (0–1), defaults to undefined (opaque) */
-	opacity?: number;
+	opacity?: number = undefined;
+
+	/** Drop shadow elevation level (0–1), defaults to undefined (no dropshadow) */
+	dropShadow?: number = undefined;
+
+	/** The style to be applied to this cell */
+	cellStyle?: UITheme.StyleConfiguration<UICellStyle> = undefined;
+}
+
+/**
+ * A style class that includes default style properties for instances of {@link UICell}
+ * - Default styles are taken from {@link UITheme}.
+ * - Extend or override this class to implement custom cell styles, see {@link UITheme.BaseStyle} for details.
+ */
+export class UICellStyle extends UITheme.BaseStyle<
+	"Cell",
+	UIComponent.DimensionsStyleType & UIComponent.DecorationStyleType
+> {
+	constructor() {
+		super("Cell", UICellStyle);
+	}
 }
 
 /**

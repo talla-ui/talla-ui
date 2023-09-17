@@ -3,18 +3,15 @@ import {
 	RenderContext,
 	UIButton,
 	UICell,
-	UIColumn,
+	UIContainer,
 	UIImage,
 	UILabel,
-	UIRow,
 	UIScrollContainer,
 	UISeparator,
 	UISpacer,
 	UITextField,
 	UIToggle,
 } from "desk-frame";
-import { UIRowRenderer } from "./UIRowRenderer.js";
-import { UIColumnRenderer } from "./UIColumnRenderer.js";
 import { UICellRenderer } from "./UICellRenderer.js";
 import { UIScrollContainerRenderer } from "./UIScrollContainerRenderer.js";
 import { UILabelRenderer } from "./UILabelRenderer.js";
@@ -24,20 +21,19 @@ import { UISeparatorRenderer } from "./UISeparatorRenderer.js";
 import { UISpacerRenderer } from "./UISpacerRenderer.js";
 import { UITextFieldRenderer } from "./UITextFieldRenderer.js";
 import { UIToggleRenderer } from "./UIToggleRenderer.js";
+import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
 /** @internal Helper function to create the appropriate renderer for given object */
 export function makeObserver<T extends RenderContext.Renderable>(
 	target: T,
 ): Observer<T> | undefined {
 	return (
-		target instanceof UIRow
-			? new UIRowRenderer()
-			: target instanceof UIColumn
-			? new UIColumnRenderer()
-			: target instanceof UICell
+		target instanceof UICell
 			? new UICellRenderer()
 			: target instanceof UIScrollContainer
 			? new UIScrollContainerRenderer()
+			: target instanceof UIContainer
+			? new UIContainerRenderer()
 			: target instanceof UILabel
 			? new UILabelRenderer()
 			: target instanceof UIButton

@@ -21,9 +21,10 @@ describe("UIToggle", (scope) => {
 	});
 
 	test("Preset using withField and form context", () => {
-		let MyToggle = UIToggle.withField("foo");
+		let MyToggle = UIToggle.withField("foo", "Foo");
 		let toggle = new MyToggle();
 		expect(toggle).toHaveProperty("formField").toBe("foo");
+		expect(toggle).toHaveProperty("label").asString().toBe("Foo");
 		let formCtx = new UIFormContext({ foo: false });
 		toggle.formContext = formCtx;
 		formCtx.set("foo", true);
@@ -31,14 +32,10 @@ describe("UIToggle", (scope) => {
 	});
 
 	test("Rendered with label", async (t) => {
-		let MyToggle = UIToggle.with({
-			label: "foo",
-			accessibleLabel: "My toggle",
-		});
-		app.render(new MyToggle());
+		app.render(new UIToggle("foo", true));
 		await t.expectOutputAsync(100, {
 			text: "foo",
-			accessibleLabel: "My toggle",
+			checked: true,
 		});
 	});
 

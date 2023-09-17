@@ -1,12 +1,19 @@
-import { ManagedChangeEvent, RenderContext, UIImage } from "desk-frame";
-import { BaseObserver } from "./BaseObserver.js";
+import {
+	ManagedChangeEvent,
+	RenderContext,
+	UIImage,
+	UIImageStyle,
+} from "desk-frame";
+import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
+import {
+	applyElementClassName,
+	applyElementStyle,
+} from "../../style/DOMStyle.js";
 
 /** @internal */
 export class UIImageRenderer extends BaseObserver<UIImage> {
 	override observe(observed: UIImage) {
-		return super
-			.observe(observed)
-			.observePropertyAsync("url", "decoration", "shrinkwrap");
+		return super.observe(observed).observePropertyAsync("url", "imageStyle");
 	}
 
 	protected override async handlePropertyChange(
@@ -19,8 +26,7 @@ export class UIImageRenderer extends BaseObserver<UIImage> {
 				case "url":
 					this.scheduleUpdate(this.element);
 					return;
-				case "decoration":
-				case "shrinkwrap":
+				case "imageStyle":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -46,14 +52,17 @@ export class UIImageRenderer extends BaseObserver<UIImage> {
 
 	override updateStyle(element: HTMLImageElement) {
 		let image = this.observed;
-		if (!image) return;
-
-		// set style objects
-		super.updateStyle(
-			element,
-			{ decoration: image.decoration },
-			image.shrinkwrap,
-		);
+		if (image) {
+			applyElementClassName(
+				element,
+				getBaseStyleClass(image.imageStyle) || UIImageStyle,
+			);
+			applyElementStyle(
+				element,
+				[image.imageStyle, { width: image.width, height: image.height }],
+				image.position,
+			);
+		}
 	}
 
 	updateContent(element: HTMLImageElement) {

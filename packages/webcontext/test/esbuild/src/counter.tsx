@@ -1,20 +1,13 @@
-import { JSX, PageViewActivity, UIStyle } from "../../../dist";
-
-const styles = {
-	counter: UIStyle.Label.extend({
-		textStyle: { fontSize: 36, bold: true },
-		decoration: { cssClassNames: ["BigCounter"] },
-	}),
-};
+import { JSX, PageViewActivity } from "../../../dist";
 
 const ViewBody = (
 	<cell>
-		<label style={styles.counter}>Count: %[count]</label>
+		<label labelStyle={{ bold: true, fontSize: 36 }}>Count: %[count]</label>
 		<spacer height={32} />
-		<centerrow>
-			<outlinebutton onClick="CountDown">Down</outlinebutton>
-			<outlinebutton onClick="CountUp">Up</outlinebutton>
-		</centerrow>
+		<row align="center">
+			<button onClick="CountDown">Down</button>
+			<button onClick="CountUp">Up</button>
+		</row>
 	</cell>
 );
 

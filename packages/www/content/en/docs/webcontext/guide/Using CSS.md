@@ -15,4 +15,4 @@ applies_to:
 > **Note:** This article is a stub. The documentation for this topic is still in development. In the meantime, refer to the information on the reference pages linked below.
 
 - {@ref WebContextOptions}
-- {@ref UIStyle}
+- {@ref UITheme}

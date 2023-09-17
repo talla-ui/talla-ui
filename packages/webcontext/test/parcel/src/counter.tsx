@@ -1,20 +1,13 @@
-import { app, JSX, PageViewActivity, UIStyle } from "desk-frame";
-
-const styles = {
-	counter: UIStyle.Label.extend({
-		textStyle: { fontSize: 36, bold: true },
-		decoration: { cssClassNames: ["BigCounter"] },
-	}),
-};
+import { app, JSX, PageViewActivity } from "desk-frame";
 
 const ViewBody = (
 	<cell>
-		<label style={styles.counter}>Count: %[count]</label>
-		<spacer height={32} shrinkwrap />
-		<centerrow>
-			<outlinebutton onClick="CountDown">Down</outlinebutton>
-			<outlinebutton onClick="CountUp">Up</outlinebutton>
-		</centerrow>
+		<label labelStyle={{ bold: true, fontSize: 36 }}>Count: %[count]</label>
+		<spacer height={32} />
+		<row align="center">
+			<button onClick="CountDown">Down</button>
+			<button onClick="CountUp">Up</button>
+		</row>
 	</cell>
 );
 

@@ -38,6 +38,15 @@ describe("UIForm and UIFormContext", () => {
 		expect(counter.changes).toBe(1);
 	});
 
+	test("Set all, with validation", () => {
+		let ctx = new UIFormContext();
+		ctx.addRequired("foo");
+		ctx.setAll({ foo: "bar", baz: 123 }, true);
+		expect(ctx.errorCount).toBe(0);
+		ctx.setAll({ foo: "", baz: 321 }, true);
+		expect(ctx.errorCount).toBe(1);
+	});
+
 	test("Serialization", () => {
 		let ctx = new UIFormContext({ foo: "bar", baz: 123 });
 		let serialized = ctx.serialize();

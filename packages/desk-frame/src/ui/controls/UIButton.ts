@@ -1,10 +1,9 @@
 import { Binding, strf, StringConvertible } from "../../core/index.js";
-import type { NavigationTarget } from "../../app/index.js";
-import type { UIColor } from "../UIColor.js";
-import { UIControl } from "./UIControl.js";
-import { UIStyle } from "../UIStyle.js";
-import { UIIcon } from "../UIIcon.js";
+import { NavigationTarget } from "../../app/index.js";
+import { UIColor } from "../UIColor.js";
+import { UIIconResource } from "../UIIconResource.js";
 import { UIComponent } from "../UIComponent.js";
+import { UITheme } from "../UITheme.js";
 
 /**
  * A view class that represents a button control
@@ -15,17 +14,22 @@ import { UIComponent } from "../UIComponent.js";
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
-export class UIButton extends UIControl {
+export class UIButton extends UIComponent {
 	/**
 	 * Creates a preset button class with the specified label and click event
 	 * - The specified label is localized using {@link strf} before being set as {@link UIButton.label}.
 	 * @param label The button label
 	 * @param onClick The name of the event to be emitted instead of (or in addition to, if starting with `+`) the Click event
+	 * @param buttonStyle The button style (optional)
 	 * @returns A class that can be used to create instances of this button class with the provided label and click event handler
 	 */
-	static withLabel(label?: StringConvertible | Binding, onClick?: string) {
+	static withLabel(
+		label?: StringConvertible | Binding,
+		onClick?: string,
+		buttonStyle?: UITheme.StyleConfiguration<UIButtonStyle>,
+	) {
 		if (typeof label === "string") label = strf(label);
-		return this.with({ label, onClick });
+		return this.with({ label, onClick, buttonStyle });
 	}
 
 	/**
@@ -37,7 +41,7 @@ export class UIButton extends UIControl {
 	 * @returns A class that can be used to create instances of this button class with the provided icon and click event handler
 	 */
 	static withIcon(
-		icon: UIIcon | `@${string}` | Binding,
+		icon: UIIconResource | `@${string}` | Binding,
 		onClick?: string,
 		size?: string | number,
 		color?: UIColor | string,
@@ -48,8 +52,7 @@ export class UIButton extends UIControl {
 	/** Creates a new button view object with the specified label */
 	constructor(label?: StringConvertible) {
 		super();
-		this.style = UIStyle.Button;
-		if (label !== undefined) this.label = label;
+		this.label = label;
 
 		// set selection state automatically
 		this.listen((e) => {
@@ -69,15 +72,19 @@ export class UIButton extends UIControl {
 	 */
 	override applyViewPreset(
 		preset: UIComponent.ViewPreset<
-			UIControl,
+			UIComponent,
 			this,
 			| "label"
 			| "icon"
 			| "iconSize"
 			| "iconMargin"
 			| "iconColor"
-			| "iconAfter"
+			| "chevron"
+			| "chevronSize"
 			| "navigateTo"
+			| "disabled"
+			| "width"
+			| "buttonStyle"
 		> & {
 			/** True if keyboard focus should be disabled this button */
 			disableKeyboardFocus?: boolean | Binding<boolean>;
@@ -105,19 +112,22 @@ export class UIButton extends UIControl {
 	label?: StringConvertible;
 
 	/** The button icon to be displayed */
-	icon?: UIIcon | `@${string}`;
+	icon?: UIIconResource | `@${string}` = undefined;
 
 	/** Icon size (in pixels or string with unit) */
 	iconSize?: string | number;
 
-	/** Margin between icon and label text (in pixels or string with unit) */
+	/** Space between icon and label text (in pixels or string with unit) */
 	iconMargin?: string | number;
 
 	/** Icon color */
 	iconColor?: UIColor | string;
 
-	/** True if the icon should appear _after_ the text instead of before */
-	iconAfter?: boolean;
+	/** Direction of chevron icon to be placed at the far end of the button, if any */
+	chevron?: "up" | "down" | "out" = undefined;
+
+	/** Chevron icon size (in pixels or string with unit) */
+	chevronSize?: string | number;
 
 	/**
 	 * Path or navigation target to navigate to when this button is clicked
@@ -125,11 +135,23 @@ export class UIButton extends UIControl {
 	 */
 	navigateTo?: StringConvertible | NavigationTarget;
 
-	/** Current selection state, set automatically based on Select and Deselect events */
-	selected?: boolean;
+	/**
+	 * The current selection state
+	 * - This property is set automatically, based on Select and Deselect events.
+	 */
+	selected = false;
 
 	/** True to disable keyboard focus (e.g. Tab key) for this button */
 	disableKeyboardFocus?: boolean;
+
+	/** True if user input should be disabled on this control */
+	disabled = false;
+
+	/** Target width of this button, in pixels or CSS length with unit */
+	width?: string | number = undefined;
+
+	/** The style to be applied to this button */
+	buttonStyle: UITheme.StyleConfiguration<UIButtonStyle> = undefined;
 
 	/**
 	 * Returns the navigation target for this button
@@ -142,71 +164,107 @@ export class UIButton extends UIControl {
 }
 
 /**
+ * A style class that includes default style properties for instances of {@link UIButton}
+ * - Default styles are taken from {@link UITheme}.
+ * - Extend or override this class to implement custom button styles, see {@link UITheme.BaseStyle} for details.
+ */
+export class UIButtonStyle extends UITheme.BaseStyle<
+	"Button",
+	UIComponent.DimensionsStyleType &
+		UIComponent.DecorationStyleType &
+		UIComponent.TextStyleType
+> {
+	constructor() {
+		super("Button", UIButtonStyle);
+	}
+}
+
+/**
  * A view class that represents a primary button control
  * - Refer to {@link UIButton} for information on button controls.
- * - This class uses the {@link UIStyle.PrimaryButton} style.
+ * - This class uses the {@link UIPrimaryButtonStyle} style.
  *
  * **JSX tag:** `<primarybutton>`
  */
 export class UIPrimaryButton extends UIButton {
 	constructor(label?: StringConvertible) {
 		super(label);
-		this.style = UIStyle.PrimaryButton;
+		this.buttonStyle = UIPrimaryButtonStyle;
 	}
 }
 
 /**
- * A view class that represents a button control without any visible borders
- * - Refer to {@link UIButton} for information on button controls.
- * - This class uses the {@link UIStyle.BorderlessButton} style.
- *
- * **JSX tag:** `<borderlessbutton>`
+ * A style class that includes default style properties for instances of {@link UIPrimaryButton}
+ * - Default styles are taken from {@link UITheme}.
+ * - Extend or override this class to implement custom primary button styles, see {@link UITheme.BaseStyle} for details.
  */
-export class UIBorderlessButton extends UIButton {
-	constructor(label?: StringConvertible) {
-		super(label);
-		this.style = UIStyle.BorderlessButton;
+export class UIPrimaryButtonStyle extends UITheme.BaseStyle<
+	"PrimaryButton",
+	UIComponent.DimensionsStyleType &
+		UIComponent.DecorationStyleType &
+		UIComponent.TextStyleType
+> {
+	constructor() {
+		super("PrimaryButton", UIPrimaryButtonStyle);
 	}
 }
 
 /**
- * A view class that represents a button control with a visible border
+ * A view class that represents a plain button control
  * - Refer to {@link UIButton} for information on button controls.
- * - This class uses the {@link UIStyle.OutlineButton} style.
+ * - This class uses the {@link UIPlainButtonStyle} style.
  *
- * **JSX tag:** `<outlinebutton>`
+ * **JSX tag:** `<plainbutton>`
  */
-export class UIOutlineButton extends UIButton {
+export class UIPlainButton extends UIButton {
 	constructor(label?: StringConvertible) {
 		super(label);
-		this.style = UIStyle.OutlineButton;
+		this.buttonStyle = UIPlainButtonStyle;
 	}
 }
 
 /**
- * A view class that represents a button control that appears as a hyperlink
- * - Refer to {@link UIButton} for information on button controls.
- * - This class uses the {@link UIStyle.LinkButton} style.
- *
- * **JSX tag:** `<linkbutton>`
+ * A style class that includes default style properties for instances of {@link UIPlainButton}
+ * - Default styles are taken from {@link UITheme}.
+ * - Extend or override this class to implement custom plain button styles, see {@link UITheme.BaseStyle} for details.
  */
-export class UILinkButton extends UIButton {
-	constructor(label?: StringConvertible) {
-		super(label);
-		this.style = UIStyle.LinkButton;
+export class UIPlainButtonStyle extends UITheme.BaseStyle<
+	"PlainButton",
+	UIComponent.DimensionsStyleType &
+		UIComponent.DecorationStyleType &
+		UIComponent.TextStyleType
+> {
+	constructor() {
+		super("PlainButton", UIPlainButtonStyle);
 	}
 }
 
 /**
  * A view class that represents a button control containing only a single icon
  * - Refer to {@link UIButton} for information on button controls.
- * - This class uses the {@link UIStyle.IconButton} style.
+ * - This class uses the {@link UIIconButtonStyle} style.
  *
  * **JSX tag:** `<iconbutton>`
  */
 export class UIIconButton extends UIButton {
 	constructor(label?: StringConvertible) {
 		super(label);
-		this.style = UIStyle.IconButton;
+		this.buttonStyle = UIIconButtonStyle;
+	}
+}
+
+/**
+ * A style class that includes default style properties for instances of {@link UIIconButton}
+ * - Default styles are taken from {@link UITheme}.
+ * - Extend or override this class to implement custom icon button styles, see {@link UITheme.BaseStyle} for details.
+ */
+export class UIIconButtonStyle extends UITheme.BaseStyle<
+	"IconButton",
+	UIComponent.DimensionsStyleType &
+		UIComponent.DecorationStyleType &
+		UIComponent.TextStyleType
+> {
+	constructor() {
+		super("IconButton", UIIconButtonStyle);
 	}
 }

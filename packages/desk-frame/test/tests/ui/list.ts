@@ -22,7 +22,7 @@ describe("UIList", (scope) => {
 	function getListText(list: UIList) {
 		return list.body.content.map((c) =>
 			String(
-				c instanceof UIList.ItemAdapter
+				c instanceof UIList.ItemController
 					? c.body instanceof UILabel && c.body.text
 					: c instanceof UILabel && c.text,
 			),
@@ -150,9 +150,9 @@ describe("UIList", (scope) => {
 		view.listen((event) => {
 			if (event.name === "Foo") {
 				t.count("foo");
-				if (!(event.delegate instanceof UIList.ItemAdapter))
+				if (!(event.delegate instanceof UIList.ItemController))
 					t.fail("Wrong delegate type");
-				let delegate = event.delegate as UIList.ItemAdapter<NamedObject>;
+				let delegate = event.delegate as UIList.ItemController<NamedObject>;
 				t.count(delegate.item.name);
 			}
 		});

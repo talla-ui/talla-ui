@@ -1,19 +1,28 @@
-import { ManagedChangeEvent, RenderContext, UITextField } from "desk-frame";
+import {
+	ManagedChangeEvent,
+	RenderContext,
+	UITextField,
+	UITextFieldStyle,
+} from "desk-frame";
 import { TestOutputElement } from "../app/TestOutputElement.js";
-import { TestRenderObserver } from "./TestRenderObserver.js";
+import {
+	TestBaseObserver,
+	applyElementStyle,
+	getBaseStyleClass,
+} from "./TestBaseObserver.js";
 
 /** @internal */
-export class UITextFieldRenderer extends TestRenderObserver<UITextField> {
+export class UITextFieldRenderer extends TestBaseObserver<UITextField> {
 	override observe(observed: UITextField) {
 		return super
 			.observe(observed)
 			.observePropertyAsync(
 				"placeholder",
 				"value",
-				"textStyle",
-				"decoration",
 				"disabled",
-				"shrinkwrap",
+				"readOnly",
+				"width",
+				"textFieldStyle",
 			);
 	}
 
@@ -26,27 +35,17 @@ export class UITextFieldRenderer extends TestRenderObserver<UITextField> {
 			switch (property) {
 				case "placeholder":
 				case "value":
-					// NOTE: ignoring field type and enter key hint here
 					this.scheduleUpdate(this.element);
 					return;
-				case "textStyle":
-				case "decoration":
 				case "disabled":
-				case "shrinkwrap":
+				case "readOnly":
+				case "width":
+				case "textFieldStyle":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
 		}
 		await super.handlePropertyChange(property, value, event);
-	}
-
-	getOutput() {
-		// NOTE: ignoring multiline flag here
-		if (!this.observed) throw ReferenceError();
-		let elt = new TestOutputElement("textfield");
-		let output = new RenderContext.Output(this.observed, elt);
-		elt.output = output;
-		return output;
 	}
 
 	override handlePlatformEvent(
@@ -61,28 +60,42 @@ export class UITextFieldRenderer extends TestRenderObserver<UITextField> {
 		super.handlePlatformEvent(name, data);
 	}
 
+	getOutput() {
+		// NOTE: ignoring multiline flag here
+		if (!this.observed) throw ReferenceError();
+		let elt = new TestOutputElement("textfield");
+		let output = new RenderContext.Output(this.observed, elt);
+		elt.output = output;
+		elt.focusable = true;
+		return output;
+	}
+
 	override updateStyle(element: TestOutputElement) {
 		let textField = this.observed;
-		if (!textField) return;
+		if (textField) {
+			// set state
+			element.disabled = textField.disabled;
+			element.readOnly = textField.readOnly;
 
-		// set disabled state
-		element.disabled = textField.disabled;
-
-		// set style objects
-		super.updateStyle(
-			element,
-			{
-				textStyle: textField.textStyle,
-				decoration: textField.decoration,
-			},
-			textField.shrinkwrap,
-		);
+			// set styles
+			element.styleClass =
+				getBaseStyleClass(textField.textFieldStyle) || UITextFieldStyle;
+			applyElementStyle(
+				element,
+				[
+					textField.textFieldStyle,
+					textField.width !== undefined
+						? { width: textField.width, minWidth: 0 }
+						: undefined,
+				],
+				textField.position,
+			);
+		}
 	}
 
 	updateContent(element: TestOutputElement) {
 		if (!this.observed) return;
 		element.text = String(this.observed.placeholder || "");
-		element.focusable = true;
 
 		let value = this.observed.value;
 		value = value == null ? "" : String(value);

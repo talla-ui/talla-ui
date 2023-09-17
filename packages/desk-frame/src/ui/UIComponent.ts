@@ -1,10 +1,7 @@
-import { app, RenderContext, View } from "../app/index.js";
-import { Binding, ManagedEvent } from "../core/index.js";
-import { err, ERROR, invalidArgErr } from "../errors.js";
-import { UIStyle } from "./UIStyle.js";
-
-/** Empty style instance, used on plain UIComponent instances */
-const _emptyStyle = new UIStyle();
+import { app, RenderContext, View, ViewClass } from "../app/index.js";
+import { Binding, ManagedEvent, StringConvertible } from "../core/index.js";
+import { err, ERROR } from "../errors.js";
+import type { UIColor } from "./UIColor.js";
 
 /** Type definition for an event that's emitted on UI components */
 export type UIComponentEvent<
@@ -12,6 +9,9 @@ export type UIComponentEvent<
 	TData extends unknown = unknown,
 	TName extends string = string,
 > = ManagedEvent<TSource, TData, TName>;
+
+/** Empty array, used for findViewContent */
+const _viewContent: any[] = Object.freeze([]) as any;
 
 /**
  * Base class for built-in UI components
@@ -53,40 +53,19 @@ export abstract class UIComponent extends View {
 		} as any;
 	}
 
-	/** Creates a new instance of this UI component class */
-	constructor() {
-		super();
-
-		// set style property accessor (observable)
-		this._style = _emptyStyle;
-		Object.defineProperty(this, "style", {
-			configurable: true,
-			get(this: UIComponent) {
-				return this._style;
-			},
-			set(this: UIComponent, v) {
-				if (v !== this._style) this.applyStyle(v || _emptyStyle);
-			},
-		});
-	}
-
 	/**
 	 * Applies the provided preset properties to this object
 	 * - This method is called automatically. Don't call this method after constructing a UI component.
 	 */
 	override applyViewPreset(preset: {
-		/** Style instance or theme style name starting with `@` */
-		style?: UIStyle | `@${string}` | Binding<UIStyle>;
 		/** True if this component should be hidden from view (doesn't stop the component from being rendered) */
 		hidden?: boolean | Binding<boolean>;
-		/** Options for the dimensions of this component (overrides) */
-		dimensions?: UIStyle.Definition.Dimensions;
 		/** Options for the positioning of this component within parent component(s) (overrides) */
-		position?: UIStyle.Definition.Position;
+		position?: UIComponent.Position | Binding<UIComponent.Position>;
 		/** WAI-ARIA role for this component, if applicable */
-		accessibleRole?: string | Binding<string>;
+		accessibleRole?: StringConvertible | Binding<StringConvertible>;
 		/** WAI-ARIA label text for this component (not tooltip), if applicable */
-		accessibleLabel?: string | Binding<string>;
+		accessibleLabel?: StringConvertible | Binding<StringConvertible>;
 		/** True if this component should be focused immediately after rendering for the first time */
 		requestFocus?: boolean;
 		/** Event that's emitted before rendering the component the first time */
@@ -132,15 +111,6 @@ export abstract class UIComponent extends View {
 		/** Event that's emitted when the down arrow key has been pressed */
 		onArrowDownKeyPress?: string;
 	}) {
-		// make sure style is set first, before overrides
-		if (typeof preset.style === "string") {
-			preset.style = new UIStyle(preset.style);
-		}
-		let position = preset.position;
-		delete preset.position;
-		let dimensions = preset.dimensions;
-		delete preset.dimensions;
-
 		// request focus (renderer will remember)
 		if (preset.requestFocus) {
 			setTimeout(() => this.requestFocus(), 1);
@@ -149,44 +119,7 @@ export abstract class UIComponent extends View {
 
 		// apply all other property values, bindings, and event handlers
 		super.applyViewPreset(preset);
-
-		if (this._style === _emptyStyle) this.applyStyle(_emptyStyle);
-		if (position) this.position = { ...this.position, ...position };
-		if (dimensions) this.dimensions = { ...this.dimensions, ...dimensions };
 	}
-
-	/**
-	 * Style definitions applied to this component, as a {@link UIStyle} object
-	 * - This property is set by the UI component constructor, for example {@link UILabel} sets its style property to `UIStyle.Label`.
-	 * - When set again, the definitions from the new {@link UIStyle} object replace all existing styles, setting properties such as {@link UIComponent.dimensions}, {@link UIComponent.position}, and {@link UIControl.decoration}.
-	 * - Hence, the final style of a component depends on the order in which the {@link UIComponent.style style} and other properties are set. For preset component classes (i.e. using {@link UIComponent.with with()}), the {@link UIComponent.style style} property is always set first, before any overriding style definition objects on the same preset object; refer to the example below.
-	 *
-	 * @example
-	 * // Preset dimensions are applied after style
-	 * const MyLabel = UILabel.with({
-	 *   text: "I'm tall and red",
-	 *   dimensions: { height: 300 }, // applied
-	 *   style: UIStyle.Label.extend({
-	 *     textStyle: { color: UIColor.Red }, // applied
-	 *     dimensions: { height: 32 } // overridden
-	 *   })
-	 * });
-	 * let label = new MyLabel();
-	 * label.dimensions.height // => 300
-	 * label.textStyle.color // => UIColor.Red
-	 *
-	 * @example
-	 * // Setting `style` overwrites all existing definitions
-	 * label.dimensions = { ...label.dimensions, height: 200 };
-	 * label.dimensions.height // => 200
-	 *
-	 * label.style = UIStyle.Label.extend({
-	 *   textStyle: { color: UIColor.Red },
-	 *   dimensions: { height: 32 }
-	 * });
-	 * label.dimensions.height // => 32
-	 */
-	declare style: UIStyle;
 
 	/**
 	 * True if the component should be hidden from view
@@ -194,27 +127,19 @@ export abstract class UIComponent extends View {
 	 * - Alternatively, use {@link UIConditional} to show and hide content dynamically.
 	 * @see UIConditional
 	 */
-	hidden?: boolean;
+	hidden = false;
 
 	/**
-	 * Style definitions related to the dimensions of this component
-	 * - This object is taken from {@link UIComponent.style} when set, but can be assigned directly to override definitions from {@link UIStyle}.
-	 * - Refer to {@link UIStyle.Definition.Dimensions} for a list of properties on this object.
+	 * Options related to the position of this component
+	 * - If set, these options replace the defaults for the type of component.
 	 */
-	dimensions!: Readonly<UIStyle.Definition.Dimensions>;
-
-	/**
-	 * Style definitions related to the positioning of this component within parent component(s)
-	 * - This object is taken from {@link UIComponent.style} when set, but can be assigned directly to override definitions from {@link UIStyle}.
-	 * - Refer to {@link UIStyle.Definition.Position} for a list of properties on this object.
-	 */
-	position!: Readonly<UIStyle.Definition.Position>;
+	position?: Readonly<UIComponent.Position> = undefined;
 
 	/** WAI-ARIA role for this component, if applicable */
-	accessibleRole?: string;
+	accessibleRole?: StringConvertible;
 
 	/** WAI-ARIA label text for this component (not tooltip), if applicable */
-	accessibleLabel?: string;
+	accessibleLabel?: StringConvertible;
 
 	/**
 	 * Requests input focus on this component
@@ -244,20 +169,6 @@ export abstract class UIComponent extends View {
 	}
 
 	/**
-	 * Applies all style definitions from the provided {@link UIStyle} object
-	 * - Do not use this method directly, simply assign to {@link UIComponent.style} if needed, or use one of the individual override properties instead.
-	 * - This method is overridden by subclasses to copy applicable styles to individual properties, such as `dimensions`, `layout`, and `decoration`.
-	 */
-	protected applyStyle(style: UIStyle) {
-		if (!(style instanceof UIStyle)) {
-			throw invalidArgErr("style"); // Invalid style
-		}
-		this._style = style;
-		this.dimensions = style.getStyles().dimensions;
-		this.position = style.getStyles().position;
-	}
-
-	/**
 	 * Triggers asynchronous rendering for this component, and all contained components, if any
 	 * - This method is invoked automatically, and should not be called by application code. However, it may be overridden to implement a UI component with custom platform-specific rendering code.
 	 * @param callback A render callback, usually provided by a container or the application {@link RenderContext} instance
@@ -276,10 +187,14 @@ export abstract class UIComponent extends View {
 		return this;
 	}
 
+	/** Implementation of {@link View.findViewContent()}, returns an empty array unless overridden */
+	override findViewContent<T extends View>(type: ViewClass<T>): T[] {
+		return _viewContent;
+	}
+
 	/** Last rendered output, if any; set by the UI component renderer */
 	lastRenderOutput?: RenderContext.Output;
 
-	private _style: UIStyle;
 	private _renderer?: any;
 }
 
@@ -300,4 +215,155 @@ export namespace UIComponent {
 	}
 		? P & { [P in K]?: TView[P] | Binding<TView[P]> }
 		: never;
+
+	/**
+	 * Options for component positioning within their parent component(s)
+	 * @see {@link UIComponent.position}
+	 */
+	export type Position = {
+		/** Position of the component in the direction perpendicular to the distribution axis of the parent component, or `overlay` if the component should be placed on top of other components (i.e. CSS absolute positioning) */
+		gravity?:
+			| "start"
+			| "end"
+			| "center"
+			| "stretch"
+			| "baseline"
+			| "overlay"
+			| "cover"
+			| "";
+		/** Top anchor: relative distance, or absolute position if `gravity` is 'overlay' (in pixels or string with unit, defaults to `auto`) */
+		top?: string | number;
+		/** Bottom anchor: relative distance, or absolute position if `gravity` is 'overlay' (in pixels or string with unit, defaults to `auto`) */
+		bottom?: string | number;
+		/** Left anchor: relative distance, or absolute position if `gravity` is 'overlay' (in pixels or string with unit, defaults to `auto`), same as `start` for LTR text direction */
+		left?: string | number;
+		/** Right anchor: relative distance, or absolute position if `gravity` is 'overlay' (in pixels or string with unit, defaults to `auto`), same as `end` for LTR text direction */
+		right?: string | number;
+		/** Start anchor: relative distance, or absolute position if `gravity` is 'overlay' (in pixels or string with unit, defaults to `auto`), same as `left` for LTR text direction */
+		start?: string | number;
+		/** End anchor: relative distance, or absolute position if `gravity` is 'overlay' (in pixels or string with unit, defaults to `auto`), same as `right` for LTR text direction */
+		end?: string | number;
+	};
+
+	/** Type definition for a measurement applied to padding, margin, or border thickness */
+	export type Offsets =
+		| string
+		| number
+		| {
+				x?: string | number;
+				y?: string | number;
+				top?: string | number;
+				bottom?: string | number;
+				left?: string | number;
+				right?: string | number;
+				start?: string | number;
+				end?: string | number;
+		  };
+
+	/**
+	 * Options for component dimensions
+	 * @see {@link UICellStyle}
+	 * @see {@link UIButtonStyle}
+	 * @see {@link UIImageStyle}
+	 * @see {@link UILabelStyle}
+	 * @see {@link UITextFieldStyle}
+	 * @see {@link UIToggleStyle}
+	 */
+	export type DimensionsStyleType = {
+		/** Outer width of the element, as specified (in pixels or string with unit) */
+		width?: string | number;
+		/** Outer height of the element, as specified (in pixels or string with unit) */
+		height?: string | number;
+		/** Minimum width of the element, as specified (in pixels or string with unit) */
+		minWidth?: string | number;
+		/** Maximum width of the element, as specified (in pixels or string with unit) */
+		maxWidth?: string | number;
+		/** Minimum height of the element, as specified (in pixels or string with unit) */
+		minHeight?: string | number;
+		/** Maximum height of the element, as specified (in pixels or string with unit) */
+		maxHeight?: string | number;
+		/** Growth quotient (0 for no growth, higher values for faster growth when needed) */
+		grow?: number;
+		/** Shrink quotient (0 to never shrink, higher values for faster shrinking when needed) */
+		shrink?: number;
+	};
+
+	/**
+	 * Options for the appearance of UI components
+	 * - The `css` property can be used to include miscellaneous CSS attributes, at your own risk.
+	 * @see {@link UICellStyle}
+	 * @see {@link UIButtonStyle}
+	 * @see {@link UIImageStyle}
+	 * @see {@link UILabelStyle}
+	 * @see {@link UITextFieldStyle}
+	 * @see {@link UIToggleLabelStyle}
+	 */
+	export type DecorationStyleType = {
+		/** Background style or color (`UIColor` or string) */
+		background?: UIColor | string;
+		/** Text color (`UIColor` or string) */
+		textColor?: UIColor | string;
+		/** Border color (`UIColor` or string) */
+		borderColor?: UIColor | string;
+		/** Border style (CSS), defaults to "solid" */
+		borderStyle?: string;
+		/** Border thickness (in pixels or CSS string, or separate offset values) */
+		borderThickness?: Offsets;
+		/** Border radius (in pixels or CSS string) */
+		borderRadius?: string | number;
+		/** Padding within control element (in pixels or CSS string, or separate offset values) */
+		padding?: Offsets;
+		/** Drop shadow elevation level (0–1) */
+		dropShadow?: number;
+		/** Opacity (0-1) */
+		opacity?: number;
+		/** Miscellaneous CSS attributes */
+		css?: Partial<CSSStyleDeclaration>;
+	};
+
+	/**
+	 * Options for typography used on UI components
+	 * @see {@link UIButtonStyle}
+	 * @see {@link UILabelStyle}
+	 * @see {@link UITextFieldStyle}
+	 * @see {@link UIToggleLabelStyle}
+	 */
+	export type TextStyleType = {
+		/** Text direction (rtl or ltr) */
+		direction?: "rtl" | "ltr";
+		/** Text alignment (CSS) */
+		textAlign?: string;
+		/** Font family (CSS) */
+		fontFamily?: string;
+		/** Font size (pixels or string with unit) */
+		fontSize?: string | number;
+		/** Font weight (CSS) */
+		fontWeight?: string | number;
+		/** Letter spacing (pixels or string with unit) */
+		letterSpacing?: string | number;
+		/** Line height (CSS relative to font size, *not* in pixels) */
+		lineHeight?: string | number;
+		/** Line break handling mode (CSS white-space) */
+		lineBreakMode?:
+			| "normal"
+			| "nowrap"
+			| "pre"
+			| "pre-wrap"
+			| "pre-line"
+			| "ellipsis"
+			| "clip"
+			| "";
+		/** True for bold text (overrides `fontWeight` value) */
+		bold?: boolean;
+		/** True for italic text */
+		italic?: boolean;
+		/** True for all-uppercase text */
+		uppercase?: boolean;
+		/** True for text using small caps */
+		smallCaps?: boolean;
+		/** True for underlined text */
+		underline?: boolean;
+		/** True for struck trough text */
+		strikeThrough?: boolean;
+	};
 }

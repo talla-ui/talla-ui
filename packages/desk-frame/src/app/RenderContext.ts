@@ -61,10 +61,10 @@ export namespace RenderContext {
 	 * Type definition for the callback that's used for asynchronous rendering
 	 * @see {@link RenderContext.Renderable.render}
 	 */
-	export type RenderCallback = (
-		output?: Output,
-		afterRender?: (out?: Output) => void,
-	) => RenderCallback;
+	export type RenderCallback<TElement = unknown> = (
+		output?: Output<TElement>,
+		afterRender?: (out?: Output<TElement>) => void,
+	) => RenderCallback<TElement>;
 
 	/**
 	 * An identifier that specifies a global rendering mode, part of {@link RenderContext.PlacementOptions}
@@ -105,8 +105,8 @@ export namespace RenderContext {
 		ref?: Output;
 		shade?: number;
 		transform?: Readonly<{
-			show?: OutputTransformer | string;
-			hide?: OutputTransformer | string;
+			show?: OutputTransformer | `@${string}`;
+			hide?: OutputTransformer | `@${string}`;
 		}>;
 	}>;
 
@@ -250,7 +250,7 @@ export namespace RenderContext {
 		lastContent?: Renderable;
 
 		/** The output that was rendered last, if any */
-		lastOutput?: RenderContext.Output;
+		lastRenderOutput?: RenderContext.Output;
 
 		/** Returns true if the render method has never been called */
 		isRendered() {
@@ -265,11 +265,15 @@ export namespace RenderContext {
 		) {
 			let isNewCallback = callback && callback !== this.callback;
 
-			if ((!content || isNewCallback) && this.callback && this.lastOutput) {
+			if (
+				(!content || isNewCallback) &&
+				this.callback &&
+				this.lastRenderOutput
+			) {
 				// use old callback to remove output
 				this.callback = this.callback(undefined);
 				this.lastContent = undefined;
-				this.lastOutput = undefined;
+				this.lastRenderOutput = undefined;
 				this._ownCallback = undefined;
 				this._seq++;
 			}
@@ -288,9 +292,9 @@ export namespace RenderContext {
 						if (seq === this._seq) {
 							if (output && place) output.place = place;
 							this.callback = callback!(output, afterRender);
-							this.lastOutput = output;
+							this.lastRenderOutput = output;
 							let animation = place?.transform?.show;
-							if (animation) app.animateAsync(output, animation);
+							if (animation) app.animateAsync(this, animation);
 							seq = ++this._seq;
 						}
 						return cb;
@@ -306,18 +310,18 @@ export namespace RenderContext {
 		/** Removes previously rendered output */
 		removeAsync() {
 			if (!this.callback) return;
-			let out = this.lastOutput;
+			let out = this.lastRenderOutput;
 			let seq = this._seq;
 			return (async () => {
 				let animation = out?.place?.transform?.hide;
-				if (animation) await app.animateAsync(out, animation);
+				if (animation) await app.animateAsync(this, animation);
 				if (seq === this._seq) {
 					let resolve: () => void;
 					let p = new Promise<void>((r) => {
 						resolve = r;
 					});
 					this.callback = this.callback!(undefined, () => resolve());
-					this.lastOutput = undefined;
+					this.lastRenderOutput = undefined;
 					this._ownCallback = undefined;
 					this._seq++;
 					return p;

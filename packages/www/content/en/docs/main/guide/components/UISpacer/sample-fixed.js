@@ -5,35 +5,37 @@ const view = desk.UICell.with(
 		desk.UICell.with(
 			{
 				position: { gravity: "start" },
-				borderColor: desk.UIColor.Text,
+				borderColor: desk.UIColor["@text"],
 				borderThickness: 1,
 			},
 			desk.UICenterRow.with(
 				{ spacing: 0 },
 				desk.UILabel.with({
 					text: "Spacer",
-					icon: desk.UIIcon.ExpandRight,
-					iconAfter: true,
+					chevron: "out",
 				}),
 				desk.UISpacer.withWidth(32),
-				desk.UILabel.with({ text: "Spacer", icon: desk.UIIcon.ExpandLeft })
-			)
+				desk.UILabel.with({
+					text: "Spacer",
+					icon: desk.UIIconResource["@expandLeft"],
+				}),
+			),
 		),
 		desk.UICell.with(
 			desk.UICell.with(
 				{
 					position: { gravity: "center" },
-					borderColor: desk.UIColor.Text,
+					borderColor: desk.UIColor["@text"],
 					borderThickness: 1,
 				},
 				desk.UIColumn.with(
 					{ spacing: 0 },
 					desk.UILabel.withText("Spacer below"),
 					desk.UISpacer.withHeight(32),
-					desk.UILabel.withText("Spacer above")
-				)
-			)
-		)
-	)
+					desk.UILabel.withText("Spacer above"),
+				),
+			),
+		),
+	),
 );
 app.render(new view(), { mode: "page" });

@@ -9,30 +9,20 @@ describe("UISpacer", (scope) => {
 	});
 
 	test("Constructor", () => {
-		let spacer = new UISpacer();
-		expect(spacer).toHaveProperty("shrinkwrap").toBeFalsy();
-	});
-
-	test("Preset using min width", () => {
-		let spacer = new (UISpacer.withWidth(10))();
-		expect(spacer.dimensions).toHaveProperty("minWidth").toBe(10);
-		expect(spacer.dimensions.minHeight).toBeUndefined();
-	});
-
-	test("Preset using min height", () => {
-		let spacer = new (UISpacer.withHeight(10))();
-		expect(spacer.dimensions).toHaveProperty("minHeight").toBe(10);
-		expect(spacer.dimensions.minWidth).toBeUndefined();
-	});
-
-	test("Preset using width and height", () => {
-		let MySpacer = UISpacer.with({
-			width: 10,
-			height: 10,
+		let spacer = new UISpacer(1, 2, 3, 4);
+		expect(spacer).toHaveProperties({
+			width: 1,
+			height: 2,
+			minWidth: 3,
+			minHeight: 4,
 		});
-		let spacer = new MySpacer();
-		expect(spacer.dimensions).toHaveProperty("minHeight").toBe(10);
-		expect(spacer.dimensions).toHaveProperty("minWidth").toBe(10);
+	});
+
+	test("Preset using dimensions", () => {
+		let widthSpacer = new (UISpacer.withWidth(10))();
+		expect(widthSpacer).toHaveProperty("width").toBe(10);
+		let heightSpacer = new (UISpacer.withHeight(10))();
+		expect(heightSpacer).toHaveProperty("height").toBe(10);
 	});
 
 	test("Rendered", async (t) => {

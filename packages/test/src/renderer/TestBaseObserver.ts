@@ -1,13 +1,14 @@
 import {
-	app,
 	ManagedChangeEvent,
 	Observer,
-	UIComponent,
-	UIStyle,
 	RenderContext,
+	UIComponent,
+	UIContainer,
+	UITheme,
+	app,
 } from "desk-frame";
 import { TestOutputElement } from "../app/TestOutputElement.js";
-import type { TestRenderer } from "../app/TestRenderer.js";
+import type { TestRenderer } from "./TestRenderer.js";
 
 /** UI component event names that are used for basic platform events */
 const _eventNames: { [p in TestOutputElement.PlatformEvent]?: string } = {
@@ -27,14 +28,75 @@ const _eventNames: { [p in TestOutputElement.PlatformEvent]?: string } = {
 	submit: "Submit",
 };
 
+/** A cache of constructed style classes, indexed by class reference */
+let _baseStyles = new Map<any, Readonly<any[]>>();
+
+/** @internal Helper function to find the base style (class) from a style/overrides object (e.g. `UILabel.labelStyle`), if any */
+export function getBaseStyleClass(
+	object: UITheme.StyleConfiguration<any>,
+): undefined | (new () => UITheme.BaseStyle<string, any>) {
+	let base = (object as any)?.[UITheme.BaseStyle.OVERRIDES_BASE] || object;
+	if (typeof base === "function") return base;
+}
+
+/** @internal Helper function to clear the cache of constructed style classes */
+export function clearStyles() {
+	_baseStyles = new Map();
+}
+
+/** @internal Helper function to get styles from a (base) style class */
+export function getClassStyles(
+	styleClass: new () => UITheme.BaseStyle<string, any>,
+) {
+	if (!_baseStyles.has(styleClass)) {
+		_baseStyles.set(
+			styleClass,
+			(new styleClass() as UITheme.BaseStyle<string, any>).getStyles(),
+		);
+	}
+	return _baseStyles.get(styleClass)!;
+}
+
+/** @internal Helper function to merge all style overrides on a single test output element */
+export function applyElementStyle(
+	element: TestOutputElement,
+	styleOverrides?: any[],
+	position?: UIComponent.Position,
+	layout?: UIContainer.Layout,
+) {
+	let styles: any = (element.styles = {
+		...(element.styleClass ? getClassStyles(element.styleClass) : undefined),
+		...position,
+		...layout,
+	});
+	function addOverrides(objects: any[]) {
+		for (let style of objects) {
+			if (!style) continue;
+			if (Array.isArray(style)) {
+				// item is an array, recurse
+				addOverrides(style);
+			} else if (Array.isArray(style.overrides)) {
+				// item is an object with more overrides, recurse
+				addOverrides(style.overrides);
+			} else if (typeof style !== "function") {
+				// set styles from plain object
+				for (let p in style) {
+					if (style[p] !== undefined) {
+						styles[p] = style[p];
+					}
+				}
+			}
+		}
+	}
+	if (styleOverrides) addOverrides(styleOverrides);
+}
+
 /** @internal Abstract observer class for all `UIComponent` instances, to create output and call render callback; implemented for all types of UI components */
-export abstract class TestRenderObserver<
+export abstract class TestBaseObserver<
 	TUIComponent extends UIComponent,
 > extends Observer<TUIComponent> {
 	override observe(observed: TUIComponent) {
-		return super
-			.observe(observed)
-			.observePropertyAsync("hidden", "dimensions", "position");
+		return super.observe(observed).observePropertyAsync("hidden", "position");
 	}
 
 	/** Handler for base property changes; must be overridden to handle other UI component properties */
@@ -46,15 +108,15 @@ export abstract class TestRenderObserver<
 		if (this.observed && this.element) {
 			switch (property) {
 				case "hidden":
-					this.updateStyle(this.element);
+					this._hidden = this.observed.hidden;
+					if (!this._hidden) this.updateStyle(this.element);
 					if (this.updateCallback) {
 						this.updateCallback = this.updateCallback.call(
 							undefined,
-							this.hidden ? undefined : this.output,
+							this._hidden ? undefined : this.output,
 						);
 					}
 					return;
-				case "dimensions":
 				case "position":
 					this.scheduleUpdate(undefined, this.element);
 					return;
@@ -69,19 +131,24 @@ export abstract class TestRenderObserver<
 	/** Rendered element, if any; set by `onRender` handler based on return value of `getOutput()` method */
 	element?: TestOutputElement;
 
-	/** Create test output (with element to render) for the observed UI component; called before rendering, must be overridden to create instances of `TestOutputElement` */
+	/** Creates test output (with element to render) for the observed UI component; called before rendering, must be overridden to create instances of `TestOutputElement` */
 	abstract getOutput(): RenderContext.Output & { element: TestOutputElement };
 
-	/** Update the specified output element with all properties of the UI component; called automatically before rendering (after `getOutputElement`), but can also be called when state properties change */
+	/** Updates the specified output element with all properties of the UI component; called automatically before rendering (after `getOutput`), but can also be called when state properties change */
 	update(element: TestOutputElement) {
 		if (!this.observed) return;
-		element.accessibleRole = this.observed.accessibleRole;
-		element.accessibleLabel = this.observed.accessibleLabel;
+		this._hidden = this.observed.hidden;
+		this._asyncContentUp = undefined;
+		this._asyncStyleUp = undefined;
+		if (this.observed.accessibleRole)
+			element.accessibleRole = String(this.observed.accessibleRole || "");
+		if (this.observed.accessibleLabel)
+			element.accessibleLabel = String(this.observed.accessibleLabel || "");
 		this.updateContent(element);
 		this.updateStyle(element);
 	}
 
-	/** Schedule asynchronous update (content and/or style); gets cancelled if `update` is called synchronously in the meantime */
+	/** Schedules an asynchronous update (content and/or style); gets cancelled if `update` is called synchronously in the meantime */
 	scheduleUpdate(
 		updateContent?: TestOutputElement,
 		updateStyle?: TestOutputElement,
@@ -104,35 +171,15 @@ export abstract class TestRenderObserver<
 	private _asyncContentUp?: TestOutputElement;
 	private _asyncStyleUp?: TestOutputElement;
 
-	/** Update the specified output element with content: either from properties (e.g. text content) or from other UI components; called automatically by `update()`, but can also be called when state properties change; must be overridden */
+	/** Updates the specified output element with content: either from properties (e.g. text content) or from other UI components; called automatically by `update()`, but can also be called when state properties change; must be overridden */
 	abstract updateContent(element: TestOutputElement): void;
 
-	/** Update the specified output element with all style properties; called automatically by `update()`, but can also be called when state properties change; must be overridden to update other style properties */
-	updateStyle(
-		element: TestOutputElement,
-		styles: Partial<UIStyle.Definition> = {},
-		shrinkwrap?: boolean | "auto",
-	) {
-		let component = this.observed;
-		if (!component) return;
-		if (component.hidden) {
-			this.hidden = true;
-		} else {
-			this.hidden = false;
-			element.styleName = component.style.name;
-			element.styleIds = component.style.getIds();
-			if (!styles.position) styles.position = component.position;
-			if (!styles.dimensions) styles.dimensions = component.dimensions;
-			if (shrinkwrap && styles.dimensions.grow) {
-				styles.dimensions = { ...styles.dimensions, grow: 0 };
-			} else if (shrinkwrap === false && !styles.dimensions.grow) {
-				styles.dimensions = { ...styles.dimensions, grow: 1 };
-			}
-			element.applyStyle(styles);
-		}
-	}
+	/** Updates the specified output element with all style properties; called automatically by `update()`, but can also be called when state properties change; must be overridden to update test output element styles */
+	abstract updateStyle(element: TestOutputElement): void;
 
-	/** Handle platform events, invoked in response to `element.sendPlatformEvent()` */
+	private _hidden?: boolean;
+
+	/** Handles platform events, invoked in response to `element.sendPlatformEvent()` */
 	handlePlatformEvent(name: TestOutputElement.PlatformEvent, data?: any) {
 		let baseEvent = _eventNames[name];
 		if (baseEvent && this.observed && !this.observed.isUnlinked()) {
@@ -160,10 +207,10 @@ export abstract class TestRenderObserver<
 			// call render callback with new element
 			this.updateCallback = event.render.call(
 				undefined,
-				this.hidden ? undefined : this.output,
+				this._hidden ? undefined : this.output,
 				() => {
 					// try to focus if requested
-					if (this._requestedFocus && this.element && !this.hidden) {
+					if (this._requestedFocus && this.element && !this._hidden) {
 						this._requestedFocus = false;
 						(app.renderer as TestRenderer).tryFocusElement(this.element);
 					}
@@ -179,7 +226,6 @@ export abstract class TestRenderObserver<
 		}
 	}
 
-	hidden?: boolean;
 	updateCallback?: RenderContext.RenderCallback;
 
 	/** Focus current element if possible */

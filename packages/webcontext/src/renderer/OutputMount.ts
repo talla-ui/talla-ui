@@ -1,5 +1,4 @@
 import { RenderContext, UIColor } from "desk-frame";
-import { getCSSColor } from "../style/DOMStyle.js";
 import {
 	CLASS_MODAL_SHADER,
 	CLASS_MODAL_WRAPPER,
@@ -28,9 +27,10 @@ export class OutputMount {
 			this._inner =
 				document.createElement("desk-page-root"));
 		elt.className = CLASS_PAGE_ROOT;
+		elt.ariaAtomic = "true";
 		this._remount = () => {
-			elt.style.background = getCSSColor("@PageBackground");
-			elt.style.color = getCSSColor("@Text");
+			elt.style.background = String(UIColor["@pageBackground"]);
+			elt.style.color = String(UIColor["@text"]);
 		};
 		this._remount();
 		registerHandlers(elt);
@@ -60,7 +60,7 @@ export class OutputMount {
 		}
 		setTimeout(() => {
 			if (reducedMotion) shader.style.transition = "none";
-			let color = new UIColor("@ModalShade").alpha(shadeOpacity || 0);
+			let color = UIColor["@modalShade"].alpha(shadeOpacity || 0);
 			shader.style.backgroundColor = String(color);
 			setFocus();
 			setTimeout(setFocus, 10);
@@ -70,8 +70,9 @@ export class OutputMount {
 		// create a flex wrapper to contain content
 		let wrapper = (this._inner = document.createElement("div"));
 		wrapper.className = CLASS_MODAL_WRAPPER;
-		wrapper.setAttribute("aria-modal", "true");
-		wrapper.style.color = getCSSColor("@Text");
+		wrapper.ariaModal = "true";
+		wrapper.ariaAtomic = "true";
+		wrapper.style.color = String(UIColor["@text"]);
 		shader.appendChild(wrapper);
 
 		// match position of wrapper with reference element, if any
@@ -112,9 +113,9 @@ export class OutputMount {
 
 		// handle remount by setting colors again
 		this._remount = () => {
-			let color = new UIColor("@ModalShade").alpha(shadeOpacity || 0);
+			let color = UIColor["@modalShade"].alpha(shadeOpacity || 0);
 			shader.style.backgroundColor = String(color);
-			wrapper.style.color = getCSSColor("@Text");
+			wrapper.style.color = String(UIColor["@text"]);
 		};
 	}
 

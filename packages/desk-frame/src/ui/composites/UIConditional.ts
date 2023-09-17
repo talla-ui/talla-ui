@@ -1,6 +1,6 @@
 import { ViewClass, ViewComposite } from "../../app/index.js";
-import { ManagedEvent } from "../../core/index.js";
-import { UIComponent } from "../UIComponent.js";
+import type { ManagedEvent } from "../../core/index.js";
+import type { UIComponent } from "../UIComponent.js";
 
 /**
  * A view composite that automatically creates and unlinks the contained view

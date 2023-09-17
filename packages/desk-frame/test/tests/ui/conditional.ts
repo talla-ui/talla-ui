@@ -2,6 +2,7 @@ import {
 	app,
 	bound,
 	ManagedObject,
+	UIButton,
 	UICell,
 	UIConditional,
 	UILabel,
@@ -17,6 +18,27 @@ describe("UIConditional", () => {
 		cond.state = true;
 		expect(cond.body).toBeInstanceOf(UICell);
 		expect(ManagedObject.whence(cond.body)).toBe(cond);
+	});
+
+	test("Events are propagated", async (t) => {
+		let MyCell = UICell.with(
+			UIConditional.with(
+				{ state: true },
+				UIButton.withLabel("Click me", "ButtonClick"),
+			),
+		);
+
+		// create instance and listen for events on cell
+		let cell = new MyCell();
+		cell.listen((e) => {
+			if (e.name === "ButtonClick") t.count("click");
+		});
+		app.render(cell);
+		let expectButton = await t.expectOutputAsync(500, { type: "button" });
+
+		t.log("Clicking button");
+		expectButton.getSingle().click();
+		t.expectCount("click").toBe(1);
 	});
 
 	test("Rendering content using bound state", async (t) => {

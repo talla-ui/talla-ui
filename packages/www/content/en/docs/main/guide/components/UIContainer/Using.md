@@ -29,7 +29,9 @@ All container components can be used to contain other components visually. The o
 - **Wrapping** — This can be enabled to create layouts that wrap elements across multiple lines along the primary axis when needed (e.g. turning a row container into a grid with components laid out horizontally first, then vertically).
 - **Spacing** or **separators** — Either a space or a separator line can be inserted automatically _between_ components within a container, along the primary axis, reducing the need to add padding or margin to every component in a row or column.
 
-All layout options are contained in the {@link UIStyle.Definition.ContainerLayout ContainerLayout} object type, which is part of {@link UIStyle} objects. Additionally, the {@link UIContainer.layout}, {@link UIContainer.distribution}, and {@link UIContainer.spacing} properties can be used to override these options directly.
+All layout options are contained in the {@link UIContainer.Layout} object type. Additionally, some properties can be used to override these options directly.
+
+<!-- TODO: check this -->
 
 ## Using container components {#components}
 

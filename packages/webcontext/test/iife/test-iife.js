@@ -11,23 +11,17 @@
 		}
 	}
 
-	const styles = {
-		counter: desk.UIStyle.Label.extend({
-			textStyle: { fontSize: 36, bold: true },
-			decoration: { cssClassNames: ["BigCounter"] },
-		}),
-	};
-
 	CountActivity.ViewBody = desk.UICell.with(
-		desk.UILabel.withText(
-			desk.bound.strf("Count: %n", "count"),
-			styles.counter
-		),
+		desk.UILabel.withText(desk.bound.strf("Count: %n", "count"), {
+			bold: true,
+			fontSize: 36,
+		}),
 		desk.UISpacer.withHeight(32),
-		desk.UICenterRow.with(
-			desk.UIOutlineButton.withLabel("Down", "CountDown"),
-			desk.UIOutlineButton.withLabel("Up", "CountUp")
-		)
+		desk.UIRow.with(
+			{ align: "center" },
+			desk.UIButton.withLabel("Down", "CountDown"),
+			desk.UIButton.withLabel("Up", "CountUp"),
+		),
 	);
 
 	desk.useWebContext();

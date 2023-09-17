@@ -6,7 +6,7 @@ const view = desk.UICell.with(
 		desk.UIOutlineButton.withLabel("Outline"),
 		desk.UIBorderlessButton.withLabel("Borderless"),
 		desk.UILinkButton.withLabel("Link"),
-		desk.UIIconButton.withIcon(desk.UIIcon.Menu)
-	)
+		desk.UIIconButton.withIcon(desk.UIIconResource["@menu"]),
+	),
 );
 app.render(new view(), { mode: "page" });

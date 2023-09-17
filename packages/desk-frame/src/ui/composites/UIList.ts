@@ -1,4 +1,4 @@
-import { app, View, ViewClass, ViewComposite } from "../../app/index.js";
+import { View, ViewClass, ViewComposite, app } from "../../app/index.js";
 import {
 	Binding,
 	DelegatedEvent,
@@ -7,8 +7,8 @@ import {
 	ManagedObject,
 	Observer,
 } from "../../core/index.js";
-import { err, ERROR } from "../../errors.js";
-import { UIComponent } from "../UIComponent.js";
+import { ERROR, err } from "../../errors.js";
+import type { UIComponent } from "../UIComponent.js";
 import { UIColumn, UIContainer } from "../containers/index.js";
 
 /** Default container used in the preset method */
@@ -54,7 +54,7 @@ export class UIList extends ViewComposite {
 		BookEnd?: ViewClass,
 	): typeof UIList {
 		// Define a view class to be used for each item
-		class Adapter extends UIList.ItemAdapter<any> {
+		class Adapter extends UIList.ItemController<any> {
 			protected override createView() {
 				return new ItemBody();
 			}
@@ -148,7 +148,7 @@ export class UIList extends ViewComposite {
 	 * The list of objects, from which each object is used to construct one view object
 	 * - This property should be set or bound to a {@link ManagedList} object or an array.
 	 * - When set to an array, the property setter _converts_ the array to a {@link ManagedList} automatically, and uses that instead.
-	 * - When updated, a {@link UIList.ItemAdapter} view instance is created for each list item and added to the {@link body} container.
+	 * - When updated, a {@link UIList.ItemController} view instance is created for each list item and added to the {@link body} container.
 	 */
 	declare items?: ManagedList;
 
@@ -279,7 +279,7 @@ export class UIList extends ViewComposite {
 
 	/** Update the container with (existing or new) components, one for each list item */
 	private _updateItems(
-		Adapter: ViewClass<UIList.ItemAdapter<ManagedObject>>,
+		Adapter: ViewClass<UIList.ItemController<ManagedObject>>,
 		BookEnd?: ViewClass,
 	) {
 		if (this.isUnlinked()) return;
@@ -382,7 +382,7 @@ export namespace UIList {
 	/**
 	 * A managed object class that contains a list (array) item which is itself not a managed object
 	 * @see {@link UIList}
-	 * @see {@link UIList.ItemAdapter}
+	 * @see {@link UIList.ItemController}
 	 */
 	export class ItemValueWrapper<TValue> extends ManagedObject {
 		/**
@@ -402,9 +402,9 @@ export namespace UIList {
 	 * A view that's created automatically for each list item by {@link UIList}
 	 * @see {@link UIList}
 	 */
-	export class ItemAdapter<TItem> extends ViewComposite {
+	export class ItemController<TItem> extends ViewComposite {
 		/**
-		 * Creates a new item adapter view object
+		 * Creates a new item controller view object
 		 * - This constructor is used by {@link UIList} and should not be used directly by an application.
 		 */
 		constructor(item: TItem | ItemValueWrapper<TItem>) {
@@ -429,13 +429,13 @@ export namespace UIList {
 	}
 
 	/**
-	 * Type alias for events delegated by {@link UIList.ItemAdapter}
-	 * - This type can be used for the argument of an event handler, for events that were originally emitted within a list item view, and have been delegated by {@link UIList.ItemAdapter}. The list item itself is available as `event.delegate.item`.
+	 * Type alias for events delegated by {@link UIList.ItemController}
+	 * - This type can be used for the argument of an event handler, for events that were originally emitted within a list item view, and have been delegated by {@link UIList.ItemController}. The list item itself is available as `event.delegate.item`.
 	 * @see {@link UIList}
-	 * @see {@link UIList.ItemAdapter}
+	 * @see {@link UIList.ItemController}
 	 */
 	export type ItemEvent<
 		TItem,
 		TSource extends ManagedObject = ManagedObject,
-	> = DelegatedEvent<ItemAdapter<TItem>, TSource>;
+	> = DelegatedEvent<ItemController<TItem>, TSource>;
 }

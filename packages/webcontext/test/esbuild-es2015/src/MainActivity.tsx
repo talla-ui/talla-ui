@@ -9,7 +9,7 @@ import { CountActivity } from "./CountActivity";
 import LightDarkToggle from "./LightDarkToggle";
 
 const ViewBody = (
-	<cell background={UIColor.PageBackground}>
+	<cell background={UIColor["@pageBackground"]}>
 		<row height={60}>
 			<spacer width={16} />
 			<h2>Sample</h2>
@@ -35,24 +35,16 @@ export class MainActivity extends PageViewActivity {
 
 	onSetLightMode() {
 		if (!app.theme) return;
-		app.theme.colors = {
-			...app.theme.colors,
-			PageBackground: UIColor.White,
-			Background: UIColor.White,
-			Primary: UIColor.Blue,
-			PrimaryBackground: UIColor.Blue,
-		};
+		app.theme = app.theme.clone();
+		app.theme.colors.set("background", UIColor["@white"]);
+		app.theme.colors.set("primary", UIColor["@blue"]);
 		app.renderer?.remount();
 	}
 	onSetDarkMode() {
 		if (!app.theme) return;
-		app.theme.colors = {
-			...app.theme.colors,
-			PageBackground: new UIColor("#111"),
-			Background: new UIColor("#111"),
-			Primary: UIColor.Green,
-			PrimaryBackground: UIColor.Green.brighten(-0.25),
-		};
+		app.theme = app.theme.clone();
+		app.theme.colors.set("background", "#111");
+		app.theme.colors.set("primary", UIColor["@green"]);
 		app.renderer?.remount();
 	}
 }

@@ -1,7 +1,13 @@
 import { app, RenderContext } from "desk-frame";
 
-const DATASET_PROPERTY = "desk__animating";
+const DATA_UID = "desk__animating";
+const DATA_REDUCE_MOTION = "desk__anim0";
 let _nextUid = 1;
+
+/** @internal Helper function to shortcut all animations on a specific element */
+export function reduceElementMotion(element: HTMLElement) {
+	element.dataset[DATA_REDUCE_MOTION] = "true";
+}
 
 /** @internal A DOM implementation of the `OutputTransform` interface */
 export class WebOutputTransform implements RenderContext.OutputTransform {
@@ -12,6 +18,9 @@ export class WebOutputTransform implements RenderContext.OutputTransform {
 		if (prev) {
 			this._origin = prev._origin;
 			this._reducedMotion = prev._reducedMotion;
+		}
+		if (elt.dataset[DATA_REDUCE_MOTION]) {
+			this._reducedMotion = true;
 		}
 
 		// prepare a promise for async callbacks
@@ -30,8 +39,7 @@ export class WebOutputTransform implements RenderContext.OutputTransform {
 		};
 		let removeHandlers = (result: boolean) => {
 			if (!elt) return false;
-			if (elt.dataset[DATASET_PROPERTY] === uid)
-				delete elt.dataset[DATASET_PROPERTY];
+			if (elt.dataset[DATA_UID] === uid) delete elt.dataset[DATA_UID];
 			elt.removeEventListener("transitionend", endHandler);
 			elt.removeEventListener("transitioncancel", cancelHandler);
 			return result;
@@ -46,11 +54,11 @@ export class WebOutputTransform implements RenderContext.OutputTransform {
 			// try to apply now
 			if (!applied) {
 				// if another transform is running, cancel now
-				if (elt.dataset[DATASET_PROPERTY]) return cancelHandler();
+				if (elt.dataset[DATA_UID]) return cancelHandler();
 				applied = this._apply(elt);
 				if (applied && this._waiting) {
 					// make sure another transform doesn't start
-					elt.dataset[DATASET_PROPERTY] = uid;
+					elt.dataset[DATA_UID] = uid;
 				}
 			}
 
@@ -249,7 +257,7 @@ export class WebOutputTransform implements RenderContext.OutputTransform {
 	private _apply(elt: HTMLElement) {
 		if (this._update && !this._update(elt)) return false;
 		elt.style.willChange = "transform,filter";
-		if (!this._duration) {
+		if (!this._duration || elt.dataset[DATA_REDUCE_MOTION]) {
 			elt.style.transition = "";
 		} else {
 			elt.style.transitionProperty = "transform,filter";

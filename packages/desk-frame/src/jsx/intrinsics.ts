@@ -2,36 +2,29 @@ import { Binding } from "../core/index.js";
 import {
 	UIAnimatedCell,
 	UIAnimationController,
-	UIBorderlessButton,
-	UIBorderlessTextField,
 	UIButton,
 	UICell,
-	UICenterRow,
 	UICloseLabel,
 	UIColumn,
 	UIComponent,
 	UIConditional,
-	UIExpandedLabel,
 	UIForm,
 	UIFormController,
-	UIHeading1,
-	UIHeading2,
-	UIHeading3,
+	UIHeading1Label,
+	UIHeading2Label,
+	UIHeading3Label,
 	UIIconButton,
 	UIImage,
 	UILabel,
-	UILinkButton,
 	UIList,
-	UIOppositeRow,
-	UIOutlineButton,
-	UIParagraph,
+	UIParagraphLabel,
+	UIPlainButton,
 	UIPrimaryButton,
 	UIRow,
 	UIScrollContainer,
 	UISelectionController,
 	UISeparator,
 	UISpacer,
-	UIStyleController,
 	UITextField,
 	UIToggle,
 	UIViewRenderer,
@@ -43,26 +36,20 @@ export const tags = {
 	cell: UICell,
 	form: UIForm,
 	row: UIRow,
-	centerrow: UICenterRow,
-	oppositerow: UIOppositeRow,
 	column: UIColumn,
 	scrollcontainer: UIScrollContainer,
 	animatedcell: UIAnimatedCell,
 	button: UIButton,
-	iconbutton: UIIconButton,
-	linkbutton: UILinkButton,
-	outlinebutton: UIOutlineButton,
-	borderlessbutton: UIBorderlessButton,
 	primarybutton: UIPrimaryButton,
+	plainbutton: UIPlainButton,
+	iconbutton: UIIconButton,
 	label: UILabel,
 	closelabel: UICloseLabel,
-	expandedlabel: UIExpandedLabel,
-	p: UIParagraph,
-	h1: UIHeading1,
-	h2: UIHeading2,
-	h3: UIHeading3,
+	p: UIParagraphLabel,
+	h1: UIHeading1Label,
+	h2: UIHeading2Label,
+	h3: UIHeading3Label,
 	textfield: UITextField,
-	borderlesstextfield: UIBorderlessTextField,
 	img: UIImage,
 	toggle: UIToggle,
 	separator: UISeparator,
@@ -71,7 +58,6 @@ export const tags = {
 	formcontext: UIFormController,
 	list: UIList,
 	selection: UISelectionController,
-	style: UIStyleController,
 	animation: UIAnimationController,
 	render: UIViewRenderer,
 };
@@ -84,8 +70,6 @@ export namespace JSX {
 			cell: UIComponent.ViewPreset<UICell>;
 			form: UIComponent.ViewPreset<UIForm>;
 			row: UIComponent.ViewPreset<UIRow>;
-			centerrow: UIComponent.ViewPreset<UICenterRow>;
-			oppositerow: UIComponent.ViewPreset<UIOppositeRow>;
 			column: UIComponent.ViewPreset<UIColumn>;
 			scrollcontainer: UIComponent.ViewPreset<UIScrollContainer>;
 			animatedcell: UIComponent.ViewPreset<UIAnimatedCell>;
@@ -93,19 +77,15 @@ export namespace JSX {
 			// controls
 			button: UIComponent.ViewPreset<UIButton>;
 			iconbutton: UIComponent.ViewPreset<UIIconButton>;
-			linkbutton: UIComponent.ViewPreset<UILinkButton>;
-			outlinebutton: UIComponent.ViewPreset<UIOutlineButton>;
-			borderlessbutton: UIComponent.ViewPreset<UIBorderlessButton>;
 			primarybutton: UIComponent.ViewPreset<UIPrimaryButton>;
+			plainbutton: UIComponent.ViewPreset<UIPlainButton>;
 			label: UIComponent.ViewPreset<UILabel>;
 			closelabel: UIComponent.ViewPreset<UICloseLabel>;
-			expandedlabel: UIComponent.ViewPreset<UIExpandedLabel>;
-			p: UIComponent.ViewPreset<UIParagraph>;
-			h1: UIComponent.ViewPreset<UIHeading1>;
-			h2: UIComponent.ViewPreset<UIHeading2>;
-			h3: UIComponent.ViewPreset<UIHeading3>;
+			p: UIComponent.ViewPreset<UIParagraphLabel>;
+			h1: UIComponent.ViewPreset<UIHeading1Label>;
+			h2: UIComponent.ViewPreset<UIHeading2Label>;
+			h3: UIComponent.ViewPreset<UIHeading3Label>;
 			textfield: UIComponent.ViewPreset<UITextField>;
-			borderlesstextfield: UIComponent.ViewPreset<UIBorderlessTextField>;
 			img: UIComponent.ViewPreset<UIImage>;
 			toggle: UIComponent.ViewPreset<UIToggle>;
 			separator: UIComponent.ViewPreset<UISeparator>;
@@ -116,7 +96,6 @@ export namespace JSX {
 			formcontext: { formContext?: Binding };
 			list: Parameters<(typeof UIList)["with"]>[0];
 			selection: {};
-			style: Parameters<(typeof UIStyleController)["with"]>[0];
 			animation: Parameters<(typeof UIAnimationController)["with"]>[0];
 			render: Parameters<(typeof UIViewRenderer)["with"]>[0];
 		}

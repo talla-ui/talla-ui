@@ -12,10 +12,9 @@ assets:
 
 ## Definition {#definition}
 
-Spacers are represented by the {@link UISpacer} class, which inherits functionality from the {@link UIControl} and {@link UIComponent} abstract classes.
+Spacers are represented by the {@link UISpacer} class, which inherits functionality from the {@link UIComponent} abstract class.
 
 - {@ref UISpacer}
-- {@ref UIControl}
 - {@ref UIComponent}
 
 ## Appearance {#appearance}
@@ -39,7 +38,7 @@ const view = UISpacer.withWidth(8);
 <spacer width={8} />
 ```
 
-When used without any preset dimensions, the {@link UIControl.shrinkwrap shrinkwrap} property is set to false, and the spacer takes up as much space as possible within the container, 'pushing' other components to the ends of the container's constrained area. This works both in containers that are laid out horizontally (rows) and vertically (columns, cells by default).
+When used without any preset dimensions, the spacer takes up as much space as possible within the container, 'pushing' other components to the ends of the container's constrained area. This works both in containers that are laid out horizontally (rows) and vertically (columns, cells by default).
 
 <!--{{iframesample js="./sample-noshrink.js" short }}-->
 
@@ -55,17 +54,16 @@ const view = UIRow.with(
 
 The following properties can be preset using `UISpacer.with({ ... })` or JSX `<spacer ...>`.
 
-| Property                                            | Type                                                                |
-| :-------------------------------------------------- | :------------------------------------------------------------------ |
-| {@link UIComponent.style style}                     | Instance of {@link UIStyle} or a theme style name starting with `@` |
-| {@link UIComponent.dimensions dimensions}           | An object with {@link UIStyle.Definition.Dimensions} properties     |
-| {@link UIComponent.position position}               | An object with {@link UIStyle.Definition.Position} properties       |
-| {@link UIComponent.hidden hidden}                   | Boolean, or binding                                                 |
-| {@link UIComponent.accessibleRole accessibleRole}   | String, or binding                                                  |
-| {@link UIComponent.accessibleLabel accessibleLabel} | String, or binding                                                  |
-| {@link UIControl.shrinkwrap shrinkwrap}             | Boolean, or binding                                                 |
-| width                                               | Number, or string with CSS units                                    |
-| height                                              | Number, or string with CSS units                                    |
+| Property                                            | Type                                     |
+| :-------------------------------------------------- | :--------------------------------------- |
+| {@link UIComponent.hidden hidden}                   | Boolean, or binding                      |
+| {@link UIComponent.position position}               | {@link UIComponent.Position}, or binding |
+| {@link UIComponent.accessibleRole accessibleRole}   | String, or binding                       |
+| {@link UIComponent.accessibleLabel accessibleLabel} | String, or binding                       |
+| {@link UISpacer.width width}                        | Number, or string with CSS units         |
+| {@link UISpacer.height height}                      | Number, or string with CSS units         |
+| {@link UISpacer.minWidth minWidth}                  | Number, or string with CSS units         |
+| {@link UISpacer.minHeight minHeight}                | Number, or string with CSS units         |
 
 Note that {@link UISpacer} also provides the following methods.
 

@@ -1,6 +1,5 @@
 import { View } from "../../app/index.js";
 import { UIComponent } from "../UIComponent.js";
-import { UIStyle } from "../UIStyle.js";
 import { UIContainer } from "./UIContainer.js";
 
 /**
@@ -16,7 +15,6 @@ export class UIColumn extends UIContainer {
 	/** Creates a new column container view object with the provided view content */
 	constructor(...content: View[]) {
 		super(...content);
-		this.style = UIStyle.Column;
 	}
 
 	/**
@@ -24,11 +22,17 @@ export class UIColumn extends UIContainer {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: UIComponent.ViewPreset<UIContainer, this, "width">,
+		preset: UIComponent.ViewPreset<UIContainer, this, "width" | "align">,
 	) {
 		super.applyViewPreset(preset);
 	}
 
 	/** Column width, in pixels or CSS length with unit */
-	width?: string | number;
+	width?: string | number = undefined;
+
+	/**
+	 * Alignment of content along the horizontal axis
+	 * - If this property is set, its value overrides {@link UIContainer.Layout layout.gravity}.
+	 */
+	align?: UIContainer.Layout["gravity"] = undefined;
 }

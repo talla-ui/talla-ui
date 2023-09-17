@@ -9,10 +9,10 @@ const ViewBody = (
 	<cell>
 		<NumberCount count={bound.number("count")} />
 		<spacer height={32} />
-		<centerrow>
-			<outlinebutton onClick="CountDown">Down</outlinebutton>
-			<outlinebutton onClick="CountUp">Up</outlinebutton>
-		</centerrow>
+		<row align="center">
+			<button onClick="CountDown">Down</button>
+			<button onClick="CountUp">Up</button>
+		</row>
 	</cell>
 );
 

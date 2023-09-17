@@ -4,10 +4,15 @@ import {
 	ManagedChangeEvent,
 	RenderContext,
 	UIButton,
+	UIButtonStyle,
 	UIComponentEvent,
 } from "desk-frame";
-import { BaseObserver } from "./BaseObserver.js";
+import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 import { setTextOrHtmlContent } from "./UILabelRenderer.js";
+import {
+	applyElementClassName,
+	applyElementStyle,
+} from "../../style/DOMStyle.js";
 
 interface HrefActivationPath extends ActivationPath {
 	getPathHref(path?: string): string;
@@ -21,10 +26,10 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 			.observePropertyAsync(
 				"label",
 				"icon",
-				"textStyle",
-				"decoration",
+				"chevron",
 				"disabled",
-				"shrinkwrap",
+				"width",
+				"buttonStyle",
 			);
 	}
 
@@ -37,12 +42,12 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 			switch (property) {
 				case "label":
 				case "icon":
+				case "chevron":
 					this.scheduleUpdate(this.element);
 					return;
-				case "textStyle":
-				case "decoration":
 				case "disabled":
-				case "shrinkwrap":
+				case "width":
+				case "buttonStyle":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -110,33 +115,50 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 
 	override updateStyle(element: HTMLButtonElement) {
 		let button = this.observed;
-		if (!button) return;
+		if (button) {
+			// set disabled state
+			element.disabled = !!button.disabled;
+			if (button.disabled) element.setAttribute("aria-disabled", "true");
+			else element.removeAttribute("aria-disabled");
 
-		// set disabled state
-		element.disabled = !!button.disabled;
-		if (button.disabled) element.setAttribute("aria-disabled", "true");
-		else element.removeAttribute("aria-disabled");
-
-		// set style objects
-		super.updateStyle(
-			element,
-			{
-				textStyle: button.textStyle,
-				decoration: button.decoration,
-			},
-			button.shrinkwrap,
-		);
+			// set CSS styles
+			applyElementClassName(
+				element,
+				getBaseStyleClass(button.buttonStyle) || UIButtonStyle,
+				undefined,
+				true,
+			);
+			applyElementStyle(
+				element,
+				[
+					button.buttonStyle,
+					button.width !== undefined
+						? { width: button.width, minWidth: 0 }
+						: undefined,
+				],
+				button.position,
+				undefined,
+				true,
+			);
+		}
 	}
 
 	updateContent(element: HTMLButtonElement) {
-		if (!this.observed) return;
-		setTextOrHtmlContent(element, {
-			text: this.observed.label,
-			icon: this.observed.icon,
-			iconSize: this.observed.iconSize,
-			iconAfter: this.observed.iconAfter,
-			iconColor: this.observed.iconColor,
-			iconMargin: this.observed.iconMargin,
-		});
+		let button = this.observed;
+		if (button) {
+			setTextOrHtmlContent(
+				element,
+				{
+					text: button.label,
+					icon: button.icon,
+					iconSize: button.iconSize,
+					iconColor: button.iconColor,
+					iconMargin: button.iconMargin,
+					chevron: button.chevron,
+					chevronSize: button.chevronSize,
+				},
+				true,
+			);
+		}
 	}
 }

@@ -3,10 +3,10 @@ import {
 	bound,
 	PageViewActivity,
 	StringConvertible,
+	UIButton,
 	UICell,
 	UIComponentEvent,
 	UILabel,
-	UIOutlineButton,
 	UITextField,
 	ViewComposite,
 } from "desk-frame";
@@ -16,7 +16,7 @@ import { describe, test, expect, useTestContext } from "../../dist/index.js";
 class CountActivity extends PageViewActivity {
 	static override ViewBody = UICell.with(
 		UITextField.with({ value: bound("count"), onInput: "SetCount" }),
-		UIOutlineButton.withLabel("+", "CountUp"),
+		UIButton.withLabel("+", "CountUp"),
 	);
 	override path = "count";
 	count = 0;

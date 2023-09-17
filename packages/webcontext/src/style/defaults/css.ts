@@ -1,5 +1,3 @@
-import { UIStyle } from "desk-frame";
-
 /** @internal UI component class name */
 export const CLASS_UI = "Desk__UI";
 /** @internal Page root element class name */
@@ -14,8 +12,20 @@ export const CLASS_SEPARATOR_LINE = "Desk__Sep--line";
 export const CLASS_SEPARATOR_LINE_VERT = "Desk__Sep--line-vert";
 /** @internal Container separator element class name: spacer */
 export const CLASS_SEPARATOR_SPACER = "Desk__Sep--space";
-/** @internal Toggle custom class name */
-export const CLASS_TOGGLE = "Desk__Toggle";
+/** @internal Additional text control class name */
+export const CLASS_TEXTCONTROL = "_Text";
+/** @internal Additional container class name */
+export const CLASS_CONTAINER = "_Container";
+/** @internal Additional column class name */
+export const CLASS_COLUMN = "_Column";
+/** @internal Additional row class name */
+export const CLASS_ROW = "_Row";
+/** @internal Additional cell class name */
+export const CLASS_CELL = "_Cell";
+/** @internal Additional scroll container class name */
+export const CLASS_SCROLL = "_Scroll";
+/** @internal Additional toggle wrapper class name */
+export const CLASS_TOGGLE_WRAPPER = "_Toggle";
 
 /** @internal Returns an object with necessary global CSS classes */
 export function makeBaseCSS() {
@@ -28,27 +38,76 @@ export function makeBaseCSS() {
 			border: "0 solid transparent",
 			cursor: "inherit",
 			boxSizing: "border-box",
+			whiteSpace: "pre",
 			textOverflow: "ellipsis",
 			textDecoration: "none",
+			fontWeight: "normal",
 		},
-		[`.${CLASS_UI}.${UIStyle.Container.getIds().join(".")}`]: {
+		[`.${CLASS_UI}.${CLASS_CONTAINER}`]: {
 			position: "relative",
 			display: "flex",
 			textAlign: "start||left",
+			alignItems: "stretch",
+			flexDirection: "column",
+			justifyContent: "flex-start",
+			alignSelf: "stretch",
+			flexGrow: "1",
+			flexShrink: "1",
 		},
-		[`.${CLASS_UI}.${UIStyle.Label.getIds().join(".")}`]: {
-			maxWidth: "100%",
-			cursor: "inherit",
+		[`.${CLASS_UI}.${CLASS_ROW}`]: {
+			flexDirection: "row",
+			alignItems: "center",
+			flexGrow: "0",
 		},
-		[`.${CLASS_UI}.${UIStyle.Label.getIds().join(".")}>icon`]: {
-			overflow: "visible",
+		[`.${CLASS_UI}.${CLASS_COLUMN}`]: {
+			alignItems: "center",
+			flexGrow: "0",
+		},
+		[`.${CLASS_UI}.${CLASS_CELL}`]: {
+			justifyContent: "center",
+			alignItems: "center",
+			overflow: "hidden",
+			top: "0",
+			minHeight: "0",
+			flexShrink: "0",
 		},
 
-		// fix vertical alignment of text within <a> button
+		// set sensible placeholder style
+		[`input.${CLASS_UI}::placeholder`]: {
+			color: "inherit",
+			opacity: "0.5",
+		},
+
+		// fix vertical alignment of text within a button
 		[`a.${CLASS_UI}`]: {
 			display: "flex",
 			flexDirection: "column",
 			justifyContent: "center",
+		},
+
+		// CSS for alignment of elements within buttons/labels
+		[`.${CLASS_UI} icon`]: {
+			display: "inline-flex",
+			alignItems: "center",
+			justifyContent: "center",
+			verticalAlign: "middle",
+		},
+		[`.${CLASS_UI} icon:not(:last-child)`]: {
+			position: "relative",
+			top: "-0.05rem",
+		},
+		[`.${CLASS_UI}>._chevron-wrapper`]: {
+			display: "inline-flex",
+			alignItems: "center",
+			position: "absolute",
+			insetInlineEnd: "1ex",
+			top: 0,
+			height: "100%",
+		},
+
+		// flip icons in RTL mode
+		[`[dir="rtl"] ._RTL-flip`]: {
+			transform: "scaleX(-1)",
 		},
 
 		// add style for root output elements
@@ -114,7 +173,7 @@ export function makeBaseCSS() {
 		},
 
 		// add custom toggle styles
-		[`.${CLASS_TOGGLE}>input`]: {
+		[`.${CLASS_UI}.${CLASS_TOGGLE_WRAPPER}>input`]: {
 			webkitAppearance: "none",
 			mozAppearance: "none",
 			appearance: "none",
@@ -122,39 +181,29 @@ export function makeBaseCSS() {
 			display: "inline-block",
 			verticalAlign: "middle",
 			top: "-0.1rem",
-			border: "1px solid transparent",
-			background: "transparent",
+			left: "2px",
+			outlineOffset: "0",
+			color: "inherit",
+			border: "1px solid currentcolor",
 			width: "1rem",
 			height: "1rem",
-			margin: "0",
 			padding: "0",
-			cursor: "pointer",
+			margin: "0",
+			cursor: "inherit",
 		},
-		[`.${CLASS_TOGGLE}>input:checked`]: {
-			background: "#333",
-		},
-		[`.${CLASS_TOGGLE}>input:checked::after`]: {
+		[`.${CLASS_UI}.${CLASS_TOGGLE_WRAPPER}>input:checked::after`]: {
 			content: "''",
 			boxSizing: "border-box",
 			display: "block",
 			position: "absolute",
-			top: "0",
+			top: "0.015rem",
 			left: ".25rem",
-			height: ".75rem",
-			width: ".375rem",
+			height: ".7rem",
+			width: ".4rem",
 			transform: "rotate(45deg)",
-			borderBottom: ".125rem solid #fff",
-			borderRight: ".125rem solid #fff",
-		},
-		[`.${CLASS_TOGGLE}>input[disabled]`]: {
-			opacity: ".5",
-			cursor: "default",
-		},
-		[`.${CLASS_TOGGLE}>input[disabled]+label`]: {
-			opacity: ".5",
-		},
-		[`.${CLASS_TOGGLE}>input:not([disabled])+label`]: {
-			cursor: "pointer",
+			borderWidth: "0 2.5px 2.5px 0",
+			borderStyle: "solid",
+			borderColor: "inherit",
 		},
 	};
 }

@@ -7,7 +7,6 @@ sort: -20
 applies_to:
   - UIComponent
   - UIContainer
-  - UIControl
   - JSX
 ---
 
@@ -17,7 +16,6 @@ applies_to:
 
 - {@ref UIComponent}
 - {@ref UIContainer}
-- {@ref UIControl}
 - {@ref JSX}
 
 ---
@@ -37,7 +35,6 @@ applies_to:
 
 <!--{{html-attr class="pagerefblock_list"}}-->
 
-- <!--{{pagerefblock path="content/en/docs/main/guide/components/UIControl/Using"}}-->
 - <!--{{pagerefblock path="content/en/docs/main/guide/components/UILabel/Using"}}-->
 - <!--{{pagerefblock path="content/en/docs/main/guide/components/UIButton/Using"}}-->
 - <!--{{pagerefblock path="content/en/docs/main/guide/components/UIImage/Using"}}-->

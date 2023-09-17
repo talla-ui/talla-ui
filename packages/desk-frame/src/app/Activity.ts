@@ -1,5 +1,6 @@
 import {
 	bound,
+	ConfigOptions,
 	ManagedObject,
 	Observer,
 	StringConvertible,
@@ -189,19 +190,20 @@ export class Activity extends ManagedObject {
 	/**
 	 * Creates a task queue that's started, paused, resumed, and stopped automatically based on the state of this activity
 	 * - Use this method to create an {@link AsyncTaskQueue} instance to run background tasks only while the activity is active, e.g. when the user is viewing a particular screen of the application.
-	 * @param configure A configuration function to set {@link AsyncTaskQueue.Options} if needed
+	 * @param config An {@link AsyncTaskQueue.Options} object or configuration function (optional)
 	 * @returns A new {@link AsyncTaskQueue} instance
 	 * @error This method throws an error if the activity has been unlinked.
 	 */
 	protected createActiveTaskQueue(
-		configure?: (options: AsyncTaskQueue.Options) => void,
+		config?: ConfigOptions.Arg<AsyncTaskQueue.Options>,
 	) {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 
 		// create queue with given options, pause if activity is not active
-		let options = new AsyncTaskQueue.Options();
-		configure && configure(options);
-		let queue = new AsyncTaskQueue(Symbol("ActiveTaskQueue"), options);
+		let queue = new AsyncTaskQueue(
+			Symbol("ActiveTaskQueue"),
+			AsyncTaskQueue.Options.init(config),
+		);
 		if (!this._activation.active) queue.pause();
 
 		// observe activity to pause/resume/stop automatically

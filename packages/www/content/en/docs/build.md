@@ -40,7 +40,7 @@ Creating an app using the Desk framework doesn't require a fixed directory struc
   - Services — If your app includes services, keep those in a `services` folder: one file for each service class.
   - Models — Any other classes that don't interact with your UI (which should be everything other than activities, views, and services) should go into a `models` folder.
   - Views — Reusable views (i.e. view _composites_ created using `ViewComposite` or by extending View directly) can go into a `views` folder, so that they can be imported by different activities and their specific views.
-  - Styles — If you don't want to keep styles together with views, e.g. if you want to maintain them separately or if your app includes a lot of reusable styles, you can export [`UIStyle`](./main/UIStyle.html), [`UIIcon`](./main/UIIcon.html), and custom [`UIColor`](./main/UIColor.html) objects from files within a `styles` folder.
+  - Styles — If you don't want to keep styles together with views, e.g. if you want to maintain them separately or if your app includes a lot of reusable styles, you can export style classes, icons, and custom colors from files within a `styles` folder.
 
 Your app may not need all of these files and folders. However, when adding new code to your application, you'll want to follow this structure to ensure that the final result is easy to understand for others who may need to work with your code in the future.
 

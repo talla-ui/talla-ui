@@ -4,11 +4,23 @@ import {
 	RenderContext,
 	StringConvertible,
 	UIColor,
+	UIIconResource,
 	UILabel,
-	UITheme,
+	UILabelStyle,
 } from "desk-frame";
-import { getCSSColor, getCSSLength } from "../../style/DOMStyle.js";
-import { BaseObserver } from "./BaseObserver.js";
+import {
+	applyElementClassName,
+	applyElementStyle,
+	getCSSColor,
+	getCSSLength,
+} from "../../style/DOMStyle.js";
+import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
+
+const CHEVRON_ICONS = {
+	up: "@chevronUp",
+	down: "@chevronDown",
+	out: "@chevronNext",
+};
 
 /** @internal */
 export class UILabelRenderer extends BaseObserver<UILabel> {
@@ -18,10 +30,11 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 			.observePropertyAsync(
 				"text",
 				"icon",
-				"textStyle",
-				"decoration",
-				"disabled",
-				"shrinkwrap",
+				"bold",
+				"italic",
+				"color",
+				"width",
+				"labelStyle",
 			);
 	}
 
@@ -36,10 +49,11 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 				case "icon":
 					this.scheduleUpdate(this.element);
 					return;
-				case "textStyle":
-				case "decoration":
-				case "disabled":
-				case "shrinkwrap":
+				case "bold":
+				case "italic":
+				case "color":
+				case "width":
+				case "labelStyle":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -62,21 +76,29 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 
 	override updateStyle(element: HTMLElement) {
 		let label = this.observed;
-		if (!label) return;
-
-		// set disabled state
-		if (label.disabled) element.setAttribute("aria-disabled", "true");
-		else element.removeAttribute("aria-disabled");
-
-		// set style objects
-		super.updateStyle(
-			element,
-			{
-				textStyle: label.textStyle,
-				decoration: label.decoration,
-			},
-			label.shrinkwrap,
-		);
+		if (label) {
+			applyElementClassName(
+				element,
+				getBaseStyleClass(label.labelStyle) || UILabelStyle,
+				undefined,
+				true,
+			);
+			applyElementStyle(
+				element,
+				[
+					label.labelStyle,
+					{
+						width: label.width,
+						bold: label.bold,
+						italic: label.italic,
+						textColor: label.color,
+					},
+				],
+				label.position,
+				undefined,
+				true,
+			);
+		}
 	}
 
 	updateContent(element: HTMLSpanElement) {
@@ -92,65 +114,86 @@ type TextContentProperties = {
 	iconSize?: string | number;
 	iconMargin?: string | number;
 	iconColor?: UIColor | string;
-	iconAfter?: boolean;
+	chevron?: "up" | "down" | "out";
+	chevronSize?: string | number;
 };
 
 /** @internal Helper function to set the (text or html) content for given element */
 export function setTextOrHtmlContent(
 	element: HTMLElement,
 	content: TextContentProperties,
+	balanceSpace?: boolean,
 ) {
 	let text = content.text == null ? "" : String(content.text);
-	if (!content.icon) {
+	if (!content.icon && !content.chevron) {
 		// just set text/html content
 		if (content.htmlFormat) element.innerHTML = text;
 		else element.textContent = text;
 		return;
 	}
+	element.innerHTML = "";
 
-	// use a wrapper to contain both the icon and the text
-	let contentWrapper = document.createElement("span");
-	contentWrapper.style.display = "flex";
-	contentWrapper.style.flexDirection = "row";
-	contentWrapper.style.alignItems = "center";
-	contentWrapper.style.justifyContent = "space-around";
-	contentWrapper.style.textOverflow = "inherit";
-	try {
-		// add icon element
-		let icon = getIconElt(content);
-		icon.style.order = content.iconAfter ? "2" : "0";
-		contentWrapper.appendChild(icon);
-	} catch (err: any) {
-		let iconSource = String(content.icon);
-		if (!_failedIconNotified[iconSource]) {
-			_failedIconNotified[iconSource] = true;
-			app.log.error(err);
+	// add icon element
+	if (content.icon) {
+		try {
+			let icon = getIconElt(content);
+			element.appendChild(icon);
+		} catch (err: any) {
+			let iconSource = String(content.icon);
+			if (!_failedIconNotified[iconSource]) {
+				_failedIconNotified[iconSource] = true;
+				app.log.error(err);
+			}
 		}
 	}
-	if (text) {
-		// add margin element
-		let margin = getCSSLength(content.iconMargin, ".5rem");
-		let marginWrapper = document.createElement("span");
-		marginWrapper.style.flex = "0 0 " + margin;
-		marginWrapper.style.width = margin;
-		marginWrapper.style.order = "1";
-		contentWrapper.appendChild(marginWrapper);
 
-		// add text element
+	// add margin element
+	if (content.icon && content.text) {
+		if (content.iconMargin) {
+			let margin = getCSSLength(content.iconMargin, 0);
+			let marginWrapper = document.createElement("span");
+			marginWrapper.style.width = margin;
+			marginWrapper.style.display = "inline-block";
+			element.appendChild(marginWrapper);
+		} else {
+			element.appendChild(document.createTextNode("  "));
+		}
+	}
+
+	// add text element
+	if (text) {
 		let textWrapper = document.createElement("span");
-		textWrapper.style.flex = "1 0 0";
-		textWrapper.style.order = content.iconAfter ? "0" : "2";
-		textWrapper.style.textOverflow = "inherit";
-		textWrapper.style.overflow = "hidden";
 		if (content.htmlFormat) textWrapper.innerHTML = text;
 		else textWrapper.textContent = text;
-		contentWrapper.appendChild(textWrapper);
+		element.appendChild(textWrapper);
 
-		// align icon to the left (ltr) if there's text next to it
-		contentWrapper.style.justifyContent = "start";
+		// add space after text if needed (for buttons)
+		if (balanceSpace) {
+			if (content.icon) {
+				element.appendChild(document.createTextNode(" "));
+			}
+			if (content.chevron) {
+				element.insertBefore(document.createTextNode(" "), textWrapper);
+			}
+		}
 	}
-	element.innerHTML = "";
-	element.appendChild(contentWrapper);
+
+	// add chevron, if any
+	if (content.chevron) {
+		let width = getCSSLength(content.chevronSize, "1rem");
+		let chevronSpacer = document.createElement("span");
+		chevronSpacer.style.display = "inline-block";
+		chevronSpacer.style.width = width;
+		element.appendChild(chevronSpacer);
+		let chevronWrapper = document.createElement("span");
+		chevronWrapper.className = "_chevron-wrapper";
+		let chevronElement = getIconElt({
+			icon: CHEVRON_ICONS[content.chevron],
+			iconSize: content.chevronSize,
+		});
+		chevronWrapper.appendChild(chevronElement);
+		element.appendChild(chevronWrapper);
+	}
 }
 let _failedIconNotified: { [name: string]: true } = {};
 
@@ -158,9 +201,17 @@ const _memoizedIcons: { [memo: string]: HTMLElement } = {};
 
 /** Memoized function to create an icon element for given icon name/content, size, and color */
 function getIconElt(content: TextContentProperties) {
-	let size = getCSSLength(content.iconSize, "auto");
+	let icon = content.icon;
+	if (typeof icon === "string" && icon[0] === "@") {
+		icon = app.theme?.icons.get(icon.slice(1));
+	}
+	let mirrorRTL = false;
+	if (icon instanceof UIIconResource) {
+		if (icon.isMirrorRTL()) mirrorRTL = true;
+	}
+	let size = getCSSLength(content.iconSize, "1.5rem");
 	let color = content.iconColor ? getCSSColor(content.iconColor) : "";
-	let iconSource = String(content.icon);
+	let iconSource = String(icon || "");
 	let memo = iconSource + ":" + size + ":" + color;
 	if (_memoizedIcons[memo]) {
 		return _memoizedIcons[memo]!.cloneNode(true) as HTMLElement;
@@ -168,33 +219,27 @@ function getIconElt(content: TextContentProperties) {
 
 	// not memoized yet, get HTML content and create element
 	let temp = document.createElement("div");
-	let iconContent = String(content.icon);
-	if (iconContent[0] === "@")
-		iconContent = String(UITheme.getIcon(iconContent.slice(1)));
-	temp.innerHTML = iconContent.trim();
-	let result: HTMLElement;
-	let icon = temp.firstChild;
-	if (!icon) icon = document.createTextNode("");
-	if (String(icon.nodeName).toLowerCase() === "svg") {
-		result = icon as HTMLElement;
-		if (result.hasAttribute("stroke")) {
-			result.style.stroke = color || "currentColor";
+	temp.innerHTML = iconSource.trim();
+	let iconElement = temp.firstChild;
+	let iconWrapper = document.createElement("icon");
+	if (color) iconWrapper.style.color = color;
+	if (mirrorRTL) iconWrapper.className = "_RTL-flip";
+	if (!iconElement) iconElement = document.createTextNode("");
+	if (String(iconElement.nodeName).toLowerCase() === "svg") {
+		let elt = iconElement as HTMLElement;
+		if (elt.hasAttribute("stroke")) {
+			elt.style.stroke = "currentColor";
 		} else {
-			result.style.fill = color || "currentColor";
+			elt.style.fill = "currentColor";
 		}
-		result.style.display = "inline-block";
-		size = content.iconSize ? size : "1rem";
-		result.style.height = "auto";
+		elt.style.display = "inline-block";
+		elt.style.height = "100%";
 	} else {
-		let iconWrapper = document.createElement("icon");
-		iconWrapper.style.display = "inline-block";
-		iconWrapper.appendChild(icon);
-		if (content.iconSize) iconWrapper.style.fontSize = size;
-		if (color) iconWrapper.style.color = color;
-		result = iconWrapper;
+		iconWrapper.style.fontSize = size;
 	}
-	result.style.flex = "0 0 " + size;
-	result.style.width = size;
-	_memoizedIcons[memo] = result.cloneNode(true) as HTMLElement;
-	return result;
+	iconWrapper.style.width = size;
+	iconWrapper.style.height = size;
+	iconWrapper.appendChild(iconElement);
+	_memoizedIcons[memo] = iconWrapper.cloneNode(true) as HTMLElement;
+	return iconWrapper;
 }

@@ -2,9 +2,11 @@ import {
 	ManagedChangeEvent,
 	UIAnimatedCell,
 	UICell,
+	UICellStyle,
 	UIComponentEvent,
 } from "desk-frame";
 import { getCSSLength } from "../../style/DOMStyle.js";
+import { getBaseStyleClass } from "./BaseObserver.js";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
 /** @internal */
@@ -12,17 +14,14 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 	override observe(observed: UICell) {
 		return super.observe(observed).observePropertyAsync(
 			// note some properties are handled by container (e.g. padding)
-			"decoration",
+			"textDirection",
 			"margin",
+			"borderRadius",
 			"background",
 			"textColor",
-			"textDirection",
-			"borderColor",
-			"borderStyle",
-			"borderThickness",
-			"borderRadius",
-			"dropShadow",
 			"opacity",
+			"dropShadow",
+			"cellStyle",
 		);
 	}
 
@@ -33,17 +32,14 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
-				case "decoration":
+				case "textDirection":
 				case "margin":
+				case "borderRadius":
 				case "background":
 				case "textColor":
-				case "textDirection":
-				case "borderColor":
-				case "borderStyle":
-				case "borderThickness":
-				case "borderRadius":
-				case "dropShadow":
 				case "opacity":
+				case "dropShadow":
+				case "cellStyle":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -66,19 +62,24 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 	override updateStyle(element: HTMLElement) {
 		let cell = this.observed;
 		if (!cell) return;
+		super.updateStyle(
+			element,
+			getBaseStyleClass(cell.cellStyle) || UICellStyle,
+			[
+				cell.cellStyle,
+				{
+					padding: cell.padding,
+					borderRadius: cell.borderRadius,
+					background: cell.background,
+					textColor: cell.textColor,
+					opacity: cell.opacity,
+					dropShadow: cell.dropShadow,
+				},
+			],
+		);
 
-		let decoration = { ...cell.decoration };
-		if (cell.background != null) decoration.background = cell.background;
-		if (cell.textColor != null) decoration.textColor = cell.textColor;
-		if (cell.borderColor != null) decoration.borderColor = cell.borderColor;
-		if (cell.borderStyle != null) decoration.borderStyle = cell.borderStyle;
-		if (cell.borderThickness != null)
-			decoration.borderThickness = cell.borderThickness;
-		if (cell.borderRadius != null) decoration.borderRadius = cell.borderRadius;
-		if (cell.dropShadow != null) decoration.dropShadow = cell.dropShadow;
-		if (cell.opacity != null) decoration.opacity = cell.opacity;
-		super.updateStyle(element, { decoration });
-		element.style.direction = cell.textDirection || "";
+		// set misc. styles
+		element.dir = cell.textDirection || "";
 		if (cell.margin != null) {
 			element.style.margin = getCSSLength(cell.margin);
 			if (typeof cell.margin === "object") {

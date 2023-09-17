@@ -1,10 +1,7 @@
-import { RenderContext, UIStyle } from "desk-frame";
+import { RenderContext } from "desk-frame";
 
 /** Running ID for generated elements */
 let _uid = 1;
-
-/** Empty object, used to check for empty style properties in output elements */
-const _emptyStyleProperty = {};
 
 /** Last focused element, if any */
 let lastFocusedElement: TestOutputElement | undefined;
@@ -28,8 +25,11 @@ export class TestOutputElement {
 	/** A reference back to the rendered output object */
 	output?: RenderContext.Output & { element: TestOutputElement };
 
-	/** True if input has been disabled for a control element (set from {@link UIControl.disabled}) */
+	/** True if input has been disabled for a control element */
 	disabled?: boolean;
+
+	/** True if text input has been marked as readonly */
+	readOnly?: boolean;
 
 	/** True if a button or cell element is selected */
 	selected?: boolean;
@@ -45,6 +45,9 @@ export class TestOutputElement {
 
 	/** A string representation of the icon as rendered for labels and buttons */
 	icon?: string;
+
+	/** The chevron direction (string) for button elements */
+	chevron?: string;
 
 	/** The URL for an image element */
 	imageUrl?: string;
@@ -66,20 +69,18 @@ export class TestOutputElement {
 		return this === lastFocusedElement;
 	}
 
-	/** The element's style name, from {@link UIStyle.name} when rendered */
-	styleName = "";
+	/**
+	 * A combination of all style overrides applied to this element
+	 * - Styles are copied as specified in objects such as {@link UIButton.buttonStyle}, {@link UICell.cellStyle}, etc.
+	 * - While styles are usually applied to the rendered element in a platform-dependent way, the test renderer simply stores all properties in this object, which therefore has no specific type.
+	 */
+	styles: Record<string, any> = {};
 
-	/** A list of style IDs, from {@link UIStyle.getIds()} when rendered */
-	styleIds: ReadonlyArray<string> = [];
-
-	/** All properties from styles that were applied when the UI component was rendered */
-	styles: UIStyle.Definition = {
-		dimensions: _emptyStyleProperty,
-		position: _emptyStyleProperty,
-		textStyle: _emptyStyleProperty,
-		decoration: _emptyStyleProperty,
-		containerLayout: _emptyStyleProperty,
-	};
+	/**
+	 * A base style class that is applied to this element
+	 * - While style classes are usually applied to the rendered element in a platform-dependent way, the test renderer simply stores the applied class in this property unchecked, typed as `any` (or undefined).
+	 */
+	styleClass?: any;
 
 	/** A list of all nested content elements, for containers */
 	content: TestOutputElement[] = [];
@@ -88,10 +89,12 @@ export class TestOutputElement {
 	 * Simulates a user click or tap event
 	 * - This method sends `mousedown`, `mouseup`, and `click` events immediately after each other.
 	 * - This method also takes care of switching `toggle` checked states, and sets focus on a (parent) focusable element.
-	 * - Nothing happens if the element is hidden or currently not part of rendered output (see {@link isOutput()}).
+	 * - An error is thrown if the element is hidden or currently not part of rendered output (see {@link isOutput()}).
 	 */
 	click() {
-		if (!this.isOutput()) return this;
+		if (!this.isOutput()) {
+			throw Error("Clicked element is not rendered");
+		}
 
 		this.sendPlatformEvent("mousedown");
 		if (this.type === "toggle" && !this.disabled) {
@@ -187,38 +190,13 @@ export class TestOutputElement {
 	}
 
 	/**
-	 * Applies given style set
-	 * - This method copies all values from the provided object(s). Each style property overwrites an existing property in `styles`, if any.
-	 * - This method is used by the UI component renderer, and typically isn't called as part of a test case.
-	 */
-	applyStyle(styles: Partial<UIStyle.Definition>) {
-		function copyObject(a: any) {
-			let result: any = {};
-			for (let key in a) {
-				if (a[key] != null) {
-					result[key] = JSON.parse(JSON.stringify(a[key]));
-				}
-			}
-			return result;
-		}
-		if (styles.position) this.styles.position = copyObject(styles.position);
-		if (styles.dimensions)
-			this.styles.dimensions = copyObject(styles.dimensions);
-		if (styles.textStyle) this.styles.textStyle = copyObject(styles.textStyle);
-		if (styles.decoration)
-			this.styles.decoration = copyObject(styles.decoration);
-		if (styles.containerLayout)
-			this.styles.containerLayout = copyObject(styles.containerLayout);
-		return this;
-	}
-
-	/**
-	 * Checks if given styles match with the current `styles` objects
+	 * Checks if given styles match with the current styles object
 	 * - This method is used by {@link TestRenderer.expectOutputAsync()}.
+	 * - While styles are usually applied to the rendered element in a platform-dependent way, the test renderer simply stores all properties in the {@link styles} object, which therefore has no specific type.
 	 * @param styles A set of style properties on a single object
 	 * @returns True, if _all_ of the properties in the provided object match with current styles.
 	 */
-	matchStyle(styles: Partial<UIStyle.Definition>) {
+	matchStyleValues(styles: Record<string, any>) {
 		function matchAll(a: any, b: any) {
 			if (a == b) return true;
 			if (
@@ -269,36 +247,21 @@ export class TestOutputElement {
 
 	/** Returns a simplified object representation of this element and its contained elements */
 	toJSON(): any {
-		let result: any = {
-			type: this.type,
-			style: this.styleName,
-		};
+		let result: any = { type: this.type };
 		if (this.text) result.text = this.text;
 		if (this.icon) result.icon = this.icon;
+		if (this.chevron) result.chevron = this.chevron;
 		if (this.imageUrl) result.imageUrl = this.imageUrl;
 		if (this.disabled) result.disabled = true;
+		if (this.readOnly) result.readOnly = true;
 		if (this.selected) result.selected = true;
 		if (this.checked) result.checked = true;
 		if (this.type === "textfield") result.value = this.value;
 		if (this.accessibleRole) result.accessibleRole = this.accessibleRole;
 		if (this.accessibleLabel) result.accessibleLabel = this.accessibleLabel;
-		if (this.styles.dimensions !== _emptyStyleProperty) {
-			result.dimensions = this.styles.dimensions;
-		}
-		if (this.styles.position !== _emptyStyleProperty) {
-			result.position = this.styles.position;
-		}
-		if (this.styles.textStyle !== _emptyStyleProperty) {
-			result.textStyle = this.styles.textStyle;
-		}
-		if (this.styles.decoration !== _emptyStyleProperty) {
-			result.decoration = this.styles.decoration;
-		}
-		if (this.styles.containerLayout !== _emptyStyleProperty) {
-			result.containerLayout = this.styles.containerLayout;
-		}
+		if (Object.keys(this.styles).length) result.styles = this.styles;
 		if (this.content.length) {
-			result.content = this.content.map((elt) => elt.toJSON());
+			result.content = this.content.map((c) => c?.toJSON());
 		}
 		return result;
 	}
@@ -308,10 +271,12 @@ export namespace TestOutputElement {
 	/** A string representation of common UI element types, used for {@link TestOutputElement.type} */
 	export type TypeString =
 		| "root"
+		| "placeholder"
 		| "container"
 		| "cell"
 		| "row"
 		| "column"
+		| "form"
 		| "label"
 		| "button"
 		| "image"

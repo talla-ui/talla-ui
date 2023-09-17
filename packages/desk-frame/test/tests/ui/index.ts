@@ -12,7 +12,6 @@ import "./toggle.js";
 import "./form.js";
 import "./list.js";
 import "./conditional.js";
-import "./style.js";
 import "./focus.js";
 import "./viewrender.js";
 import "./jsx.js";

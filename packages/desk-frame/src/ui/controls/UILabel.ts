@@ -1,9 +1,8 @@
 import { Binding, strf, StringConvertible } from "../../core/index.js";
 import type { UIColor } from "../UIColor.js";
 import { UIComponent } from "../UIComponent.js";
-import { UIIcon } from "../UIIcon.js";
-import { UIStyle } from "../UIStyle.js";
-import { UIControl } from "./UIControl.js";
+import { UIIconResource } from "../UIIconResource.js";
+import { UITheme } from "../UITheme.js";
 
 /**
  * A view class that represents a label control
@@ -14,24 +13,20 @@ import { UIControl } from "./UIControl.js";
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
-export class UILabel extends UIControl {
+export class UILabel extends UIComponent {
 	/**
 	 * Creates a preset label class with the specified text and style
 	 * - The specified text is localized using {@link strf} before being set as {@link UILabel.text}.
 	 * @param text The label text
-	 * @param style Style definitions to be applied, as an instance of {@link UIStyle} or the name of a dynamic theme style prefixed with the `@` character, **or** an object with {@link UIStyle.Definition.TextStyle} properties
+	 * @param labelStyle The label style (optional)
 	 * @returns A class that can be used to create instances of this label class with the provided text and style
 	 */
 	static withText(
 		text?: StringConvertible | Binding,
-		style?: UIStyle.Definition.TextStyle | UIStyle | `@${string}`,
+		labelStyle?: UITheme.StyleConfiguration<UILabelStyle>,
 	) {
 		if (typeof text === "string") text = strf(text);
-		return style instanceof UIStyle || typeof style === "string"
-			? this.with({ text, style })
-			: style
-			? this.with({ text, textStyle: style })
-			: this.with({ text });
+		return this.with({ text, labelStyle });
 	}
 
 	/**
@@ -42,7 +37,7 @@ export class UILabel extends UIControl {
 	 * @returns A class that can be used to create instances of this label class with the specified icon
 	 */
 	static withIcon(
-		icon?: UIIcon | `@${string}` | Binding,
+		icon?: UIIconResource | `@${string}` | Binding,
 		size?: string | number,
 		color?: UIColor | string,
 	) {
@@ -52,13 +47,12 @@ export class UILabel extends UIControl {
 	/** Creates a new label view object with the specified text */
 	constructor(text?: StringConvertible) {
 		super();
-		this.style = UIStyle.Label;
-		if (text !== undefined) this.text = text;
+		this.text = text;
 	}
 
 	override applyViewPreset(
 		preset: UIComponent.ViewPreset<
-			UIControl,
+			UIComponent,
 			this,
 			| "headingLevel"
 			| "htmlFormat"
@@ -67,7 +61,11 @@ export class UILabel extends UIControl {
 			| "iconSize"
 			| "iconMargin"
 			| "iconColor"
-			| "iconAfter"
+			| "width"
+			| "bold"
+			| "italic"
+			| "color"
+			| "labelStyle"
 		> & {
 			/** True if this label may receive input focus */
 			allowFocus?: boolean;
@@ -84,19 +82,16 @@ export class UILabel extends UIControl {
 	text?: StringConvertible;
 
 	/** The label icon to be displayed */
-	icon?: UIIcon | `@${string}`;
+	icon?: UIIconResource | `@${string}` = undefined;
 
 	/** Icon size (in pixels or string with unit) */
 	iconSize?: string | number;
 
-	/** Margin between the icon and label text (in pixels or string with unit) */
+	/** Space between the icon and label text (in pixels or string with unit) */
 	iconMargin?: string | number;
 
 	/** Icon color (`UIColor` or string) */
 	iconColor?: UIColor | string;
-
-	/** True if the icon should appear _after_ the text instead of before */
-	iconAfter?: boolean;
 
 	/**
 	 * Text heading level
@@ -120,92 +115,197 @@ export class UILabel extends UIControl {
 	 * - If this property is set to true, allowFocus is assumed to be true as well and no longer checked.
 	 */
 	allowKeyboardFocus?: boolean;
+
+	/** Target width of the label, in pixels or CSS length with unit */
+	width?: string | number = undefined;
+
+	/**
+	 * True if this label should be displayed using bold text
+	 * - If set, this property overrides the `bold` property of the current label style.
+	 */
+	bold?: boolean = undefined;
+
+	/**
+	 * True if this label should be displayed using bold text
+	 * - If set, this property overrides the `italic` property of the current label style.
+	 */
+	italic?: boolean = undefined;
+
+	/**
+	 * The text color to be applied to this label
+	 * - If set, this property overrides the `textColor` property of the current label style.
+	 */
+	color?: UIColor | string = undefined;
+
+	/** The style to be applied to this label */
+	labelStyle: UITheme.StyleConfiguration<UILabelStyle> = undefined;
+}
+
+/**
+ * A style class that includes default style properties for instances of {@link UILabel}
+ * - Default styles are taken from {@link UITheme}.
+ * - Extend or override this class to implement custom label styles, see {@link UITheme.BaseStyle} for details.
+ */
+export class UILabelStyle extends UITheme.BaseStyle<
+	"Label",
+	UIComponent.DimensionsStyleType &
+		UIComponent.DecorationStyleType &
+		UIComponent.TextStyleType
+> {
+	constructor() {
+		super("Label", UILabelStyle);
+	}
 }
 
 /**
  * A view class that represents a label control with heading level 1
  * - Refer to {@link UILabel} for information on label components.
- * - This class uses the {@link UIStyle.Heading1} style, and sets {@link UILabel.headingLevel} to 1.
+ * - This class uses the {@link UIHeading1LabelStyle} style, and sets {@link UILabel.headingLevel} to 1.
  *
  * **JSX tag:** `<h1>`
  */
-export class UIHeading1 extends UILabel {
+export class UIHeading1Label extends UILabel {
 	constructor(text?: StringConvertible) {
 		super(text);
-		this.style = UIStyle.Heading1;
 		this.headingLevel = 1;
+		this.labelStyle = UIHeading1LabelStyle;
+	}
+}
+
+/**
+ * A style class that includes default style properties for instances of {@link UIHeading1Label}
+ * - Default styles are taken from {@link UITheme}.
+ * - Extend or override this class to implement custom heading styles, see {@link UITheme.BaseStyle} for details.
+ */
+export class UIHeading1LabelStyle extends UITheme.BaseStyle<
+	"Heading1Label",
+	UIComponent.DimensionsStyleType &
+		UIComponent.DecorationStyleType &
+		UIComponent.TextStyleType
+> {
+	constructor() {
+		super("Heading1Label", UIHeading1LabelStyle);
 	}
 }
 
 /**
  * A view class that represents a label control with heading level 2
  * - Refer to {@link UILabel} for information on label components.
- * - This class uses the {@link UIStyle.Heading2} style, and sets {@link UILabel.headingLevel} to 2.
+ * - This class uses the {@link UIHeading2LabelStyle} style, and sets {@link UILabel.headingLevel} to 2.
  *
  * **JSX tag:** `<h2>`
  */
-export class UIHeading2 extends UILabel {
+export class UIHeading2Label extends UILabel {
 	constructor(text?: StringConvertible) {
 		super(text);
-		this.style = UIStyle.Heading2;
 		this.headingLevel = 2;
+		this.labelStyle = UIHeading1LabelStyle;
+	}
+}
+
+/**
+ * A style class that includes default style properties for instances of {@link UIHeading2Label}
+ * - Default styles are taken from {@link UITheme}.
+ * - Extend or override this class to implement custom heading styles, see {@link UITheme.BaseStyle} for details.
+ */
+export class UIHeading2LabelStyle extends UITheme.BaseStyle<
+	"Heading2Label",
+	UIComponent.DimensionsStyleType &
+		UIComponent.DecorationStyleType &
+		UIComponent.TextStyleType
+> {
+	constructor() {
+		super("Heading2Label", UIHeading2LabelStyle);
 	}
 }
 
 /**
  * A view class that represents a label control with heading level 3
  * - Refer to {@link UILabel} for information on label components.
- * - This class uses the {@link UIStyle.Heading3} style, and sets {@link UILabel.headingLevel} to 3.
+ * - This class uses the {@link UIHeading3LabelStyle} style, and sets {@link UILabel.headingLevel} to 3.
  *
  * **JSX tag:** `<h3>`
  */
-export class UIHeading3 extends UILabel {
+export class UIHeading3Label extends UILabel {
 	constructor(text?: StringConvertible) {
 		super(text);
-		this.style = UIStyle.Heading3;
 		this.headingLevel = 3;
+		this.labelStyle = UIHeading1LabelStyle;
+	}
+}
+
+/**
+ * A style class that includes default style properties for instances of {@link UIHeading3Label}
+ * - Default styles are taken from {@link UITheme}.
+ * - Extend or override this class to implement custom heading styles, see {@link UITheme.BaseStyle} for details.
+ */
+export class UIHeading3LabelStyle extends UITheme.BaseStyle<
+	"Heading3Label",
+	UIComponent.DimensionsStyleType &
+		UIComponent.DecorationStyleType &
+		UIComponent.TextStyleType
+> {
+	constructor() {
+		super("Heading3Label", UIHeading3LabelStyle);
 	}
 }
 
 /**
  * A view class that represents a paragraph label control
  * - Refer to {@link UILabel} for information on label components.
- * - This class uses the {@link UIStyle.Paragraph} style.
- * - Text in paragraph labels is wrapped using the `pre-wrap` style.
+ * - This class uses the {@link UIParagraphLabelStyle} style, which applies the `pre-wrap` style by default.
  *
  * **JSX tag:** `<p>`
  */
-export class UIParagraph extends UILabel {
+export class UIParagraphLabel extends UILabel {
 	constructor(text?: StringConvertible) {
 		super(text);
-		this.style = UIStyle.Paragraph;
+		this.labelStyle = UIParagraphLabelStyle;
+	}
+}
+
+/**
+ * A style class that includes default style properties for instances of {@link UIParagraphLabel}
+ * - Default styles are taken from {@link UITheme}.
+ * - Extend or override this class to implement custom paragraph label styles, see {@link UITheme.BaseStyle} for details.
+ */
+export class UIParagraphLabelStyle extends UITheme.BaseStyle<
+	"ParagraphLabel",
+	UIComponent.DimensionsStyleType &
+		UIComponent.DecorationStyleType &
+		UIComponent.TextStyleType
+> {
+	constructor() {
+		super("ParagraphLabel", UIParagraphLabelStyle);
 	}
 }
 
 /**
  * A view class that represents a label control with reduced vertical padding
  * - Refer to {@link UILabel} for information on label components.
- * - This class uses the {@link UIStyle.CloseLabel} style.
+ * - This class uses the {@link UICloseLabelStyle} style, which removes all vertical padding by default.
  *
  * **JSX tag:** `<closelabel>`
  */
 export class UICloseLabel extends UILabel {
 	constructor(text?: StringConvertible) {
 		super(text);
-		this.style = UIStyle.CloseLabel;
+		this.labelStyle = UICloseLabelStyle;
 	}
 }
 
 /**
- * A view class that represents a label control that's expanded as much as possible
- * - Refer to {@link UILabel} for information on label components.
- * - The label is expanded along the primary axis of the containing component; see {@link UIControl.shrinkwrap}.
- *
- * **JSX tag:** `<expandedlabel>`
+ * A style class that includes default style properties for instances of {@link UICloseLabel}
+ * - Default styles are taken from {@link UITheme}.
+ * - Extend or override this class to implement custom close label styles, see {@link UITheme.BaseStyle} for details.
  */
-export class UIExpandedLabel extends UILabel {
-	constructor(text?: StringConvertible) {
-		super(text);
+export class UICloseLabelStyle extends UITheme.BaseStyle<
+	"CloseLabel",
+	UIComponent.DimensionsStyleType &
+		UIComponent.DecorationStyleType &
+		UIComponent.TextStyleType
+> {
+	constructor() {
+		super("CloseLabel", UICloseLabelStyle);
 	}
-	override shrinkwrap = false;
 }

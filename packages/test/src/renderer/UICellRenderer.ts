@@ -2,9 +2,11 @@ import {
 	ManagedChangeEvent,
 	RenderContext,
 	UICell,
+	UICellStyle,
 	UIComponentEvent,
 } from "desk-frame";
 import { TestOutputElement } from "../app/TestOutputElement.js";
+import { getBaseStyleClass } from "./TestBaseObserver.js";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
 /** @internal */
@@ -12,17 +14,14 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 	override observe(observed: UICell) {
 		return super.observe(observed).observePropertyAsync(
 			// note some properties are handled by container (e.g. padding)
-			"decoration",
+			"textDirection",
 			"margin",
+			"borderRadius",
 			"background",
 			"textColor",
-			"textDirection",
-			"borderColor",
-			"borderStyle",
-			"borderThickness",
-			"borderRadius",
-			"dropShadow",
 			"opacity",
+			"dropShadow",
+			"cellStyle",
 		);
 	}
 
@@ -33,17 +32,14 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
-				case "decoration":
+				case "textDirection":
 				case "margin":
+				case "borderRadius":
 				case "background":
 				case "textColor":
-				case "textDirection":
-				case "borderColor":
-				case "borderStyle":
-				case "borderThickness":
-				case "borderRadius":
-				case "dropShadow":
 				case "opacity":
+				case "dropShadow":
+				case "cellStyle":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -68,6 +64,8 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 		let elt = new TestOutputElement("cell");
 		let output = new RenderContext.Output(this.observed, elt);
 		elt.output = output;
+		if (this.observed.allowFocus || this.observed.allowKeyboardFocus)
+			elt.focusable = true;
 		return output;
 	}
 
@@ -76,16 +74,20 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 		if (!cell) return;
 
 		// NOTE: margin, textDirection aren't applied in test renderer
-		let decoration = { ...cell.decoration };
-		if (cell.background != null) decoration.background = cell.background;
-		if (cell.textColor != null) decoration.textColor = cell.textColor;
-		if (cell.borderColor != null) decoration.borderColor = cell.borderColor;
-		if (cell.borderStyle != null) decoration.borderStyle = cell.borderStyle;
-		if (cell.borderThickness != null)
-			decoration.borderThickness = cell.borderThickness;
-		if (cell.borderRadius != null) decoration.borderRadius = cell.borderRadius;
-		if (cell.dropShadow != null) decoration.dropShadow = cell.dropShadow;
-		if (cell.opacity != null) decoration.opacity = cell.opacity;
-		super.updateStyle(element, { decoration });
+		super.updateStyle(
+			element,
+			getBaseStyleClass(cell.cellStyle) || UICellStyle,
+			[
+				cell.cellStyle,
+				{
+					padding: cell.padding,
+					borderRadius: cell.borderRadius,
+					background: cell.background,
+					textColor: cell.textColor,
+					opacity: cell.opacity,
+					dropShadow: cell.dropShadow,
+				},
+			],
+		);
 	}
 }

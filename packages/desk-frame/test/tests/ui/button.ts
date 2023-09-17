@@ -5,10 +5,11 @@ import {
 	UISelectionController,
 	PageViewActivity,
 	UIPrimaryButton,
-	UIBorderlessButton,
-	UIOutlineButton,
-	UILinkButton,
+	UIPlainButton,
 	UIIconButton,
+	UIPrimaryButtonStyle,
+	UIPlainButtonStyle,
+	UIIconButtonStyle,
 } from "../../../dist/index.js";
 import { describe, expect, test, useTestContext } from "@desk-framework/test";
 
@@ -27,20 +28,17 @@ describe("UIButton", (scope) => {
 
 	test("Sub type constructors", () => {
 		let buttons = [
+			new UIButton("foo"),
 			new UIPrimaryButton("foo"),
-			new UIBorderlessButton("foo"),
-			new UIOutlineButton("foo"),
-			new UILinkButton("foo"),
+			new UIPlainButton("foo"),
 			new UIIconButton("foo"),
 		];
-		let styleNames = buttons.map((b) => b.style.name);
-		[
-			"@PrimaryButton",
-			"@BorderlessButton",
-			"@OutlineButton",
-			"@LinkButton",
-			"@IconButton",
-		].forEach((id, i) => expect(styleNames[i]).toMatchRegExp(new RegExp(id)));
+		expect(buttons.map((b) => b.buttonStyle)).toBeArray([
+			undefined,
+			UIPrimaryButtonStyle,
+			UIPlainButtonStyle,
+			UIIconButtonStyle,
+		]);
 	});
 
 	test("Preset with properties", () => {
@@ -77,15 +75,17 @@ describe("UIButton", (scope) => {
 	test("Rendered with styles", async (t) => {
 		let MyButton = UIButton.with({
 			label: "foo",
-			decoration: { borderColor: "@Orange" },
-			textStyle: { bold: true },
+			buttonStyle: {
+				borderColor: "@orange",
+				bold: true,
+			},
 		});
 		app.render(new MyButton());
 		await t.expectOutputAsync(100, {
 			text: "foo",
-			style: {
-				decoration: { borderColor: "@Orange" },
-				textStyle: { bold: true },
+			styles: {
+				borderColor: "@orange",
+				bold: true,
 			},
 		});
 	});

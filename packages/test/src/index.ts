@@ -14,7 +14,7 @@ export {
 export * from "./app/TestActivationPath.js";
 export * from "./app/OutputAssertion.js";
 export * from "./app/TestOutputElement.js";
-export * from "./app/TestRenderer.js";
+export * from "./renderer/TestRenderer.js";
 export * from "./app/TestContext.js";
 
 /**
@@ -220,6 +220,14 @@ export function formatTestResults(results: TestResultsData): string {
 			text += `\nERROR: ${r.name}\n`;
 			if (r.logs) text += r.logs + "\n";
 			if (r.error) text += r.error + "\n";
+			if (r.stack)
+				text +=
+					String(r.stack)
+						.split(/[\r\n]+/)
+						.filter((line) => /\.js:\d+/.test(line))
+						.filter((line) => !/\/dist\//.test(line))
+						.slice(0, 3)
+						.join("\n") + "\n";
 		}
 	}
 	text += results.failed ? "\n❌ FAIL" : "✅ PASS";

@@ -1,9 +1,9 @@
 import { ManagedChangeEvent, RenderContext, UISeparator } from "desk-frame";
 import { TestOutputElement } from "../app/TestOutputElement.js";
-import { TestRenderObserver } from "./TestRenderObserver.js";
+import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 
 /** @internal */
-export class UISeparatorRenderer extends TestRenderObserver<UISeparator> {
+export class UISeparatorRenderer extends TestBaseObserver<UISeparator> {
 	override observe(observed: UISeparator) {
 		return super
 			.observe(observed)
@@ -20,7 +20,6 @@ export class UISeparatorRenderer extends TestRenderObserver<UISeparator> {
 				case "color":
 				case "margin":
 				case "thickness":
-					// NOTE: this doesn't actually do much at all in the test renderer
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -36,7 +35,22 @@ export class UISeparatorRenderer extends TestRenderObserver<UISeparator> {
 		return output;
 	}
 
-	updateContent(element: TestOutputElement) {
-		// do nothing
+	updateContent() {}
+
+	updateStyle(element: TestOutputElement) {
+		let sep = this.observed;
+		if (sep) {
+			// NOTE: margin is ignored in test renderer
+			applyElementStyle(
+				element,
+				[
+					{
+						borderColor: sep.color,
+						borderThickness: sep.thickness,
+					},
+				],
+				sep.position,
+			);
+		}
 	}
 }

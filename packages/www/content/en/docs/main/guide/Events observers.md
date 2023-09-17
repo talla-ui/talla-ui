@@ -310,7 +310,7 @@ In the example above, the `SearchFieldChange` event is emitted multiple times:
 However, not every view object _needs_ to emit the event unmodified. In particular, the following view classes create a new event, keeping the original `source` property, but utilizing the {@link ManagedEvent.delegate} property to add a reference to themselves as well. This can be used by the final handler to get more information from the containing view.
 
 - The {@link UIForm} and {@link UIFormController} views add a reference to themselves, allowing UI event handlers to get easy access to the form context.
-- The {@link UIList.ItemAdapter} view composite — created automatically for each list item by {@link UIList}, adds a reference to itself as well. This allows UI event handlers to get easy access to the list item (data).
+- The {@link UIList.ItemController} view composite — created automatically for each list item by {@link UIList}, adds a reference to itself as well. This allows UI event handlers to get easy access to the list item (data).
 
 In both cases, the {@link ManagedEvent.inner} property is set to the original event, which you can use to find _nested_ delegate views if needed.
 
@@ -340,7 +340,7 @@ class MyActivity extends PageViewActivity {
 }
 ```
 
-The following example shows an event handler for a button that's part of a list item view. Assuming list items are of type `SomeItem`, which are made available by the (implicit) {@link UIList.ItemAdapter} view through its `item` property, the event handler's parameter could be typed as `UIList.ItemEvent<SomeItem>`.
+The following example shows an event handler for a button that's part of a list item view. Assuming list items are of type `SomeItem`, which are made available by the (implicit) {@link UIList.ItemController} view through its `item` property, the event handler's parameter could be typed as `UIList.ItemEvent<SomeItem>`.
 
 ```ts
 class SomeItem extends ManagedObject {

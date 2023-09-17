@@ -59,7 +59,7 @@ function _stringify(s: any) {
 /**
  * Returns a (lazily) formatted string incorporating the provided values
  *
- * @summary This function creates a new instance of {@link LazyString} with the specified format string. When converted to a string, the text is translated, formatted, and cached using the following methods:
+ * @summary This function creates a new instance of {@link LazyString} with the specified format string. When converted to a string, the text is translated, formatted (if arguments are provided), and cached using the following methods:
  * - {@link LazyString.translate()}
  * - {@link LazyString.format()}
  * - {@link LazyString.cache()}
@@ -67,7 +67,7 @@ function _stringify(s: any) {
  * For format placeholder options and features such as pluralization, refer to the {@link LazyString.format format()} method.
  *
  * @param format The format string, which may include placeholders for dynamically formatted values; **or** an array passed by a template literal source
- * @param values Any number of values to include in the result
+ * @param values Any number of values to include in the result; if no values are provided, the result is a {@link LazyString} instance that can be formatted later
  * @returns An instance of {@link LazyString}.
  *
  * @example
@@ -91,12 +91,21 @@ export function strf(
 	format: StringConvertible | StringConvertible[],
 	...values: any[]
 ) {
-	if (format instanceof LazyString && !values.length) return format;
+	// if invoked as template literal, convert to string
 	if (Array.isArray(format)) format = format.join("%s");
-	return LazyString.prototype.translate
-		.apply(format)
-		.format(...values)
-		.cache();
+
+	// check if already a LazyString, return directly if possible
+	let result: LazyString;
+	if (format instanceof LazyString) {
+		if (!values.length) return format;
+		result = format;
+	} else {
+		// translate first if not already a LazyString
+		result = LazyString.prototype.translate.apply(format ?? "");
+	}
+
+	// format string if values are provided, then cache
+	return values.length ? result.format(...values).cache() : result.cache();
 }
 
 /**
@@ -157,6 +166,11 @@ export class LazyString extends String {
 		return this._formatArgs || [];
 	}
 
+	/** Returns the original (untranslated and unformatted) string or LazyString instance */
+	getOriginal() {
+		return this._orig;
+	}
+
 	/**
 	 * Caches the result after evaluating it once
 	 * - This method is called automatically by {@link strf()}.
@@ -171,6 +185,7 @@ export class LazyString extends String {
 			cacheIdx = _cacheIdx;
 			return (result = String(this));
 		});
+		clone._orig = this._orig;
 		clone._formatArgs = this._formatArgs;
 		return clone;
 	}
@@ -182,9 +197,11 @@ export class LazyString extends String {
 	 * @returns A new LazyString instance.
 	 */
 	translate() {
-		return new LazyString(() =>
+		let result = new LazyString(() =>
 			_i18n ? _i18n.getText(String(this)) : String(this),
 		);
+		result._orig = this._orig || this;
+		return result;
 	}
 
 	/**
@@ -258,10 +275,12 @@ export class LazyString extends String {
 				},
 			);
 		});
+		clone._orig = this._orig || this;
 		clone._formatArgs = args;
 		return clone;
 	}
 
+	private _orig?: StringConvertible;
 	private _formatArgs?: any[];
 }
 

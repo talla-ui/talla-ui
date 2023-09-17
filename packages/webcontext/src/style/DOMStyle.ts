@@ -1,5 +1,10 @@
-import { UIColor, UIComponent, UIStyle, UITheme } from "desk-frame";
-import { CLASS_TOGGLE, CLASS_UI } from "./defaults/css.js";
+import { UIColor, UIComponent, UIContainer, UITheme, app } from "desk-frame";
+import {
+	CLASS_CONTAINER,
+	CLASS_TEXTCONTROL,
+	CLASS_TOGGLE_WRAPPER,
+	CLASS_UI,
+} from "./defaults/css.js";
 
 /** @internal Default number of logical pixels in a REM unit */
 export const LOGICAL_PX_PER_REM = 16;
@@ -35,8 +40,8 @@ let _cssUpdater:
 	| ((css: { [spec: string]: any }, allImports: string[]) => void)
 	| undefined;
 
-/** CSS classes currently defined, for particular selectors */
-let _cssDefined: { [id: string]: true | undefined } = {};
+/** CSS classes currently defined, one CSS class name per style class */
+let _cssDefined = new Map<any, UITheme.BaseStyle<string, any>>();
 
 /** Pending CSS update, if any */
 let _pendingCSS: { [spec: string]: any } | undefined;
@@ -44,11 +49,45 @@ let _pendingCSS: { [spec: string]: any } | undefined;
 /** All CSS imports */
 let _cssImports: string[] = [];
 
+/** @internal Helper method to convert a value to a CSS color string */
+export function getCSSColor(color: string | UIColor) {
+	color = String(color);
+	if (color[0] === "@") {
+		color = String(app.theme?.colors.get(color.slice(1)) || "transparent");
+	}
+	return color;
+}
+
+/** @internal Helper method to convert a CSS length unit *or* pixels number to a CSS string or given default string (e.g. `auto`) */
+export function getCSSLength(
+	length?: UIComponent.Offsets,
+	defaultValue: any = "auto",
+): string {
+	if (typeof length === "string") return length;
+	if (typeof length === "number") return length / LOGICAL_PX_PER_REM + "rem";
+	if (typeof length === "object") {
+		let top: string | number = 0;
+		let bottom: string | number = 0;
+		let start: string | number = 0;
+		let end: string | number = 0;
+		if (length.x) start = end = getCSSLength(length.x);
+		if (length.y) top = bottom = getCSSLength(length.y);
+		if (length.top) top = getCSSLength(length.top);
+		if (length.bottom) bottom = getCSSLength(length.bottom);
+		if (length.start) start = getCSSLength(length.start);
+		else if (length.left) start = getCSSLength(length.left);
+		if (length.end) end = getCSSLength(length.end);
+		else if (length.right) end = getCSSLength(length.right);
+		return top + " " + end + " " + bottom + " " + start;
+	}
+	return defaultValue;
+}
+
 /** @internal Clears all styles and stylesheet imports, so that next update will start fresh */
 export function resetCSS() {
 	_pendingCSS = undefined;
 	_cssImports = [];
-	_cssDefined = {};
+	_cssDefined = new Map();
 }
 
 /** @internal Imports an external stylesheet */
@@ -75,6 +114,26 @@ export function getWindowInnerHeight() {
 	return (window.innerHeight / _currentPxPerRem) * LOGICAL_PX_PER_REM;
 }
 
+/** @internal Sets the global focus 'glow' outline width and blur (pixels or string with unit), and color */
+export function setFocusDecoration(
+	decoration: UIComponent.DecorationStyleType,
+) {
+	let styles = {};
+	addDecorationStyleCSS(styles, decoration);
+	setGlobalCSS({
+		[`.${CLASS_UI}:focus`]: { outline: "0", outlineOffset: "0" },
+		[`.${CLASS_UI}[tabindex]:focus-visible`]: styles,
+		[`.${CLASS_TOGGLE_WRAPPER}>input:focus-visible`]: styles,
+	});
+}
+
+/** @internal Sets the global control style based on given text styles */
+export function setControlTextStyle(textStyle: UIComponent.TextStyleType) {
+	let styles = {};
+	addTextStyleCSS(styles, textStyle);
+	setGlobalCSS({ [`.${CLASS_UI}.${CLASS_TEXTCONTROL}`]: styles });
+}
+
 /** @internal Replaces given CSS styles in the global root style sheet */
 export function setGlobalCSS(css: {
 	[spec: string]:
@@ -91,194 +150,143 @@ export function setGlobalCSS(css: {
 	});
 }
 
-/** @internal Sets the global focus 'glow' outline width and blur (pixels or string with unit), and color */
-export function setFocusDecoration(decoration: UIStyle.Definition.Decoration) {
-	let css = makeDeclaration({ decoration });
-	setGlobalCSS({
-		[`.${CLASS_UI}:focus`]: { outline: "0" },
-		[`.${CLASS_UI}[tabindex]:focus`]: css,
-		[`.${CLASS_TOGGLE}>[tabindex]:focus+label>control`]: css,
-	});
+/** @internal Defines a CSS class for given style class */
+export function defineStyleClass(
+	styleClass: new () => UITheme.BaseStyle<string, any>,
+	isTextStyle?: boolean,
+) {
+	if (_cssDefined.has(styleClass)) {
+		return _cssDefined.get(styleClass)!;
+	}
+	let instance = new styleClass();
+	let styles = instance.getStyles();
+	if (!instance.id) throw RangeError();
+	let selector = "*." + CLASS_UI + "." + instance.id;
+	_cssDefined.set(styleClass, instance);
+
+	// combine all CSS styles
+	let combined: { [spec: string]: Partial<CSSStyleDeclaration> } = {};
+	function addStateStyle(style: any) {
+		let stateSelector = selector;
+		if (style[UITheme.STATE_DISABLED]) stateSelector += "[disabled]";
+		else if (style[UITheme.STATE_DISABLED] === false)
+			stateSelector += ":not([disabled])";
+		if (style[UITheme.STATE_READONLY]) stateSelector += "[readonly]";
+		else if (style[UITheme.STATE_READONLY] === false)
+			stateSelector += ":not([readonly])";
+		if (style[UITheme.STATE_SELECTED]) stateSelector += "[data-selected]";
+		else if (style[UITheme.STATE_SELECTED] === false)
+			stateSelector += ":not([data-selected])";
+		if (style[UITheme.STATE_HOVERED]) stateSelector += ":hover";
+		else if (style[UITheme.STATE_HOVERED] === false)
+			stateSelector += ":not(:hover)";
+		if (style[UITheme.STATE_PRESSED]) stateSelector += ":active";
+		else if (style[UITheme.STATE_PRESSED] === false)
+			stateSelector += ":not(:active)";
+		if (style[UITheme.STATE_FOCUSED]) stateSelector += ":focus-visible";
+		else if (style[UITheme.STATE_FOCUSED] === false)
+			stateSelector += ":not(:focus-visible)";
+		let css = combined[stateSelector] || {};
+		addDimensionsCSS(css, style);
+		addDecorationStyleCSS(css, style);
+		if (isTextStyle) addTextStyleCSS(css, style);
+		combined[stateSelector] = css;
+	}
+	for (let style of styles) {
+		addStateStyle(style);
+	}
+
+	// add CSS to global element for base and conditional styles
+	setGlobalCSS(combined);
+	return instance;
 }
 
-/** @internal Sets the global control style based on given text styles */
-export function setControlTextStyle(textStyle: UIStyle.Definition.TextStyle) {
-	let css = makeDeclaration({ textStyle });
-	setGlobalCSS({
-		[`.${CLASS_UI}.${UIStyle.Control.getIds().join(".")}`]: css,
-	});
-}
-
-/** @internal Applies styles from given UI component to given element, using CSS classes and/or overrides */
-export function applyElementCSS(
+/** @internal Helper function to apply style classes to an element using CSS class names */
+export function applyElementClassName(
 	element: HTMLElement,
-	styles: Partial<UIStyle.Definition>,
-	component: UIComponent,
+	BaseStyle?: new () => UITheme.BaseStyle<string, any>,
+	systemName?: string,
+	isTextControl?: boolean,
+	isContainer?: boolean,
+) {
+	// if element is hidden, stop early
+	if (element.hidden) {
+		element.className = "";
+		return;
+	}
+	let className = CLASS_UI;
+	if (isTextControl) className += " " + CLASS_TEXTCONTROL;
+	if (isContainer) className += " " + CLASS_CONTAINER;
+	if (systemName) className += " " + systemName;
+	if (BaseStyle) {
+		let baseName = defineStyleClass(BaseStyle, isTextControl).id;
+		if (baseName) className += " " + baseName;
+	}
+	element.className = className;
+}
+
+/** @internal Helper function to apply styles to an element using inline CSS properties */
+export function applyElementStyle(
+	element: HTMLElement,
+	styleOverrides?: any[],
+	position?: UIComponent.Position,
+	layout?: UIContainer.Layout,
+	isTextControl?: boolean,
 ) {
 	// if element is hidden, stop early
 	if (element.hidden) {
 		element.style.cssText = "";
-		element.className = "";
+		(element as any)["HAS_STYLES"] = false;
+		return;
 	}
 
-	// set inline styles (overrides given as argument)
-	let inline: Partial<CSSStyleDeclaration> & { className?: string } = {};
-	if (UIStyle.isStyleOverride(styles.dimensions))
-		addDimensionsCSS(inline, styles.dimensions);
-	if (UIStyle.isStyleOverride(styles.position))
-		addPositionCSS(inline, styles.position);
-	if (UIStyle.isStyleOverride(styles.textStyle))
-		addTextStyleCSS(inline, styles.textStyle);
-	if (UIStyle.isStyleOverride(styles.containerLayout))
-		addContainerLayoutCSS(inline, styles.containerLayout);
-	if (UIStyle.isStyleOverride(styles.decoration)) {
-		// set inline decoration styles + inline CSS class name
-		addDecorationCSS(inline, styles.decoration);
-	} else if (styles.decoration) {
-		// just set CSS class names from style instance
-		let decoration = styles.decoration as any;
-		if (decoration.cssClassNames) {
-			inline.className = decoration.cssClassNames.join(" ");
+	// combine all CSS and override styles
+	let inline: any = {};
+	if (styleOverrides) addInlineCSS(inline, styleOverrides, isTextControl);
+	if (position) addPositionCSS(inline, position);
+	if (layout) addContainerLayoutCSS(inline, layout);
+
+	// apply inline CSS properties as a CSS string
+	let cssText = getCSSText(inline);
+	if (cssText || (element as any)["HAS_STYLES"]) {
+		element.style.cssText = cssText;
+		(element as any)["HAS_STYLES"] = true;
+	}
+}
+
+/**
+ * Helper function to append inline CSS styles to given object
+ * - The 'objects' argument is an array that contains style override objects,
+ * further arrays, or objects with an 'overrides' property that contains
+ * another array. This function will recursively add all styles to the result.
+ * - Styles include dimensions, decoration, and (optionally) text styles.
+ */
+function addInlineCSS(
+	inline: Partial<CSSStyleDeclaration>,
+	objects: any[],
+	isTextControl?: boolean,
+) {
+	for (let style of objects) {
+		if (!style) continue;
+		if (Array.isArray(style)) {
+			// item is an array, recurse
+			addInlineCSS(inline, style, isTextControl);
+		} else if (Array.isArray(style.overrides)) {
+			// item is an object with more overrides, recurse
+			addInlineCSS(inline, style.overrides, isTextControl);
+		} else if (typeof style !== "function") {
+			// set styles from plain object
+			addDimensionsCSS(inline, style);
+			addDecorationStyleCSS(inline, style);
+			if (isTextControl) addTextStyleCSS(inline, style);
 		}
 	}
-
-	// set CSS classes for global style(s), if any
-	let style = component.style;
-	let className = CLASS_UI;
-	if (style) {
-		defineStyleClass(style);
-		className += " " + style.getIds().join(" ");
-	}
-	if (inline.className) {
-		className += " " + inline.className;
-		delete inline.className;
-	}
-	element.className = className;
-
-	// apply inline CSS properties as a CSS string
-	let cssText = getCSSText(inline);
-	if (cssText || (element as any)["HAS_STYLES"]) {
-		element.style.cssText = cssText;
-		(element as any)["HAS_STYLES"] = true;
-	}
-}
-
-/** @internal Applies decoration styles from given object to an element, using CSS overrides only */
-export function applyDecorationCSS(
-	element: HTMLElement,
-	decoration: Partial<UIStyle.Definition.Decoration>,
-) {
-	let inline: Partial<CSSStyleDeclaration> & { className?: string } = {};
-	addDecorationCSS(inline, decoration);
-	if (decoration.cssClassNames) {
-		element.className = decoration.cssClassNames.join(" ");
-	}
-
-	// apply inline CSS properties as a CSS string
-	let cssText = getCSSText(inline);
-	if (cssText || (element as any)["HAS_STYLES"]) {
-		element.style.cssText = cssText;
-		(element as any)["HAS_STYLES"] = true;
-	}
-}
-
-/** @internal Helper method to convert a value to a CSS color string */
-export function getCSSColor(color: string | UIColor) {
-	color = String(color);
-	if (color[0] === "@") color = String(UITheme.getColor(color.slice(1)));
-	return color;
-}
-
-/** @internal Helper method to convert a CSS length unit *or* pixels number to a CSS string or given default string (e.g. `auto`) */
-export function getCSSLength(
-	length?: UIStyle.Offsets,
-	defaultValue: any = "auto",
-): string {
-	if (typeof length === "string") return length;
-	if (typeof length === "number") return length / LOGICAL_PX_PER_REM + "rem";
-	if (typeof length === "object") {
-		let top: string | number = 0;
-		let bottom: string | number = 0;
-		let start: string | number = 0;
-		let end: string | number = 0;
-		if (length.x) start = end = getCSSLength(length.x);
-		if (length.y) top = bottom = getCSSLength(length.y);
-		if (length.top) top = getCSSLength(length.top);
-		if (length.bottom) bottom = getCSSLength(length.bottom);
-		if (length.start) start = getCSSLength(length.start);
-		else if (length.left) start = getCSSLength(length.left);
-		if (length.end) end = getCSSLength(length.end);
-		else if (length.right) end = getCSSLength(length.right);
-		return top + " " + end + " " + bottom + " " + start;
-	}
-	return defaultValue;
-}
-
-/** Helper function to make a set of CSS style declarations for given style definition */
-function makeDeclaration(styles: Partial<UIStyle.Definition>) {
-	let result: Partial<CSSStyleDeclaration> = {};
-	if (styles.containerLayout)
-		addContainerLayoutCSS(result, styles.containerLayout);
-	if (styles.dimensions) addDimensionsCSS(result, styles.dimensions);
-	if (styles.position) addPositionCSS(result, styles.position);
-	if (styles.textStyle) addTextStyleCSS(result, styles.textStyle);
-	if (styles.decoration) addDecorationCSS(result, styles.decoration);
-	return result;
-}
-
-/** Helper function to recursively define CSS class(es) for given instance of `UIStyle` */
-function defineStyleClass(style: UIStyle) {
-	let selector = "*." + CLASS_UI + "." + style.getIds().join(".");
-	if (_cssDefined[selector]) return;
-
-	// add CSS to global element for base and conditional styles
-	if (style.hasStyles()) {
-		let c = style.getConditionalStyles();
-		setGlobalCSS({
-			[selector]: makeDeclaration(style.getOwnStyles()),
-			[selector + ":focus"]: c.focused && makeDeclaration(c.focused),
-			[selector + ":hover:not([disabled],[data-selected])"]:
-				c.hover && makeDeclaration(c.hover),
-			[selector + ":active:not([disabled],[data-selected])"]:
-				c.pressed && makeDeclaration(c.pressed),
-			[selector + "[disabled]"]: c.disabled && makeDeclaration(c.disabled),
-			[selector + "[data-selected]"]: c.selected && makeDeclaration(c.selected),
-		});
-		_cssDefined[selector] = true;
-	}
-
-	// recurse for inherited styles
-	let base = style.getBaseStyle();
-	base && defineStyleClass(base);
-}
-
-/** Helper function to append CSS styles to given object for a given `Dimensions` object */
-function addDimensionsCSS(
-	result: Partial<CSSStyleDeclaration>,
-	dimensions: UIStyle.Definition.Dimensions,
-) {
-	let width = dimensions.width;
-	if (width !== undefined) result.width = getCSSLength(width);
-	let height = dimensions.height;
-	if (height !== undefined) result.height = getCSSLength(height);
-	let minWidth = dimensions.minWidth;
-	if (minWidth !== undefined) result.minWidth = getCSSLength(minWidth, "");
-	let minHeight = dimensions.minHeight;
-	if (minHeight !== undefined) result.minHeight = getCSSLength(minHeight, "");
-	let maxWidth = dimensions.maxWidth;
-	if (maxWidth !== undefined) result.maxWidth = getCSSLength(maxWidth, "");
-	let maxHeight = dimensions.maxHeight;
-	if (maxHeight !== undefined) result.maxHeight = getCSSLength(maxHeight, "");
-	let grow = dimensions.grow;
-	if (grow !== undefined) result.flexGrow = grow as any;
-	let shrink = dimensions.shrink;
-	if (shrink !== undefined) result.flexShrink = shrink as any;
 }
 
 /** Helper function to append CSS styles to given object for a given `Position` object */
 function addPositionCSS(
 	result: Partial<CSSStyleDeclaration>,
-	position: UIStyle.Definition.Position,
+	position: UIComponent.Position,
 ) {
 	let alignSelf = position.gravity;
 	let hasHorizontalPosition: boolean | undefined;
@@ -316,17 +324,38 @@ function addPositionCSS(
 	}
 }
 
+/** Helper function to append CSS styles to given object for a given `Dimensions` object */
+function addDimensionsCSS(
+	result: Partial<CSSStyleDeclaration>,
+	dimensions: UIComponent.DimensionsStyleType,
+) {
+	let width = dimensions.width;
+	if (width !== undefined) result.width = getCSSLength(width);
+	let height = dimensions.height;
+	if (height !== undefined) result.height = getCSSLength(height);
+	let minWidth = dimensions.minWidth;
+	if (minWidth !== undefined) result.minWidth = getCSSLength(minWidth, "");
+	let minHeight = dimensions.minHeight;
+	if (minHeight !== undefined) result.minHeight = getCSSLength(minHeight, "");
+	let maxWidth = dimensions.maxWidth;
+	if (maxWidth !== undefined) result.maxWidth = getCSSLength(maxWidth, "");
+	let maxHeight = dimensions.maxHeight;
+	if (maxHeight !== undefined) result.maxHeight = getCSSLength(maxHeight, "");
+	let grow = dimensions.grow;
+	if (grow !== undefined) result.flexGrow = grow as any;
+	let shrink = dimensions.shrink;
+	if (shrink !== undefined) result.flexShrink = shrink as any;
+}
+
 /** Helper function to append CSS styles to given object for a given `TextStyle` object */
 function addTextStyleCSS(
 	result: Partial<CSSStyleDeclaration>,
-	textStyle: UIStyle.Definition.TextStyle,
+	textStyle: UIComponent.TextStyleType,
 ) {
 	let direction = textStyle.direction;
 	if (direction !== undefined) result.direction = direction;
-	let align = textStyle.align;
-	if (align !== undefined) result.textAlign = align;
-	let color = textStyle.color;
-	if (color !== undefined) result.color = getCSSColor(color);
+	let textAlign = textStyle.textAlign;
+	if (textAlign !== undefined) result.textAlign = textAlign;
 	let fontFamily = textStyle.fontFamily;
 	if (fontFamily !== undefined) result.fontFamily = fontFamily;
 	let fontSize = textStyle.fontSize;
@@ -366,9 +395,9 @@ function addTextStyleCSS(
 }
 
 /** Helper function to append CSS styles to given object for a given `Decoration` object */
-function addDecorationCSS(
+function addDecorationStyleCSS(
 	result: Partial<CSSStyleDeclaration> & { className?: string },
-	decoration: UIStyle.Definition.Decoration,
+	decoration: UIComponent.DecorationStyleType,
 ) {
 	let background = decoration.background;
 	if (background !== undefined) result.background = getCSSColor(background);
@@ -399,15 +428,12 @@ function addDecorationCSS(
 		// copy all properties to result
 		for (let p in decoration.css) result[p] = decoration.css[p];
 	}
-	if (decoration.cssClassNames) {
-		result.className = decoration.cssClassNames.join(" ");
-	}
 }
 
 /** Helper function to append CSS styles to given object for a given `ContainerLayout` object */
 function addContainerLayoutCSS(
 	result: Partial<CSSStyleDeclaration>,
-	layout: UIStyle.Definition.ContainerLayout,
+	layout: UIContainer.Layout,
 ) {
 	let axis = layout.axis;
 	if (axis !== undefined)
@@ -430,7 +456,7 @@ function getCSSText(style: any) {
 	let result = "";
 	for (let p in style) {
 		if (p === "className" || style[p] === "" || style[p] == undefined) continue;
-		let key = memoizeKey(p);
+		let key = camelToCssCase(p);
 		let value = String(style[p]);
 		if (value.indexOf("|") >= 0) {
 			for (let str of value.split("||").reverse()) {
@@ -444,11 +470,11 @@ function getCSSText(style: any) {
 }
 
 // Memoize camelCase property names to css-case names:
-const _memoizeKey: { [k: string]: string } = Object.create(null);
-function memoizeKey(k: string) {
+const _memoizedCamelToCssCase: { [k: string]: string } = Object.create(null);
+function camelToCssCase(k: string) {
 	return (
-		_memoizeKey[k] ??
-		(_memoizeKey[k] = k
+		_memoizedCamelToCssCase[k] ??
+		(_memoizedCamelToCssCase[k] = k
 			.replace(/([A-Z])/g, "-$1")
 			.toLowerCase()
 			.replace(/^(webkit|o|ms|moz)-/, "-$1-"))

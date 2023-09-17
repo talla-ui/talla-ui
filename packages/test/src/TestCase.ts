@@ -1,11 +1,12 @@
 import { app } from "desk-frame";
-import { OutputAssertion, OutputSelectFilter } from "./app/OutputAssertion.js";
-import { TestRenderer } from "./app/TestRenderer.js";
 import { Assertion } from "./Assertion.js";
-import { val2str } from "./log.js";
 import { TestScope } from "./TestScope.js";
+import { OutputAssertion, OutputSelectFilter } from "./app/OutputAssertion.js";
+import { TestRenderer } from "./renderer/TestRenderer.js";
+import { val2str } from "./log.js";
 
 const DEFAULT_TIMEOUT = 10000;
+const DUMP_DEPTH = 100;
 
 /** If set, all tests should be skipped from this point on */
 let stopAll = false;
@@ -97,6 +98,16 @@ export class TestCase {
 		this._logs.push(
 			values.map((v, i) => (!i && typeof v === "string" ? v : val2str(v))),
 		);
+	}
+
+	/**
+	 * Store the provided value as log output with greater detail
+	 * - The logged value is converted to a string immediately, recursing deeper into nested structures than with {@link TestCase.log()}
+	 * @param values A list of values, of any type
+	 * @see {@link TestCase.getLogs()}
+	 */
+	dump(value: any) {
+		this._logs.push([val2str(value, -DUMP_DEPTH)]);
 	}
 
 	/**

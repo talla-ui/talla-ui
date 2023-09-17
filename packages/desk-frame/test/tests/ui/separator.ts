@@ -11,20 +11,20 @@ describe("UISeparator", (scope) => {
 	test("Constructor with defaults", () => {
 		let sep = new UISeparator();
 		expect(sep.thickness).toBe(1);
-		expect(sep.margin).toBeUndefined();
+		expect(sep.margin).toBe(app.theme?.separatorMargin);
 	});
 
 	test("Preset with properties", () => {
 		let MySeparator = UISeparator.with({
 			thickness: 2,
 			margin: 8,
-			color: "@Green",
+			color: "@green",
 			vertical: true,
 		});
 		let sep = new MySeparator();
 		expect(sep).toHaveProperty("thickness").toBe(2);
 		expect(sep).toHaveProperty("margin").toBe(8);
-		expect(sep).toHaveProperty("color").toBe("@Green");
+		expect(sep).toHaveProperty("color").toBe("@green");
 		expect(sep).toHaveProperty("vertical").toBe(true);
 	});
 

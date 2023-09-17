@@ -13,10 +13,9 @@ assets:
 
 ## Definition {#definition}
 
-Text fields are represented by the {@link UITextField} class, which inherits functionality from the {@link UIControl} and {@link UIComponent} abstract classes.
+Text fields are represented by the {@link UITextField} class, which inherits functionality from the {@link UIComponent} abstract class.
 
 - {@ref UITextField}
-- {@ref UIControl}
 - {@ref UIComponent}
 
 ## Appearance {#appearance}
@@ -48,53 +47,28 @@ Text field decorations, dimensions, position, and text styles are highly customi
 
 - <!--{{pagerefblock path="content/en/docs/main/guide/Styles"}}-->
 
-## Borderless text fields {#borderless}
-
-A special type of text field can be created using the {@link UIBorderlessTextField} class. This component is frequently used as part of a combined input/button element, because it lacks any decoration styles such as background color, border color, and border radius.
-
-<!--{{iframesample js="./sample-borderless.js" short}}-->
-
-```ts
-const view = UICell.with(
-	{
-		borderColor: UIColor.Separator,
-		borderThickness: { bottom: 1 },
-	},
-	UICenterRow.with(
-		UIBorderlessTextField.with({
-			placeholder: "Search...",
-		}),
-		UIIconButton.withIcon(UIIcon.ExpandDown),
-	),
-);
-```
-
-> **Note:** Since a borderless text field may not have a visible 'focus' indicator, you may need to apply additional styles while the text field has input focus. These can be added to the text field itself, or to any other related component.
-
 ## Preset properties {#presets}
 
 The following properties can be preset using `UITextField.with({ ... })` or JSX `<textfield ...>`.
 
-| Property                                                | Type                                                                |
-| :------------------------------------------------------ | :------------------------------------------------------------------ |
-| {@link UIComponent.style style}                         | Instance of {@link UIStyle} or a theme style name starting with `@` |
-| {@link UIComponent.dimensions dimensions}               | An object with {@link UIStyle.Definition.Dimensions} properties     |
-| {@link UIComponent.position position}                   | An object with {@link UIStyle.Definition.Position} properties       |
-| {@link UIControl.textStyle textStyle}                   | An object with {@link UIStyle.Definition.TextStyle} properties      |
-| {@link UIControl.decoration decoration}                 | An object with {@link UIStyle.Definition.Decoration} properties     |
-| {@link UIComponent.hidden hidden}                       | Boolean, or binding                                                 |
-| {@link UIComponent.accessibleRole accessibleRole}       | String, or binding                                                  |
-| {@link UIComponent.accessibleLabel accessibleLabel}     | String, or binding                                                  |
-| {@link UIControl.disabled disabled}                     | Boolean, or binding                                                 |
-| {@link UIControl.shrinkwrap shrinkwrap}                 | Boolean, or binding                                                 |
-| {@link UITextField.placeholder placeholder}             | String, {@link LazyString}, or binding                              |
-| {@link UITextField.value value}                         | String, {@link LazyString}, or binding                              |
-| {@link UITextField.type type}                           | String, or {@link UITextField.InputType}                            |
-| {@link UITextField.enterKeyHint enterKeyHint}           | String, or {@link UITextField.EnterKeyHintType}                     |
-| {@link UITextField.multiline multiline}                 | True if this text field should receive multi-line text input        |
-| {@link UITextField.formField formField}                 | String                                                              |
-| {@link UITextField.disableSpellCheck disableSpellCheck} | True if spell checking should be disabled by default                |
-| requestFocus                                            | True to request focus immediately after first render                |
+| Property                                                | Type                                                         |
+| :------------------------------------------------------ | :----------------------------------------------------------- |
+| {@link UIComponent.hidden hidden}                       | Boolean, or binding                                          |
+| {@link UIComponent.position position}                   | {@link UIComponent.Position}, or binding                     |
+| {@link UIComponent.accessibleRole accessibleRole}       | String, or binding                                           |
+| {@link UIComponent.accessibleLabel accessibleLabel}     | String, or binding                                           |
+| {@link UITextField.placeholder placeholder}             | String, {@link LazyString}, or binding                       |
+| {@link UITextField.value value}                         | String, {@link LazyString}, or binding                       |
+| {@link UITextField.type type}                           | String, or {@link UITextField.InputType}                     |
+| {@link UITextField.multiline multiline}                 | True if this text field should receive multi-line text input |
+| {@link UITextField.formField formField}                 | String                                                       |
+| {@link UITextField.enterKeyHint enterKeyHint}           | String, or {@link UITextField.EnterKeyHintType}              |
+| {@link UITextField.disableSpellCheck disableSpellCheck} | True if spell checking should be disabled by default         |
+| {@link UITextField.disabled disabled}                   | Boolean, or binding                                          |
+| {@link UITextField.readOnly readOnly}                   | Boolean, or binding                                          |
+| {@link UITextField.width width}                         | Number, string with CSS unit, or binding                     |
+| {@link UITextField.textFieldStyle textFieldStyle}       | {@link UITextFieldStyle} class, overrides, or binding        |
+| requestFocus                                            | True to request focus immediately after first render         |
 
 Note that {@link UITextField} also provides the following methods.
 

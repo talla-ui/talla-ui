@@ -15,7 +15,6 @@ applies_to:
   - UIColumn
   - UIForm
   - UIScrollContainer
-  - UIControl
   - UISeparator
   - UISpacer
   - UIButton

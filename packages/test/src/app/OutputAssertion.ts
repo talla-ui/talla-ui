@@ -1,4 +1,4 @@
-import { RenderContext, UIStyle } from "desk-frame";
+import { RenderContext } from "desk-frame";
 import type { TestOutputElement } from "./TestOutputElement.js";
 
 /** An object that provides filters to match a set of output elements, to be asserted using {@link OutputAssertion} */
@@ -11,6 +11,8 @@ export interface OutputSelectFilter {
 	type?: RenderContext.RenderableClass | TestOutputElement.TypeString;
 	/** True if the element must be disabled, false if it must not */
 	disabled?: boolean;
+	/** True if the element must be readonly, false if it must not */
+	readOnly?: boolean;
 	/** True if the element must be selected, false if it must not */
 	selected?: boolean;
 	/** True if the element must be focused, false if it must not */
@@ -21,6 +23,8 @@ export interface OutputSelectFilter {
 	text?: string | RegExp;
 	/** A string representation of the element's icon content, must be an exact match */
 	icon?: string;
+	/** A button element's chevron direction, must be an exact match */
+	chevron?: string;
 	/** An image URL, must be an exact match */
 	imageUrl?: string;
 	/** The current input value for text fields */
@@ -29,12 +33,10 @@ export interface OutputSelectFilter {
 	accessibleRole?: string;
 	/** A matching element's accessible label */
 	accessibleLabel?: string;
-	/** A (partial) style object, to match one or more properties on the element's style object */
-	style?: Partial<UIStyle.Definition>;
-	/** A style name, to match the exact style name on an element */
-	styleName?: string;
-	/** A set of style ID(s), to match styles on an element */
-	styleIds?: string[];
+	/** A set of style overrides that must be applied to a matching element (values for e.g. `bold`, `textColor`, and `background`) */
+	styles?: Record<string, any>;
+	/** A base style class that must be applied to a matching element (e.g. a subclass of {@link UIButtonStyle}, {@link UICellStyle}, and {@link UIToggleStyle}) */
+	styleClass?: any;
 }
 
 /** Returns true if given element matches given selection criteria */
@@ -46,6 +48,7 @@ function _matchElement(select: OutputSelectFilter, elt: TestOutputElement) {
 		(typeof select.type === "function" &&
 			!(elt.output?.source instanceof select.type)) ||
 		(select.disabled !== undefined && !!elt.disabled !== !!select.disabled) ||
+		(select.readOnly !== undefined && !!elt.readOnly !== !!select.readOnly) ||
 		(select.selected !== undefined && !!elt.selected !== !!select.selected) ||
 		(select.checked !== undefined && !!elt.checked !== !!select.checked) ||
 		(select.focused !== undefined && !!elt.hasFocus() !== !!select.focused) ||
@@ -56,16 +59,15 @@ function _matchElement(select: OutputSelectFilter, elt: TestOutputElement) {
 				? !select.text.test(elt.text || "")
 				: true)) ||
 		(select.icon !== undefined && elt.icon !== select.icon) ||
+		(select.chevron !== undefined && elt.chevron !== select.chevron) ||
 		(select.imageUrl !== undefined && elt.imageUrl !== select.imageUrl) ||
 		(select.value !== undefined && elt.value !== select.value) ||
 		(select.accessibleRole !== undefined &&
 			elt.accessibleRole !== select.accessibleRole) ||
 		(select.accessibleLabel !== undefined &&
 			elt.accessibleLabel !== select.accessibleLabel) ||
-		(select.style && !elt.matchStyle(select.style)) ||
-		(select.styleName && elt.styleName !== select.styleName) ||
-		(Array.isArray(select.styleIds) &&
-			!select.styleIds.every((s) => elt.styleIds.includes(s)))
+		(select.styles && !elt.matchStyleValues(select.styles)) ||
+		(select.styleClass !== undefined && elt.styleClass !== select.styleClass)
 	);
 }
 

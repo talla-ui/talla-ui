@@ -1,9 +1,14 @@
-import { app, ActivationContext, GlobalContext } from "desk-frame";
-import { TestActivationPath } from "./TestActivationPath.js";
-import { TestRenderer } from "./TestRenderer.js";
-import { TestTheme } from "../ui/TestTheme.js";
-import { TestViewportContext } from "./TestViewportContext.js";
+import {
+	ActivationContext,
+	ConfigOptions,
+	GlobalContext,
+	app,
+} from "desk-frame";
 import { TestScope } from "../TestScope.js";
+import { TestTheme } from "../style/TestTheme.js";
+import { TestActivationPath } from "./TestActivationPath.js";
+import { TestRenderer } from "../renderer/TestRenderer.js";
+import { TestViewportContext } from "./TestViewportContext.js";
 
 /** Type definition for the global {@link app} context with test-specific render and activation contexts, set by the {@link useTestContext} function */
 export type TestContext = GlobalContext & {
@@ -15,7 +20,7 @@ export type TestContext = GlobalContext & {
  * A class that contains options for the test context
  * - These options should be set in a configuration callback passed to {@link useTestContext}.
  */
-export class TestContextOptions {
+export class TestContextOptions extends ConfigOptions {
 	/** The initial path on the history stack, defaults to empty string (i.e. `/`) */
 	path = "";
 
@@ -32,7 +37,7 @@ export class TestContextOptions {
 /**
  * Clears the current global {@link app} context and initializes a test context
  *
- * @param configure A callback function that sets options on a provided {@link TestContextOptions} object
+ * @param config A {@link TestContextOptions} object, or a callback to set options
  * @returns The {@link app} global context, typed as {@link TestContext}.
  *
  * @example
@@ -47,11 +52,8 @@ export class TestContextOptions {
  *   // ... add some tests here, to use `app`
  * });
  */
-export function useTestContext(
-	configure?: (options: TestContextOptions) => void,
-) {
-	let options = new TestContextOptions();
-	configure?.(options);
+export function useTestContext(config?: ConfigOptions.Arg<TestContextOptions>) {
+	let options = TestContextOptions.init(config);
 
 	// clear the current app properties first
 	app.clear();

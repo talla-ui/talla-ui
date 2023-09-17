@@ -21,9 +21,11 @@ Scroll containers are represented by the {@link UIScrollContainer} class, which 
 
 A scroll container contains other components which are arranged along a vertical (or horizontal) axis. When the space taken up by the content components is larger than the space taken up by the container itself, the user is allowed to scroll the content within the container.
 
-Note that this means that the container's dimensions must be limited in the direction of scroll — otherwise the container itself will simply grow to accommodate its contents. To do this, set the `width`, `height`, `maxWidth`, or `maxHeight` properties of the {@link UIStyle.Definition.Dimensions dimensions} style object, and make sure `grow` is set to 0 to avoid expanding in the direction of the _parent_ container's primary axis.
+Note that this means that the container's dimensions must be limited in the direction of scroll — otherwise the container itself will simply grow to accommodate its contents. To do this, set the `width`, `height`, `maxWidth`, or `maxHeight` style properties, and make sure `grow` is set to 0 to avoid expanding in the direction of the _parent_ container's primary axis.
 
-Alternatively, wrap the scroll container inside of a non-scrolling container (such as a {@link UICell}) that has fixed dimensions, or has its `gravity` style property (in the {@link UIComponent.position position} object or {@link UIComponent.style style} instance) set to `cover`.
+<!-- TODO: check this, scroll containers now don't have dimensions? -->
+
+Alternatively, wrap the scroll container inside of a non-scrolling container (such as a {@link UICell}) that has fixed dimensions, or has its `gravity` style property set to `cover`.
 
 <!--{{iframesample js="./sample-single.js"}}-->
 
@@ -96,24 +98,20 @@ To scroll to the very top or bottom of a container, use the following methods:
 
 The following properties can be preset using `UIScrollContainer.with({ ... })` or JSX `<scrollcontainer ...>`.
 
-| Property                                                                  | Type                                                                 |
-| :------------------------------------------------------------------------ | :------------------------------------------------------------------- |
-| {@link UIComponent.style style}                                           | Instance of {@link UIStyle} or a theme style name starting with `@`  |
-| {@link UIComponent.dimensions dimensions}                                 | An object with {@link UIStyle.Definition.Dimensions} properties      |
-| {@link UIComponent.position position}                                     | An object with {@link UIStyle.Definition.Position} properties        |
-| {@link UIContainer.layout layout}                                         | An object with {@link UIStyle.Definition.ContainerLayout} properties |
-| {@link UIComponent.hidden hidden}                                         | Boolean, or binding                                                  |
-| {@link UIComponent.accessibleRole accessibleRole}                         | String, or binding                                                   |
-| {@link UIComponent.accessibleLabel accessibleLabel}                       | String, or binding                                                   |
-| {@link UIContainer.distribution distribution}                             | String, or binding                                                   |
-| {@link UIContainer.padding padding}                                       | Number, string with CSS unit, {@link UIStyle.Offsets}, or binding    |
-| {@link UIContainer.spacing spacing}                                       | Number, string with CSS unit, or binding                             |
-| {@link UIContainer.asyncContentRendering asyncContentRendering}           | True if content may be rendered asynchronously                       |
-| {@link UIScrollContainer.topThreshold topThreshold}                       | Number, string with CSS unit, or binding                             |
-| {@link UIScrollContainer.bottomThreshold bottomThreshold}                 | Number, string with CSS unit, or binding                             |
-| {@link UIScrollContainer.horizontalThreshold horizontalThreshold}         | Number, string with CSS unit, or binding                             |
-| {@link UIScrollContainer.verticalScrollEnabled verticalScrollEnabled}     | Boolean                                                              |
-| {@link UIScrollContainer.horizontalScrollEnabled horizontalScrollEnabled} | Boolean                                                              |
+| Property                                                                  | Type                                                                  |
+| :------------------------------------------------------------------------ | :-------------------------------------------------------------------- |
+| {@link UIComponent.hidden hidden}                                         | Boolean, or binding                                                   |
+| {@link UIComponent.position position}                                     | {@link UIComponent.Position}, or binding                              |
+| {@link UIComponent.accessibleRole accessibleRole}                         | String, or binding                                                    |
+| {@link UIComponent.accessibleLabel accessibleLabel}                       | String, or binding                                                    |
+| {@link UIContainer.padding padding}                                       | Number, string with CSS unit, {@link UIComponent.Offsets}, or binding |
+| {@link UIContainer.spacing spacing}                                       | Number, string with CSS unit, or binding                              |
+| {@link UIContainer.asyncContentRendering asyncContentRendering}           | True if content may be rendered asynchronously                        |
+| {@link UIScrollContainer.topThreshold topThreshold}                       | Number, string with CSS unit, or binding                              |
+| {@link UIScrollContainer.bottomThreshold bottomThreshold}                 | Number, string with CSS unit, or binding                              |
+| {@link UIScrollContainer.horizontalThreshold horizontalThreshold}         | Number, string with CSS unit, or binding                              |
+| {@link UIScrollContainer.verticalScrollEnabled verticalScrollEnabled}     | Boolean                                                               |
+| {@link UIScrollContainer.horizontalScrollEnabled horizontalScrollEnabled} | Boolean                                                               |
 
 ## Events {#events}
 

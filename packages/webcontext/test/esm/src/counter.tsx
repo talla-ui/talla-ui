@@ -1,24 +1,16 @@
 import {
 	JSX,
 	PageViewActivity,
-	UIStyle,
 } from "../lib/desk-framework-web.es2018.esm.min.js";
-
-const styles = {
-	counter: UIStyle.Label.extend({
-		textStyle: { fontSize: 36, bold: true },
-		decoration: { cssClassNames: ["BigCounter"] },
-	}),
-};
 
 const ViewBody = (
 	<cell>
-		<label style={styles.counter}>Count: %[count]</label>
+		<label labelStyle={{ bold: true, fontSize: 36 }}>Count: %[count]</label>
 		<spacer height={32} />
-		<centerrow>
-			<outlinebutton onClick="CountDown">Down</outlinebutton>
-			<outlinebutton onClick="CountUp">Up</outlinebutton>
-		</centerrow>
+		<row align="center">
+			<button onClick="CountDown">Down</button>
+			<button onClick="CountUp">Up</button>
+		</row>
 	</cell>
 );
 

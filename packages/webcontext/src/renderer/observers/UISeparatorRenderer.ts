@@ -1,5 +1,9 @@
 import { ManagedChangeEvent, RenderContext, UISeparator } from "desk-frame";
-import { getCSSLength } from "../../style/DOMStyle.js";
+import {
+	applyElementClassName,
+	applyElementStyle,
+	getCSSLength,
+} from "../../style/DOMStyle.js";
 import {
 	CLASS_SEPARATOR_LINE,
 	CLASS_SEPARATOR_LINE_VERT,
@@ -42,21 +46,29 @@ export class UISeparatorRenderer extends BaseObserver<UISeparator> {
 
 	override updateStyle(element: HTMLElement) {
 		let sep = this.observed;
-		if (!sep) return;
-		let addClass =
-			CLASS_SEPARATOR_LINE +
-			(sep.vertical ? " " + CLASS_SEPARATOR_LINE_VERT : "");
+		if (sep) {
+			let systemName = CLASS_SEPARATOR_LINE;
+			if (sep.vertical) systemName += CLASS_SEPARATOR_LINE_VERT;
+			applyElementClassName(element, undefined, systemName);
+			applyElementStyle(
+				element,
+				[
+					{
+						borderColor: sep.color,
+						borderThickness: sep.thickness,
+					},
+				],
+				sep.position,
+			);
 
-		let decoration = { ...sep.decoration };
-		decoration.cssClassNames = decoration.cssClassNames
-			? [...decoration.cssClassNames, addClass]
-			: [addClass];
-		if (sep.color) decoration.borderColor = sep.color;
-		if (sep.thickness) decoration.borderThickness = sep.thickness;
-		super.updateStyle(element, { decoration });
-		if (sep.margin) {
-			let margin = getCSSLength(sep.margin);
-			element.style.margin = sep.vertical ? "0 " + margin : margin + " 0";
+			// set margin separately
+			let margin = sep.margin ? getCSSLength(sep.margin) : undefined;
+			let cssMargin = margin
+				? sep.vertical
+					? "0 " + margin
+					: margin + " 0"
+				: "";
+			element.style.margin = cssMargin;
 		}
 	}
 }

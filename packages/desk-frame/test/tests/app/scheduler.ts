@@ -81,6 +81,29 @@ describe("Scheduler", () => {
 			expect(q.errors).toBeArray(0);
 		});
 
+		test("Single task, replaced", (t) => {
+			let q = app.scheduler.createQueue(Symbol());
+			q.addOrReplace("foo", () => {
+				t.log("Ran task1");
+				t.count("task1");
+			});
+			q.addOrReplace("foo", () => {
+				t.log("Ran task2");
+				t.count("task2");
+			});
+			expect(q.count).toBe(1);
+			q.run();
+			q.addOrReplace("foo", () => {
+				t.log("Ran task3");
+				t.count("task3");
+			});
+			q.run();
+			t.expectCount("task1").toBe(0);
+			t.expectCount("task2").toBe(1);
+			t.expectCount("task3").toBe(1);
+			expect(q.count).toBe(0);
+		});
+
 		test("Two tasks, stopped in between", (t) => {
 			let q = app.scheduler.createQueue(Symbol());
 			q.add(() => {

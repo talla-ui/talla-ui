@@ -1,7 +1,6 @@
 import { RenderContext, View } from "../../app/index.js";
 import { ManagedEvent } from "../../core/index.js";
 import { UIComponent } from "../UIComponent.js";
-import { UIStyle } from "../UIStyle.js";
 import { UIContainer } from "./UIContainer.js";
 
 /**
@@ -17,7 +16,6 @@ export class UIScrollContainer extends UIContainer {
 	/** Creates a new scroll container view object with the provided view content */
 	constructor(...content: View[]) {
 		super(...content);
-		this.style = UIStyle.ScrollContainer;
 	}
 
 	/**

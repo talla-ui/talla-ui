@@ -1,5 +1,11 @@
 import { err, ERROR } from "../errors.js";
-import { Binding, StringFormatBinding, strf, ViewClass } from "../index.js";
+import {
+	Binding,
+	StringFormatBinding,
+	strf,
+	ViewClass,
+	LazyString,
+} from "../index.js";
 import * as intrinsics from "./intrinsics.js";
 
 /** Helper function to flatten component arrays */
@@ -35,26 +41,20 @@ function flatten(a: any[]): any {
  * |`<cell>` |{@link UICell}
  * |`<form>` |{@link UIForm}
  * |`<row>` |{@link UIRow}
- * |`<centerrow>` |{@link UICenterRow}
- * |`<oppositerow>` |{@link UIOppositeRow}
  * |`<column>` |{@link UIColumn}
  * |`<scrollcontainer>` |{@link UIScrollContainer}
  * |`<animatedcell>` |{@link UIAnimatedCell}
  * |`<button>` |{@link UIButton}
- * |`<iconbutton>` |{@link UIIconButton}
- * |`<linkbutton>` |{@link UILinkButton}
- * |`<outlinebutton>` |{@link UIOutlineButton}
- * |`<borderlessbutton>` |{@link UIBorderlessButton}
  * |`<primarybutton>` |{@link UIPrimaryButton}
+ * |`<plainbutton>` |{@link UIPlainButton}
+ * |`<iconbutton>` |{@link UIIconButton}
  * |`<label>` |{@link UILabel}
  * |`<closelabel>` |{@link UICloseLabel}
- * |`<expandedlabel>` |{@link UIExpandedLabel}
- * |`<p>` |{@link UIParagraph}
- * |`<h1>` |{@link UIHeading1}
- * |`<h2>` |{@link UIHeading2}
- * |`<h3>` |{@link UIHeading3}
+ * |`<p>` |{@link UIParagraphLabel}
+ * |`<h1>` |{@link UIHeading1Label}
+ * |`<h2>` |{@link UIHeading2Label}
+ * |`<h3>` |{@link UIHeading3Label}
  * |`<textfield>` |{@link UITextField}
- * |`<borderlesstextfield>` |{@link UIBorderlessTextField}
  * |`<img>` |{@link UIImage}
  * |`<toggle>` |{@link UIToggle}
  * |`<separator>` |{@link UISeparator}
@@ -63,7 +63,6 @@ function flatten(a: any[]): any {
  * |`<formcontext>` |{@link UIFormController}
  * |`<list>` |{@link UIList}
  * |`<selection>` |{@link UISelectionController}
- * |`<style>` |{@link UIStyleController}
  * |`<animation>` |{@link UIAnimationController}
  * |`<render>` |{@link UIViewRenderer}
  *
@@ -72,7 +71,7 @@ function flatten(a: any[]): any {
  * import { JSX } from "desk-frame";
  *
  * export default (
- *   <cell background={UIColor.Background}>
+ *   <cell background={UIColor["@background"]}>
  *     <label>Hello, world!</label>
  *     <label>Today is %[weekDay]</label>
  *     <primarybutton onClick="DoSomething">
@@ -91,6 +90,9 @@ export function JSX(f: any, presets: any, ...rest: any[]): ViewClass {
 	let bindings: any = {};
 	let components: any[] = [];
 	for (let r of rest) {
+		if (r instanceof LazyString) {
+			r = String(r.getOriginal());
+		}
 		if (typeof r === "string") {
 			fmt += r.replace(
 				/\%\[([^\]\:\s\=]+)(?:\=([^\]\:\s]*))?/g,

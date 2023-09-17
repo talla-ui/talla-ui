@@ -3,23 +3,19 @@ import {
 	RenderContext,
 	UIButton,
 	UICell,
-	UIColumn,
+	UIContainer,
 	UIImage,
 	UILabel,
-	UIRow,
-	UIScrollContainer,
 	UISeparator,
 	UISpacer,
 	UITextField,
 	UIToggle,
 } from "desk-frame";
-import { UIContainerRenderer } from "./UIContainerRenderer.js";
-import { UIRowRenderer } from "./UIRowRenderer.js";
-import { UIColumnRenderer } from "./UIColumnRenderer.js";
-import { UICellRenderer } from "./UICellRenderer.js";
-import { UILabelRenderer } from "./UILabelRenderer.js";
 import { UIButtonRenderer } from "./UIButtonRenderer.js";
+import { UICellRenderer } from "./UICellRenderer.js";
+import { UIContainerRenderer } from "./UIContainerRenderer.js";
 import { UIImageRenderer } from "./UIImageRenderer.js";
+import { UILabelRenderer } from "./UILabelRenderer.js";
 import { UISeparatorRenderer } from "./UISeparatorRenderer.js";
 import { UISpacerRenderer } from "./UISpacerRenderer.js";
 import { UITextFieldRenderer } from "./UITextFieldRenderer.js";
@@ -30,13 +26,9 @@ export function makeObserver<T extends RenderContext.Renderable>(
 	target: T,
 ): Observer<T> | undefined {
 	return (
-		target instanceof UIRow
-			? new UIRowRenderer()
-			: target instanceof UIColumn
-			? new UIColumnRenderer()
-			: target instanceof UICell
+		target instanceof UICell
 			? new UICellRenderer()
-			: target instanceof UIScrollContainer
+			: target instanceof UIContainer
 			? new UIContainerRenderer()
 			: target instanceof UILabel
 			? new UILabelRenderer()

@@ -3,6 +3,7 @@ import {
 	removeFromNullableArray,
 } from "../core/NullableArray.js";
 import { errorHandler } from "../errors.js";
+import { ConfigOptions } from "../index.js";
 import { AppException } from "./AppException.js";
 
 /**
@@ -13,13 +14,13 @@ export class Scheduler {
 	 * Creates a new asynchronous task queue with the provided name and options
 	 * @param name The name of the task queue, or a unique symbol to identify it
 	 * @param replace True if any existing queues with the same name should be replaced
-	 * @param configure A callback function to set additional options for the task queue
+	 * @param config An options object or configuration function to set additional options for the task queue
 	 * @returns A new {@link AsyncTaskQueue} instance
 	 */
 	createQueue(
 		name: string | symbol,
 		replace?: boolean,
-		configure?: (options: AsyncTaskQueue.Options) => void,
+		config?: ConfigOptions.Arg<AsyncTaskQueue.Options>,
 	) {
 		// stop all and remove queues with the same name first, if required
 		if (replace) {
@@ -33,9 +34,7 @@ export class Scheduler {
 		}
 
 		// create the queue with given options
-		let options = new AsyncTaskQueue.Options();
-		configure && configure(options);
-		let queue = new AsyncTaskQueue(name, options);
+		let queue = new AsyncTaskQueue(name, AsyncTaskQueue.Options.init(config));
 		this._queues.push(queue);
 		return queue;
 	}
@@ -109,6 +108,7 @@ export class AsyncTaskQueue {
 
 		// schedule next run if needed
 		this._schedule();
+		return this;
 	}
 
 	/**
@@ -132,6 +132,7 @@ export class AsyncTaskQueue {
 			for (let i = q.length - 1; i >= 0; i--) {
 				if (q[i]!.handle === handle) {
 					q.splice(i, 1);
+					this._n--;
 					break;
 				}
 			}
@@ -146,6 +147,7 @@ export class AsyncTaskQueue {
 
 		// schedule next run if needed
 		this._schedule();
+		return this;
 	}
 
 	/**
@@ -164,6 +166,7 @@ export class AsyncTaskQueue {
 	pause() {
 		// just set paused flag, will be checked by run()
 		this._paused = true;
+		return this;
 	}
 
 	/** Resumes execution of (pending) tasks in this queue */
@@ -171,6 +174,7 @@ export class AsyncTaskQueue {
 		// clear paused flag and schedule right away
 		this._paused = false;
 		this._schedule();
+		return this;
 	}
 
 	/**
@@ -190,6 +194,7 @@ export class AsyncTaskQueue {
 
 		// call all afterEach callbacks (from waitAsync)
 		for (let f of this._afterEach) f && f(true);
+		return this;
 	}
 
 	/**
@@ -230,7 +235,7 @@ export class AsyncTaskQueue {
 			clearTimeout(this._timer);
 			this._timer = undefined;
 		}
-		if (this._paused) return;
+		if (this._paused) return this;
 
 		// run a batch of tasks now, if possible
 		let parallel = this.options.parallel;
@@ -267,6 +272,7 @@ export class AsyncTaskQueue {
 
 		// schedule again if needed
 		this._schedule();
+		return this;
 	}
 
 	/** Helper function to handle async task, taking up one parallel slot */
@@ -323,7 +329,7 @@ export class AsyncTaskQueue {
 
 export namespace AsyncTaskQueue {
 	/** An object with options for a particular {@link AsyncTaskQueue} */
-	export class Options {
+	export class Options extends ConfigOptions {
 		/** The number of tasks that can be started (asynchronously) in parallel, defaults to 1 */
 		parallel = 1;
 		/** True if errors should be added to {@link AsyncTaskQueue.errors} instead of being handled globally */

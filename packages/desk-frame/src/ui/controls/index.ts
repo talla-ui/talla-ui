@@ -1,4 +1,3 @@
-export * from "./UIControl.js";
 export * from "./UILabel.js";
 export * from "./UIButton.js";
 export * from "./UIImage.js";

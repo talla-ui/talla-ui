@@ -32,8 +32,8 @@ const view = UICell.with(
 	{
 		margin: 16,
 		padding: 8,
-		background: UIColor.Blue.alpha(0.1),
-		borderColor: UIColor.Red,
+		background: UIColor["@blue"].alpha(0.1),
+		borderColor: UIColor["@red"],
 		borderThickness: 2,
 		dropShadow: 1,
 	},
@@ -46,8 +46,8 @@ const view = UICell.with(
 <cell
 	margin={16}
 	padding={8}
-	background={UIColor.Blue.alpha(0.1)}
-	borderColor={UIColor.Red}
+	background={UIColor["@blue"].alpha(0.1)}
+	borderColor={UIColor["@red"]}
 	borderThickness={2}
 	dropShadow={1}
 >
@@ -68,11 +68,9 @@ Like all containers, cells can add space around and between contained components
 - {@ref UIContainer.padding}
 - {@ref UIContainer.spacing}
 
-To move components within the available space, along the primary axis of the component, use the following property.
+To move components within the available space, or changing the primary axis, use the following property.
 
-- {@ref UIContainer.distribution}
-
-For more options, such as for changing the primary axis from vertical to horizontal, use the {@link UIContainer.layout layout} or {@link UIComponent.style style} properties to apply predefined styles.
+- {@ref UIContainer.layout}
 
 ### Style overrides {#overrides}
 
@@ -81,25 +79,23 @@ Cell containers allow you to change the appearance of the rendered cell by setti
 - {@ref UICell.margin}
 - {@ref UICell.background}
 - {@ref UICell.textColor}
-- {@ref UICell.borderThickness}
-- {@ref UICell.borderColor}
-- {@ref UICell.borderStyle}
 - {@ref UICell.borderRadius}
 - {@ref UICell.dropShadow}
 - {@ref UICell.opacity}
 
 ## Selection state {#selection}
 
-Cell containers automatically keep track of `Select` and `Deselect` events, and set the {@link UICell.selected selected} property accordingly. These events aren't emitted automatically — use an event preset and/or a {@link UISelectionController} to manage selection state. You can also use the `selected` state for {@link UIStyle} objects as illustrated below.
+Cell containers automatically keep track of `Select` and `Deselect` events, and set the {@link UICell.selected selected} property accordingly. These events aren't emitted automatically — use an event preset and/or a {@link UISelectionController} to manage selection state. You can also use the selected state for extended style classes as illustrated below.
 
 <!--{{iframesample js="./sample-select.js"}}-->
 
 ```ts
+// TODO: Update this example
 const cellStyle = UIStyle.Cell.extend(
 	{
 		decoration: {
 			borderThickness: 1,
-			borderColor: UIColor.Separator,
+			borderColor: UIColor["@separator"],
 		},
 	},
 	{
@@ -132,33 +128,27 @@ const view = desk.UISelectionController.with(
 
 The following properties can be preset using `UICell.with({ ... })` or JSX `<cell ...>`.
 
-| Property                                                        | Type                                                                 |
-| :-------------------------------------------------------------- | :------------------------------------------------------------------- |
-| {@link UIComponent.style style}                                 | Instance of {@link UIStyle} or a theme style name starting with `@`  |
-| {@link UIComponent.dimensions dimensions}                       | An object with {@link UIStyle.Definition.Dimensions} properties      |
-| {@link UIComponent.position position}                           | An object with {@link UIStyle.Definition.Position} properties        |
-| {@link UIContainer.layout layout}                               | An object with {@link UIStyle.Definition.ContainerLayout} properties |
-| {@link UICell.decoration decoration}                            | An object with {@link UIStyle.Definition.Decoration} properties      |
-| {@link UIComponent.hidden hidden}                               | Boolean, or binding                                                  |
-| {@link UIComponent.accessibleRole accessibleRole}               | String, or binding                                                   |
-| {@link UIComponent.accessibleLabel accessibleLabel}             | String, or binding                                                   |
-| {@link UIContainer.distribution distribution}                   | String, or binding                                                   |
-| {@link UIContainer.padding padding}                             | Number, string with CSS unit, {@link UIStyle.Offsets}, or binding    |
-| {@link UIContainer.spacing spacing}                             | Number, string with CSS unit, or binding                             |
-| {@link UICell.margin margin}                                    | Number, string with CSS unit, {@link UIStyle.Offsets}, or binding    |
-| {@link UICell.background background}                            | {@link UIColor}, string, or binding                                  |
-| {@link UICell.textDirection textDirection}                      | String (`"rtl"` or `"ltr"`)                                          |
-| {@link UICell.textColor textColor}                              | {@link UIColor}, string, or binding                                  |
-| {@link UICell.borderThickness borderThickness}                  | Number, string with CSS unit, {@link UIStyle.Offsets}, or binding    |
-| {@link UICell.borderColor borderColor}                          | {@link UIColor}, string, or binding                                  |
-| {@link UICell.borderStyle borderStyle}                          | String, or binding                                                   |
-| {@link UICell.borderRadius borderRadius}                        | Number, string with CSS unit, or binding                             |
-| {@link UICell.dropShadow dropShadow}                            | Number (0-1), or binding                                             |
-| {@link UICell.opacity opacity}                                  | Number (0-1), or binding                                             |
-| {@link UIContainer.asyncContentRendering asyncContentRendering} | True if content may be rendered asynchronously                       |
-| {@link UIContainer.allowFocus allowFocus}                       | True if this component may receive input focus                       |
-| {@link UIContainer.allowKeyboardFocus allowKeyboardFocus}       | True if keyboard focus should be enabled                             |
-| requestFocus                                                    | True to request focus immediately after first render                 |
+| Property                                                        | Type                                                                  |
+| :-------------------------------------------------------------- | :-------------------------------------------------------------------- |
+| {@link UIComponent.hidden hidden}                               | Boolean, or binding                                                   |
+| {@link UIComponent.position position}                           | {@link UIComponent.Position}, or binding                              |
+| {@link UIComponent.accessibleRole accessibleRole}               | String, or binding                                                    |
+| {@link UIComponent.accessibleLabel accessibleLabel}             | String, or binding                                                    |
+| {@link UIContainer.padding padding}                             | Number, string with CSS unit, {@link UIComponent.Offsets}, or binding |
+| {@link UIContainer.spacing spacing}                             | Number, string with CSS unit, or binding                              |
+| {@link UIComponent.layout layout}                               | {@link UIContainer.Layout}, or binding                                |
+| {@link UICell.margin margin}                                    | Number, string with CSS unit, {@link UIComponent.Offsets}, or binding |
+| {@link UICell.background background}                            | {@link UIColor}, string, or binding                                   |
+| {@link UICell.textDirection textDirection}                      | String (`"rtl"` or `"ltr"`)                                           |
+| {@link UICell.textColor textColor}                              | {@link UIColor}, string, or binding                                   |
+| {@link UICell.borderRadius borderRadius}                        | Number, string with CSS unit, or binding                              |
+| {@link UICell.dropShadow dropShadow}                            | Number (0-1), or binding                                              |
+| {@link UICell.opacity opacity}                                  | Number (0-1), or binding                                              |
+| {@link UICell.cellStyle cellStyle}                              | {@link UICellStyle} class, overrides, or binding                      |
+| {@link UIContainer.asyncContentRendering asyncContentRendering} | True if content may be rendered asynchronously                        |
+| {@link UIContainer.allowFocus allowFocus}                       | True if this component may receive input focus                        |
+| {@link UIContainer.allowKeyboardFocus allowKeyboardFocus}       | True if keyboard focus should be enabled                              |
+| requestFocus                                                    | True to request focus immediately after first render                  |
 
 ## Events {#events}
 

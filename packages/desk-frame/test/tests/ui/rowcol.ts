@@ -1,11 +1,4 @@
-import {
-	app,
-	UIColumn,
-	UILabel,
-	UIRow,
-	UIOppositeRow,
-	UICenterRow,
-} from "../../../dist/index.js";
+import { app, UIColumn, UILabel, UIRow } from "../../../dist/index.js";
 import { describe, test, expect, useTestContext } from "@desk-framework/test";
 
 describe("UIRow and UIColumn", (scope) => {
@@ -20,13 +13,6 @@ describe("UIRow and UIColumn", (scope) => {
 		let label2 = new UILabel("bar");
 		let row = new UIRow(label1, label2);
 		expect(row).toHaveProperty("content").asArray().toBeArray([label1, label2]);
-	});
-
-	test("Row sub type constructors", () => {
-		let opp = new UIOppositeRow(new UILabel("foo"));
-		expect(opp.distribution).toBe("end");
-		let ctr = new UICenterRow(new UILabel("foo"));
-		expect(ctr.distribution).toBe("center");
 	});
 
 	test("Column constructor with content", () => {
@@ -72,13 +58,11 @@ describe("UIRow and UIColumn", (scope) => {
 		// wait for row > col > label to be rendered
 		// and check row height
 		let out = await t.expectOutputAsync(100, { type: "row" });
-		let hasHeight = out.getSingle().matchStyle({ dimensions: { height: 123 } });
-		if (!hasHeight) t.fail("Height mismatch");
+		expect(out.getSingle().styles).toHaveProperties({ height: 123 });
 
 		// check column width
 		out = out.containing({ type: "column" });
-		let hasWidth = out.getSingle().matchStyle({ dimensions: { width: 123 } });
-		if (!hasWidth) t.fail("Width mismatch");
+		expect(out.getSingle().styles).toHaveProperties({ width: 123 });
 
 		// check if label is there, too
 		out.containing({ type: "label" }).getSingle();

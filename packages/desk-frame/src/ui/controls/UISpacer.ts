@@ -1,6 +1,4 @@
 import { UIComponent } from "../UIComponent.js";
-import { UIStyle } from "../UIStyle.js";
-import { UIControl } from "./UIControl.js";
 
 /**
  * A view class that represents a flexible control without any content
@@ -11,25 +9,25 @@ import { UIControl } from "./UIControl.js";
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
-export class UISpacer extends UIControl {
+export class UISpacer extends UIComponent {
 	/**
 	 * Creates a preset spacer class with the specified height
-	 * @param height The spacer height, in pixels or CSS length with unit
-	 * @param shrinkwrap False if the spacer should expand beyond the specified height, where possible, within a vertical container component; defaults to true
+	 * @param height The target spacer height, in pixels or CSS length with unit; if undefined, the spacer will occupy all available space
+	 * @param minHeight The minimum spacer height, in pixels or CSS length with unit
 	 * @returns A class that can be used to create instances of this spacer class with the provided height
 	 */
-	static withHeight(height?: string | number, shrinkwrap = true) {
-		return this.with({ height, shrinkwrap });
+	static withHeight(height?: string | number, minHeight?: string | number) {
+		return this.with({ height, minHeight });
 	}
 
 	/**
 	 * Creates a preset spacer class with the specified width
-	 * @param height The spacer width, in pixels or CSS length with unit
-	 * @param shrinkwrap False if the spacer should expand beyond the specified width, where possible, within a horizontal container component; defaults to true
+	 * @param width The target spacer width, in pixels or CSS length with unit; if undefined, the spacer will occupy all available space
+	 * @param minWidth The minimum spacer width, in pixels or CSS length with unit
 	 * @returns A class that can be used to create instances of this spacer class with the provided width
 	 */
-	static withWidth(width?: string | number, shrinkwrap = true) {
-		return this.with({ width, shrinkwrap });
+	static withWidth(width?: string | number, minWidth?: string | number) {
+		return this.with({ width, minWidth });
 	}
 
 	/**
@@ -37,48 +35,42 @@ export class UISpacer extends UIControl {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: UIComponent.ViewPreset<UIControl> & {
-			/** Spacer width (in pixels or string with unit) */
-			width?: string | number;
-			/** Spacer height (in pixels or string with unit) */
-			height?: string | number;
-		},
+		preset: UIComponent.ViewPreset<
+			UIComponent,
+			this,
+			"width" | "height" | "minWidth" | "minHeight"
+		>,
 	) {
-		if (preset.height !== undefined) {
-			preset = {
-				...preset,
-				height: undefined,
-				shrinkwrap: preset.shrinkwrap == null ? true : preset.shrinkwrap,
-				dimensions: {
-					...preset.dimensions,
-					grow: 0,
-					minHeight: preset.height,
-				},
-			};
-			delete preset.height;
-		}
-		if (preset.width !== undefined) {
-			preset = {
-				...preset,
-				width: undefined,
-				shrinkwrap: preset.shrinkwrap == null ? true : preset.shrinkwrap,
-				dimensions: {
-					...preset.dimensions,
-					grow: 0,
-					minWidth: preset.width,
-				},
-			};
-			delete preset.width;
-		}
 		super.applyViewPreset(preset);
 	}
 
-	/** Creates a new spacer view object */
-	constructor() {
+	/**
+	 * Creates a new spacer component, with optional width and height
+	 * @param width The spacer width, in pixels or CSS length with unit
+	 * @param height The spacer height, in pixels or CSS length with unit
+	 */
+	constructor(
+		width?: string | number,
+		height?: string | number,
+		minWidth?: string | number,
+		minHeight?: string | number,
+	) {
 		super();
-		this.style = UIStyle.Control;
-
-		// default shrinkwrap to false
-		this.shrinkwrap = false;
+		this.width = width;
+		this.height = height;
+		this.minWidth = minWidth;
+		this.minHeight = minHeight;
 	}
+
+	/** Spacer width (in pixels or string with unit) */
+	width?: string | number;
+
+	/** Spacer height (in pixels or string with unit) */
+	height?: string | number;
+
+	/** Spacer minimum width (in pixels or string with unit) */
+	minWidth?: string | number;
+
+	/** Spacer minimum height (in pixels or string with unit) */
+	minHeight?: string | number;
 }

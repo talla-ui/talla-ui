@@ -7,16 +7,16 @@ const view = desk.UICell.with(
 		desk.UILabel.withText("Third label"),
 		desk.UIRow.with(
 			desk.UIExpandedLabel.withText("UIExpandedLabel in UIRow"),
-			desk.UIPrimaryButton.withLabel("UIPrimaryButton")
+			desk.UIPrimaryButton.withLabel("UIPrimaryButton"),
 		),
 		desk.UICell.with(
 			{
-				borderColor: desk.UIColor.Separator,
+				borderColor: desk.UIColor["@separator"],
 				borderThickness: 1,
 				dimensions: { height: 64 },
 			},
-			desk.UILabel.withText("UILabel in UICell with height")
-		)
-	)
+			desk.UILabel.withText("UILabel in UICell with height"),
+		),
+	),
 );
 app.render(new view(), { mode: "page" });

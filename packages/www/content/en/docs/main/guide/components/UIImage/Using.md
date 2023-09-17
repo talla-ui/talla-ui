@@ -11,10 +11,9 @@ assets:
 
 ## Definition {#definition}
 
-Image components are represented by the {@link UIImage} class, which inherits functionality from the {@link UIControl} and {@link UIComponent} abstract classes.
+Image components are represented by the {@link UIImage} class, which inherits functionality from the {@link UIComponent} abstract class.
 
 - {@ref UIImage}
-- {@ref UIControl}
 - {@ref UIComponent}
 
 ## Appearance {#appearance}
@@ -47,22 +46,19 @@ Decorations dimensions, and position are customizable, either using {@link UIThe
 
 The following properties can be preset using `UIImage.with({ ... })` or JSX `<img ...>`.
 
-| Property                                              | Type                                                                |
-| :---------------------------------------------------- | :------------------------------------------------------------------ |
-| {@link UIComponent.style style}                       | Instance of {@link UIStyle} or a theme style name starting with `@` |
-| {@link UIComponent.dimensions dimensions}             | An object with {@link UIStyle.Definition.Dimensions} properties     |
-| {@link UIComponent.position position}                 | An object with {@link UIStyle.Definition.Position} properties       |
-| {@link UIControl.textStyle textStyle}                 | An object with {@link UIStyle.Definition.TextStyle} properties      |
-| {@link UIControl.decoration decoration}               | An object with {@link UIStyle.Definition.Decoration} properties     |
-| {@link UIComponent.hidden hidden}                     | Boolean, or binding                                                 |
-| {@link UIComponent.accessibleRole accessibleRole}     | String, or binding                                                  |
-| {@link UIComponent.accessibleLabel accessibleLabel}   | String, or binding                                                  |
-| {@link UIControl.disabled disabled}                   | Boolean, or binding                                                 |
-| {@link UIControl.shrinkwrap shrinkwrap}               | Boolean, or binding                                                 |
-| {@link UIImage.url url}                               | String, {@link LazyString}, or binding                              |
-| {@link UIImage.allowFocus allowFocus}                 | True to allow the image to receive input focus                      |
-| {@link UIImage.allowKeyboardFocus allowKeyboardFocus} | True to allow the image to receive input focus using the keyboard   |
-| requestFocus                                          | True to request focus immediately after first render                |
+| Property                                              | Type                                                              |
+| :---------------------------------------------------- | :---------------------------------------------------------------- |
+| {@link UIComponent.hidden hidden}                     | Boolean, or binding                                               |
+| {@link UIComponent.position position}                 | {@link UIComponent.Position}, or binding                          |
+| {@link UIComponent.accessibleRole accessibleRole}     | String, or binding                                                |
+| {@link UIComponent.accessibleLabel accessibleLabel}   | String, or binding                                                |
+| {@link UIImage.url url}                               | String, {@link LazyString}, or binding                            |
+| {@link UIImage.width width}                           | Number, string with CSS unit, or binding                          |
+| {@link UIImage.height height}                         | Number, string with CSS unit, or binding                          |
+| {@link UIImage.imageStyle imageStyle}                 | {@link UIImageStyle} class, overrides, or binding                 |
+| {@link UIImage.allowFocus allowFocus}                 | True to allow the image to receive input focus                    |
+| {@link UIImage.allowKeyboardFocus allowKeyboardFocus} | True to allow the image to receive input focus using the keyboard |
+| requestFocus                                          | True to request focus immediately after first render              |
 
 Note that {@link UIImage} also provides the following methods.
 

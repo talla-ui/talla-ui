@@ -17,7 +17,7 @@ import { View, ViewClass } from "./View.js";
  *
  * View composites are primarily used in two different ways:
  *
- * - As a way to _control_ an encapsulated view. Refer to e.g. {@link UIConditional}, {@link UIStyleController}, and {@link UIList}, all of which are built-in ViewComposite classes.
+ * - As a way to _control_ an encapsulated view. Refer to e.g. {@link UIConditional} and {@link UIList}, which are built-in ViewComposite classes.
  * - As a way to create reusable view structures. Refer to the static {@link define()} method which can be used to create a ViewComposite class using a function and/or a class.
  *
  * Note the similarities with the {@link ViewActivity} class, which also encapsulates a single view object. As a rule, use view _activities_ if event handlers or other class methods include business logic. Use view _composites_ if the class is only concerned with the look and feel of a set of UI components, and all content can be preset, bound, or provided by a view model.
@@ -202,23 +202,23 @@ export abstract class ViewComposite extends View {
 
 		// auto-attach view, render when changed, delegate events
 		class ViewObserver extends Observer<View> {
-			constructor(public controller: ViewComposite) {
+			constructor(public vc: ViewComposite) {
 				super();
 			}
 			override observe(observed: View) {
 				super.observe(observed);
-				this.controller.render();
+				this.vc.render();
 				return this;
 			}
 			override stop() {
-				this.controller.render();
+				this.vc.render();
 			}
 			protected override handleEvent(event: ManagedEvent) {
 				if (
-					this.controller.body &&
+					this.vc.body &&
 					!(event as RenderContext.RendererEvent).isRendererEvent
 				) {
-					this.controller.delegateViewEvent(event);
+					this.vc.delegateViewEvent(event);
 				}
 			}
 		}
@@ -286,7 +286,7 @@ export abstract class ViewComposite extends View {
 			// return true or promise result, otherwise false below
 			if (result === true) return true;
 			if (result && result.then && result.catch) {
-				return (result as Promise<void>).catch(errorHandler);
+				return (result as Promise<unknown>).catch(errorHandler);
 			}
 		}
 		return false;
@@ -299,7 +299,7 @@ export abstract class ViewComposite extends View {
 	render(callback?: RenderContext.RenderCallback) {
 		// create a new view and call beforeRender if needed
 		if (!this.body) this.body = this.createView()!;
-		if (!this._renderer.isRendered()) this.beforeRender();
+		if (callback && !this._renderer.isRendered()) this.beforeRender();
 		this._renderer.render(this.body, callback);
 		return this;
 	}

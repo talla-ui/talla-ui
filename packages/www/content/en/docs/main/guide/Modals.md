@@ -8,7 +8,7 @@ applies_to:
   - RenderContext
   - GlobalContext
   - GlobalContext.showAlertDialogAsync
-  - GlobalContext.showConfirmationDialogAsync
+  - GlobalContext.showConfirmDialogAsync
   - GlobalContext.showModalMenuAsync
   - DialogViewActivity
 ---
@@ -18,6 +18,6 @@ applies_to:
 > **Note:** This article is a stub. The documentation for this topic is still in development. In the meantime, refer to the information on the reference pages linked below.
 
 - {@ref GlobalContext.showAlertDialogAsync}
-- {@ref GlobalContext.showConfirmationDialogAsync}
+- {@ref GlobalContext.showConfirmDialogAsync}
 - {@ref GlobalContext.showModalMenuAsync}
 - {@ref DialogViewActivity}

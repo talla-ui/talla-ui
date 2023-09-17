@@ -1,20 +1,15 @@
 import {
+	Binding,
 	bound,
 	JSX,
-	UIStyle,
 	ViewComposite,
 } from "../../../lib/desk-framework-web.es2015.esm.min";
 
-const styles = {
-	counter: UIStyle.Label.extend({
-		textStyle: { fontSize: 36, bold: true },
-		decoration: { cssClassNames: ["BigCounter"] },
-	}),
-};
-
-export default ViewComposite.define<{ count: number }>(
+export default ViewComposite.define<{ count: number | Binding<number> }>(
 	<column>
 		<label>Count:</label>
-		<label style={styles.counter}>{bound.number("count")}</label>
+		<label labelStyle={{ bold: true, fontSize: 36 }}>
+			{bound.number("count")}
+		</label>
 	</column>,
 );

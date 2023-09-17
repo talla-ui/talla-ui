@@ -1,4 +1,5 @@
-import { UITheme, strf } from "desk-frame";
+import { MessageDialogOptions, UITheme } from "desk-frame";
+import { WebContextOptions } from "../WebContext.js";
 import {
 	importStylesheets,
 	resetCSS,
@@ -7,24 +8,24 @@ import {
 	setGlobalCSS,
 	setLogicalPxScale,
 } from "./DOMStyle.js";
+import { MessageDialog } from "./MessageDialog.js";
+import { ModalMenu } from "./ModalMenu.js";
+import { animations } from "./defaults/animations.js";
+import { colors } from "./defaults/colors.js";
 import { makeBaseCSS } from "./defaults/css.js";
 import { icons } from "./defaults/icons.js";
-import { animations } from "./defaults/animations.js";
-import { defaultControlTextStyle, makeStyles } from "./defaults/styles.js";
-import { AlertDialog, alertDialogStyles } from "./AlertDialog.js";
-import { ModalMenu, modalMenuStyles } from "./ModalMenu.js";
-import { WebContextOptions } from "../WebContext.js";
+import { defaultControlTextStyle, styles } from "./defaults/styles.js";
 
 /** @internal Modal view implementation for the web context */
 export class ModalFactory implements UITheme.ModalControllerFactory {
-	createAlertDialog() {
-		return new AlertDialog();
+	buildAlertDialog(options: MessageDialogOptions) {
+		return new MessageDialog(options).setAlertButton();
 	}
-	createConfirmationDialog() {
-		return new AlertDialog(strf("Confirm"), strf("Cancel"));
+	buildConfirmDialog(options: MessageDialogOptions) {
+		return new MessageDialog(options).setConfirmButtons();
 	}
-	createMenu() {
-		return new ModalMenu();
+	buildMenu(options: UITheme.MenuOptions) {
+		return new ModalMenu(options);
 	}
 }
 
@@ -66,13 +67,9 @@ export class WebTheme extends UITheme {
 		super();
 
 		this.modalFactory = new ModalFactory();
-		this.icons = icons;
-		this.animations = animations;
-		this.styles = {
-			...this.styles,
-			...makeStyles(this.styles),
-			...alertDialogStyles,
-			...modalMenuStyles,
-		};
+		this.icons = new Map(icons);
+		this.animations = new Map(animations);
+		this.colors = new Map(colors);
+		this.styles = new Map(styles) as any;
 	}
 }

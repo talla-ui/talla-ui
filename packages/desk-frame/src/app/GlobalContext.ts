@@ -1,4 +1,9 @@
-import { LazyString, ManagedObject, StringConvertible } from "../core/index.js";
+import {
+	ConfigOptions,
+	LazyString,
+	ManagedObject,
+	StringConvertible,
+} from "../core/index.js";
 import { err, ERROR, errorHandler, setErrorHandler } from "../errors.js";
 import { ActivationContext } from "./ActivationContext.js";
 import { ServiceContext } from "./ServiceContext.js";
@@ -11,6 +16,7 @@ import type { ViewportContext } from "./ViewportContext.js";
 import { UITheme } from "../ui/UITheme.js";
 import { Scheduler } from "./Scheduler.js";
 import { LogWriter } from "./LogWriter.js";
+import { MessageDialogOptions } from "./MessageDialogOptions.js";
 
 /**
  * A singleton class that represents the global application state
@@ -244,138 +250,105 @@ export class GlobalContext extends ManagedObject {
 	 * @summary This method passes a renderer-specific transformation object to an asynchronous function, which may use methods on the transformation object to animate the view output.
 	 * @see {@link RenderContext.OutputTransform}
 	 * @see {@link RenderContext.OutputTransformer}
+	 * @see {@link UITheme.animations}
 	 *
-	 * @param out The view output element to be animated, platform dependent
+	 * @param ref The UI component to be animated
 	 * @param transformer An asynchronous function that performs transformations, or a named animation from the current theme
 	 * @error This method throws an error if the renderer hasn't been initialized yet.
 	 */
 	async animateAsync(
-		out?: RenderContext.Output,
-		animation?: RenderContext.OutputTransformer | string,
+		ref: { lastRenderOutput?: RenderContext.Output },
+		animation?: RenderContext.OutputTransformer | `@${string}`,
 	) {
 		if (!this.renderer) throw err(ERROR.GlobalContext_NoRenderer);
+		let out = ref.lastRenderOutput;
 		let t = out && this.renderer.transform(out);
 		let f =
 			typeof animation === "string"
-				? UITheme.getAnimation(animation)
+				? this.theme?.animations.get(animation.slice(1))
 				: animation;
 		if (t && f) await f(t);
 	}
 
 	/**
-	 * Displays an alert dialog with the specified content
+	 * Displays an alert dialog with the specified content and a single dismiss button
 	 * - Use {@link strf} to translate content if necessary; this method doesn't localize strings by default.
-	 * @param message
-	 *  The message to be displayed, or an array with multiple messages
-	 * @param title
-	 *  The dialog title, displayed at the top of the dialog (optional)
-	 * @param buttonLabel
-	 *  The label for the dismiss button
+	 * @param config An instance of {@link MessageDialogOptions}; or a callback function to set options for the dialog to be displayed; or one or more messages to be displayed
+	 * @param buttonLabel The label for the dismiss button (if a single message was provided)
 	 * @returns A promise that resolves when the dialog is closed.
 	 * @error This method throws an error if the theme modal dialog controller can't be initialized (i.e. there's no current theme, or the theme doesn't support modal dialog views).
 	 */
 	async showAlertDialogAsync(
-		message: StringConvertible | StringConvertible[],
-		title?: StringConvertible,
+		config:
+			| ConfigOptions.Arg<MessageDialogOptions>
+			| LazyString
+			| string
+			| StringConvertible[],
 		buttonLabel?: StringConvertible,
 	) {
-		let controller = this.theme?.modalFactory?.createAlertDialog?.();
+		let controller = this.theme?.modalFactory?.buildAlertDialog?.(
+			config instanceof MessageDialogOptions || typeof config === "function"
+				? MessageDialogOptions.init(config)
+				: new MessageDialogOptions(config, buttonLabel),
+		);
 		if (!controller) throw err(ERROR.GlobalContext_NoModal);
-
-		// use controller to set message, title, and button text
-		for (let m of Array.isArray(message) ? message : [message]) {
-			controller!.addMessage(m);
-		}
-		if (title) controller.setTitle(title);
-		if (buttonLabel) controller.setButtonLabel(buttonLabel);
-
-		// create the dialog and display it
 		await controller.showAsync();
 	}
 
 	/**
-	 * Displays a confirmation dialog with the specified content
+	 * Displays a confirmation dialog with the specified text and buttons
 	 * - Use {@link strf} to translate content if necessary; this method doesn't localize strings by default.
-	 * @param message
-	 *  The message to be displayed, or an array with multiple messages
-	 * @param title
-	 *  The dialog title, displayed at the top of the dialog (optional)
-	 * @param confirmButtonLabel
-	 *  The label for the 'confirm' button
-	 * @param cancelButtonLabel
-	 *  The label for the 'cancel' button
-	 * @returns A promise that resolves to true if the confirm button was clicked, false otherwise.
+	 * @param config An instance of {@link MessageDialogOptions}; or a callback function to set options for the dialog to be displayed; or one or more messages to be displayed
+	 * @param confirmLabel The label for the confirm button (if a single message was provided instead of an options object or callback)
+	 * @param cancelLabel The label for the cancel button (if a single message was provided instead of an options object or callback)
+	 * @returns A promise that resolves to true if the confirm button was clicked, false if cancelled, or the number 0 if the alternative option is selected (if any).
 	 * @error This method throws an error if the theme modal dialog controller can't be initialized (i.e. there's no current theme, or the theme doesn't support modal dialog views).
 	 */
-	async showConfirmationDialogAsync(
-		message: StringConvertible | StringConvertible[],
-		title?: StringConvertible,
-		confirmButtonLabel?: StringConvertible,
-		cancelButtonLabel?: StringConvertible,
+	async showConfirmDialogAsync(
+		config:
+			| ConfigOptions.Arg<MessageDialogOptions>
+			| LazyString
+			| string
+			| StringConvertible[],
+		confirmLabel?: StringConvertible,
+		cancelLabel?: StringConvertible,
 	) {
-		let controller = this.theme?.modalFactory?.createConfirmationDialog?.();
+		let controller = this.theme?.modalFactory?.buildConfirmDialog?.(
+			config instanceof MessageDialogOptions || typeof config === "function"
+				? MessageDialogOptions.init(config)
+				: new MessageDialogOptions(config, confirmLabel, cancelLabel),
+		);
 		if (!controller) throw err(ERROR.GlobalContext_NoModal);
-
-		// use controller to set message, title, and button text
-		for (let m of Array.isArray(message) ? message : [message]) {
-			controller!.addMessage(m);
-		}
-		if (title) controller.setTitle(title);
-		if (confirmButtonLabel)
-			controller.setConfirmButtonLabel(confirmButtonLabel);
-		if (cancelButtonLabel) controller.setCancelButtonLabel(cancelButtonLabel);
-
-		// create the dialog and display it, then return confirmed boolean
-		return (await controller.showAsync()).confirmed;
+		let result = await controller.showAsync();
+		return result.confirmed ? true : result.other ? 0 : false;
 	}
 
 	/** Displays a context/dropdown menu with the provided list of items
 	 *
 	 * @summary
-	 * This method displays a modal menu with the list of items that are provided using the `items` argument. The menu is positioned near a particular UI component (an instance of {@link UIComponent}, e.g. a button that was clicked by the user).
+	 * This method displays a modal menu, using the specified options (or options that are set in a configuration function). The menu is positioned near a particular UI component, an instance of {@link UIComponent}, e.g. a button that was clicked by the user.
 	 *
 	 * The `key` value of the chosen menu item, if any, is returned asynchronously. If the menu was dismissed, the returned promise is resolved to `undefined`.
 	 *
-	 * @note Use {@link strf} to translate content if necessary; this method doesn't localize strings by default.
+	 * @note Use {@link strf} to translate item labels if necessary; this method doesn't localize strings by default.
 	 *
-	 * @param items
-	 *  A list of menu items, as objects of type {@link UITheme.MenuItem}
-	 * @param ref
-	 * 	The related UI component
+	 * @param config An instance of {@link UITheme.MenuOptions}, including a list of menu items; or a callback function to set options for the menu to be displayed
+	 * @param ref The related UI component
 	 * @returns A promise that resolves to the selected item key, if any
 	 * @error This method throws an error if the theme modal menu controller can't be initialized (i.e. there's no current theme, or the theme doesn't support modal menu views).
-	 *
-	 * @example
-	 * // An event handler, part of an activity or view composite:
-	 * async onSomeButtonClick(e: UIComponentEvent) {
-	 *   let choice = await app.showModalMenuAsync(
-	 *     [
-	 *       { key: "one", text: "Option one" },
-	 *       // ...
-	 *     ],
-	 *     e.source // <-- the button that was pressed
-	 *   )
-	 *   if (choice === "one") {
-	 *     // the user selected Option one
-	 *   }
-	 * }
 	 */
 	async showModalMenuAsync(
-		items: UITheme.MenuItem[],
-		ref: { lastRenderOutput?: RenderContext.Output },
-		width?: number,
+		config: ConfigOptions.Arg<UITheme.MenuOptions>,
+		ref?: { lastRenderOutput?: RenderContext.Output },
 	) {
-		let controller = this.theme?.modalFactory?.createMenu?.();
+		let controller = this.theme?.modalFactory?.buildMenu?.(
+			UITheme.MenuOptions.init(config),
+		);
 		if (!controller) throw err(ERROR.GlobalContext_NoModal);
-
-		// use controller to add items
-		for (let item of items) {
-			controller.addItem(item);
-		}
-		if (width) controller.setWidth(width);
-
-		// create the menu and display it, then return key
-		return (await controller.showAsync({ ref: ref.lastRenderOutput })).key;
+		let result = await controller.showAsync({
+			ref: ref && ref.lastRenderOutput,
+		});
+		return result && result.key;
 	}
 
 	/**
@@ -446,7 +419,7 @@ export class GlobalContext extends ManagedObject {
  * **Rendering** — Use the following methods to render views.
  *
  * - {@ref GlobalContext.showAlertDialogAsync()}
- * - {@ref GlobalContext.showConfirmationDialogAsync()}
+ * - {@ref GlobalContext.showConfirmDialogAsync()}
  * - {@ref GlobalContext.showModalMenuAsync()}
  * - {@ref GlobalContext.render()}
  * - {@ref GlobalContext.animateAsync()}
