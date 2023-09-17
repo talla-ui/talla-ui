@@ -510,8 +510,8 @@ function tryWatchFromOrigin(
 	nestingLevel = 0,
 ): void {
 	if (origin && !origin[$_unlinked]) {
-		// if the linked origin object is a list/map, skip it right away
-		// (don't bind to e.g. `.count` on containing lists/maps)
+		// if the linked origin object is a list, skip it right away
+		// (don't bind to e.g. `.count` on containing lists)
 		if (Symbol.iterator in origin) {
 			tryWatchFromOrigin(
 				managedObject,

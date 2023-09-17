@@ -2,7 +2,6 @@ import {
 	bound,
 	Binding,
 	ManagedList,
-	ManagedMap,
 	ManagedObject,
 	Observer,
 	GlobalEmitter,
@@ -337,7 +336,6 @@ describe("Bindings", () => {
 			}
 			class Parent extends ManagedObject {
 				list = new ManagedList().restrict(ListItem);
-				map = new ManagedMap().restrict(ListItem);
 				readonly boundIndex = this.attach(
 					new BoundObject().bindNumber("list.0.n"),
 				);
@@ -346,9 +344,6 @@ describe("Bindings", () => {
 				);
 				readonly boundLast = this.attach(
 					new BoundObject().bindNumber("list.#last.n"),
-				);
-				readonly boundMap = this.attach(
-					new BoundObject().bindNumber("map.#a.n"),
 				);
 			}
 			let p = new Parent();
@@ -375,13 +370,6 @@ describe("Bindings", () => {
 			expect(p).toHaveProperty("boundIndex").toHaveProperty("a").toBe(2);
 			expect(p).toHaveProperty("boundFirst").toHaveProperty("a").toBe(2);
 			expect(p).toHaveProperty("boundLast").toHaveProperty("a").toBe(1);
-
-			t.log("Testing empty map");
-			expect(p).toHaveProperty("boundMap").toHaveProperty("a").toBeUndefined();
-
-			t.log("Testing map item");
-			p.map.set("a", new ListItem(1));
-			expect(p).toHaveProperty("boundMap").toHaveProperty("a").toBe(1);
 		});
 
 		test("Binding to plain object property", () => {

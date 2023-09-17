@@ -17,6 +17,7 @@ import { UITheme } from "../ui/UITheme.js";
 import { Scheduler } from "./Scheduler.js";
 import { LogWriter } from "./LogWriter.js";
 import { MessageDialogOptions } from "./MessageDialogOptions.js";
+import { Service } from "./Service.js";
 
 /**
  * A singleton class that represents the global application state
@@ -164,11 +165,10 @@ export class GlobalContext extends ManagedObject {
 	 * @summary
 	 * This method adds a global service to the current {@link ServiceContext}, i.e. `app.services`. This allows other parts of the application to find and observe the service.
 	 *
-	 * @param name The name of the service to be added
-	 * @param service The service to be added
+	 * @param service The service to be added, must have a valid `id` property
 	 */
-	addService(name: string, service: ManagedObject) {
-		this.services.set(name, service);
+	addService(service: Service) {
+		this.services.add(service);
 		return this;
 	}
 

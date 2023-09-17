@@ -53,14 +53,14 @@ To alleviate these issues, the {@link ManagedObject} class includes a way to lin
 
 - An object can only be attached to one object (its parent, or owner).
 - You can find out to which parent an object is attached, if any.
-- Multiple objects can be attached to a single parent, using properties, or as part of a list or map (see below).
+- Multiple objects can be attached to a single parent, using properties, or as part of a managed list (see below).
 - Attaching an object to another parent _detaches_ it from the first.
 - After an object is no longer needed, you can **unlink** it: this also _recursively_ unlinks all attached objects automatically, and informs the parent object if needed.
 - After unlinking, the object can no longer be attached, and other features such as events and bindings stop working.
 
 This pattern has two main advantages for managing an application at runtime:
 
-**Ownership** — While any object may _reference_ any other object, a {@link ManagedObject} only has one _attached_ parent (an object, or a list or map). This makes it clear when objects are no longer needed, and should be cleaned up along with their parent(s) and/or other attached objects.
+**Ownership** — While any object may _reference_ any other object, a {@link ManagedObject} only has one _attached_ parent (an object or a managed list). This makes it clear when objects are no longer needed, and should be cleaned up along with their parent(s) and/or other attached objects.
 
 **Events and bindings** — Arranging objects in a simple parent-child hierarchy also allows for simple event handling, and _binding_ property values by dynamically observing parent properties — as well as cleaning up after event handlers and bindings when objects are detached or unlinked.
 
@@ -121,19 +121,18 @@ class MyActivity extends PageViewActivity {
 }
 ```
 
-## Attaching objects through lists and maps {#attach-lists}
+## Attaching objects through managed lists {#attach-lists}
 
-Rather than attaching objects one by one, you can also attach objects using _lists and maps_ — that's, instances of {@link ManagedList} and {@link ManagedMap}. These classes have been specifically designed to contain {@link ManagedObject} instances, and they can be attached, too.
+Rather than attaching objects one by one, you can also attach objects using _managed lists_ — that is, instances of {@link ManagedList}. This class has been specifically designed to contain {@link ManagedObject} instances, and they can be attached, too.
 
-- After a list (or map) is attached to a {@link ManagedObject} (which includes any other list or map), all objects contained by it are attached to the list itself.
-- Any objects that are added to the list (or map) afterwards, are also automatically attached to it.
-- When an object is unlinked, it's removed from the list/map automatically.
+- After a list is attached to a {@link ManagedObject} (which includes any other list), all objects contained by it are attached to the list itself.
+- Any objects that are added to the list afterwards, are also automatically attached to it.
+- When an object is unlinked, it's removed from the list automatically.
 - To prevent this behavior, you can use the {@link ManagedList.autoAttach autoAttach()} method.
 
-Refer to the documentation below to learn more about managed lists and maps.
+Refer to the documentation below to learn more about managed lists.
 
 - {@ref ManagedList}
-- {@ref ManagedMap}
 
 ## Understanding attached objects as part of an application {#attach-apps}
 

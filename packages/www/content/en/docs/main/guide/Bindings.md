@@ -199,13 +199,12 @@ You can also include calls to the following _methods_ on a {@link Binding} objec
 
 ## Binding list data {#lists}
 
-Lists and maps (i.e. instances of {@link ManagedList} and {@link ManagedMap}) provide additional sources for bindings.
+Managed lists (i.e. instances of {@link ManagedList}) provide additional sources for bindings.
 
 - To bind the list itself, simply use {@link bound()} or {@link bound.list()} — this can be used for the **items** property of a {@link UIList}, for example.
-- To bind the number of items in a list or map, bind to `.count` — e.g. `bound.number("myList.count")`.
+- To bind the number of items in a managed list, bind to `.count` — e.g. `bound.number("myList.count")`.
 - To bind the first item in a managed list, bind to `#first` — e.g. `bound("myList.#first.foo")`.
 - To bind the last item in a managed list, bind to `#last` — e.g. `bound("myList.#last.foo")`.
-- To bind to any item in a managed map by (string) key, use a `#` prefix — e.g. `bound("myMap.#default.foo")`.
 
 ## Using default values for bindings {#defaults}
 

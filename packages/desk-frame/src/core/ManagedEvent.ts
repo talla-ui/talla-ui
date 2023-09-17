@@ -10,7 +10,7 @@ import type { ManagedObject } from "./ManagedObject.js";
  *
  * **Types** — Events are identified by their name at runtime. In the application source code, a specific event can be identified using the type arguments of ManagedEvent. These refer to the source object type, data object, and name, respectively — e.g. `ManagedEvent<MyViewController, { foo: number }, "Foo">`, which is a type definition for an event emitted by instances of MyViewController, with name Foo and a data object that includes a `foo` number property.
  *
- * Several types are already defined, such as {@link DelegatedEvent}, {@link UIComponentEvent}, {@link UIList.ItemEvent}, {@link ManagedList.ChangeEvent}, and {@link ManagedMap.ChangeEvent}.
+ * Several types are already defined, such as {@link DelegatedEvent}, {@link UIComponentEvent}, {@link UIList.ItemEvent}, and {@link ManagedList.ChangeEvent}.
  *
  * Alternatively a sub class can be defined, such as {@link ManagedChangeEvent}, if a type of event may be used with different names.
  *

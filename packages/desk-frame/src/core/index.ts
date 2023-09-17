@@ -1,6 +1,5 @@
 export * from "./ManagedObject.js";
 export * from "./ManagedList.js";
-export * from "./ManagedMap.js";
 export * from "./ManagedRecord.js";
 export * from "./ManagedEvent.js";
 export * from "./Observer.js";

@@ -25,11 +25,11 @@ export function isManagedObject(object: any): object is ManagedObject {
  * The base class of all managed objects, which can be placed into a tree structure to enable event handling and data binding
  *
  * @description
- * The ManagedObject class is the core construct that powers framework concepts such as event handling and property binding. Many of the other classes are derived from ManagedObject, including {@link ManagedList}, {@link ManagedMap}, and {@link ManagedRecord}. This class provides the following features:
+ * The ManagedObject class is the core construct that powers framework concepts such as event handling and property binding. Many of the other classes are derived from ManagedObject, including {@link ManagedList} and {@link ManagedRecord}. This class provides the following features:
  *
  * **Object lifecycle** — The {@link ManagedObject.unlink unlink()} method marks an object as stale, and disables the other features below. Objects can add additional lifecycle behavior by overriding the {@link ManagedObject.beforeUnlink beforeUnlink()} method.
  *
- * **Attaching objects** — Managed objects are meant to be linked together to form a _directed graph_, that's, a tree structure where one object can be 'attached' to only one other managed object: its parent, origin, or containing object. In turn, several objects can be attached to every object, which makes up a hierarchical structure.
+ * **Attaching objects** — Managed objects are meant to be linked together to form a _directed graph_, i.e. a tree structure where one object can be 'attached' to only one other managed object: its parent, origin, or containing object. In turn, several objects can be attached to every object, which makes up a hierarchical structure.
  *
  * - Objects can be attached ad-hoc using the {@link ManagedObject.attach attach()} method. An {@link Observer} or callback function can be used to listen for events (see below) or wait for the object to be unlinked.
  * - Objects can be attached by referencing them from specific observed properties. The property needs to be watched using the {@link ManagedObject.observeAttach observeAttach()} method; afterwards, any object assigned to this property is attached automatically, and then when the referenced object is unlinked, the property is set to undefined. The {@link ManagedObject.observeAttach observeAttach()} method also accepts an observer or callback function.
@@ -96,7 +96,7 @@ export class ManagedObject {
 	/** @internal Reference to origin (parent) managed object, if any */
 	declare [$_origin]?: ManagedObject;
 
-	/** @internal Property getter for non-observable property bindings, overridden on lists and maps */
+	/** @internal Property getter for non-observable property bindings, overridden on managed lists */
 	[$_get](propertyName: string) {
 		return (this as any)[propertyName];
 	}
@@ -151,7 +151,7 @@ export class ManagedObject {
 	 *
 	 * - Any objects that have been attached to the unlinked object (using {@link ManagedObject.attach attach()} or {@link ManagedObject.observeAttach observeAttach()}) will also be unlinked.
 	 * - If this object is attached using {@link ManagedObject.observeAttach observeAttach()} (to a 'parent' or containing object), the corresponding property will be set to undefined.
-	 * - If this object was attached to a containing {@link ManagedList} or {@link ManagedMap}, the item will be removed.
+	 * - If this object was attached to a containing {@link ManagedList}, the item will be removed.
 	 */
 	unlink() {
 		unlinkObject(this);

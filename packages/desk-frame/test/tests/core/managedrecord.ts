@@ -1,6 +1,5 @@
 import {
 	ManagedList,
-	ManagedMap,
 	ManagedObject,
 	ManagedRecord,
 } from "../../../dist/index.js";
@@ -44,18 +43,15 @@ describe("ManagedRecord", () => {
 		expect(a.getNextSibling()).toBe(b);
 	});
 
-	test("Find parent record: direct reference, list, map", () => {
+	test("Find parent record: direct reference and list", () => {
 		class MyRecord extends ManagedRecord {
 			record = this.attach(ManagedRecord.create({ foo: 123 }));
 			list = this.attach(new ManagedList().restrict(ManagedRecord));
-			map = this.attach(new ManagedMap().restrict(ManagedRecord));
 		}
 		let r = new MyRecord();
 		r.list.add(ManagedRecord.create({ bar: 123 }));
-		r.map.set("a", ManagedRecord.create({ a: "a" }));
 		expect(r.record.getParentRecord()).toBe(r);
 		expect(r.list.first()!.getParentRecord()).toBe(r);
-		expect(r.map.get("a")!.getParentRecord()).toBe(r);
 	});
 
 	test("Find parent record: indirect reference", () => {

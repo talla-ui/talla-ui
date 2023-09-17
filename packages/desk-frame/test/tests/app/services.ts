@@ -1,18 +1,16 @@
+import { Service } from "../../../dist/app/Service.js";
 import {
 	app,
 	ServiceObserver,
 	ManagedObject,
 	ServiceContext,
-	Activity,
-	Observer,
-	bound,
 } from "../../../dist/index.js";
 import { describe, expect, test } from "@desk-framework/test";
 
 describe("ManagedService", (scope) => {
 	scope.afterEach((t) => {
 		t.breakOnFail();
-		expect(app.services.count).toBe(0);
+		expect(app.services.getAll()).toBeArray(0);
 	});
 
 	test("Service context reference", () => {
@@ -24,49 +22,59 @@ describe("ManagedService", (scope) => {
 		// if this fails, don't bother testing more because can't guarantee global state
 		t.breakOnFail();
 
-		class MyService extends ManagedObject {
+		class MyService extends Service {
+			id = "Test.MyService";
 			foo = 1;
 		}
 		let svc = new MyService();
-		app.services.set("Test.MyService", svc);
-		app.services.set("Test.MyService", svc);
+		expect(svc.isServiceRegistered()).toBe(false);
+		app.addService(svc);
+		expect(svc.isServiceRegistered()).toBe(true);
 		expect(app.services.get("Test.MyService")).toBe(svc);
 		expect(app.services.get("teST.mYSERvicE")).toBeUndefined();
-		expect([...app.services.objects()]).toBeArray([svc]);
+		expect([...app.services.getAll()]).toBeArray([svc]);
 
 		svc.unlink();
 		expect(app.services.get("Test.MyService")).toBeUndefined();
+		expect(svc.isServiceRegistered()).toBe(false);
 	});
 
 	test("Change service", () => {
-		class MyService extends ManagedObject {
+		class MyService extends Service {
+			id = "Test.MyService";
 			foo = 1;
 		}
 		let svc1 = new MyService();
-		app.services.set("Test.MyService", svc1);
-		expect([...app.services.objects()]).toBeArray([svc1]);
+		app.services.add(svc1);
+		expect([...app.services.getAll()]).toBeArray([svc1]);
+		app.services.add(svc1);
+		expect([...app.services.getAll()]).toBeArray([svc1]);
 		let svc2 = new MyService();
-		app.services.set("Test.MyService", svc2);
+		app.services.add(svc2);
 		expect(app.services.get("Test.MyService")).toBe(svc2);
+		expect(svc1.isServiceRegistered()).toBe(false);
+		expect(svc2.isServiceRegistered()).toBe(true);
 		svc2.unlink();
-		expect([...app.services.objects()]).toBeArray(0);
+		expect([...app.services.getAll()]).toBeArray(0);
 	});
 
 	test("Observe single service", () => {
-		class ObservedService extends ManagedObject {
+		class ObservedService extends Service {
+			id = "Test.Observed";
 			foo = 1;
 		}
 		let svc = new ObservedService();
 		let observed = app.services.observeService("Test.Observed");
 		expect(observed.service).toBeUndefined();
-		app.services.set("Test.Observed", svc);
+		app.services.add(svc);
 		expect(observed.service).toBe(svc);
 		svc.unlink();
 		expect(observed.service).toBeUndefined();
 	});
 
 	test("Observe single service, using function", (t) => {
-		class ObservedService extends ManagedObject {
+		class ObservedService extends Service {
+			id = "Test.Observed";
 			foo = 1;
 		}
 		let svc = new ObservedService();
@@ -79,7 +87,7 @@ describe("ManagedService", (scope) => {
 			},
 		);
 		expect(observed.service).toBeUndefined();
-		app.services.set("Test.Observed", svc);
+		app.services.add(svc);
 		expect(observed.service).toBe(svc);
 		svc.emitChange();
 		svc.unlink();
@@ -90,7 +98,8 @@ describe("ManagedService", (scope) => {
 	});
 
 	test("Observe single service, custom observer", (t) => {
-		class ObservedService extends ManagedObject {
+		class ObservedService extends Service {
+			id = "Test.Observed";
 			foo = 1;
 		}
 		class ObservedServiceObserver extends ServiceObserver<ObservedService> {
@@ -111,7 +120,7 @@ describe("ManagedService", (scope) => {
 			}
 		}
 		let svc = new ObservedService();
-		app.services.set("Test.Observed", svc);
+		app.services.add(svc);
 		let observer = app.services.observeService(
 			"Test.Observed",
 			new ObservedServiceObserver(),
@@ -131,7 +140,8 @@ describe("ManagedService", (scope) => {
 	});
 
 	test("Stop observing", (t) => {
-		class ObservedService extends ManagedObject {
+		class ObservedService extends Service {
+			id = "Test.Observed";
 			stop?: boolean;
 		}
 		class ObservedServiceObserver extends ServiceObserver<ObservedService> {
@@ -150,13 +160,13 @@ describe("ManagedService", (scope) => {
 
 		// trigger observer handlers
 		let svc = new ObservedService();
-		app.services.set("Test.Observed", svc);
+		app.services.add(svc);
 		svc.stop = false;
 		svc.stop = true;
 
 		// following should not be observed
 		svc = new ObservedService();
-		app.services.set("Test.Observed", svc);
+		app.services.add(svc);
 		svc.stop = false;
 		svc.stop = true;
 		svc.unlink();
@@ -168,7 +178,8 @@ describe("ManagedService", (scope) => {
 	});
 
 	test("Observe service changes", (t) => {
-		class ChangedService extends ManagedObject {
+		class ChangedService extends Service {
+			id = "Test.Changed";
 			foo = 1;
 		}
 		class ChangedServiceObserver extends ServiceObserver<ChangedService> {
@@ -184,16 +195,16 @@ describe("ManagedService", (scope) => {
 		app.services.observeService("Test.Changed", new ChangedServiceObserver());
 
 		let svc1 = new ChangedService();
-		app.services.set("Test.Changed", svc1);
+		app.services.add(svc1);
 		svc1.foo = 2;
 		let svc2 = new ChangedService();
-		app.services.set("Test.Changed", svc2);
+		app.services.add(svc2);
 		svc1.foo = 3; // not observed
 		svc2.foo = 4;
 		svc2.unlink();
 		svc2.foo = 5; // not observed
 		let svc3 = new ChangedService();
-		app.services.set("Test.Changed", svc3);
+		app.services.add(svc3);
 
 		// check that all handlers were called
 		t.expectCount("observe").toBe(3);
@@ -201,47 +212,5 @@ describe("ManagedService", (scope) => {
 
 		// clear services
 		app.services.clear();
-	});
-
-	test("Reference service using bindings", (t) => {
-		class MyService extends ManagedObject {
-			foo = 1;
-		}
-
-		// define an activity that binds a service and its property
-		class MyActivity extends Activity {
-			constructor() {
-				super();
-				new ActivityObserver().observe(this);
-				bound("services").bindTo(this, "services");
-				bound("services.#Test").bindTo(this, "service");
-				bound("services.#Test.foo").bindTo(this, "foo");
-			}
-			services?: ServiceContext;
-			service?: MyService;
-			foo?: number;
-		}
-
-		// observe the service property from the activity
-		class ActivityObserver extends Observer<MyActivity> {
-			override observe(observed: MyActivity) {
-				return super.observe(observed).observeProperty("foo");
-			}
-			onFooChange(v: number) {
-				if (v) t.count("foo");
-			}
-		}
-
-		try {
-			let activity = new MyActivity();
-			app.addService("Test", new MyService());
-			app.addActivity(activity); // service is now bound
-			expect(activity.services).toBeInstanceOf(ServiceContext);
-			expect(activity.service).toBeInstanceOf(MyService);
-			expect(activity.foo).toBe(1);
-			t.expectCount("foo").toBe(1);
-		} finally {
-			app.clear();
-		}
 	});
 });

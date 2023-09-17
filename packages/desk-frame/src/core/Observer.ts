@@ -25,7 +25,7 @@ const _nextTick = Promise.resolve();
  * The base class for an observer that watches a particular {@link ManagedObject}
  *
  * @description
- * Observers can be used to watch particular objects (instances of {@link ManagedObject} or any subclass, including {@link ManagedList}, {@link ManagedMap}, {@link ManagedRecord}, etc.), specifically to:
+ * Observers can be used to watch particular objects (instances of {@link ManagedObject} or any subclass, including {@link ManagedList}, {@link ManagedRecord}, etc.), specifically to:
  *
  * - Listen for events (see {@link Observer.handleEvent handleEvent()}, which can be overridden or used to dispatch events to specific Observer methods).
  * - Check when the object is attached (see {@link Observer.handleAttachedChange handleAttachedChange()}, which can be overridden).
@@ -41,43 +41,6 @@ const _nextTick = Promise.resolve();
  * @online_docs Refer to the Desk website for more information on using observers.
  */
 export class Observer<T extends ManagedObject = ManagedObject> {
-	/** @internal Create an observer that calls a single function on change/unlink */
-	static fromChangeHandler<TObserver extends Observer, T extends ManagedObject>(
-		this: typeof Observer & (new () => TObserver),
-		f: (target?: T, event?: any) => void,
-	): TObserver {
-		// FIXME(low prio, performance): Note this implementation creates a new class each time;
-		// definitely not the most performant implementation.
-		let _last: T | undefined;
-		const invoke = () => {
-			if (observer.observed !== _last) {
-				f((_last = observer.observed));
-			}
-		};
-		class ChangeObserver extends this<T> {
-			override observe(observed: any) {
-				super.observe(observed);
-				invoke();
-				return this;
-			}
-			override stop() {
-				super.stop();
-				invoke();
-			}
-			protected override handleUnlink() {
-				super.handleUnlink();
-				invoke();
-			}
-			protected override handleEvent(event: ManagedEvent) {
-				if ((event as ManagedChangeEvent).isChangeEvent) {
-					f(this.observed as any, event);
-				}
-			}
-		}
-		let observer = new ChangeObserver();
-		return observer as any;
-	}
-
 	/**
 	 * Creates a new observer, without observing any object yet
 	 * - Start observing an object using the {@link Observer.observe observe()} method; override this method to add property observers.
@@ -362,4 +325,36 @@ export class Observer<T extends ManagedObject = ManagedObject> {
 	private _callbacks: { [p: string]: TrapCallback } = Object.create(null);
 	private _asyncEvents: { [name: string]: ManagedEvent | undefined } =
 		Object.create(null);
+}
+
+export namespace Observer {
+	/** @internal Create an observer that calls a single function on change/unlink */
+	export function fromChangeHandler<
+		TObserver extends Observer<T>,
+		T extends ManagedObject,
+	>(
+		f: (target?: T, event?: any) => void,
+		Base?: new () => TObserver,
+	): TObserver {
+		let _last: T | undefined;
+		function withInvoke(orig: Function) {
+			return function (this: Observer<T>) {
+				let r = orig.apply(this, arguments);
+				if (this.observed !== _last) {
+					f((_last = this.observed));
+				}
+				return r;
+			};
+		}
+		let result = new (Base || Observer)() as any;
+		result.observe = withInvoke(result.observe);
+		result.stop = withInvoke(result.stop);
+		result.handleUnlink = withInvoke(result.handleUnlink);
+		result.handleEvent = function (this: Observer<T>, event: ManagedEvent) {
+			if (typeof (event as ManagedChangeEvent).isChangeEvent === "function") {
+				f(this.observed, event);
+			}
+		};
+		return result;
+	}
 }

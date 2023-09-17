@@ -34,7 +34,7 @@ export function isBinding<T = any>(value: any): value is Binding<T> {
  *
  * **Creating bindings** — To create a binding, use one of the {@link bound()} functions to bind a number, string, (negated) boolean, list, or a string composed using a format string and one or more embedded bindings, e.g. `bound("anyValue")`, `bound.not("showList")`, `bound.string("labelText")`, or `bound.strf("Value: %i", "lines.count")`.
  *
- * **Binding to lists and maps** — {@link ManagedList} and {@link ManagedMap} instances include special properties that may be referenced by a binding path. On managed lists, use `.count` to bind to the list count, `.#first` and `.#last` to bind to the first and last item in the list, respectively. On managed maps, use `.count` to bind to the number of keys in the map, and `.#` followed by a key name to bind to _any_ object in the map.
+ * **Binding to managed lists** — {@link ManagedList} instances include special properties that may be referenced by a binding path. Use `.count` to bind to the list count, `.#first` and `.#last` to bind to the first and last item in the list, respectively.
  *
  * **Applying bindings** — Include the result of {@link bound()} in the object passed to `with` to add a bound property to a view ({@link UIComponent} or {@link ViewComposite}), e.g. `UILabel.with({ text: bound.string("labelText") })`. Note that some view classes include shortcut methods, such as `UILabel.withText(bound.string("labelText"))`, which also accept bindings.
  *
@@ -173,7 +173,7 @@ export class Binding<T = any> {
 
 	/**
 	 * Adds a filter, to make sure that the bound value is an iterable list
-	 * - This method allows arrays, Maps, ManagedList and ManagedMap instances, and any other object that includes Symbol.iterator.
+	 * - This method allows arrays, Maps, ManagedList instances, and any other object that includes Symbol.iterator.
 	 * - Other values are changed to undefined.
 	 * @returns The binding itself, typed as an Iterable object
 	 */

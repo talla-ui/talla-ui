@@ -75,7 +75,7 @@ class ManagedListIterator<T extends ManagedObject> implements Iterator<T> {
  *
  * **Events** — Since ManagedList itself inherits from ManagedObject, a list can emit events, too. When any objects are added, moved, or removed, a {@link ManagedList.ChangeEvent} is emitted. In addition, for auto-attaching lists (see {@link ManagedList.autoAttach()}) any events that are emitted by an object are re-emitted on the list itself. The {@link ManagedEvent.source} property can be used to find the object that originally emitted the event.
  *
- * **Nested lists and maps** — Managed lists can contain (and even attach to) other managed lists and maps (see {@link ManagedMap}), which allows for building nested or recursive data structures that fully support bindings and events.
+ * **Nested lists** — Managed lists can contain (and even attach to) other managed lists, which allows for building nested or recursive data structures that fully support bindings and events.
  *
  * @example
  * // Create a list, add and remove objects

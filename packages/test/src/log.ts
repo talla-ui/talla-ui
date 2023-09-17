@@ -1,4 +1,4 @@
-import { ManagedList, ManagedMap, ManagedObject } from "desk-frame";
+import { ManagedList, ManagedObject } from "desk-frame";
 import { TestCase } from "./TestCase.js";
 
 const MAX_LOGS = 100;
@@ -59,13 +59,6 @@ export function val2str(value: any, nest = 0, seen: any[] = []): string {
 			result += (n++ ? ", " : "") + val2str(elt, nest, [...seen, value]);
 		}
 		return result + "]";
-	}
-	if (value instanceof ManagedMap) {
-		// return count for managed map
-		let name = Object.getPrototypeOf(value)?.constructor?.name;
-		let result = `[[${name}]]`;
-		if (value.isUnlinked()) return "unlinked:" + result;
-		return result + (value.count ? "{...count: " + value.count + "}" : "{}");
 	}
 	if (value instanceof Date) {
 		// return date value as text
