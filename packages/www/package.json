@@ -1,7 +1,7 @@
 {
 	"private": true,
 	"name": "@desk-framework/www",
-	"description": "Desk framework: website (not on NPM)",
+	"description": "Desk framework: website (package not published)",
 	"author": "Jelmer Cormont",
 	"license": "MIT",
 	"homepage": "https://desk-framework.com",
@@ -14,11 +14,11 @@
 		"prebuild": "rimraf build",
 		"build": "concurrently npm:build:*",
 		"build:pipeline": "esbuild src/pipeline.ts --bundle --outdir=build/pipeline --format=cjs --packages=external",
-		"build:app": "esbuild app/app.ts --outdir=build/app --bundle --external:desk-frame --external:@desk-framework/webcontext --format=iife --target=es2020 --minify",
+		"build:app": "esbuild app/app.ts --outdir=build/app --bundle --external:@desk-framework/frame-core --external:@desk-framework/frame-web --format=iife --target=es2020 --minify",
 		"premake": "rimraf ../../_site",
 		"make": "markdown-pipeline ../../_site build/pipeline/pipeline.js",
 		"debug": "npm run prebuild && npm run debug:app && npm run build:pipeline && npm run premake && npm run make && npm run debug:copymap",
-		"debug:app": "esbuild app/app.ts --outdir=build/app --bundle --external:desk-frame --external:@desk-framework/webcontext --format=iife --target=es2020 --sourcemap",
+		"debug:app": "esbuild app/app.ts --outdir=build/app --bundle --external:@desk-framework/frame-core --external:@desk-framework/frame-web --format=iife --target=es2020 --sourcemap",
 		"debug:copymap": "cp build/app/app.js.map ../../_site/app.js.map",
 		"check-format": "prettier --check \"{src,content,app,templates}/**/*.{ts,tsx}\""
 	},
@@ -36,8 +36,8 @@
 		]
 	},
 	"devDependencies": {
-		"@desk-framework/webcontext": "file:../webcontext",
-		"@desk-framework/test": "file:../test",
-		"desk-frame": "file:../desk-frame"
+		"@desk-framework/frame-web": "file:../frame-web",
+		"@desk-framework/frame-test": "file:../frame-test",
+		"@desk-framework/frame-core": "file:../frame-core"
 	}
 }

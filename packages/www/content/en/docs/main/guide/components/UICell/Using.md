@@ -8,7 +8,6 @@ applies_to:
   - UIAnimatedCell
 assets:
   - sample-single.js
-  - sample-select.js
 ---
 
 ## Definition {#definition}

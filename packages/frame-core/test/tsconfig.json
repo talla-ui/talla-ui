@@ -1,0 +1,26 @@
+{
+	"compilerOptions": {
+		"stripInternal": true,
+		"useDefineForClassFields": true,
+		"experimentalDecorators": true,
+		"strict": true,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noImplicitOverride": true,
+		"noUncheckedIndexedAccess": true,
+		"importHelpers": true,
+		"module": "esnext",
+		"moduleResolution": "node",
+		"target": "esnext",
+		"lib": ["dom", "esnext"],
+		"jsx": "react",
+		"jsxFactory": "JSX",
+		"outDir": "../.test-run",
+		"sourceMap": true,
+		"pretty": true,
+		"paths": {
+			"@desk-framework/frame-core": ["../dist"]
+		}
+	},
+	"files": ["index.ts"]
+}

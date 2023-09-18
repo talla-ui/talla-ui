@@ -31,15 +31,15 @@ So you want to build and run the framework yourself? You'll only need a recent v
 
 This repository includes several packages, in 'monorepo' fashion.
 
-The `desk-frame` package provides the core API, which is also used by other packages. The `test` package (i.e. NPM module `@desk-framework/test`) is used by the `desk-frame` package for automated testing, hence both need to be built before running any tests.
+The `frame-core` package provides the core API, which is also used by other packages. The `frame-test` package is used by the `frame-core` package for automated testing, hence both need to be built before running any tests.
 
 Building and running tests involves the following steps:
 
 - Installing dependencies and cross-linking packages
-- Compiling the `desk-frame` package
-- Compiling the `test` package
-- Running tests for the `test` package
-- Running tests for the `desk-frame` package
+- Compiling the `frame-core` package
+- Compiling the `frame-test` package
+- Running tests for the `frame-test` package
+- Running tests for the `frame-core` package
 - Compiling and testing other packages
 
 ### Installing dependencies
@@ -66,7 +66,7 @@ All packages include a build step to compile TypeScript source code to JavaScrip
 
 **Output folders** — Code is compiled for multiple EcmaScript version targets, starting with ES2015. The output for ES2015 target is stored in the `dist-es2015` folder, while ESNext (latest version) output is stored in the `dist` folder itself, along with `.d.ts` type definition files.
 
-**Web formats** — The `webcontext` package also bundles several versions of all Desk framework code into specific output files. These files are stored in the `lib` folder and published along with the `dist` folder on NPM.
+**Web formats** — The `frame-web` package also bundles several versions of all Desk framework code into specific output files. These files are stored in the `lib` folder and published along with the `dist` folder on NPM.
 
 - IIFE format: `*.iife.min.js`, `*.iife.min.js.map`, and `*.iife.d.ts` with type definitions for the global `desk` variable.
 - ESM format: `*.esm.min.js`, `*.esm.min.js.map`, and `*.esm.min.d.ts` for direct import using ES Modules.
@@ -81,13 +81,13 @@ npm run build
 
 All packages (except for `www`) include tests.
 
-`test` package — tests include basic checks for the test library itself. Use the following command from the `test` package folder.
+`frame-test` package — tests include basic checks for the test library itself. Use the following command from the `frame-test` package folder.
 
 ```sh
 npm test
 ```
 
-`desk-frame` package — the full test suite should cover nearly 100% of all source code. Use the following command from the `desk-frame` package folder.
+`frame-core` package — the full test suite should cover nearly 100% of all source code. Use the following command from the `frame-core` package folder.
 
 ```sh
 npm test
@@ -100,11 +100,12 @@ npm run test-c8
 npx http-server coverage
 ```
 
-`webcontext` package — there are currently no automated tests for this package. However, several different output formats can be tested using the following commands.
+`frame-web` package — there are currently no automated tests for this package. However, several different output formats can be tested using the following commands.
 
 ```sh
 npm run test-iife
 npm run test-esbuild
+npm run test-esbuild-es2015
 npm run test-esm
 npm run test-parcel
 ```

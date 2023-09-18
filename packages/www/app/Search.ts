@@ -1,4 +1,4 @@
-import { ManagedRecord } from "desk-frame";
+import { ManagedRecord } from "@desk-framework/frame-core";
 
 export class SearchResult extends ManagedRecord {
 	constructor(

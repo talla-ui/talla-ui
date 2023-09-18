@@ -7,10 +7,10 @@
 		{
 			"type": "node",
 			"request": "launch",
-			"name": "Test: desk-frame",
+			"name": "Test: core",
 			"cwd": "${workspaceFolder}",
 			"runtimeExecutable": "npm",
-			"runtimeArgs": ["run", "test:desk-frame"],
+			"runtimeArgs": ["run", "test:core"],
 			"skipFiles": ["<node_internals>/**"]
 		},
 		{

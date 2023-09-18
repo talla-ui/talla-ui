@@ -2,7 +2,7 @@
 title: Web context API
 nav_id: webcontext_api
 nav_parent: ""
-abstract: The `webcontext` package provides DOM support for the Desk front-end framework.
+abstract: The `frame-web` package provides DOM support for the Desk front-end framework.
 ---
 
 ## Getting started {#getting-started}

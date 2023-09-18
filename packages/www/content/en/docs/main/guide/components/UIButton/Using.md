@@ -13,7 +13,6 @@ assets:
   - sample-types.js
   - sample-style.js
   - sample-theme.js
-  - sample-select.js
 ---
 
 ## Definition {#definition}

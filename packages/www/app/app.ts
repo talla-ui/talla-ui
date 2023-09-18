@@ -1,4 +1,4 @@
-import { useWebContext } from "@desk-framework/webcontext";
+import { useWebContext } from "@desk-framework/frame-web";
 import { enableButtons } from "./buttons";
 import { SearchActivity } from "./SearchActivity";
 import { initializeSwap } from "./swap";

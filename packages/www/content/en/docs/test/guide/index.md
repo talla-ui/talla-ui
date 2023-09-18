@@ -23,7 +23,7 @@ The Desk framework test library allows you to write tests for your Desk applicat
 
 ## Installation {#installation}
 
-To use the Desk framework test library, include `@desk-framework/test` in your application package's dev-dependencies. Include a reference in your `package.json` file, or run the following command from within your application package folder:
+To use the Desk framework test library, include `@desk-framework/frame-test` in your application package's dev-dependencies. Include a reference in your `package.json` file, or run the following command from within your application package folder:
 
 <!--{{html-attr class=terminal}}-->
 

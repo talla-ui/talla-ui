@@ -26,7 +26,8 @@ export function start(pipeline: Pipeline) {
 			docgen.start(
 				mainPipeline,
 				{
-					dtsPath: "../../../../node_modules/desk-frame/dist/**/*.d.ts",
+					dtsPath:
+						"../../../../node_modules/@desk-framework/frame-core/dist/**/*.d.ts",
 					strings: config.strings,
 					path: mainPipeline.path,
 					pageData: { template: "en/docpage", nav_parent: "api" },
@@ -44,7 +45,7 @@ export function start(pipeline: Pipeline) {
 			docgen.start(webContextPipeline, {
 				parentDocs: mainApiDocs,
 				dtsPath:
-					"../../../../node_modules/@desk-framework/webcontext/dist/**/*.d.ts",
+					"../../../../node_modules/@desk-framework/frame-web/dist/**/*.d.ts",
 				strings: config.strings,
 				path: webContextPipeline.path,
 				pageData: { template: "en/docpage", nav_parent: "webcontext_api" },
@@ -57,7 +58,8 @@ export function start(pipeline: Pipeline) {
 		docPipeline.spawn("test", "test", (testPipeline) => {
 			docgen.start(testPipeline, {
 				parentDocs: mainApiDocs,
-				dtsPath: "../../../../node_modules/@desk-framework/test/dist/**/*.d.ts",
+				dtsPath:
+					"../../../../node_modules/@desk-framework/frame-test/dist/**/*.d.ts",
 				strings: config.strings,
 				path: testPipeline.path,
 				pageData: { template: "en/docpage", nav_parent: "test_api" },

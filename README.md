@@ -1,6 +1,6 @@
 # Desk framework
 
-[![npm](https://img.shields.io/npm/v/desk-frame.svg)](https://www.npmjs.com/package/desk-frame)
+[![npm](https://img.shields.io/npm/v/@desk-framework/frame-core.svg)](https://www.npmjs.com/package/@desk-framework/frame-core)
 
 > **Note:** Desk framework and this repository are still in development. Check back later for updates.
 

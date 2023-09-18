@@ -81,7 +81,7 @@ Refer to the following guides for information about all of the different UI cont
 
 ### Testing {#testing}
 
-Refer to the following guides for more information on testing your application using the `@desk-framework/test` package.
+Refer to the following guides for more information on testing your application using the `@desk-framework/frame-test` package.
 
 <!--{{html-attr class="pagerefblock_list"}}-->
 
@@ -92,7 +92,7 @@ Refer to the following guides for more information on testing your application u
 
 ### Web context API {#webcontext}
 
-Refer to the following guides for more information on building and configuring a web application using the `@desk-framework/webcontext` package.
+Refer to the following guides for more information on building and configuring a web application using the `@desk-framework/frame-web` package.
 
 <!--{{html-attr class="pagerefblock_list"}}-->
 

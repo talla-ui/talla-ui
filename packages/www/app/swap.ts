@@ -1,4 +1,4 @@
-import { app } from "desk-frame";
+import { app } from "@desk-framework/frame-core";
 import { enableButtons } from "./buttons";
 
 const SWAP_TIMEOUT = 500;

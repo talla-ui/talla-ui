@@ -3,6 +3,6 @@
 		"allowJs": true,
 		"strict": true,
 		"noUnusedLocals": true,
-		"types": ["../../../../../webcontext/lib/desk-framework-web.iife.d.ts"]
+		"types": ["../../../../../frame-web/lib/desk-framework-web.iife.d.ts"]
 	}
 }

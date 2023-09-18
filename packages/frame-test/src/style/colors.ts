@@ -1,0 +1,33 @@
+import { UIColor } from "@desk-framework/frame-core";
+
+/** @internal Default set of colors */
+export const colors: [name: string, color: UIColor][] = [
+	["black", new UIColor("#000000")],
+	["darkerGray", new UIColor("#333333")],
+	["darkGray", new UIColor("#777777")],
+	["gray", new UIColor("#aaaaaa")],
+	["lightGray", new UIColor("#dddddd")],
+	["white", new UIColor("#ffffff")],
+	["slate", new UIColor("#667788")],
+	["lightSlate", new UIColor("#c0c8d0")],
+	["red", new UIColor("#ee3333")],
+	["orange", new UIColor("#ee9922")],
+	["yellow", new UIColor("#ddcc33")],
+	["lime", new UIColor("#99bb33")],
+	["green", new UIColor("#44aa44")],
+	["turquoise", new UIColor("#33aaaa")],
+	["cyan", new UIColor("#33bbbb")],
+	["blue", new UIColor("#2277ff")],
+	["violet", new UIColor("#8844ee")],
+	["purple", new UIColor("#aa4488")],
+	["magenta", new UIColor("#dd2299")],
+	["primary", new UIColor("@blue")],
+	["primaryBackground", new UIColor("@blue")],
+	["accent", new UIColor("@purple")],
+	["pageBackground", new UIColor("@background")],
+	["background", new UIColor("@white")],
+	["text", new UIColor("@background").text()],
+	["separator", new UIColor("@background").text().alpha(0.1)],
+	["controlBase", new UIColor("@background").contrast(-0.1)],
+	["modalShade", new UIColor("@black")],
+];

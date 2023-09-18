@@ -1,4 +1,10 @@
-import { app, UIList, UITextField, ViewActivity, ViewEvent } from "desk-frame";
+import {
+	app,
+	UIList,
+	UITextField,
+	ViewActivity,
+	ViewEvent,
+} from "@desk-framework/frame-core";
 import { swapPageAsync } from "./swap";
 import { Search, SearchResult } from "./Search";
 import SearchView from "./SearchView";

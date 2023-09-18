@@ -1,0 +1,61 @@
+{
+	"private": true,
+	"name": "@desk-framework/frame-core",
+	"version": "0.0.0",
+	"publishConfig": {
+		"tag": "dev"
+	},
+	"description": "Desk framework: core API package",
+	"author": "Jelmer Cormont",
+	"license": "MIT",
+	"homepage": "https://desk-framework.com",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/desk-framework/desk"
+	},
+	"type": "module",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"clean": "rimraf coverage dist dist-* .test-run",
+		"prebuild": "npm run clean",
+		"build": "concurrently npm:build:*",
+		"build:esnext": "tsc -p src --declaration",
+		"build:es2020": "tsc -p src --target es2020 --outdir dist-es2020",
+		"build:es2018": "tsc -p src --target es2018 --outdir dist-es2018",
+		"build:es2015": "tsc -p src --target es2015 --outdir dist-es2015",
+		"pretest": "tsc -p test",
+		"test": "node .test-run",
+		"posttest": "rimraf .test-run",
+		"pretest-c8": "tsc -p test",
+		"test-c8": "c8 node .test-run",
+		"posttest-c8": "rimraf .test-run",
+		"check-format": "prettier --check \"{src,test}/**/*.{ts,tsx}\""
+	},
+	"prettier": {
+		"useTabs": true,
+		"trailingComma": "all",
+		"endOfLine": "lf"
+	},
+	"c8": {
+		"reporter": [
+			"html"
+		],
+		"exclude": [
+			".test-run"
+		]
+	},
+	"files": [
+		"dist",
+		"dist-es2015",
+		"dist-es2018",
+		"dist-es2020"
+	],
+	"dependencies": {
+		"tslib": "^2.6.2"
+	},
+	"devDependencies": {
+		"@desk-framework/frame-test": "file:../frame-test"
+	}
+}

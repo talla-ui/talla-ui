@@ -47,7 +47,9 @@ You can define views using regular JavaScript syntax, by calling static `.with` 
 
 ```ts
 // view.ts
-import { bound, UICell, UILabel, UISpacer, UICenterRow, UIOutlineButton } from "desk-frame";
+import {
+	bound, UICell, UILabel, UISpacer, UICenterRow, UIOutlineButton
+} from "@desk-framework/frame-core";
 
 export default UICell.with(
 	UILabel.with(
@@ -66,7 +68,7 @@ Or, you can define views using JSX-style syntax:
 
 ```tsx
 // view.tsx
-import { JSX } from "desk-frame";
+import { JSX } from "@desk-framework/frame-core";
 
 export default (
 	<cell>
@@ -90,7 +92,7 @@ In our example, we define an activity by extending the [`PageViewActivity`](./ma
 
 ```ts
 // CountActivity.ts
-import { PageViewActivity } from "desk-frame";
+import { PageViewActivity } from "@desk-framework/frame-core";
 import view from "./page.js";
 
 export class CountActivity extends PageViewActivity {

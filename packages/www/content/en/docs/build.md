@@ -52,9 +52,9 @@ The Desk framework itself is distributed as an NPM package, which must be refere
 
 In general, you'll need to add the following dependencies to your application.
 
-- `desk-frame` — This includes most of the code for Desk itself.
-- A _platform-specific_ context package — At this time, only `@desk-framework/webcontext` is supported. This includes all code that sets up the Desk runtime environment for rendering within a browser.
-- Optionally, the Desk test library, i.e. `@desk-framework/test` — This package includes functions for running tests, asserting values, and even testing UI output asynchronously.
+- `@desk-framework/frame-core` — This includes most of the code for Desk itself.
+- A _platform-specific_ context package — At this time, only `@desk-framework/frame-web` is supported. This includes all code that sets up the Desk runtime environment for rendering within a browser.
+- Optionally, the Desk test library, i.e. `@desk-framework/frame-test` — This package includes functions for running tests, asserting values, and even testing UI output asynchronously.
 - Any view components that may be distributed as NPM packages.
 - Bundler dependencies — Depending on your choice of tooling, you may need to add one or more packages in order to build your application.
 
@@ -134,12 +134,12 @@ The contents of `package.json` should be as follows:
 		"test": "tsc -p tsconfig.test.json && node .test-run/app.test.js"
 	},
 	"dependencies": {
-		"desk-frame": "file:../../desk/packages/desk-frame",
-		"@desk-framework/webcontext": "file:../../desk/packages/webcontext"
+		"@desk-framework/frame-core": "file:../../desk/packages/frame-core",
+		"@desk-framework/frame-web": "file:../../desk/packages/frame-web"
 	},
 	"devDependencies": {
 		"@types/node": "latest",
-		"@desk-framework/test": "file:../../desk/packages/test",
+		"@desk-framework/frame-test": "file:../../desk/packages/frame-test",
 		"parcel": "2",
 		"typescript": "5.1"
 	}
@@ -222,7 +222,7 @@ In the same folder, create `app.ts` with the following contents:
 
 ```ts
 // app.ts
-import { useWebContext, app } from "@desk-framework/webcontext";
+import { useWebContext, app } from "@desk-framework/frame-web";
 import { CountActivity } from "./counter/CountActivity.js";
 
 useWebContext((options) => {
@@ -244,7 +244,7 @@ In the `src/counter` folder, add `CountActivity.ts` with the following content:
 
 ```ts
 // CountActivity.ts
-import { PageViewActivity } from "desk-frame";
+import { PageViewActivity } from "@desk-framework/frame-core";
 import page from "./page.js";
 
 export class CountActivity extends PageViewActivity {
@@ -278,7 +278,7 @@ Still within the `src/counter` folder, create `page.tsx` with the following cont
 
 ```tsx
 // page.tsx
-import { JSX } from "desk-frame";
+import { JSX } from "@desk-framework/frame-core";
 
 export default (
 	<cell>
@@ -318,7 +318,7 @@ To run the application in development mode, we'll use the `dev` script that's co
 Change the first line of `CountActivity.ts` to include an import for `app`:
 
 ```ts
-import { PageViewActivity, app } from "desk-frame";
+import { PageViewActivity, app } from "@desk-framework/frame-core";
 ```
 
 Then, add a line at the end, to link the surrounding module with the exported class (we need to check for `module` here, otherwise this won't work for tests in Node, without Parcel).
@@ -363,7 +363,7 @@ Within the `src` folder, add a new file `app.test.ts` with the following content
 
 ```ts
 // app.test.ts
-import { formatTestResults, runTestsAsync } from "@desk-framework/test";
+import { formatTestResults, runTestsAsync } from "@desk-framework/frame-test";
 import "./counter/CountActivity.test.js";
 
 runTestsAsync().then((result) => {
@@ -382,7 +382,7 @@ Now, within the `src/counter` folder, create `CountActivity.test.ts` with the fo
 
 ```ts
 // CountActivity.test.ts
-import { describe, test, useTestContext } from "@desk-framework/test";
+import { describe, test, useTestContext } from "@desk-framework/frame-test";
 import { CountActivity } from "./CountActivity.js";
 
 describe("Counter", (ctx) => {

@@ -1,4 +1,10 @@
-import { bound, JSX, UIColor, UIIconResource, UIStyle } from "desk-frame";
+import {
+	bound,
+	JSX,
+	UIColor,
+	UIIconResource,
+	UIStyle,
+} from "@desk-framework/frame-core";
 
 const styles = {
 	textField: UIStyle.TextField.extend(

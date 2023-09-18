@@ -1,15 +1,15 @@
 ---
-title: Framework API (desk-frame)
+title: Framework API (frame-core)
 nav_id: api
 nav_parent: ""
-abstract: The `desk-frame` package provides a platform-independent API that can be used to build front-end applications with the Desk framework.
+abstract: The `frame-core` package provides a platform-independent API that can be used to build front-end applications with the Desk framework.
 ---
 
 ## Getting started {#getting-started}
 
 This package contains most of the classes and functions that are used by application code. In particular, it provides the infrastructure for activities, views, services.
 
-However, this package doesn't include code for 'rendering' output, for example to a web page — you'll also need to import `@desk-framework/webcontext` for that ([reference](../webcontext/)). For more information, refer to [Building an app](../build.html).
+However, this package doesn't include code for 'rendering' output, for example to a web page — you'll also need to import `@desk-framework/frame-web` for that ([reference](../webcontext/)). For more information, refer to [Building an app](../build.html).
 
 Refer to the following articles to get started.
 

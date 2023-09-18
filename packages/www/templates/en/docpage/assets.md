@@ -1,11 +1,11 @@
 ---
 partial: true
 assets:
-  - input: ../webcontext/lib/desk-framework-web.es2018.iife.min.js
+  - input: ../frame-web/lib/desk-framework-web.es2018.iife.min.js
     output: desk-framework-web.es2018.iife.min.js
-  - input: ../webcontext/lib/desk-framework-web.es2018.iife.min.js.gz
+  - input: ../frame-web/lib/desk-framework-web.es2018.iife.min.js.gz
     output: desk-framework-web.es2018.iife.min.js.gz
-  - input: ../webcontext/lib/desk-framework-web.es2018.iife.min.js.map
+  - input: ../frame-web/lib/desk-framework-web.es2018.iife.min.js.map
     output: desk-framework-web.es2018.iife.min.js.map
   - input: build/app/app.js
     output: app.js
