@@ -1,5 +1,5 @@
 import { ActivationPath, app } from "@desk-framework/frame-core";
-import { type WebContextOptions } from "../WebContext";
+import { type WebContextOptions } from "../WebContext.js";
 
 /** Global flag for global (window) event listener, see constructor */
 let _eventListenerAdded = false;

@@ -14,7 +14,7 @@ import {
 	ViewEvent,
 	app,
 } from "@desk-framework/frame-core";
-import { reduceElementMotion } from "../renderer/WebOutputTransform";
+import { reduceElementMotion } from "../renderer/WebOutputTransform.js";
 
 /** @internal Fixed container position, used for each menu container */
 const _containerPosition = {
