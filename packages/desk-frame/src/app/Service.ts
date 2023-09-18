@@ -25,5 +25,5 @@ export abstract class Service extends ManagedObject {
 	}
 
 	/** The unique ID for this service (instance) */
-	abstract id?: string;
+	abstract id: string;
 }

@@ -19,29 +19,25 @@ import { Service } from "./Service.js";
 export class ServiceContext extends ManagedObject {
 	/** Returns a single service instance by ID, if registered */
 	get(id: string): Service | undefined {
-		for (let service of this._list) {
-			if (service.id === id) return service;
-		}
+		return this._map?.get(id);
 	}
 
-	/** Returns an array of currently registered services */
+	/** Returns an array of all currently registered services */
 	getAll() {
 		return this._list.toArray();
 	}
 
-	/** Adds the specified service by ID, replacing any current services with the same ID */
+	/**
+	 * Adds the specified service
+	 * - If a service with the same ID is currently registered, it will be unlinked and replaced with the new service
+	 */
 	add(service: Service) {
+		// Note: we want this operation to be atomic so we use replace()
 		let id = service.id;
-		let old: Service | undefined;
-		for (let existing of this._list) {
-			if (existing.id === id) {
-				if (service === existing) return this;
-				old = existing;
-				break;
-			}
-		}
-		if (old) this._list.remove(old);
-		this._list.add(service);
+		this._list.replace([
+			...this._list.toArray().filter((s) => s.id !== id),
+			service,
+		]);
 		return this;
 	}
 
@@ -86,8 +82,12 @@ export class ServiceContext extends ManagedObject {
 	}
 
 	// keep track of services in a list, and forward events
+	private _map?: Map<string, Service>;
 	private _list = this.attach(new ManagedList<Service>(), (_list, e) => {
-		if (e instanceof ManagedChangeEvent) this.emit(e);
+		if (e instanceof ManagedChangeEvent) {
+			this._map = new Map(this._list.map((s) => [s.id, s]));
+			this.emitChange();
+		}
 	});
 }
 
