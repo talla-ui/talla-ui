@@ -2,8 +2,8 @@ import {
 	app,
 	UIButton,
 	UICell,
-	UIComponentEvent,
 	ViewComposite,
+	ViewEvent,
 } from "../../../dist/index.js";
 import { describe, expect, test, useTestContext } from "@desk-framework/test";
 
@@ -84,15 +84,15 @@ describe("Focus management", (scope) => {
 			protected override createView() {
 				return new Preset();
 			}
-			onCell1Ref(e: UIComponentEvent<UICell>) {
+			onCell1Ref(e: ViewEvent<UICell>) {
 				e.source.requestFocus();
 			}
-			onCell1Focus(e: UIComponentEvent) {
+			onCell1Focus(e: ViewEvent) {
 				events.push(e.inner ? e.inner.name : "NO_INNER");
 				if (!this.cell2) t.fail("Cell 2 not set");
 				else this.cell2.requestFocus();
 			}
-			onCell2Ref(e: UIComponentEvent<UICell>) {
+			onCell2Ref(e: ViewEvent<UICell>) {
 				this.cell2 = e.source;
 			}
 			cell2?: UICell;

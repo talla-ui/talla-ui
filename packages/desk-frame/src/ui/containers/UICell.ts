@@ -1,4 +1,3 @@
-import type { View } from "../../app/index.js";
 import { UIColor } from "../UIColor.js";
 import { UIComponent } from "../UIComponent.js";
 import { UITheme } from "../UITheme.js";
@@ -14,22 +13,6 @@ import { UIContainer } from "./UIContainer.js";
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
 export class UICell extends UIContainer {
-	/** Creates a new cell container view object with the provided view content */
-	constructor(...content: View[]) {
-		super(...content);
-
-		// set selection state automatically
-		this.listen((e) => {
-			if (e.source === this) {
-				if (e.name === "Select") {
-					this.selected = true;
-				} else if (e.name === "Deselect") {
-					this.selected = false;
-				}
-			}
-		});
-	}
-
 	/**
 	 * Applies the provided preset properties to this object
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
@@ -51,20 +34,10 @@ export class UICell extends UIContainer {
 			onMouseEnter?: string;
 			/** Event that's emitted when the mouse cursor leaves the cell area */
 			onMouseLeave?: string;
-			/** Event that's emitted when the cell is selected */
-			onSelect?: string;
-			/** Event that's emitted when the cell is deselected */
-			onDeselect?: string;
 		},
 	) {
 		super.applyViewPreset(preset);
 	}
-
-	/**
-	 * The current selection state
-	 * - This property is set automatically, based on Select and Deselect events.
-	 */
-	selected = false;
 
 	/** Text direction (rtl or ltr) for all components within this cell */
 	textDirection?: "ltr" | "rtl" = undefined;

@@ -188,7 +188,7 @@ class MyActivity extends PageViewActivity {
 	// ...
 
 	// Event handler, called when the user clicks the button
-	onTestButtonClick(event: UIComponentEvent<UIButton>) {
+	onTestButtonClick(event: ViewEvent<UIButton>) {
 		// ... handle the event
 	}
 }

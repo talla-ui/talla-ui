@@ -13,8 +13,8 @@ export interface OutputSelectFilter {
 	disabled?: boolean;
 	/** True if the element must be readonly, false if it must not */
 	readOnly?: boolean;
-	/** True if the element must be selected, false if it must not */
-	selected?: boolean;
+	/** True if a button must be selected (pressed), false if it must not */
+	pressed?: boolean;
 	/** True if the element must be focused, false if it must not */
 	focused?: boolean;
 	/** True if the toggle must be checked, false if it must not */
@@ -49,7 +49,7 @@ function _matchElement(select: OutputSelectFilter, elt: TestOutputElement) {
 			!(elt.output?.source instanceof select.type)) ||
 		(select.disabled !== undefined && !!elt.disabled !== !!select.disabled) ||
 		(select.readOnly !== undefined && !!elt.readOnly !== !!select.readOnly) ||
-		(select.selected !== undefined && !!elt.selected !== !!select.selected) ||
+		(select.pressed !== undefined && !!elt.pressed !== !!select.pressed) ||
 		(select.checked !== undefined && !!elt.checked !== !!select.checked) ||
 		(select.focused !== undefined && !!elt.hasFocus() !== !!select.focused) ||
 		(select.text !== undefined &&

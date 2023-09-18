@@ -3,7 +3,6 @@ import {
 	UIAnimatedCell,
 	UICell,
 	UICellStyle,
-	UIComponentEvent,
 } from "desk-frame";
 import { getCSSLength } from "../../style/DOMStyle.js";
 import { getBaseStyleClass } from "./BaseObserver.js";
@@ -45,18 +44,6 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 			}
 		}
 		await super.handlePropertyChange(property, value, event);
-	}
-
-	onSelect(e: UIComponentEvent) {
-		if (e.source === this.observed && this.element) {
-			this.element.dataset.selected = "selected";
-		}
-	}
-
-	onDeselect(e: UIComponentEvent) {
-		if (e.source === this.observed && this.element) {
-			delete this.element.dataset.selected;
-		}
 	}
 
 	override updateStyle(element: HTMLElement) {

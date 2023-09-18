@@ -168,24 +168,32 @@ export function defineStyleClass(
 	let combined: { [spec: string]: Partial<CSSStyleDeclaration> } = {};
 	function addStateStyle(style: any) {
 		let stateSelector = selector;
+
+		// add suffixes for disabled, readonly, hovered, focused
 		if (style[UITheme.STATE_DISABLED]) stateSelector += "[disabled]";
 		else if (style[UITheme.STATE_DISABLED] === false)
 			stateSelector += ":not([disabled])";
 		if (style[UITheme.STATE_READONLY]) stateSelector += "[readonly]";
 		else if (style[UITheme.STATE_READONLY] === false)
 			stateSelector += ":not([readonly])";
-		if (style[UITheme.STATE_SELECTED]) stateSelector += "[data-selected]";
-		else if (style[UITheme.STATE_SELECTED] === false)
-			stateSelector += ":not([data-selected])";
 		if (style[UITheme.STATE_HOVERED]) stateSelector += ":hover";
 		else if (style[UITheme.STATE_HOVERED] === false)
 			stateSelector += ":not(:hover)";
-		if (style[UITheme.STATE_PRESSED]) stateSelector += ":active";
-		else if (style[UITheme.STATE_PRESSED] === false)
-			stateSelector += ":not(:active)";
 		if (style[UITheme.STATE_FOCUSED]) stateSelector += ":focus-visible";
 		else if (style[UITheme.STATE_FOCUSED] === false)
 			stateSelector += ":not(:focus-visible)";
+
+		// pressed state is controlled by two selectors
+		if (style[UITheme.STATE_PRESSED]) {
+			stateSelector =
+				stateSelector + ":active," + stateSelector + "[aria-pressed=true]";
+		} else if (style[UITheme.STATE_PRESSED] === false) {
+			stateSelector =
+				stateSelector +
+				":not(:active):not([aria-pressed])," +
+				stateSelector +
+				"[aria-pressed=false]";
+		}
 		let css = combined[stateSelector] || {};
 		addDimensionsCSS(css, style);
 		addDecorationStyleCSS(css, style);

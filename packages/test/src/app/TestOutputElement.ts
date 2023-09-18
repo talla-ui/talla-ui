@@ -31,8 +31,8 @@ export class TestOutputElement {
 	/** True if text input has been marked as readonly */
 	readOnly?: boolean;
 
-	/** True if a button or cell element is selected */
-	selected?: boolean;
+	/** True if a button is visibly selected (pressed) */
+	pressed?: boolean;
 
 	/** The content of a text field input element */
 	value?: string;
@@ -254,7 +254,7 @@ export class TestOutputElement {
 		if (this.imageUrl) result.imageUrl = this.imageUrl;
 		if (this.disabled) result.disabled = true;
 		if (this.readOnly) result.readOnly = true;
-		if (this.selected) result.selected = true;
+		if (this.pressed) result.pressed = true;
 		if (this.checked) result.checked = true;
 		if (this.type === "textfield") result.value = this.value;
 		if (this.accessibleRole) result.accessibleRole = this.accessibleRole;

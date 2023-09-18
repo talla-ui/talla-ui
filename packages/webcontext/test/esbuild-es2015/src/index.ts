@@ -3,7 +3,7 @@ import {
 	app,
 	useWebContext,
 } from "../../../lib/desk-framework-web.es2015.esm.min";
-import { MainActivity } from "./MainActivity.js";
+import { MainActivity } from "./main/MainActivity";
 
 // Use an activity to navigate to the count activity from the base path
 class RootActivity extends Activity {

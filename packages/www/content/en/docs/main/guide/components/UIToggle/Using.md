@@ -94,7 +94,7 @@ export class MyActivity extends ViewActivity {
 	userAgreed = false;
 
 	// this event handler is invoked for user input
-	onSampleToggleChange(e: UIComponentEvent<UIToggle>) {
+	onSampleToggleChange(e: ViewEvent<UIToggle>) {
 		this.userAgreed = e.source.state;
 	}
 }

@@ -3,7 +3,6 @@ import {
 	RenderContext,
 	UICell,
 	UICellStyle,
-	UIComponentEvent,
 } from "desk-frame";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import { getBaseStyleClass } from "./TestBaseObserver.js";
@@ -45,18 +44,6 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 			}
 		}
 		await super.handlePropertyChange(property, value, event);
-	}
-
-	onSelect(e: UIComponentEvent) {
-		if (e.source === this.observed && this.element) {
-			this.element.selected = true;
-		}
-	}
-
-	onDeselect(e: UIComponentEvent) {
-		if (e.source === this.observed && this.element) {
-			this.element.selected = false;
-		}
 	}
 
 	override getOutput() {

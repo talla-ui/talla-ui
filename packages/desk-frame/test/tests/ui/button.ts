@@ -1,17 +1,17 @@
+import { describe, expect, test, useTestContext } from "@desk-framework/test";
 import {
-	app,
+	ManagedEvent,
+	PageViewActivity,
 	UIButton,
 	UICell,
-	UISelectionController,
-	PageViewActivity,
-	UIPrimaryButton,
-	UIPlainButton,
 	UIIconButton,
-	UIPrimaryButtonStyle,
-	UIPlainButtonStyle,
 	UIIconButtonStyle,
+	UIPlainButton,
+	UIPlainButtonStyle,
+	UIPrimaryButton,
+	UIPrimaryButtonStyle,
+	app,
 } from "../../../dist/index.js";
-import { describe, expect, test, useTestContext } from "@desk-framework/test";
 
 describe("UIButton", (scope) => {
 	scope.beforeEach(() => {
@@ -58,6 +58,23 @@ describe("UIButton", (scope) => {
 		let MyButton = UIButton.withIcon("@foo");
 		let button = new MyButton();
 		expect(button).toHaveProperty("icon").asString().toBe("@foo");
+	});
+
+	test("Preset with +Event:target", () => {
+		let MyButton = UIButton.with({ label: "foo", onClick: "+Test:foo" });
+		let button = new MyButton();
+		let events: ManagedEvent[] = [];
+		button.listen((e) => {
+			events.push(e);
+		});
+		button.emit("Click", { test: 123 });
+		expect(events).toBeArray(2);
+		expect(events[0]).toHaveProperty("name").toBe("Click");
+		expect(events[1]).toHaveProperty("name").toBe("Test");
+		expect(events[1])
+			.toHaveProperty("data")
+			.toHaveProperty("target")
+			.toBe("foo");
 	});
 
 	test("Rendered with label", async (t) => {
@@ -118,48 +135,5 @@ describe("UIButton", (scope) => {
 		elt.click();
 		await t.sleep(2);
 		expect(app.getPath()).toBe("foo");
-	});
-
-	test("Button selection in selection group", async (t) => {
-		let Preset = UISelectionController.with(
-			UICell.with(
-				UIButton.with({ label: "one", onClick: "Select" }),
-				UIButton.with({ label: "two", onClick: "Select" }),
-			),
-		);
-
-		t.log("Rendering view");
-		app.render(new Preset());
-		let buttonOneElt = (
-			await t.expectOutputAsync(100, {
-				text: "one",
-			})
-		).getSingle();
-
-		t.log("Clicking button one");
-		buttonOneElt.click();
-		await t.expectOutputAsync(100, { element: buttonOneElt, selected: true });
-		expect(buttonOneElt.output!.source).toHaveProperty("selected").toBe(true);
-
-		t.log("Clicking button two");
-		let buttonTwoElt = (
-			await t.expectOutputAsync(100, {
-				text: "two",
-			})
-		).getSingle();
-		buttonTwoElt.click();
-		await t.expectOutputAsync(100, { element: buttonTwoElt, selected: true });
-		expect(buttonTwoElt.output!.source).toHaveProperty("selected").toBe(true);
-
-		t.log("Expecting first button to be deselected");
-		await t.expectOutputAsync(100, { element: buttonOneElt, selected: false });
-		expect(buttonOneElt.output!.source).toHaveProperty("selected").toBe(false);
-
-		t.log("Deselecting button two");
-		buttonTwoElt.output!.source.emit("Deselect");
-
-		t.log("Expecting second button to be deselected");
-		await t.expectOutputAsync(100, { element: buttonTwoElt, selected: false });
-		expect(buttonTwoElt.output!.source).toHaveProperty("selected").toBe(false);
 	});
 });

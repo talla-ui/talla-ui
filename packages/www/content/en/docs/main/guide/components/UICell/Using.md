@@ -83,47 +83,6 @@ Cell containers allow you to change the appearance of the rendered cell by setti
 - {@ref UICell.dropShadow}
 - {@ref UICell.opacity}
 
-## Selection state {#selection}
-
-Cell containers automatically keep track of `Select` and `Deselect` events, and set the {@link UICell.selected selected} property accordingly. These events aren't emitted automatically — use an event preset and/or a {@link UISelectionController} to manage selection state. You can also use the selected state for extended style classes as illustrated below.
-
-<!--{{iframesample js="./sample-select.js"}}-->
-
-```ts
-// TODO: Update this example
-const cellStyle = UIStyle.Cell.extend(
-	{
-		decoration: {
-			borderThickness: 1,
-			borderColor: UIColor["@separator"],
-		},
-	},
-	{
-		// use the selected state to switch styles automatically:
-		selected: {
-			decoration: { dropShadow: 0.5 },
-		},
-	},
-);
-
-const myCell = UICell.with(
-	{
-		// emit Select events when clicked:
-		onClick: "+Select",
-		style: cellStyle,
-	},
-	UILabel.withText(
-		// bind to `selected` property of the surrounding cell:
-		bound.boolean("selected").select("Selected", "Not selected"),
-	),
-);
-
-// use a UISelectionController to emit Deselect events too
-const view = desk.UISelectionController.with(
-	desk.UIColumn.with({ padding: 8, spacing: 8 }, myCell, myCell, myCell),
-);
-```
-
 ## Preset properties {#presets}
 
 The following properties can be preset using `UICell.with({ ... })` or JSX `<cell ...>`.
@@ -180,5 +139,3 @@ The following events are emitted by UICell objects, and can be preset.
 | ArrowRightKeyPress | Emitted when the right arrow key has been pressed                    |
 | ArrowUpKeyPress    | Emitted when the up arrow key has been pressed                       |
 | ArrowDownKeyPress  | Emitted when the down arrow key has been pressed                     |
-| Select             | Emitted when the component is selected                               |
-| Deselect           | Emitted when the component is deselected                             |

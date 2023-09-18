@@ -6,11 +6,11 @@ import {
 	UICell,
 	UIColumn,
 	UIComponent,
-	UIComponentEvent,
 	UIContainer,
 	UIRow,
 	UIScrollContainer,
 	UITheme,
+	ViewEvent,
 } from "desk-frame";
 import {
 	CLASS_CELL,
@@ -112,7 +112,7 @@ export class UIContainerRenderer<
 	lastFocused?: UIComponent;
 
 	/** Switch tabindex on focus */
-	onFocusIn(e: UIComponentEvent) {
+	onFocusIn(e: ViewEvent<UIComponent>) {
 		if (!this.observed || !this.element) return;
 		if (e.source !== this.observed && this.observed.allowKeyboardFocus) {
 			// temporarily disable keyboard focus on this parent
@@ -123,7 +123,7 @@ export class UIContainerRenderer<
 	}
 
 	/** Switch tabindex back on blur */
-	onFocusOut(e: UIComponentEvent) {
+	onFocusOut(e: ViewEvent) {
 		if (!this.observed || !this.element) return;
 		if (e.source !== this.observed && this.observed.allowKeyboardFocus) {
 			// make this parent focusable again
@@ -236,7 +236,7 @@ export class UIContainerRenderer<
 	}
 	lastSeparator?: UIContainer.SeparatorOptions;
 
-	onDragContainer(e: UIComponentEvent<UIContainer, any>) {
+	onDragContainer(e: ViewEvent<UIContainer>) {
 		let element = this.element!;
 		if (!element) return;
 		if (
@@ -246,25 +246,26 @@ export class UIContainerRenderer<
 		)
 			return;
 
-		// find original event (e.g. mousedown)
-		let event: MouseEvent | TouchEvent | undefined;
-		while (e && !event) {
-			if (e.data.event && (e.data.event as MouseEvent).type)
-				event = e.data.event;
-			else if (e.inner) e = e.inner as any;
-			else break;
+		// find original DOM event (e.g. mousedown)
+		let domEvent: MouseEvent | TouchEvent | undefined;
+		while (e && !domEvent) {
+			if (e.data && e.data.event && (e.data.event as MouseEvent).type) {
+				domEvent = e.data.event as any;
+			} else {
+				e = e.inner as any;
+			}
 		}
-		if (!event || (event as MouseEvent).button) return;
+		if (!domEvent || (domEvent as MouseEvent).button) return;
 
 		// check starting coordinates
 		let startX =
-			((event as TouchEvent).touches &&
-				(event as TouchEvent).touches[0]!.screenX) ||
-			(event as MouseEvent).screenX;
+			((domEvent as TouchEvent).touches &&
+				(domEvent as TouchEvent).touches[0]!.screenX) ||
+			(domEvent as MouseEvent).screenX;
 		let startY =
-			((event as TouchEvent).touches &&
-				(event as TouchEvent).touches[0]!.screenY) ||
-			(event as MouseEvent).screenY;
+			((domEvent as TouchEvent).touches &&
+				(domEvent as TouchEvent).touches[0]!.screenY) ||
+			(domEvent as MouseEvent).screenY;
 		if (startX === undefined || startY === undefined) return;
 
 		// found the element and coordinates, start dragging now

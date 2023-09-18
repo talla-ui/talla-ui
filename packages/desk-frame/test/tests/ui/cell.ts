@@ -56,17 +56,6 @@ describe("UICell", (scope) => {
 		expect(label1).toHaveProperty("text").asString().toBe("foo");
 	});
 
-	test("Select/deselect properties", () => {
-		let cell = new UICell();
-		expect(cell.selected).toBeFalsy();
-		cell.emit("Select");
-		expect(cell).toHaveProperty("selected").toBeTruthy();
-		cell.emit("Select");
-		expect(cell).toHaveProperty("selected").toBeTruthy();
-		cell.emit("Deselect");
-		expect(cell).toHaveProperty("selected").toBeFalsy();
-	});
-
 	test("Rendered as cell", async (t) => {
 		let cell = new UICell();
 		app.render(cell);
@@ -160,18 +149,5 @@ describe("UICell", (scope) => {
 		);
 
 		expect(out2.getSingle().uid).toBe(uid);
-	});
-
-	test("Rendered and selected using FocusIn", async (t) => {
-		let MyCell = UICell.with(
-			{ allowFocus: true, onFocusIn: "Select" },
-			UILabel.with({ allowFocus: true, text: "foo" }),
-		);
-		let cell = new MyCell();
-		app.render(cell);
-		let out = await t.expectOutputAsync(100, { text: "foo" });
-		out.getSingle().focus();
-		expect(cell).toHaveProperty("selected").toBeTruthy();
-		await t.expectOutputAsync(100, { selected: true });
 	});
 });

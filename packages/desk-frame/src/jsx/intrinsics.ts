@@ -22,7 +22,6 @@ import {
 	UIPrimaryButton,
 	UIRow,
 	UIScrollContainer,
-	UISelectionController,
 	UISeparator,
 	UISpacer,
 	UITextField,
@@ -57,7 +56,6 @@ export const tags = {
 	conditional: UIConditional,
 	formcontext: UIFormController,
 	list: UIList,
-	selection: UISelectionController,
 	animation: UIAnimationController,
 	render: UIViewRenderer,
 };

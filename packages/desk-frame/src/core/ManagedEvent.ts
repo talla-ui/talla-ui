@@ -10,7 +10,7 @@ import type { ManagedObject } from "./ManagedObject.js";
  *
  * **Types** — Events are identified by their name at runtime. In the application source code, a specific event can be identified using the type arguments of ManagedEvent. These refer to the source object type, data object, and name, respectively — e.g. `ManagedEvent<MyViewController, { foo: number }, "Foo">`, which is a type definition for an event emitted by instances of MyViewController, with name Foo and a data object that includes a `foo` number property.
  *
- * Several types are already defined, such as {@link DelegatedEvent}, {@link UIComponentEvent}, {@link UIList.ItemEvent}, and {@link ManagedList.ChangeEvent}.
+ * Several types are already defined, such as {@link DelegatedEvent}, {@link ViewEvent}, {@link UIList.ItemEvent}, and {@link ManagedList.ChangeEvent}.
  *
  * Alternatively a sub class can be defined, such as {@link ManagedChangeEvent}, if a type of event may be used with different names.
  *
@@ -63,7 +63,9 @@ import type { ManagedObject } from "./ManagedObject.js";
  */
 export class ManagedEvent<
 	TSource extends ManagedObject = ManagedObject,
-	TData extends unknown = unknown,
+	TData extends Record<string, unknown> | undefined =
+		| Record<string, unknown>
+		| undefined,
 	TName extends string = string,
 > {
 	/**
@@ -77,13 +79,13 @@ export class ManagedEvent<
 	constructor(
 		name: TName,
 		source: TSource,
-		data: Readonly<TData> = undefined as any,
+		data?: TData,
 		delegate?: ManagedObject,
 		inner?: ManagedEvent,
 	) {
 		this.name = name;
 		this.source = source;
-		this.data = data;
+		this.data = data as TData;
 		this.delegate = delegate;
 		this.inner = inner;
 	}
@@ -92,8 +94,8 @@ export class ManagedEvent<
 	readonly name: TName;
 	/** The object that's emitted (or will emit) the event */
 	readonly source: TSource;
-	/** Object that contains arbitrary event data */
-	readonly data: Readonly<TData> = undefined as any;
+	/** Object that contains arbitrary event data (if any) */
+	readonly data: Readonly<TData>;
 	/** An object that delegated the event, if any, e.g. {@link UIForm}, {@link UIFormController}, or {@link UIList.ItemController} */
 	readonly delegate?: ManagedObject;
 	/** The original event, if the event was intercepted or propagated */
@@ -107,7 +109,9 @@ export class ManagedEvent<
  */
 export class ManagedChangeEvent<
 	TSource extends ManagedObject = ManagedObject,
-	TData = unknown,
+	TData extends Record<string, unknown> | undefined =
+		| Record<string, unknown>
+		| undefined,
 	TName extends string = string,
 > extends ManagedEvent<TSource, TData, TName> {
 	/** A method that always returns true, can be used for duck-typing this type of events */
@@ -123,7 +127,9 @@ export class ManagedChangeEvent<
 export type DelegatedEvent<
 	TDelegate extends ManagedObject,
 	TSource extends ManagedObject = ManagedObject,
-	TData extends unknown = unknown,
+	TData extends Record<string, unknown> | undefined =
+		| Record<string, unknown>
+		| undefined,
 	TName extends string = string,
 > = ManagedEvent<TSource, TData, TName> & {
 	/** The object that delegated the event, e.g. {@link UIForm}, {@link UIFormController}, or {@link UIList.ItemController} */

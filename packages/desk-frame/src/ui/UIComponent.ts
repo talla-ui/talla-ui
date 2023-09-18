@@ -1,14 +1,7 @@
 import { app, RenderContext, View, ViewClass } from "../app/index.js";
-import { Binding, ManagedEvent, StringConvertible } from "../core/index.js";
+import { Binding, StringConvertible } from "../core/index.js";
 import { err, ERROR } from "../errors.js";
 import type { UIColor } from "./UIColor.js";
-
-/** Type definition for an event that's emitted on UI components */
-export type UIComponentEvent<
-	TSource extends UIComponent = UIComponent,
-	TData extends unknown = unknown,
-	TName extends string = string,
-> = ManagedEvent<TSource, TData, TName>;
 
 /** Empty array, used for findViewContent */
 const _viewContent: any[] = Object.freeze([]) as any;

@@ -4,8 +4,13 @@ import {
 	ManagedList,
 	Observer,
 } from "../../core/index.js";
-import type { RenderContext, View, ViewClass } from "../../app/index.js";
-import { UIComponent, UIComponentEvent } from "../UIComponent.js";
+import type {
+	RenderContext,
+	View,
+	ViewClass,
+	ViewEvent,
+} from "../../app/index.js";
+import { UIComponent } from "../UIComponent.js";
 import type { UIColor } from "../UIColor.js";
 
 /**
@@ -192,7 +197,7 @@ export namespace UIContainer {
 	export type ContentRenderingEvent<
 		TContainer extends UIContainer = UIContainer,
 	> = RenderContext.RendererEvent &
-		UIComponentEvent<
+		ViewEvent<
 			TContainer,
 			{ output: Array<RenderContext.Output | undefined> },
 			"ContentRendering"

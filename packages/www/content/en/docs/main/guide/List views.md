@@ -7,7 +7,6 @@ nav_parent: using
 applies_to:
   - UIList
   - UIContainer
-  - UISelectionController
 ---
 
 ## Data types {#data}

@@ -3,7 +3,7 @@ import {
 	bound,
 	JSX,
 	ViewComposite,
-} from "../../../lib/desk-framework-web.es2015.esm.min";
+} from "../../../../lib/desk-framework-web.es2015.esm.min";
 
 export default ViewComposite.define<{ count: number | Binding<number> }>(
 	<column>

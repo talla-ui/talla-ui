@@ -197,11 +197,11 @@ export const styles: [
 	],
 	[
 		UIHeading2LabelStyle,
-		[{ ...baseLabelStyle, fontSize: "1.75em", bold: true }],
+		[{ ...baseLabelStyle, fontSize: "1.75em", fontWeight: 600 }],
 	],
 	[
 		UIHeading3LabelStyle,
-		[{ ...baseLabelStyle, fontSize: "1.375em", bold: true }],
+		[{ ...baseLabelStyle, fontSize: "1.375em", fontWeight: 600 }],
 	],
 	[
 		UIParagraphLabelStyle,

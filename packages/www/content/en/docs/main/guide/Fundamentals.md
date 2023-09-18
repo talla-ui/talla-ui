@@ -13,7 +13,7 @@ applies_to:
   - ManagedEvent
   - ManagedChangeEvent
   - DelegatedEvent
-  - UIComponentEvent
+  - ViewEvent
   - Binding
   - StringFormatBinding
   - bound

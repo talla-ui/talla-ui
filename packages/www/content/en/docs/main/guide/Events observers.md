@@ -13,7 +13,7 @@ applies_to:
   - ManagedEvent
   - ManagedChangeEvent
   - DelegatedEvent
-  - UIComponentEvent
+  - ViewEvent
   - Observer
 ---
 
@@ -248,7 +248,7 @@ myObject.bar.emitChange("Test"); // handled by onBarChange()
 
 Events that are the result of user interactions, such as button clicks or changes to the contents of a text input field, are represented by events that are emitted by the corresponding {@link UIComponent}.
 
-The {@link UIComponentEvent} type can be used to refer to {@link ManagedEvent} instances that have their **source** property set to a {@link UIComponent}. Other than that, UI events are simply instances of {@link ManagedEvent}, with names such as `Click`, `FocusIn`, or `Change`.
+The {@link ViewEvent} type can be used to refer to {@link ManagedEvent} instances that have their **source** property set to a {@link View} object of a specific type. Other than that, UI events are simply instances of {@link ManagedEvent}, with names such as `Click`, `FocusIn`, or `Change`.
 
 To find out which events are emitted by different types of UI components, refer to the **Events** section of the corresponding guide for each UI component. You can find guides for all UI components on the following page.
 
@@ -283,7 +283,7 @@ class MyActivity extends PageViewActivity {
 	searchText = "";
 
 	/** Event handler, called when search field text changes */
-	onSearchFieldChange(e: UIComponentEvent<UITextField>) {
+	onSearchFieldChange(e: ViewEvent<UITextField>) {
 		this.searchText = e.source.value;
 	}
 

@@ -29,5 +29,5 @@ export const colors: [name: string, color: UIColor][] = [
 	["text", new UIColor("@background").text()],
 	["separator", new UIColor("@background").text().alpha(0.1)],
 	["controlBase", new UIColor("@background").contrast(-0.1)],
-	["modalShade", new UIColor("@black")],
+	["modalShade", new UIColor("@pageBackground").text()],
 ];

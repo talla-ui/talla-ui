@@ -4,7 +4,6 @@ import {
 	UICell,
 	UICellStyle,
 	UIColor,
-	UIComponentEvent,
 	UIContainer,
 	UILabel,
 	UILabelStyle,
@@ -12,6 +11,7 @@ import {
 	UISpacer,
 	UITheme,
 	ViewComposite,
+	ViewEvent,
 	app,
 } from "desk-frame";
 import { reduceElementMotion } from "../renderer/WebOutputTransform";
@@ -196,7 +196,7 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 		return container;
 	}
 
-	onArrowDownKeyPress(e: UIComponentEvent) {
+	onArrowDownKeyPress(e: ViewEvent) {
 		if (e.source !== this.body) return;
 		let content = this.body && (this.body as UICell).content;
 		if (content) {
@@ -209,7 +209,7 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 		}
 	}
 
-	onArrowUpKeyPress(e: UIComponentEvent) {
+	onArrowUpKeyPress(e: ViewEvent) {
 		if (e.source !== this.body) return;
 		let content = this.body && (this.body as UICell).content;
 		if (content) {

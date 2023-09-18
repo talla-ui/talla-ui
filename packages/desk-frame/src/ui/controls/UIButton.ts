@@ -53,17 +53,6 @@ export class UIButton extends UIComponent {
 	constructor(label?: StringConvertible) {
 		super();
 		this.label = label;
-
-		// set selection state automatically
-		this.listen((e) => {
-			if (e.source === this) {
-				if (e.name === "Select") {
-					this.selected = true;
-				} else if (e.name === "Deselect") {
-					this.selected = false;
-				}
-			}
-		});
 	}
 
 	/**
@@ -84,14 +73,12 @@ export class UIButton extends UIComponent {
 			| "navigateTo"
 			| "disabled"
 			| "width"
+			| "pressed"
+			| "value"
 			| "buttonStyle"
 		> & {
 			/** True if keyboard focus should be disabled this button */
 			disableKeyboardFocus?: boolean | Binding<boolean>;
-			/** Event that's emitted when the button is selected */
-			onSelect?: string;
-			/** Event that's emitted when the button is deselected */
-			onDeselect?: string;
 		},
 	) {
 		// quietly change 'text' to label to support JSX tag content
@@ -136,10 +123,16 @@ export class UIButton extends UIComponent {
 	navigateTo?: StringConvertible | NavigationTarget;
 
 	/**
-	 * The current selection state
-	 * - This property is set automatically, based on Select and Deselect events.
+	 * The current visual selection state
+	 * - This property is not set automatically. It can be set manually, or bound using {@link Binding.match()} to select and deselect the button based on the current value of a property.
 	 */
-	selected = false;
+	pressed = false;
+
+	/**
+	 * An option value that this button represents, if any
+	 * - This property isn't rendered in any way, but it may be used to find out which button was clicked in a group of buttons.
+	 */
+	value?: string;
 
 	/** True to disable keyboard focus (e.g. Tab key) for this button */
 	disableKeyboardFocus?: boolean;

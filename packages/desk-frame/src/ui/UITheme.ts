@@ -215,8 +215,6 @@ export namespace UITheme {
 	export const STATE_HOVERED = Symbol("hovered");
 	/** A property that is used on {@link StyleStateOptions} to apply styles to pressed elements */
 	export const STATE_PRESSED = Symbol("pressed");
-	/** A property that is used on {@link StyleStateOptions} to apply styles to selected elements */
-	export const STATE_SELECTED = Symbol("selected");
 	/** A property that is used on {@link StyleStateOptions} to apply styles to focused elements */
 	export const STATE_FOCUSED = Symbol("focused");
 	/** A property that is used on {@link StyleStateOptions} to apply styles to disabled elements */
@@ -231,7 +229,6 @@ export namespace UITheme {
 	export type StyleStateOptions = {
 		[STATE_HOVERED]?: boolean;
 		[STATE_PRESSED]?: boolean;
-		[STATE_SELECTED]?: boolean;
 		[STATE_FOCUSED]?: boolean;
 		[STATE_DISABLED]?: boolean;
 		[STATE_READONLY]?: boolean;

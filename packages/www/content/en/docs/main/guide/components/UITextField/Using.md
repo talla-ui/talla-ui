@@ -96,7 +96,7 @@ export class MyActivity extends ViewActivity {
 	textValue = "";
 
 	// this event handler is invoked for user input
-	onSampleTextInput(e: UIComponentEvent<UITextField>) {
+	onSampleTextInput(e: ViewEvent<UITextField>) {
 		let currentText = e.source.value || "";
 		this.textValue = currentText;
 	}

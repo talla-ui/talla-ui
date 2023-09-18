@@ -3,7 +3,6 @@ import {
 	RenderContext,
 	UIButton,
 	UIButtonStyle,
-	UIComponentEvent,
 } from "desk-frame";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import {
@@ -23,6 +22,7 @@ export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 				"chevron",
 				"disabled",
 				"width",
+				"pressed",
 				"buttonStyle",
 			);
 	}
@@ -40,6 +40,7 @@ export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 					this.scheduleUpdate(this.element);
 					return;
 				case "disabled":
+				case "pressed":
 				case "width":
 				case "buttonStyle":
 					this.scheduleUpdate(undefined, this.element);
@@ -47,18 +48,6 @@ export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 			}
 		}
 		await super.handlePropertyChange(property, value, event);
-	}
-
-	onSelect(e: UIComponentEvent) {
-		if (e.source === this.observed && this.element) {
-			this.element.selected = true;
-		}
-	}
-
-	onDeselect(e: UIComponentEvent) {
-		if (e.source === this.observed && this.element) {
-			this.element.selected = false;
-		}
 	}
 
 	override handlePlatformEvent(
@@ -89,8 +78,9 @@ export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 	override updateStyle(element: TestOutputElement) {
 		let button = this.observed;
 		if (button) {
-			// set disabled state
+			// set state
 			element.disabled = button.disabled;
+			element.pressed = button.pressed;
 
 			// set styles
 			element.styleClass =

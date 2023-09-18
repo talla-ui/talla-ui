@@ -5,8 +5,11 @@ import {
 	UICloseLabel,
 	UICloseLabelStyle,
 	UIHeading1Label,
+	UIHeading1LabelStyle,
 	UIHeading2Label,
+	UIHeading2LabelStyle,
 	UIHeading3Label,
+	UIHeading3LabelStyle,
 	UILabel,
 	UILabelStyle,
 	UIParagraphLabel,
@@ -42,9 +45,18 @@ describe("UILabel", (scope) => {
 			new UIHeading2Label("foo"),
 			new UIHeading3Label("foo"),
 		];
-		expect(h1.headingLevel).toBe(1);
-		expect(h2.headingLevel).toBe(2);
-		expect(h3.headingLevel).toBe(3);
+		expect(h1).toHaveProperties({
+			headingLevel: 1,
+			labelStyle: UIHeading1LabelStyle,
+		});
+		expect(h2).toHaveProperties({
+			headingLevel: 2,
+			labelStyle: UIHeading2LabelStyle,
+		});
+		expect(h3).toHaveProperties({
+			headingLevel: 3,
+			labelStyle: UIHeading3LabelStyle,
+		});
 
 		let p = new UIParagraphLabel("foo");
 		expect(p.labelStyle).toBe(UIParagraphLabelStyle);

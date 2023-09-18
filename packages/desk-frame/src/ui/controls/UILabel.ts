@@ -199,7 +199,7 @@ export class UIHeading2Label extends UILabel {
 	constructor(text?: StringConvertible) {
 		super(text);
 		this.headingLevel = 2;
-		this.labelStyle = UIHeading1LabelStyle;
+		this.labelStyle = UIHeading2LabelStyle;
 	}
 }
 
@@ -230,7 +230,7 @@ export class UIHeading3Label extends UILabel {
 	constructor(text?: StringConvertible) {
 		super(text);
 		this.headingLevel = 3;
-		this.labelStyle = UIHeading1LabelStyle;
+		this.labelStyle = UIHeading3LabelStyle;
 	}
 }
 

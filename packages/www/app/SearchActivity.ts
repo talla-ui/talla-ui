@@ -1,10 +1,4 @@
-import {
-	app,
-	UIComponentEvent,
-	UIList,
-	UITextField,
-	ViewActivity,
-} from "desk-frame";
+import { app, UIList, UITextField, ViewActivity, ViewEvent } from "desk-frame";
 import { swapPageAsync } from "./swap";
 import { Search, SearchResult } from "./Search";
 import SearchView from "./SearchView";
@@ -56,7 +50,7 @@ export class SearchActivity extends ViewActivity {
 		})();
 	}
 
-	protected async onSearchInput(e: UIComponentEvent<UITextField>) {
+	protected async onSearchInput(e: ViewEvent<UITextField>) {
 		let searchText = e.source.value || "";
 		if (this.loading) {
 			await this.loading;

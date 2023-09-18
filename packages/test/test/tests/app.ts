@@ -5,12 +5,12 @@ import {
 	StringConvertible,
 	UIButton,
 	UICell,
-	UIComponentEvent,
 	UILabel,
 	UITextField,
 	ViewComposite,
+	ViewEvent,
 } from "desk-frame";
-import { describe, test, expect, useTestContext } from "../../dist/index.js";
+import { describe, expect, test, useTestContext } from "../../dist/index.js";
 // ... from "@desk-framework/test"
 
 class CountActivity extends PageViewActivity {
@@ -23,7 +23,7 @@ class CountActivity extends PageViewActivity {
 	onCountUp() {
 		this.count++;
 	}
-	onSetCount(e: UIComponentEvent<UITextField>) {
+	onSetCount(e: ViewEvent<UITextField>) {
 		this.count = +e.source.value! || 0;
 	}
 }

@@ -135,19 +135,19 @@ export abstract class ViewComposite extends View {
 	 *
 	 * @example
 	 * // A view composite that adds an event handler
-	 * const SelectOnClick = ViewComposite.define(
+	 * const AnimateOnClick = ViewComposite.define(
 	 *   (p, content) => content,
 	 *   class extends ViewComposite {
 	 *     onClick() {
-	 *       this.body?.emit("Select");
+	 *       // ...animate this.body
 	 *     }
 	 *   }
 	 * );
 	 *
 	 * // Use like this in JSX:
-	 * <SelectOnClick>
+	 * <AnimateOnClick>
 	 *   <cell> ... </cell>
-	 * </SelectOnClick>
+	 * </AnimateOnClick>
 	 */
 	static define<
 		TPreset extends {},

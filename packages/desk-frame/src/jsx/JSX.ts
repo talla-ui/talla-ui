@@ -62,7 +62,6 @@ function flatten(a: any[]): any {
  * |`<conditional>` |{@link UIConditional}
  * |`<formcontext>` |{@link UIFormController}
  * |`<list>` |{@link UIList}
- * |`<selection>` |{@link UISelectionController}
  * |`<animation>` |{@link UIAnimationController}
  * |`<render>` |{@link UIViewRenderer}
  *

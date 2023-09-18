@@ -5,14 +5,13 @@ import {
 	RenderContext,
 	UIButton,
 	UIButtonStyle,
-	UIComponentEvent,
 } from "desk-frame";
-import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
-import { setTextOrHtmlContent } from "./UILabelRenderer.js";
 import {
 	applyElementClassName,
 	applyElementStyle,
 } from "../../style/DOMStyle.js";
+import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
+import { setTextOrHtmlContent } from "./UILabelRenderer.js";
 
 interface HrefActivationPath extends ActivationPath {
 	getPathHref(path?: string): string;
@@ -29,6 +28,7 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 				"chevron",
 				"disabled",
 				"width",
+				"pressed",
 				"buttonStyle",
 			);
 	}
@@ -46,6 +46,7 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 					this.scheduleUpdate(this.element);
 					return;
 				case "disabled":
+				case "pressed":
 				case "width":
 				case "buttonStyle":
 					this.scheduleUpdate(undefined, this.element);
@@ -55,43 +56,33 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 		await super.handlePropertyChange(property, value, event);
 	}
 
-	onSelect(e: UIComponentEvent) {
-		if (e.source === this.observed && this.element) {
-			this.element.dataset.selected = "selected";
-		}
-	}
-
-	onDeselect(e: UIComponentEvent) {
-		if (e.source === this.observed && this.element) {
-			delete this.element.dataset.selected;
-		}
-	}
-
 	getOutput() {
-		if (!this.observed) throw ReferenceError();
-		let isLink = this.observed.accessibleRole === "link";
+		let button = this.observed;
+		if (!button) throw ReferenceError();
+
+		let isLink = button.accessibleRole === "link";
 		let elt = document.createElement(isLink ? "a" : "button");
 		if (!isLink) elt.type = "button";
-		let output = new RenderContext.Output(this.observed, elt);
+		let output = new RenderContext.Output(button, elt);
 
 		// make (keyboard) focusable
-		elt.tabIndex = this.observed.disableKeyboardFocus ? -1 : 0;
+		elt.tabIndex = button.disableKeyboardFocus ? -1 : 0;
 
 		// set href property if possible
-		if (this.observed.navigateTo) {
+		if (button.navigateTo) {
 			let activationPath = app.activities.activationPath as
 				| HrefActivationPath
 				| undefined;
 			if (activationPath && typeof activationPath.getPathHref === "function") {
 				(elt as HTMLAnchorElement).href = activationPath.getPathHref(
-					String(this.observed.getNavigationTarget()),
+					String(button.getNavigationTarget()),
 				);
 			}
 		}
 
 		// handle direct clicks with `navigateTo` set
 		elt.addEventListener("click", (e) => {
-			if (this.observed && this.observed.navigateTo) {
+			if (button && button.navigateTo) {
 				if (
 					(e as MouseEvent).ctrlKey ||
 					(e as MouseEvent).altKey ||
@@ -104,8 +95,8 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 				} else {
 					// use app to navigate instead, emit an event here:
 					e.preventDefault();
-					if (!this.observed.disabled) {
-						this.observed.emit("Navigate");
+					if (!button.disabled) {
+						button.emit("Navigate");
 					}
 				}
 			}
@@ -120,6 +111,12 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 			element.disabled = !!button.disabled;
 			if (button.disabled) element.setAttribute("aria-disabled", "true");
 			else element.removeAttribute("aria-disabled");
+
+			// set pressed state (true/false/undefined)
+			if (button.pressed) element.setAttribute("aria-pressed", "true");
+			else if (button.pressed === false)
+				element.setAttribute("aria-pressed", "false");
+			else element.removeAttribute("aria-pressed");
 
 			// set CSS styles
 			applyElementClassName(

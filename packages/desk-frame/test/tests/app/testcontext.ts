@@ -1,25 +1,24 @@
 import {
-	describe,
-	test,
-	expect,
-	useTestContext,
+	TestActivationPath,
 	TestRenderer,
+	describe,
+	expect,
+	test,
+	useTestContext,
 } from "@desk-framework/test";
-import { TestActivationPath } from "@desk-framework/test";
 import {
-	UICell,
-	app,
-	PageViewActivity,
 	ManagedEvent,
-	ManagedObject,
-	UIPrimaryButton,
-	ViewComposite,
-	UITheme,
 	MessageDialogOptions,
-	strf,
-	UIIconResource,
+	PageViewActivity,
 	UIButtonStyle,
+	UICell,
 	UIColor,
+	UIIconResource,
+	UIPrimaryButton,
+	UITheme,
+	ViewComposite,
+	app,
+	strf,
 } from "../../../dist/index.js";
 
 describe("TestContext", () => {
@@ -241,9 +240,7 @@ describe("TestContext", () => {
 						onFocusIn: "+CellFocused",
 					}),
 				);
-				protected override delegateViewEvent(
-					event: ManagedEvent<ManagedObject, unknown, string>,
-				) {
+				protected override delegateViewEvent(event: ManagedEvent) {
 					return super.delegateViewEvent(event);
 				}
 				onCellFocused() {

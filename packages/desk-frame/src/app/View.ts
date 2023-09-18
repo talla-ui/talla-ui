@@ -10,6 +10,15 @@ import { RenderContext } from "./RenderContext.js";
 /** Type definition for a constructor that instantiates a {@link View} object */
 export type ViewClass<T extends View = View> = new (...args: any[]) => T;
 
+/** Type definition for an event that's emitted on a view object */
+export type ViewEvent<
+	TSource extends View = View,
+	TData extends Record<string, unknown> | undefined =
+		| Record<string, unknown>
+		| undefined,
+	TName extends string = string,
+> = ManagedEvent<TSource, TData, TName>;
+
 /**
  * An abstract class that represents a view
  *
@@ -73,7 +82,7 @@ export abstract class View
 				if (!v || typeof v !== "string" || eventName === v) {
 					throw invalidArgErr("preset." + p);
 				}
-				(events || (events = {}))[eventName] = v;
+				(events || (events = Object.create(null)))[eventName] = v;
 				continue;
 			}
 
@@ -85,8 +94,11 @@ export abstract class View
 		if (events) {
 			let _emit = this.emit.bind(this);
 			this.emit = function (event, data?) {
-				if (typeof event === "string")
+				if (typeof event === "string") {
 					event = new ManagedEvent(event, this, data);
+				} else {
+					data = event.data;
+				}
 
 				// check for event intercept/forward
 				let v = events![event.name];
@@ -98,10 +110,15 @@ export abstract class View
 					v = v.slice(1);
 				}
 
+				// add 'target' data property if needed
+				let colonIndex = v.indexOf(":");
+				if (colonIndex > 0) {
+					data = { target: v.slice(colonIndex + 1) };
+					v = v.slice(0, colonIndex);
+				}
+
 				// emit intercept event with original event as `inner`
-				return this.emit(
-					new ManagedEvent(v, this, event.data, undefined, event),
-				);
+				return this.emit(new ManagedEvent(v, this, data, undefined, event));
 			};
 		}
 	}

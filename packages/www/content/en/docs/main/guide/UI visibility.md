@@ -115,7 +115,7 @@ class MyActivity extends PageViewActivity {
 		// ...
 	}
 
-	onHandleContainerClick(e: UIComponentEvent<UIColumn>) {
+	onHandleContainerClick(e: ViewEvent<UIColumn>) {
 		// find the current input value
 		// for a text field within the clicked column
 		let textField = e.source.findViewContent(UITextField)[0];

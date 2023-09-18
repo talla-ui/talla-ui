@@ -123,40 +123,6 @@ const view = UIPrimaryButton.with({
 });
 ```
 
-## Selection state {#selection}
-
-Button controls automatically keep track of `Select` and `Deselect` events, and set the {@link UIButton.selected selected} property accordingly. These events aren't emitted automatically — use an event preset and/or a {@link UISelectionController} to manage selection state. You can also use the selected state for extended style classes as illustrated below.
-
-<!--{{iframesample js="./sample-select.js" short}}-->
-
-```ts
-// TODO: Update this example
-const buttonStyle = UIStyle.OutlineButton.extend(
-	{},
-	{
-		// use the selected state to switch styles automatically:
-		selected: {
-			decoration: {
-				background: UIColor["@primaryBackground"],
-				textColor: UIColor["@primaryBackground"].text(),
-			},
-		},
-	},
-);
-
-const myButton = UIButton.with({
-	// emit Select events when clicked:
-	onClick: "+Select",
-	style: buttonStyle,
-	label: "Selectable",
-});
-
-// use a UISelectionController to emit Deselect events too
-const view = UISelectionController.with(
-	UIRow.with({ padding: 8, spacing: 8 }, myButton, myButton, myButton),
-);
-```
-
 ## Preset properties {#presets}
 
 The following properties can be preset using `UIButton.with({ ... })` or JSX `<button ...>`.
@@ -234,5 +200,3 @@ The following events are emitted by UIButton objects, and can also be preset.
 | ArrowRightKeyPress | Emitted when the right arrow key has been pressed                    |
 | ArrowUpKeyPress    | Emitted when the up arrow key has been pressed                       |
 | ArrowDownKeyPress  | Emitted when the down arrow key has been pressed                     |
-| Select             | Emitted when the component is selected                               |
-| Deselect           | Emitted when the component is deselected                             |

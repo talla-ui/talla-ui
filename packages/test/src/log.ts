@@ -20,7 +20,10 @@ export function val2str(value: any, nest = 0, seen: any[] = []): string {
 		// return value name
 		return String(value);
 	}
-	if (typeof value === "function") return "<<function>>";
+	if (typeof value === "function") {
+		let type = String(value).startsWith("class") ? "class" : "function";
+		return `<<${type} ${value.name}>>`;
+	}
 	if (value instanceof RegExp) {
 		return "/" + value.source + "/" + value.flags;
 	}
