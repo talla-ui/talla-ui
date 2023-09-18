@@ -86,7 +86,7 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 			// set label style
 			let label = element.lastChild as HTMLLabelElement;
 			applyElementClassName(
-				element,
+				label,
 				getBaseStyleClass(toggle.labelStyle) || UIToggleLabelStyle,
 				undefined,
 				true,
