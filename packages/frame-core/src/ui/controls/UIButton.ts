@@ -111,7 +111,7 @@ export class UIButton extends UIComponent {
 	iconColor?: UIColor | string;
 
 	/** Direction of chevron icon to be placed at the far end of the button, if any */
-	chevron?: "up" | "down" | "out" = undefined;
+	chevron?: "up" | "down" | "next" | "back" = undefined;
 
 	/** Chevron icon size (in pixels or string with unit) */
 	chevronSize?: string | number;

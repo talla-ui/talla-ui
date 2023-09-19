@@ -19,7 +19,8 @@ import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 const CHEVRON_ICONS = {
 	up: "@chevronUp",
 	down: "@chevronDown",
-	out: "@chevronNext",
+	next: "@chevronNext",
+	back: "@chevronBack",
 };
 
 /** @internal */
@@ -114,7 +115,7 @@ type TextContentProperties = {
 	iconSize?: string | number;
 	iconMargin?: string | number;
 	iconColor?: UIColor | string;
-	chevron?: "up" | "down" | "out";
+	chevron?: "up" | "down" | "back" | "next";
 	chevronSize?: string | number;
 };
 

@@ -78,13 +78,6 @@ export function makeBaseCSS() {
 			opacity: "0.5",
 		},
 
-		// fix vertical alignment of text within a button
-		[`a.${CLASS_UI}`]: {
-			display: "flex",
-			flexDirection: "column",
-			justifyContent: "center",
-		},
-
 		// CSS for alignment of elements within buttons/labels
 		[`.${CLASS_UI} icon`]: {
 			display: "inline-flex",
@@ -185,6 +178,7 @@ export function makeBaseCSS() {
 			outlineOffset: "0",
 			color: "inherit",
 			border: "1px solid currentcolor",
+			borderRadius: "0",
 			width: "1rem",
 			height: "1rem",
 			padding: "0",

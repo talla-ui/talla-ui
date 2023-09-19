@@ -43,8 +43,8 @@ const baseButtonStyle: CombinedStyleType = {
 	fontWeight: 600,
 	textAlign: "center",
 	lineBreakMode: "ellipsis",
+	lineHeight: 2,
 	minWidth: 112,
-	minHeight: 40,
 	shrink: 0,
 	css: {
 		position: "relative",
