@@ -70,6 +70,7 @@ export class UIButton extends UIComponent {
 			| "iconColor"
 			| "chevron"
 			| "chevronSize"
+			| "chevronColor"
 			| "navigateTo"
 			| "disabled"
 			| "width"
@@ -115,6 +116,9 @@ export class UIButton extends UIComponent {
 
 	/** Chevron icon size (in pixels or string with unit) */
 	chevronSize?: string | number;
+
+	/** Chevron icon color */
+	chevronColor?: UIColor | string;
 
 	/**
 	 * Path or navigation target to navigate to when this button is clicked

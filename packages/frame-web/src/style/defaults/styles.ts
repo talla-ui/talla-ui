@@ -34,7 +34,7 @@ export const defaultControlTextStyle: CombinedStyleType = {
 const controlBase = UIColor["@controlBase"];
 
 const baseButtonStyle: CombinedStyleType = {
-	padding: { y: 4, x: 12 },
+	padding: { y: 6, x: 12 },
 	borderRadius: 12,
 	borderThickness: 1,
 	borderColor: UIColor["@clear"],
@@ -56,7 +56,9 @@ const baseButtonStyle: CombinedStyleType = {
 };
 
 const baseLabelStyle: CombinedStyleType = {
+	padding: { y: 6 },
 	maxWidth: "100%",
+	lineHeight: 1,
 	lineBreakMode: "ellipsis",
 	css: { cursor: "inherit" },
 };
@@ -171,7 +173,6 @@ export const styles: [
 			{
 				...baseLabelStyle,
 				lineHeight: 1.5,
-				padding: { y: 6 },
 			},
 		],
 	],

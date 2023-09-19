@@ -86,8 +86,7 @@ export function makeBaseCSS() {
 			verticalAlign: "middle",
 		},
 		[`.${CLASS_UI} icon:not(:last-child)`]: {
-			position: "relative",
-			top: "-0.05rem",
+			paddingBottom: "0.125em",
 		},
 		[`.${CLASS_UI}>._chevron-wrapper`]: {
 			display: "inline-flex",

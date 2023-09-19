@@ -117,6 +117,7 @@ type TextContentProperties = {
 	iconColor?: UIColor | string;
 	chevron?: "up" | "down" | "back" | "next";
 	chevronSize?: string | number;
+	chevronColor?: UIColor | string;
 };
 
 /** @internal Helper function to set the (text or html) content for given element */
@@ -191,6 +192,7 @@ export function setTextOrHtmlContent(
 		let chevronElement = getIconElt({
 			icon: CHEVRON_ICONS[content.chevron],
 			iconSize: content.chevronSize,
+			iconColor: content.chevronColor,
 		});
 		chevronWrapper.appendChild(chevronElement);
 		element.appendChild(chevronWrapper);
