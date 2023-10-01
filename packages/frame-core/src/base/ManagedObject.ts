@@ -130,14 +130,95 @@ export class ManagedObject {
 
 	/**
 	 * Adds a handler for all events emitted by this object
-	 * @note This method adds a permanent listener. To prevent memory leaks, it may be better to use an {@link Observer} that can be stopped when needed.
+	 *
 	 * @param handler A function (void return type, or asynchronous) that will be called for all events emitted by this object; the function is called with the `this` value set to the managed object, and a single event argument
+	 * @returns If no callback function is provided, an async iterable that can be used instead
+	 *
+	 * @description
+	 * This method adds a permanent listener for all events emitted by this object, in one of two ways. Either a callback function can be provided, or this method returns an async iterable that can be used to iterate over all events.
+	 *
+	 * **Callback function** — If a callback function is provided, it will be called for every event that's emitted by this object. The function is called with the `this` value set to the managed object, and a single event argument. The callback function can be asynchronous, in which case the result is awaited to catch any errors.
+	 *
+	 * **Async iterable** — If no callback function is provided, this method returns an async iterable that can be used to iterate over all events using a `for await...of` loop. The loop body is run for each event, in the order they're emitted, either awaiting new events or continuing execution immediately. The loop stops when the object is unlinked.
+	 *
+	 * @note This method adds a permanent listener. To prevent memory leaks, it may be better to use an {@link Observer} that can be stopped when needed, if the object is expected to outlive the listener.
+	 *
+	 * @example
+	 * // Handle all events using a callback function
+	 * someObject.listen((event) => {
+	 *   if (event.name === "Foo") {
+	 *     // ...handle Foo event
+	 *   }
+	 * });
+	 * // ... (code continues to run)
+	 *
+	 * @example
+	 * // Handle all events using an async iterable
+	 * for await (let event of someObject.listen()) {
+	 *   if (event.name === "Foo") {
+	 *     // ...handle Foo event
+	 *   }
+	 * }
+	 * // ... (code here runs after object is unlinked, or `break`)
 	 */
-	listen(handler: (this: this, event: ManagedEvent) => Promise<void> | void) {
-		addTrap(this, $_traps_event, (target, p, event) => {
-			handler.call(this, event)?.catch?.(errorHandler);
-		});
-		return this;
+	listen(
+		handler: (this: this, event: ManagedEvent) => Promise<void> | void,
+	): void;
+	listen(): AsyncIterable<ManagedEvent>;
+	listen(handler?: (this: this, event: ManagedEvent) => Promise<void> | void) {
+		// add a single handler if provided
+		if (handler) {
+			addTrap(this, $_traps_event, (target, p, event) => {
+				handler.call(this, event)?.catch?.(errorHandler);
+			});
+			return;
+		}
+
+		// return an async iterable for events
+		let self = this;
+		let iterable: AsyncIterable<ManagedEvent> = {
+			[Symbol.asyncIterator]() {
+				let buf: ManagedEvent[] | undefined = [];
+				let waiter: undefined | ((event?: ManagedEvent) => void);
+				addTrap(
+					self,
+					$_traps_event,
+					(target, p, event) => {
+						// handle an event: add to buffer, or resolve a waiter
+						if (waiter) waiter(event);
+						else if (buf) buf.push(event);
+					},
+					() => {
+						// handle unlinking: resolve waiter if any
+						if (waiter) waiter();
+					},
+				);
+				const stop = (): any => {
+					buf = undefined;
+					return Promise.resolve({ done: true });
+				};
+
+				// return the iterator
+				let iterator: AsyncIterator<ManagedEvent> = {
+					async next() {
+						if (!buf) return { done: true } as any;
+						if (buf.length) return { value: buf.shift()! };
+						return new Promise<IteratorResult<ManagedEvent>>((resolve) => {
+							if (self[$_unlinked]) return resolve(stop());
+							waiter = (event) => {
+								waiter = undefined;
+								if (self[$_unlinked]) resolve({ done: true } as any);
+								else resolve({ value: event! });
+							};
+						});
+					},
+					return: stop,
+					throw: stop,
+				};
+				return iterator;
+			},
+		};
+		return iterable;
 	}
 
 	/** Returns true if the object has been unlinked */

@@ -88,6 +88,63 @@ describe("Events", () => {
 		});
 	});
 
+	describe.only("Async iterator listeners", () => {
+		test("Unlink cancels iterator", async (t) => {
+			let c = new ManagedObject();
+			let iter = c.listen()[Symbol.asyncIterator]();
+			c.unlink();
+			expect(await iter.next())
+				.toHaveProperty("done")
+				.toBe(true);
+		});
+
+		test("Unlink stops waiting iterator", async (t) => {
+			let c = new ManagedObject();
+			t.sleep(10).then(() => c.unlink());
+			for await (let _event of c.listen()) {
+				t.count("event");
+			}
+			t.expectCount("event").toBe(0);
+		});
+
+		test("Iterator handles events using buffer", async (t) => {
+			let c = new ManagedObject();
+			t.sleep(10).then(() => {
+				c.emit("Foo");
+				c.emit("Bar");
+				c.emit("Baz");
+			});
+			let handled: string[] = [];
+			for await (let event of c.listen()) {
+				handled.push(event.name);
+				if (handled.length >= 3) break;
+			}
+			expect(handled).toBeArray(["Foo", "Bar", "Baz"]);
+		});
+
+		test("Iterator handles events directly", async (t) => {
+			let c = new ManagedObject();
+			t.sleep(10).then(() => c.emit("Foo"));
+			for await (let event of c.listen()) {
+				if (event.name === "Foo") c.emit("Bar");
+				if (event.name === "Bar") c.unlink();
+			}
+		});
+
+		test("Iterator handles exceptions", async (t) => {
+			let c = new ManagedObject();
+			t.sleep(10).then(() => c.emit("Foo"));
+			try {
+				for await (let _event of c.listen()) {
+					throw Error("Testing");
+				}
+			} catch (err) {
+				t.count("error");
+			}
+			t.expectCount("error").toBe(1);
+		});
+	});
+
 	test("GlobalEmitter", (t) => {
 		type MyEvent = ManagedEvent<ManagedObject, { foo: string }, "Foo">;
 		let emitter = new GlobalEmitter<MyEvent>();

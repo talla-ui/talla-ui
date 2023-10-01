@@ -14,12 +14,16 @@ import { hasTraps, $_traps_event } from "./object_util.js";
 export class GlobalEmitter<TEvent extends ManagedEvent> extends ManagedObject {
 	/**
 	 * Adds a (permanent) event listener
-	 * @param handler A function that will be called for every event that's emitted, with the event as the only argument
+	 * @param handler A function that will be called for every event that's emitted, with the event as the only argument; if not provided, this method returns an async iterable (see {@link ManagedObject.listen()}
 	 */
 	override listen(
 		handler: (this: unknown, event: TEvent) => void | Promise<void>,
-	): this {
-		return super.listen(handler as any);
+	): void;
+	override listen(): AsyncIterable<TEvent>;
+	override listen(
+		handler?: (this: unknown, event: TEvent) => void | Promise<void>,
+	) {
+		return super.listen(handler as any) as any;
 	}
 
 	/** Strongly typed version of {@link ManagedObject.emit()} */
