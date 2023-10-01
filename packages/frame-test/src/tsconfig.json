@@ -3,7 +3,6 @@
 		"pretty": true,
 		"declaration": true,
 		"stripInternal": true,
-		"experimentalDecorators": true,
 		"strict": true,
 		"noImplicitAny": true,
 		"noUnusedLocals": true,

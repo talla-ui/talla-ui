@@ -2,7 +2,6 @@
 	"compilerOptions": {
 		"stripInternal": true,
 		"useDefineForClassFields": true,
-		"experimentalDecorators": true,
 		"strict": true,
 		"noImplicitAny": true,
 		"noUnusedLocals": true,
@@ -17,10 +16,7 @@
 		"jsxFactory": "JSX",
 		"outDir": "../.test-run",
 		"sourceMap": true,
-		"pretty": true,
-		"paths": {
-			"@desk-framework/frame-core": ["../dist"]
-		}
+		"pretty": true
 	},
 	"files": ["index.ts"]
 }
