@@ -1,4 +1,4 @@
-import { Binding, ManagedObject } from "../base/index.js";
+import { ManagedObject } from "../base/index.js";
 import { ServiceContext } from "./ServiceContext.js";
 
 /**
@@ -12,11 +12,6 @@ import { ServiceContext } from "./ServiceContext.js";
  * @see {@link ServiceContext}
  */
 export abstract class Service extends ManagedObject {
-	constructor() {
-		super();
-		Binding.limitTo(this);
-	}
-
 	/** Returns true if this service is currently registered */
 	isServiceRegistered() {
 		// use duck typing to find out if parent map is a ServiceContext

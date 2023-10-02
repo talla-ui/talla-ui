@@ -86,7 +86,7 @@ export class Binding<T = any> {
 
 	/**
 	 * Restricts bindings that can be bound to (attached parent objects of) the specified object, if the object itself does not include a corresponding property
-	 * @note This method is used automatically on {@link Activity} and {@link Service} objects, since any attempt to bind to a property that's not defined on the object itself is usually considered an error. To change the default behavior, call this method with a custom filter function.
+	 * @note This method is used automatically on the {@link app} object, since any attempt to bind to a property (e.g. from the view) should at least stop there. For further limitations, call this method with a filter to restrict bindings on any other object.
 	 * @param object The object for which to restrict bindings
 	 * @param filter A function that returns true if a property is allowed to pass, or false if an attempt to bind should result in an unhandled error; if not provided, no properties are allowed
 	 */

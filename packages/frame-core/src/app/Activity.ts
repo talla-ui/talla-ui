@@ -1,5 +1,4 @@
 import {
-	Binding,
 	bound,
 	ConfigOptions,
 	ManagedObject,
@@ -66,7 +65,6 @@ export class Activity extends ManagedObject {
 	 */
 	constructor() {
 		super();
-		Binding.limitTo(this);
 		_boundActivationPath.bindTo(this, "activationPath");
 
 		// create observer to match path and activate/deactivate

@@ -1,23 +1,24 @@
 import {
+	Binding,
 	ConfigOptions,
 	LazyString,
 	ManagedObject,
 	StringConvertible,
 } from "../base/index.js";
-import { err, ERROR, errorHandler, setErrorHandler } from "../errors.js";
+import { ERROR, err, errorHandler, setErrorHandler } from "../errors.js";
+import { UITheme } from "../ui/UITheme.js";
 import { ActivationContext } from "./ActivationContext.js";
-import { ServiceContext } from "./ServiceContext.js";
+import type { ActivationPath } from "./ActivationPath.js";
 import type { Activity } from "./Activity.js";
 import type { I18nProvider } from "./I18nProvider.js";
-import type { NavigationTarget } from "./NavigationTarget.js";
-import type { ActivationPath } from "./ActivationPath.js";
-import type { RenderContext } from "./RenderContext.js";
-import type { ViewportContext } from "./ViewportContext.js";
-import { UITheme } from "../ui/UITheme.js";
-import { Scheduler } from "./Scheduler.js";
 import { LogWriter } from "./LogWriter.js";
 import { MessageDialogOptions } from "./MessageDialogOptions.js";
+import type { NavigationTarget } from "./NavigationTarget.js";
+import type { RenderContext } from "./RenderContext.js";
+import { Scheduler } from "./Scheduler.js";
 import { Service } from "./Service.js";
+import { ServiceContext } from "./ServiceContext.js";
+import type { ViewportContext } from "./ViewportContext.js";
 
 /**
  * A singleton class that represents the global application state
@@ -35,6 +36,7 @@ export class GlobalContext extends ManagedObject {
 	private constructor() {
 		if (GlobalContext.instance) throw Error;
 		super();
+		Binding.limitTo(this);
 		this.autoAttach("services");
 		this.autoAttach("activities");
 		this.autoAttach("renderer");
