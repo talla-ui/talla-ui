@@ -77,7 +77,7 @@ describe("NavigationTarget", () => {
 		class MyActivity extends Activity {
 			constructor() {
 				super();
-				this.observeAttach("nested");
+				this.autoAttach("nested");
 			}
 			nested?: MyActivity;
 		}

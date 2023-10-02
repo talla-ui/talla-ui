@@ -100,7 +100,7 @@ describe("ActivationPath and ActivationContext", () => {
 			class MyActivity extends Activity {
 				constructor() {
 					super();
-					this.observeAttach("child");
+					this.autoAttach("child");
 				}
 				child?: MyActivity;
 			}
@@ -116,7 +116,7 @@ describe("ActivationPath and ActivationContext", () => {
 			class MyActivity extends Activity {
 				constructor() {
 					super();
-					this.observeAttach("child");
+					this.autoAttach("child");
 				}
 				child?: MyActivity;
 			}

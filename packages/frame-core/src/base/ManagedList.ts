@@ -71,9 +71,9 @@ class ManagedListIterator<T extends ManagedObject> implements Iterator<T> {
  *
  * Managed lists are used in many places throughout the framework, such as to reference view objects within a {@link UIContainer} object. Managed lists can also be used by application code to efficiently represent lists of data models or other records.
  *
- * **Attaching list items** — By default, objects aren't attached to the list, so they could be attached to other objects themselves and still be part of a managed list. However, you can enable auto-attaching of objects in a list using the {@link ManagedList.autoAttach()} method — **or** by attaching the list itself to another object. This ensures that objects in a list are only attached to the list itself, and are unlinked when they're removed from the list (and removed from the list when they're no longer attached to it, e.g. when moved to another auto-attaching list).
+ * **Attaching list items** — By default, objects aren't attached to the list, so they could be attached to other objects themselves and still be part of a managed list. However, you can enable auto-attaching of objects in a list using the {@link ManagedList.attachAll()} method — **or** by attaching the list itself to another object. This ensures that objects in a list are only attached to the list itself, and are unlinked when they're removed from the list (and removed from the list when they're no longer attached to it, e.g. when moved to another auto-attaching list).
  *
- * **Events** — Since ManagedList itself inherits from ManagedObject, a list can emit events, too. When any objects are added, moved, or removed, a {@link ManagedList.ChangeEvent} is emitted. In addition, for auto-attaching lists (see {@link ManagedList.autoAttach()}) any events that are emitted by an object are re-emitted on the list itself. The {@link ManagedEvent.source} property can be used to find the object that originally emitted the event.
+ * **Events** — Since ManagedList itself inherits from ManagedObject, a list can emit events, too. When any objects are added, moved, or removed, a {@link ManagedList.ChangeEvent} is emitted. In addition, for auto-attaching lists (see {@link ManagedList.attachAll()}) any events that are emitted by an object are re-emitted on the list itself. The {@link ManagedEvent.source} property can be used to find the object that originally emitted the event.
  *
  * **Nested lists** — Managed lists can contain (and even attach to) other managed lists, which allows for building nested or recursive data structures that fully support bindings and events.
  *
@@ -111,7 +111,7 @@ export class ManagedList<
 			this,
 			$_origin,
 			(t, p, v) => {
-				if (v && this._attach === undefined) this.autoAttach(true);
+				if (v && this._attach === undefined) this.attachAll(true);
 			},
 			() => {
 				// ... and clear the list when unlinked
@@ -604,7 +604,7 @@ export class ManagedList<
 	 *
 	 * @error This method throws an error if the feature can't be enabled or disabled.
 	 */
-	autoAttach(set: boolean, noEventPropagation?: boolean) {
+	attachAll(set: boolean, noEventPropagation?: boolean) {
 		// set property to false ONLY if no attached objects
 		if (!set && this._attach && this[$_list].map.size) {
 			throw err(ERROR.List_AttachState);
@@ -631,7 +631,7 @@ export class ManagedList<
 		attachObject(this, target, new AttachObserver(this, !this._noPropagation));
 	}
 
-	/** True if objects should be attached to this map when added (and no duplicates allowed) */
+	/** True if objects should be attached to this list when added (and no duplicates allowed) */
 	private _attach?: boolean;
 
 	/** True if attached object events should NOT be propagated */

@@ -7,7 +7,7 @@ sort: -10
 applies_to:
   - ManagedObject
   - ManagedObject.attach
-  - ManagedObject.observeAttach
+  - ManagedObject.autoAttach
   - ManagedObject.emit
   - ManagedObject.emitChange
   - ManagedEvent
@@ -59,7 +59,7 @@ To emit a change event, instantiate a {@link ManagedChangeEvent} object first, o
 
 ## Handling change events from attached objects {#attached-events}
 
-When attaching an object using {@link ManagedObject.attach()}, or adding an observed property using {@link ManagedObject.observeAttach()}, you can provide a callback function that's invoked when —
+When attaching an object using {@link ManagedObject.attach()}, or adding an observed property using {@link ManagedObject.autoAttach()}, you can provide a callback function that's invoked when —
 
 - an object is attached,
 - an attached object is unlinked or otherwise detached, or
@@ -68,7 +68,7 @@ When attaching an object using {@link ManagedObject.attach()}, or adding an obse
 Refer to the documentation for these methods to learn more.
 
 - {@ref ManagedObject.attach}
-- {@ref ManagedObject.observeAttach}
+- {@ref ManagedObject.autoAttach}
 
 Alternatively, you can provide an {@link Observer} object instead of a callback function. An observer class would be able to handle _any_ event as well as property changes (refer to the sections about observers below).
 

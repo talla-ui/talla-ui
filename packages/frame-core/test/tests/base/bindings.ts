@@ -65,8 +65,8 @@ describe("Bindings", () => {
 					super();
 
 					// add auto-attached properties
-					this.observeAttach("other");
-					this.observeAttach("child");
+					this.autoAttach("other");
+					this.autoAttach("child");
 
 					// add mechanics for dynamic property x
 					let x = 0;
@@ -96,7 +96,7 @@ describe("Bindings", () => {
 			class ChildObject extends ManagedObject {
 				constructor() {
 					super();
-					this.observeAttach("nested");
+					this.autoAttach("nested");
 				}
 				aa?: number;
 				dd?: number;
@@ -451,11 +451,11 @@ describe("Bindings", () => {
 			class BaseObject extends ManagedObject {
 				constructor() {
 					super();
-					this.observeAttach("nest");
+					this.autoAttach("nest");
 					for (let i = 0; i < 26; i++) {
 						let letter = String.fromCharCode("a".charCodeAt(0) + i);
 						(this as any)[letter] = new AnotherObject();
-						this.observeAttach(letter as any);
+						this.autoAttach(letter as any);
 					}
 				}
 				declare nest: BaseObject;

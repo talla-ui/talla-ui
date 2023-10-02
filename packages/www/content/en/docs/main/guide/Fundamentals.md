@@ -7,7 +7,7 @@ sort: -20
 applies_to:
   - ManagedObject
   - ManagedObject.attach
-  - ManagedObject.observeAttach
+  - ManagedObject.autoAttach
   - ManagedObject.emit
   - ManagedObject.emitChange
   - ManagedEvent
@@ -67,7 +67,7 @@ This pattern has two main advantages for managing an application at runtime:
 Use the following methods to attach and detach objects.
 
 - {@ref ManagedObject.attach}
-- {@ref ManagedObject.observeAttach}
+- {@ref ManagedObject.autoAttach}
 - {@ref ManagedObject.unlink}
 
 #### Example
@@ -83,13 +83,13 @@ class MyObject extends ManagedObject {
 }
 ```
 
-On the other hand, watched properties are usually not initialized right away, and the call to `observeAttach` is best placed in a constructor.
+On the other hand, watched properties are usually not initialized right away, and the call to `autoAttach` is best placed in a constructor.
 
 ```ts
 class MyObject extends ManagedObject {
 	constructor() {
 		super();
-		this.observeAttach("someObject");
+		this.autoAttach("someObject");
 	}
 
 	// This property is watched
@@ -128,7 +128,7 @@ Rather than attaching objects one by one, you can also attach objects using _man
 - After a list is attached to a {@link ManagedObject} (which includes any other list), all objects contained by it are attached to the list itself.
 - Any objects that are added to the list afterwards, are also automatically attached to it.
 - When an object is unlinked, it's removed from the list automatically.
-- To prevent this behavior, you can use the {@link ManagedList.autoAttach autoAttach()} method.
+- To prevent this behavior, you can use the {@link ManagedList.attachAll attachAll()} method.
 
 Refer to the documentation below to learn more about managed lists.
 

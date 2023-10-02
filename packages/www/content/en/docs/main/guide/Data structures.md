@@ -141,9 +141,9 @@ This is best explained with an example that relates to UI containers:
 - Therefore, any bindings on view objects are able to bind to properties of the {@link UIContainer} object and _its_ attached parent objects.
 - When the {@link UIContainer} is unlinked, so is the content list, and therefore all of the objects within the list.
 
-Refer to the documentation of {@link ManagedList.autoAttach()} for details.
+Refer to the documentation of {@link ManagedList.attachAll()} for details.
 
-- {@ref ManagedList.autoAttach}
+- {@ref ManagedList.attachAll}
 
 This pattern is not just reserved for UI components and views, but can also be used for data models. In the case of managed records, attaching a record to a list allows its {@link ManagedRecord.getParentRecord getParentRecord()}, {@link ManagedRecord.getNextSibling getNextSibling()}, and {@link ManagedRecord.getPreviousSibling getPreviousSibling()} to find related records.
 
@@ -151,7 +151,7 @@ This pattern is not just reserved for UI components and views, but can also be u
 class Customer extends ManagedRecord {
 	// ...
 	readonly contacts = this.attach(
-		new ManagedList().restrict(Contact).autoAttach(true),
+		new ManagedList().restrict(Contact).attachAll(true),
 	);
 }
 
@@ -168,7 +168,7 @@ contact1.getNextSibling(); // contact2
 
 Attaching objects to managed lists not only conveys ownership, but also allows lists to handle and **propagate** events from each object it contains.
 
-By default, event propagation is enabled along with auto-attachment using the {@link ManagedList.autoAttach autoAttach()} method. To _disable_ event propagation, set the second parameter of this method to false.
+By default, event propagation is enabled along with auto-attachment using the {@link ManagedList.attachAll attachAll()} method. To _disable_ event propagation, set the second parameter of this method to false.
 
 After enabling auto-attachment and event propagating, _all events_ emitted on objects in the list are re-emitted by the list itself — propagating the event from the object to the list, allowing it to be handled by the object that contains it.
 
@@ -180,7 +180,7 @@ This mechanism can be combined with handling change events that are emitted by t
 class Customer extends ManagedRecord {
 	// ...
 	readonly contacts = this.attach(
-		new ManagedList().restrict(Contact).autoAttach(true),
+		new ManagedList().restrict(Contact).attachAll(true),
 		(list, changeEvent) => {
 			// ... handle a change to OR within the list
 			// (use changeEvent.source to find the object)

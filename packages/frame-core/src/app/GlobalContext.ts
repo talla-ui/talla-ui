@@ -35,9 +35,9 @@ export class GlobalContext extends ManagedObject {
 	private constructor() {
 		if (GlobalContext.instance) throw Error;
 		super();
-		this.observeAttach("services");
-		this.observeAttach("activities");
-		this.observeAttach("renderer");
+		this.autoAttach("services");
+		this.autoAttach("activities");
+		this.autoAttach("renderer");
 
 		// define i18n property and handle new objects when set
 		let i18n: I18nProvider | undefined;

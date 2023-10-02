@@ -11,7 +11,7 @@ import { View, ViewClass } from "./View.js";
  *
  * The encapsulated view is referenced by the {@link ViewComposite.body body} property, which is usually set automatically, either when the ViewComposite is instantiated or right before rendering. It may be changed or unlinked at any time; the rendered view will be updated accordingly by the ViewComposite itself.
  *
- * The {@link ViewComposite.body body} property is watched using {@link ManagedObject.observeAttach}, which means that setting it to a view instance automatically attaches the object to the ViewComposite. Setting the property to undefined will unlink the existing view, and setting it to a new view will unlink an existing one. Therefore, the ViewComposite instance can only contain a single view object at a time.
+ * The {@link ViewComposite.body body} property is watched using {@link ManagedObject.autoAttach}, which means that setting it to a view instance automatically attaches the object to the ViewComposite. Setting the property to undefined will unlink the existing view, and setting it to a new view will unlink an existing one. Therefore, the ViewComposite instance can only contain a single view object at a time.
  *
  * Since the view is attached to the ViewComposite object, bindings continue to work, and events can be handled either by the ViewComposite object or by a containing object.
  *
@@ -222,7 +222,7 @@ export abstract class ViewComposite extends View {
 				}
 			}
 		}
-		this.observeAttach("body", new ViewObserver(this));
+		this.autoAttach("body", new ViewObserver(this));
 	}
 
 	/**

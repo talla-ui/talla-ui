@@ -34,7 +34,7 @@ const _nextTick = Promise.resolve();
  *
  * Before any property can be observed, the `observeProperty*()` method must be called. This should be done within the {@link Observer.observe observe()} method, which must be overridden. Refer to the examples below.
  *
- * Observers can be created manually (using `new`, and the {@link Observer.observe observe()} method), but they can also be passed to {@link ManagedObject.attach()} and {@link ManagedObject.observeAttach()} to observe attached objects. Refer to the examples below.
+ * Observers can be created manually (using `new`, and the {@link Observer.observe observe()} method), but they can also be passed to {@link ManagedObject.attach()} and {@link ManagedObject.autoAttach()} to observe attached objects. Refer to the examples below.
  *
  * The observer is automatically stopped when the target is unlinked, but it can also be stopped manually (see {@link Observer.stop stop()}). This may be necessary to avoid memory leaks, since observers are linked to the observed object while they're active — keeping them (and any referenced objects) from being freed up by the JavaScript garbage collector as long as the observed object is referenced itself.
  *
@@ -44,7 +44,7 @@ export class Observer<T extends ManagedObject = ManagedObject> {
 	/**
 	 * Creates a new observer, without observing any object yet
 	 * - Start observing an object using the {@link Observer.observe observe()} method; override this method to add property observers.
-	 * - Alternatively, pass an observer class to {@link ManagedObject.attach()} or {@link ManagedObject.observeAttach()}.
+	 * - Alternatively, pass an observer class to {@link ManagedObject.attach()} or {@link ManagedObject.autoAttach()}.
 	 */
 	constructor() {
 		Object.defineProperty(this, $_observed, {

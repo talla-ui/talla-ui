@@ -1,13 +1,14 @@
 import {
+	Binding,
 	bound,
 	ConfigOptions,
 	ManagedObject,
 	Observer,
 	StringConvertible,
 } from "../base/index.js";
-import { NavigationTarget } from "./NavigationTarget.js";
-import { ActivationPath } from "./ActivationPath.js";
 import { err, ERROR } from "../errors.js";
+import { ActivationPath } from "./ActivationPath.js";
+import { NavigationTarget } from "./NavigationTarget.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
 
 const _boundActivationPath = bound("activationPath");
@@ -65,6 +66,7 @@ export class Activity extends ManagedObject {
 	 */
 	constructor() {
 		super();
+		Binding.limitTo(this);
 		_boundActivationPath.bindTo(this, "activationPath");
 
 		// create observer to match path and activate/deactivate

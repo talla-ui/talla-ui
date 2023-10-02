@@ -22,7 +22,7 @@ describe("ManagedRecord", () => {
 	});
 
 	test("Find sibling records", () => {
-		let list = new ManagedList().autoAttach(true);
+		let list = new ManagedList().attachAll(true);
 		let a = ManagedRecord.create({ name: "a" });
 		let b = ManagedRecord.create({ name: "b" });
 		list.add(a, b);
@@ -39,7 +39,7 @@ describe("ManagedRecord", () => {
 		list.add(a, b);
 		expect(a.getNextSibling()).toBeUndefined();
 		expect(b.getPreviousSibling()).toBeUndefined();
-		list.autoAttach(true);
+		list.attachAll(true);
 		expect(a.getNextSibling()).toBe(b);
 	});
 

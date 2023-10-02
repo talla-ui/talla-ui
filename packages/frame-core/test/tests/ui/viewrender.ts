@@ -104,7 +104,7 @@ describe("UIViewRenderer", (scope) => {
 			);
 			constructor() {
 				super();
-				this.observeAttach("second");
+				this.autoAttach("second");
 				this.second = new MySecondActivity();
 			}
 			declare second?: MySecondActivity;

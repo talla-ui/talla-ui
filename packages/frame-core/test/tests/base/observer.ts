@@ -10,7 +10,7 @@ describe("Observers", () => {
 	class MyObject extends ManagedObject {
 		constructor() {
 			super();
-			this.observeAttach("child");
+			this.autoAttach("child");
 			let dynamic = false;
 			Object.defineProperty(this, "dynamic", {
 				configurable: true,
@@ -845,7 +845,7 @@ describe("Observers", () => {
 				foo?: MyObject;
 				go() {
 					this.foo = new MyObject();
-					this.observeAttach("foo", new MyObserver(t));
+					this.autoAttach("foo", new MyObserver(t));
 					this.foo.emit("Foo");
 				}
 			}
@@ -859,7 +859,7 @@ describe("Observers", () => {
 				foo?: MyObject;
 				go() {
 					this.foo = new MyObject();
-					this.observeAttach("foo", (target, event) => {
+					this.autoAttach("foo", (target, event) => {
 						if (event) t.count("change");
 						if (target instanceof MyObject) t.count("observe");
 					});
@@ -875,7 +875,7 @@ describe("Observers", () => {
 			class MyObject extends ManagedObject {
 				foo?: MyObject;
 				go() {
-					this.observeAttach("foo", new MyObserver(t));
+					this.autoAttach("foo", new MyObserver(t));
 					this.foo = new MyObject();
 					this.foo.emit("Foo");
 					this.foo = new MyObject();
@@ -891,7 +891,7 @@ describe("Observers", () => {
 			class MyObject extends ManagedObject {
 				foo?: MyObject;
 				go() {
-					this.observeAttach("foo", (target, event) => {
+					this.autoAttach("foo", (target, event) => {
 						if (event) t.count("change");
 						if (target instanceof MyObject) t.count("observe");
 						else if (!target) t.count("stop");
@@ -912,7 +912,7 @@ describe("Observers", () => {
 			class MyObject extends ManagedObject {
 				foo?: MyObject;
 				go() {
-					this.observeAttach("foo", new MyObserver(t));
+					this.autoAttach("foo", new MyObserver(t));
 					this.foo = new MyObject();
 					this.foo.emit("Foo");
 					this.foo.unlink();
@@ -929,7 +929,7 @@ describe("Observers", () => {
 			class MyObject extends ManagedObject {
 				foo?: MyObject;
 				go() {
-					this.observeAttach("foo", (target, event) => {
+					this.autoAttach("foo", (target, event) => {
 						if (event) t.count("change");
 						if (target instanceof MyObject) t.count("observe");
 						else if (!target) t.count("stop");
@@ -950,7 +950,7 @@ describe("Observers", () => {
 			class MyObject extends ManagedObject {
 				foo?: MyObject;
 				go() {
-					this.observeAttach("foo", new MyObserver(t));
+					this.autoAttach("foo", new MyObserver(t));
 					this.foo = new MyObject();
 					this.foo.emit("Foo");
 					expect(
@@ -971,7 +971,7 @@ describe("Observers", () => {
 			class MyObject extends ManagedObject {
 				foo?: MyObject;
 				go() {
-					this.observeAttach("foo", (target, event) => {
+					this.autoAttach("foo", (target, event) => {
 						if (event) t.count("change");
 						if (target instanceof MyObject) t.count("observe");
 						else if (!target) t.count("stop");

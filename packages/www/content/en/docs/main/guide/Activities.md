@@ -83,7 +83,7 @@ In addition, you can use the {@link ManagedObject.beforeUnlink()} method to impl
 
 ## Nesting activities {#nesting}
 
-Activities can be nested by attaching one activity to another using the {@link ManagedObject.attach} or {@link ManagedObject.observeAttach} methods. No particular behavior is enforced for nested activities, and nested activities can be activated and deactivated independently. Nested activities simply provide a way to organize activities into a hierarchy instead of having to add them all at the root level.
+Activities can be nested by attaching one activity to another using the {@link ManagedObject.attach} or {@link ManagedObject.autoAttach} methods. No particular behavior is enforced for nested activities, and nested activities can be activated and deactivated independently. Nested activities simply provide a way to organize activities into a hierarchy instead of having to add them all at the root level.
 
 Only paths for automatic activation and deactivation (routing) are treated specially for nested activities, and they can also be used to implement navigation patterns — see below.
 

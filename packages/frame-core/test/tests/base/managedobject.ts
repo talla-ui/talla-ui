@@ -45,7 +45,7 @@ describe("ManagedObject", () => {
 		class TestObject extends ManagedObject {
 			constructor() {
 				super();
-				this.observeAttach("child");
+				this.autoAttach("child");
 			}
 			id = id++;
 			child?: ChildObject = new ChildObject();
@@ -114,7 +114,7 @@ describe("ManagedObject", () => {
 			class MyLoop extends ManagedObject {
 				constructor() {
 					super();
-					this.observeAttach("loop");
+					this.autoAttach("loop");
 				}
 				loop?: MyLoop;
 				attachLoop() {

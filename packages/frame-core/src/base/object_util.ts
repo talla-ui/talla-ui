@@ -15,6 +15,9 @@ export const $_origin = Symbol("origin");
 /** @internal Getter for non-observable properties (used for e.g. list count) */
 export const $_get = Symbol("get");
 
+/** @internal Filter function for bindings that pass along an origin object */
+export const $_bindFilter = Symbol("bndF");
+
 /** @internal Non-existent property, trap is invoked when an event is emitted */
 export const $_traps_event = Symbol("event");
 
@@ -521,14 +524,17 @@ function tryWatchFromOrigin(
 			);
 		} else {
 			// watch all properties along path if possible
-			let firstPropertyName = bindRef.p[0]!;
-			if (canTrap(origin, firstPropertyName)) {
+			let first = bindRef.p[0]!;
+			if (canTrap(origin, first)) {
 				bindRef.i = nestingLevel;
 				watchFromOrigin(managedObject, origin, bindRef);
 			} else {
-				// check if non-observable property is there anyway
-				if (firstPropertyName in origin) {
-					throw err(ERROR.Object_NoObserve, firstPropertyName);
+				// check if bind filter set, or otherwise unobservable
+				let allowed = !origin[$_bindFilter] || origin[$_bindFilter](first);
+				if (!allowed || first in origin) {
+					let error = err(ERROR.Object_NoObserve, first);
+					errorHandler(error);
+					return;
 				}
 
 				// check on next linked origin, increase nesting level

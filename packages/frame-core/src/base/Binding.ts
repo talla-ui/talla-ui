@@ -3,7 +3,12 @@ import { LazyString } from "./LazyString.js";
 import { ManagedEvent } from "./ManagedEvent.js";
 import { ManagedObject } from "./ManagedObject.js";
 import type { GlobalEmitter } from "./GlobalEmitter.js";
-import { $_unlinked, watchBinding } from "./object_util.js";
+import {
+	$_bindFilter,
+	$_unlinked,
+	guard,
+	watchBinding,
+} from "./object_util.js";
 
 /** Constant used to check against (new) binding value */
 const NO_VALUE = {};
@@ -78,6 +83,19 @@ export function isBinding<T = any>(value: any): value is Binding<T> {
 export class Binding<T = any> {
 	/** Event emitter used by {@link Binding.debug()} */
 	declare static debugEmitter: GlobalEmitter<Binding.DebugEvent>;
+
+	/**
+	 * Restricts bindings that can be bound to (attached parent objects of) the specified object, if the object itself does not include a corresponding property
+	 * @note This method is used automatically on {@link Activity} and {@link Service} objects, since any attempt to bind to a property that's not defined on the object itself is usually considered an error. To change the default behavior, call this method with a custom filter function.
+	 * @param object The object for which to restrict bindings
+	 * @param filter A function that returns true if a property is allowed to pass, or false if an attempt to bind should result in an unhandled error; if not provided, no properties are allowed
+	 */
+	static limitTo(
+		object: ManagedObject,
+		filter?: (property: string | symbol) => boolean,
+	) {
+		object[$_bindFilter] = filter ? guard(filter) : () => false;
+	}
 
 	/**
 	 * Creates a new binding for given property and default value; use {@link bound()} functions instead

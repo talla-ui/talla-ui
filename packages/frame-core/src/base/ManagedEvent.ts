@@ -4,7 +4,7 @@ import type { ManagedObject } from "./ManagedObject.js";
  * An object that represents an event, to be emitted on a {@link ManagedObject}
  *
  * @description
- * Events can be emitted on instances of {@link ManagedObject}, and handled using {@link ManagedObject.listen()}, {@link Observer}, or a change callback to {@link ManagedObject.attach()} or {@link ManagedObject.observeAttach()}.
+ * Events can be emitted on instances of {@link ManagedObject}, and handled using {@link ManagedObject.listen()}, {@link Observer}, or a change callback to {@link ManagedObject.attach()} or {@link ManagedObject.autoAttach()}.
  *
  * In most cases, instances of ManagedEvent are created by {@link ManagedObject.emit()} itself, when provided with just the event name and data (if any). When handling events, the implicitly created ManagedEvent will be passed to the handler.
  *
@@ -29,7 +29,7 @@ import type { ManagedObject } from "./ManagedObject.js";
  * class MyObject extends ManagedObject {
  *   constructor() {
  *     super();
- *     this.observeAttach("foo", (foo, e) => {
+ *     this.autoAttach("foo", (foo, e) => {
  *       // ...either foo property is set directly, OR
  *       // a change event `e` was emitted
  *     })
@@ -105,7 +105,7 @@ export class ManagedEvent<
 /**
  * An object that represents an event, emitted on a {@link ManagedObject} when its internal state changes
  * - Events of this type can be emitted using the {@link ManagedObject.emitChange()} method.
- * - Change events are handled specially by {@link Observer}, and trigger the callback provided to {@link ManagedObject.attach()} and {@link ManagedObject.observeAttach()}.
+ * - Change events are handled specially by {@link Observer}, and trigger the callback provided to {@link ManagedObject.attach()} and {@link ManagedObject.autoAttach()}.
  */
 export class ManagedChangeEvent<
 	TSource extends ManagedObject = ManagedObject,

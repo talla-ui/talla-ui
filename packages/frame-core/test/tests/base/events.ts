@@ -88,7 +88,7 @@ describe("Events", () => {
 		});
 	});
 
-	describe.only("Async iterator listeners", () => {
+	describe("Async iterator listeners", () => {
 		test("Unlink cancels iterator", async (t) => {
 			let c = new ManagedObject();
 			let iter = c.listen()[Symbol.asyncIterator]();

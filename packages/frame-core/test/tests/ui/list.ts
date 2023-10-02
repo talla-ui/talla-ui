@@ -96,7 +96,7 @@ describe("UIList", (scope) => {
 		class ArrayProvider extends ManagedObject {
 			constructor() {
 				super();
-				this.observeAttach("view");
+				this.autoAttach("view");
 			}
 			declare view?: UIList;
 			array = ["a", "b", "c"];

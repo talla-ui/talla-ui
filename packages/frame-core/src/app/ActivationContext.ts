@@ -11,7 +11,7 @@ export class ActivationContext extends ManagedObject {
 	/** Creates a new instance of this class; do not use */
 	constructor() {
 		super();
-		this.observeAttach("activationPath");
+		this.autoAttach("activationPath");
 	}
 
 	/**
