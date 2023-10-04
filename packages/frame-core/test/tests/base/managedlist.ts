@@ -289,13 +289,16 @@ describe("ManagedList", () => {
 			expect(list.includes(a)).toBeFalsy();
 			expect(() => list.add(new NamedObject(""))).toThrowError();
 			expect(() => {
-				for (let _t of list);
-			}).toThrowError();
-			expect(() => list.map(() => {})).toThrowError();
-			expect(list.find(() => {})).toBe(false);
+				let i = 0;
+				for (let _t of list) i++;
+				return i;
+			})
+				.not.toThrowError()
+				.toBe(0);
+			expect(list.map(() => {})).toBeArray(0);
+			expect(list.find(() => {})).toBe(undefined);
 			expect(list.some(() => {})).toBe(false);
-			expect(list.every(() => {})).toBe(false);
-			expect(list.pluck("name")).toBeArray(0);
+			expect(list.every(() => {})).toBe(true);
 		});
 
 		test("Reverse", () => {
@@ -477,12 +480,6 @@ describe("ManagedList", () => {
 			expect(list2.map((o) => o)).toBeArray(orig);
 		});
 
-		test("pluck", () => {
-			let [list1, list2] = makeLists();
-			expect(list1.pluck("name")).toBeArray(["a", "b", "c", "d", "e"]);
-			expect(list2.pluck("name")).toBeArray(["a", "b", "c", "d", "e"]);
-		});
-
 		test("toArray and toJSON", () => {
 			let [list1, list2, orig] = makeLists();
 			expect(list1.toArray()).toBeArray(orig);
@@ -510,7 +507,7 @@ describe("ManagedList", () => {
 			for (let t of list) {
 				if (t.name === "d") list.insert(a, t);
 			}
-			expect(list.pluck("name")).toBeArray(["b", "c", "a", "d", "e"]);
+			expect(list.map((a) => a.name)).toBeArray(["b", "c", "a", "d", "e"]);
 		});
 
 		test("Clearing in the middle of an iterator", () => {
