@@ -8,7 +8,7 @@ import { Service } from "./Service.js";
  * A container of named services, part of the global application context
  *
  * @description
- * This class is a container for named services, which should be accessible by the rest of the application. Services can be set, unset, and replaced using the service context, and a {@link ServiceObserver} can be used to access the currently registered service with a particular name.
+ * This class is a container for named services, which should be accessible by the rest of the application. Services can be set, unset, and replaced using the service context, and a {@link ServiceObserver} can be used to access the currently registered service with a particular ID.
  *
  * - Use the {@link add()} method to add or update a service by ID. The service must be an instance of {@link Service} with a valid `id` property. The service is automatically attached to the ServiceContext instance.
  * - Unlink a service to remove it again.
@@ -53,8 +53,8 @@ export class ServiceContext extends ManagedObject {
 	}
 
 	/**
-	 * Attaches an observer to a particular named service
-	 * @param name The name of the service to be observed
+	 * Attaches an observer to a particular service by ID
+	 * @param id The ID of the service to be observed
 	 * @param observer An instance of {@link ServiceObserver}, if any; otherwise a plain {@link ServiceObserver} instance will be created, which exposes the current service as {@link ServiceObserver.service service}
 	 *
 	 * @example
@@ -67,7 +67,7 @@ export class ServiceContext extends ManagedObject {
 	 * }
 	 */
 	observeService<TService extends Service>(
-		name: string,
+		id: string,
 		observer:
 			| ServiceObserver<TService>
 			| ManagedObject.AttachObserverFunction<TService> = new ServiceObserver(),
@@ -78,7 +78,7 @@ export class ServiceContext extends ManagedObject {
 				TService
 			>(observer, ServiceObserver);
 		}
-		return observer.observeService(this, name);
+		return observer.observeService(this, id);
 	}
 
 	// keep track of services in a list, and forward events
@@ -136,20 +136,20 @@ class ServiceContextObserver<
 	TService extends Service,
 > extends Observer<ServiceContext> {
 	constructor(
-		public name: string,
+		public id: string,
 		public observer: ServiceObserver<TService>,
 	) {
 		super();
 	}
 	override observe(observed: ServiceContext) {
 		super.observe(observed);
-		let service = observed.get(this.name);
+		let service = observed.get(this.id);
 		if (service) this.observer.observe(service as TService);
 		return this;
 	}
 	protected override handleEvent(event: ManagedList.ChangeEvent<Service>) {
 		// TODO: use event to not always have to check this way?
-		let newService = this.observed!.get(this.name);
+		let newService = this.observed!.get(this.id);
 		if (newService && newService !== this.observer.observed) {
 			this.observer.observe(newService as TService);
 		}

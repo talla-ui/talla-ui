@@ -117,14 +117,21 @@ export class ManagedList<
 		return idx >= 0 && idx < this[$_list].map.size ? this.get(idx) : undefined;
 	}
 
+	/** Iterator symbol, alias of {@link objects()} method */
+	declare [Symbol.iterator]: () => IterableIterator<T>;
+
 	/**
-	 * Iterator symbol, enables managed lists to work with 'for...of' statements
+	 * Returns an iterable iterator for this list
+	 * - The iterable iterator can be used to iterate over the list using a 'for...of' statement, without being able to modify the list itself (similar to the `Array.values` method).
 	 * - If the list is unlinked, the iterator stops immediately.
 	 * @note The behavior of the iterator is undefined if the object _after_ the current object is removed, moved, or if another object is inserted before it. Removing the _current_ object or any previous objects during iteration is safe.
 	 */
-	[Symbol.iterator](): Iterator<T> {
+	objects(): IterableIterator<T> {
 		let head = this[$_list].h;
 		return {
+			[Symbol.iterator]() {
+				return this;
+			},
 			next: (): IteratorResult<T> => {
 				let o = head && head.o;
 				if (!this.isUnlinked() && o) {
@@ -531,6 +538,7 @@ export class ManagedList<
 	/**
 	 * Returns an array that contains all objects in the list
 	 * - If the list is unlinked, this method returns an empty array.
+	 * - If you only need to iterate over all values, use the {@link objects()} method instead.
 	 */
 	toArray() {
 		if (this.isUnlinked()) return [];
@@ -623,6 +631,9 @@ export class ManagedList<
 	/** @internal Linked list, containing all objects */
 	private readonly [$_list]: LinkedList<T>;
 }
+
+// set iterator to objects() method
+ManagedList.prototype[Symbol.iterator] = ManagedList.prototype.objects;
 
 export namespace ManagedList {
 	/** Type definition for an event that's emitted when elements are added to, removed from, or moved within a list */

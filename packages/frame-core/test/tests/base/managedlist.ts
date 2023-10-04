@@ -355,6 +355,26 @@ describe("ManagedList", () => {
 			];
 		}
 
+		test("Iterable iterator (objects)", (t) => {
+			let [list1, list2, orig] = makeLists();
+
+			t.log("list1...");
+			let i = 0;
+			for (let t of list1) expect(t).toBe(orig[i++]);
+			expect(i).toBe(orig.length);
+
+			t.log("list2...");
+			i = 0;
+			for (let t of list2) expect(t).toBe(orig[i++]);
+			expect(i).toBe(orig.length);
+
+			t.log("list2.objects...");
+			let iter = list2.objects();
+			i = 0;
+			for (let t of iter) expect(t).toBe(orig[i++]);
+			expect(i).toBe(orig.length);
+		});
+
 		test("get", () => {
 			let [list1, list2] = makeLists();
 			expect(list1.get(0)).toHaveProperty("name").toBe("a");
