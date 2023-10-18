@@ -6,7 +6,7 @@ import {
 } from "@desk-framework/frame-test";
 import {
 	ManagedEvent,
-	PageViewActivity,
+	Activity,
 	UIButton,
 	UICell,
 	UIIconButton,
@@ -113,10 +113,12 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Click event propagation", async (t) => {
-		class MyActivity extends PageViewActivity {
-			static override ViewBody = UICell.with(
-				UIButton.withLabel("Button", "ButtonClicked"),
-			);
+		const ViewBody = UICell.with(UIButton.withLabel("Button", "ButtonClicked"));
+		class MyActivity extends Activity {
+			protected override ready() {
+				this.view = new ViewBody();
+				app.render(this.view);
+			}
 			onButtonClicked() {
 				t.count("clicked");
 			}
@@ -132,8 +134,11 @@ describe("UIButton", (scope) => {
 			label: "foo",
 			navigateTo: "/foo",
 		});
-		class MyActivity extends PageViewActivity {
-			static override ViewBody = MyButton;
+		class MyActivity extends Activity {
+			protected override ready() {
+				this.view = new MyButton();
+				app.render(this.view);
+			}
 		}
 		app.addActivity(new MyActivity(), true);
 		let elt = (await t.expectOutputAsync(100, { text: "foo" })).getSingle();

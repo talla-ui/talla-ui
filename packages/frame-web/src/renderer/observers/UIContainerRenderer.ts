@@ -10,6 +10,7 @@ import {
 	UIRow,
 	UIScrollContainer,
 	UITheme,
+	View,
 	ViewEvent,
 } from "@desk-framework/frame-core";
 import {
@@ -350,7 +351,7 @@ export class ContentUpdater {
 	readonly element: HTMLElement;
 
 	/** Current list of content items */
-	content: RenderContext.Renderable[] = [];
+	content: View[] = [];
 
 	/** Set async rendering flag; when enabled, all content is rendered asynchronously */
 	setAsyncRendering(async?: boolean) {
@@ -415,8 +416,8 @@ export class ContentUpdater {
 		return this;
 	}
 
-	/** Update the output element with output from given list of content items (or current) */
-	update(content: Iterable<RenderContext.Renderable> = this.content) {
+	/** Update the output element with output from given list of content views (or current) */
+	update(content: Iterable<View> = this.content) {
 		let element = this.element;
 
 		// resolve the current update promise, or create a resolved promise right away
@@ -426,7 +427,7 @@ export class ContentUpdater {
 		if (!this._stopped) {
 			// go through all content items and get their output
 			let output: Array<RenderContext.Output<Node> | undefined> = [];
-			let contentSet = new Set<RenderContext.Renderable>();
+			let contentSet = new Set<View>();
 			for (let it of content) {
 				contentSet.add(it);
 				output.push(this.getItemOutput(it));
@@ -499,8 +500,8 @@ export class ContentUpdater {
 		this._updateResolve = undefined;
 	}
 
-	/** Get the current output for given content item, or render it if needed; returns the output, or undefined if the output is still being rendered. */
-	getItemOutput(item: RenderContext.Renderable) {
+	/** Get the current output for given content view, or render it if needed; returns the output, or undefined if the output is still being rendered. */
+	getItemOutput(item: View) {
 		if (!this._output.has(item)) {
 			// set output to undefined first, to avoid rendering again
 			this._output.set(item, undefined);
@@ -614,8 +615,8 @@ export class ContentUpdater {
 		this.container.emit(event);
 	}
 
-	/** Returns a separator HTML element (if needed) for given content element; if an element already exists it's used, otherwise a new element is created */
-	private _getSeparatorFor(content: RenderContext.Renderable) {
+	/** Returns a separator HTML element (if needed) for given content view; if an element already exists it's used, otherwise a new element is created */
+	private _getSeparatorFor(content: View) {
 		if (this._sepTemplate) {
 			let sep = this._separators.get(content);
 			if (!sep) {
@@ -630,10 +631,7 @@ export class ContentUpdater {
 	private _async?: boolean;
 	private _updateP?: Promise<void>;
 	private _updateResolve?: () => void;
-	private _output = new Map<
-		RenderContext.Renderable,
-		RenderContext.Output<Node> | undefined
-	>();
+	private _output = new Map<View, RenderContext.Output<Node> | undefined>();
 	private _sepTemplate?: HTMLElement;
-	private _separators = new Map<RenderContext.Renderable, HTMLElement>();
+	private _separators = new Map<View, HTMLElement>();
 }

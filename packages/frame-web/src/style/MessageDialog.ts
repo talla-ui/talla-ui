@@ -49,7 +49,7 @@ import {
 export class MessageDialogStyles {
 	/**
 	 * The cell style used for the outer dialog container
-	 * - The default style includes properties for dimensions,  background, border radius, and drop shadow
+	 * - The default style includes properties for dimensions, background, border radius, and drop shadow
 	 */
 	ContainerStyle: UITheme.StyleClassType<UICellStyle> = UICellStyle.extend({
 		background: UIColor["@pageBackground"],
@@ -158,20 +158,19 @@ export class MessageDialog
 	otherLabel?: StringConvertible;
 
 	async showAsync(place?: Partial<RenderContext.PlacementOptions>) {
-		let rendered = app.render(this, {
-			mode: "dialog",
-			shade: UITheme.getModalDialogShadeOpacity(),
-			transform: {
-				show: "@show-dialog",
-				hide: "@hide-dialog",
-			},
-			...place,
-		});
-
 		// return a promise that's resolved when one of the buttons is pressed
 		return new Promise<{ confirmed: boolean; other?: boolean }>((r) => {
+			app.render(this, {
+				mode: "dialog",
+				shade: UITheme.getModalDialogShadeOpacity(),
+				transform: {
+					show: "@show-dialog",
+					hide: "@hide-dialog",
+				},
+				...place,
+			});
 			this._resolve = (result) => {
-				rendered.removeAsync();
+				this.unlink();
 				r(result);
 			};
 		});

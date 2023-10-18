@@ -1,4 +1,9 @@
-import { app, MessageDialogOptions, type RenderContext } from "../app/index.js";
+import {
+	MessageDialogOptions,
+	View,
+	app,
+	type RenderContext,
+} from "../app/index.js";
 import { ConfigOptions, type StringConvertible } from "../base/index.js";
 import type { UIColor } from "./UIColor.js";
 import type { UIComponent } from "./UIComponent.js";
@@ -37,9 +42,8 @@ let _nextStyleId = 0x1234;
  * @description
  * The current application theme is available through the {@link GlobalContext.theme app.theme} property.
  *
- * To change the theme, either update the styles, icons, animations, and/or colors objects for the current theme, or create a new theme using {@link UITheme.clone()} and assign further properties afterwards.
+ * To change the theme, create a new theme using {@link UITheme.clone()} and update styles, icons, animations, and/or colors. The view for all activities will be re-rendered automatically.
  *
- * Theme changes are not applied to views that are already rendered. Use the {@link RenderContext.remount()} method to update views after modifying a theme or setting a new theme.
  */
 export class UITheme {
 	/** Returns the default row spacing value from the current theme, or default */
@@ -57,7 +61,7 @@ export class UITheme {
 		return app.theme ? app.theme.modalDialogShadeOpacity : BASE_MODAL_OPACITY;
 	}
 
-	/** Dialog backdrop shader opacity (for {@link DialogViewActivity}), defaults to 0.3 */
+	/** Dialog backdrop shader opacity (used by modal dialog views), defaults to 0.3 */
 	modalDialogShadeOpacity = BASE_MODAL_OPACITY;
 
 	/** Default spacing between components in a row, defaults to 8 */
@@ -411,11 +415,21 @@ export namespace UITheme {
 	 * - An object of this type should be assigned to {@link UITheme.modalFactory}, which is used by the `app` methods that display modal view components.
 	 */
 	export interface ModalControllerFactory {
+		buildDialog?: (view: View) => DialogController;
 		buildAlertDialog?: (options: MessageDialogOptions) => AlertDialogController;
 		buildConfirmDialog?: (
 			options: MessageDialogOptions,
 		) => ConfirmDialogController;
 		buildMenu?: (options: MenuOptions) => MenuController;
+	}
+
+	/**
+	 * An interface for a class that manages a modal dialog view
+	 * @see {@link UITheme.ModalControllerFactory}
+	 */
+	export interface DialogController {
+		/** Display the dialog, until the content view is unlinked */
+		show(place?: Partial<RenderContext.PlacementOptions>): void;
 	}
 
 	/**

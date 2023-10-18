@@ -1,4 +1,4 @@
-import { RenderContext } from "@desk-framework/frame-core";
+import { View, ViewClass } from "@desk-framework/frame-core";
 import type { TestOutputElement } from "./TestOutputElement.js";
 
 /** An object that provides filters to match a set of output elements, to be asserted using {@link OutputAssertion} */
@@ -6,9 +6,9 @@ export interface OutputSelectFilter {
 	/** The element itself, if known */
 	element?: TestOutputElement;
 	/** The source component that rendered the output */
-	source?: RenderContext.Renderable;
+	source?: View;
 	/** A type of element (string or class) */
-	type?: RenderContext.RenderableClass | TestOutputElement.TypeString;
+	type?: ViewClass | TestOutputElement.TypeString;
 	/** True if the element must be disabled, false if it must not */
 	disabled?: boolean;
 	/** True if the element must be readonly, false if it must not */
@@ -117,12 +117,10 @@ export class OutputAssertion {
 	}
 
 	/**
-	 * Returns the component that rendered the currently matched output element, if there's only one
+	 * Returns the view object that rendered the currently matched output element, if there's only one
 	 * @error This method throws an error if the current selection consists of more than one element, or none at all.
 	 */
-	getSingleComponent<TRenderable extends RenderContext.Renderable>(
-		type: RenderContext.RenderableClass<TRenderable>,
-	): TRenderable {
+	getSingleView<TView extends View>(type: ViewClass<TView>): TView {
 		let elements = this.elements.filter(
 			(elt) => elt.output?.source instanceof type,
 		);

@@ -18,18 +18,15 @@ export class TestModalMenu
 	}
 
 	async showAsync(place?: Partial<RenderContext.PlacementOptions>) {
-		// render the view, keep a reference in order to remove it later
-		let handler = app.render(this, {
-			mode: "modal",
-			...place,
-		});
-
 		// return a promise that's resolved when one of the items is selected
 		// or when the menu is dismissed otherwise
-		// (remember resolve function for later)
 		return new Promise<{ key: string } | undefined>((r) => {
+			app.render(this, {
+				mode: "modal",
+				...place,
+			});
 			this._resolve = (key) => {
-				handler.removeAsync();
+				this.unlink();
 				r(key ? { key } : undefined);
 			};
 		});

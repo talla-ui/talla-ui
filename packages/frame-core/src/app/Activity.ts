@@ -1,16 +1,26 @@
 import {
 	bound,
 	ConfigOptions,
+	ManagedEvent,
 	ManagedObject,
 	Observer,
 	StringConvertible,
 } from "../base/index.js";
-import { err, ERROR } from "../errors.js";
-import { ActivationPath } from "./ActivationPath.js";
+import { err, ERROR, errorHandler } from "../errors.js";
+import type { UIFormContext } from "../ui/index.js";
+import type { ActivationPath } from "./ActivationPath.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
+import type { View, ViewClass } from "./View.js";
 
+/** Global list of activity instances for (old) activity class, for HMR */
+const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
+
+/** Reused binding for global activation path reference */
 const _boundActivationPath = bound("activationPath");
+
+/** Reused binding for global theme reference */
+const _boundTheme = bound("theme");
 
 /**
  * A class that represents a part of the application that can be activated when the user navigates to it
@@ -18,20 +28,19 @@ const _boundActivationPath = bound("activationPath");
  * @description
  * The activity is one of the main architectural components of a Desk application. It represents a potential 'place' in the application, which can be activated and deactivated when the user navigates around.
  *
- * This class provides infrastructure for path-based routing, based on the application's location, such as the browser URL. However, activities can also be activated and deactivated manually.
+ * This class provides infrastructure for path-based routing, based on the application's location, such as the browser URL. However, activities can also be activated and deactivated manually, or activated immediately when added using {@link GlobalContext.addActivity app.addActivity()}.
  *
  * Activities emit `Active` and `Inactive` change events when state transitions occur.
  *
- * @note The base Activity class does **not** render a view. Use the {@link ViewActivity} class instead for an activity that renders an accompanying view.
- *
- * @see {@link ViewActivity}
+ * This class also provides a {@link view} property, which can be set to a view object. Usually, this property is set in the {@link Activity.ready()} method. Afterwards, if the activity corresponds to a full page or dialog, this method should call {@link app} methods to show the view. The view is automatically unlinked when the activity is deactivated, and the property is set to undefined.
  *
  * @example
  * // Create an activity and activate it:
  * class MyActivity extends Activity {
  *   path = "foo";
- *   protected async afterActiveAsync() {
- *     console.log("MyActivity is now active");
+ *   protected ready() {
+ *     this.view = new body(); // imported from a view file
+ *     app.render(this.view);
  *   }
  * }
  *
@@ -39,7 +48,7 @@ const _boundActivationPath = bound("activationPath");
  * app.navigate("/foo");
  */
 export class Activity extends ManagedObject {
-	/** @internal Update prototype for given class with newer prototype */
+	/** @internal Update prototype for given class with newer prototype, and rebuild view */
 	static _$hotReload(
 		Old: undefined | typeof Activity,
 		Updated: typeof Activity,
@@ -57,6 +66,13 @@ export class Activity extends ManagedObject {
 			// keep a reference to the old class to be able to recurse next time
 			Updated.prototype._OrigClass = Old;
 		}
+		_hotInstances.set(Updated, (Updated.prototype._hotInstances = new Set()));
+		if (Old && Updated.prototype instanceof Activity) {
+			let instances = _hotInstances.get(Old);
+			if (instances) {
+				for (let activity of instances) activity.ready();
+			}
+		}
 	}
 
 	/**
@@ -66,6 +82,23 @@ export class Activity extends ManagedObject {
 	constructor() {
 		super();
 		_boundActivationPath.bindTo(this, "activationPath");
+		_boundTheme.bindTo(this, () =>
+			// re-render view when theme changes, async
+			Promise.resolve().then(() => this.isActive() && this.ready()),
+		);
+
+		// auto-attach view and delegate events
+		class ViewObserver extends Observer<View> {
+			constructor(public activity: Activity) {
+				super();
+			}
+			protected override handleEvent(event: ManagedEvent<any>) {
+				if (this.activity.isActive()) {
+					this.activity.delegateViewEvent(event);
+				}
+			}
+		}
+		this.autoAttach("view", new ViewObserver(this));
 
 		// create observer to match path and activate/deactivate
 		new Activity._ActivityObserver().observe(this);
@@ -99,6 +132,15 @@ export class Activity extends ManagedObject {
 	 * @see {@link Activity.path}
 	 */
 	protected pathMatch?: ActivationPath.Match = undefined;
+
+	/**
+	 * The view to be rendered, if any
+	 * - The view is rendered automatically when this property is set. However, there's no need to set this property manually: a view instance is created automatically when the activity becomes active.
+	 */
+	declare view?: View;
+
+	/** Default form context used with input elements, if any */
+	formContext?: UIFormContext = undefined;
 
 	/**
 	 * Returns a {@link NavigationTarget} instance that refers to this activity
@@ -143,9 +185,12 @@ export class Activity extends ManagedObject {
 				if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 				return this.beforeActiveAsync();
 			},
-			() => {
+			async () => {
+				if (this.isUnlinked()) return;
 				this.emitChange("Active");
-				return this.afterActiveAsync();
+				this._hotInstances?.add(this);
+				await this.afterActiveAsync();
+				this.ready();
 			},
 		);
 	}
@@ -158,7 +203,10 @@ export class Activity extends ManagedObject {
 	async deactivateAsync() {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 
-		// set inactive asynchronously and run beforeInctiveAsync
+		// remove view first, if any
+		this.view = undefined;
+
+		// set inactive asynchronously and run beforeInactiveAsync
 		await this._activation.waitAndSetAsync(
 			false,
 			() => {
@@ -183,8 +231,9 @@ export class Activity extends ManagedObject {
 		let isUp =
 			(this._activation.active || this._activation.activating) &&
 			!this._activation.deactivating;
-		if (match && !isUp) return this.activateAsync();
 		if (!match && isUp) return this.deactivateAsync();
+		if (match && !isUp) return this.activateAsync();
+		if (match && isUp) this.ready();
 	}
 
 	/**
@@ -223,6 +272,74 @@ export class Activity extends ManagedObject {
 		return queue;
 	}
 
+	/**
+	 * Delegates events from the current view
+	 * - This method is called automatically when an event is emitted by the current view object.
+	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true`, undefined, or a promise (which is awaited just to be able to handle any errors).
+	 * - This method may be overridden to handle events in any other way, e.g. to propagate them by emitting the same event on the activity object itself.
+	 * @param event The event to be delegated (from the view)
+	 * @returns True if an event handler was found, and it returned true; false otherwise.
+	 */
+	protected delegateViewEvent(event: ManagedEvent) {
+		// find own handler method
+		let method = (this as any)["on" + event.name];
+		if (typeof method === "function") {
+			let result = method.call(this, event);
+
+			// return true or promise result, otherwise false below
+			if (result === true) return true;
+			if (result && result.then && result.catch) {
+				return (result as Promise<unknown>).catch(errorHandler);
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Handles the `Navigate` event
+	 * - This method is called automatically when a view object emits the `Navigate` event. Such events are emitted from views that include a `getNavigationTarget` method, such as {@link UIButton}.
+	 * - This method calls {@link handleNavigateAsync} in turn, which may be overridden.
+	 */
+	protected onNavigate(
+		e: ManagedEvent<
+			ManagedObject & { getNavigationTarget?: () => NavigationTarget }
+		>,
+	) {
+		if (
+			this.activationPath &&
+			typeof e.source.getNavigationTarget === "function"
+		) {
+			return this.handleNavigateAsync(e.source.getNavigationTarget());
+		}
+	}
+
+	/**
+	 * Handles navigation to a provided navigation target
+	 * - This method is called automatically by {@link onNavigate} when a view object emits the `Navigate` event. It may be overridden to handle navigation differently, e.g. for master-detail view activities.
+	 */
+	protected async handleNavigateAsync(target: NavigationTarget) {
+		if (this.activationPath) {
+			await this.activationPath.navigateAsync(String(target));
+		}
+	}
+
+	/**
+	 * Searches the view hierarchy for view objects of the provided type
+	 * @summary This method looks for matching view objects in the current view structure — including the activity's view itself. If a component is an instance of the provided class, it's added to the list. Components _within_ matching components aren't searched for further matches.
+	 * @param type A view class
+	 * @returns An array with instances of the provided view class; may be empty but never undefined.
+	 */
+	findViewContent<T extends View>(type: ViewClass<T>): T[] {
+		return this.view
+			? this.view instanceof type
+				? [this.view]
+				: this.view.findViewContent(type)
+			: [];
+	}
+
+	/** A method that's called on an active activity, to be overridden to create and render the view if needed */
+	protected ready() {}
+
 	/** A method that's called and awaited before the activity is activated, to be overridden if needed */
 	protected async beforeActiveAsync() {}
 
@@ -238,8 +355,11 @@ export class Activity extends ManagedObject {
 	/** Activation queue for this activity */
 	private readonly _activation = new ActivationQueue();
 
-	/** Original class that's been updated using `@reload` method */
+	/** Original class that's been updated using hot reload (set on prototype) */
 	private declare _OrigClass?: typeof Activity;
+
+	/** Set of instances, if hot reload has been enabled for this activity (set on prototype) */
+	private declare _hotInstances?: Set<Activity>;
 
 	/** Observer class for activities, to watch for path matches */
 	private static _ActivityObserver = class extends Observer<Activity> {
@@ -295,7 +415,7 @@ class ActivationQueue {
 	async waitAndSetAsync(
 		set: boolean,
 		before: () => Promise<void>,
-		after: () => void,
+		after: () => Promise<void>,
 	) {
 		// if latest transition does/did the same, then return same promise
 		if (this._set === set) return this._result;
@@ -314,7 +434,7 @@ class ActivationQueue {
 				// invoke callbacks and set activation state
 				await before();
 				this.active = set;
-				after();
+				after().catch(errorHandler);
 			}
 		})();
 

@@ -103,22 +103,19 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 	}
 
 	async showAsync(place?: Partial<RenderContext.PlacementOptions>) {
-		// render the view, keep a reference in order to remove it later
-		let handler = app.render(this, {
-			mode: "modal",
-			transform: {
-				show: "@show-menu",
-				hide: "@hide-menu",
-			},
-			...place,
-		});
-
 		// return a promise that's resolved when one of the items is selected
 		// or when the menu is dismissed otherwise
-		// (remember resolve function for later)
 		return new Promise<{ key: string } | undefined>((r) => {
+			app.render(this, {
+				mode: "modal",
+				transform: {
+					show: "@show-menu",
+					hide: "@hide-menu",
+				},
+				...place,
+			});
 			this._resolve = (key) => {
-				handler.removeAsync();
+				this.unlink();
 				r(key ? { key } : undefined);
 			};
 		});

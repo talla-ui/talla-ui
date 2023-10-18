@@ -71,8 +71,11 @@ export function isBinding<T = any>(value: any): value is Binding<T> {
  *   )
  * );
  *
- * export class MyActivity extends PageViewActivity {
- *   static override ViewBody = BodyView;
+ * export class MyActivity extends Activity {
+ *   protected ready() {
+ *     this.view = new BodyView();
+ *     app.render(this.view);
+ *   }
  *   user = { name: "Foo Bar" };
  *   roles = ["Administrator", "Contributor", "Viewer"];
  *   onRemoveRole(e: UIList.ItemEvent<string>) {
@@ -113,10 +116,8 @@ export class Binding<T = any> {
 		this._apply = !source
 			? function () {}
 			: (register, update) =>
-					register(
-						path,
-						(value, bound) => update(value ?? defaultValue, bound),
-						this._events,
+					register(path, (value, bound) =>
+						update(value ?? defaultValue, bound),
 					);
 
 		// parse source path
@@ -496,7 +497,6 @@ export class Binding<T = any> {
 		register: (
 			path: readonly string[],
 			callback: (value: any, bound: boolean) => void,
-			watchChangeEvents?: boolean,
 		) => void,
 		update: (value: any, bound: boolean) => void,
 	) => void;
@@ -533,9 +533,6 @@ export class Binding<T = any> {
 
 	/** Binding source text */
 	private _source?: string;
-
-	/** True if binding should be updated when a change event is emitted on a bound managed object (if it's the current value of the binding; only set when filters are added) */
-	private _events?: boolean;
 }
 
 Binding.prototype.isManagedBinding = _isManagedBinding;

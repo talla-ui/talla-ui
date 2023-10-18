@@ -6,6 +6,7 @@ import {
 	UIRow,
 	UIScrollContainer,
 	UITheme,
+	View,
 	app,
 } from "@desk-framework/frame-core";
 import { TestOutputElement } from "../app/TestOutputElement.js";
@@ -142,7 +143,7 @@ export class ContentUpdater {
 	readonly element: TestOutputElement;
 
 	/** Current list of content items */
-	content: RenderContext.Renderable[] = [];
+	content: View[] = [];
 
 	/** Set async rendering flag; when enabled, all content is rendered asynchronously */
 	setAsyncRendering(async?: boolean) {
@@ -158,8 +159,8 @@ export class ContentUpdater {
 		return this;
 	}
 
-	/** Update the output element with output from given list of content items (or current) */
-	update(content: Iterable<RenderContext.Renderable> = this.content) {
+	/** Update the output element with output from given list of content views (or current) */
+	update(content: Iterable<View> = this.content) {
 		// resolve the current update promise, or create a resolved promise right away
 		if (this._updateResolve) this._updateResolve();
 		else this._updateP = Promise.resolve();
@@ -203,8 +204,8 @@ export class ContentUpdater {
 		this._updateResolve = undefined;
 	}
 
-	/** Get the current output for given content item, or render it if needed; returns the output, or undefined if the output is still being rendered. */
-	getItemOutput(item: RenderContext.Renderable) {
+	/** Get the current output for given content view, or render it if needed; returns the output, or undefined if the output is still being rendered. */
+	getItemOutput(item: View) {
 		if (!this._output.has(item)) {
 			// set output to undefined first, to avoid rendering again
 			this._output.set(item, undefined);
@@ -340,8 +341,5 @@ export class ContentUpdater {
 	private _async?: boolean;
 	private _updateP?: Promise<void>;
 	private _updateResolve?: () => void;
-	private _output = new Map<
-		RenderContext.Renderable,
-		RenderContext.Output | undefined
-	>();
+	private _output = new Map<View, RenderContext.Output | undefined>();
 }

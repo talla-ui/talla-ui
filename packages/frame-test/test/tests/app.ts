@@ -1,7 +1,7 @@
 import {
 	app,
 	bound,
-	PageViewActivity,
+	Activity,
 	StringConvertible,
 	UIButton,
 	UICell,
@@ -13,11 +13,14 @@ import {
 import { describe, expect, test, useTestContext } from "../../dist/index.js";
 // ... from "@desk-framework/frame-test"
 
-class CountActivity extends PageViewActivity {
-	static override ViewBody = UICell.with(
-		UITextField.with({ value: bound("count"), onInput: "SetCount" }),
-		UIButton.withLabel("+", "CountUp"),
-	);
+class CountActivity extends Activity {
+	protected override ready() {
+		this.view = new (UICell.with(
+			UITextField.with({ value: bound("count"), onInput: "SetCount" }),
+			UIButton.withLabel("+", "CountUp"),
+		))();
+		app.render(this.view);
+	}
 	override path = "count";
 	count = 0;
 	onCountUp() {

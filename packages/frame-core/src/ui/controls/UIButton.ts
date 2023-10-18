@@ -153,7 +153,7 @@ export class UIButton extends UIComponent {
 	/**
 	 * Returns the navigation target for this button
 	 * - This method only returns a path (or {@link NavigationTarget} instance) if the {@link UIButton.navigateTo} property is set.
-	 * - This method is called automatically by {@link ViewActivity}.
+	 * - This method is called automatically by {@link Activity.onNavigate()}.
 	 */
 	getNavigationTarget() {
 		return this.navigateTo;

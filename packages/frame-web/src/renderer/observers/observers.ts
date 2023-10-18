@@ -1,6 +1,5 @@
 import {
 	Observer,
-	RenderContext,
 	UIButton,
 	UICell,
 	UIContainer,
@@ -11,20 +10,21 @@ import {
 	UISpacer,
 	UITextField,
 	UIToggle,
+	View,
 } from "@desk-framework/frame-core";
-import { UICellRenderer } from "./UICellRenderer.js";
-import { UIScrollContainerRenderer } from "./UIScrollContainerRenderer.js";
-import { UILabelRenderer } from "./UILabelRenderer.js";
 import { UIButtonRenderer } from "./UIButtonRenderer.js";
+import { UICellRenderer } from "./UICellRenderer.js";
+import { UIContainerRenderer } from "./UIContainerRenderer.js";
 import { UIImageRenderer } from "./UIImageRenderer.js";
+import { UILabelRenderer } from "./UILabelRenderer.js";
+import { UIScrollContainerRenderer } from "./UIScrollContainerRenderer.js";
 import { UISeparatorRenderer } from "./UISeparatorRenderer.js";
 import { UISpacerRenderer } from "./UISpacerRenderer.js";
 import { UITextFieldRenderer } from "./UITextFieldRenderer.js";
 import { UIToggleRenderer } from "./UIToggleRenderer.js";
-import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
 /** @internal Helper function to create the appropriate renderer for given object */
-export function makeObserver<T extends RenderContext.Renderable>(
+export function makeObserver<T extends View>(
 	target: T,
 ): Observer<T> | undefined {
 	return (

@@ -1,6 +1,7 @@
 import {
 	ActivationContext,
 	app,
+	bound,
 	ConfigOptions,
 	GlobalContext,
 	UIComponent,
@@ -9,6 +10,7 @@ import { WebHashActivationPath } from "./path/WebHashActivationPath.js";
 import { WebHistoryActivationPath } from "./path/WebHistoryActivationPath.js";
 import { WebRenderer } from "./renderer/WebRenderer.js";
 import { WebViewportContext } from "./renderer/WebViewportContext.js";
+import { Dialog, DialogStyles } from "./style/Dialog.js";
 import { MessageDialog, MessageDialogStyles } from "./style/MessageDialog.js";
 import { ModalMenu, ModalMenuStyles } from "./style/ModalMenu.js";
 import { WebTheme } from "./style/WebTheme.js";
@@ -47,11 +49,11 @@ export class WebContextOptions extends ConfigOptions {
 	focusDecoration?: UIComponent.DecorationStyleType;
 
 	/**
-	 * Options for the appearance of the default modal menu view
-	 * - These styles can be changed directly on this object. Refer to {@link ModalMenuStyles} for details.
-	 * @see {@link ModalMenuStyles}
+	 * Options for the appearance of the default modal dialog view (container)
+	 * - These styles can be changed directly on this object. Refer to {@link DialogStyles} for details.
+	 * @see {@link DialogStyles}
 	 */
-	modalMenuStyles: ModalMenuStyles = ModalMenu.styles;
+	dialogStyles: DialogStyles = Dialog.styles;
 
 	/**
 	 * Options for the appearance of the default modal message dialog view
@@ -59,6 +61,13 @@ export class WebContextOptions extends ConfigOptions {
 	 * @see {@link MessageDialogStyles}
 	 */
 	messageDialogStyles: MessageDialogStyles = MessageDialog.styles;
+
+	/**
+	 * Options for the appearance of the default modal menu view
+	 * - These styles can be changed directly on this object. Refer to {@link ModalMenuStyles} for details.
+	 * @see {@link ModalMenuStyles}
+	 */
+	modalMenuStyles: ModalMenuStyles = ModalMenu.styles;
 
 	/** Breakpoint (in logical pixels) below which {@link ViewportContext.narrow} and {@link ViewportContext.short} are set */
 	smallBreakpoint = 590;
@@ -102,16 +111,6 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 	// clear the current app properties first
 	app.clear();
 
-	// create DOM renderer
-	let renderer = (app.renderer = new WebRenderer(options));
-
-	// on (change) event, reset all CSS styles
-	renderer.listen((e) => {
-		if (e.source === renderer) {
-			WebTheme.initializeCSS(options);
-		}
-	});
-
 	// apply theme
 	WebTheme.initializeCSS(options);
 	app.theme = options.theme;
@@ -124,6 +123,13 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 	let viewport = new WebViewportContext(options);
 	app.viewport = viewport;
 	viewport.update();
+
+	// create DOM renderer
+	let renderer = (app.renderer = new WebRenderer(options));
+	bound("theme").bindTo(renderer, () => {
+		WebTheme.initializeCSS(options);
+		Promise.resolve().then(() => renderer.remount());
+	});
 
 	// create activation path
 	if (options.useHistoryAPI) {

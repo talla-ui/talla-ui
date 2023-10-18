@@ -1,21 +1,21 @@
 import {
-	bound,
+	describe,
+	expect,
+	test,
+	useTestContext,
+} from "@desk-framework/frame-test";
+import {
+	Activity,
 	Observer,
-	PageViewActivity,
-	app,
 	UIForm,
 	UIFormContext,
 	UIFormController,
 	UILabel,
 	UIRow,
 	UITextField,
+	app,
+	bound,
 } from "../../../dist/index.js";
-import {
-	describe,
-	test,
-	expect,
-	useTestContext,
-} from "@desk-framework/frame-test";
 
 describe("UIForm and UIFormContext", () => {
 	// helper class to observe a form context and count events
@@ -192,17 +192,21 @@ describe("UIForm and UIFormContext", () => {
 		useTestContext((options) => {
 			options.renderFrequency = 5;
 		});
-		class MyActivity extends PageViewActivity {
-			static override ViewBody = UIRow.with(
-				UIForm.with(
-					{ formContext: bound("form1") },
-					UITextField.withField("text"),
-				),
-				UIForm.with(
-					{ formContext: bound("form2") },
-					UITextField.withField("text"),
-				),
-			);
+		const ViewBody = UIRow.with(
+			UIForm.with(
+				{ formContext: bound("form1") },
+				UITextField.withField("text"),
+			),
+			UIForm.with(
+				{ formContext: bound("form2") },
+				UITextField.withField("text"),
+			),
+		);
+		class MyActivity extends Activity {
+			protected override ready() {
+				this.view = new ViewBody();
+				app.render(this.view);
+			}
 			form1 = new UIFormContext({ text: "foo" });
 			form2 = new UIFormContext({ text: "bar" });
 		}

@@ -37,8 +37,11 @@ export const _boundFormContext = bound("formContext");
  *   UIPrimaryButton.withLabel("Go", "Submit")
  * );
  *
- * class MyActivity extends ViewActivity {
- *   static override ViewBody = FormView;
+ * class MyActivity extends Activity {
+ *   protected ready() {
+ *     this.view = new FormView();
+ *   }
+ *
  *   fooForm = new UIFormContext({ foo: "" })
  *     .addTest("foo", (t) => {
  *       t.required();
@@ -59,8 +62,10 @@ export const _boundFormContext = bound("formContext");
  *   // ...
  * );
  *
- * class MyActivity extends ViewActivity {
- *   static override ViewBody = MyView;
+ * class MyActivity extends Activity {
+ *   protected ready() {
+ *     this.view = new FormView();
+ *   }
  *   formContext = new UIFormContext({ foo: "" });
  *   // ...
  * }

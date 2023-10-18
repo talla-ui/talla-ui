@@ -1,4 +1,4 @@
-import { app, JSX, PageViewActivity } from "@desk-framework/frame-core";
+import { Activity, JSX, app } from "@desk-framework/frame-core";
 
 const ViewBody = (
 	<cell>
@@ -11,8 +11,11 @@ const ViewBody = (
 	</cell>
 );
 
-export class CountActivity extends PageViewActivity {
-	static ViewBody = ViewBody;
+export class CountActivity extends Activity {
+	protected ready() {
+		this.view = new ViewBody();
+		app.render(this.view);
+	}
 
 	count = 0;
 

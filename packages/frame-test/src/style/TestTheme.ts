@@ -1,4 +1,9 @@
-import { MessageDialogOptions, UITheme } from "@desk-framework/frame-core";
+import {
+	MessageDialogOptions,
+	UITheme,
+	View,
+} from "@desk-framework/frame-core";
+import { TestDialog } from "./TestDialog.js";
 import { TestMessageDialog } from "./TestMessageDialog.js";
 import { TestModalMenu } from "./TestModalMenu.js";
 import { colors } from "./colors.js";
@@ -6,6 +11,9 @@ import { icons } from "./icons.js";
 
 /** @internal Modal view implementation for the test context */
 export class TestModalFactory implements UITheme.ModalControllerFactory {
+	buildDialog(view: View) {
+		return new TestDialog(view);
+	}
 	buildAlertDialog(options: MessageDialogOptions) {
 		return new TestMessageDialog(options).setAlertButton();
 	}

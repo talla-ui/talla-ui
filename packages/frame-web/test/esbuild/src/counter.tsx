@@ -1,4 +1,4 @@
-import { JSX, PageViewActivity } from "../../../dist";
+import { JSX, Activity, app } from "../../../dist";
 
 const ViewBody = (
 	<cell>
@@ -11,8 +11,11 @@ const ViewBody = (
 	</cell>
 );
 
-export class CountActivity extends PageViewActivity {
-	static ViewBody = ViewBody;
+export class CountActivity extends Activity {
+	ready() {
+		this.view = new ViewBody();
+		app.render(this.view);
+	}
 
 	count = 0;
 

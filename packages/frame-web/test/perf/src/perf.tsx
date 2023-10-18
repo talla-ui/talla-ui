@@ -3,7 +3,7 @@ import {
 	AsyncTaskQueue,
 	bound,
 	JSX,
-	PageViewActivity,
+	Activity,
 	UILabelStyle,
 } from "../../../dist";
 
@@ -29,9 +29,12 @@ const ViewBody = (
 	</scrollcontainer>
 );
 
-export class PerfActivity extends PageViewActivity {
-	static override ViewBody = ViewBody;
-	protected override async beforeActiveAsync(): Promise<void> {
+export class PerfActivity extends Activity {
+	protected override ready() {
+		this.view = new ViewBody();
+		app.render(this.view);
+	}
+	protected override async beforeActiveAsync() {
 		this.items = new Array(MAX);
 		for (let i = 0; i < MAX; i++) {
 			this.items[i] = i;

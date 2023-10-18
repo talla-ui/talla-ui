@@ -36,7 +36,7 @@ export class UIForm extends UIColumn {
 	/**
 	 * Form state context object
 	 * - This object is used by contained input elements, to get and set input values.
-	 * - This property defaults to an empty {@link UIFormContext} object, but can be bound to a property of a containing view or view activity object.
+	 * - This property defaults to an empty {@link UIFormContext} object, but can be bound to a property of a containing view or activity object.
 	 */
 	formContext? = new UIFormContext();
 

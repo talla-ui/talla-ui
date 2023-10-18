@@ -1,4 +1,4 @@
-import { RenderContext, UIColor } from "@desk-framework/frame-core";
+import { RenderContext, UIColor, View } from "@desk-framework/frame-core";
 import {
 	CLASS_MODAL_SHADER,
 	CLASS_MODAL_WRAPPER,
@@ -93,11 +93,11 @@ export class OutputMount {
 			const checkAndClose = (e: Event) => {
 				if (
 					(e.target === shader || e.target === wrapper) &&
-					this._lastSource &&
-					!this._lastSource.isUnlinked()
+					this._lastView &&
+					!this._lastView.isUnlinked()
 				) {
 					e.stopPropagation();
-					this._lastSource.emit("CloseModal");
+					this._lastView.emit("CloseModal");
 				}
 			};
 			shader.addEventListener("click", checkAndClose, true);
@@ -147,7 +147,7 @@ export class OutputMount {
 	/** Updates the current element with given output, if not already set */
 	update(output: RenderContext.Output<HTMLElement>) {
 		if (this._inner && this._inner.firstChild !== output.element) {
-			this._lastSource = output.source;
+			this._lastView = output.source;
 			this._inner.innerHTML = "";
 			if (output.detach) output.detach();
 			this._inner.appendChild(output.element);
@@ -204,7 +204,7 @@ export class OutputMount {
 	_outer?: HTMLElement;
 	_inner?: HTMLElement;
 	_shader?: HTMLElement;
-	_lastSource?: RenderContext.Renderable;
+	_lastView?: View;
 	_lastElementId?: string;
 	_remount?: () => void;
 }

@@ -8,6 +8,6 @@ export default (
 			<spacer />
 			{themeToggle}
 		</row>
-		<render view={bound("countActivity")} />
+		<render view={bound("countActivity.view")} />
 	</cell>
 );

@@ -2,14 +2,15 @@ import {
 	AsyncTaskQueue,
 	Observer,
 	RenderContext,
+	View,
 	app,
 } from "@desk-framework/frame-core";
-import { val2str } from "../log.js";
-import { makeObserver } from "./observers.js";
 import { OutputAssertion, OutputSelectFilter } from "../app/OutputAssertion.js";
 import type { TestContextOptions } from "../app/TestContext.js";
 import { TestOutputElement } from "../app/TestOutputElement.js";
+import { val2str } from "../log.js";
 import { clearStyles } from "./TestBaseObserver.js";
+import { makeObserver } from "./observers.js";
 
 /** Max run time for scheduled render functions */
 const MAX_SCHED_RUNTIME = 30;
@@ -91,9 +92,7 @@ export class TestRenderer extends RenderContext {
 	transform(_output: RenderContext.Output) {}
 
 	/** Attaches a renderer to the the provided UI component (called internally) */
-	createObserver<T extends RenderContext.Renderable>(
-		target: T,
-	): Observer<T> | undefined {
+	createObserver<T extends View>(target: T): Observer<T> | undefined {
 		return makeObserver(target);
 	}
 

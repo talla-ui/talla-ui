@@ -9,7 +9,6 @@ export * from "./NavigationTarget.js";
 export * from "./ActivationContext.js";
 export * from "./ActivationPath.js";
 export * from "./Activity.js";
-export * from "./ViewActivity.js";
 export * from "./View.js";
 export * from "./ViewComposite.js";
 export * from "./LogWriter.js";

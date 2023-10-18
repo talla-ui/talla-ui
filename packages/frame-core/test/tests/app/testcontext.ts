@@ -7,13 +7,13 @@ import {
 	useTestContext,
 } from "@desk-framework/frame-test";
 import {
-	ManagedEvent,
+	Activity,
 	MessageDialogOptions,
-	PageViewActivity,
 	UIButtonStyle,
 	UICell,
 	UIColor,
 	UIIconResource,
+	UILabel,
 	UIPrimaryButton,
 	UITheme,
 	ViewComposite,
@@ -203,8 +203,11 @@ describe("TestContext", () => {
 		});
 
 		test("Cell view from root activity", async () => {
-			class MyActivity extends PageViewActivity {
-				static override ViewBody = UICell;
+			class MyActivity extends Activity {
+				protected override ready() {
+					this.view = new UICell();
+					app.render(this.view);
+				}
 			}
 			let activity = new MyActivity();
 			let app = useTestContext((options) => {
@@ -215,8 +218,11 @@ describe("TestContext", () => {
 		});
 
 		test("Remove view by deactivating activity", async (t) => {
-			class MyActivity extends PageViewActivity {
-				static override ViewBody = UICell;
+			class MyActivity extends Activity {
+				protected override ready() {
+					this.view = new UICell();
+					app.render(this.view);
+				}
 			}
 			let activity = new MyActivity();
 			let app = useTestContext((options) => {
@@ -231,47 +237,21 @@ describe("TestContext", () => {
 			await t.pollAsync(() => !app.renderer.hasOutput(), 10, 100);
 		});
 
-		test("Request focus on last focused UI component", async (t) => {
-			class MyActivity extends PageViewActivity {
-				static override ViewBody = UICell.with(
-					UICell.with({
-						allowFocus: true,
-						requestFocus: true,
-						onFocusIn: "+CellFocused",
-					}),
-				);
-				protected override delegateViewEvent(event: ManagedEvent) {
-					return super.delegateViewEvent(event);
-				}
-				onCellFocused() {
-					t.count("focus");
+		test("Show dialog", async (t) => {
+			class MyActivity extends Activity {
+				protected override ready() {
+					this.view = new UICell(new UILabel("foo"));
+					app.showDialog(this.view);
 				}
 			}
-
-			// show view activity with focused cell
+			let activity = new MyActivity();
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
-			let activity = new MyActivity();
 			app.addActivity(activity, true);
-			let cellElt = (
-				await t.expectOutputAsync(100, { focused: true })
-			).getSingle();
-			t.expectCount("focus").toBe(1);
-			expect(cellElt.hasFocus()).toBeTruthy();
-
-			// wait for tryFocusElement to stop trying to focus
-			await t.expectOutputAsync(20);
-
-			// now blur cell and wait
-			cellElt.blur();
-			await t.expectOutputAsync(100, { element: cellElt, focused: false });
-			expect(cellElt.hasFocus()).toBeFalsy();
-
-			// focus again using view activity
-			activity.requestFocus();
-			await t.expectOutputAsync(100, { element: cellElt, focused: true });
-			t.expectCount("focus").toBe(2);
+			await app.renderer.expectOutputAsync(100, { text: "foo" });
+			await activity.deactivateAsync();
+			await t.pollAsync(() => !app.renderer.hasOutput(), 10, 100);
 		});
 
 		test("Show alert dialog", async (t) => {

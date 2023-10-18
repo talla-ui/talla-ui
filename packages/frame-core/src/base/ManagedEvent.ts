@@ -48,8 +48,7 @@ import type { ManagedObject } from "./ManagedObject.js";
  *     )
  *   )
  * )
- * class MyActivity extends PageViewActivity {
- *   static override ViewBody = BodyView;
+ * class MyActivity extends Activity {
  *   // ...
  *   items: SampleData[];
  *   onRemoveItem(e: UIList.ItemEvent<SampleData>) {

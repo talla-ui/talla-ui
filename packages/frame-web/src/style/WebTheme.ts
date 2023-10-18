@@ -1,4 +1,8 @@
-import { MessageDialogOptions, UITheme } from "@desk-framework/frame-core";
+import {
+	MessageDialogOptions,
+	UITheme,
+	View,
+} from "@desk-framework/frame-core";
 import { WebContextOptions } from "../WebContext.js";
 import {
 	importStylesheets,
@@ -15,9 +19,13 @@ import { colors } from "./defaults/colors.js";
 import { makeBaseCSS } from "./defaults/css.js";
 import { icons } from "./defaults/icons.js";
 import { defaultControlTextStyle, styles } from "./defaults/styles.js";
+import { Dialog } from "./Dialog.js";
 
 /** @internal Modal view implementation for the web context */
 export class ModalFactory implements UITheme.ModalControllerFactory {
+	buildDialog(view: View) {
+		return new Dialog(view);
+	}
 	buildAlertDialog(options: MessageDialogOptions) {
 		return new MessageDialog(options).setAlertButton();
 	}

@@ -7,7 +7,7 @@ import { View, ViewClass } from "./View.js";
  * A class that encapsulates a dynamic view
  *
  * @description
- * View composites contain a single (attached) view object. ViewComposite instances are themselves also views, and as such can be included in a view hierarchy or used for a {@link ViewActivity}. When rendered, view composites display the contained view component.
+ * View composites contain a single (attached) view object. ViewComposite instances are themselves also views, and as such can be included in a view hierarchy or used as the view object of an {@link Activity}. When rendered, view composites display the contained view component.
  *
  * The encapsulated view is referenced by the {@link ViewComposite.body body} property, which is usually set automatically, either when the ViewComposite is instantiated or right before rendering. It may be changed or unlinked at any time; the rendered view will be updated accordingly by the ViewComposite itself.
  *
@@ -20,7 +20,7 @@ import { View, ViewClass } from "./View.js";
  * - As a way to _control_ an encapsulated view. Refer to e.g. {@link UIConditional} and {@link UIList}, which are built-in ViewComposite classes.
  * - As a way to create reusable view structures. Refer to the static {@link define()} method which can be used to create a ViewComposite class using a function and/or a class.
  *
- * Note the similarities with the {@link ViewActivity} class, which also encapsulates a single view object. As a rule, use view _activities_ if event handlers or other class methods include business logic. Use view _composites_ if the class is only concerned with the look and feel of a set of UI components, and all content can be preset, bound, or provided by a view model.
+ * Note the similarities with the {@link Activity} class, which also encapsulates a single view object. As a rule, use _activities_ if event handlers or other class methods include business logic. Use view _composites_ if the class is only concerned with the look and feel of a set of UI components, and all content can be preset, bound, or provided by a view model.
  *
  * @note A custom ViewComposite class (such as in the example below) can't be used as a JSX tag using TypeScript. Use the {@link ViewComposite.define()} method instead, which produces a builder function that can be used from JSX code while also exposing a typed `.with()` method for non-JSX code.
  *

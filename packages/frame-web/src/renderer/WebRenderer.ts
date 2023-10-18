@@ -1,9 +1,10 @@
 import {
-	app,
-	RenderContext,
-	AsyncTaskQueue,
 	Activity,
+	AsyncTaskQueue,
 	Observer,
+	RenderContext,
+	View,
+	app,
 } from "@desk-framework/frame-core";
 import type { WebContextOptions } from "../WebContext.js";
 import { OutputMount } from "./OutputMount.js";
@@ -75,7 +76,8 @@ export class WebRenderer extends RenderContext {
 						mount = new OutputMount();
 						this._mounts.set(mount.id, mount);
 						switch (output.place.mode) {
-							case "none":
+							case "default":
+								mount.createElement();
 								break;
 							case "mount":
 								if (output.place.mountId) {
@@ -96,8 +98,8 @@ export class WebRenderer extends RenderContext {
 									this._reducedMotion,
 								);
 								break;
-							default:
-								mount.createElement();
+							default: // "none"
+								break;
 						}
 					}
 
@@ -113,9 +115,9 @@ export class WebRenderer extends RenderContext {
 		return callback;
 	}
 
-	/** Sets the document title according to activity that contains the provided component */
-	setDocumentTitle(component: RenderContext.Renderable) {
-		let activity = Activity.whence(component);
+	/** Sets the document title according to the activity that contains the provided view */
+	setDocumentTitle(view: View) {
+		let activity = Activity.whence(view);
 		while (activity) {
 			let target = activity.getNavigationTarget();
 			if (target.title) {
@@ -144,9 +146,7 @@ export class WebRenderer extends RenderContext {
 	private _elementToFocus?: HTMLElement;
 
 	/** Attaches a renderer to given UI component */
-	createObserver<T extends RenderContext.Renderable>(
-		target: T,
-	): Observer<T> | undefined {
+	createObserver<T extends View>(target: T): Observer<T> | undefined {
 		return makeObserver(target);
 	}
 

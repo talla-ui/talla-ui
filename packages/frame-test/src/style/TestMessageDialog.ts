@@ -37,15 +37,14 @@ export class TestMessageDialog
 	otherLabel?: StringConvertible;
 
 	showAsync(place?: Partial<RenderContext.PlacementOptions>) {
-		let rendered = app.render(this, {
-			mode: "dialog",
-			...place,
-		});
-
 		// return a promise that's resolved when one of the buttons is pressed
 		return new Promise<{ confirmed: boolean; other?: boolean }>((r) => {
+			app.render(this, {
+				mode: "dialog",
+				...place,
+			});
 			this._resolve = (result) => {
-				rendered.removeAsync();
+				this.unlink();
 				r(result);
 			};
 		});

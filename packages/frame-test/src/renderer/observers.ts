@@ -1,6 +1,5 @@
 import {
 	Observer,
-	RenderContext,
 	UIButton,
 	UICell,
 	UIContainer,
@@ -10,6 +9,7 @@ import {
 	UISpacer,
 	UITextField,
 	UIToggle,
+	View,
 } from "@desk-framework/frame-core";
 import { UIButtonRenderer } from "./UIButtonRenderer.js";
 import { UICellRenderer } from "./UICellRenderer.js";
@@ -22,7 +22,7 @@ import { UITextFieldRenderer } from "./UITextFieldRenderer.js";
 import { UIToggleRenderer } from "./UIToggleRenderer.js";
 
 /** @internal */
-export function makeObserver<T extends RenderContext.Renderable>(
+export function makeObserver<T extends View>(
 	target: T,
 ): Observer<T> | undefined {
 	return (

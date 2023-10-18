@@ -1,6 +1,7 @@
 import { ManagedEvent, ManagedObject, Observer } from "../base/index.js";
 import { invalidArgErr } from "../errors.js";
 import { app } from "./GlobalContext.js";
+import { View } from "./View.js";
 
 /**
  * An abstract class that supports global view rendering, part of the global application context
@@ -12,9 +13,7 @@ export abstract class RenderContext extends ManagedObject {
 	/** Returns a render callback for root view output; do not use directly */
 	abstract getRenderCallback(): RenderContext.RenderCallback;
 	/** Creates a new renderer observer for the provided view object; do not use directly */
-	abstract createObserver<T extends RenderContext.Renderable>(
-		target: T,
-	): Observer<T> | undefined;
+	abstract createObserver<T extends View>(target: T): Observer<T> | undefined;
 	/** Creates a new transformation object for the provided output, if supported */
 	abstract transform(
 		out: RenderContext.Output,
@@ -25,42 +24,10 @@ export abstract class RenderContext extends ManagedObject {
 	abstract clear(): this;
 	/** Relocates existing mounted view output if needed */
 	abstract remount(): this;
-
-	/** Creates a new encapsulated renderer for the provided view object; do not use directly */
-	render(
-		view?: RenderContext.Renderable,
-		callback?: RenderContext.RenderCallback,
-		place?: RenderContext.PlacementOptions,
-	) {
-		return new RenderContext.DynamicRendererWrapper().render(
-			view,
-			callback || this.getRenderCallback(),
-			place || { mode: "none" },
-		);
-	}
 }
 
 export namespace RenderContext {
-	/**
-	 * Type definition for any view object that can be rendered
-	 * - This interface defines the minimum API for an object to become part of the render hierarchy. In particular, this interface is implemented by {@link View} (and all of its many sub classes) and {@link ViewActivity}.
-	 */
-	export interface Renderable extends ManagedObject {
-		/**
-		 * A method that should be implemented to render a view object
-		 * - The view object may be rendered asynchronously, providing output as well as any updates to the provided renderer callback.
-		 */
-		render(callback: RenderCallback): void;
-	}
-
-	/** Type definition for a class that creates view instances that can be rendered */
-	export type RenderableClass<TRenderable extends Renderable = Renderable> =
-		ManagedObject.Constructor<ManagedObject & TRenderable>;
-
-	/**
-	 * Type definition for the callback that's used for asynchronous rendering
-	 * @see {@link RenderContext.Renderable.render}
-	 */
+	/** Type definition for the callback that's used for asynchronous rendering */
 	export type RenderCallback<TElement = unknown> = (
 		output?: Output<TElement>,
 		afterRender?: (out?: Output<TElement>) => void,
@@ -90,7 +57,7 @@ export namespace RenderContext {
 	 * Type definition for global rendering placement options
 	 *
 	 * @description
-	 * An object of this type can be provided when rendering a view object. View activities also include a property that's used to provide placement options when rendering, i.e. {@link ViewActivity.renderPlacement}.
+	 * An object of this type can be provided when rendering a view object using {@link GlobalContext.render app.render()}, or {@link RenderContext.DynamicRendererWrapper}.
 	 *
 	 * The following properties determine how root view elements are placed on the screen:
 	 * - `mode` — One of the {@link RenderContext.PlacementMode} options.
@@ -208,18 +175,14 @@ export namespace RenderContext {
 	 * @hideconstructor
 	 */
 	export class Output<TElement = unknown> {
-		constructor(
-			source: Renderable,
-			element: TElement,
-			place?: PlacementOptions,
-		) {
+		constructor(source: View, element: TElement, place?: PlacementOptions) {
 			this.source = source;
 			this.element = element;
 			this.place = place;
 		}
 
-		/** The rendered component */
-		readonly source: Renderable;
+		/** The rendered view */
+		readonly source: View;
 
 		/** The rendered element, as a platform-dependent object or handle */
 		readonly element: TElement;
@@ -235,19 +198,17 @@ export namespace RenderContext {
 	}
 
 	/**
-	 * A class that's used to render content referenced by a property
+	 * A class that's used to render a view referenced by a property
 	 * - Objects of this type are created by the {@link RenderContext.render()} and {@link GlobalContext.render app.render()} methods, and are mostly used internally to keep track of rendering state asynchronously.
 	 *
 	 * @hideconstructor
 	 */
 	export class DynamicRendererWrapper {
-		constructor() {}
-
 		/** The current render callback, if any */
 		callback?: RenderCallback;
 
 		/** The view object that was rendered last, if any */
-		lastContent?: Renderable;
+		lastView?: View;
 
 		/** The output that was rendered last, if any */
 		lastRenderOutput?: RenderContext.Output;
@@ -257,9 +218,9 @@ export namespace RenderContext {
 			return this._seq > 0;
 		}
 
-		/** Renders the provided content using a new callback, or previously stored callback */
+		/** Renders the provided view using a new callback, or previously stored callback */
 		render(
-			content?: Renderable,
+			content?: View,
 			callback?: RenderCallback,
 			place?: PlacementOptions,
 		) {
@@ -272,10 +233,11 @@ export namespace RenderContext {
 			) {
 				// use old callback to remove output
 				this.callback = this.callback(undefined);
-				this.lastContent = undefined;
+				this.lastView = undefined;
 				this.lastRenderOutput = undefined;
 				this._ownCallback = undefined;
 				this._seq++;
+				this._viewObserver?.stop();
 			}
 
 			if (isNewCallback) this.callback = callback;
@@ -293,7 +255,7 @@ export namespace RenderContext {
 							if (output && place) output.place = place;
 							this.callback = callback!(output, afterRender);
 							this.lastRenderOutput = output;
-							let animation = place?.transform?.show;
+							let animation = output?.place?.transform?.show;
 							if (animation) app.animateAsync(this, animation);
 							seq = ++this._seq;
 						}
@@ -301,7 +263,8 @@ export namespace RenderContext {
 					};
 					this._ownCallback = cb;
 				}
-				this.lastContent = content;
+				this.lastView = content;
+				this._viewObserver.observe(content);
 				content.render(this._ownCallback);
 			}
 			return this;
@@ -309,10 +272,10 @@ export namespace RenderContext {
 
 		/** Removes previously rendered output */
 		removeAsync() {
-			if (!this.callback) return;
 			let out = this.lastRenderOutput;
 			let seq = this._seq;
 			return (async () => {
+				if (!this.callback) return;
 				let animation = out?.place?.transform?.hide;
 				if (animation) await app.animateAsync(this, animation);
 				if (seq === this._seq) {
@@ -322,12 +285,26 @@ export namespace RenderContext {
 					});
 					this.callback = this.callback!(undefined, () => resolve());
 					this.lastRenderOutput = undefined;
+					this.lastView = undefined;
 					this._ownCallback = undefined;
 					this._seq++;
+					this._viewObserver?.stop();
 					return p;
 				}
 			})();
 		}
+
+		private _viewObserver = new (class extends Observer<View> {
+			constructor(public wrapper: DynamicRendererWrapper) {
+				super();
+			}
+			override handleUnlink() {
+				if (this.wrapper.lastView === this.observed) {
+					this.wrapper.removeAsync();
+				}
+				return super.handleUnlink();
+			}
+		})(this);
 
 		private _ownCallback: any;
 		private _seq = 0;

@@ -289,13 +289,13 @@ describe("UIList", (scope) => {
 		expect(list.focusPreviousItem()).toBeFalsy();
 
 		t.log("Move focus down by 2");
-		firstOut.getSingleComponent(UILabel).emit("ArrowDownKeyPress");
+		firstOut.getSingleView(UILabel).emit("ArrowDownKeyPress");
 		await t.expectOutputAsync(100, { text: "b", focused: true });
 		list.focusNextItem();
 		let thirdOut = await t.expectOutputAsync(100, { text: "c", focused: true });
 
 		t.log("Move focus up again");
-		thirdOut.getSingleComponent(UILabel).emit("ArrowUpKeyPress");
+		thirdOut.getSingleView(UILabel).emit("ArrowUpKeyPress");
 		await t.expectOutputAsync(100, { text: "b", focused: true });
 	});
 
