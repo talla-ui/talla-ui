@@ -43,13 +43,13 @@ describe("UIRow and UIColumn", (scope) => {
 
 	test("Rendered as row", async (t) => {
 		let row = new UIRow();
-		app.render(row);
+		app.showPage(row);
 		await t.expectOutputAsync(100, { type: "row" });
 	});
 
 	test("Rendered as column", async (t) => {
 		let col = new UIColumn();
-		app.render(col);
+		app.showPage(col);
 		await t.expectOutputAsync(100, { type: "column" });
 	});
 
@@ -58,7 +58,7 @@ describe("UIRow and UIColumn", (scope) => {
 			{ height: 123 },
 			UIColumn.with({ width: 123 }, UILabel.withText("foo")),
 		);
-		app.render(new Preset());
+		app.showPage(new Preset());
 
 		// wait for row > col > label to be rendered
 		// and check row height

@@ -87,7 +87,7 @@ describe("UIButton", (scope) => {
 			label: "foo",
 			accessibleLabel: "My button",
 		});
-		app.render(new MyButton());
+		app.showPage(new MyButton());
 		await t.expectOutputAsync(100, {
 			text: "foo",
 			accessibleLabel: "My button",
@@ -102,7 +102,7 @@ describe("UIButton", (scope) => {
 				bold: true,
 			},
 		});
-		app.render(new MyButton());
+		app.showPage(new MyButton());
 		await t.expectOutputAsync(100, {
 			text: "foo",
 			styles: {
@@ -117,7 +117,7 @@ describe("UIButton", (scope) => {
 		class MyActivity extends Activity {
 			protected override ready() {
 				this.view = new ViewBody();
-				app.render(this.view);
+				app.showPage(this.view);
 			}
 			onButtonClicked() {
 				t.count("clicked");
@@ -137,7 +137,7 @@ describe("UIButton", (scope) => {
 		class MyActivity extends Activity {
 			protected override ready() {
 				this.view = new MyButton();
-				app.render(this.view);
+				app.showPage(this.view);
 			}
 		}
 		app.addActivity(new MyActivity(), true);

@@ -128,7 +128,7 @@ describe("JSX", () => {
 		useTestContext((options) => {
 			options.renderFrequency = 5;
 		});
-		app.render(new (MyView.with({ foo: 123 }))());
+		app.showPage(new (MyView.with({ foo: 123 }))());
 		await t.expectOutputAsync(50, { text: "123" });
 	});
 
@@ -140,7 +140,7 @@ describe("JSX", () => {
 		useTestContext((options) => {
 			options.renderFrequency = 5;
 		});
-		app.render(new (MyView.with({ foo: 123 }))());
+		app.showPage(new (MyView.with({ foo: 123 }))());
 		await t.expectOutputAsync(50, { text: "Foo is 123" });
 	});
 
@@ -157,7 +157,7 @@ describe("JSX", () => {
 			options.renderFrequency = 5;
 		});
 		let V = MyView.with({ foo: 123, bar: { foo: 456, baz: "abc" } });
-		app.render(new V());
+		app.showPage(new V());
 		let expectRow = await t.expectOutputAsync(50, { type: "row" });
 		t.log("straight binding");
 		expectRow.containing({ text: "foo='123'" }).toBeRendered();
@@ -181,7 +181,7 @@ describe("JSX", () => {
 		useTestContext((options) => {
 			options.renderFrequency = 5;
 		});
-		app.render(new Preset1());
+		app.showPage(new Preset1());
 		await t.sleep(20);
 		await t.expectOutputAsync(50, { text: "You have 1 email" });
 
@@ -198,7 +198,7 @@ describe("JSX", () => {
 			}
 		}
 		app.i18n = new MyI18nProvider();
-		app.render(new Preset2());
+		app.showPage(new Preset2());
 		await t.expectOutputAsync(50, { text: "Je hebt 2 e-mails" });
 	});
 });

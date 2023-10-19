@@ -18,7 +18,7 @@ export class MainActivity extends Activity {
 
 	protected override ready() {
 		this.view = new body();
-		app.render(this.view);
+		app.showPage(this.view);
 	}
 
 	selectedTheme: string = "light";

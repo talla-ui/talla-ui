@@ -13,13 +13,6 @@ let _nextId = 1;
 export class OutputMount {
 	readonly id = _nextId++;
 
-	/** Creates a plain (separate) root element, i.e. for placement mode "default" */
-	createElement() {
-		let elt = (this._outer = this._inner = document.createElement("desk-root"));
-		registerHandlers(elt);
-		document.body.appendChild(elt);
-	}
-
 	/** Creates a fixed full-page root element, i.e. for placement mode "page" */
 	createPageElement() {
 		let elt =

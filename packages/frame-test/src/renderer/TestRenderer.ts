@@ -51,7 +51,12 @@ export class TestRenderer extends RenderContext {
 					if (lastOutput && lastOutput !== output && lastOutput.element) {
 						(lastOutput.element as TestOutputElement).remove();
 					}
-					if (output && output.element) {
+					if (
+						output &&
+						output.element &&
+						output.place &&
+						output.place.mode !== "none"
+					) {
 						let elt = output.element as TestOutputElement;
 						if (!self._root.content.includes(elt)) {
 							self._root.content.push(elt);

@@ -32,7 +32,7 @@ const ViewBody = (
 export class PerfActivity extends Activity {
 	protected override ready() {
 		this.view = new ViewBody();
-		app.render(this.view);
+		app.showPage(this.view);
 	}
 	protected override async beforeActiveAsync() {
 		this.items = new Array(MAX);

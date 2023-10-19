@@ -34,7 +34,7 @@ describe("UISeparator", (scope) => {
 	});
 
 	test("Rendered", async (t) => {
-		app.render(new UISeparator());
+		app.showPage(new UISeparator());
 		await t.expectOutputAsync(100, { type: "separator" });
 	});
 });

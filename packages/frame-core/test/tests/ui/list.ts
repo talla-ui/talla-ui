@@ -62,7 +62,7 @@ describe("UIList", (scope) => {
 
 	test("Empty list, rendered", async (t) => {
 		let MyList = UIList.with({}, UILabel);
-		app.render(new MyList());
+		app.showPage(new MyList());
 		await t.expectOutputAsync(50, { type: "column" });
 	});
 
@@ -78,7 +78,7 @@ describe("UIList", (scope) => {
 		let instance = new MyList();
 
 		t.log("Rendering");
-		app.render(instance);
+		app.showPage(instance);
 		let out = await t.expectOutputAsync(50, { type: "row" });
 		expect(out.elements[0], "row element").toBeDefined();
 		out.containing({ text: "a" }).toBeRendered("list element a");
@@ -111,7 +111,7 @@ describe("UIList", (scope) => {
 		parent.view = instance;
 
 		t.log("Rendering");
-		app.render(instance);
+		app.showPage(instance);
 		await t.expectOutputAsync(50, { type: "row" });
 		expect(getListText(instance)).toBeArray(["a", "b", "c"]);
 	});
@@ -129,7 +129,7 @@ describe("UIList", (scope) => {
 		let instance = new MyList();
 
 		t.log("Rendering");
-		app.render(instance);
+		app.showPage(instance);
 		let out = await t.expectOutputAsync(50, { type: "row" }, { text: "c" });
 		let cRendered = out.getSingle();
 
@@ -163,7 +163,7 @@ describe("UIList", (scope) => {
 		});
 
 		t.log("Rendering");
-		app.render(view);
+		app.showPage(view);
 		let out = await t.expectOutputAsync(50, { text: "d" });
 
 		t.log("Clicking");
@@ -183,7 +183,7 @@ describe("UIList", (scope) => {
 		let instance = new MyList();
 
 		t.log("Rendering");
-		app.render(instance);
+		app.showPage(instance);
 		await t.expectOutputAsync(50, { type: "row" }, { text: "d" });
 		expect(getListText(instance)).toBeArray(["a", "b", "c", "d", "end"]);
 
@@ -203,7 +203,7 @@ describe("UIList", (scope) => {
 		let instance = new MyList();
 
 		t.log("Rendering 0-1");
-		app.render(instance);
+		app.showPage(instance);
 		await t.expectOutputAsync(50, { type: "row" });
 		expect(getListText(instance)).toBeArray(["a", "b"]);
 
@@ -235,7 +235,7 @@ describe("UIList", (scope) => {
 			UILabel.with({ text: bound("item.name"), allowFocus: true }),
 		);
 		let list = new Preset();
-		app.render(list);
+		app.showPage(list);
 		let out = await t.expectOutputAsync(50, { text: "a" });
 		expect(list.getIndexOfView(out.getSingle().output!.source)).toBe(0);
 		out = await t.expectOutputAsync(50, { text: "d" });
@@ -251,7 +251,7 @@ describe("UIList", (scope) => {
 				UILabel.with({ text: bound("item.name"), allowFocus: true }),
 			),
 		);
-		app.render(new Preset());
+		app.showPage(new Preset());
 		let out = await t.expectOutputAsync(50, { text: "a" });
 
 		t.log("Focus first item");
@@ -279,7 +279,7 @@ describe("UIList", (scope) => {
 			}),
 		);
 		let list = new Preset();
-		app.render(list);
+		app.showPage(list);
 		let firstOut = await t.expectOutputAsync(100, { text: "a" });
 
 		t.log("Focus first item");

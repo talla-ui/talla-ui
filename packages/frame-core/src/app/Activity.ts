@@ -40,7 +40,7 @@ const _boundTheme = bound("theme");
  *   path = "foo";
  *   protected ready() {
  *     this.view = new body(); // imported from a view file
- *     app.render(this.view);
+ *     app.showPage(this.view);
  *   }
  * }
  *

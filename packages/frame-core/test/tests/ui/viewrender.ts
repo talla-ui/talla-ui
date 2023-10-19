@@ -34,7 +34,7 @@ describe("UIViewRenderer", (scope) => {
 		let MyCell = UICell.with(UILabel.withText("foo"));
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new MyCell();
-		app.render(viewRenderer);
+		app.showPage(viewRenderer);
 		await t.expectOutputAsync(50, { text: "foo" });
 		expect(viewRenderer.findViewContent(UILabel)).toBeArray(1);
 	});
@@ -44,7 +44,7 @@ describe("UIViewRenderer", (scope) => {
 		let MyCell2 = UICell.with(UILabel.withText("bar"));
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new MyCell1();
-		app.render(viewRenderer);
+		app.showPage(viewRenderer);
 		await t.expectOutputAsync(50, { text: "foo" });
 		viewRenderer.view = new MyCell2();
 		await t.expectOutputAsync(50, { text: "bar" });
@@ -54,7 +54,7 @@ describe("UIViewRenderer", (scope) => {
 		let MyCell = UICell.with(UILabel.withText("foo"));
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new MyCell();
-		app.render(viewRenderer);
+		app.showPage(viewRenderer);
 		await t.expectOutputAsync(50, { text: "foo" });
 		viewRenderer.view.unlink();
 		await t.sleep(20);
@@ -69,7 +69,7 @@ describe("UIViewRenderer", (scope) => {
 		class MyActivity extends Activity {
 			protected override ready() {
 				this.view = new (UIViewRenderer.with({ view: bound("vc") }))();
-				app.render(this.view);
+				app.showPage(this.view);
 			}
 			vc = this.attach(new Preset());
 		}
@@ -80,7 +80,7 @@ describe("UIViewRenderer", (scope) => {
 	test("Set view and focus", async (t) => {
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new UITextField();
-		app.render(viewRenderer);
+		app.showPage(viewRenderer);
 		await t.expectOutputAsync(50, { type: "textfield", focused: false });
 		viewRenderer.requestFocus();
 		await t.expectOutputAsync(50, { type: "textfield", focused: true });
@@ -111,7 +111,7 @@ describe("UIViewRenderer", (scope) => {
 					UIViewRenderer.with({ view: bound("second.view") }),
 				);
 				this.view = new ViewBody();
-				app.render(this.view);
+				app.showPage(this.view);
 			}
 			declare second?: MySecondActivity;
 			onButtonPress(e: ManagedEvent) {

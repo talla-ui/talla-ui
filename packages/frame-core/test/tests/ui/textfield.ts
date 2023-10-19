@@ -38,7 +38,7 @@ describe("UITextField", (scope) => {
 	});
 
 	test("Rendered with placeholder", async (t) => {
-		app.render(new UITextField("foo", "bar"));
+		app.showPage(new UITextField("foo", "bar"));
 		await t.expectOutputAsync(100, {
 			text: "foo",
 			value: "bar",
@@ -47,7 +47,7 @@ describe("UITextField", (scope) => {
 
 	test("User input, directly setting value", async (t) => {
 		let tf = new UITextField();
-		app.render(tf);
+		app.showPage(tf);
 		let tfElt = (
 			await t.expectOutputAsync(100, { type: "textfield" })
 		).getSingle();
@@ -67,7 +67,7 @@ describe("UITextField", (scope) => {
 
 		// render field, check that value is 'bar'
 		t.log("Rendering with value");
-		app.render(tf);
+		app.showPage(tf);
 		let tfElt = (
 			await t.expectOutputAsync(100, { type: "textfield" })
 		).getSingle();

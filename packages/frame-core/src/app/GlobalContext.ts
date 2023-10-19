@@ -230,20 +230,30 @@ export class GlobalContext extends ManagedObject {
 	/**
 	 * Renders the provided view using specified placement options
 	 *
-	 * @summary This method can be used to render any view object to the screen (or in-memory test output, when called from a test function), such as a {@link UICell} or {@link ViewComposite} instance. By default, the view is rendered as a full-screen page, but you can specify a different placement using the `place` argument.
+	 * @summary This method can be used to render any view object to the screen (or in-memory test output, when called from a test function), such as a {@link UICell} or {@link ViewComposite} instance.
 	 *
 	 * @param view The view object to be rendered
-	 * @param place Global view placement options, refer to {@link RenderContext.PlacementOptions}
+	 * @param place Mount element ID, or global view placement options, refer to {@link RenderContext.PlacementOptions}
 	 * @returns A new {@link RenderContext.DynamicRendererWrapper} instance, which can be used to control the rendered view
 	 * @error This method throws an error if the renderer hasn't been initialized yet.
 	 */
-	render(view: View, place?: RenderContext.PlacementOptions) {
+	render(view: View, place: string | RenderContext.PlacementOptions) {
 		if (!this.renderer) throw err(ERROR.GlobalContext_NoRenderer);
 		return new RenderContext.DynamicRendererWrapper().render(
 			view,
 			this.renderer.getRenderCallback(),
-			place || { mode: "page" },
+			typeof place === "string" ? { mode: "mount", mountId: place } : place,
 		);
+	}
+
+	/**
+	 * Displays a full-screen page with the specified content view
+	 * - The page will be displayed until the view is unlinked. Further rendered content will be placed on top, if any.
+	 * @param view The view object to be displayed
+	 * @error This method throws an error if the renderer hasn't been initialized yet.
+	 */
+	showPage(view: View) {
+		this.render(view, { mode: "page" });
 	}
 
 	/**

@@ -205,7 +205,7 @@ describe("UIForm and UIFormContext", () => {
 		class MyActivity extends Activity {
 			protected override ready() {
 				this.view = new ViewBody();
-				app.render(this.view);
+				app.showPage(this.view);
 			}
 			form1 = new UIFormContext({ text: "foo" });
 			form2 = new UIFormContext({ text: "bar" });

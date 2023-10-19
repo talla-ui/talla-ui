@@ -19,7 +19,7 @@ class CountActivity extends Activity {
 			UITextField.with({ value: bound("count"), onInput: "SetCount" }),
 			UIButton.withLabel("+", "CountUp"),
 		))();
-		app.render(this.view);
+		app.showPage(this.view);
 	}
 	override path = "count";
 	count = 0;
@@ -48,7 +48,7 @@ describe("App test", (scope) => {
 			UILabel.withText(p.title),
 		).with({ title: "TEST" });
 		let view = new MyView();
-		app.render(view);
+		app.showPage(view);
 		await t.expectOutputAsync(100, { text: "TEST" });
 	});
 

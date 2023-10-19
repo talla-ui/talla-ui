@@ -39,19 +39,12 @@ export namespace RenderContext {
 	 * @description
 	 * This type describes how root view output elements are placed among other output. The following options are available:
 	 * - `none` — No output should be placed at all.
-	 * - `default` — Platform default (useful for testing, set by `app.render()`)
+	 * - `page` — The output should fill the entire screen, on top of other content.
+	 * - `dialog` — The output should appear on top of all other output, surrounded by a shaded margin.
+	 * - `modal` — The output should appear on top of all other output, surrounded by a shaded margin. A `CloseModal` event is emitted when touching or clicking outside of the modal view area, or pressing the Escape key.
 	 * - `mount` — The output should be 'mounted' within an existing output element, with a specified string ID (e.g. HTML element).
-	 * - `page` — The output should fill the entire screen, and replace other page content.
-	 * - `dialog` — The output should appear on top of all other output.
-	 * - `modal` — The output should appear on top of all other output, with an optional backdrop shader. A `CloseModal` event is emitted when touching or clicking outside of the modal view area, or pressing the Escape key.
 	 */
-	export type PlacementMode =
-		| "none"
-		| "default"
-		| "mount"
-		| "page"
-		| "dialog"
-		| "modal";
+	export type PlacementMode = "none" | "page" | "dialog" | "modal" | "mount";
 
 	/**
 	 * Type definition for global rendering placement options
@@ -199,7 +192,7 @@ export namespace RenderContext {
 
 	/**
 	 * A class that's used to render a view referenced by a property
-	 * - Objects of this type are created by the {@link RenderContext.render()} and {@link GlobalContext.render app.render()} methods, and are mostly used internally to keep track of rendering state asynchronously.
+	 * - Objects of this type are created by the {@link GlobalContext.render app.render()} method, and are mostly used internally to keep track of rendering state asynchronously.
 	 *
 	 * @hideconstructor
 	 */

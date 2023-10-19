@@ -17,7 +17,7 @@
 	class CountActivity extends desk.Activity {
 		ready() {
 			this.view = new ViewBody();
-			desk.app.render(this.view);
+			desk.app.showPage(this.view);
 		}
 		count = 0;
 		onCountDown() {

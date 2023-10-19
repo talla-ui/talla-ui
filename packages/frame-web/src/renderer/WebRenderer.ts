@@ -76,9 +76,6 @@ export class WebRenderer extends RenderContext {
 						mount = new OutputMount();
 						this._mounts.set(mount.id, mount);
 						switch (output.place.mode) {
-							case "default":
-								mount.createElement();
-								break;
 							case "mount":
 								if (output.place.mountId) {
 									mount.findMountElement(output.place.mountId);

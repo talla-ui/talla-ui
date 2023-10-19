@@ -147,7 +147,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
-			app.render(view);
+			app.showPage(view);
 			await app.renderer.expectOutputAsync(100, { source: view });
 		});
 
@@ -159,7 +159,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
-			app.render(view);
+			app.showPage(view);
 			await app.renderer.expectOutputAsync(100, { source: view.body! });
 		});
 
@@ -175,7 +175,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
-			app.render(view);
+			app.showPage(view);
 			let out = await app.renderer.expectOutputAsync(500, {
 				source: view.body!,
 			});
@@ -196,7 +196,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
-			let rendered = app.render(view);
+			let rendered = app.render(view, { mode: "page" });
 			await app.renderer.expectOutputAsync(100, { source: view.body! });
 			await rendered.removeAsync();
 			app.renderer.expectOutput({ type: "cell" }).toBeEmpty();
@@ -206,7 +206,7 @@ describe("TestContext", () => {
 			class MyActivity extends Activity {
 				protected override ready() {
 					this.view = new UICell();
-					app.render(this.view);
+					app.showPage(this.view);
 				}
 			}
 			let activity = new MyActivity();
@@ -221,7 +221,7 @@ describe("TestContext", () => {
 			class MyActivity extends Activity {
 				protected override ready() {
 					this.view = new UICell();
-					app.render(this.view);
+					app.showPage(this.view);
 				}
 			}
 			let activity = new MyActivity();
@@ -351,7 +351,7 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			let button = new UIPrimaryButton("Test");
-			app.render(button);
+			app.showPage(button);
 			await t.expectOutputAsync(100, { type: "button" });
 			let p = app.showModalMenuAsync(
 				new UITheme.MenuOptions([

@@ -38,7 +38,7 @@ describe("UIConditional", () => {
 		cell.listen((e) => {
 			if (e.name === "ButtonClick") t.count("click");
 		});
-		app.render(cell);
+		app.showPage(cell);
 		let expectButton = await t.expectOutputAsync(500, { type: "button" });
 
 		t.log("Clicking button");
@@ -66,7 +66,7 @@ describe("UIConditional", () => {
 		let view = new MyView();
 
 		t.log("Rendering view");
-		app.render(view);
+		app.showPage(view);
 
 		// after rendering, there should be a cell but no label
 		t.log("Checking for cell but no label");

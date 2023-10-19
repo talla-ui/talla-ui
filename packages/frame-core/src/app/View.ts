@@ -25,7 +25,7 @@ export type ViewEvent<
  * @description
  * The view is one of the main architectural components of a Desk application. It provides a method to render its encapsulated content, either directly or using a collection of built-in UI components.
  *
- * Views can be rendered on their own (using {@link GlobalContext.render app.render()}) or included as content within another view. In most cases, a top-level view is rendered from the {@link Activity.ready()} method.
+ * Views can be rendered on their own (using {@link GlobalContext.render app.render()}, {@link GlobalContext.showPage app.showPage()}, or {@link GlobalContext.showDialog app.showDialog()}) or included as content within another view. In most cases, a top-level view is rendered from the {@link Activity.ready()} method.
  *
  * The View class can't be used on its own. Instead, define views using the following classes and methods:
  * - {@link UIComponent} subclasses and their static `.with()` methods, e.g. `UIButton.with()`, which create **preset** view constructors for built-in UI components.

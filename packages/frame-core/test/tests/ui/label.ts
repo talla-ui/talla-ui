@@ -100,7 +100,7 @@ describe("UILabel", (scope) => {
 			accessibleLabel: "My label",
 		});
 		let label = new MyLabel();
-		app.render(label);
+		app.showPage(label);
 		await t.expectOutputAsync(100, {
 			text: "foo",
 			accessibleLabel: "My label",
@@ -113,7 +113,7 @@ describe("UILabel", (scope) => {
 			UILabelStyle.override({ bold: true }),
 		);
 		let MyLabel2 = UILabel.withText("two", { bold: true });
-		app.render(new UICell(new MyLabel1(), new MyLabel2()));
+		app.showPage(new UICell(new MyLabel1(), new MyLabel2()));
 		let match = await t.expectOutputAsync(100, {
 			type: "label",
 			styles: { bold: true },
@@ -128,7 +128,7 @@ describe("UILabel", (scope) => {
 			labelStyle: { bold: true },
 		});
 		let label = new MyLabel();
-		app.render(label);
+		app.showPage(label);
 		await t.expectOutputAsync(100, {
 			text: "foo",
 			styles: { width: 100, bold: true },
@@ -138,7 +138,7 @@ describe("UILabel", (scope) => {
 	test("Rendered, hidden and shown", async (t) => {
 		let label = new UILabel("foo");
 		let view = new UICell(label);
-		app.render(view);
+		app.showPage(view);
 		await t.expectOutputAsync(100, { type: "label", text: "foo" });
 		label.hidden = true;
 		let out = await t.expectOutputAsync(100, {

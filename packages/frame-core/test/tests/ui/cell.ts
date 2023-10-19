@@ -63,7 +63,7 @@ describe("UICell", (scope) => {
 
 	test("Rendered as cell", async (t) => {
 		let cell = new UICell();
-		app.render(cell);
+		app.showPage(cell);
 		await t.expectOutputAsync(100, { type: "cell" });
 	});
 
@@ -73,7 +73,7 @@ describe("UICell", (scope) => {
 			UILabel.withText("foo"),
 			UILabel.withText("bar"),
 		);
-		app.render(new MyCell());
+		app.showPage(new MyCell());
 		let out = await t.expectOutputAsync(100, {
 			type: "cell",
 			styles: { gravity: "end" },
@@ -90,7 +90,7 @@ describe("UICell", (scope) => {
 			},
 			UILabel.withText("foo"),
 		);
-		app.render(new MyCell());
+		app.showPage(new MyCell());
 		await t.expectOutputAsync(100, {
 			type: "cell",
 			styles: {
@@ -104,7 +104,7 @@ describe("UICell", (scope) => {
 
 	test("Rendered, then update style", async (t) => {
 		let cell = new UICell();
-		app.render(cell);
+		app.showPage(cell);
 		await t.expectOutputAsync(100, { type: "cell" });
 		cell.borderRadius = 8;
 		cell.layout = { distribution: "start" };
@@ -118,7 +118,7 @@ describe("UICell", (scope) => {
 
 	test("Rendered, then update content", async (t) => {
 		let cell = new UICell(new UILabel("foo"), new UILabel("bar"));
-		app.render(cell);
+		app.showPage(cell);
 		await t.expectOutputAsync(100, { type: "cell" });
 		cell.content.add(new UILabel("baz"));
 		let out = await t.expectOutputAsync(100, { type: "cell" });
@@ -137,7 +137,7 @@ describe("UICell", (scope) => {
 		let cell2 = new UICell();
 
 		// render cell 1 with labels first
-		app.render(new UICell(cell1, cell2));
+		app.showPage(new UICell(cell1, cell2));
 		let out1 = await t.expectOutputAsync(
 			100,
 			{ source: cell1 },

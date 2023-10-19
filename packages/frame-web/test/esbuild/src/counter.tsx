@@ -14,7 +14,7 @@ const ViewBody = (
 export class CountActivity extends Activity {
 	ready() {
 		this.view = new ViewBody();
-		app.render(this.view);
+		app.showPage(this.view);
 	}
 
 	count = 0;
