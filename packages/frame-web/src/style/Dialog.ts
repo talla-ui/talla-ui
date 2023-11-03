@@ -28,7 +28,6 @@ export class DialogStyles {
 		dropShadow: 0.8,
 		width: "auto",
 		minWidth: 360,
-		maxWidth: "95vw",
 		grow: 0,
 	});
 
