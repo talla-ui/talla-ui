@@ -9,8 +9,10 @@ import {
 import { err, ERROR, errorHandler } from "../errors.js";
 import type { UIFormContext } from "../ui/index.js";
 import type { ActivationPath } from "./ActivationPath.js";
+import { app } from "./GlobalContext.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
+import type { Service } from "./Service.js";
 import type { View, ViewClass } from "./View.js";
 
 /** Global list of activity instances for (old) activity class, for HMR */
@@ -237,42 +239,6 @@ export class Activity extends ManagedObject {
 	}
 
 	/**
-	 * Creates a task queue that's started, paused, resumed, and stopped automatically based on the state of this activity
-	 * - Use this method to create an {@link AsyncTaskQueue} instance to run background tasks only while the activity is active, e.g. when the user is viewing a particular screen of the application.
-	 * @param config An {@link AsyncTaskQueue.Options} object or configuration function (optional)
-	 * @returns A new {@link AsyncTaskQueue} instance
-	 * @error This method throws an error if the activity has been unlinked.
-	 */
-	protected createActiveTaskQueue(
-		config?: ConfigOptions.Arg<AsyncTaskQueue.Options>,
-	) {
-		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
-
-		// create queue with given options, pause if activity is not active
-		let queue = new AsyncTaskQueue(
-			Symbol("ActiveTaskQueue"),
-			AsyncTaskQueue.Options.init(config),
-		);
-		if (!this._activation.active) queue.pause();
-
-		// observe activity to pause/resume/stop automatically
-		class ActivityQueueObserver extends Observer<Activity> {
-			onActive() {
-				queue.resume();
-			}
-			onInactive() {
-				queue.pause();
-			}
-			override stop(): void {
-				queue.stop();
-			}
-		}
-		new ActivityQueueObserver().observe(this);
-
-		return queue;
-	}
-
-	/**
 	 * Delegates events from the current view
 	 * - This method is called automatically when an event is emitted by the current view object.
 	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true`, undefined, or a promise (which is awaited just to be able to handle any errors).
@@ -337,6 +303,57 @@ export class Activity extends ManagedObject {
 			: [];
 	}
 
+	/**
+	 * Creates a task queue that's started, paused, resumed, and stopped automatically based on the state of this activity
+	 * - Use this method to create an {@link AsyncTaskQueue} instance to run background tasks only while the activity is active, e.g. when the user is viewing a particular screen of the application.
+	 * @param config An {@link AsyncTaskQueue.Options} object or configuration function (optional)
+	 * @returns A new {@link AsyncTaskQueue} instance
+	 * @error This method throws an error if the activity has been unlinked.
+	 */
+	protected createActiveTaskQueue(
+		config?: ConfigOptions.Arg<AsyncTaskQueue.Options>,
+	) {
+		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
+
+		// create queue with given options, pause if activity is not active
+		let queue = new AsyncTaskQueue(
+			Symbol("ActiveTaskQueue"),
+			AsyncTaskQueue.Options.init(config),
+		);
+		if (!this._activation.active) queue.pause();
+
+		// observe activity to pause/resume/stop automatically
+		class ActivityQueueObserver extends Observer<Activity> {
+			onActive() {
+				queue.resume();
+			}
+			onInactive() {
+				queue.pause();
+			}
+			override stop(): void {
+				queue.stop();
+			}
+		}
+		new ActivityQueueObserver().observe(this);
+
+		return queue;
+	}
+
+	/**
+	 * Observes a particular service by ID, until the activity is unlinked
+	 * @param id The ID of the service to be observed
+	 * @param observer An {@link Observer} class or instance, or a function that's called whenever a change event is emitted by the service (with service and event arguments, respectively), and when the current service is unlinked (without any arguments)
+	 * @returns The observer instance, which references the observed service using the {@link Observer.observed observed} property
+	 */
+	protected observeService<TService extends Service>(
+		id: string,
+		observer:
+			| Observer<TService>
+			| ManagedObject.AttachObserverFunction<TService> = new Observer(),
+	) {
+		return app.services._$observe(id, observer, this);
+	}
+
 	/** A method that's called on an active activity, to be overridden to create and render the view if needed */
 	protected ready() {}
 
@@ -361,7 +378,7 @@ export class Activity extends ManagedObject {
 	/** Set of instances, if hot reload has been enabled for this activity (set on prototype) */
 	private declare _hotInstances?: Set<Activity>;
 
-	/** Observer class for activities, to watch for path matches */
+	/** @internal Observer class for activities, to watch for path matches */
 	private static _ActivityObserver = class extends Observer<Activity> {
 		override observe(activity: Activity) {
 			return super.observe(activity).observePropertyAsync("activationPath");
