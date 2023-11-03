@@ -62,14 +62,14 @@ export class GlobalContext extends ManagedObject {
 	/**
 	 * The current activation context, an instance of {@link ActivationContext}
 	 * - This object (indirectly) contains all activity instances, as well as the current location path object.
-	 * @note To add an activity to the application, use the {@link GlobalContext.addActivity() app.addActivity()} method instead.
+	 * @note To add an activity to the application, use the {@link GlobalContext.addActivity app.addActivity()} method instead.
 	 */
 	readonly activities = new ActivationContext();
 
 	/**
 	 * The current service context, an instance of {@link ServiceContext}
 	 * - This object contains all current service instances, and provides methods to observe any changes.
-	 * @note To add a service to the application, use the {@link GlobalContext.addService() app.addService()} method instead.
+	 * @note To add a service to the application, use the {@link GlobalContext.addService app.addService()} method instead.
 	 */
 	readonly services = new ServiceContext();
 
