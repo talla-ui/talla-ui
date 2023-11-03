@@ -202,6 +202,19 @@ describe("TestContext", () => {
 			app.renderer.expectOutput({ type: "cell" }).toBeEmpty();
 		});
 
+		test("View is not rendered twice", async () => {
+			const view = new UICell(new UILabel("Test"));
+			let app = useTestContext((options) => {
+				options.renderFrequency = 5;
+			});
+			app.showPage(view);
+			let out1 = await app.renderer.expectOutputAsync(100, { type: "label" });
+			view.findViewContent(UILabel)[0]!.text = "Foo";
+			app.showPage(view);
+			let out2 = await app.renderer.expectOutputAsync(100, { type: "label" });
+			expect(out2.elements).toBeArray(out1.elements);
+		});
+
 		test("Cell view from root activity", async () => {
 			class MyActivity extends Activity {
 				protected override ready() {

@@ -21,6 +21,9 @@ import { ServiceContext } from "./ServiceContext.js";
 import type { View } from "./View.js";
 import type { ViewportContext } from "./ViewportContext.js";
 
+/** A map to keep track of views that have already been displayed with showPage and showDialog, and shouldn't be re-rendered */
+const shownViews = new WeakMap<View, boolean>();
+
 /**
  * A singleton class that represents the global application state
  *
@@ -249,20 +252,30 @@ export class GlobalContext extends ManagedObject {
 	/**
 	 * Displays a full-screen page with the specified content view
 	 * - The page will be displayed until the view is unlinked. Further rendered content will be placed on top, if any.
+	 * - The same view cannot be shown twice. A second call with the same view will be ignored.
 	 * @param view The view object to be displayed
 	 * @error This method throws an error if the renderer hasn't been initialized yet.
 	 */
 	showPage(view: View) {
+		if (shownViews.has(view)) return;
+		shownViews.set(view, true);
+
+		// render view directly, removes itself when unlinked
 		this.render(view, { mode: "page" });
 	}
 
 	/**
 	 * Displays a modal dialog with the specified content view
-	 * - The dialog will be displayed until the view is unlinked. View events are not handled, so add a listener separately if necessary.
+	 * - The dialog will be displayed until the view is unlinked. View events are not handled, so add a listener separately if the view is not already attached to an activity.
+	 * - The same view cannot be shown twice. A second call with the same view will be ignored.
 	 * @param view The view object to be displayed within a modal dialog
 	 * @error This method throws an error if the theme modal dialog controller can't be initialized (i.e. there's no current theme, or the theme doesn't support modal dialog views).
 	 */
 	showDialog(view: View) {
+		if (shownViews.has(view)) return;
+		shownViews.set(view, true);
+
+		// use theme modal dialog controller to render view
 		let controller = this.theme?.modalFactory?.buildDialog?.(view);
 		if (!controller) throw err(ERROR.GlobalContext_NoModal);
 		controller.show();
