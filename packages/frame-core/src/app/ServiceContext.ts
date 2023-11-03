@@ -7,9 +7,9 @@ import { Service } from "./Service.js";
  * A container of named services, part of the global application context
  *
  * @description
- * This class is a container for named services, which should be accessible by the rest of the application. Services can be set, unset, and replaced using the service context, and a {@link ServiceObserver} can be used to access the currently registered service with a particular ID.
+ * This class is a container for named services, which should be accessible by the rest of the application. Services can be set, unset, and replaced using the global service context.
  *
- * - Use the {@link add()} method to add or update a service by ID. The service must be an instance of {@link Service} with a valid `id` property. The service is automatically attached to the ServiceContext instance.
+ * - Use the {@link add()} method to add or update a service by ID. The service must be an instance of {@link Service} with a valid `id` property. The service is automatically attached to the ServiceContext instance. An alias of this method is available as {@link GlobalContext.addService app.addService()}.
  * - Use the {@link get()} method to retrieve a service by ID, if one is currently registered.
  * - Unlink a service to remove (unregister) it.
  * - Use the {@link Activity.observeService()} or {@link Service.observeService()} methods to observe a particular service by ID and handle change events.
@@ -84,7 +84,7 @@ export class ServiceContext extends ManagedObject {
 	});
 }
 
-/** Context observer used by a ServiceObserver */
+/** Context observer used by _$observe */
 class ServiceContextObserver<
 	TService extends Service,
 > extends Observer<ServiceContext> {
