@@ -383,6 +383,10 @@ export class Activity extends ManagedObject {
 		override observe(activity: Activity) {
 			return super.observe(activity).observePropertyAsync("activationPath");
 		}
+		protected override handleUnlink() {
+			this.observed?._hotInstances?.delete(this.observed);
+			super.handleUnlink();
+		}
 		async onActivationPathChange() {
 			let activity = this.observed;
 			if (
