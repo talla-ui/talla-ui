@@ -12,35 +12,35 @@ describe("Bindings", () => {
 	test("Constructor without params", () => {
 		expect(() => new Binding())
 			.not.toThrowError()
-			.toHaveProperty("isManagedBinding");
+			.toHaveProperty("isBinding");
 		expect(String(new Binding())).toBe("bound()");
 	});
 
 	test("Constructor with empty string", () => {
 		expect(() => new Binding(""))
 			.not.toThrowError()
-			.toHaveProperty("isManagedBinding");
+			.toHaveProperty("isBinding");
 	});
 
 	test("Global variants with empty string", () => {
 		expect(() => bound(""))
 			.not.toThrowError()
-			.toHaveProperty("isManagedBinding");
+			.toHaveProperty("isBinding");
 		expect(() => bound.number(""))
 			.not.toThrowError()
-			.toHaveProperty("isManagedBinding");
+			.toHaveProperty("isBinding");
 		expect(() => bound.string(""))
 			.not.toThrowError()
-			.toHaveProperty("isManagedBinding");
+			.toHaveProperty("isBinding");
 		expect(() => bound.boolean(""))
 			.not.toThrowError()
-			.toHaveProperty("isManagedBinding");
+			.toHaveProperty("isBinding");
 		expect(() => bound.not(""))
 			.not.toThrowError()
-			.toHaveProperty("isManagedBinding");
+			.toHaveProperty("isBinding");
 		expect(() => bound.list(""))
 			.not.toThrowError()
-			.toHaveProperty("isManagedBinding");
+			.toHaveProperty("isBinding");
 	});
 
 	test("Constructor with invalid argument", () => {
@@ -49,13 +49,13 @@ describe("Bindings", () => {
 
 	test("Constructor with path", () => {
 		let b = new Binding("x.y");
-		expect(b.isManagedBinding()).toBe(true);
+		expect(b.isBinding()).toBe(true);
 		expect(b).asString().toMatchRegExp(/x\.y/);
 	});
 
 	test("Constructor with path and filters", () => {
 		let b = new Binding("!x.y|!|!");
-		expect(b.isManagedBinding()).toBe(true);
+		expect(b.isBinding()).toBe(true);
 	});
 
 	describe("Basic bindings", () => {

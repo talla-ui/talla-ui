@@ -37,7 +37,7 @@ export class NavigationTarget {
 
 	/**
 	 * Adds parameters to the navigation target path
-	 * @return The object itself
+	 * @returns The object itself
 	 */
 	append(...params: StringConvertible[]) {
 		this._detail = [this._detail, ...params]

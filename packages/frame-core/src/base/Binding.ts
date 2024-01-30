@@ -14,13 +14,13 @@ import {
 const NO_VALUE = {};
 
 /** Method used for duck typing property */
-const _isManagedBinding = function (): true {
+const _isBinding = function (): true {
 	return true;
 };
 
 /** @internal Checks if the provided value is an instance of {@link Binding}; uses duck typing for performance */
 export function isBinding<T = any>(value: any): value is Binding<T> {
-	return !!(value && (value as Binding).isManagedBinding === _isManagedBinding);
+	return !!(value && (value as Binding).isBinding === _isBinding);
 }
 
 /**
@@ -106,9 +106,17 @@ export class Binding<T = any> {
 	 * @param source The source path that's used for obtaining the bound value
 	 * @param defaultValue An optional default value that's used when the bound value is undefined
 	 */
-	constructor(source?: string, defaultValue?: T) {
+	constructor(source?: string | Binding, defaultValue?: T) {
+		if (isBinding(source)) {
+			this._source = source._source;
+			this._apply = source._apply;
+			return;
+		}
+
 		if (source !== undefined && typeof source !== "string")
 			throw invalidArgErr("source");
+
+		// initialize new binding from source
 		this._source = "bound(" + (source || "") + ")";
 		let path: string[];
 
@@ -129,7 +137,9 @@ export class Binding<T = any> {
 			// If you find this comment, DO NOT USE this pattern :)
 			while (source[0] === "!") {
 				source = source.slice(1);
-				this.not();
+				let _apply = this._apply;
+				this._apply = (register, update) =>
+					_apply(register, (value, bound) => update(!value, bound));
 			}
 			path = source.split(".");
 		}
@@ -165,40 +175,43 @@ export class Binding<T = any> {
 	/**
 	 * Adds a filter, to convert the bound value to a string.
 	 * @param format A {@link strf} format placeholder (without `%` character) to format the value, e.g. `n`, `.2f`, `lc`
-	 * @returns The binding itself, typed as a string
+	 * @returns A new binding, typed as a string
 	 */
 	asString(format?: string): Binding<string> {
+		let result = this.clone();
 		let _apply = this._apply;
-		this._apply = (register, update) =>
+		result._apply = (register, update) =>
 			_apply(register, (value, bound) =>
 				update(
 					format ? LazyString.formatValue(format, value) : String(value ?? ""),
 					bound,
 				),
 			);
-		return this as any;
+		return result as any;
 	}
 
 	/**
 	 * Adds a filter, to convert the bound value to a number.
-	 * @returns The binding itself, typed as a number
+	 * @returns A new binding, typed as a number
 	 */
 	asNumber(): Binding<number> {
+		let result = this.clone();
 		let _apply = this._apply;
-		this._apply = (register, update) =>
+		result._apply = (register, update) =>
 			_apply(register, (value, bound) => update(+value, bound));
-		return this as any;
+		return result as any;
 	}
 
 	/**
 	 * Adds a filter, to make sure that the bound value is an iterable list
 	 * - This method allows arrays, Maps, ManagedList instances, and any other object that includes Symbol.iterator.
 	 * - Other values are changed to undefined.
-	 * @returns The binding itself, typed as an Iterable object
+	 * @returns A new binding, typed as an Iterable object
 	 */
 	asList<T = any>(): Binding<Iterable<T>> {
+		let result = this.clone();
 		let _apply = this._apply;
-		this._apply = (register, update) =>
+		result._apply = (register, update) =>
 			_apply(register, (value, bound) =>
 				update(
 					value && typeof value === "object" && Symbol.iterator in value
@@ -207,31 +220,33 @@ export class Binding<T = any> {
 					bound,
 				),
 			);
-		return this as any;
+		return result as any;
 	}
 
 	/**
 	 * Adds a filter, to convert the bound value to a boolean.
-	 * @returns The binding itself, typed as a boolean
+	 * @returns A new binding, typed as a boolean
 	 */
 	asBoolean(): Binding<boolean> {
+		let result = this.clone();
 		let _apply = this._apply;
-		this._apply = (register, update) =>
+		result._apply = (register, update) =>
 			_apply(register, (value, bound) => update(!!value, bound));
-		return this as any;
+		return result as any;
 	}
 
 	/**
 	 * Adds a filter, to convert the bound value to a boolean, and negate it.
-	 * @returns The binding itself, typed as a boolean
+	 * @returns A new binding, typed as a boolean
 	 */
 	not(): Binding<boolean> {
 		// TODO(code size): all of these methods could use a helper function to set
 		// this._apply and update source string; which would decrease code size
+		let result = this.clone();
 		let _apply = this._apply;
-		this._apply = (register, update) =>
+		result._apply = (register, update) =>
 			_apply(register, (value, bound) => update(!value, bound));
-		return this as any;
+		return result as any;
 	}
 
 	/**
@@ -245,7 +260,7 @@ export class Binding<T = any> {
 	 * - The {@link bound.strf()} function adds a slight overhead, since it creates an additional binding.
 	 *
 	 * @param format The format string, as if passed to {@link strf()}; may include one placeholder, for the bound value
-	 * @returns The binding itself, typed as a string
+	 * @returns A new binding, typed as a string
 	 *
 	 * @example
 	 * // A label with text that includes a bound number property
@@ -260,14 +275,15 @@ export class Binding<T = any> {
 	 * )
 	 */
 	strf(format: string): Binding<LazyString> {
+		let result = this.clone();
 		let _apply = this._apply;
 		let str = new LazyString(() => String(format)).translate();
-		this._apply = (register, update) =>
+		result._apply = (register, update) =>
 			_apply(register, (value, bound) =>
 				update(str.format(value).cache(), bound),
 			);
-		if (this._source) this._source += ".strf()";
-		return this as any;
+		if (this._source) result._source += ".strf()";
+		return result as any;
 	}
 
 	/**
@@ -275,7 +291,7 @@ export class Binding<T = any> {
 	 * - The provided type is passed directly to the I18n provider. Commonly used types include `date` (with an additional `long` or `short` argument), and `currency` (with an optional currency symbol argument).
 	 *
 	 * @param type Argument(s) passed to {@link I18nProvider.format()}
-	 * @returns The binding itself, typed as a string
+	 * @returns A new binding, typed as a string
 	 *
 	 * @example
 	 * // A label that shows a short last-modified date
@@ -284,13 +300,14 @@ export class Binding<T = any> {
 	 * )
 	 */
 	local(...type: string[]): Binding<string> {
+		let result = this.clone();
 		let _apply = this._apply;
-		this._apply = (register, update) =>
+		result._apply = (register, update) =>
 			_apply(register, (value, bound) =>
 				update(LazyString.local(value, ...type), bound),
 			);
-		if (this._source) this._source += ".local()";
-		return this as any;
+		if (this._source) result._source += ".local()";
+		return result as any;
 	}
 
 	/**
@@ -300,7 +317,7 @@ export class Binding<T = any> {
 	 *
 	 * @param trueValue The value to be used if the bound value is equal to true
 	 * @param falseValue The value to be used if the bound value is equal to false
-	 * @returns The binding itself, typed like both of the given values
+	 * @returns A new binding, typed like both of the given values
 	 *
 	 * @example
 	 * // A label that displays (localized) Yes or No
@@ -310,13 +327,14 @@ export class Binding<T = any> {
 	 * )
 	 */
 	select<U, V>(trueValue: U, falseValue?: V): Binding<U | V> {
+		let result = this.clone();
 		let _apply = this._apply;
-		this._apply = (register, update) =>
+		result._apply = (register, update) =>
 			_apply(register, (value, bound) =>
 				update(value ? trueValue : falseValue, bound),
 			);
-		if (this._source) this._source += ".select()";
-		return this as any;
+		if (this._source) result._source += ".select()";
+		return result as any;
 	}
 
 	/**
@@ -326,7 +344,7 @@ export class Binding<T = any> {
 	 * @note Alternatively, use the `defaultValue` argument to the {@link bound()} function to specify a default value that's used if the bound value is undefined.
 	 *
 	 * @param falseValue The value to be used if the bound value is equal to false
-	 * @returns The binding itself, typed like the given value
+	 * @returns A new binding, typed like the given value
 	 *
 	 * @example
 	 * // A label that displays a value OR (localized) "None"
@@ -335,13 +353,14 @@ export class Binding<T = any> {
 	 * )
 	 */
 	else<U>(falseValue: U): Binding<T | U> {
+		let result = this.clone();
 		let _apply = this._apply;
-		this._apply = (register, update) =>
+		result._apply = (register, update) =>
 			_apply(register, (value, bound) =>
 				update(value || (falseValue as any), bound),
 			);
-		if (this._source) this._source += ".else()";
-		return this as any;
+		if (this._source) result._source += ".else()";
+		return result as any;
 	}
 
 	/**
@@ -352,7 +371,7 @@ export class Binding<T = any> {
 	 * To do the opposite, and substitute with false if any of the provided values match, use the {@link Binding.not not()} method afterwards (see example).
 	 *
 	 * @param values A list of values to compare the bound value to
-	 * @returns The binding itself, typed as a boolean
+	 * @returns A new binding, typed as a boolean
 	 *
 	 * @example
 	 * // A cell that's rendered only if a string matches
@@ -371,16 +390,17 @@ export class Binding<T = any> {
 	 * )
 	 */
 	matches(...values: any[]): Binding<boolean> {
+		let result = this.clone();
 		let _apply = this._apply;
-		this._apply = (register, update) =>
+		result._apply = (register, update) =>
 			_apply(register, (value, bound) =>
 				update(
 					values.some((a) => a === value),
 					bound,
 				),
 			);
-		if (this._source) this._source += ".matches()";
-		return this as any;
+		if (this._source) result._source += ".matches()";
+		return result as any;
 	}
 
 	/**
@@ -391,7 +411,7 @@ export class Binding<T = any> {
 	 * To do the opposite, and substitute with false if the bindings match, use the {@link Binding.not not()} method afterwards.
 	 *
 	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bound()}
-	 * @returns The binding itself, typed as a boolean
+	 * @returns A new binding, typed as a boolean
 	 *
 	 * @example
 	 * // A cell that's rendered only if two bindings match
@@ -404,9 +424,9 @@ export class Binding<T = any> {
 	 */
 	equals(source: Binding | string): Binding<boolean> {
 		let binding = isBinding(source) ? source : new Binding(source);
-		this._addBool(binding, false, true);
-		if (this._source) this._source += ".equals(" + binding._source + ")";
-		return this as any;
+		let result = this._addBool(binding, false, true);
+		if (this._source) result._source += ".equals(" + binding._source + ")";
+		return result as any;
 	}
 
 	/**
@@ -415,7 +435,7 @@ export class Binding<T = any> {
 	 * @summary This method can be used to combine two bindings logically, using the `&&` operator. The resulting bound value is the value of the _other_ binding, if the current bound value is equal to true (according to the `==` operator). The result is the value of the current binding, if its value is equal to false.
 	 *
 	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bound()}
-	 * @returns The binding itself, typed as a union of both original types
+	 * @returns A new binding, typed as a union of both original types
 	 *
 	 * @example
 	 * // A simple boolean AND
@@ -427,9 +447,9 @@ export class Binding<T = any> {
 	 */
 	and<U = any>(source: Binding<U> | string): Binding<T | U> {
 		let binding = isBinding<U>(source) ? source : new Binding(source);
-		this._addBool(binding, true);
-		if (this._source) this._source += " and " + String(source);
-		return this as any;
+		let result = this._addBool(binding, true);
+		if (this._source) result._source += " and " + String(source);
+		return result as any;
 	}
 
 	/**
@@ -438,7 +458,7 @@ export class Binding<T = any> {
 	 * @summary This method can be used to combine two bindings logically, using the `||` operator. The resulting bound value is the value of the _other_ binding, if the current bound value is equal to false (according to the `==` operator). The result is the value of the current binding, if its value is equal to true.
 	 *
 	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bound()}
-	 * @returns The binding itself, typed as a union of both original types
+	 * @returns A new binding, typed as a union of both original types
 	 *
 	 * @example
 	 * // A simple boolean OR
@@ -450,14 +470,15 @@ export class Binding<T = any> {
 	 */
 	or<U = any>(source: Binding<U> | string): Binding<T | U> {
 		let binding = isBinding<U>(source) ? source : new Binding(source);
-		this._addBool(binding);
-		if (this._source) this._source += " or " + String(source);
-		return this as any;
+		let result = this._addBool(binding);
+		if (this._source) result._source += " or " + String(source);
+		return result as any;
 	}
 
 	/**
 	 * Adds a filter, to emit an event whenever the bound value changes.
 	 * - For every change, an event will be emitted on {@link Binding.debugEmitter}. Events include both a reference to the binding and its new value, see {@link Binding.DebugEvent}.
+	 * @returns The binding itself, with debug events enabled
 	 */
 	debug() {
 		let _apply = this._apply;
@@ -489,11 +510,20 @@ export class Binding<T = any> {
 		return this._source;
 	}
 
+	/**
+	 * Returns a copy of this object
+	 * - This method is used by other methods to return a new instance of the same type, before adding filters, e.g. {@link not()}.
+	 */
+	protected clone(): Binding<T> {
+		return new Binding(this);
+	}
+
 	/** A method that's used for duck typing, always returns true */
-	declare isManagedBinding: () => true; // set on prototype
+	declare isBinding: () => true; // set on prototype
 
 	/** @internal Apply this binding to a managed object using given callbacks; cascades down to child bindings (for boolean logic and string bindings) */
 	_apply: (
+		this: unknown,
 		register: (
 			path: readonly string[],
 			callback: (value: any, bound: boolean) => void,
@@ -504,8 +534,9 @@ export class Binding<T = any> {
 	/** Implementation for `.and()`, `.or()`, and `.equals()` */
 	private _addBool(binding: Binding, isAnd?: boolean, isEqual?: boolean) {
 		// update apply method to also apply other binding
+		let result = this.clone();
 		let _apply = this._apply;
-		this._apply = (register, update) => {
+		result._apply = (register, update) => {
 			let currentValue = NO_VALUE;
 
 			// keep track of status, only update when both values known
@@ -529,13 +560,14 @@ export class Binding<T = any> {
 				set(value1, (value2 = value), (flags &= 1), bound),
 			);
 		};
+		return result;
 	}
 
 	/** Binding source text */
 	private _source?: string;
 }
 
-Binding.prototype.isManagedBinding = _isManagedBinding;
+Binding.prototype.isBinding = _isBinding;
 
 /**
  * A class that represents a string-formatted binding with nested property bindings
@@ -581,6 +613,7 @@ export class StringFormatBinding<
 	constructor(format: S, ...args: Binding.StringFormatArgsFor<S>) {
 		super(undefined);
 		this._format = format;
+		if (!format) return;
 
 		// create bindings for string arguments
 		let bindings = args.map((a) =>
@@ -604,6 +637,13 @@ export class StringFormatBinding<
 	/** Returns a description of this binding, including its original format string. */
 	override toString() {
 		return "bound.strf(" + JSON.stringify(this._format) + ")";
+	}
+
+	protected override clone(): StringFormatBinding<S> {
+		let result = new StringFormatBinding("");
+		result._format = this._format;
+		result._apply = this._apply;
+		return result;
 	}
 
 	/** Set the _apply method to update the bound string value */
