@@ -1,5 +1,5 @@
 import {
-	ActivationPath,
+	NavigationPath,
 	app,
 	ManagedChangeEvent,
 	RenderContext,
@@ -13,7 +13,7 @@ import {
 import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 import { setTextOrHtmlContent } from "./UILabelRenderer.js";
 
-interface HrefActivationPath extends ActivationPath {
+interface HrefNavigationPath extends NavigationPath {
 	getPathHref(path?: string): string;
 }
 
@@ -70,11 +70,11 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 
 		// set href property if possible
 		if (button.navigateTo) {
-			let activationPath = app.activities.activationPath as
-				| HrefActivationPath
+			let navigationPath = app.activities.navigationPath as
+				| HrefNavigationPath
 				| undefined;
-			if (activationPath && typeof activationPath.getPathHref === "function") {
-				(elt as HTMLAnchorElement).href = activationPath.getPathHref(
+			if (navigationPath && typeof navigationPath.getPathHref === "function") {
+				(elt as HTMLAnchorElement).href = navigationPath.getPathHref(
 					String(button.getNavigationTarget()),
 				);
 			}

@@ -1,19 +1,19 @@
 import {
-	ActivationContext,
+	ActivityContext,
 	ConfigOptions,
 	GlobalContext,
 	app,
 } from "@desk-framework/frame-core";
 import { TestScope } from "../TestScope.js";
 import { TestTheme } from "../style/TestTheme.js";
-import { TestActivationPath } from "./TestActivationPath.js";
+import { TestNavigationPath } from "./TestNavigationPath.js";
 import { TestRenderer } from "../renderer/TestRenderer.js";
 import { TestViewportContext } from "./TestViewportContext.js";
 
-/** Type definition for the global {@link app} context with test-specific render and activation contexts, set by the {@link useTestContext} function */
+/** Type definition for the global {@link app} context with test-specific render and activity contexts, set by the {@link useTestContext} function */
 export type TestContext = GlobalContext & {
 	renderer: TestRenderer;
-	activities: ActivationContext & { activationPath: TestActivationPath };
+	activities: ActivityContext & { navigationPath: TestNavigationPath };
 };
 
 /**
@@ -76,8 +76,8 @@ export function useTestContext(config?: ConfigOptions.Arg<TestContextOptions>) {
 	// create no-op viewport context
 	app.viewport = new TestViewportContext();
 
-	// create test activation path and set initial path
-	app.activities.activationPath = new TestActivationPath(options);
+	// create test navigation path and set initial path
+	app.activities.navigationPath = new TestNavigationPath(options);
 
 	return app as TestContext;
 }

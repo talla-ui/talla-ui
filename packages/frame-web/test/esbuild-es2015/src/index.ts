@@ -7,7 +7,7 @@ import { MainActivity } from "./main/MainActivity";
 
 // Use an activity to navigate to the count activity from the base path
 class RootActivity extends Activity {
-	path = "/";
+	navigationPageId = "";
 	protected async afterActiveAsync() {
 		console.log("Redirecting...");
 		app.navigate("/main");

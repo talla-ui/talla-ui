@@ -487,6 +487,13 @@ describe("ManagedList", () => {
 			expect(list.some(() => false)).toBeFalsy();
 		});
 
+		test("filter", () => {
+			let [list] = makeLists();
+			for (let s of ["a", "b", "c", "d", "e"])
+				expect(list.filter((t) => t.name === s)).toBeArray(1);
+			expect(list.filter(() => false)).toBeArray(0);
+		});
+
 		test("every", () => {
 			let [list] = makeLists();
 			for (let s of ["a", "b", "c", "d", "e"])

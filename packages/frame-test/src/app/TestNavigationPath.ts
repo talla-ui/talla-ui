@@ -1,4 +1,4 @@
-import { ActivationPath } from "@desk-framework/frame-core";
+import { NavigationPath } from "@desk-framework/frame-core";
 import { TestContextOptions } from "./TestContext.js";
 
 /** Helper function to make an absolute path from multiple relative or absolute paths */
@@ -17,10 +17,10 @@ function absolute(...paths: string[]) {
 	return result.join("/");
 }
 
-/** A class that encapsulates an activation path, simulating browser-like behavior */
-export class TestActivationPath extends ActivationPath {
+/** A class that encapsulates a navigation path, simulating browser-like behavior */
+export class TestNavigationPath extends NavigationPath {
 	/**
-	 * Creates a new activation path context instance, used by `useTestContext()`
+	 * Creates a new navigation path instance, used by `useTestContext()`
 	 * @hideconstructor
 	 */
 	constructor(options: TestContextOptions) {
@@ -34,11 +34,11 @@ export class TestActivationPath extends ActivationPath {
 	 * - The provided path should be in relative URL format, **or** `:back` to go back.
 	 * - The path is set only after a delay (see {@link TestContextOptions.pathDelay}), simulating asynchronous browser behavior.
 	 * @param path The (relative) path to set
-	 * @param mode An optional navigation mode (an object that matches {@link ActivationPath.NavigationMode})
+	 * @param mode An optional navigation mode (an object that matches {@link NavigationPath.NavigationMode})
 	 */
 	override async navigateAsync(
 		path: string,
-		mode?: ActivationPath.NavigationMode,
+		mode?: NavigationPath.NavigationMode,
 	) {
 		// go back first, if needed
 		if (mode && mode.back) {

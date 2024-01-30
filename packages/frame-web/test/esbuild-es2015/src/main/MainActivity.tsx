@@ -9,7 +9,7 @@ import { CountActivity } from "../count/CountActivity";
 import body from "./body";
 
 export class MainActivity extends Activity {
-	path = "/main";
+	navigationPageId = "main";
 	countActivity = this.attach(new CountActivity());
 
 	protected async afterActiveAsync() {

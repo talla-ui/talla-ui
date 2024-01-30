@@ -26,7 +26,7 @@ export abstract class Service extends ManagedObject {
 	}
 
 	/** The unique ID for this service (instance) */
-	abstract id: string;
+	abstract readonly id: string;
 
 	/**
 	 * Observes another service by ID, until the current service is unlinked

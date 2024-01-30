@@ -1,13 +1,13 @@
 import {
-	ActivationContext,
+	ActivityContext,
 	app,
 	bound,
 	ConfigOptions,
 	GlobalContext,
 	UIComponent,
 } from "@desk-framework/frame-core";
-import { WebHashActivationPath } from "./path/WebHashActivationPath.js";
-import { WebHistoryActivationPath } from "./path/WebHistoryActivationPath.js";
+import { WebHashNavigationPath } from "./path/WebHashNavigationPath.js";
+import { WebHistoryNavigationPath } from "./path/WebHistoryNavigationPath.js";
 import { WebRenderer } from "./renderer/WebRenderer.js";
 import { WebViewportContext } from "./renderer/WebViewportContext.js";
 import { Dialog, DialogStyles } from "./style/Dialog.js";
@@ -16,12 +16,12 @@ import { ModalMenu, ModalMenuStyles } from "./style/ModalMenu.js";
 import { WebTheme } from "./style/WebTheme.js";
 
 /**
- * Type definition for the global {@link app} context with web-specific render and activation contexts, set by the {@link useWebContext} function
+ * Type definition for the global {@link app} context with web-specific render and activity contexts, set by the {@link useWebContext} function
  */
 export type WebContext = GlobalContext & {
 	theme: WebTheme;
-	activities: ActivationContext & {
-		activationPath: WebHashActivationPath | WebHistoryActivationPath;
+	activities: ActivityContext & {
+		navigationPath: WebHashNavigationPath | WebHistoryNavigationPath;
 	};
 };
 
@@ -131,11 +131,11 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 		Promise.resolve().then(() => renderer.remount());
 	});
 
-	// create activation path
+	// create navigation path
 	if (options.useHistoryAPI) {
-		app.activities.activationPath = new WebHistoryActivationPath(options);
+		app.activities.navigationPath = new WebHistoryNavigationPath(options);
 	} else {
-		app.activities.activationPath = new WebHashActivationPath(options);
+		app.activities.navigationPath = new WebHashNavigationPath(options);
 	}
 
 	// enable hot module reload for activities

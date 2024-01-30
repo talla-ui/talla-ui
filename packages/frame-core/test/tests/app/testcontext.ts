@@ -1,5 +1,5 @@
 import {
-	TestActivationPath,
+	TestNavigationPath,
 	TestRenderer,
 	describe,
 	expect,
@@ -26,10 +26,10 @@ describe("TestContext", () => {
 		t.breakOnFail();
 		let app = useTestContext();
 		expect(app.renderer).toBeInstanceOf(TestRenderer);
-		expect(app.activities.activationPath).toBeInstanceOf(TestActivationPath);
+		expect(app.activities.navigationPath).toBeInstanceOf(TestNavigationPath);
 	});
 
-	describe("Activation paths", () => {
+	describe("Navigation paths", () => {
 		test("Initial path: default", () => {
 			let app = useTestContext();
 			expect(app.getPath()).toBe("");
@@ -46,7 +46,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.path = "foo";
 			});
-			let path = app.activities.activationPath;
+			let path = app.activities.navigationPath;
 			await path.navigateAsync("bar");
 			expect(path.getHistory()).toBeArray(["foo", "foo/bar"]);
 		});
@@ -55,7 +55,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.path = "foo";
 			});
-			let path = app.activities.activationPath;
+			let path = app.activities.navigationPath;
 			await path.navigateAsync("bar");
 			await path.navigateAsync("baz", { replace: true });
 			expect(path.getHistory()).toBeArray(["foo", "foo/bar/baz"]);
@@ -65,7 +65,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.path = "foo";
 			});
-			let path = app.activities.activationPath;
+			let path = app.activities.navigationPath;
 			await path.navigateAsync("bar");
 			await path.navigateAsync("", { back: true });
 			expect(path.getHistory()).toBeArray(["foo"]);
@@ -88,7 +88,7 @@ describe("TestContext", () => {
 				options.path = "foo";
 				options.pathDelay = 0;
 			});
-			let path = app.activities.activationPath;
+			let path = app.activities.navigationPath;
 			await path.navigateAsync("bar");
 			app.goBack();
 			await t.expectPathAsync(100, "foo");
@@ -99,7 +99,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.path = "foo";
 			});
-			let path = app.activities.activationPath;
+			let path = app.activities.navigationPath;
 			await path.navigateAsync("bar");
 			await path.navigateAsync("baz", { back: true });
 			expect(path.getHistory()).toBeArray(["foo", "foo/baz"]);
@@ -109,7 +109,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.path = "foo";
 			});
-			let path = app.activities.activationPath;
+			let path = app.activities.navigationPath;
 			await expect(async () =>
 				path.navigateAsync("", { back: true }),
 			).toThrowErrorAsync();
@@ -117,7 +117,7 @@ describe("TestContext", () => {
 
 		test("Navigate to relative path", async () => {
 			let app = useTestContext();
-			let path = app.activities.activationPath;
+			let path = app.activities.navigationPath;
 			await path.navigateAsync("bar");
 			await path.navigateAsync("./baz");
 			expect(path.getHistory()).toBeArray(["", "bar", "bar/baz"]);

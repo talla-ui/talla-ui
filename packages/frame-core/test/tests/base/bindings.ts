@@ -188,6 +188,23 @@ describe("Bindings", () => {
 			expect(c.child).toHaveProperty("aa").toBe(1);
 		});
 
+		test("Single binding, unlink origin", (t) => {
+			let { TestObject } = setup();
+			let c = new TestObject();
+			let binding = bound.number("a");
+			binding.bindTo(c.child, (a) => {
+				t.log("Binding updated", a);
+				t.count("update");
+			});
+			c.a = 1;
+			c.a = 2;
+			t.expectCount("update").toBe(2);
+			c.child.unlink();
+			c.a = 3;
+			c.a = 4;
+			t.expectCount("update").toBe(2);
+		});
+
 		test("Single binding with 2-step path", () => {
 			let { TestObject, ChildObject } = setup();
 			let c = new TestObject();

@@ -16,7 +16,7 @@ applies_to:
 
 ## Overview {#overview}
 
-The Desk framework test package can be used to test interactive user interfaces even from the command line. The {@link useTestContext()} initialization function registers an in-memory renderer and simulated activation path context, allowing tests to validate the behavior of regular application code.
+The Desk framework test package can be used to test interactive user interfaces even from the command line. The {@link useTestContext()} initialization function registers an in-memory renderer and simulated navigation path, allowing tests to validate the behavior of regular application code.
 
 - {@ref useTestContext}
 
@@ -76,7 +76,7 @@ describe("Count activity", (scope) => {
 
 A fresh test app environment is created with each call to `useTestContext()`. This function clears the existing global context (using {@link GlobalContext.clear clear()}) and then initializes the following:
 
-- A simulated activation path context, instance of {@link TestActivationPath};
+- A simulated navigation path, instance of {@link TestNavigationPath};
 - An in-memory test renderer, instance of {@link TestRenderer};
 - A theme with some empty styles;
 - An empty viewport context.
@@ -104,7 +104,7 @@ The following methods of the {@link TestCase} class can be used to validate appl
 
 ## Matching activity paths {#matching-path}
 
-The test activation context included in the `test` library simulates user navigation using a history 'stack', similar to a browser.
+The test activity context included in the `test` library simulates user navigation using a history 'stack', similar to a browser.
 
 Programmatic navigation (e.g. using {@link GlobalContext.navigate app.navigate()}, or a button click) is handled automatically. Note that paths are set asynchronously — just like they would in a browser.
 
@@ -112,7 +112,7 @@ Use the {@link TestCase.expectPathAsync expectPathAsync()} method to wait for ch
 
 ```js
 describe("My app", () => {
-	test("Activation paths", async (t) => {
+	test("Navigation paths", async (t) => {
 		useTestContext((options) => {
 			options.path = "foo";
 		});
@@ -125,10 +125,10 @@ describe("My app", () => {
 });
 ```
 
-Furthermore, you can use the following methods to simulate user navigation — changing the URL in the address bar, or pressing the Back button. These methods also update the activation path immediately, rather than asynchronously, just like they would in a browser.
+Furthermore, you can use the following methods to simulate user navigation — changing the URL in the address bar, or pressing the Back button. These methods also update the navigation path immediately, rather than asynchronously, just like they would in a browser.
 
-- {@ref TestActivationPath.userNavigation}
-- {@ref TestActivationPath.userBack}
+- {@ref TestNavigationPath.userNavigation}
+- {@ref TestNavigationPath.userBack}
 
 ## Matching view elements {#matching-view}
 

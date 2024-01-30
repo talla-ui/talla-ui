@@ -232,7 +232,7 @@ describe("Activity", () => {
 		test("Add activity", () => {
 			let activity = new Activity();
 			app.addActivity(activity);
-			expect(app.activities.root.includes(activity)).toBeTruthy();
+			expect(app.activities.getAll().includes(activity)).toBeTruthy();
 		});
 
 		test("Global context is parent", () => {
@@ -261,69 +261,23 @@ describe("Activity", () => {
 		});
 
 		test("Navigate app to activity path", async (t) => {
-			class MyActivity extends Activity {
-				getPathMatch() {
-					return this.pathMatch;
-				}
-			}
-			let activity = new MyActivity();
-			activity.path = "foo";
+			let activity = new Activity();
+			activity.navigationPageId = "foo";
 			app.addActivity(activity);
-			expect(activity.activationPath).toBeDefined();
 			app.navigate(activity);
 			await t.sleep(10);
 			expect(app.getPath()).toBe("foo");
-			expect(activity.getPathMatch()).toHaveProperty("path").toBe("foo");
 			expect(activity.isActive()).toBeTruthy();
 		});
 
-		test("Navigate app to nested activity path", async (t) => {
-			class MyActivity extends Activity {
-				nested = this.attach(new ManagedList().restrict(MyActivity));
-			}
-			let parent = new MyActivity();
-			let activity = new MyActivity();
-			activity.path = "foo";
-			parent.nested.add(activity);
-			app.addActivity(parent);
-			app.navigate(activity);
+		test("Navigate app to activity path with detail", async (t) => {
+			let activity = new Activity();
+			activity.navigationPageId = "foo";
+			app.addActivity(activity);
+			app.navigate(activity.getNavigationTarget("bar"));
 			await t.sleep(10);
-			expect(parent.isActive()).toBeFalsy();
+			expect(app.getPath()).toBe("foo/bar");
 			expect(activity.isActive()).toBeTruthy();
-		});
-
-		test("Navigate app to nested activity nested path", async (t) => {
-			class MyActivity extends Activity {
-				nested = this.attach(new ManagedList().restrict(MyActivity));
-			}
-			let parent = new MyActivity();
-			parent.path = "foo/bar";
-			let activity = new MyActivity();
-			activity.path = "./baz";
-			parent.nested.add(activity);
-			app.addActivity(parent);
-			app.navigate(activity);
-			await t.sleep(10);
-			expect(activity.isActive()).toBeTruthy();
-		});
-
-		test("Navigate app to nested activity nested path with captures", async (t) => {
-			class MyActivity extends Activity {
-				nested = this.attach(new ManagedList().restrict(MyActivity));
-				getPathMatch() {
-					return this.pathMatch;
-				}
-			}
-			let parent = new MyActivity();
-			parent.path = "foo/bar";
-			let activity = new MyActivity();
-			activity.path = "./:xyz";
-			parent.nested.add(activity);
-			app.addActivity(parent);
-			app.navigate(activity.getNavigationTarget({ xyz: "123" }));
-			await t.sleep(10);
-			expect(activity.isActive()).toBeTruthy();
-			expect(activity.getPathMatch()).toHaveProperty("xyz").toBe("123");
 		});
 	});
 });

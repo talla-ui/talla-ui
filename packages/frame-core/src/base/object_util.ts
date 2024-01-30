@@ -273,7 +273,7 @@ export function unlinkObject(managedObject: ManagedObject) {
 		}
 	}
 
-	// remove bindings
+	// remove bindings list reference explicitly
 	_bindings.delete(managedObject);
 }
 
@@ -352,7 +352,8 @@ function detachObject(origin: ManagedObject, target: ManagedObject) {
 			let bindings = _bindings.get(target);
 			if (bindings) {
 				for (let w of bindings) {
-					if (w.t && w.i <= nestingLevel) {
+					if (w.t && w.i >= nestingLevel) {
+						// remove first trap, which clears others
 						if (w.t[0]) w.t[0].u();
 						else w.t = undefined;
 					}
@@ -487,6 +488,7 @@ export function watchBinding(
 	f: (value: any, bound: boolean) => void,
 ) {
 	if (!managedObject || !path.length) throw TypeError();
+	if (managedObject[$_unlinked]) return;
 	f = guard(f);
 	let bindRef: BindRef = {
 		f,
@@ -568,7 +570,7 @@ function watchFromOrigin(
 
 	// helper function to invoke the binding callback, if new value
 	function invoke(value: any, bound: boolean, force?: boolean) {
-		if (force || value !== lastInvokedWith) {
+		if (!managedObject[$_unlinked] && (force || value !== lastInvokedWith)) {
 			bindRef.f((lastInvokedWith = value), bound);
 		}
 	}

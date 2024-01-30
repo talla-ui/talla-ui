@@ -536,6 +536,17 @@ export class ManagedList<
 	}
 
 	/**
+	 * Returns an array of objects for which the provided callback function returns true
+	 * - If the list is unlinked, this method returns an empty array.
+	 * - The behavior of this method is undefined if the callback modifies the list.
+	 */
+	filter(callback: (target: T) => boolean | undefined) {
+		let result: T[] = [];
+		for (let t of this) callback(t) && result.push(t);
+		return result;
+	}
+
+	/**
 	 * Returns an array that contains all objects in the list
 	 * - If the list is unlinked, this method returns an empty array.
 	 * - If you only need to iterate over all values, use the {@link objects()} method instead.

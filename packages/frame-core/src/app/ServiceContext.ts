@@ -34,10 +34,7 @@ export class ServiceContext extends ManagedObject {
 	add(service: Service) {
 		// Note: we want this operation to be atomic so we use replace()
 		let id = service.id;
-		this._list.replace([
-			...this._list.toArray().filter((s) => s.id !== id),
-			service,
-		]);
+		this._list.replace([...this._list.filter((s) => s.id !== id), service]);
 		return this;
 	}
 

@@ -8,13 +8,13 @@ applies_to:
   - GlobalContext
   - GlobalContext.activities
   - GlobalContext.addActivity
-  - ActivationContext
+  - ActivityContext
   - Activity
   - ViewActivity
   - PageViewActivity
   - DialogViewActivity
-  - ActivationPath
-  - ActivationPath.Match
+  - NavigationPath
+  - NavigationPath.Match
   - Activity.path
   - Activity.pathMatch
   - NavigationTarget
@@ -230,12 +230,12 @@ class MyActivity extends PageViewActivity {
 - `customers/*path` — matches `customers/123/orders`, `customers/456/profile`, etc., with the `path` capture set to e.g. `123/orders`, or `456/profile`.
 - `customers/*path` does **not** match `customers` since `*` captures must match at least one character.
 
-Captures can be retrieved from the {@link Activity.pathMatch} property, which is set as soon as the activity path property matches the current path. Internally, this is handled using the {@link ActivationPath.match} method, which can also be used to match paths manually.
+Captures can be retrieved from the {@link Activity.pathMatch} property, which is set as soon as the activity path property matches the current path. Internally, this is handled using the {@link NavigationPath.match} method, which can also be used to match paths manually.
 
 - {@ref Activity.pathMatch}
-- {@ref ActivationPath.match}
+- {@ref NavigationPath.match}
 
-**Path match handlers** — Path match handlers are used to handle path matches that are more complex, or which require asynchronous logic. A handler can be added by overriding the {@link Activity.handlePathMatchAsync} method. The method is called with the {@link ActivationPath.Match} object (or undefined) as the first parameter, and should return a promise that resolves when the activity is activated or deactivated.
+**Path match handlers** — Path match handlers are used to handle path matches that are more complex, or which require asynchronous logic. A handler can be added by overriding the {@link Activity.handlePathMatchAsync} method. The method is called with the {@link NavigationPath.Match} object (or undefined) as the first parameter, and should return a promise that resolves when the activity is activated or deactivated.
 
 - {@ref Activity.handlePathMatchAsync}
 
@@ -254,7 +254,7 @@ class MyActivity extends PageViewActivity {
 		// ... load customer data, set this.customer and this.loading
 	}
 
-	protected async handlePathMatchAsync(match?: ActivationPath.Match) {
+	protected async handlePathMatchAsync(match?: NavigationPath.Match) {
 		if (match) {
 			if (match.id !== this.customer?.id) {
 				this.customer = undefined;
@@ -276,7 +276,7 @@ class ParentActivity extends Activity {
 
 	customerActivity?: CustomerActivity = undefined;
 
-	protected async handlePathMatchAsync(match?: ActivationPath.Match) {
+	protected async handlePathMatchAsync(match?: NavigationPath.Match) {
 		if (match) {
 			if (match.id !== this.customerActivity?.customerId) {
 				this.customerActivity?.unlink();

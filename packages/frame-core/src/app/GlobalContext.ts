@@ -7,8 +7,8 @@ import {
 } from "../base/index.js";
 import { ERROR, err, errorHandler, setErrorHandler } from "../errors.js";
 import { UITheme } from "../ui/UITheme.js";
-import { ActivationContext } from "./ActivationContext.js";
-import type { ActivationPath } from "./ActivationPath.js";
+import { ActivityContext } from "./ActivityContext.js";
+import type { NavigationPath } from "./NavigationPath.js";
 import { Activity } from "./Activity.js";
 import type { I18nProvider } from "./I18nProvider.js";
 import { LogWriter } from "./LogWriter.js";
@@ -60,11 +60,11 @@ export class GlobalContext extends ManagedObject {
 	}
 
 	/**
-	 * The current activation context, an instance of {@link ActivationContext}
+	 * The current activity context, an instance of {@link ActivityContext}
 	 * - This object (indirectly) contains all activity instances, as well as the current location path object.
 	 * @note To add an activity to the application, use the {@link GlobalContext.addActivity app.addActivity()} method instead.
 	 */
-	readonly activities = new ActivationContext();
+	readonly activities = new ActivityContext();
 
 	/**
 	 * The current service context, an instance of {@link ServiceContext}
@@ -154,13 +154,13 @@ export class GlobalContext extends ManagedObject {
 	 * Adds an activity to the global application context
 	 *
 	 * @summary
-	 * This method adds an {@link Activity} instance to the current {@link ActivationContext}, i.e. `app.activities`. This allows the activity to use the current path and renderer to activate and/or render its view automatically.
+	 * This method adds an {@link Activity} instance to the current {@link ActivityContext}, i.e. `app.activities`. This allows the activity to use the current path and renderer to activate and/or render its view automatically.
 	 *
 	 * @param activity The activity to be added
 	 * @param activate True if the activity should be activated immediately
 	 */
 	addActivity(activity: Activity, activate?: boolean) {
-		this.activities.root.add(activity);
+		this.activities.add(activity);
 		if (activate) activity.activateAsync().catch(errorHandler);
 		return this;
 	}
@@ -180,9 +180,9 @@ export class GlobalContext extends ManagedObject {
 
 	/**
 	 * Navigates to the specified path asynchronously
-	 * - The behavior of this method is platform dependent. It uses {@link ActivationPath.navigateAsync()} to navigate to the specified path, which in turn updates the path returned by {@link GlobalContext.getPath app.getPath()} — and may activate or deactivate activities.
+	 * - The behavior of this method is platform dependent. It uses {@link NavigationPath.navigateAsync()} to navigate to the specified path, which in turn updates the path returned by {@link GlobalContext.getPath app.getPath()} — and may activate or deactivate activities.
 	 * @param target The target location: a path in URL format, or a {@link NavigationTarget} instance
-	 * @param mode The navigation mode, refer to {@link ActivationPath.navigateAsync()}
+	 * @param mode The navigation mode, refer to {@link NavigationPath.navigateAsync()}
 	 *
 	 * @example
 	 * // In a web application, navigate to the /foo URL
@@ -193,13 +193,13 @@ export class GlobalContext extends ManagedObject {
 			| StringConvertible
 			| NavigationTarget
 			| { getNavigationTarget(): NavigationTarget },
-		mode?: ActivationPath.NavigationMode,
+		mode?: NavigationPath.NavigationMode,
 	) {
-		if (this.activities.activationPath) {
+		if (this.activities.navigationPath) {
 			if (typeof (target as any).getNavigationTarget === "function") {
 				target = (target as any).getNavigationTarget();
 			}
-			this.activities.activationPath
+			this.activities.navigationPath
 				.navigateAsync(String(target), mode)
 				.catch(errorHandler);
 		}
@@ -208,11 +208,11 @@ export class GlobalContext extends ManagedObject {
 
 	/**
 	 * Navigates back to the previous location in the location history stack
-	 * - The behavior of this method is platform dependent. It uses {@link ActivationPath.navigateAsync()} to navigate back, which in turn updates the path returned by {@link GlobalContext.getPath app.getPath()} — and may activate or deactivate activities.
+	 * - The behavior of this method is platform dependent. It uses {@link NavigationPath.navigateAsync()} to navigate back, which in turn updates the path returned by {@link GlobalContext.getPath app.getPath()} — and may activate or deactivate activities.
 	 */
 	goBack() {
-		if (this.activities.activationPath) {
-			this.activities.activationPath
+		if (this.activities.navigationPath) {
+			this.activities.navigationPath
 				.navigateAsync("", { back: true })
 				.catch(errorHandler);
 		}
@@ -223,11 +223,11 @@ export class GlobalContext extends ManagedObject {
 	 * Returns the current application location
 	 *
 	 * @summary
-	 * This method returns {@link ActivationPath.path} from the current {@link ActivationContext} instance. This property is used by activities to activate and deactivate automatically according to their {@link Activity.path} value, if any.
+	 * This method returns {@link NavigationPath.path} from the current {@link ActivityContext} instance. This property is used by activities to activate and deactivate automatically according to their {@link Activity.path} value, if any.
 	 * @note To set the application location (i.e. navigate to a different path), use the {@link GlobalContext.navigate app.navigate()} method.
 	 */
 	getPath() {
-		return this.activities.activationPath.path;
+		return this.activities.navigationPath.path;
 	}
 
 	/**

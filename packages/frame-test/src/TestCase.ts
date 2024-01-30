@@ -328,9 +328,9 @@ export class TestCase {
 	}
 
 	/**
-	 * Waits for the activation path to match the given string
+	 * Waits for the global navigation path to match the given string
 	 *
-	 * @summary This method starts checking the activation path periodically (using {@link GlobalContext.getPath()}), and waits for the path to match the provided string. If the path still doesn't match after the given timeout (number of milliseconds) this method throws an error.
+	 * @summary This method starts checking the navigation path periodically (using {@link GlobalContext.getPath()}), and waits for the path to match the provided string. If the path still doesn't match after the given timeout (number of milliseconds) this method throws an error.
 	 * @note This method is asynchronous and **must** be `await`-ed.
 	 * @param timeout Timeout, in milliseconds
 	 * @param path Path to wait for, must be an exact match

@@ -21,7 +21,7 @@ class CountActivity extends Activity {
 		))();
 		app.showPage(this.view);
 	}
-	override path = "count";
+	override navigationPageId = "count";
 	count = 0;
 	onCountUp() {
 		this.count++;

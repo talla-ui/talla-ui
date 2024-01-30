@@ -8,8 +8,8 @@ sort: -9
 applies_to:
   - WebContext
   - useWebContext
-  - WebHistoryActivationPath
-  - WebHashActivationPath
+  - WebHistoryNavigationPath
+  - WebHashNavigationPath
 ---
 
 <!-- TODO(stub) -->

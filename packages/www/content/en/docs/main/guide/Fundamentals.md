@@ -140,16 +140,16 @@ A running Desk application consists of different framework objects, mostly arran
 
 By enforcing strict ownership, the lifetime of event handlers and property bindings becomes linked to the state of the objects themselves — for example, when the user moves to another part of your application, views and/or activities are unlinked, and all references between objects are automatically removed.
 
-- The {@link app} singleton object owns an _activation context_ object, i.e. an instance of {@link ActivationContext} (attached).
-- The activation context contains a {@link ManagedList} that contains all of the current 'root' activities (i.e. instances of {@link Activity}, attached).
-- Activities can be attached to other activities, through properties or other lists. By attaching activities (indirectly) to the {@link app} object, they're able to find the activation context (for routing) and renderer (to render their views, if any).
+- The {@link app} singleton object owns an _activity context_ object, i.e. an instance of {@link ActivityContext} (attached).
+- The activity context contains a {@link ManagedList} that contains all of the current 'root' activities (i.e. instances of {@link Activity}, attached).
+- Activities can be attached to other activities, through properties or other lists. By attaching activities (indirectly) to the {@link app} object, they're able to find the activity context (for routing) and renderer (to render their views, if any).
 - Each {@link ViewActivity} object creates and unlinks its view automatically, from a static constructor, and then assigns the view instance to the {@link ViewActivity.view} property (attached).
 - Views have different ways of containing other views. For example, {@link UIContainer} instances contain other views through the {@link UIContainer.content} list (attached).
 
 Refer to the documentation for the following classes to learn more.
 
 - {@ref GlobalContext}
-- {@ref ActivationContext}
+- {@ref ActivityContext}
 - {@ref Activity}
 - {@ref ViewActivity}
 - {@ref View}

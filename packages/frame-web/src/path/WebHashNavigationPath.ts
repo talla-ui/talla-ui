@@ -1,23 +1,23 @@
-import { ActivationPath, app } from "@desk-framework/frame-core";
+import { NavigationPath, app } from "@desk-framework/frame-core";
 import { type WebContextOptions } from "../WebContext.js";
 
 /** Global flag for global (window) event listener, see constructor */
 let _eventListenerAdded = false;
 
 /**
- * A class that manages the application activation path using the DOM history API
- * - This class is used automatically when {@link WebContextOptions.useHistoryAPI} is set to true.
+ * A class that manages the application navigation path using the DOM location 'hash' value
+ * - This class is used automatically when {@link WebContextOptions.useHistoryAPI} is set to false.
  * @see {@link useWebContext()}
  * @hideconstructor
  */
-export class WebHistoryActivationPath extends ActivationPath {
+export class WebHashNavigationPath extends NavigationPath {
 	constructor(options: WebContextOptions) {
 		super();
-		this._basePath = options.basePath.replace(/^\//, "");
+		this._basePath = options.basePath.replace(/^[#\/]+/, "");
 		if (!_eventListenerAdded) {
-			window.addEventListener("popstate", () => {
-				let self = app.activities.activationPath;
-				if (self instanceof WebHistoryActivationPath) {
+			window.addEventListener("hashchange", () => {
+				let self = app.activities.navigationPath;
+				if (self instanceof WebHashNavigationPath) {
 					self.update();
 				}
 			});
@@ -52,17 +52,17 @@ export class WebHistoryActivationPath extends ActivationPath {
 				.replace(/\/[^\/]+\/\.\.\//g, "/")
 				.replace(/^\/?\.\.\//, "/");
 		}
-		return this._basePath + "/" + target.replace(/^\/+/, "");
+		return "#" + this._basePath + "/" + target.replace(/^\/+/, "");
 	}
 
 	/**
 	 * Navigates to the specified path
 	 * @param path The path to navigate to; should be formatted as a URL, or set to `:back` to invoke `history.back()`
-	 * @param mode The intended mode of navigation, see {@link ActivationPath.NavigationMode}
+	 * @param mode The intended mode of navigation, see {@link NavigationPath.NavigationMode}
 	 */
 	override async navigateAsync(
 		path: string,
-		mode?: ActivationPath.NavigationMode,
+		mode?: NavigationPath.NavigationMode,
 	): Promise<void> {
 		path = String(path);
 		if (mode && mode.back) {
@@ -84,23 +84,22 @@ export class WebHistoryActivationPath extends ActivationPath {
 			) {
 				// replace path if possible
 				window.history.replaceState({}, document.title, this.getPathHref(path));
-				this.update();
+				this.update(); // above doesn't trigger hash change
 			} else {
 				// just navigate to given path (as hash)
-				window.history.pushState({}, document.title, this.getPathHref(path));
-				this.update();
+				window.location.hash = this.getPathHref(path);
 			}
 		}
 	}
 
 	/**
-	 * Updates the activation path from the current window location
+	 * Updates the navigation path from the current location hash value
 	 * - This method is called automatically. It shouldn't be necessary to call this method manually in an application.
 	 */
 	update() {
-		let path = String(window.location.pathname || "").replace(/^\//, "");
+		let path = String(window.location.hash || "").replace(/^[#\/]+/, "");
 		if (path.startsWith(this._basePath)) {
-			path = path.slice(this._basePath.length).replace(/^\//, "");
+			path = path.slice(this._basePath.length).replace(/^[#\/]+/, "");
 		}
 		this.path = path;
 	}

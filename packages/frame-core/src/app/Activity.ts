@@ -8,7 +8,7 @@ import {
 } from "../base/index.js";
 import { err, ERROR, errorHandler } from "../errors.js";
 import type { UIFormContext } from "../ui/index.js";
-import type { ActivationPath } from "./ActivationPath.js";
+import type { NavigationPath } from "./NavigationPath.js";
 import { app } from "./GlobalContext.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
@@ -17,9 +17,6 @@ import type { View, ViewClass } from "./View.js";
 
 /** Global list of activity instances for (old) activity class, for HMR */
 const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
-
-/** Reused binding for global activation path reference */
-const _boundActivationPath = bound("activationPath");
 
 /** Reused binding for global theme reference */
 const _boundTheme = bound("theme");
@@ -30,7 +27,7 @@ const _boundTheme = bound("theme");
  * @description
  * The activity is one of the main architectural components of a Desk application. It represents a potential 'place' in the application, which can be activated and deactivated when the user navigates around.
  *
- * This class provides infrastructure for path-based routing, based on the application's location, such as the browser URL. However, activities can also be activated and deactivated manually, or activated immediately when added using {@link GlobalContext.addActivity app.addActivity()}.
+ * This class provides infrastructure for path-based routing, based on the application's navigation path (such as the browser's current URL). However, activities can also be activated and deactivated manually, or activated immediately when added using {@link GlobalContext.addActivity app.addActivity()}.
  *
  * Activities emit `Active` and `Inactive` change events when state transitions occur.
  *
@@ -39,7 +36,7 @@ const _boundTheme = bound("theme");
  * @example
  * // Create an activity and activate it:
  * class MyActivity extends Activity {
- *   path = "foo";
+ *   navigationPathId = "foo";
  *   protected ready() {
  *     this.view = new body(); // imported from a view file
  *     app.showPage(this.view);
@@ -47,7 +44,7 @@ const _boundTheme = bound("theme");
  * }
  *
  * app.addActivity(new MyActivity());
- * app.navigate("/foo");
+ * app.navigate("foo");
  */
 export class Activity extends ManagedObject {
 	/** @internal Update prototype for given class with newer prototype, and rebuild view */
@@ -79,14 +76,15 @@ export class Activity extends ManagedObject {
 
 	/**
 	 * Creates a new activity instance
-	 * @note For automatic activation based on {@link Activity.path} to work, the activity must be (indirectly) attached to {@link GlobalContext.activities}. Use the {@link GlobalContext.addActivity()} method to add newly created activities to the global application context.
+	 * @note For automatic activation based on {@link Activity.navigationPageId} to work, the activity must be added to the {@link ActivityContext} using the {@link GlobalContext.addActivity app.addActivity()} method.
 	 */
 	constructor() {
 		super();
-		_boundActivationPath.bindTo(this, "activationPath");
 		_boundTheme.bindTo(this, () =>
 			// re-render view when theme changes, async
-			Promise.resolve().then(() => this.isActive() && this.ready()),
+			Promise.resolve()
+				.then(() => this.isActive() && this.ready())
+				.catch(errorHandler),
 		);
 
 		// auto-attach view and delegate events
@@ -101,9 +99,6 @@ export class Activity extends ManagedObject {
 			}
 		}
 		this.autoAttach("view", new ViewObserver(this));
-
-		// create observer to match path and activate/deactivate
-		new Activity._ActivityObserver().observe(this);
 	}
 
 	/**
@@ -114,48 +109,23 @@ export class Activity extends ManagedObject {
 	title?: StringConvertible;
 
 	/**
-	 * A (bound) reference to the current activation path
-	 * - This property is bound automatically, so that it reflects the path from the global application context when the activity is added using {@link GlobalContext.addActivity()}. Afterwards, changes to the path are observed, and the activity will be activated and deactivated based on the {@link Activity.path} property.
+	 * The page ID associated with this activity, to match the (first part of the) navigation path
+	 * - If this property is set to a string, the activity will be activated automatically when the first part of the current path matches this value, and deactivated when it doesn't.
+	 * - The activity must be added to the activity context using {@link GlobalContext.addActivity app.addActivity()}, or attached to an existing activity, for the navigation path to be matched.
+	 * - To match the root path (`/`), set this property to an empty string
 	 */
-	readonly activationPath?: ActivationPath;
+	navigationPageId?: string = undefined;
 
 	/**
-	 * The path associated with this activity
-	 * - If this property is set to a string, the activity will be activated automatically when the specified path matches the current location, and deactivated when it doesn't.
-	 * - The activity must be added to the global application context using {@link GlobalContext.addActivity()}, or attached to an existing activity, for the path to be matched.
-	 * - To match the root path (`/`), set this property to an empty string; to match _all_ paths, set this property to `/`. Refer to {@link ActivationPath.match()} for details.
-	 * - Use `./` at the start of the path to make it a 'sub path': the path of the closest containing (attached) activity that also defines a path will be prepended when navigating to this activity, and when checking the activity path.
-	 * - Include capture placeholders such as `:foo` or `*foo` to match path segments. The matched values for captures are available on the {@link Activity.pathMatch} object.
-	 */
-	path?: string = undefined;
-
-	/**
-	 * An object that contains data related to the matched path, if any
-	 * @see {@link Activity.path}
-	 */
-	protected pathMatch?: ActivationPath.Match = undefined;
-
-	/**
-	 * The view to be rendered, if any
-	 * - The view is rendered automatically when this property is set. However, there's no need to set this property manually: a view instance is created automatically when the activity becomes active.
+	 * The current view, if any (attached automatically)
+	 * - This property should be set to a view object in the {@link Activity.ready} method, and displayed using the available {@link app} methods.
+	 * - The view is automatically unlinked when the activity is deactivated or unlinked.
+	 * - Events emitted by the view are automatically delegated to the activity, see {@link delegateViewEvent()}.
 	 */
 	declare view?: View;
 
 	/** Default form context used with input elements, if any */
 	formContext?: UIFormContext = undefined;
-
-	/**
-	 * Returns a {@link NavigationTarget} instance that refers to this activity
-	 * - The {@link Activity.path} for this activity as well as any containing (attached) activities are used to determine the target path.
-	 * @param capture An object containing string values for all named captures in {@link Activity.path}, if any
-	 * @param rest The string value for the final 'rest' capture in {@link Activity.path}
-	 */
-	getNavigationTarget(
-		capture?: { [captureId: string]: string },
-		rest?: string,
-	) {
-		return new NavigationTarget(this).setCapture(capture, rest);
-	}
 
 	/** Returns true if this activity is currently active */
 	isActive() {
@@ -173,8 +143,17 @@ export class Activity extends ManagedObject {
 	}
 
 	/**
+	 * A method that's called immediately before unlinking this activity.
+	 * - If overridden, the base implementation must be called as well to ensure that all resources are released, if any.
+	 */
+	protected override beforeUnlink() {
+		this._hotInstances?.delete(this);
+	}
+
+	/**
 	 * Activates the activity asynchronously
 	 * - If the activity is currently transitioning between active and inactive states, the transition will be allowed to finish before the activity is activated.
+	 * - After activation, the activity's {@link ready()} method is called automatically.
 	 * @error This method throws an error if the activity has been unlinked.
 	 */
 	async activateAsync() {
@@ -200,19 +179,18 @@ export class Activity extends ManagedObject {
 	/**
 	 * Deactivates the activity asynchronously
 	 * - If the activity is currently transitioning between active and inactive states, the transition will be allowed to finish before the activity is deactivated.
+	 * - Before deactivation, the activity's {@link view} property is set to undefined, unlinking the current view object, if any.
 	 * @error This method throws an error if the activity has been unlinked.
 	 */
 	async deactivateAsync() {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
-
-		// remove view first, if any
-		this.view = undefined;
 
 		// set inactive asynchronously and run beforeInactiveAsync
 		await this._activation.waitAndSetAsync(
 			false,
 			() => {
 				if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
+				this.view = undefined;
 				return this.beforeInactiveAsync();
 			},
 			() => {
@@ -223,19 +201,27 @@ export class Activity extends ManagedObject {
 	}
 
 	/**
-	 * Activates or deactivates the activity based on a change to {@link Activity.pathMatch}, can be overridden
-	 * - This method is called automatically after updating the {@link Activity.pathMatch} property. It can be overridden to implement additional checks before automatic activation or deactivation.
-	 * @param match Data related to the matched path, if any
-	 * @returns A promise that's resolved when the activity is activated or deactivated, if necessary
+	 * Returns a {@link NavigationTarget} instance that refers to this activity
+	 * - The {@link navigationPageId} for this activity is used to determine the target path, and the provided parameters are appended to it.
+	 * @param params An list of one or more values to be concatenated to the target path
 	 */
-	protected async handlePathMatchAsync(match?: ActivationPath.Match) {
-		if (this.isUnlinked()) return;
-		let isUp =
-			(this._activation.active || this._activation.activating) &&
-			!this._activation.deactivating;
-		if (!match && isUp) return this.deactivateAsync();
-		if (match && !isUp) return this.activateAsync();
-		if (match && isUp) this.ready();
+	getNavigationTarget(...params: StringConvertible[]) {
+		return new NavigationTarget(this).append(...params);
+	}
+
+	/**
+	 * A method that's called after the user navigated to a particular sub-path of this activity, to be overridden if needed
+	 * - This method is called automatically after the activity is activated (or was already active), if the current navigation path matches the activity's {@link navigationPageId}.
+	 * - If the navigation path matches the activity's {@link navigationPageId} exactly, this method is called with an empty string as the `detail` argument.
+	 * - This method can be used to show specific content within the activity's view, e.g. a tab or detail view, or to activate a child activity.
+	 * @param detail The part of the navigation path that comes after the page ID
+	 * @param navigationPath The current navigation path instance
+	 */
+	async handleNavigationDetailAsync(
+		detail: string,
+		navigationPath: NavigationPath,
+	): Promise<void> {
+		// nothing here, to be overridden
 	}
 
 	/**
@@ -262,30 +248,26 @@ export class Activity extends ManagedObject {
 	}
 
 	/**
-	 * Handles the `Navigate` event
-	 * - This method is called automatically when a view object emits the `Navigate` event. Such events are emitted from views that include a `getNavigationTarget` method, such as {@link UIButton}.
-	 * - This method calls {@link handleNavigateAsync} in turn, which may be overridden.
+	 * Handles navigation to a provided navigation target or path, from the current activity
+	 * - This method is called automatically by {@link onNavigate} when a view object emits the `Navigate` event while this activity is active.
+	 * - The default implementation directly calls {@link NavigationPath.navigateAsync()}. Override this method to handle navigation differently, e.g. to _replace_ the current path for detail view activities.
+	 */
+	protected async navigateAsync(target: string | NavigationTarget) {
+		await app.activities.navigationPath.navigateAsync(target);
+	}
+
+	/**
+	 * Handles a `Navigate` event emitted by the current view
+	 * - This method is called when a view object emits the `Navigate` event. Such events are emitted from views that include a `getNavigationTarget` method, such as {@link UIButton}.
+	 * - This method calls {@link handleViewNavigateAsync} in turn, which may be overridden.
 	 */
 	protected onNavigate(
 		e: ManagedEvent<
 			ManagedObject & { getNavigationTarget?: () => NavigationTarget }
 		>,
 	) {
-		if (
-			this.activationPath &&
-			typeof e.source.getNavigationTarget === "function"
-		) {
-			return this.handleNavigateAsync(e.source.getNavigationTarget());
-		}
-	}
-
-	/**
-	 * Handles navigation to a provided navigation target
-	 * - This method is called automatically by {@link onNavigate} when a view object emits the `Navigate` event. It may be overridden to handle navigation differently, e.g. for master-detail view activities.
-	 */
-	protected async handleNavigateAsync(target: NavigationTarget) {
-		if (this.activationPath) {
-			await this.activationPath.navigateAsync(String(target));
+		if (typeof e.source.getNavigationTarget === "function") {
+			return this.navigateAsync(e.source.getNavigationTarget());
 		}
 	}
 
@@ -377,44 +359,6 @@ export class Activity extends ManagedObject {
 
 	/** Set of instances, if hot reload has been enabled for this activity (set on prototype) */
 	private declare _hotInstances?: Set<Activity>;
-
-	/** @internal Observer class for activities, to watch for path matches */
-	private static _ActivityObserver = class extends Observer<Activity> {
-		override observe(activity: Activity) {
-			return super.observe(activity).observePropertyAsync("activationPath");
-		}
-		protected override handleUnlink() {
-			this.observed?._hotInstances?.delete(this.observed);
-			super.handleUnlink();
-		}
-		async onActivationPathChange() {
-			let activity = this.observed;
-			if (
-				activity &&
-				typeof activity.path === "string" &&
-				!activity.isUnlinked()
-			) {
-				let activationPath = activity.activationPath;
-				try {
-					// set pathMatch and call handler
-					let match = activationPath?.match(activity.path, activity);
-					if (activity.pathMatch !== match) {
-						activity.pathMatch = match;
-						await activity.handlePathMatchAsync(match);
-					}
-				} catch (err) {
-					// path change might be cancelled for good reasons,
-					// don't leak unhandled error unnecessarily
-					if (
-						!activity.isUnlinked() &&
-						activity.activationPath === activationPath
-					) {
-						throw err;
-					}
-				}
-			}
-		}
-	};
 }
 
 /** Helper class that contains activation state, and runs callbacks on activation/deactivation asynchronously */
