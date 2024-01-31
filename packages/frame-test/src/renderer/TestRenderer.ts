@@ -15,6 +15,38 @@ import { makeObserver } from "./observers.js";
 /** Max run time for scheduled render functions */
 const MAX_SCHED_RUNTIME = 30;
 
+export class RenderedTestMessageDialog {
+	constructor(dialogOutput: OutputAssertion) {
+		this.labels.push(...dialogOutput.containing({ type: "label" }).elements);
+		this.buttons.push(...dialogOutput.containing({ type: "button" }).elements);
+	}
+
+	labels: TestOutputElement[] = [];
+	buttons: TestOutputElement[] = [];
+
+	async clickAsync(button: string) {
+		for (let b of this.buttons) {
+			if (b.text === button) return this._click(b);
+		}
+		this._click();
+	}
+
+	async confirmAsync() {
+		return this._click(this.buttons[0]);
+	}
+
+	async cancelAsync() {
+		let button = this.buttons[this.buttons.length - 1];
+		return this._click(button);
+	}
+
+	private async _click(button?: TestOutputElement) {
+		if (!button) throw Error("Message dialog button not found");
+		button?.click();
+		return Promise.resolve().then(() => Promise.resolve());
+	}
+}
+
 /**
  * A class that represents an in-memory application render context
  * - This class behaves mostly like a 'real' renderer, but only keeps rendered elements in memory. The elements can be queried and validated using e.g. {@link TestCase.expectOutputAsync()}.
@@ -188,6 +220,20 @@ export class TestRenderer extends RenderContext {
 			};
 			poll();
 		});
+	}
+
+	async expectMessageDialogAsync(
+		timeout: number,
+		...match: Array<string | RegExp>
+	) {
+		let dialogOut = await this.expectOutputAsync(timeout, {
+			accessibleRole: "alertdialog",
+		});
+		dialogOut.getSingle();
+		for (let m of match) {
+			dialogOut.containing({ type: "label", text: m }).toBeRendered();
+		}
+		return new RenderedTestMessageDialog(dialogOut);
 	}
 
 	/** Returns an object representation of (selected) output */

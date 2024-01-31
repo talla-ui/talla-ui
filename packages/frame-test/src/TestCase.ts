@@ -391,6 +391,24 @@ export class TestCase {
 		return new OutputAssertion([]);
 	}
 
+	async expectMessageDialogAsync(
+		timeout: number,
+		...match: Array<string | RegExp>
+	) {
+		if (!(app.renderer instanceof TestRenderer)) {
+			throw Error("Test renderer not found, run `useTestContext()` first");
+		}
+		this._awaiting++;
+		try {
+			return await (app.renderer as TestRenderer).expectMessageDialogAsync(
+				timeout,
+				...match,
+			);
+		} finally {
+			this._awaiting--;
+		}
+	}
+
 	/** Runs this test case (used by {@link TestScope}) */
 	runTestAsync(timeout = DEFAULT_TIMEOUT) {
 		if (this._startT) throw Error("Test has already run");
