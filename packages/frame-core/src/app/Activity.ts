@@ -259,7 +259,7 @@ export class Activity extends ManagedObject {
 	/**
 	 * Handles a `Navigate` event emitted by the current view
 	 * - This method is called when a view object emits the `Navigate` event. Such events are emitted from views that include a `getNavigationTarget` method, such as {@link UIButton}.
-	 * - This method calls {@link handleViewNavigateAsync} in turn, which may be overridden.
+	 * - This method calls {@link navigateAsync()} in turn, which may be overridden.
 	 */
 	protected onNavigate(
 		e: ManagedEvent<

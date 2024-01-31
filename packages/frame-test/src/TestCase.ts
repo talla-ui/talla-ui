@@ -2,7 +2,10 @@ import { app } from "@desk-framework/frame-core";
 import { Assertion } from "./Assertion.js";
 import { TestScope } from "./TestScope.js";
 import { OutputAssertion, OutputSelectFilter } from "./app/OutputAssertion.js";
-import { TestRenderer } from "./renderer/TestRenderer.js";
+import {
+	RenderedTestMessageDialog,
+	TestRenderer,
+} from "./renderer/TestRenderer.js";
 import { val2str } from "./log.js";
 
 const DEFAULT_TIMEOUT = 10000;
@@ -391,10 +394,31 @@ export class TestCase {
 		return new OutputAssertion([]);
 	}
 
+	/**
+	 * Waits for an alert or confirm dialog to be rendered (by the test renderer)
+	 * - This method uses {@link TestRenderer.expectMessageDialogAsync()}, refer to its documentation for details.
+	 * - This method is asynchronous and **must** be `await`-ed.
+	 * @param timeout Timeout, in milliseconds
+	 * @param match A list of strings or regular expressions to match the dialog message
+	 * @returns A promise that's resolved to a {@link RenderedTestMessageDialog} instance for checking content or pressing buttons, or rejected when a timeout occurs.
+	 *
+	 * @example
+	 * describe("My scope", () => {
+	 *   test("Cancel confirm dialog", async (t) => {
+	 *     // ...
+	 *     let p = app.showConfirmDialog("Are you sure?");
+	 *     await (
+	 *       await t.expectMessageDialogAsync(100, /sure/)
+	 *     ).cancelAsync();
+	 *     let result = await p;
+	 *     expect(result).toBe(false);
+	 *   });
+	 * });
+	 */
 	async expectMessageDialogAsync(
 		timeout: number,
 		...match: Array<string | RegExp>
-	) {
+	): Promise<RenderedTestMessageDialog> {
 		if (!(app.renderer instanceof TestRenderer)) {
 			throw Error("Test renderer not found, run `useTestContext()` first");
 		}

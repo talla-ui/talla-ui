@@ -15,15 +15,25 @@ import { makeObserver } from "./observers.js";
 /** Max run time for scheduled render functions */
 const MAX_SCHED_RUNTIME = 30;
 
+/**
+ * A class that represents a rendered message dialog (for testing)
+ * - This class can be used to validate the contents of a message dialog, and to click its buttons (asynchronously).
+ * - To wait for a message dialog to be rendered, use the {@link TestCase.expectMessageDialogAsync()} method and use the returned object.
+ * @hideconstructor
+ */
 export class RenderedTestMessageDialog {
 	constructor(dialogOutput: OutputAssertion) {
 		this.labels.push(...dialogOutput.containing({ type: "label" }).elements);
 		this.buttons.push(...dialogOutput.containing({ type: "button" }).elements);
 	}
 
+	/** The rendered label output elements */
 	labels: TestOutputElement[] = [];
+
+	/** The rendered button output elements */
 	buttons: TestOutputElement[] = [];
 
+	/** Clicks the specified button (matched using the button label) */
 	async clickAsync(button: string) {
 		for (let b of this.buttons) {
 			if (b.text === button) return this._click(b);
@@ -31,15 +41,18 @@ export class RenderedTestMessageDialog {
 		this._click();
 	}
 
+	/** Clicks the first button of the dialog (confirm or dismiss button) */
 	async confirmAsync() {
 		return this._click(this.buttons[0]);
 	}
 
+	/** Clicks the last button of the dialog (cancel or dismiss button) */
 	async cancelAsync() {
 		let button = this.buttons[this.buttons.length - 1];
 		return this._click(button);
 	}
 
+	/** Clicks a button and idles while promises are resolved */
 	private async _click(button?: TestOutputElement) {
 		if (!button) throw Error("Message dialog button not found");
 		button?.click();
@@ -222,6 +235,36 @@ export class TestRenderer extends RenderContext {
 		});
 	}
 
+	/**
+	 * Waits for an alert or confirmation dialog to be rendered, that contains the provided label(s)
+	 * - To avoid casting {@link app} to get to the {@link TestRenderer} instance, use the {@link TestCase.expectMessageDialogAsync()} method instead.
+	 * @note This method is asynchronous, and **must** be `await`-ed in a test function.
+	 *
+	 * @summary
+	 * This method regularly polls all rendered output, and attempts to find a message dialog. As soon as one is found, the resulting promise is resolved to an instance of {@link RenderedTestMessageDialog}.
+	 * 
+	 * The returned object can be used to validate dialog contents, and to click its buttons (asynchronously).
+
+	 * If the specified timeout is reached, the promise is rejected.
+	 *
+	 * @param timeout The number of milliseconds to wait for matching output to be rendered
+	 * @param match A list of strings or regular expressions to validate matching label(s) on the message dialog.
+	 * @returns A promise for an {@link RenderedTestMessageDialog} instance. The promise is rejected if a timeout occurs.
+	 *
+	 * @example
+	 * describe("My scope", () => {
+	 *   test("Cancel a confirmation dialog", async (t) => {
+	 *     let app = useTestContext();
+	 *     // ... 
+	 *     let p = app.showConfirmDialog("Are you sure?");
+	 *     await (
+	 *       await app.renderer.expectMessageDialogAsync(100, /sure/)
+	 *     ).cancelAsync();
+	 *     let result = await p;
+	 *     expect(result).toBe(false);
+	 *   });
+	 * });
+	 */
 	async expectMessageDialogAsync(
 		timeout: number,
 		...match: Array<string | RegExp>

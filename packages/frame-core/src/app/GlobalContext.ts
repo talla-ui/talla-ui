@@ -223,7 +223,7 @@ export class GlobalContext extends ManagedObject {
 	 * Returns the current application location
 	 *
 	 * @summary
-	 * This method returns {@link NavigationPath.path} from the current {@link ActivityContext} instance. This property is used by activities to activate and deactivate automatically according to their {@link Activity.path} value, if any.
+	 * This method returns {@link NavigationPath.path} from the current {@link ActivityContext} instance. This property is used by the activity context to activate and deactivate activities according to their {@link Activity.navigationPageId} value, if any.
 	 * @note To set the application location (i.e. navigate to a different path), use the {@link GlobalContext.navigate app.navigate()} method.
 	 */
 	getPath() {
