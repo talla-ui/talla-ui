@@ -630,22 +630,26 @@ function watchFromOrigin(
 			function () {
 				// managed object unlinked and/or detached
 				if (trap === traps[i]) {
-					// if trap was still active, remove traps from here
-					for (let j = traps.length - 1; j >= i; j--) {
-						removeTrap(traps[j]);
-					}
-					traps.length = i;
-
-					// start all over, or set bound value to undefined
-					bindRef.i = -1;
-					bindRef.t = undefined;
-					managedObject[$_unlinked]
-						? invoke(undefined, false)
-						: tryWatchFromOrigin(
+					if (!i) {
+						// if this was the first trap, start all over
+						for (let t of traps) removeTrap(t);
+						bindRef.i = -1;
+						bindRef.t = undefined;
+						if (!managedObject[$_unlinked]) {
+							tryWatchFromOrigin(
 								managedObject,
 								managedObject[$_origin],
 								bindRef,
-						  );
+							);
+						}
+					} else {
+						// otherwise, just remove traps from here
+						for (let j = traps.length - 1; j >= i; j--) {
+							removeTrap(traps[j]);
+						}
+						traps.length = i;
+						invoke(undefined, false);
+					}
 				}
 			},
 			true,

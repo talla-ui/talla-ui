@@ -288,6 +288,27 @@ describe("Bindings", () => {
 			expect(c.child).toHaveProperty("aa").toBeUndefined();
 		});
 
+		test("Single binding with 3-step path, unlink midway", (t) => {
+			let { TestObject, ChildObject } = setup();
+			let c = new TestObject();
+			c.other = new ChildObject();
+			c.other.nested = new ChildObject();
+			c.child.addAABinding("other.nested.aa");
+			bound("other.nested.aa").bindTo(c.child, (value, bound) => {
+				t.log("3-step path updated", value, bound);
+				t.count("update");
+			});
+			c.other.nested.aa = 3;
+			expect(c.child).toHaveProperty("aa").toBe(3);
+			t.expectCount("update").toBe(2);
+			c.other.nested.unlink();
+			expect(c.child).toHaveProperty("aa").toBeUndefined();
+			c.other.nested = new ChildObject();
+			c.other.nested.aa = 4;
+			expect(c.child).toHaveProperty("aa").toBe(4);
+			t.expectCount("update").toBe(4); // undefined, 3, undefined, 4
+		});
+
 		test("Single binding with 4-step path though non-state object ref", () => {
 			let { TestObject, ChildObject } = setup();
 			let c = new TestObject();
