@@ -194,11 +194,15 @@ export class LazyString extends String {
 	 * Translates the string using the current I18n provider
 	 * - This method is called automatically by {@link strf()}.
 	 * - If no I18n provider (see {@link GlobalContext.i18n app.i18n}) is currently set, the current string value is used directly.
+	 * - If the resulting string _starts with_ `##`, the translation marker and following space, OR optional description (between `:` characters) are removed: e.g. `##T_HELLO Hello, world` or `##T_HELLO:User greeting:Hello, world`. Spaces after the end of the description are not removed.
 	 * @returns A new LazyString instance.
 	 */
 	translate() {
 		let result = new LazyString(() =>
-			_i18n ? _i18n.getText(String(this)) : String(this),
+			(_i18n ? _i18n.getText(String(this)) : String(this)).replace(
+				/^##[^ :]+(?: |\:[^:]*\:?|$)/,
+				"",
+			),
 		);
 		result._orig = this._orig || this;
 		return result;
