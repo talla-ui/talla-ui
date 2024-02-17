@@ -1,9 +1,4 @@
-import {
-	ManagedEvent,
-	Observer,
-	StringConvertible,
-	strf,
-} from "../../base/index.js";
+import { ManagedEvent, Observer, StringConvertible } from "../../base/index.js";
 import { UIComponent } from "../UIComponent.js";
 import { UIFormContext, _boundFormContext } from "../UIFormContext.js";
 import { UITheme } from "../UITheme.js";
@@ -18,19 +13,6 @@ import { UITheme } from "../UITheme.js";
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
 export class UITextField extends UIComponent {
-	/**
-	 * Creates a preset text field class with the specified form field name and placeholder
-	 * - The form field name is used with the nearest `formContext` property, see {@link UIFormContext}.
-	 * - The specified placeholder text is localized using {@link strf} before being set as {@link UITextField.placeholder}.
-	 * @param formField The form field name to use
-	 * @param placeholder The placeholder text to display when the text field is empty
-	 * @returns A class that can be used to create instances of this text field class with the provided form field name and placeholder
-	 */
-	static withField(formField?: string, placeholder?: StringConvertible) {
-		if (typeof placeholder === "string") placeholder = strf(placeholder);
-		return this.with({ formField, placeholder });
-	}
-
 	/** Creates a new text field view instance */
 	constructor(placeholder?: StringConvertible, value?: string) {
 		super();

@@ -1,4 +1,4 @@
-import { UITextField, UIFormContext, app } from "../../../dist/index.js";
+import { UITextField, UIFormContext, app, strf } from "../../../dist/index.js";
 import {
 	describe,
 	expect,
@@ -24,8 +24,11 @@ describe("UITextField", (scope) => {
 		expect(tf).toHaveProperty("placeholder").asString().toBe("foo");
 	});
 
-	test("Preset using withField and form context", () => {
-		let MyTF = UITextField.withField("foo", "Placeholder");
+	test("Preset using formField and form context", () => {
+		let MyTF = UITextField.with({
+			formField: "foo",
+			placeholder: strf("Placeholder"),
+		});
 		let tf = new MyTF();
 		expect(tf).toHaveProperty("formField").toBe("foo");
 		expect(tf).toHaveProperty("placeholder").asString().toBe("Placeholder");

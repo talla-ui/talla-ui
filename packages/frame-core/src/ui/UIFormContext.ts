@@ -28,7 +28,7 @@ export const _boundFormContext = bound("formContext");
  * // Use form fields in a form
  * const FormView = UIForm.with(
  *   { formContext: bound("fooForm") },
- *   UITextField.withField("foo"),
+ *   UITextField.with({ formField: "foo" }),
  *   UILabel.with({
  *     style: myStyles.errorLabel,
  *     hidden: bound.not("fooForm.errors.foo"),
@@ -58,7 +58,7 @@ export const _boundFormContext = bound("formContext");
  * @example
  * // Use form fields with formContext on the activity
  * const MyView = UICell.with(
- *   UITextField.withField("foo"),
+ *   UITextField.with({ formField: "foo" }),
  *   // ...
  * );
  *

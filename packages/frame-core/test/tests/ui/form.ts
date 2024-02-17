@@ -163,7 +163,7 @@ describe("UIForm and UIFormContext", () => {
 		let MyComp = UIFormController.with(
 			UIRow.with(
 				UILabel.withText(bound("formContext.errors.foo")),
-				UITextField.withField("foo"),
+				UITextField.with({ formField: "foo" }),
 			),
 		);
 		let view = new MyComp();
@@ -195,11 +195,11 @@ describe("UIForm and UIFormContext", () => {
 		const ViewBody = UIRow.with(
 			UIForm.with(
 				{ formContext: bound("form1") },
-				UITextField.withField("text"),
+				UITextField.with({ formField: "text" }),
 			),
 			UIForm.with(
 				{ formContext: bound("form2") },
-				UITextField.withField("text"),
+				UITextField.with({ formField: "text" }),
 			),
 		);
 		class MyActivity extends Activity {
