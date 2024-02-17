@@ -18,6 +18,9 @@ describe("I18n", (scope) => {
 	});
 
 	class BaseI18nProvider implements I18nProvider {
+		getLocale() {
+			return "test";
+		}
 		getText(text: string): string {
 			throw new Error("Method not implemented.");
 		}
@@ -27,7 +30,7 @@ describe("I18n", (scope) => {
 		format(value: any, ...types: any[]): string {
 			throw new Error("Method not implemented.");
 		}
-		getDecimalSeparator(): string {
+		getDecimalSeparator() {
 			return ".";
 		}
 	}

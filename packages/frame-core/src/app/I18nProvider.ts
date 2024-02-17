@@ -3,6 +3,9 @@
  * - I18n providers are selected on the global application context. Refer to {@link GlobalContext.i18n app.i18n} for details.
  */
 export interface I18nProvider {
+	/** Returns the locale identifier, usually a combination of language and country codes */
+	getLocale(): string;
+
 	/**
 	 * A method that's used to localize a string
 	 * @summary This method is called primarily by {@link LazyString} (the result of {@link strf()}), for each string that should be translated. The implementation of this method may use a lookup table to provide a translation for a particular language, or it may return the same string if translation isn't necessary.

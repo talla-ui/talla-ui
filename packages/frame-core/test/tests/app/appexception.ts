@@ -50,6 +50,7 @@ describe("AppException", (scope) => {
 			constructor(public word: string) {
 				super();
 			}
+			getLocale = () => "test";
 			format = () => "";
 			getPlural = () => "";
 			getDecimalSeparator = () => ".";

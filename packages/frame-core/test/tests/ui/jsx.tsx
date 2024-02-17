@@ -7,7 +7,6 @@ import {
 import {
 	JSX,
 	LazyString,
-	ManagedObject,
 	UICell,
 	UIColor,
 	UIColumn,
@@ -186,7 +185,8 @@ describe("JSX", () => {
 		await t.expectOutputAsync(50, { text: "You have 1 email" });
 
 		// Use I18n provider for text translation (note binding path)
-		class MyI18nProvider extends ManagedObject {
+		class MyI18nProvider {
+			getLocale = () => "test";
 			getText = (s: string) =>
 				s === "You have %[numEmails:n] %[numEmails:plural|email|emails]"
 					? "Je hebt %[numEmails:n] %[numEmails:plural|e-mail|e-mails]"
