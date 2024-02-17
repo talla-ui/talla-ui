@@ -3,14 +3,15 @@ import { AppException } from "./AppException.js";
 
 /** Helper function that puts together event data for a log message */
 function makeEventData(
-	severity: number,
-	message: unknown,
+	level: number,
+	source: unknown,
 ): LogWriter.LogMessageData {
-	let data: any[] | undefined;
+	let data: any[];
+	let message: string;
 	let error: Error | undefined;
-	if (message instanceof Error) {
-		error = message;
-		message = error.message || error.name || "Error";
+	if (source instanceof Error) {
+		error = source;
+		message = String(error.message || error.name || "Error");
 		data = (error instanceof AppException && error.data) || [];
 		data.push({
 			error: true,
@@ -18,15 +19,11 @@ function makeEventData(
 			stack: error.stack,
 			cause: (error as any).cause ? (error as any).cause.stack : undefined,
 		});
-	} else if (message instanceof LazyString) {
-		data = message.getFormatArgs();
+	} else {
+		message = String(source);
+		data = source instanceof LazyString ? source.getFormatArgs() : [];
 	}
-	return {
-		severity,
-		message: String(message),
-		error,
-		data: data || [],
-	};
+	return { message, level, error, data };
 }
 
 /**
@@ -35,7 +32,7 @@ function makeEventData(
  * @description
  * An instance of this class is available as {@link GlobalContext.log app.log}. You can use methods on that instance to write messages to the application log.
  *
- * Different methods are available for different 'severity' levels, ranging from `verbose` (level 0) to `fatal` (level 5).
+ * Different methods are available for different severity levels, ranging from `verbose` (level 0) to `fatal` (level 5).
  *
  * Log messages are emitted as events on {@link LogWriter.emitter}. A listener can be added there, or using {@link GlobalContext.addLogHandler app.addLogHandler()} to add a log 'sink' for a minimum severity level. If no listeners have been added, log messages are written to the console.
  *
@@ -134,11 +131,11 @@ export class LogWriter {
 	emitter = new GlobalEmitter<LogWriter.LogMessageEvent>();
 
 	/** Private implementation to emit a log message event, or write to the console */
-	private _write(severity: number, message: unknown) {
-		let data = makeEventData(severity, message);
+	private _write(level: number, message: unknown) {
+		let data = makeEventData(level, message);
 		if (this.emitter.isObserved()) {
 			this.emitter.emit("LogMessage", data);
-		} else if (severity >= 4) {
+		} else if (level >= 4) {
 			console.error(message);
 			if (data.data.length) console.log(...data.data);
 		} else {
@@ -158,13 +155,13 @@ export namespace LogWriter {
 	 * - `message` — A string representation of the log message.
 	 * - `error` — The original error that was logged, if any.
 	 * - `data` — Additional data, such as error details or format placeholder values.
-	 * - `severity` — A number indicating the severity level (0–5).
+	 * - `level` — A number indicating the severity level (0–5).
 	 */
 	export type LogMessageData = Readonly<{
 		message: string;
 		error?: Error;
 		data: any[];
-		severity: number;
+		level: number;
 	}>;
 
 	/**

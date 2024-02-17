@@ -398,7 +398,7 @@ export class GlobalContext extends ManagedObject {
 		f: (message: LogWriter.LogMessageData) => void,
 	) {
 		this.log.emitter.listen((e) => {
-			if (e.data.severity >= minLevel) f(e.data);
+			if (e.data.level >= minLevel) f(e.data);
 		});
 	}
 

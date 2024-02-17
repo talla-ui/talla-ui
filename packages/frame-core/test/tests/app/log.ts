@@ -8,7 +8,7 @@ describe("LogWriter", (ctx) => {
 
 	test("Add log sink", () => {
 		app.addLogHandler(0, (data) => {
-			expect(data.severity).toBe(2);
+			expect(data.level).toBe(2);
 			expect(data.message).toBe("Hello");
 		});
 		app.log.information("Hello");
@@ -24,7 +24,7 @@ describe("LogWriter", (ctx) => {
 			"Fatal",
 		];
 		app.addLogHandler(2, (data) => {
-			t.count(levels[data.severity] || "Unknown");
+			t.count(levels[data.level] || "Unknown");
 		});
 		app.log.verbose("Hello");
 		app.log.debug("Hello");
