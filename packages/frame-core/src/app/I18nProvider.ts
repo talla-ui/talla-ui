@@ -4,7 +4,7 @@
  */
 export interface I18nProvider {
 	/** Returns the locale identifier, usually a combination of language and country codes */
-	getLocale(): string;
+	getAttributes(): Readonly<I18nProvider.Attributes>;
 
 	/**
 	 * A method that's used to localize a string
@@ -52,10 +52,22 @@ export interface I18nProvider {
 	 * }
 	 */
 	format(value: any, ...type: string[]): string;
+}
 
+export namespace I18nProvider {
 	/**
-	 * A method that's used to set the decimal separator for numeric values
-	 * @summary This method is called once by {@link LazyString} to set the decimal separator (`.` or `,`) that will be used for number formatting while the {@link I18nProvider} is active.
+	 * Attributes that describe the locale and its formatting rules
+	 * - These attributes can be used by the application to adjust its behavior based on the current locale
+	 * - The `locale` attribute is required, while the others are optional
+	 * - The `rtl` attribute should only be set to `true` if the writing direction for the locale is right-to-left
+	 * - The `decimalSeparator` attribute is used to determine the decimal separator for numeric values, `.` or `,`; this attribute defaults to `.` if not provided
 	 */
-	getDecimalSeparator(): string;
+	export type Attributes = {
+		/** The locale identifier, usually a combination of language and country codes */
+		locale: string;
+		/** The text direction, `true` for right-to-left */
+		rtl?: boolean;
+		/** The decimal separator for numeric values, `.` or `,` */
+		decimalSeparator?: string;
+	};
 }

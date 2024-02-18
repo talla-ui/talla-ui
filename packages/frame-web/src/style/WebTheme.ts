@@ -69,7 +69,7 @@ export class WebTheme extends UITheme {
 
 	/**
 	 * Creates a new theme instance
-	 * @note It should not be necessary to create a new theme instance at all. You can change the properties of the existing theme (and trigger a re-render if needed by emitting a change event on the renderer) or clone it to create different versions.
+	 * - This constructor creates a new blank theme. Use {@link UITheme.clone()} to create a copy of an existing theme.
 	 */
 	constructor() {
 		super();

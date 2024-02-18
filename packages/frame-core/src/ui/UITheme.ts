@@ -46,17 +46,17 @@ let _nextStyleId = 0x1234;
  *
  */
 export class UITheme {
-	/** Returns the default row spacing value from the current theme, or default */
+	/** Returns the row spacing value from the current theme, or a default value */
 	static getRowSpacing() {
 		return app.theme ? app.theme.rowSpacing : BASE_ROW_SPACING;
 	}
 
-	/** Returns the default separator margin value from the current theme, or default */
+	/** Returns the separator margin value from the current theme, or a default value */
 	static getSeparatorMargin() {
 		return app.theme ? app.theme.separatorMargin : BASE_SEPARATOR_MARGIN;
 	}
 
-	/** Returns the modal dialog backdrop shade value from the current theme, or default */
+	/** Returns the modal dialog backdrop shade value from the current theme, or a default value */
 	static getModalDialogShadeOpacity() {
 		return app.theme ? app.theme.modalDialogShadeOpacity : BASE_MODAL_OPACITY;
 	}
@@ -117,9 +117,7 @@ export class UITheme {
 	 * - controlBase
 	 * - modalShade
 	 *
-	 * Color changes are not applied to views that are already rendered. Use the {@link RenderContext.remount()} method to update views after modifying a theme or setting a new theme.
-	 *
-	 * @note Color values are cached by {@link UIColor}, hence any changes to individual colors won't take effect if keys are set one by one. Either use the {@link UITheme.clone()} method, or set this property to a new map.
+	 * Color changes may not be applied to views that are already rendered. If needed, re-render content using `app.renderer.remount()`, or change the theme altogether (use {@link UITheme.clone()} to create a new theme).
 	 *
 	 * @example
 	 * useWebContext((options) => {
@@ -149,7 +147,7 @@ export class UITheme {
 	 * - expandRight
 	 * - expandLeft
 	 *
-	 * Icon changes are not applied to views that are already rendered. Use the {@link RenderContext.remount()} method to update views after modifying a theme or setting a new theme.
+	 * Icon changes may not be applied to views that are already rendered. If needed, re-render content using `app.renderer.remount()`.
 	 */
 	icons = new Map<string, UIIconResource>();
 

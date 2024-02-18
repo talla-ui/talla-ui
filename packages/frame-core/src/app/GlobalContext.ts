@@ -99,14 +99,15 @@ export class GlobalContext extends ManagedObject {
 
 	/**
 	 * The current internationalization context, an object that implements {@link I18nProvider}
-	 * - You can set `app.i18n` to an object that implements {@link I18nProvider}, to change the current internationalization context. Note that labels and other UI text elements aren't updated until the output is re-rendered: emit a change event on `app.renderer` to trigger a global re-render.
+	 * - You can set `app.i18n` to an object that implements {@link I18nProvider}, to change the current internationalization context.
+	 * - Note that labels and other UI controls that are already rendered won't be updated automatically. If needed, use `app.renderer.remount()` to force a full re-render.
 	 */
 	declare i18n?: I18nProvider;
 
 	/**
 	 * The current theme, an instance of {@link UITheme}
 	 * - The theme instance can be modified, or a new instance can be created in advance.
-	 * - Styling and other properties don't update instantly, a re-render is required after updating the theme: emit a change event on the renderer context to force UI components to evaluate current theme styles.
+	 * - Changing indidivual theme properties may not update the UI immediately. Use `app.renderer.remount()` to force a full re-render, or set the theme property to a new instance.
 	 * - Refer to {@link UITheme} for available properties and methods of `app.theme`.
 	 * @see {@link UITheme}
 	 */

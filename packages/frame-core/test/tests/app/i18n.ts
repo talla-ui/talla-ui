@@ -18,8 +18,8 @@ describe("I18n", (scope) => {
 	});
 
 	class BaseI18nProvider implements I18nProvider {
-		getLocale() {
-			return "test";
+		getAttributes(): Readonly<I18nProvider.Attributes> {
+			return { locale: "test" };
 		}
 		getText(text: string): string {
 			throw new Error("Method not implemented.");
@@ -29,9 +29,6 @@ describe("I18n", (scope) => {
 		}
 		format(value: any, ...types: any[]): string {
 			throw new Error("Method not implemented.");
-		}
-		getDecimalSeparator() {
-			return ".";
 		}
 	}
 
@@ -116,8 +113,11 @@ describe("I18n", (scope) => {
 
 	test("Decimal separator", () => {
 		class MyI18nProvider extends BaseI18nProvider {
+			override getAttributes = () => ({
+				locale: "test",
+				decimalSeparator: ",",
+			});
 			override getText = (s: string) => s;
-			override getDecimalSeparator = () => ",";
 		}
 		LazyString.setI18nInterface(new MyI18nProvider() as any);
 		expect(strf("%.2f", 1)).asString().toBe("1,00");
@@ -131,7 +131,6 @@ describe("I18n", (scope) => {
 				s === "%n book#{/s}" ? "%n livre#{/s}" : s;
 			override getPlural = (n: number, forms: string[]) =>
 				forms[n < 2 ? 0 : 1] || "";
-			override getDecimalSeparator = () => ".";
 		}
 		expect(strf("%n book#{/s}", 0)).asString().toBe("0 books");
 		expect(strf("%n book#{/s}", 1)).asString().toBe("1 book");

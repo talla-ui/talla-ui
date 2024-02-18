@@ -22,7 +22,7 @@ export abstract class RenderContext extends ManagedObject {
 	abstract schedule(f: () => void, lowPriority?: boolean): void;
 	/** Clears all current root view output */
 	abstract clear(): this;
-	/** Relocates existing mounted view output if needed */
+	/** Re-renders output, and relocates existing mounted view output if needed */
 	abstract remount(): this;
 }
 

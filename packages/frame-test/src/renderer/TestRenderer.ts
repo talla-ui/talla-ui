@@ -156,8 +156,9 @@ export class TestRenderer extends RenderContext {
 		return this;
 	}
 
-	/** Re-mounts mounted content (not supported in test renderer) */
+	/** Re-mounts mounted content (not supported in test renderer, but does emit a change event) */
 	remount() {
+		this.emitChange();
 		return this;
 	}
 

@@ -186,13 +186,12 @@ describe("JSX", () => {
 
 		// Use I18n provider for text translation (note binding path)
 		class MyI18nProvider {
-			getLocale = () => "test";
+			getAttributes = () => ({ locale: "nl-NL" });
 			getText = (s: string) =>
 				s === "You have %[numEmails:n] %[numEmails:plural|email|emails]"
 					? "Je hebt %[numEmails:n] %[numEmails:plural|e-mail|e-mails]"
 					: s;
 			getPlural = (n: number, forms: string[]) => forms[n < 2 ? 0 : 1]!;
-			getDecimalSeparator = () => ".";
 			format(s: string) {
 				return s;
 			}

@@ -1,4 +1,4 @@
-import { RenderContext, UIColor, View } from "@desk-framework/frame-core";
+import { RenderContext, UIColor, View, app } from "@desk-framework/frame-core";
 import {
 	CLASS_MODAL_SHADER,
 	CLASS_MODAL_WRAPPER,
@@ -22,6 +22,7 @@ export class OutputMount {
 		elt.className = CLASS_PAGE_ROOT;
 		elt.ariaAtomic = "true";
 		this._remount = () => {
+			elt.dir = app.i18n?.getAttributes().rtl ? "rtl" : "ltr";
 			elt.style.background = String(UIColor["@pageBackground"]);
 			elt.style.color = String(UIColor["@text"]);
 		};
@@ -63,6 +64,7 @@ export class OutputMount {
 		// create a flex wrapper to contain content
 		let wrapper = (this._inner = document.createElement("div"));
 		wrapper.className = CLASS_MODAL_WRAPPER;
+		wrapper.dir = app.i18n?.getAttributes().rtl ? "rtl" : "ltr";
 		wrapper.ariaModal = "true";
 		wrapper.ariaAtomic = "true";
 		wrapper.style.color = String(UIColor["@text"]);
@@ -109,6 +111,7 @@ export class OutputMount {
 			let color = UIColor["@modalShade"].alpha(shadeOpacity || 0);
 			shader.style.backgroundColor = String(color);
 			wrapper.style.color = String(UIColor["@text"]);
+			wrapper.dir = app.i18n?.getAttributes().rtl ? "rtl" : "ltr";
 		};
 	}
 

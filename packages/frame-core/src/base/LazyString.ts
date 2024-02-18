@@ -132,7 +132,7 @@ export class LazyString extends String {
 	 */
 	static setI18nInterface(i18n?: I18nProvider) {
 		_i18n = i18n;
-		_decimalSeparator = String((i18n && i18n.getDecimalSeparator()) || ".");
+		_decimalSeparator = String(i18n?.getAttributes().decimalSeparator || ".");
 	}
 
 	/**
@@ -230,7 +230,7 @@ export class LazyString extends String {
 	 *
 	 * **Using arguments within placeholders** — Asterisks (`*`) anywhere in a placeholder are replaced by the next value in the parameter list (_before_ the value being represented itself), e.g. in `strf("%.*f", precision, number)` and `strf("%{local|currency:*}", currency, number)`.
 	 *
-	 * **Decimal separator** — Floating point numbers are formatted using the decimal separator specified by the `I18nInterface.decimalSeparator` property of the currently registered i18n interface, if any. Number grouping separators aren't supported, and if necessary numbers will need to be formatted using %{local|...}.
+	 * **Decimal separator** — Floating point numbers are formatted using the decimal separator specified by the `decimalSeparator` attribute of the currently registered i18n interface, if any. Number grouping separators aren't supported, and if necessary numbers will need to be formatted using %{local|...}.
 	 *
 	 * **Argument positions** — Use position specifiers (i.e. `n$`) to change the order of parameters used, e.g. `strf("A is %i and B is %i, so %1$i + %2$i equals %i", i1, i2, i1 + i2)`. This is mostly helpful for translations where the position of words or numbers is different.
 	 *
