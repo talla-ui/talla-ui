@@ -223,6 +223,7 @@ export class LazyString extends String {
 	 * - `%n` (non-standard) general-purpose number format, never results in exponential notation
 	 * - `%_` to insert nothing at all (blank string)
 	 * - `%{uc}`, `%{lc}` to convert strings to uppercase or lowercase
+	 * - `%{s|abc}` to insert a string, or `abc` if the string is empty or not defined
 	 * - `%{?|a}` to insert string a if the value `== true`, otherwise a blank string
 	 * - `%{?|a|b}` to insert one of `a` or `b`: the first option if the value `== true`, the second if not
 	 * - `%{plural|...|...}` for pluralization, but with its own quantity value in the argument list
@@ -299,22 +300,22 @@ export namespace LazyString {
 			// use special format
 			let split = format.split("|");
 			switch (split[0]!) {
-				case "_":
-					return "";
-				case "?":
-					return value
-						? _stringify(split[1] ?? "")
-						: _stringify(split[2] ?? "");
-				case "uc":
-					return _stringify(value ?? "").toUpperCase();
-				case "lc":
-					return _stringify(value ?? "").toLowerCase();
 				case "local":
 					return LazyString.local.call(undefined, value, ...split.splice(1));
 				case "plural":
 					return _i18n
 						? String(_i18n.getPlural(value, split.splice(1)))
 						: split[value == 1 ? 1 : 2] || "";
+				case "s":
+					return _stringify(value) || (split[1] ?? "");
+				case "?":
+					return value ? split[1] ?? "" : split[2] ?? "";
+				case "uc":
+					return _stringify(value ?? "").toUpperCase();
+				case "lc":
+					return _stringify(value ?? "").toLowerCase();
+				case "_":
+					return "";
 				default:
 					errorHandler(err(ERROR.Format_Type, format));
 					return "???";

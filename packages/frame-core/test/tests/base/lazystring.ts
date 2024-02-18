@@ -98,8 +98,11 @@ describe("LazyString", () => {
 		});
 
 		test("Placeholder using braces %{s}", () => {
+			expect(_f("%{s}")).toBe("");
 			expect(_f("%{s}", "foo")).toBe("foo");
 			expect(_f("a%{s}c", "b")).toBe("abc");
+			expect(_f("%{s|xyz}", "")).toBe("xyz");
+			expect(_f("%{s|zzz}", undefined)).toBe("zzz");
 		});
 
 		test("Retrieve format arguments", () => {
