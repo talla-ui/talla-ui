@@ -75,8 +75,8 @@ export class ServiceContext extends ManagedObject {
 
 	// keep track of services in a list, and forward events
 	private _map?: Map<string, Service>;
-	private _list = this.attach(new ManagedList<Service>(), () => {
-		this._map = new Map(this._list.map((s) => [s.id, s]));
+	private _list = this.attach(new ManagedList<Service>(), (list) => {
+		this._map = new Map(list?.map((s) => [s.id, s]));
 		this.emitChange();
 	});
 }
