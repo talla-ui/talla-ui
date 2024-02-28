@@ -3,6 +3,7 @@ import {
 	app,
 	UILabel,
 	UIScrollContainer,
+	ui,
 } from "../../../dist/index.js";
 import {
 	describe,
@@ -27,7 +28,7 @@ describe("UIScrollContainer", (scope) => {
 	});
 
 	test("Preset with properties", () => {
-		let MyContainer = UIScrollContainer.with({
+		let MyContainer = ui.scroll({
 			horizontalScrollEnabled: false,
 			verticalScrollEnabled: true,
 		});

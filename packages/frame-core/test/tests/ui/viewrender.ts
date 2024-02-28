@@ -8,14 +8,14 @@ import {
 import {
 	Activity,
 	ManagedEvent,
-	UIButton,
-	UICell,
+	StringConvertible,
 	UILabel,
 	UITextField,
 	UIViewRenderer,
 	ViewComposite,
 	app,
 	bound,
+	ui,
 } from "../../../dist/index.js";
 
 describe("UIViewRenderer", (scope) => {
@@ -31,7 +31,7 @@ describe("UIViewRenderer", (scope) => {
 	});
 
 	test("Set simple view and render", async (t) => {
-		let MyCell = UICell.with(UILabel.withText("foo"));
+		let MyCell = ui.cell(ui.label("foo"));
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new MyCell();
 		app.showPage(viewRenderer);
@@ -40,8 +40,8 @@ describe("UIViewRenderer", (scope) => {
 	});
 
 	test("Change view after rendering", async (t) => {
-		let MyCell1 = UICell.with(UILabel.withText("foo"));
-		let MyCell2 = UICell.with(UILabel.withText("bar"));
+		let MyCell1 = ui.cell(ui.label("foo"));
+		let MyCell2 = ui.cell(ui.label("bar"));
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new MyCell1();
 		app.showPage(viewRenderer);
@@ -51,7 +51,7 @@ describe("UIViewRenderer", (scope) => {
 	});
 
 	test("Unlink view after rendering", async (t) => {
-		let MyCell = UICell.with(UILabel.withText("foo"));
+		let MyCell = ui.cell(ui.label("foo"));
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new MyCell();
 		app.showPage(viewRenderer);
@@ -62,13 +62,14 @@ describe("UIViewRenderer", (scope) => {
 	});
 
 	test("Set view using view composite, and render", async (t) => {
-		const CompView = ViewComposite.define((p: { text: string }) =>
-			UILabel.withText(p.text),
+		const CompView = ViewComposite.withPreset(
+			{ text: StringConvertible.EMPTY },
+			ui.label(bound("text")),
 		);
-		const Preset = CompView.with({ text: "foo" });
+		const Preset = CompView.preset({ text: "foo" });
 		class MyActivity extends Activity {
 			protected override ready() {
-				this.view = new (UIViewRenderer.with({ view: bound("vc") }))();
+				this.view = new (ui.renderView({ view: bound("vc") }))();
 				app.showPage(this.view);
 			}
 			vc = this.attach(new Preset());
@@ -90,7 +91,7 @@ describe("UIViewRenderer", (scope) => {
 		// activity that will be rendered as nested view
 		class MySecondActivity extends Activity {
 			protected override ready() {
-				const ViewBody = UICell.with(UIButton.withLabel("foo", "+ButtonPress"));
+				const ViewBody = ui.cell(ui.button("foo", "+ButtonPress"));
 				this.view = new ViewBody();
 			}
 			onButtonPress() {
@@ -106,9 +107,9 @@ describe("UIViewRenderer", (scope) => {
 				this.second = new MySecondActivity();
 			}
 			protected override ready() {
-				const ViewBody = UICell.with(
+				const ViewBody = ui.cell(
 					{ accessibleLabel: "outer" },
-					UIViewRenderer.with({ view: bound("second.view") }),
+					ui.renderView({ view: bound("second.view") }),
 				);
 				this.view = new ViewBody();
 				app.showPage(this.view);

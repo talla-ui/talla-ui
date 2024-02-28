@@ -1,15 +1,15 @@
 import {
-	Binding,
-	bound,
-	JSX,
 	ViewComposite,
+	bound,
+	ui,
 } from "../../../../lib/desk-framework-web.es2015.esm.min";
 
-export default ViewComposite.define<{ count: number | Binding<number> }>(
-	<column>
-		<label>Count:</label>
-		<label labelStyle={{ bold: true, fontSize: 36 }}>
+export default ViewComposite.withPreset(
+	{ count: 0 },
+	<ui.column>
+		<ui.label>Count:</ui.label>
+		<ui.label style={{ bold: true, fontSize: 36 }}>
 			{bound.number("count")}
-		</label>
-	</column>,
+		</ui.label>
+	</ui.column>,
 );

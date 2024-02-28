@@ -4,16 +4,14 @@ import {
 	Observer,
 	UIComponent,
 	RenderContext,
-	UITheme,
+	UIStyle,
 } from "@desk-framework/frame-core";
 import { ELT_HND_PROP } from "../events.js";
 import { WebRenderer } from "../WebRenderer.js";
 
 /** @internal Helper function to find the base style (class) from a style/overrides object (e.g. `UILabel.labelStyle`), if any */
-export function getBaseStyleClass(
-	object: UITheme.StyleConfiguration<any>,
-): undefined | (new () => UITheme.BaseStyle<string, any>) {
-	let base = (object as any)?.[UITheme.BaseStyle.OVERRIDES_BASE] || object;
+export function getBaseStyleClass(object: any): undefined | UIStyle.Type<any> {
+	let base = (object as any)?.[UIStyle.OVERRIDES_BASE] || object;
 	if (typeof base === "function") return base;
 }
 

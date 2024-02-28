@@ -1,6 +1,6 @@
 import { View, ViewClass, ViewComposite, app } from "../../app/index.js";
 import {
-	Binding,
+	BindingOrValue,
 	DelegatedEvent,
 	ManagedEvent,
 	ManagedList,
@@ -8,64 +8,34 @@ import {
 	Observer,
 } from "../../base/index.js";
 import { ERROR, err } from "../../errors.js";
-import type { UIComponent } from "../UIComponent.js";
-import { UIColumn, UIContainer } from "../containers/index.js";
-
-/** Default container used in the preset method */
-const _defaultContainer = UIColumn.with({
-	accessibleRole: "list",
-	layout: { gravity: "start" },
-	spacing: 0,
-});
+import type { UIColumn, UIContainer, UIRow } from "../containers/index.js";
 
 /**
  * A view composite that manages views for each item in a list of objects or values
  *
  * @description A list component creates and renders content based on a provided list data structure.
  *
- * **JSX tag:** `<list>`
- *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
-export class UIList extends ViewComposite {
-	/**
-	 * Creates a preset controller class with the specified property values, bindings, and event handlers
-	 * @param preset Property values, bindings, and event handlers
-	 * @param ItemBody A view class that's instantiated for each list item
-	 * @param ContainerBody A view class that's used for the outer view container
-	 * @param BookEnd A view class that's always added to the back of the container
-	 * @returns A class that can be used to create instances of this view class with the provided property values, bindings, and event handlers
-	 */
-	static with(
-		preset: UIComponent.ViewPreset<
-			ViewComposite,
-			UIList,
-			"firstIndex" | "maxItems" | "animation"
-		> & {
-			/** List of objects, either an array, {@link ManagedList} object, or binding for either */
-			items?: Iterable<any> | Binding<Iterable<any>>;
-			/** True if the _container_ view object may receive input focus using the keyboard (e.g. Tab key) */
-			allowKeyboardFocus?: boolean;
-			/** Event that's emitted when list item views are rendered */
-			onListItemsChange?: string;
-		},
-		ItemBody: ViewClass,
-		ContainerBody?: ViewClass<UIContainer>,
-		BookEnd?: ViewClass,
-	): typeof UIList {
-		// Define a view class to be used for each item
-		class Adapter extends UIList.ItemController<any> {
+export class UIListView extends ViewComposite {
+	/** @internal Creates an observer that populates the list with the provided item body and book end */
+	static createObserver(ItemBody: ViewClass, BookEnd?: ViewClass) {
+		// use a controller view class for each item
+		class ItemAdapter extends UIListView.ItemControllerView<any> {
 			protected override createView() {
 				return new ItemBody();
 			}
 		}
 
-		// Define an observer class for the entire list
-		class PresetListObserver extends Observer<UIList> {
-			override observe(observed: UIList) {
+		// return a unique class for the provided views
+		return class PresetListObserver extends Observer<UIListView> {
+			override observe(observed: UIListView) {
 				super
 					.observe(observed)
 					.observePropertyAsync("items", "firstIndex", "maxItems");
+
+				// create view already to avoid unnecessary async updates
+				observed.body = observed.createView() as any;
 				this.doUpdateAsync();
 				return this;
 			}
@@ -94,40 +64,23 @@ export class UIList extends ViewComposite {
 				this._pending = true;
 				await Promise.resolve();
 				this._pending = false;
-				this.observed?._updateItems(Adapter, BookEnd);
+				this.observed?._updateItems(ItemAdapter, BookEnd);
 			}
 			private _pending?: boolean;
-		}
-
-		// return a preset view class referencing the above
-		return class PresetView extends this {
-			constructor() {
-				super();
-				this.applyViewPreset({ ...preset });
-
-				// create the view *already*, then add observer,
-				// to avoid unnecessary async updates
-				this.body = this.createView();
-				if (preset.allowKeyboardFocus) this.body.allowKeyboardFocus = true;
-				new PresetListObserver().observe(this);
-			}
-			protected override createView() {
-				return new (ContainerBody || _defaultContainer)();
-			}
 		};
 	}
 
-	/** Creates a new UIList view composite object */
+	/** Creates a new list view composite object */
 	constructor() {
 		super();
 		let list: ManagedList | undefined;
 		Object.defineProperty(this, "items", {
 			configurable: true,
 			enumerable: true,
-			get(this: UIList) {
+			get(this: UIListView) {
 				return list;
 			},
-			set(this: UIList, v: any) {
+			set(this: UIListView, v: any) {
 				if (Array.isArray(v)) v = this._makeList(v);
 				if (!(v instanceof ManagedList) && v != null) {
 					throw err(ERROR.UIList_Invalid);
@@ -138,17 +91,51 @@ export class UIList extends ViewComposite {
 	}
 
 	/**
+	 * Applies the provided preset properties to this object
+	 * - This method is called automatically. Do not call this method after constructing an instance
+	 */
+	override applyViewPreset(
+		preset: View.ViewPreset<
+			ViewComposite,
+			UIListView,
+			"firstIndex" | "maxItems" | "animation"
+		> & {
+			/** List of objects, either an array, {@link ManagedList} object, or binding for either */
+			items?: BindingOrValue<Iterable<any>>;
+			/** True if the _container_ view object may receive input focus using the keyboard (e.g. Tab key) */
+			allowKeyboardFocus?: boolean;
+			/** Event that's emitted when list item views are rendered */
+			onListItemsChange?: string;
+		},
+	) {
+		super.applyViewPreset(preset);
+		if ((preset as any).Body) {
+			let Body = (preset as any).Body as ViewClass<UIColumn | UIRow>;
+			this.createView = () => {
+				let view = new Body();
+				if (preset.allowKeyboardFocus) view.allowKeyboardFocus = true;
+				return view;
+			};
+			delete (preset as any).Body;
+		}
+		if ((preset as any).Observer) {
+			new (preset as any).Observer().observe(this);
+			delete (preset as any).Observer;
+		}
+	}
+
+	/**
 	 * The list container component
 	 * - On instances of preset UIList classes, this property defaults to a column view without any spacing, but can be preset to another container view.
 	 * - This property should not be changed on UIList instances.
 	 */
-	declare body: UIContainer;
+	declare body: UIRow | UIColumn;
 
 	/**
 	 * The list of objects, from which each object is used to construct one view object
 	 * - This property should be set or bound to a {@link ManagedList} object or an array.
 	 * - When set to an array, the property setter _converts_ the array to a {@link ManagedList} automatically, and uses that instead.
-	 * - When updated, a {@link UIList.ItemController} view instance is created for each list item and added to the {@link body} container.
+	 * - When updated, a {@link UIListView.ItemControllerView} view instance is created for each list item and added to the {@link body} container.
 	 */
 	declare items?: ManagedList;
 
@@ -184,7 +171,7 @@ export class UIList extends ViewComposite {
 	 * - If the specified view object is (currently) not contained within the list container, this method returns -1.
 	 */
 	getIndexOfView(view?: ManagedObject) {
-		let container = this.body as UIContainer;
+		let container = this.body;
 		if (!container) return -1;
 		while (view && ManagedObject.whence(view) !== container.content) {
 			view = ManagedObject.whence(view);
@@ -196,7 +183,7 @@ export class UIList extends ViewComposite {
 	/** Requests input focus on the last-focused list view object, or the first one, if possible */
 	override requestFocus() {
 		// pass on to last focused component (or first)
-		let container = this.body as UIContainer;
+		let container = this.body;
 		if (container && container.content.count > 0) {
 			let lastFocusedIdx = Math.max(this.lastFocusedIndex, 0);
 			let index = Math.min(container.content.count - 1, lastFocusedIdx);
@@ -262,7 +249,7 @@ export class UIList extends ViewComposite {
 	 */
 	protected onFocusPrevious() {
 		if (!this.focusPreviousItem()) {
-			let parentList = UIList.whence(this);
+			let parentList = UIListView.whence(this);
 			if (parentList) parentList.requestFocus();
 		}
 		return true;
@@ -277,9 +264,9 @@ export class UIList extends ViewComposite {
 		return this.focusNextItem();
 	}
 
-	/** Update the container with (existing or new) components, one for each list item */
+	/** Update the container with (existing or new) components, one for each list item; only called from list observer */
 	private _updateItems(
-		Adapter: ViewClass<UIList.ItemController<ManagedObject>>,
+		Adapter: ViewClass<UIListView.ItemControllerView<ManagedObject>>,
 		BookEnd?: ViewClass,
 	) {
 		if (this.isUnlinked()) return;
@@ -346,7 +333,7 @@ export class UIList extends ViewComposite {
 	private _makeList(v: any[]) {
 		return new ManagedList(
 			...v.map((it) =>
-				it instanceof ManagedObject ? it : new UIList.ItemValueWrapper(it),
+				it instanceof ManagedObject ? it : new UIListView.ItemValueWrapper(it),
 			),
 		);
 	}
@@ -360,7 +347,7 @@ export class UIList extends ViewComposite {
 
 /** @internal Observer class that's used on the container to animate list items */
 class AnimationObserver extends Observer<UIContainer> {
-	list?: UIList;
+	list?: UIListView;
 	onContentRendering(e: UIContainer.ContentRenderingEvent) {
 		let animation = this.list && this.list.animation;
 		if (animation && animation.duration && app.renderer) {
@@ -378,16 +365,16 @@ class AnimationObserver extends Observer<UIContainer> {
 	}
 }
 
-export namespace UIList {
+export namespace UIListView {
 	/**
 	 * A managed object class that contains a list (array) item which is itself not a managed object
-	 * @see {@link UIList}
-	 * @see {@link UIList.ItemController}
+	 * @see {@link UIListView}
+	 * @see {@link UIListView.ItemControllerView}
 	 */
 	export class ItemValueWrapper<TValue> extends ManagedObject {
 		/**
 		 * Creates a new wrapper object
-		 * - This constructor is used by {@link UIList} and should not be used from an application.
+		 * - This constructor is used by {@link UIListView} and should not be used from an application.
 		 */
 		constructor(value: TValue) {
 			super();
@@ -399,13 +386,13 @@ export namespace UIList {
 	}
 
 	/**
-	 * A view that's created automatically for each list item by {@link UIList}
-	 * @see {@link UIList}
+	 * A view that's created automatically for each list item by {@link UIListView}
+	 * @see {@link UIListView}
 	 */
-	export class ItemController<TItem> extends ViewComposite {
+	export class ItemControllerView<TItem> extends ViewComposite {
 		/**
 		 * Creates a new item controller view object
-		 * - This constructor is used by {@link UIList} and should not be used directly by an application.
+		 * - This constructor is used by {@link UIListView} and should not be used directly by an application.
 		 */
 		constructor(item: TItem | ItemValueWrapper<TItem>) {
 			super();
@@ -419,23 +406,21 @@ export namespace UIList {
 		 * Implementation of {@link ViewComposite.delegateViewEvent}, emits events with the `delegate` property set to this object
 		 */
 		protected override delegateViewEvent(event: ManagedEvent) {
-			if (!super.delegateViewEvent(event)) {
-				this.emit(
-					new ManagedEvent(event.name, event.source, event.data, this, event),
-				);
-			}
+			this.emit(
+				new ManagedEvent(event.name, event.source, event.data, this, event),
+			);
 			return true;
 		}
 	}
 
 	/**
-	 * Type alias for events delegated by {@link UIList.ItemController}
-	 * - This type can be used for the argument of an event handler, for events that were originally emitted within a list item view, and have been delegated by {@link UIList.ItemController}. The list item itself is available as `event.delegate.item`.
-	 * @see {@link UIList}
-	 * @see {@link UIList.ItemController}
+	 * Type alias for events delegated by {@link UIListView.ItemControllerView}
+	 * - This type can be used for the argument of an event handler, for events that were originally emitted within a list item view, and have been delegated by {@link UIListView.ItemControllerView}. The list item itself is available as `event.delegate.item`.
+	 * @see {@link UIListView}
+	 * @see {@link UIListView.ItemControllerView}
 	 */
 	export type ItemEvent<
 		TItem,
 		TSource extends ManagedObject = ManagedObject,
-	> = DelegatedEvent<ItemController<TItem>, TSource>;
+	> = DelegatedEvent<ItemControllerView<TItem>, TSource>;
 }

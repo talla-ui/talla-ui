@@ -19,51 +19,6 @@ import type { UIColor } from "../UIColor.js";
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
 export abstract class UIContainer extends UIComponent {
-	/**
-	 * Creates a preset view class for a UI container component
-	 *
-	 * @summary This static method returns a new constructor, that applies the provided property values, bindings, and event handlers to all instances of the resulting view class.
-	 *
-	 * Refer to {@link UIComponent.with()} for details.
-	 *
-	 * @param preset Property values, bindings, and event handlers
-	 * @param content A list of view classes to be constructed as the content for each container
-	 * @returns A class that can be used to create instances with the provided property values, bindings, and event handlers.
-	 */
-	static override with<TViewClass, TComponent extends UIComponent>(
-		this: TViewClass & (new (...args: any[]) => TComponent),
-		preset: UIComponent.ViewPreset<TComponent, any, never>,
-		...content: Array<ViewClass | undefined>
-	): TViewClass;
-	static override with<TViewClass>(
-		this: TViewClass,
-		...content: Array<ViewClass | undefined>
-	): TViewClass;
-	static override with(...presets: any[]): any {
-		let preset: any;
-		if (typeof presets[0] !== "function") {
-			// first arg is a preset properties object
-			preset = presets.shift();
-		}
-		return class PresetUIContainer extends (this as any) {
-			constructor(...args: View[]) {
-				super();
-
-				// apply preset properties
-				if (preset) this.applyViewPreset({ ...preset });
-
-				// add preset or constructor content
-				if (presets.length) {
-					for (let C of presets) {
-						if (C) this.content.add(new C());
-					}
-				} else if (args.length) {
-					this.content.add(...args);
-				}
-			}
-		};
-	}
-
 	/** Creates a new container view object with the provided view content */
 	constructor(...content: View[]) {
 		super();
@@ -88,7 +43,7 @@ export abstract class UIContainer extends UIComponent {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: UIComponent.ViewPreset<
+		preset: View.ViewPreset<
 			UIComponent,
 			this,
 			"layout" | "padding" | "spacing"
@@ -230,8 +185,8 @@ export namespace UIContainer {
 		space?: string | number;
 		/** Separator line thickness (CSS length or pixels) */
 		lineThickness?: string | number;
-		/** Line separator color (`UIColor` or string), defaults to `@separator` */
-		lineColor?: UIColor | string;
+		/** Line separator color, defaults to `separator` */
+		lineColor?: UIColor;
 		/** Line separator margin (CSS length or pixels) */
 		lineMargin?: string | number;
 	};

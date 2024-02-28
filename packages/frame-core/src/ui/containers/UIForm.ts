@@ -1,15 +1,12 @@
-import { ManagedEvent } from "../../base/index.js";
+import type { ManagedEvent } from "../../base/index.js";
 import type { View } from "../../app/index.js";
 import { UIFormContext } from "../UIFormContext.js";
 import { UIColumn } from "./UIColumn.js";
-import { UIComponent } from "../UIComponent.js";
 
 /**
  * A view class for a column container that can be used to bind form controls to a single {@link UIFormContext}
  *
  * @description A form container functions like a regular column container component, but includes a {@link formContext} property that's used to manage input values.
- *
- * **JSX tag:** `<form>`
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
@@ -25,7 +22,7 @@ export class UIForm extends UIColumn {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: UIComponent.ViewPreset<UIColumn, this, "formContext"> & {
+		preset: View.ViewPreset<UIColumn, this, "formContext"> & {
 			/** Event that's emitted when the form is submitted */
 			onSubmit?: string;
 		},

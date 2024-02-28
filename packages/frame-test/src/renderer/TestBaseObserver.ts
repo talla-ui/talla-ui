@@ -4,7 +4,7 @@ import {
 	RenderContext,
 	UIComponent,
 	UIContainer,
-	UITheme,
+	UIStyle,
 	app,
 } from "@desk-framework/frame-core";
 import { TestOutputElement } from "../app/TestOutputElement.js";
@@ -31,11 +31,9 @@ const _eventNames: { [p in TestOutputElement.PlatformEvent]?: string } = {
 /** A cache of constructed style classes, indexed by class reference */
 let _baseStyles = new Map<any, Readonly<any[]>>();
 
-/** @internal Helper function to find the base style (class) from a style/overrides object (e.g. `UILabel.labelStyle`), if any */
-export function getBaseStyleClass(
-	object: UITheme.StyleConfiguration<any>,
-): undefined | (new () => UITheme.BaseStyle<string, any>) {
-	let base = (object as any)?.[UITheme.BaseStyle.OVERRIDES_BASE] || object;
+/** @internal Helper function to find the base style (class) from a style/overrides object (e.g. `UILabel.style`), if any */
+export function getBaseStyleClass(object: any): undefined | UIStyle.Type<any> {
+	let base = (object as any)?.[UIStyle.OVERRIDES_BASE] || object;
 	if (typeof base === "function") return base;
 }
 
@@ -45,14 +43,9 @@ export function clearStyles() {
 }
 
 /** @internal Helper function to get styles from a (base) style class */
-export function getClassStyles(
-	styleClass: new () => UITheme.BaseStyle<string, any>,
-) {
+export function getClassStyles(styleClass: UIStyle.Type<any>) {
 	if (!_baseStyles.has(styleClass)) {
-		_baseStyles.set(
-			styleClass,
-			(new styleClass() as UITheme.BaseStyle<string, any>).getStyles(),
-		);
+		_baseStyles.set(styleClass, (new styleClass() as UIStyle<any>).getStyles());
 	}
 	return _baseStyles.get(styleClass)!;
 }

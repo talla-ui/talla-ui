@@ -3,11 +3,7 @@ import {
 	RenderContext,
 	UISeparator,
 } from "@desk-framework/frame-core";
-import {
-	applyElementClassName,
-	applyElementStyle,
-	getCSSLength,
-} from "../../style/DOMStyle.js";
+import { applyStyles, getCSSLength } from "../../style/DOMStyle.js";
 import {
 	CLASS_SEPARATOR_LINE,
 	CLASS_SEPARATOR_LINE_VERT,
@@ -53,9 +49,13 @@ export class UISeparatorRenderer extends BaseObserver<UISeparator> {
 		if (sep) {
 			let systemName = CLASS_SEPARATOR_LINE;
 			if (sep.vertical) systemName += CLASS_SEPARATOR_LINE_VERT;
-			applyElementClassName(element, undefined, systemName);
-			applyElementStyle(
+			applyStyles(
+				sep,
 				element,
+				undefined,
+				systemName,
+				false,
+				false,
 				[
 					{
 						borderColor: sep.color,

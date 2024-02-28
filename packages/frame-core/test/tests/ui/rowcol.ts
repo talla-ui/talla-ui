@@ -1,4 +1,4 @@
-import { app, UIColumn, UILabel, UIRow } from "../../../dist/index.js";
+import { app, ui, UIColumn, UILabel, UIRow } from "../../../dist/index.js";
 import {
 	describe,
 	test,
@@ -28,14 +28,14 @@ describe("UIRow and UIColumn", (scope) => {
 	});
 
 	test("Row preset with height and content", () => {
-		let MyRow = UIRow.with({ height: 123 }, UILabel);
+		let MyRow = ui.row({ height: 123 }, UILabel);
 		let row = new MyRow();
 		expect(row).toHaveProperty("height").toBe(123);
 		expect(row).toHaveProperty("content").asArray().toBeArray(1);
 	});
 
 	test("Column preset with width", () => {
-		let MyCol = UIColumn.with({ width: 123 }, UILabel);
+		let MyCol = ui.column({ width: 123 }, UILabel);
 		let col = new MyCol();
 		expect(col).toHaveProperty("width").toBe(123);
 		expect(col).toHaveProperty("content").asArray().toBeArray(1);
@@ -54,9 +54,9 @@ describe("UIRow and UIColumn", (scope) => {
 	});
 
 	test("Rendered with height and width", async (t) => {
-		let Preset = UIRow.with(
+		let Preset = ui.row(
 			{ height: 123 },
-			UIColumn.with({ width: 123 }, UILabel.withText("foo")),
+			ui.column({ width: 123 }, ui.label("foo")),
 		);
 		app.showPage(new Preset());
 

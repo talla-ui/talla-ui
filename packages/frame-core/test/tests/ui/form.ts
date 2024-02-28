@@ -7,14 +7,14 @@ import {
 import {
 	Activity,
 	Observer,
-	UIForm,
 	UIFormContext,
-	UIFormController,
 	UILabel,
 	UIRow,
 	UITextField,
+	ViewComposite,
 	app,
 	bound,
+	ui,
 } from "../../../dist/index.js";
 
 describe("UIForm and UIFormContext", () => {
@@ -160,13 +160,17 @@ describe("UIForm and UIFormContext", () => {
 		let ctx = new UIFormContext({ foo: "bar" }).addTest("foo", (t) => {
 			t.assert(t.value && t.value.length > 1, "Too short");
 		});
-		let MyComp = UIFormController.with(
-			UIRow.with(
-				UILabel.withText(bound("formContext.errors.foo")),
-				UITextField.with({ formField: "foo" }),
+		let MyComp = ViewComposite.withPreset<{
+			formContext?: UIFormContext;
+		}>(
+			{ formContext: undefined },
+			ui.row(
+				ui.label(bound("formContext.errors.foo")),
+				ui.textField({ formField: "foo" }),
 			),
 		);
 		let view = new MyComp();
+		expect(view).toHaveProperty("formContext");
 		view.render();
 		let row = view.body as UIRow;
 		let [label, tf] = row.content.toArray() as [UILabel, UITextField];
@@ -192,14 +196,14 @@ describe("UIForm and UIFormContext", () => {
 		useTestContext((options) => {
 			options.renderFrequency = 5;
 		});
-		const ViewBody = UIRow.with(
-			UIForm.with(
+		const ViewBody = ui.row(
+			ui.form(
 				{ formContext: bound("form1") },
-				UITextField.with({ formField: "text" }),
+				ui.textField({ formField: "text" }),
 			),
-			UIForm.with(
+			ui.form(
 				{ formContext: bound("form2") },
-				UITextField.with({ formField: "text" }),
+				ui.textField({ formField: "text" }),
 			),
 		);
 		class MyActivity extends Activity {

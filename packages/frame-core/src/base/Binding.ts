@@ -24,6 +24,16 @@ export function isBinding<T = any>(value: any): value is Binding<T> {
 }
 
 /**
+ * A type that maps to the specified type _or_ a {@link Binding} instance
+ * - This type can be used in object types or function arguments, to allow both a direct value and a binding.
+ */
+export type BindingOrValue<T> = T | { [BindingOrValue.TYPE_CHECK]: () => T };
+export namespace BindingOrValue {
+	/** A symbol that's used for type checking only */
+	export const TYPE_CHECK = Symbol();
+}
+
+/**
  * A class that represents a property binding
  *
  * @description
@@ -41,7 +51,7 @@ export function isBinding<T = any>(value: any): value is Binding<T> {
  *
  * **Binding to managed lists** — {@link ManagedList} instances include special properties that may be referenced by a binding path. Use `.count` to bind to the list count, `.#first` and `.#last` to bind to the first and last item in the list, respectively.
  *
- * **Applying bindings** — Include the result of {@link bound()} in the object passed to `with` to add a bound property to a view ({@link UIComponent} or {@link ViewComposite}), e.g. `UILabel.with({ text: bound.string("labelText") })`. Note that some view classes include shortcut methods, such as `UILabel.withText(bound.string("labelText"))`, which also accept bindings.
+ * **Applying bindings** — Include the result of {@link bound()} in the preset object or parameters passed to {@link ui} factory functions or `preset` of a custom {@link ViewComposite}, to add a bound property to a view, e.g. `ui.label(bound.string("labelText"))`.
  *
  * To apply a binding to any other managed object, use to the {@link Binding.bindTo bindTo()} method. This method can be used to bind a target property, or to call a function whenever the source value changes.
  *
@@ -55,33 +65,6 @@ export function isBinding<T = any>(value: any): value is Binding<T> {
  * @see {@link bound.not}
  * @see {@link bound.list}
  * @see {@link bound.strf}
- *
- * @example
- * // A view and an activity, connected using one-way bindings:
- * const BodyView = UIColumn.with(
- *   // bind the text to a string including a nested binding:
- *   UILabel.withText(bound.strf("Username: %s", "user.name")),
- *   UIList.with(
- *     { items: bound.list("roles") },
- *     UIRow.with(
- *       // note: within the list, we can bind to 'item'
- *       UIExpandedLabel.withText(bound.string("item")),
- *       UILinkButton.withLabel("Remove", "RemoveRole")
- *     )
- *   )
- * );
- *
- * export class MyActivity extends Activity {
- *   protected ready() {
- *     this.view = new BodyView();
- *     app.showPage(this.view);
- *   }
- *   user = { name: "Foo Bar" };
- *   roles = ["Administrator", "Contributor", "Viewer"];
- *   onRemoveRole(e: UIList.ItemEvent<string>) {
- *     this.roles = this.roles.filter((s) => s !== e.delegate.item);
- *   }
- * }
  */
 export class Binding<T = any> {
 	/** Event emitter used by {@link Binding.debug()} */
@@ -264,13 +247,13 @@ export class Binding<T = any> {
 	 *
 	 * @example
 	 * // A label with text that includes a bound number property
-	 * UILabel.withText(
+	 * ui.label(
 	 *   bound("nEmails")
 	 *     .strf("You have %n email#{/s}")
 	 * )
 	 *
 	 * // Same as the following, at a slight overhead
-	 * UILabel.withText(
+	 * ui.label(
 	 *   bound.strf("You have %n email#{/s}", "nEmails")
 	 * )
 	 */
@@ -295,7 +278,7 @@ export class Binding<T = any> {
 	 *
 	 * @example
 	 * // A label that shows a short last-modified date
-	 * UILabel.withText(
+	 * ui.label(
 	 *   bound("lastModified").local("date", "short")
 	 * )
 	 */
@@ -322,7 +305,7 @@ export class Binding<T = any> {
 	 * @example
 	 * // A label that displays (localized) Yes or No
 	 * // depending on a property value
-	 * UILabel.withText(
+	 * ui.label(
 	 *   bound("isEnabled").select(strf("Yes"), strf("No"))
 	 * )
 	 */
@@ -348,7 +331,7 @@ export class Binding<T = any> {
 	 *
 	 * @example
 	 * // A label that displays a value OR (localized) "None"
-	 * UILabel.withText(
+	 * ui.label(
 	 *   bound("customer.name").else(strf("None"))
 	 * )
 	 */
@@ -375,16 +358,16 @@ export class Binding<T = any> {
 	 *
 	 * @example
 	 * // A cell that's rendered only if a string matches
-	 * UIConditional.with(
+	 * ui.conditional(
 	 *   { state: bound("tab").matches("contacts") },
-	 *   UICell.with(
+	 *   ui.cell(
 	 *     // ...
 	 *   )
 	 * )
 	 *
 	 * @example
 	 * // A cell that's hidden if a string doesn't match
-	 * UICell.with(
+	 * ui.cell(
 	 *   { hidden: bound("tab").matches("contacts").not() },
 	 *   // ...
 	 * )
@@ -415,9 +398,9 @@ export class Binding<T = any> {
 	 *
 	 * @example
 	 * // A cell that's rendered only if two bindings match
-	 * UIConditional.with(
+	 * ui.conditional(
 	 *   { state: bound("item").equals("selectedItem") },
-	 *   UICell.with(
+	 *   ui.cell(
 	 *     // ...
 	 *   )
 	 * )
@@ -521,6 +504,9 @@ export class Binding<T = any> {
 	/** A method that's used for duck typing, always returns true */
 	declare isBinding: () => true; // set on prototype
 
+	/** A method that's used for type checking, doesn't actually exist */
+	declare [BindingOrValue.TYPE_CHECK]: () => T;
+
 	/** @internal Apply this binding to a managed object using given callbacks; cascades down to child bindings (for boolean logic and string bindings) */
 	_apply: (
 		this: unknown,
@@ -597,7 +583,7 @@ Binding.prototype.isBinding = _isBinding;
  * @example
  * // A label with bound text
  * // (Note: JSX element text is bound automatically, see `JSX`)
- * UILabel.withText(
+ * ui.label(
  *   bound.strf("Welcome, %s", "user.fullName")
  * )
  */
@@ -805,7 +791,7 @@ export namespace bound {
 	 *
 	 * @example
 	 * // Show a cell only when a property is true
-	 * UICell.with(
+	 * ui.cell(
 	 *   { hidden: bound.not("showCell") },
 	 *   // ...cell content
 	 * )
@@ -826,9 +812,9 @@ export namespace bound {
 	 *
 	 * @example
 	 * // Bind a list view to a ManagedList (or array) property
-	 * UIList.with(
+	 * ui.list(
 	 *   { items: bound.list("users") },
-	 *   UIRow.with(
+	 *   ui.row(
 	 *     // ...content for each user
 	 *   )
 	 * )

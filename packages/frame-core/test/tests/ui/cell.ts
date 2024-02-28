@@ -1,4 +1,4 @@
-import { app, UICell, UILabel, UIAnimatedCell } from "../../../dist/index.js";
+import { app, UICell, UILabel, ui } from "../../../dist/index.js";
 import {
 	describe,
 	expect,
@@ -25,13 +25,13 @@ describe("UICell", (scope) => {
 	});
 
 	test("Preset with properties", () => {
-		let MyCell = UICell.with({ hidden: true });
+		let MyCell = ui.cell({ hidden: true });
 		let cell = new MyCell();
 		expect(cell).toHaveProperty("hidden").toBeTruthy();
 	});
 
 	test("Preset animation cell with properties", () => {
-		let MyCell = UIAnimatedCell.with({
+		let MyCell = ui.animatedCell({
 			hidden: true,
 			animationDuration: 200,
 			animationTiming: "ease",
@@ -42,23 +42,19 @@ describe("UICell", (scope) => {
 	});
 
 	test("Preset with focusable", () => {
-		let MyCell = UICell.with({ allowKeyboardFocus: true });
+		let MyCell = ui.cell({ allowKeyboardFocus: true });
 		let cell = new MyCell();
 		expect(cell.allowFocus).toBe(true);
 		expect(cell.allowKeyboardFocus).toBe(true);
 	});
 
 	test("Preset with content", () => {
-		let MyCell = UICell.with(
-			{ hidden: true },
-			UILabel.withText("foo"),
-			UILabel.withText("bar"),
-		);
+		let MyCell = ui.cell({ hidden: true }, ui.label("foo"));
 		let cell = new MyCell();
 		expect(cell).toHaveProperty("hidden").toBeTruthy();
-		expect(cell).toHaveProperty("content").asArray().toBeArray(2);
-		let label1 = cell.content.first() as UILabel;
-		expect(label1).toHaveProperty("text").asString().toBe("foo");
+		expect(cell).toHaveProperty("content").asArray().toBeArray(1);
+		let label = cell.content.first() as UILabel;
+		expect(label).toHaveProperty("text").asString().toBe("foo");
 	});
 
 	test("Rendered as cell", async (t) => {
@@ -68,11 +64,7 @@ describe("UICell", (scope) => {
 	});
 
 	test("Rendered with content", async (t) => {
-		let MyCell = UICell.with(
-			{ layout: { gravity: "end" } },
-			UILabel.withText("foo"),
-			UILabel.withText("bar"),
-		);
+		let MyCell = ui.cell({ layout: { gravity: "end" } }, ui.label("foo"));
 		app.showPage(new MyCell());
 		let out = await t.expectOutputAsync(100, {
 			type: "cell",
@@ -82,13 +74,13 @@ describe("UICell", (scope) => {
 	});
 
 	test("Rendered with style", async (t) => {
-		let MyCell = UICell.with(
+		let MyCell = ui.cell(
 			{
 				padding: 16,
-				cellStyle: { borderColor: "@green", borderThickness: 1 },
+				style: { borderColor: ui.color.GREEN, borderThickness: 1 },
 				layout: { distribution: "start" },
 			},
-			UILabel.withText("foo"),
+			ui.label("foo"),
 		);
 		app.showPage(new MyCell());
 		await t.expectOutputAsync(100, {
@@ -96,7 +88,7 @@ describe("UICell", (scope) => {
 			styles: {
 				distribution: "start",
 				padding: 16,
-				borderColor: "@green",
+				borderColor: ui.color.GREEN,
 				borderThickness: 1,
 			},
 		});

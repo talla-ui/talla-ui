@@ -1,10 +1,4 @@
-import {
-	UIColor,
-	UIComponent,
-	UIContainer,
-	UITheme,
-	app,
-} from "@desk-framework/frame-core";
+import { UIComponent, UIContainer, UIStyle } from "@desk-framework/frame-core";
 import {
 	CLASS_CONTAINER,
 	CLASS_TEXTCONTROL,
@@ -35,6 +29,7 @@ const _flexAlignOptions = {
 	center: "center",
 	stretch: "stretch",
 	baseline: "baseline",
+	auto: "auto",
 	"": "",
 };
 
@@ -47,22 +42,13 @@ let _cssUpdater:
 	| undefined;
 
 /** CSS classes currently defined, one CSS class name per style class */
-let _cssDefined = new Map<any, UITheme.BaseStyle<string, any>>();
+let _cssDefined = new Map<any, UIStyle<any>>();
 
 /** Pending CSS update, if any */
 let _pendingCSS: { [spec: string]: any } | undefined;
 
 /** All CSS imports */
 let _cssImports: string[] = [];
-
-/** @internal Helper method to convert a value to a CSS color string */
-export function getCSSColor(color: string | UIColor) {
-	color = String(color);
-	if (color[0] === "@") {
-		color = String(app.theme?.colors.get(color.slice(1)) || "transparent");
-	}
-	return color;
-}
 
 /** @internal Helper method to convert a CSS length unit *or* pixels number to a CSS string or given default string (e.g. `auto`) */
 export function getCSSLength(
@@ -158,7 +144,7 @@ export function setGlobalCSS(css: {
 
 /** @internal Defines a CSS class for given style class */
 export function defineStyleClass(
-	styleClass: new () => UITheme.BaseStyle<string, any>,
+	styleClass: UIStyle.Type<any>,
 	isTextStyle?: boolean,
 ) {
 	if (_cssDefined.has(styleClass)) {
@@ -176,24 +162,24 @@ export function defineStyleClass(
 		let stateSelector = selector;
 
 		// add suffixes for disabled, readonly, hovered, focused
-		if (style[UITheme.STATE_DISABLED]) stateSelector += "[disabled]";
-		else if (style[UITheme.STATE_DISABLED] === false)
+		if (style[UIStyle.STATE_DISABLED]) stateSelector += "[disabled]";
+		else if (style[UIStyle.STATE_DISABLED] === false)
 			stateSelector += ":not([disabled])";
-		if (style[UITheme.STATE_READONLY]) stateSelector += "[readonly]";
-		else if (style[UITheme.STATE_READONLY] === false)
+		if (style[UIStyle.STATE_READONLY]) stateSelector += "[readonly]";
+		else if (style[UIStyle.STATE_READONLY] === false)
 			stateSelector += ":not([readonly])";
-		if (style[UITheme.STATE_HOVERED]) stateSelector += ":hover";
-		else if (style[UITheme.STATE_HOVERED] === false)
+		if (style[UIStyle.STATE_HOVERED]) stateSelector += ":hover";
+		else if (style[UIStyle.STATE_HOVERED] === false)
 			stateSelector += ":not(:hover)";
-		if (style[UITheme.STATE_FOCUSED]) stateSelector += ":focus-visible";
-		else if (style[UITheme.STATE_FOCUSED] === false)
+		if (style[UIStyle.STATE_FOCUSED]) stateSelector += ":focus-visible";
+		else if (style[UIStyle.STATE_FOCUSED] === false)
 			stateSelector += ":not(:focus-visible)";
 
 		// pressed state is controlled by two selectors
-		if (style[UITheme.STATE_PRESSED]) {
+		if (style[UIStyle.STATE_PRESSED]) {
 			stateSelector =
 				stateSelector + ":active," + stateSelector + "[aria-pressed=true]";
-		} else if (style[UITheme.STATE_PRESSED] === false) {
+		} else if (style[UIStyle.STATE_PRESSED] === false) {
 			stateSelector =
 				stateSelector +
 				":not(:active):not([aria-pressed])," +
@@ -215,14 +201,36 @@ export function defineStyleClass(
 	return instance;
 }
 
-/** @internal Helper function to apply style classes to an element using CSS class names */
-export function applyElementClassName(
+/** @internal Helper function to apply styles to an element using CSS */
+export function applyStyles(
+	component: UIComponent,
 	element: HTMLElement,
-	BaseStyle?: new () => UITheme.BaseStyle<string, any>,
+	BaseStyle?: UIStyle.Type<any>,
 	systemName?: string,
 	isTextControl?: boolean,
 	isContainer?: boolean,
+	styleOverrides?: any[],
+	position?: UIComponent.Position,
+	layout?: UIContainer.Layout,
 ) {
+	applyElementBaseStyle(
+		element,
+		BaseStyle,
+		systemName,
+		isTextControl,
+		isContainer,
+	);
+	applyElementStyle(element, styleOverrides, position, layout, isTextControl);
+}
+
+/** @internal Helper function to apply a base style to an element (i.e. CSS class name) */
+function applyElementBaseStyle(
+	element: HTMLElement,
+	BaseStyle?: UIStyle.Type<any>,
+	systemName?: string,
+	isTextControl?: boolean,
+	isContainer?: boolean,
+): UIStyle<any> | undefined {
 	// if element is hidden, stop early
 	if (element.hidden) {
 		element.className = "";
@@ -233,14 +241,14 @@ export function applyElementClassName(
 	if (isContainer) className += " " + CLASS_CONTAINER;
 	if (systemName) className += " " + systemName;
 	if (BaseStyle) {
-		let baseName = defineStyleClass(BaseStyle, isTextControl).id;
-		if (baseName) className += " " + baseName;
+		let style = defineStyleClass(BaseStyle, isTextControl);
+		className += " " + style.id;
 	}
 	element.className = className;
 }
 
 /** @internal Helper function to apply styles to an element using inline CSS properties */
-export function applyElementStyle(
+function applyElementStyle(
 	element: HTMLElement,
 	styleOverrides?: any[],
 	position?: UIComponent.Position,
@@ -388,10 +396,9 @@ function addTextStyleCSS(
 	else if (lineBreakMode === "ellipsis")
 		(result.overflow = "hidden"), (result.textOverflow = "ellipsis");
 	else if (lineBreakMode !== undefined) result.whiteSpace = lineBreakMode;
-	let bold = textStyle.bold;
-	if (bold) result.fontWeight = "bold"; // or explicit fontWeight above
 	let italic = textStyle.italic;
 	if (italic !== undefined) result.fontStyle = italic ? "italic" : "normal";
+	if (textStyle.bold) result.fontWeight = "bold"; // or explicit fontWeight above
 	let uppercase = textStyle.uppercase;
 	if (uppercase !== undefined)
 		result.textTransform = uppercase ? "uppercase" : "none";
@@ -406,6 +413,10 @@ function addTextStyleCSS(
 	else if (strikeThrough) result.textDecoration = "line-through";
 	else if (underline === false || strikeThrough === false)
 		result.textDecoration = "none";
+	if (textStyle.userSelect) {
+		result.userSelect = "text";
+		(result as any).webkitUserSelect = "text";
+	}
 }
 
 /** Helper function to append CSS styles to given object for a given `Decoration` object */
@@ -414,14 +425,14 @@ function addDecorationStyleCSS(
 	decoration: UIComponent.DecorationStyleType,
 ) {
 	let background = decoration.background;
-	if (background !== undefined) result.background = getCSSColor(background);
+	if (background !== undefined) result.background = String(background);
 	let textColor = decoration.textColor;
-	if (textColor !== undefined) result.color = getCSSColor(textColor);
+	if (textColor !== undefined) result.color = String(textColor);
 	let borderThickness = decoration.borderThickness;
 	if (borderThickness !== undefined)
 		result.borderWidth = getCSSLength(borderThickness);
 	let borderColor = decoration.borderColor;
-	if (borderColor != undefined) result.borderColor = getCSSColor(borderColor);
+	if (borderColor != undefined) result.borderColor = String(borderColor);
 	let borderStyle = decoration.borderStyle;
 	if (borderStyle != undefined) result.borderStyle = decoration.borderStyle;
 
@@ -435,8 +446,6 @@ function addDecorationStyleCSS(
 			result.paddingInlineStart = getCSSLength(padding.start);
 		if ("end" in padding) result.paddingInlineEnd = getCSSLength(padding.end);
 	}
-	if (decoration.dropShadow !== undefined)
-		result.boxShadow = getBoxShadowCSS(decoration.dropShadow);
 	if (decoration.opacity! >= 0) result.opacity = String(decoration.opacity);
 	if (decoration.css) {
 		// copy all properties to result
@@ -492,28 +501,6 @@ function camelToCssCase(k: string) {
 			.replace(/([A-Z])/g, "-$1")
 			.toLowerCase()
 			.replace(/^(webkit|o|ms|moz)-/, "-$1-"))
-	);
-}
-
-/** Helper function to get boxShadow property for given elevation (0-1) */
-function getBoxShadowCSS(d = 0) {
-	let inset = "";
-	if (d < 0) {
-		inset = "inset ";
-		d = -d;
-	}
-	d = Math.min(1, Math.max(0, d));
-	if (!(d > 0)) return "none";
-	return (
-		`${inset}0 0 ${d * 2}rem ${d * -0.25}rem rgba(0,0,0,${d * d * 0.3}),` +
-		`${inset}0 ${d * 0.85}rem ${d * 1}rem ${d * -0.25}rem rgba(0,0,0,${
-			d * 0.15 + 0.1
-		}),` +
-		`${inset}0 ${d * d * 0.5 + d * 0.6}rem ${d * 1}rem ${
-			d * -1
-		}rem rgba(0,0,0,.4),` +
-		`${inset}0 ${d * d * 1.5}rem ${d * 3}rem ${d * -1}rem rgba(0,0,0,.3),` +
-		`${inset}0 ${d * d * 3}rem ${d * 2.5}rem ${d * -2}rem rgba(0,0,0,.3)`
 	);
 }
 

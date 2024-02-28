@@ -1,14 +1,13 @@
+import type { View } from "../../app/index.js";
 import { ManagedEvent, Observer, StringConvertible } from "../../base/index.js";
 import { UIComponent } from "../UIComponent.js";
 import { UIFormContext, _boundFormContext } from "../UIFormContext.js";
-import { UITheme } from "../UITheme.js";
+import type { UIStyle } from "../UIStyle.js";
 
 /**
  * A view class that represents a text field control
  *
  * @description A text field component is rendered on-screen as a single-line (default) or multi-line input field.
- *
- * **JSX tag:** `<textfield>`
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
@@ -27,7 +26,7 @@ export class UITextField extends UIComponent {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: UIComponent.ViewPreset<
+		preset: View.ViewPreset<
 			UIComponent,
 			this,
 			| "placeholder"
@@ -40,7 +39,7 @@ export class UITextField extends UIComponent {
 			| "disabled"
 			| "readOnly"
 			| "width"
-			| "textFieldStyle"
+			| "style"
 		> & {
 			/** Event that's emitted after the text field has updated and input focus lost */
 			onChange?: string;
@@ -108,7 +107,7 @@ export class UITextField extends UIComponent {
 	width?: string | number = undefined;
 
 	/** The style to be applied to the text field */
-	textFieldStyle: UITheme.StyleConfiguration<UITextFieldStyle> = undefined;
+	style?: UIStyle.TypeOrOverrides<UITextField.StyleType> = undefined;
 }
 
 /** @internal Text field UI component observer to manage the input value automatically */
@@ -136,6 +135,11 @@ class UITextFieldObserver extends Observer<UITextField> {
 }
 
 export namespace UITextField {
+	/** The type definition for styles applicable to {@link UITextField.style} */
+	export type StyleType = UIComponent.DimensionsStyleType &
+		UIComponent.DecorationStyleType &
+		UIComponent.TextStyleType;
+
 	/** An identifier for a text field input type */
 	export type InputType = "text" | "password" | "number" | "date" | "color";
 
@@ -148,20 +152,4 @@ export namespace UITextField {
 		| "previous"
 		| "search"
 		| "send";
-}
-
-/**
- * A style class that includes default style properties for instances of {@link UITextField}
- * - Default styles are taken from {@link UITheme}.
- * - Extend or override this class to implement custom text field styles, see {@link UITheme.BaseStyle} for details.
- */
-export class UITextFieldStyle extends UITheme.BaseStyle<
-	"TextField",
-	UIComponent.DimensionsStyleType &
-		UIComponent.DecorationStyleType &
-		UIComponent.TextStyleType
-> {
-	constructor() {
-		super("TextField", UITextFieldStyle);
-	}
 }

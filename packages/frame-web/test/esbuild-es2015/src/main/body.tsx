@@ -1,13 +1,15 @@
-import { bound, JSX } from "../../../../lib/desk-framework-web.es2015.esm.min";
-import themeToggle from "./themeToggle";
+import { bound, ui } from "../../../../lib/desk-framework-web.es2015.esm.min";
+import _themeToggle from "./_themeToggle";
 
 export default (
-	<cell>
-		<row padding={16}>
-			<h1>Sample</h1>
-			<spacer />
-			{themeToggle}
-		</row>
-		<render view={bound("countActivity.view")} />
-	</cell>
+	<ui.scroll>
+		<ui.row padding={16} position={{ gravity: "overlay" }}>
+			<ui.label title>Sample</ui.label>
+			<ui.spacer />
+			{_themeToggle}
+		</ui.row>
+		<ui.cell>
+			<ui.renderView view={bound("countActivity.view")} />
+		</ui.cell>
+	</ui.scroll>
 );

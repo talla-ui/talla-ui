@@ -14,7 +14,7 @@ export class OutputMount {
 	readonly id = _nextId++;
 
 	/** Creates a fixed full-page root element, i.e. for placement mode "page" */
-	createPageElement() {
+	createPageElement(background: UIColor | string) {
 		let elt =
 			(this._outer =
 			this._inner =
@@ -23,8 +23,8 @@ export class OutputMount {
 		elt.ariaAtomic = "true";
 		this._remount = () => {
 			elt.dir = app.i18n?.getAttributes().rtl ? "rtl" : "ltr";
-			elt.style.background = String(UIColor["@pageBackground"]);
-			elt.style.color = String(UIColor["@text"]);
+			elt.style.background = String(background);
+			elt.style.color = String(new UIColor("Text"));
 		};
 		this._remount();
 		registerHandlers(elt);
@@ -34,9 +34,9 @@ export class OutputMount {
 	/** Creates a modal root element, for use with various modal placement modes */
 	createModalElement(
 		autoCloseModal?: boolean,
-		shadeOpacity?: number,
 		refElt?: HTMLElement,
 		reducedMotion?: boolean,
+		shadeBackground?: UIColor | string,
 	) {
 		let shader = (this._outer = this._shader = document.createElement("div"));
 		shader.className = CLASS_MODAL_SHADER;
@@ -54,8 +54,7 @@ export class OutputMount {
 		}
 		setTimeout(() => {
 			if (reducedMotion) shader.style.transition = "none";
-			let color = UIColor["@modalShade"].alpha(shadeOpacity || 0);
-			shader.style.backgroundColor = String(color);
+			shader.style.backgroundColor = String(shadeBackground);
 			setFocus();
 			setTimeout(setFocus, 10);
 			setTimeout(setFocus, 100);
@@ -67,7 +66,7 @@ export class OutputMount {
 		wrapper.dir = app.i18n?.getAttributes().rtl ? "rtl" : "ltr";
 		wrapper.ariaModal = "true";
 		wrapper.ariaAtomic = "true";
-		wrapper.style.color = String(UIColor["@text"]);
+		wrapper.style.color = String(new UIColor("Text"));
 		shader.appendChild(wrapper);
 
 		// match position of wrapper with reference element, if any
@@ -108,9 +107,8 @@ export class OutputMount {
 
 		// handle remount by setting colors again
 		this._remount = () => {
-			let color = UIColor["@modalShade"].alpha(shadeOpacity || 0);
-			shader.style.backgroundColor = String(color);
-			wrapper.style.color = String(UIColor["@text"]);
+			shader.style.backgroundColor = String(shadeBackground);
+			wrapper.style.color = String(new UIColor("Text"));
 			wrapper.dir = app.i18n?.getAttributes().rtl ? "rtl" : "ltr";
 		};
 	}

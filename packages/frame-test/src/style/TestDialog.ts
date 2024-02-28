@@ -1,12 +1,11 @@
 import {
 	RenderContext,
-	UICell,
 	UITheme,
-	UIViewRenderer,
 	View,
 	ViewComposite,
 	app,
 	bound,
+	ui,
 } from "@desk-framework/frame-core";
 
 /** @internal Limited implementation of a dialog controller */
@@ -19,8 +18,8 @@ export class TestDialog
 	}
 
 	protected override createView() {
-		return new (UICell.with(
-			UIViewRenderer.with({
+		return new (ui.cell(
+			ui.renderView({
 				view: bound("dialogView"),
 				onViewUnlinked: "DialogViewUnlinked",
 			}),

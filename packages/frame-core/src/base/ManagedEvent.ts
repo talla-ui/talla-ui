@@ -8,15 +8,15 @@ import type { ManagedObject } from "./ManagedObject.js";
  *
  * In most cases, instances of ManagedEvent are created by {@link ManagedObject.emit()} itself, when provided with just the event name and data (if any). When handling events, the implicitly created ManagedEvent will be passed to the handler.
  *
- * **Types** — Events are identified by their name at runtime. In the application source code, a specific event can be identified using the type arguments of ManagedEvent. These refer to the source object type, data object, and name, respectively — e.g. `ManagedEvent<MyViewController, { foo: number }, "Foo">`, which is a type definition for an event emitted by instances of MyViewController, with name Foo and a data object that includes a `foo` number property.
+ * **Types** — Events are identified by their name at runtime. In the application source code, a specific event can be identified using the type arguments of ManagedEvent. These refer to the source object type, data object, and name, respectively — e.g. `ManagedEvent<MyView, { foo: number }, "Foo">`, which is a type definition for an event emitted by instances of MyView, with name Foo and a data object that includes a `foo` number property.
  *
- * Several types are already defined, such as {@link DelegatedEvent}, {@link ViewEvent}, {@link UIList.ItemEvent}, and {@link ManagedList.ChangeEvent}.
+ * Several types are already defined, such as {@link DelegatedEvent}, {@link ViewEvent}, {@link UIListView.ItemEvent}, and {@link ManagedList.ChangeEvent}.
  *
  * Alternatively a sub class can be defined, such as {@link ManagedChangeEvent}, if a type of event may be used with different names.
  *
  * **Delegation** — If an object handles an event by re-emitting the same event on its own, but both the original source object _and_ the delegating object should be available, a new event should be created that includes the `delegate` property. The original source can be traced back using the `source` property, while the second object is available as `delegate`. Refer to {@link DelegatedEvent} and the example below.
  *
- * **Forwarding and intercepting events** — When an event is forwarded or intercepted by a preset view (using `on...` properties of the object passed to `with(...)`), the original event is stored in the `inner` property.
+ * **Forwarding and intercepting events** — When an event is forwarded or intercepted by a preset view (using `on...` properties of the object passed to e.g. `ui.cell({ ... })`), the original event is stored in the `inner` property.
  *
  * @example
  * // Emitting an event from a managed object
@@ -40,11 +40,11 @@ import type { ManagedObject } from "./ManagedObject.js";
  * @example
  * // Handling delegated UI events
  * const BodyView = (
- *   UIList.with(
+ *   ui.list(
  *     { items: bind("items") }
- *     UIRow.with(
+ *     ui.row(
  *       // ...
- *       UIButton.withLabel("Remove", "RemoveItem")
+ *       ui.button("Remove", "RemoveItem")
  *     )
  *   )
  * )
@@ -95,7 +95,7 @@ export class ManagedEvent<
 	readonly source: TSource;
 	/** Object that contains arbitrary event data (if any) */
 	readonly data: Readonly<TData>;
-	/** An object that delegated the event, if any, e.g. {@link UIForm}, {@link UIFormController}, or {@link UIList.ItemController} */
+	/** An object that delegated the event, if any, e.g. {@link UIForm} or {@link UIListView.ItemControllerView} */
 	readonly delegate?: ManagedObject;
 	/** The original event, if the event was intercepted or propagated */
 	readonly inner?: ManagedEvent;
@@ -121,7 +121,7 @@ export class ManagedChangeEvent<
 
 /**
  * A generic type definition for an event that has been propagated by a delegate object
- * - The `source` property refers to the object that originally emitted (or intercepted) the event; however, the `delegate` property can be used to find the object that delegated the event, e.g. {@link UIForm}, {@link UIFormController}, or {@link UIList.ItemController}.
+ * - The `source` property refers to the object that originally emitted (or intercepted) the event; however, the `delegate` property can be used to find the object that delegated the event, e.g. {@link UIForm} or {@link UIListView.ItemControllerView}.
  */
 export type DelegatedEvent<
 	TDelegate extends ManagedObject,
@@ -131,6 +131,6 @@ export type DelegatedEvent<
 		| undefined,
 	TName extends string = string,
 > = ManagedEvent<TSource, TData, TName> & {
-	/** The object that delegated the event, e.g. {@link UIForm}, {@link UIFormController}, or {@link UIList.ItemController} */
+	/** The object that delegated the event, e.g. {@link UIForm} or {@link UIListView.ItemControllerView} */
 	readonly delegate: TDelegate;
 };

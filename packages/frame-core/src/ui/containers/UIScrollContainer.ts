@@ -1,14 +1,11 @@
 import { RenderContext, View } from "../../app/index.js";
-import { ManagedEvent } from "../../base/index.js";
-import { UIComponent } from "../UIComponent.js";
+import type { ManagedEvent } from "../../base/index.js";
 import { UIContainer } from "./UIContainer.js";
 
 /**
  * A view class that represents a container component that allows users to scroll, emitting asynchronous scroll events
  *
  * @description A scroll container functions like a regular container component, but allows users to scroll horizontally and/or vertically.
- *
- * **JSX tag:** `<scrollcontainer>`
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
@@ -23,7 +20,7 @@ export class UIScrollContainer extends UIContainer {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: UIComponent.ViewPreset<
+		preset: View.ViewPreset<
 			UIContainer,
 			this,
 			| "topThreshold"

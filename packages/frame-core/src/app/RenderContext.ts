@@ -24,6 +24,15 @@ export abstract class RenderContext extends ManagedObject {
 	abstract clear(): this;
 	/** Re-renders output, and relocates existing mounted view output if needed */
 	abstract remount(): this;
+
+	/** Uses the provided output transformer to animate a rendered view */
+	async animateAsync(
+		out: RenderContext.Output,
+		transformer: RenderContext.OutputTransformer,
+	): Promise<void> {
+		let t = this.transform(out);
+		if (t) await transformer.applyTransform(t);
+	}
 }
 
 export namespace RenderContext {
@@ -56,27 +65,19 @@ export namespace RenderContext {
 	 * - `mode` — One of the {@link RenderContext.PlacementMode} options.
 	 * - `mountId` — The mount element ID (e.g. HTML element ID), if `mode` is set to `mount`.
 	 * - `ref` — The existing output element that determines the position of modal view output, if any.
-	 * - `shade` — The opacity of the modal backdrop shading layer (modal shader), ranging from 0 to 1.
+	 * - `shade` — True if the modal element should be surrounded by a backdrop shade.
 	 * - `transform` — A set of functions or names of theme animations that should run for the view output. By default, showing and hiding (or removing) output can be animated.
 	 */
 	export type PlacementOptions = Readonly<{
 		mode: PlacementMode;
 		mountId?: string;
 		ref?: Output;
-		shade?: number;
+		shade?: boolean;
 		transform?: Readonly<{
-			show?: OutputTransformer | `@${string}`;
-			hide?: OutputTransformer | `@${string}`;
+			show?: OutputTransformer;
+			hide?: OutputTransformer;
 		}>;
 	}>;
-
-	/**
-	 * Type definition for a function that animates a provided output transformation
-	 * @see {@link RenderContext.OutputTransform}
-	 */
-	export type OutputTransformer = (
-		transform: OutputTransform,
-	) => Promise<unknown>;
 
 	/**
 	 * An interface for an object that represents transformations to be applied to an output element
@@ -84,14 +85,14 @@ export namespace RenderContext {
 	 * @description
 	 * This object encapsulates a view output element, as well as any transformations that can be applied to it. The transformation methods stack particular transformations on top of each other. Timing functions can be used to control the animation speed and curve. To build complex animations that consist of multiple transformations, use a step-wise approach by chaining a call to `step()`.
 	 *
-	 * This interface is used to control animations within a {@link RenderContext.OutputTransformer} function, which can be used on its own, with {@link GlobalContext.animateAsync app.animateAsync}, or from a {@link UIAnimationController}.
+	 * This interface is used to control animations within a {@link RenderContext.OutputTransformer}, which can be used on its own, with {@link GlobalContext.animateAsync app.animateAsync}, or from a {@link UIAnimationView}.
 	 *
 	 * @see {@link RenderContext.OutputTransformer}
 	 * @see {@link GlobalContext.animateAsync}
 	 */
-	export interface OutputTransform {
+	export interface OutputTransform<TElement = unknown> {
 		/** Returns the output for which this transform has been created */
-		getOutput(): Output;
+		getOutput(): Output<TElement>;
 		/** Adds a specified delay (in milliseconds) before any transformation takes place */
 		delay(ms: number): this;
 		/** Sets the timing curve for the current step to linear, with the specified duration (in milliseconds) */
@@ -104,11 +105,11 @@ export namespace RenderContext {
 		easeOut(ms: number): this;
 		/** Sets a custom bezier timing curve for the current step, with the specified duration (in milliseconds) */
 		timing(ms: number, bezier: [number, number, number, number]): this;
-		/** Adds a fade effect to the current step, with the specified target opacity */
+		/** Adds an opacity filter to the current step, with the specified target opacity */
 		fade(opacity: number): this;
-		/** Adds a blur effect to the current step, with the specified effect strength (in pixels) */
+		/** Adds a blur filter to the current step, with the specified strength (in pixels) */
 		blur(strength: number): this;
-		/** Adds a (de)saturation effect to the current step, with the specified strength */
+		/** Adds a (de)saturation filter to the current step, with the specified strength */
 		saturate(saturation: number): this;
 		/** Sets the transformation origin for the current step */
 		origin(x: number, y: number): this;
@@ -129,7 +130,7 @@ export namespace RenderContext {
 		 * @param scaleY The vertical scale factor to apply
 		 */
 		align(
-			ref?: Output,
+			ref?: Output<TElement>,
 			origin?: [number, number],
 			refOrigin?: [number, number],
 			scaleX?: number,
@@ -150,17 +151,21 @@ export namespace RenderContext {
 	}
 
 	/**
-	 * A class that represents a render-related event
-	 * - Events of this type are considered internal to the rendered component, and are ignored when coming from attached view objects. In {@link ViewComposite} instances, the {@link ViewComposite.delegateViewEvent()} method doesn't get invoked for renderer events at all. Similarly, {@link UIContainer} doesn't propagate renderer events from attached views.
+	 * An interface that describes an asynchronous transformer for a rendered output element
+	 * @see {@link RenderContext.OutputTransform}
 	 */
-	export class RendererEvent extends ManagedEvent {
-		/** Always returns true, can be used for duck-typing this type of events */
-		isRendererEvent(): true {
-			return true;
-		}
+	export interface OutputTransformer<TElement = unknown> {
+		/** Apply the transformer using the provided output transform object */
+		applyTransform(transform: OutputTransform<TElement>): Promise<unknown>;
+	}
 
-		/** Render callback, only used for `Render` events to capture output */
-		render?: RenderCallback;
+	/**
+	 * A platform-dependent effect that can be applied to a rendered output element
+	 * - This type is used to apply visual effects to rendered (cell) output elements, when referenced from @{link UICell.effect}.
+	 */
+	export interface OutputEffect<TElement = unknown> {
+		/** Apply the effect to the provided output element */
+		applyEffect(element: TElement, source: View): void;
 	}
 
 	/**
@@ -188,6 +193,20 @@ export namespace RenderContext {
 		 * - This method may be set by a previous renderer, to be able to remove the view element from a container element before displaying it as part of another container.
 		 */
 		detach?: () => void;
+	}
+
+	/**
+	 * A class that represents a render-related event
+	 * - Events of this type are considered internal to the rendered component, and are ignored when coming from attached view objects. In {@link ViewComposite} instances, the {@link ViewComposite.delegateViewEvent()} method doesn't get invoked for renderer events at all. Similarly, {@link UIContainer} doesn't propagate renderer events from attached views.
+	 */
+	export class RendererEvent extends ManagedEvent {
+		/** Always returns true, can be used for duck-typing this type of events */
+		isRendererEvent(): true {
+			return true;
+		}
+
+		/** Render callback, only used for `Render` events to capture output */
+		render?: RenderCallback;
 	}
 
 	/**

@@ -90,7 +90,7 @@ export class GlobalContext extends ManagedObject {
 	 *
 	 * @example
 	 * // Use the viewport size in a view:
-	 * UICell.with(
+	 * ui.cell(
 	 *   { hidden: bound("!viewport.portrait") }
 	 *   // ... portrait cell content
 	 * )
@@ -257,8 +257,8 @@ export class GlobalContext extends ManagedObject {
 	 * @param view The view object to be displayed
 	 * @error This method throws an error if the renderer hasn't been initialized yet.
 	 */
-	showPage(view: View) {
-		if (shownViews.has(view)) return;
+	showPage(view?: View) {
+		if (!view || shownViews.has(view)) return;
 		shownViews.set(view, true);
 
 		// render view directly, removes itself when unlinked
@@ -272,8 +272,8 @@ export class GlobalContext extends ManagedObject {
 	 * @param view The view object to be displayed within a modal dialog
 	 * @error This method throws an error if the theme modal dialog controller can't be initialized (i.e. there's no current theme, or the theme doesn't support modal dialog views).
 	 */
-	showDialog(view: View) {
-		if (shownViews.has(view)) return;
+	showDialog(view?: View) {
+		if (!view || shownViews.has(view)) return;
 		shownViews.set(view, true);
 
 		// use theme modal dialog controller to render view
@@ -366,7 +366,7 @@ export class GlobalContext extends ManagedObject {
 	/**
 	 * Runs an animation on the provided view output element
 	 *
-	 * @summary This method passes a renderer-specific transformation object to an asynchronous function, which may use methods on the transformation object to animate the view output.
+	 * @summary This method passes a renderer-specific transformation object to an asynchronous transformer, which may use methods on the transform object to animate a view.
 	 * @see {@link RenderContext.OutputTransform}
 	 * @see {@link RenderContext.OutputTransformer}
 	 * @see {@link UITheme.animations}
@@ -377,16 +377,13 @@ export class GlobalContext extends ManagedObject {
 	 */
 	async animateAsync(
 		ref: { lastRenderOutput?: RenderContext.Output },
-		animation?: RenderContext.OutputTransformer | `@${string}`,
+		animation?: RenderContext.OutputTransformer,
 	) {
 		if (!this.renderer) throw err(ERROR.GlobalContext_NoRenderer);
 		let out = ref.lastRenderOutput;
-		let t = out && this.renderer.transform(out);
-		let f =
-			typeof animation === "string"
-				? this.theme?.animations.get(animation.slice(1))
-				: animation;
-		if (t && f) await f(t);
+		if (out && animation) {
+			await this.renderer.animateAsync(out, animation);
+		}
 	}
 
 	/**

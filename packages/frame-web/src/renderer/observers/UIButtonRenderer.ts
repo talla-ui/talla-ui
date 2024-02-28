@@ -4,12 +4,9 @@ import {
 	ManagedChangeEvent,
 	RenderContext,
 	UIButton,
-	UIButtonStyle,
+	ui,
 } from "@desk-framework/frame-core";
-import {
-	applyElementClassName,
-	applyElementStyle,
-} from "../../style/DOMStyle.js";
+import { applyStyles } from "../../style/DOMStyle.js";
 import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 import { setTextOrHtmlContent } from "./UILabelRenderer.js";
 
@@ -29,7 +26,7 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 				"disabled",
 				"width",
 				"pressed",
-				"buttonStyle",
+				"style",
 			);
 	}
 
@@ -48,7 +45,7 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 				case "disabled":
 				case "pressed":
 				case "width":
-				case "buttonStyle":
+				case "style":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -119,23 +116,22 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 			else element.removeAttribute("aria-pressed");
 
 			// set CSS styles
-			applyElementClassName(
+			applyStyles(
+				button,
 				element,
-				getBaseStyleClass(button.buttonStyle) || UIButtonStyle,
+				getBaseStyleClass(button.style) ||
+					(button.primary ? ui.style.BUTTON_PRIMARY : ui.style.BUTTON),
 				undefined,
 				true,
-			);
-			applyElementStyle(
-				element,
+				false,
 				[
-					button.buttonStyle,
+					button.style,
 					button.width !== undefined
 						? { width: button.width, minWidth: 0 }
 						: undefined,
 				],
 				button.position,
 				undefined,
-				true,
 			);
 		}
 	}

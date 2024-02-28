@@ -4,22 +4,7 @@ import {
 	test,
 	useTestContext,
 } from "@desk-framework/frame-test";
-import {
-	app,
-	UICell,
-	UICloseLabel,
-	UICloseLabelStyle,
-	UIHeading1Label,
-	UIHeading1LabelStyle,
-	UIHeading2Label,
-	UIHeading2LabelStyle,
-	UIHeading3Label,
-	UIHeading3LabelStyle,
-	UILabel,
-	UILabelStyle,
-	UIParagraphLabel,
-	UIParagraphLabelStyle,
-} from "../../../dist/index.js";
+import { app, ui, UICell, UILabel, UIRow } from "../../../dist/index.js";
 
 describe("UILabel", (scope) => {
 	scope.beforeEach(() => {
@@ -41,34 +26,8 @@ describe("UILabel", (scope) => {
 		}).toThrowError();
 	});
 
-	test("Sub type constructors", () => {
-		let close = new UICloseLabel("foo");
-		expect(close.labelStyle).toBe(UICloseLabelStyle);
-
-		let [h1, h2, h3] = [
-			new UIHeading1Label("foo"),
-			new UIHeading2Label("foo"),
-			new UIHeading3Label("foo"),
-		];
-		expect(h1).toHaveProperties({
-			headingLevel: 1,
-			labelStyle: UIHeading1LabelStyle,
-		});
-		expect(h2).toHaveProperties({
-			headingLevel: 2,
-			labelStyle: UIHeading2LabelStyle,
-		});
-		expect(h3).toHaveProperties({
-			headingLevel: 3,
-			labelStyle: UIHeading3LabelStyle,
-		});
-
-		let p = new UIParagraphLabel("foo");
-		expect(p.labelStyle).toBe(UIParagraphLabelStyle);
-	});
-
 	test("Preset with properties", () => {
-		let MyLabel = UILabel.with({ text: "foo" });
+		let MyLabel = ui.label({ text: "foo" });
 		let label = new MyLabel();
 		expect(label).toHaveProperty("text").asString().toBe("foo");
 	});
@@ -77,25 +36,19 @@ describe("UILabel", (scope) => {
 		let plainLabel = new UILabel();
 		expect(plainLabel.allowFocus).toBeFalsy();
 		expect(plainLabel.allowKeyboardFocus).toBeFalsy();
-		let focusableLabel = new (UILabel.with({ allowKeyboardFocus: true }))();
+		let focusableLabel = new (ui.label({ allowKeyboardFocus: true }))();
 		expect(focusableLabel.allowFocus).toBeTruthy();
 		expect(focusableLabel.allowKeyboardFocus).toBeTruthy();
 	});
 
-	test("Preset using withText", () => {
-		let MyLabel = UILabel.withText("foo");
+	test("Preset using text", () => {
+		let MyLabel = ui.label("foo");
 		let label = new MyLabel();
 		expect(label).toHaveProperty("text").asString().toBe("foo");
 	});
 
-	test("Preset using withIcon", () => {
-		let MyLabel = UILabel.withIcon("@foo");
-		let label = new MyLabel();
-		expect(label).toHaveProperty("icon").asString().toBe("@foo");
-	});
-
 	test("Rendered with text", async (t) => {
-		let MyLabel = UILabel.with({
+		let MyLabel = ui.label({
 			text: "foo",
 			accessibleLabel: "My label",
 		});
@@ -107,13 +60,10 @@ describe("UILabel", (scope) => {
 		});
 	});
 
-	test("Rendered with styles (using withText)", async (t) => {
-		let MyLabel1 = UILabel.withText(
-			"one",
-			UILabelStyle.override({ bold: true }),
-		);
-		let MyLabel2 = UILabel.withText("two", { bold: true });
-		app.showPage(new UICell(new MyLabel1(), new MyLabel2()));
+	test("Rendered with styles (using text preset)", async (t) => {
+		let MyLabel1 = ui.label("one", ui.style.LABEL.override({ bold: true }));
+		let MyLabel2 = ui.label("two", { bold: true });
+		app.showPage(new UIRow(new MyLabel1(), new MyLabel2()));
 		let match = await t.expectOutputAsync(100, {
 			type: "label",
 			styles: { bold: true },
@@ -122,10 +72,10 @@ describe("UILabel", (scope) => {
 	});
 
 	test("Rendered with styles", async (t) => {
-		let MyLabel = UILabel.with({
+		let MyLabel = ui.label({
 			text: "foo",
 			width: 100,
-			labelStyle: { bold: true },
+			style: { bold: true },
 		});
 		let label = new MyLabel();
 		app.showPage(label);

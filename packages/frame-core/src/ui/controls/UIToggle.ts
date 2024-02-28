@@ -1,14 +1,13 @@
+import type { View } from "../../app/index.js";
 import { ManagedEvent, Observer, StringConvertible } from "../../base/index.js";
 import { UIComponent } from "../UIComponent.js";
 import { UIFormContext, _boundFormContext } from "../UIFormContext.js";
-import { UITheme } from "../UITheme.js";
+import type { UIStyle } from "../UIStyle.js";
 
 /**
  * A view control that represents a checkbox or toggle input
  *
  * @description A toggle component is rendered on-screen as a checkbox or toggle control that can be switched on and off by the user.
- *
- * **JSX tag:** `<toggle>`
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
@@ -28,15 +27,10 @@ export class UIToggle extends UIComponent {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: UIComponent.ViewPreset<
+		preset: View.ViewPreset<
 			UIComponent,
 			this,
-			| "label"
-			| "state"
-			| "formField"
-			| "disabled"
-			| "toggleStyle"
-			| "labelStyle"
+			"label" | "state" | "formField" | "disabled" | "style" | "labelStyle"
 		> & {
 			/** Event that's emitted when the toggle state has changed */
 			onChange?: string;
@@ -70,10 +64,28 @@ export class UIToggle extends UIComponent {
 	disabled = false;
 
 	/** The style to be applied to the toggle control as a whole */
-	toggleStyle: UITheme.StyleConfiguration<UIToggleStyle> = undefined;
+	style?: UIStyle.TypeOrOverrides<UIToggle.StyleType> = undefined;
 
 	/** The style to be applied to the toggle label */
-	labelStyle: UITheme.StyleConfiguration<UIToggleLabelStyle> = undefined;
+	labelStyle?: UIStyle.TypeOrOverrides<UIToggle.LabelStyleType> = undefined;
+}
+
+export namespace UIToggle {
+	/** The type definition for styles applicable to {@link UIToggle.style} */
+	export type StyleType = UIComponent.DimensionsStyleType & {
+		/** Padding within control element (in pixels or CSS string, or separate offset values) */
+		padding?: UIComponent.Offsets;
+		/** Opacity (0-1) */
+		opacity?: number;
+		/** Miscellaneous CSS attributes */
+		css?: Partial<CSSStyleDeclaration>;
+		/** Miscellaneous CSS class names (array) */
+		cssClassNames?: string[];
+	};
+
+	/** The type definition for styles applicable to {@link UIToggle.labelStyle} */
+	export type LabelStyleType = UIComponent.DecorationStyleType &
+		UIComponent.TextStyleType;
 }
 
 /** @internal Toggle UI component observer to manage the input value automatically */
@@ -97,42 +109,5 @@ class UIToggleObserver extends Observer<UIToggle> {
 				cb.formContext.set(cb.formField, cb.state, true);
 			}
 		}
-	}
-}
-
-/**
- * A style class that includes default style properties for instances of {@link UIToggle}
- * - Default styles are taken from {@link UITheme}.
- * - Extend or override this class to implement custom toggle styles, see {@link UITheme.BaseStyle} for details.
- */
-export class UIToggleStyle extends UITheme.BaseStyle<
-	"Toggle",
-	UIComponent.DimensionsStyleType & {
-		/** Padding within control element (in pixels or CSS string, or separate offset values) */
-		padding?: UIComponent.Offsets;
-		/** Opacity (0-1) */
-		opacity?: number;
-		/** Miscellaneous CSS attributes */
-		css?: Partial<CSSStyleDeclaration>;
-		/** Miscellaneous CSS class names (array) */
-		cssClassNames?: string[];
-	}
-> {
-	constructor() {
-		super("Toggle", UIToggleStyle);
-	}
-}
-
-/**
- * A style class that includes default style properties for labels on instances of {@link UIToggle}
- * - Default styles are taken from {@link UITheme}.
- * - Extend or override this class to implement custom toggle styles, see {@link UITheme.BaseStyle} for details.
- */
-export class UIToggleLabelStyle extends UITheme.BaseStyle<
-	"ToggleLabel",
-	UIComponent.DecorationStyleType & UIComponent.TextStyleType
-> {
-	constructor() {
-		super("ToggleLabel", UIToggleLabelStyle);
 	}
 }

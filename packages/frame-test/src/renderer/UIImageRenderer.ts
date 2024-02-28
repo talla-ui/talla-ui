@@ -2,7 +2,7 @@ import {
 	ManagedChangeEvent,
 	RenderContext,
 	UIImage,
-	UIImageStyle,
+	ui,
 } from "@desk-framework/frame-core";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import {
@@ -14,7 +14,7 @@ import {
 /** @internal */
 export class UIImageRenderer extends TestBaseObserver<UIImage> {
 	override observe(observed: UIImage) {
-		return super.observe(observed).observePropertyAsync("url", "imageStyle");
+		return super.observe(observed).observePropertyAsync("url", "style");
 	}
 
 	protected override async handlePropertyChange(
@@ -27,7 +27,7 @@ export class UIImageRenderer extends TestBaseObserver<UIImage> {
 				case "url":
 					this.scheduleUpdate(this.element);
 					return;
-				case "imageStyle":
+				case "style":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -48,10 +48,10 @@ export class UIImageRenderer extends TestBaseObserver<UIImage> {
 	override updateStyle(element: TestOutputElement) {
 		let image = this.observed;
 		if (image) {
-			element.styleClass = getBaseStyleClass(image.imageStyle) || UIImageStyle;
+			element.styleClass = getBaseStyleClass(image.style) || ui.style.IMAGE;
 			applyElementStyle(
 				element,
-				[image.imageStyle, { width: image.width, height: image.height }],
+				[image.style, { width: image.width, height: image.height }],
 				image.position,
 			);
 		}

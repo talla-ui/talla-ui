@@ -2,7 +2,7 @@ import {
 	ManagedChangeEvent,
 	RenderContext,
 	UILabel,
-	UILabelStyle,
+	ui,
 } from "@desk-framework/frame-core";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import {
@@ -23,7 +23,8 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 				"italic",
 				"color",
 				"width",
-				"labelStyle",
+				"dim",
+				"style",
 			);
 	}
 
@@ -42,7 +43,8 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 				case "italic":
 				case "color":
 				case "width":
-				case "labelStyle":
+				case "dim":
+				case "style":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -63,16 +65,26 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 	override updateStyle(element: TestOutputElement) {
 		let label = this.observed;
 		if (label) {
-			element.styleClass = getBaseStyleClass(label.labelStyle) || UILabelStyle;
+			element.styleClass =
+				getBaseStyleClass(label.style) ||
+				(label.title
+					? ui.style.LABEL_TITLE
+					: label.small
+					? ui.style.LABEL_SMALL
+					: ui.style.LABEL);
 			applyElementStyle(
 				element,
 				[
-					label.labelStyle,
+					label.style,
 					{
 						width: label.width,
 						bold: label.bold,
 						italic: label.italic,
 						textColor: label.color,
+						opacity:
+							label.dim === true ? 0.5 : label.dim === false ? 1 : label.dim,
+						lineBreakMode: label.wrap ? "pre-wrap" : undefined,
+						userSelect: label.selectable || undefined,
 					},
 				],
 				label.position,
@@ -83,6 +95,6 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 	updateContent(element: TestOutputElement) {
 		if (!this.observed) return;
 		element.text = String(this.observed.text);
-		element.icon = String(this.observed.icon);
+		element.icon = String(this.observed.icon || "");
 	}
 }

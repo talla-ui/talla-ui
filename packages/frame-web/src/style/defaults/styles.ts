@@ -1,27 +1,9 @@
-import {
-	UIButtonStyle,
-	UICloseLabelStyle,
-	UIColor,
-	UIComponent,
-	UIHeading1LabelStyle,
-	UIHeading2LabelStyle,
-	UIHeading3LabelStyle,
-	UIIconButtonStyle,
-	UIImageStyle,
-	UILabelStyle,
-	UIParagraphLabelStyle,
-	UIPlainButtonStyle,
-	UIPrimaryButtonStyle,
-	UITextFieldStyle,
-	UITheme,
-	UIToggleLabelStyle,
-	UIToggleStyle,
-} from "@desk-framework/frame-core";
+import { UIComponent, UIStyle, ui } from "@desk-framework/frame-core";
 
 type CombinedStyleType = UIComponent.DimensionsStyleType &
 	UIComponent.DecorationStyleType &
 	UIComponent.TextStyleType &
-	UITheme.StyleStateOptions;
+	UIStyle.StyleStateOptions;
 
 /** @internal Defaults used for control text style */
 export const defaultControlTextStyle: CombinedStyleType = {
@@ -31,15 +13,18 @@ export const defaultControlTextStyle: CombinedStyleType = {
 	lineHeight: "1.25",
 };
 
-const controlBase = UIColor["@controlBase"];
+const _color_clear = ui.color.CLEAR;
+const _color_text = ui.color.TEXT;
+const _color_primaryBackground = ui.color.PRIMARY_BG;
+const _color_controlBase = ui.color.CONTROL_BASE;
 
 const baseButtonStyle: CombinedStyleType = {
 	padding: { y: 6, x: 12 },
 	borderRadius: 12,
 	borderThickness: 1,
-	borderColor: UIColor["@clear"],
-	background: controlBase,
-	textColor: controlBase.text(),
+	borderColor: _color_clear,
+	background: _color_controlBase,
+	textColor: _color_controlBase.text(),
 	fontWeight: 600,
 	textAlign: "center",
 	lineBreakMode: "ellipsis",
@@ -49,7 +34,6 @@ const baseButtonStyle: CombinedStyleType = {
 	css: {
 		position: "relative",
 		overflow: "hidden",
-		userSelect: "none",
 		cursor: "pointer",
 		transition: "background 0.1s ease, border-color 0.1s ease",
 	},
@@ -64,82 +48,95 @@ const baseLabelStyle: CombinedStyleType = {
 };
 
 const disabledStyle: CombinedStyleType = {
-	[UITheme.STATE_DISABLED]: true,
+	[UIStyle.STATE_DISABLED]: true,
 	opacity: 0.5,
 	css: { cursor: "default" },
 };
 
 const hoveredNotDisabled: CombinedStyleType = {
-	[UITheme.STATE_HOVERED]: true,
-	[UITheme.STATE_DISABLED]: false,
+	[UIStyle.STATE_HOVERED]: true,
+	[UIStyle.STATE_DISABLED]: false,
 };
 
 const pressedNotDisabled: CombinedStyleType = {
-	[UITheme.STATE_PRESSED]: true,
-	[UITheme.STATE_DISABLED]: false,
+	[UIStyle.STATE_PRESSED]: true,
+	[UIStyle.STATE_DISABLED]: false,
 };
 
 /** @internal Default styles for `UITheme.styles` */
 export const styles: [
-	styleClass: new () => UITheme.BaseStyle<string, any>,
-	styles: UITheme.StyleSelectorList<CombinedStyleType>,
+	name: string,
+	styles: UIStyle.StyleSelectorList<CombinedStyleType>,
 ][] = [
 	[
-		UIButtonStyle,
+		"BackgroundCell",
+		[
+			{
+				background: ui.color.BACKGROUND,
+				borderThickness: 1,
+				borderColor: ui.color.BACKGROUND.fg(
+					ui.color.TEXT.alpha(0.1),
+					ui.color.TEXT.alpha(0.2),
+				),
+			},
+		],
+	],
+	[
+		"Button",
 		[
 			baseButtonStyle,
 			{
 				...hoveredNotDisabled,
-				background: controlBase.contrast(-0.1),
+				background: _color_controlBase.contrast(-0.1),
 			},
 			{
 				...pressedNotDisabled,
-				background: controlBase.contrast(0.1),
+				background: _color_controlBase.contrast(0.1),
 			},
 			disabledStyle,
 		],
 	],
 	[
-		UIPrimaryButtonStyle,
+		"PrimaryButton",
 		[
 			{
 				...baseButtonStyle,
-				background: UIColor["@primaryBackground"],
-				textColor: UIColor["@primaryBackground"].text(),
+				background: _color_primaryBackground,
+				textColor: _color_primaryBackground.text(),
 			},
 			{
 				...hoveredNotDisabled,
-				background: UIColor["@primaryBackground"].contrast(0.2),
+				background: _color_primaryBackground.contrast(0.2),
 			},
 			{
 				...pressedNotDisabled,
-				background: UIColor["@primaryBackground"].contrast(-0.1),
+				background: _color_primaryBackground.contrast(-0.1),
 			},
 			disabledStyle,
 		],
 	],
 	[
-		UIPlainButtonStyle,
+		"PlainButton",
 		[
 			{
 				...baseButtonStyle,
-				background: UIColor["@clear"],
-				textColor: UIColor["@text"],
+				background: _color_clear,
+				textColor: _color_text,
 				minWidth: 0,
 			},
 			{
 				...hoveredNotDisabled,
-				background: controlBase,
+				background: _color_controlBase,
 			},
 			{
 				...pressedNotDisabled,
-				background: controlBase.contrast(-0.1),
+				background: _color_controlBase.contrast(-0.1),
 			},
 			disabledStyle,
 		],
 	],
 	[
-		UIIconButtonStyle,
+		"IconButton",
 		[
 			{
 				minWidth: 32,
@@ -147,8 +144,8 @@ export const styles: [
 				padding: 4,
 				shrink: 0,
 				borderRadius: "50%",
-				background: UIColor["@clear"],
-				textColor: UIColor["@text"],
+				background: _color_clear,
+				textColor: _color_text,
 				lineHeight: 1,
 				fontSize: "0",
 				css: {
@@ -158,17 +155,17 @@ export const styles: [
 			},
 			{
 				...hoveredNotDisabled,
-				background: controlBase,
+				background: _color_controlBase,
 			},
 			{
 				...pressedNotDisabled,
-				background: controlBase.contrast(-0.1),
+				background: _color_controlBase.contrast(-0.1),
 			},
 			disabledStyle,
 		],
 	],
 	[
-		UILabelStyle,
+		"Label",
 		[
 			{
 				...baseLabelStyle,
@@ -176,8 +173,10 @@ export const styles: [
 			},
 		],
 	],
+	["SmallLabel", [{ ...baseLabelStyle, fontSize: "0.75em", lineHeight: 1.25 }]],
+	["TitleLabel", [{ ...baseLabelStyle, fontSize: "1.75em", fontWeight: 600 }]],
 	[
-		UICloseLabelStyle,
+		"CloseLabel",
 		[
 			{
 				...baseLabelStyle,
@@ -185,79 +184,57 @@ export const styles: [
 			},
 		],
 	],
+	["Image", [{ maxWidth: "100%" }]],
 	[
-		UIHeading1LabelStyle,
+		"TextField",
 		[
 			{
-				...baseLabelStyle,
-				fontSize: "2em",
-				fontWeight: 600,
-				letterSpacing: -0.5,
-			},
-		],
-	],
-	[
-		UIHeading2LabelStyle,
-		[{ ...baseLabelStyle, fontSize: "1.75em", fontWeight: 600 }],
-	],
-	[
-		UIHeading3LabelStyle,
-		[{ ...baseLabelStyle, fontSize: "1.375em", fontWeight: 600 }],
-	],
-	[
-		UIParagraphLabelStyle,
-		[
-			{
-				lineBreakMode: "pre-wrap",
-				lineHeight: 1.5,
-				padding: { y: 6 },
-				css: { cursor: "text" },
-			},
-		],
-	],
-	[UIImageStyle, [{ maxWidth: "100%" }]],
-	[
-		UITextFieldStyle,
-		[
-			{
-				background: UIColor["@background"],
-				textColor: UIColor["@text"],
+				background: _color_clear,
+				textColor: _color_text,
 				borderThickness: 1,
-				borderColor: controlBase.contrast(-0.1),
+				borderColor: _color_text.alpha(0.25),
 				borderRadius: 5,
 				minWidth: 96,
 				padding: 8,
 				lineBreakMode: "pre-wrap",
 				lineHeight: 1.5,
+				userSelect: true,
 				css: { cursor: "text" },
 			},
 			{
 				...hoveredNotDisabled,
-				[UITheme.STATE_READONLY]: false,
-				borderColor: controlBase.contrast(-0.2),
+				[UIStyle.STATE_READONLY]: false,
+				borderColor: _color_text.alpha(0.5),
 			},
 			{
-				[UITheme.STATE_READONLY]: true,
-				background: UIColor["@background"].contrast(-0.1),
-				borderColor: UIColor["@background"].contrast(-0.1),
-			},
-			disabledStyle,
-		],
-	],
-	[
-		UIToggleStyle,
-		[
-			{
-				padding: { y: 8 },
-				css: { userSelect: "none", cursor: "pointer" },
+				[UIStyle.STATE_READONLY]: true,
+				background: _color_text.alpha(0.1),
+				borderColor: _color_clear,
 			},
 			disabledStyle,
 		],
 	],
 	[
-		UIToggleLabelStyle,
+		"Toggle",
 		[
 			{
+				borderColor: _color_text.alpha(0.5),
+				textColor: _color_primaryBackground, // :checked fill
+				padding: { y: 4 },
+				css: { cursor: "pointer" },
+			},
+			{
+				...hoveredNotDisabled,
+				borderColor: _color_text.alpha(0.75),
+			},
+			disabledStyle,
+		],
+	],
+	[
+		"ToggleLabel",
+		[
+			{
+				textColor: _color_text, // (don't inherit :checked fill)
 				lineBreakMode: "pre-wrap",
 				lineHeight: 1.5,
 				padding: { y: 6, x: 8 },

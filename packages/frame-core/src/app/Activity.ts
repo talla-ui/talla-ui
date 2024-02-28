@@ -31,7 +31,7 @@ const _boundTheme = bound("theme");
  *
  * Activities emit `Active` and `Inactive` change events when state transitions occur.
  *
- * This class also provides a {@link view} property, which can be set to a view object. Usually, this property is set in the {@link Activity.ready()} method. Afterwards, if the activity corresponds to a full page or dialog, this method should call {@link app} methods to show the view. The view is automatically unlinked when the activity is deactivated, and the property is set to undefined.
+ * This class also provides a {@link Activity.view view} property, which can be set to a view object. Usually, this property is set in the {@link Activity.ready()} method. Afterwards, if the activity corresponds to a full page or dialog, this method should call {@link app} methods to show the view. The view is automatically unlinked when the activity is deactivated, and the property is set to undefined.
  *
  * @example
  * // Create an activity and activate it:
@@ -179,7 +179,7 @@ export class Activity extends ManagedObject {
 	/**
 	 * Deactivates the activity asynchronously
 	 * - If the activity is currently transitioning between active and inactive states, the transition will be allowed to finish before the activity is deactivated.
-	 * - Before deactivation, the activity's {@link view} property is set to undefined, unlinking the current view object, if any.
+	 * - Before deactivation, the activity's {@link Activity.view view} property is set to undefined, unlinking the current view object, if any.
 	 * @error This method throws an error if the activity has been unlinked.
 	 */
 	async deactivateAsync() {

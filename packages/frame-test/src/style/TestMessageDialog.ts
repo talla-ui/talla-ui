@@ -4,9 +4,7 @@ import {
 	RenderContext,
 	strf,
 	StringConvertible,
-	UIButton,
-	UICell,
-	UILabel,
+	ui,
 	UITheme,
 	ViewComposite,
 } from "@desk-framework/frame-core";
@@ -51,20 +49,20 @@ export class TestMessageDialog
 	}
 
 	protected override createView() {
-		return new (UICell.with(
+		return new (ui.column(
 			{ accessibleRole: "alertdialog" },
-			...this.options.messages.map((text) => UILabel.withText(text)),
-			UIButton.with({
+			...this.options.messages.map((text) => ui.label(String(text))),
+			ui.button({
 				label: this.confirmLabel,
 				onClick: "+Confirm",
 				requestFocus: true,
 			}),
-			UIButton.with({
+			ui.button({
 				hidden: !this.otherLabel,
 				label: this.otherLabel,
 				onClick: "+Other",
 			}),
-			UIButton.with({
+			ui.button({
 				hidden: !this.cancelLabel,
 				label: this.cancelLabel,
 				onClick: "+Cancel",

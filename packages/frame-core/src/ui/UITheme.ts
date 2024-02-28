@@ -8,24 +8,10 @@ import { ConfigOptions, type StringConvertible } from "../base/index.js";
 import type { UIColor } from "./UIColor.js";
 import type { UIComponent } from "./UIComponent.js";
 import type { UIIconResource } from "./UIIconResource.js";
-import type {
-	UIButtonStyle,
-	UICellStyle,
-	UIImageStyle,
-	UILabelStyle,
-	UITextFieldStyle,
-	UIToggleLabelStyle,
-	UIToggleStyle,
-} from "./index.js";
+import { UIStyle } from "./UIStyle.js";
 
-/** Default row `spacing` for new themes */
-const BASE_ROW_SPACING = 8;
-
-/** Default separator `margin` for new themes */
-const BASE_SEPARATOR_MARGIN = 8;
-
-/** Default modalDialogShadeOpacity for new themes */
-const BASE_MODAL_OPACITY = 0.3;
+/** Default row spacing and separator margin for new themes */
+const BASE_SPACING = 8;
 
 /** Default dark text color */
 const BASE_DARK_TEXT_COLOR = "#000000";
@@ -33,42 +19,26 @@ const BASE_DARK_TEXT_COLOR = "#000000";
 /** Default light text color */
 const BASE_LIGHT_TEXT_COLOR = "#ffffff";
 
-/** Next 'random' ID assigned if style definition doesn't specify one */
-let _nextStyleId = 0x1234;
-
 /**
- * A collection of default style options, colors, animations, and icons, part of the global application context
+ * A collection of default style options, colors, animations, effects, and icons, part of the global application context
  *
  * @description
  * The current application theme is available through the {@link GlobalContext.theme app.theme} property.
  *
- * To change the theme, create a new theme using {@link UITheme.clone()} and update styles, icons, animations, and/or colors. The view for all activities will be re-rendered automatically.
+ * To change the theme, create a new theme using {@link UITheme.clone()} and update styles, icons, animations, effects, and/or colors. The view for all activities will be re-rendered automatically.
  *
  */
 export class UITheme {
 	/** Returns the row spacing value from the current theme, or a default value */
-	static getRowSpacing() {
-		return app.theme ? app.theme.rowSpacing : BASE_ROW_SPACING;
+	static getSpacing() {
+		return app.theme ? app.theme.rowSpacing : BASE_SPACING;
 	}
-
-	/** Returns the separator margin value from the current theme, or a default value */
-	static getSeparatorMargin() {
-		return app.theme ? app.theme.separatorMargin : BASE_SEPARATOR_MARGIN;
-	}
-
-	/** Returns the modal dialog backdrop shade value from the current theme, or a default value */
-	static getModalDialogShadeOpacity() {
-		return app.theme ? app.theme.modalDialogShadeOpacity : BASE_MODAL_OPACITY;
-	}
-
-	/** Dialog backdrop shader opacity (used by modal dialog views), defaults to 0.3 */
-	modalDialogShadeOpacity = BASE_MODAL_OPACITY;
 
 	/** Default spacing between components in a row, defaults to 8 */
-	rowSpacing: string | number = BASE_ROW_SPACING;
+	rowSpacing: string | number = BASE_SPACING;
 
 	/** Default margin around separator components, defaults to 8 */
-	separatorMargin: string | number = BASE_SEPARATOR_MARGIN;
+	separatorMargin: string | number = BASE_SPACING;
 
 	/** Default dark text color, defaults to `#000000` */
 	darkTextColor: string = BASE_DARK_TEXT_COLOR;
@@ -83,69 +53,24 @@ export class UITheme {
 	 * A map that defines a set of predefined colors
 	 *
 	 * @description
-	 * The colors defined by this map are used by predefined {@link UIColor} objects, e.g. `UIColor["@green"]` and `UIColor["@primary"]`. Keys of this map are capitalized in the same way as these object names.
-	 *
-	 * Additional colors may be defined by an application. These can be referenced by new {@link UIColor} instances, constructed using the name of the new color prefixed with `@` — e.g. `new UIColor("@myColor")`.
-	 *
-	 * The following colors are set by default:
-	 * - black
-	 * - darkerGray
-	 * - darkGray
-	 * - gray
-	 * - lightGray
-	 * - white
-	 * - slate
-	 * - lightSlate
-	 * - red
-	 * - orange
-	 * - yellow
-	 * - lime
-	 * - green
-	 * - turquoise
-	 * - cyan
-	 * - blue
-	 * - violet
-	 * - purple
-	 * - magenta
-	 * - primary
-	 * - primaryBackground
-	 * - accent
-	 * - pageBackground
-	 * - background
-	 * - text
-	 * - separator
-	 * - controlBase
-	 * - modalShade
+	 * The colors defined by this map are used by {@link UIColor} objects that are instantiated with the color name, e.g. `ui.color("Primary")` (which returns `new UIColor("Primary")`). Default colors are also available as static properties of `ui.color()`, e.g. `ui.color.PRIMARY`.
 	 *
 	 * Color changes may not be applied to views that are already rendered. If needed, re-render content using `app.renderer.remount()`, or change the theme altogether (use {@link UITheme.clone()} to create a new theme).
 	 *
 	 * @example
 	 * useWebContext((options) => {
-	 *   options.theme.colors.set("background", UIColor["@darkerGray"]);
-	 *   options.theme.colors.set("brand", "#e0b0ff")
+	 *   options.theme.colors.set("background", ui.color.DARKER_GRAY);
+	 *   options.theme.colors.set("foo", ui.color("#e0b0ff"))
 	 *   // ...
 	 * });
 	 */
-	colors = new Map<string, UIColor | string>();
+	colors = new Map<string, UIColor>();
 
 	/**
 	 * A map that defines a set of predefined icons
 	 *
 	 * @description
-	 * The icons defined by this map are used by predefined {@link UIIconResource} objects, e.g. `UIIconResource["@close"]`. Keys of this map are capitalized in the same way as these object names. Additional icons may be defined by an application. These can be referenced by new {@link UIIconResource} instances, constructed using the name of the new icon prefixed with `@` — e.g. `new UIIconResource("@myIcon")`. This way, icons can be changed dynamically by changing the {@link UITheme} object.
-	 *
-	 * The following basic icons are defined by default:
-	 * - blank
-	 * - close
-	 * - check
-	 * - menu
-	 * - more
-	 * - plus
-	 * - minus
-	 * - expandDown
-	 * - expandUp
-	 * - expandRight
-	 * - expandLeft
+	 * The icons defined by this map are used by {@link UIIconResource} objects that are instantiated with the icon name, e.g. `ui.icon("Menu")` (which returns `new UIIconResource("Menu")`). Default icons are also available as static properties of `ui.icon()`, e.g. `ui.icon.MENU`.
 	 *
 	 * Icon changes may not be applied to views that are already rendered. If needed, re-render content using `app.renderer.remount()`.
 	 */
@@ -155,51 +80,37 @@ export class UITheme {
 	 * A map that defines a set of predefined output transform animations
 	 *
 	 * @description
-	 * The animations defined by this map can be used with the {@link GlobalContext.animateAsync} method, as well as {@link UIAnimationController} and the animations set on the {@link RenderContext.PlacementOptions} object.
-	 *
-	 * The following basic animations are defined by default:
-	 * - fade-in
-	 * - fade-out
-	 * - fade-in-up
-	 * - fade-in-down
-	 * - fade-in-left
-	 * - fade-in-right
-	 * - fade-out-up
-	 * - fade-out-down
-	 * - fade-out-left
-	 * - fade-out-right
-	 * - show-dialog
-	 * - hide-dialog
-	 * - show-menu
-	 * - hide-menu
+	 * The animations defined by this map can be used with the {@link GlobalContext.animateAsync} method, as well as {@link UIAnimationController} and the animations set on the {@link RenderContext.PlacementOptions} object. Default animations are also available as static properties of `ui.animation()`, e.g. `ui.animation.FADE_IN`.
 	 */
 	animations = new Map<string, RenderContext.OutputTransformer>();
 
 	/**
+	 * A map that defines a set of predefined output effects
+	 *
+	 * @description
+	 * The effects defined by this map can be used on rendered cell output (see {@link UICell.effect}), using `ui.effect()`. Default effects are available as static properties of `ui.effect`, e.g. `ui.effect.SHADOW`.
+	 */
+	effects = new Map<string, RenderContext.OutputEffect>();
+
+	/**
 	 * A map that defines a set of predefined styles
-	 * - This map includes base style definitions that are applied to instances of {@link UITheme.BaseStyle}. Each key is a subclass, and each value is a list of style definitions (as an array). To change the base appearance of UI components, preferably _add_ objects with style definitions to each array. The format of style definitions is the same as the arguments of {@link BaseStyle.extend}.
+	 * - This map includes base style definitions that are applied to instances of {@link UIStyle}. Each key is a base style name, and each value is a list of style definitions (as an array). To change the base appearance of UI components, preferably _add_ objects with style definitions to each array. The format of style definitions is the same as the arguments of {@link UIStyle.extend}.
+	 * - These style definitions are used by default styles (and any extensions or overrides) available as static properties of `ui.style()`, e.g. `ui.style.BUTTON`.
 	 *
 	 * @example
 	 * useWebContext((options) => {
-	 *   options.theme.styles.set(UIButtonStyle, [
-	 *     ...options.theme.styles.get(UIButtonStyle)!,
+	 *   options.theme.styles.set("Button", [
+	 *     ...options.theme.styles.get("Button")!,
 	 *     { minHeight: 48 },
 	 *   ]);
 	 *   // ... (apply the same to other button styles)
 	 * });
 	 */
-	styles: UITheme.StyleMapType<UICellStyle> &
-		UITheme.StyleMapType<UIButtonStyle> &
-		UITheme.StyleMapType<UILabelStyle> &
-		UITheme.StyleMapType<UIImageStyle> &
-		UITheme.StyleMapType<UITextFieldStyle> &
-		UITheme.StyleMapType<UIToggleStyle> &
-		UITheme.StyleMapType<UIToggleLabelStyle> = new Map();
+	styles: Map<string, UIStyle.StyleSelectorList<any>> = new Map();
 
 	/** Returns a new {@link UITheme} object that's a clone of this object */
 	clone() {
 		let result = new UITheme();
-		result.modalDialogShadeOpacity = this.modalDialogShadeOpacity;
 		result.rowSpacing = this.rowSpacing;
 		result.modalFactory = this.modalFactory;
 		result.darkTextColor = this.darkTextColor;
@@ -208,206 +119,12 @@ export class UITheme {
 		result.colors = new Map(this.colors);
 		result.styles = new Map(this.styles) as any;
 		result.animations = new Map(this.animations);
+		result.effects = new Map(this.effects);
 		return result;
 	}
 }
 
 export namespace UITheme {
-	/** A property that is used on {@link StyleStateOptions} to apply styles to hovered elements */
-	export const STATE_HOVERED = Symbol("hovered");
-	/** A property that is used on {@link StyleStateOptions} to apply styles to pressed elements */
-	export const STATE_PRESSED = Symbol("pressed");
-	/** A property that is used on {@link StyleStateOptions} to apply styles to focused elements */
-	export const STATE_FOCUSED = Symbol("focused");
-	/** A property that is used on {@link StyleStateOptions} to apply styles to disabled elements */
-	export const STATE_DISABLED = Symbol("disabled");
-	/** A property that is used on {@link StyleStateOptions} to apply styles to readonly elements */
-	export const STATE_READONLY = Symbol("readonly");
-
-	/**
-	 * Type definition for an object that includes style state options
-	 * @see {@link UITheme.StyleSelectorList}
-	 */
-	export type StyleStateOptions = {
-		[STATE_HOVERED]?: boolean;
-		[STATE_PRESSED]?: boolean;
-		[STATE_FOCUSED]?: boolean;
-		[STATE_DISABLED]?: boolean;
-		[STATE_READONLY]?: boolean;
-	};
-
-	/**
-	 * Type definition for a map that defines a set of predefined styles
-	 * @see {@link UITheme.styles}
-	 */
-	export type StyleMapType<
-		TBaseStyle extends BaseStyle<string, any>,
-		TDefinition = BaseStyle.DefinitionType<TBaseStyle>,
-	> = Map<StyleClassType<TBaseStyle>, StyleSelectorList<TDefinition>>;
-
-	/**
-	 * Type definition for a list of styles that can be applied to a UI component
-	 * @see {@link UITheme.styles}
-	 * @see {@link UITheme.BaseStyle.extend}
-	 */
-	export type StyleSelectorList<TDefinition> = Readonly<
-		TDefinition & StyleStateOptions
-	>[];
-
-	/**
-	 * Type definition for values that can be used to apply styles to a UI component
-	 * - Valid values include a subclass of {@link UITheme.BaseStyle} (such as {@link UIButtonStyle}), a style override (see {@link UITheme.BaseStyle.override}), a style definition object (with style properties such as `background`, `opacity`, `bold`, etc., determined by the styles included in the specific subclass of {@link UITheme.BaseStyle}).
-	 * - This type is used for properties such as {@link UIButton.buttonStyle} and {@link UIToggle.labelStyle}.
-	 * @see {@link UITheme.BaseStyle}
-	 */
-	export type StyleConfiguration<TBaseStyle> =
-		| StyleClassType<TBaseStyle>
-		| BaseStyle.StyleOverrides<TBaseStyle>
-		| BaseStyle.DefinitionType<TBaseStyle>
-		| undefined;
-
-	/**
-	 * Type definition for a base style class, or a class that extends a base style class
-	 * - This type matches both built-in style classes (e.g. {@link UIButtonStyle}), as well as subclasses that are created by extending one of these classes — either by using the {@link UITheme.BaseStyle.extend} method, or by defining a subclass directly using the `extends` keyword.
-	 */
-	export type StyleClassType<TBaseStyle> = (new () => TBaseStyle) & {
-		extend: (typeof BaseStyle)["extend"];
-		override: (typeof BaseStyle)["override"];
-	};
-
-	/**
-	 * A base class for defining styles that can be applied to UI components
-	 *
-	 * @description
-	 * This class is used as a base class for defining styles that can be applied to UI components, such as {@link UIButtonStyle} and {@link UIToggleLabelStyle}.
-	 *
-	 * @note This class shouldn't be used directly, but subclasses should be created for specific component styles — either by extending the class, or using the static {@link extend()} method.
-	 *
-	 * @see {@link UICellStyle}
-	 * @see {@link UIButtonStyle}
-	 * @see {@link UIImageStyle}
-	 * @see {@link UILabelStyle}
-	 * @see {@link UITextFieldStyle}
-	 * @see {@link UIToggleStyle}
-	 *
-	 * @example
-	 * const MyButtonStyle = UIButtonStyle.extend({
-	 *   background: UIColor["@primary"],
-	 *   bold: true,
-	 * });
-	 *
-	 * // apply to a button, e.g.:
-	 * const view = UICell.with(
-	 *   UIButton.with({
-	 *     buttonStyle: MyButtonStyle,
-	 *     label: "My Button",
-	 *     onClick: "MyButtonClick"
-	 *   }),
-	 *   // or:
-	 *   UIButton.withLabel("My Button", "MyButtonClick", MyButtonStyle),
-	 * );
-	 *
-	 * @example
-	 * // use the override method to apply styles directly
-	 * const view = UICell.with(
-	 *   UIButton.with({
-	 *     buttonStyle: UIButtonStyle.override({
-	 *       textColor: UIColor["@red"],
-	 *     }),
-	 *     label: "My Button",
-	 *     onClick: "MyButtonClick"
-	 *   }),
-	 * );
-	 */
-	export abstract class BaseStyle<TypeString extends string, TDefinition> {
-		/**
-		 * Creates a new subclass that includes the original styles as well as new styles
-		 * @param styles A list of style definitions to be added to the extended style; this may include multiple objects with different state options (see {@link StyleStateOptions}).
-		 * @returns A subclass of {@link BaseStyle} that includes the specified styles
-		 */
-		static extend<TypeString extends string, TDefinition>(
-			this: StyleClassType<BaseStyle<TypeString, TDefinition>>,
-			...styles: Readonly<StyleSelectorList<TDefinition>>
-		): typeof this {
-			return class extends this {
-				override getStyles() {
-					return [...super.getStyles(), ...styles];
-				}
-			} as any;
-		}
-
-		/**
-		 * Creates a style override object that can be used to apply base styles as well as the specified styles to a UI component
-		 * @param styles A list of style definitions to be added to the extended style; these may _not_ include state options (see {@link StyleStateOptions}).
-		 * @returns A style override object that can be used to apply the specified styles to a UI component (e.g. {@link UIButton.buttonStyle})
-		 */
-		static override<TypeString extends string, TDefinition>(
-			this: StyleClassType<BaseStyle<TypeString, TDefinition>>,
-			...styles: Readonly<TDefinition | undefined>[]
-		): BaseStyle.StyleOverrides<BaseStyle<TypeString, TDefinition>> {
-			return {
-				[BaseStyle.OVERRIDES_BASE]: this,
-				overrides: styles,
-			};
-		}
-
-		/**
-		 * Creates a new style object; do not use directly
-		 * - This constructor is used by the renderer to declare each style once, and doesn't need to be used otherwise.
-		 */
-		constructor(type: `${string}${TypeString}`, BaseClass: Function) {
-			let isBaseStyle = this.constructor === BaseClass;
-			this.id = type + (isBaseStyle ? "" : "_" + _nextStyleId++);
-			this.type = type;
-			this.base = app.theme?.styles.get(BaseClass as any) || ([] as any[]);
-		}
-
-		/**
-		 * Unique style ID
-		 * - This property is set by the constructor, but can be changed afterwards as long as the value is unique across different styles.
-		 */
-		readonly id: string;
-
-		/** Style type identifier */
-		readonly type: `${string}${TypeString}`;
-
-		/** Base styles, read from the current theme */
-		readonly base: Readonly<StyleSelectorList<TDefinition>>;
-
-		/**
-		 * Returns the list of styles that should be applied to a UI component
-		 * - This method is called by the renderer to declare each style once, and doesn't need to be called otherwise. It can be overridden to modify or add styles.
-		 * - The static {@link extend()} method returns a subclass that overrides this method to include the specified styles.
-		 */
-		getStyles(): Readonly<StyleSelectorList<TDefinition>> {
-			return this.base;
-		}
-	}
-
-	export namespace BaseStyle {
-		/** Symbol that's used on override objects to reference the base style class */
-		export const OVERRIDES_BASE = Symbol("style");
-
-		/** Type definition that's used to infer the definition object type for a base style class */
-		export type DefinitionType<TBaseStyle> = TBaseStyle extends BaseStyle<
-			string,
-			infer TDefinition
-		>
-			? TDefinition
-			: never;
-
-		/**
-		 * An object that includes a base style reference and style overrides
-		 * - This object is produced by {@link BaseStyle.override()} and accepted as a valid value for the {@link UITheme.StyleConfiguration} type.
-		 */
-		export type StyleOverrides<TBaseStyle> = {
-			[BaseStyle.OVERRIDES_BASE]: StyleClassType<TBaseStyle>;
-			overrides: Array<
-				Readonly<BaseStyle.DefinitionType<TBaseStyle>> | undefined
-			>;
-		};
-	}
-
 	/**
 	 * An interface that defines methods for creating modal views
 	 * - An object of this type should be assigned to {@link UITheme.modalFactory}, which is used by the `app` methods that display modal view components.
@@ -470,9 +187,9 @@ export namespace UITheme {
 		| {
 				key: string;
 				text?: StringConvertible;
-				icon?: UIIconResource | `@${string}`;
+				icon?: UIIconResource;
 				hint?: StringConvertible;
-				hintIcon?: UIIconResource | `@${string}`;
+				hintIcon?: UIIconResource;
 				labelStyle?: UIComponent.TextStyleType;
 				hintStyle?: UIComponent.TextStyleType;
 				separate?: never;

@@ -1,4 +1,4 @@
-import { UIToggle, UIFormContext, app, strf } from "../../../dist/index.js";
+import { UIToggle, UIFormContext, app, strf, ui } from "../../../dist/index.js";
 import {
 	describe,
 	expect,
@@ -19,14 +19,14 @@ describe("UIToggle", (scope) => {
 	});
 
 	test("Preset with properties", () => {
-		let MyToggle = UIToggle.with({ label: "foo", state: true });
+		let MyToggle = ui.toggle({ label: "foo", state: true });
 		let toggle = new MyToggle();
 		expect(toggle).toHaveProperty("label").toBe("foo");
 		expect(toggle).toHaveProperty("state").toBe(true);
 	});
 
 	test("Preset using form field and form context", () => {
-		let MyToggle = UIToggle.with({ formField: "foo", label: strf("Foo") });
+		let MyToggle = ui.toggle({ formField: "foo", label: strf("Foo") });
 		let toggle = new MyToggle();
 		expect(toggle).toHaveProperty("formField").toBe("foo");
 		expect(toggle).toHaveProperty("label").asString().toBe("Foo");

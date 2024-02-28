@@ -2,7 +2,7 @@ import {
 	ManagedChangeEvent,
 	RenderContext,
 	UIToggle,
-	UIToggleStyle,
+	ui,
 } from "@desk-framework/frame-core";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import {
@@ -20,7 +20,7 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 				"label",
 				"state",
 				"disabled",
-				"toggleStyle",
+				"style",
 				"labelStyle",
 			);
 	}
@@ -37,7 +37,7 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 					this.scheduleUpdate(this.element);
 					return;
 				case "disabled":
-				case "toggleStyle":
+				case "style":
 				case "labelStyle":
 					this.scheduleUpdate(undefined, this.element);
 					return;
@@ -75,9 +75,8 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 			element.disabled = toggle.disabled;
 
 			// set styles
-			element.styleClass =
-				getBaseStyleClass(toggle.toggleStyle) || UIToggleStyle;
-			applyElementStyle(element, [toggle.toggleStyle], toggle.position);
+			element.styleClass = getBaseStyleClass(toggle.style) || ui.style.TOGGLE;
+			applyElementStyle(element, [toggle.style], toggle.position);
 		}
 	}
 

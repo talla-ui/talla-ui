@@ -1,14 +1,13 @@
-import { UIColor } from "../UIColor.js";
-import { UIComponent } from "../UIComponent.js";
-import { UITheme } from "../UITheme.js";
+import type { RenderContext, View } from "../../app/index.js";
+import type { UIColor } from "../UIColor.js";
+import type { UIComponent } from "../UIComponent.js";
+import type { UIStyle } from "../UIStyle.js";
 import { UIContainer } from "./UIContainer.js";
 
 /**
  * A view class that represents a cell container component
  *
  * @description A cell container functions like a regular container component, and lays out other components either vertically (default) or horizontally.
- *
- * **JSX tag:** `<cell>`
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
@@ -18,7 +17,7 @@ export class UICell extends UIContainer {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: UIComponent.ViewPreset<
+		preset: View.ViewPreset<
 			UIContainer,
 			this,
 			| "textDirection"
@@ -26,9 +25,9 @@ export class UICell extends UIContainer {
 			| "background"
 			| "textColor"
 			| "borderRadius"
-			| "dropShadow"
 			| "opacity"
-			| "cellStyle"
+			| "effect"
+			| "style"
 		> & {
 			/** Event that's emitted when the mouse cursor enters the cell area */
 			onMouseEnter?: string;
@@ -49,41 +48,31 @@ export class UICell extends UIContainer {
 	borderRadius?: string | number = undefined;
 
 	/** Cell background color, defaults to undefined (no fill) */
-	background?: UIColor | string = undefined;
+	background?: UIColor = undefined;
 
 	/** Text color for labels within this cell */
-	textColor?: UIColor | string = undefined;
+	textColor?: UIColor = undefined;
 
 	/** Opacity level (0–1), defaults to undefined (opaque) */
 	opacity?: number = undefined;
 
-	/** Drop shadow elevation level (0–1), defaults to undefined (no dropshadow) */
-	dropShadow?: number = undefined;
+	/** An output effect that will be applied when the cell is rendered */
+	effect?: RenderContext.OutputEffect = undefined;
 
 	/** The style to be applied to this cell */
-	cellStyle?: UITheme.StyleConfiguration<UICellStyle> = undefined;
+	style?: UIStyle.TypeOrOverrides<UICell.StyleType> = undefined;
 }
 
-/**
- * A style class that includes default style properties for instances of {@link UICell}
- * - Default styles are taken from {@link UITheme}.
- * - Extend or override this class to implement custom cell styles, see {@link UITheme.BaseStyle} for details.
- */
-export class UICellStyle extends UITheme.BaseStyle<
-	"Cell",
-	UIComponent.DimensionsStyleType & UIComponent.DecorationStyleType
-> {
-	constructor() {
-		super("Cell", UICellStyle);
-	}
+export namespace UICell {
+	/** The type definition for styles applicable to {@link UICell.style} */
+	export type StyleType = UIComponent.DimensionsStyleType &
+		UIComponent.DecorationStyleType;
 }
 
 /**
  * A view class that represents a cell with animated style updates
  *
  * @description An animated cell container functions like a regular cell container (see {@link UICell}), but shows animations for all style-related updates where possible.
- *
- * **JSX tag:** `<animatedcell>`
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
@@ -93,7 +82,7 @@ export class UIAnimatedCell extends UICell {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: UIComponent.ViewPreset<
+		preset: View.ViewPreset<
 			UICell,
 			this,
 			"animationDuration" | "animationTiming"

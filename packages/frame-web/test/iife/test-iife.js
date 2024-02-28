@@ -1,23 +1,27 @@
 /// <reference path="../../lib/desk-framework-web.iife.d.ts" />
+const { app, ui, bound } = desk;
 
 (function () {
-	const ViewBody = desk.UICell.with(
-		desk.UILabel.withText(desk.bound.strf("Count: %n", "count"), {
-			bold: true,
-			fontSize: 36,
-		}),
-		desk.UISpacer.withHeight(32),
-		desk.UIRow.with(
-			{ align: "center" },
-			desk.UIButton.withLabel("Down", "CountDown"),
-			desk.UIButton.withLabel("Up", "CountUp"),
+	const ViewBody = ui.cell(
+		ui.column(
+			{ distribute: "center" },
+			ui.label(bound.strf("Count: %n", "count"), {
+				bold: true,
+				fontSize: 36,
+			}),
+			ui.spacer(0, 32),
+			ui.row(
+				{ align: "center" },
+				ui.button("Down", "CountDown"),
+				ui.button("Up", "CountUp"),
+			),
 		),
 	);
 
 	class CountActivity extends desk.Activity {
 		ready() {
 			this.view = new ViewBody();
-			desk.app.showPage(this.view);
+			app.showPage(this.view);
 		}
 		count = 0;
 		onCountDown() {
@@ -29,5 +33,5 @@
 	}
 
 	desk.useWebContext();
-	desk.app.addActivity(new CountActivity(), true);
+	app.addActivity(new CountActivity(), true);
 })();

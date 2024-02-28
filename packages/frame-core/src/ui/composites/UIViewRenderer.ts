@@ -6,35 +6,27 @@ import { Binding, ManagedEvent, Observer } from "../../base/index.js";
  *
  * @description An view renderer component renders unattached view content within its parent view component.
  *
- * **JSX tag:** `<render>`
- *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  *
  * - The rendered view is not attached to the view renderer object itself. Therefore, it must be attached to another object, such as an activity.
  */
 export class UIViewRenderer extends View {
+	constructor() {
+		super();
+		new UIViewRendererObserver().observe(this);
+	}
+
 	/**
-	 * Creates a preset controller class with a specified view binding
-	 * @param preset An object that contains a binding for the referenced view
-	 * @returns A class that can be used to create instances of this view class with the provided view binding
+	 * Applies the provided preset properties to this object
+	 * - This method is called automatically. Do not call this method after constructing an instance
 	 */
-	static with(preset: {
+	override applyViewPreset(preset: {
 		/** A binding that references the view object to be rendered */
 		view?: Binding;
 		/** Event that's emitted when the rendered view is unlinked */
 		onViewUnlinked?: string;
-	}): typeof UIViewRenderer {
-		return class PresetView extends this {
-			constructor() {
-				super();
-				this.applyViewPreset({ ...preset });
-			}
-		};
-	}
-
-	constructor() {
-		super();
-		new UIViewRendererObserver().observe(this);
+	}) {
+		super.applyViewPreset(preset);
 	}
 
 	/**

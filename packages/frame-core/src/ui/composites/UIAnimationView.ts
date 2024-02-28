@@ -1,71 +1,49 @@
-import {
-	app,
-	RenderContext,
-	ViewClass,
-	ViewComposite,
-} from "../../app/index.js";
+import { app, RenderContext, View, ViewComposite } from "../../app/index.js";
 import type { ManagedEvent } from "../../base/ManagedEvent.js";
-import type { UIComponent } from "../UIComponent.js";
 
 let _nextUpdateId = 1;
 
 /**
  * A view composite that manages animation playback on the contained view
  *
- * @description An animation controller component can be used to play animations and/or automatically play them when the contained component is shown or hidden.
- *
- * **JSX tag:** `<animation>`
+ * @description An animation controller view component can be used to play animations and/or automatically play them when the contained component is shown or hidden.
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
-export class UIAnimationController extends ViewComposite {
+export class UIAnimationView extends ViewComposite {
 	/**
-	 * Creates a preset controller class with the specified property values, bindings, and event handlers
-	 * @param preset Property values, bindings, and event handlers
-	 * @returns A class that can be used to create instances of this view class with the provided property values, bindings, and event handlers
+	 * Applies the provided preset properties to this object
+	 * - This method is called automatically. Do not call this method after constructing an instance
 	 */
-	static with(
-		preset: UIComponent.ViewPreset<
+	override applyViewPreset(
+		preset: View.ViewPreset<
 			ViewComposite,
-			UIAnimationController,
+			UIAnimationView,
 			"showAnimation" | "hideAnimation" | "repeatAnimation"
 		>,
-		Body: ViewClass,
-	): typeof UIAnimationController {
-		return class PresetView extends this {
-			constructor() {
-				super();
-				this.applyViewPreset({ ...preset });
-			}
-			override createView() {
-				return new Body();
-			}
-		};
+	) {
+		if ((preset as any).Body) {
+			let Body = (preset as any).Body;
+			this.createView = () => new Body();
+			delete (preset as any).Body;
+		}
+		super.applyViewPreset(preset);
 	}
 
 	/** Plays the specified animation on the last output element rendered by the content view */
 	async playAsync(
-		animation?: `@${string}` | RenderContext.OutputTransformer,
+		animation?: RenderContext.OutputTransformer,
 		repeat?: boolean,
 	) {
 		// prepare everything in advance
 		let renderer = app.renderer;
-		let f =
-			typeof animation === "string"
-				? app.theme?.animations.get(animation.slice(1))
-				: animation;
 		let output = this._lastOutput;
-		if (!f || !output || !renderer) return;
+		if (!animation || !output || !renderer) return;
 
 		// loop if repeating, otherwise run transform just once
 		let update = this._lastUpdate;
-		let t: RenderContext.OutputTransform | undefined | void;
-		while (
-			this.body &&
-			this._lastUpdate === update &&
-			(t = renderer.transform(output))
-		) {
-			await f(t);
+		while (this.body && this._lastUpdate === update) {
+			await renderer.animateAsync(output, animation);
 			if (!repeat) return;
 		}
 	}
@@ -118,13 +96,13 @@ export class UIAnimationController extends ViewComposite {
 	}
 
 	/** Animation that will be played automatically when the content view is shown */
-	showAnimation?: `@${string}` | RenderContext.OutputTransformer;
+	showAnimation?: RenderContext.OutputTransformer;
 
-	/** Animation that will be played when the content view is hidden (through `UIComponent.hidden` property or `UIConditional` view) */
-	hideAnimation?: `@${string}` | RenderContext.OutputTransformer;
+	/** Animation that will be played when the content view is hidden (through `UIComponent.hidden` property or `UIConditionalView`) */
+	hideAnimation?: RenderContext.OutputTransformer;
 
 	/** Animation that will be played repeatedly after the content view is shown */
-	repeatAnimation?: `@${string}` | RenderContext.OutputTransformer;
+	repeatAnimation?: RenderContext.OutputTransformer;
 
 	private _lastOutput?: RenderContext.Output;
 	private _lastUpdate?: number;

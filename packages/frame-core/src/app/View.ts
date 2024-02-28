@@ -1,5 +1,6 @@
 import {
 	Binding,
+	BindingOrValue,
 	isBinding,
 	ManagedEvent,
 	ManagedObject,
@@ -28,10 +29,10 @@ export type ViewEvent<
  * Views can be rendered on their own (using {@link GlobalContext.render app.render()}, {@link GlobalContext.showPage app.showPage()}, or {@link GlobalContext.showDialog app.showDialog()}) or included as content within another view. In most cases, a top-level view is rendered from the {@link Activity.ready()} method.
  *
  * The View class can't be used on its own. Instead, define views using the following classes and methods:
- * - {@link UIComponent} subclasses and their static `.with()` methods, e.g. `UIButton.with()`, which create **preset** view constructors for built-in UI components.
+ * - {@link UIComponent} classes, and the various {@link ui} factory functions (e.g. `ui.button(...)`) that create **preset** constructors for built-in UI components.
  * - Specifically, {@link UIContainer} classes such as {@link UICell}, {@link UIRow}, and {@link UIColumn}, which represent containers that contain further UI components (and containers). These can be used to lay out your UI.
- * - Built-in {@link ViewComposite} classes, which control an encapsulated view — such as {@link UIConditional} and {@link UIList}.
- * - The {@link ViewComposite.define()} method, which creates a custom `.with()` method that in turn creates a custom {@link ViewComposite} class.
+ * - Built-in {@link ViewComposite} classes, which control an encapsulated view — such as {@link UIConditionalView} and {@link UIListView}.
+ * - The {@link ViewComposite.withPreset()} function, which creates a custom {@link ViewComposite} subclass.
  *
  * Use the View class itself as a _type_, along with {@link ViewClass}, when referencing variables or parameters that should refer to any other view.
  *
@@ -54,7 +55,7 @@ export abstract class View extends ManagedObject {
 	/**
 	 * Applies the provided preset properties to this object
 	 *
-	 * @summary This method is called from the constructor of **preset** view classes, e.g. the result of `UILabel.with({ .. })` and {@link ViewComposite.define()}. The provided object may contain property values, bindings, and events.
+	 * @summary This method is called from the constructor of **preset** view classes, e.g. the result of `ui.label(...)` and {@link ViewComposite.withPreset()}. The provided object may contain property values, bindings, and event specifiers.
 	 *
 	 * **Property values** — These are set directly on the view object. Each property is set to the corresponding value.
 	 *
@@ -70,18 +71,22 @@ export abstract class View extends ManagedObject {
 		let events: { [eventName: string]: string } | undefined;
 		for (let p in preset) {
 			let v = (preset as any)[p];
-			if (v === undefined) continue;
 
 			// intercept and/or forward events: remember all first
 			if (p[0] === "o" && p[1] === "n" && (p[2]! < "a" || p[2]! > "z")) {
-				// add event handler: forward or substitute event
-				let eventName = p.slice(2);
-				if (!v || typeof v !== "string" || eventName === v) {
-					throw invalidArgErr("preset." + p);
+				if (v) {
+					// add event handler: forward or substitute event
+					let eventName = p.slice(2);
+					if (typeof v !== "string" || eventName === v) {
+						throw invalidArgErr("preset." + p);
+					}
+					(events || (events = Object.create(null)))[eventName] = v;
 				}
-				(events || (events = Object.create(null)))[eventName] = v;
 				continue;
 			}
+
+			// ignore undefined values, unless the property was never added
+			if (v === undefined && p in this) continue;
 
 			// apply binding or set property
 			isBinding(v) ? v.bindTo(this, p as any) : ((this as any)[p] = v);
@@ -119,4 +124,23 @@ export abstract class View extends ManagedObject {
 			};
 		}
 	}
+}
+
+export namespace View {
+	/**
+	 * Type definition for the object that can be used to initialize a preset view
+	 * @summary This type is used to put together the object type for e.g. `ui.cell(...)`, based on the provided type parameters.
+	 * - TBase is used to infer the type of the parameter accepted by {@link View.applyViewPreset()} on a subclass.
+	 * - TView is used to infer the type of a property.
+	 * - K is a string type containing all properties to take from TView.
+	 */
+	export type ViewPreset<
+		TBase extends View,
+		TView = any,
+		K extends keyof TView = never,
+	> = TBase extends {
+		applyViewPreset(preset: infer P): void;
+	}
+		? P & { [P in K]?: BindingOrValue<TView[P]> }
+		: never;
 }

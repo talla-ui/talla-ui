@@ -9,16 +9,15 @@ import {
 import {
 	Activity,
 	MessageDialogOptions,
-	UIButtonStyle,
+	UIButton,
 	UICell,
-	UIColor,
 	UIIconResource,
 	UILabel,
-	UIPrimaryButton,
 	UITheme,
 	ViewComposite,
 	app,
 	strf,
+	ui,
 } from "../../../dist/index.js";
 
 describe("TestContext", () => {
@@ -164,8 +163,7 @@ describe("TestContext", () => {
 		});
 
 		test("Cell view from single controller, handle events", async (t) => {
-			class MyView extends ViewComposite {
-				override createView = () => new UICell();
+			class MyView extends ViewComposite.withPreset({}, UICell) {
 				async onClick() {
 					await Promise.resolve();
 					throw Error("Catch me");
@@ -363,7 +361,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
-			let button = new UIPrimaryButton("Test");
+			let button = new UIButton("Test");
 			app.showPage(button);
 			await t.expectOutputAsync(100, { type: "button" });
 			let p = app.showModalMenuAsync(
@@ -412,21 +410,21 @@ describe("TestContext", () => {
 		});
 
 		test("Select icons are mirrored in RTL", () => {
-			let icon = new UIIconResource("test").setMirrorRTL();
+			let icon = new UIIconResource("Test").setMirrorRTL();
 			expect(icon.isMirrorRTL()).toBe(true);
 
 			// check on standard icons
 			let app = useTestContext();
-			expect(app.theme!.icons.get("chevronNext")!.isMirrorRTL()).toBe(true);
-			expect(app.theme!.icons.get("chevronBack")!.isMirrorRTL()).toBe(true);
-			expect(app.theme!.icons.get("chevronUp")!.isMirrorRTL()).toBe(false);
-			expect(app.theme!.icons.get("chevronDown")!.isMirrorRTL()).toBe(false);
+			expect(app.theme!.icons.get("ChevronNext")!.isMirrorRTL()).toBe(true);
+			expect(app.theme!.icons.get("ChevronBack")!.isMirrorRTL()).toBe(true);
+			expect(app.theme!.icons.get("ChevronUp")!.isMirrorRTL()).toBe(false);
+			expect(app.theme!.icons.get("ChevronDown")!.isMirrorRTL()).toBe(false);
 		});
 
 		describe("Base styles", () => {
 			test("Extend base style using static method", () => {
-				let MyStyle = UIButtonStyle.extend({
-					textColor: UIColor["@green"],
+				let MyStyle = ui.style.BUTTON.extend({
+					textColor: ui.color.GREEN,
 				});
 				let expectStyles = expect(new MyStyle())
 					.toHaveMethod("getStyles")
@@ -435,41 +433,39 @@ describe("TestContext", () => {
 				let styles = new MyStyle().getStyles();
 				expect(styles[styles.length - 1])
 					.toHaveProperty("textColor")
-					.toBe(UIColor["@green"]);
+					.toBe(ui.color.GREEN);
 			});
 
 			test("Extend base style using class", () => {
-				class MyStyle extends UIButtonStyle {
+				class MyStyle extends ui.style.BUTTON {
 					override getStyles() {
-						return [...super.getStyles(), { textColor: UIColor["@green"] }];
+						return [...super.getStyles(), { textColor: ui.color.GREEN }];
 					}
 				}
 				expect(() => new MyStyle()).not.toThrowError();
 			});
 
 			test("Override base style", () => {
-				let override = UIButtonStyle.override({
-					textColor: UIColor["@green"],
+				let override = ui.style.BUTTON.override({
+					textColor: ui.color.GREEN,
 				});
 				expect(override.overrides).toBeArray(1);
 				expect(override.overrides[0])
 					.toHaveProperty("textColor")
-					.toBe(UIColor["@green"]);
+					.toBe(ui.color.GREEN);
 			});
 
 			test("Styles cache is cleared on context clear", (t) => {
 				let app = useTestContext();
-				app.theme!.styles.set(UIButtonStyle, [
-					{ textColor: UIColor["@green"] },
-				]);
-				let MyButtonStyle = UIButtonStyle.extend({ padding: 8 });
+				app.theme!.styles.set("Button", [{ textColor: ui.color.GREEN }]);
+				let MyButtonStyle = ui.style.BUTTON.extend({ padding: 8 });
 				let styles = new MyButtonStyle().getStyles().slice(-2);
-				expect(styles[0]).toHaveProperty("textColor").toBe(UIColor["@green"]);
+				expect(styles[0]).toHaveProperty("textColor").toBe(ui.color.GREEN);
 				expect(styles[1]).toHaveProperty("padding").toBe(8);
 
 				t.log("Clearing test context");
 				app = useTestContext();
-				app.theme!.styles.set(UIButtonStyle, [{ padding: 0 }]);
+				app.theme!.styles.set("Button", [{ padding: 0 }]);
 				styles = new MyButtonStyle().getStyles().slice(-2);
 				expect(styles[0]).not.toHaveProperty("textColor");
 				expect(styles[1]).toHaveProperty("padding").toBe(8);

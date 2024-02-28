@@ -1,4 +1,4 @@
-import { app, UIImage } from "../../../dist/index.js";
+import { app, ui, UIImage } from "../../../dist/index.js";
 import {
 	describe,
 	expect,
@@ -18,14 +18,14 @@ describe("UIImage", (scope) => {
 		expect(image).toHaveProperty("url").asString().toBe("foo.png");
 	});
 
-	test("Preset using withUrl", () => {
-		let MyImage = UIImage.withUrl("foo.png");
+	test("Preset using url", () => {
+		let MyImage = ui.image("foo.png");
 		let image = new MyImage();
 		expect(image).toHaveProperty("url").asString().toBe("foo.png");
 	});
 
 	test("Preset with properties", () => {
-		let MyImage = UIImage.with({ url: "foo.png" });
+		let MyImage = ui.image({ url: "foo.png" });
 		let image = new MyImage();
 		expect(image).toHaveProperty("url").asString().toBe("foo.png");
 	});
@@ -34,13 +34,13 @@ describe("UIImage", (scope) => {
 		let plainImage = new UIImage();
 		expect(plainImage.allowFocus).toBeFalsy();
 		expect(plainImage.allowKeyboardFocus).toBeFalsy();
-		let focusableImage = new (UIImage.with({ allowKeyboardFocus: true }))();
+		let focusableImage = new (ui.image({ allowKeyboardFocus: true }))();
 		expect(focusableImage.allowFocus).toBeTruthy();
 		expect(focusableImage.allowKeyboardFocus).toBeTruthy();
 	});
 
 	test("Rendered with image url", async (t) => {
-		let MyImage = UIImage.with({
+		let MyImage = ui.image({
 			url: "foo.png",
 			accessibleLabel: "My image",
 		});

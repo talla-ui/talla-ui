@@ -3,24 +3,19 @@ import {
 	ManagedChangeEvent,
 	RenderContext,
 	StringConvertible,
+	ui,
 	UIColor,
 	UIIconResource,
 	UILabel,
-	UILabelStyle,
 } from "@desk-framework/frame-core";
-import {
-	applyElementClassName,
-	applyElementStyle,
-	getCSSColor,
-	getCSSLength,
-} from "../../style/DOMStyle.js";
+import { applyStyles, getCSSLength } from "../../style/DOMStyle.js";
 import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 
 const CHEVRON_ICONS = {
-	up: "@chevronUp",
-	down: "@chevronDown",
-	next: "@chevronNext",
-	back: "@chevronBack",
+	up: ui.icon.CHEVRON_UP,
+	down: ui.icon.CHEVRON_DOWN,
+	next: ui.icon.CHEVRON_NEXT,
+	back: ui.icon.CHEVRON_BACK,
 };
 
 /** @internal */
@@ -35,7 +30,8 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 				"italic",
 				"color",
 				"width",
-				"labelStyle",
+				"dim",
+				"style",
 			);
 	}
 
@@ -54,7 +50,8 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 				case "italic":
 				case "color":
 				case "width":
-				case "labelStyle":
+				case "dim":
+				case "style":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -78,26 +75,33 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 	override updateStyle(element: HTMLElement) {
 		let label = this.observed;
 		if (label) {
-			applyElementClassName(
+			applyStyles(
+				label,
 				element,
-				getBaseStyleClass(label.labelStyle) || UILabelStyle,
+				getBaseStyleClass(label.style) ||
+					(label.title
+						? ui.style.LABEL_TITLE
+						: label.small
+						? ui.style.LABEL_SMALL
+						: ui.style.LABEL),
 				undefined,
 				true,
-			);
-			applyElementStyle(
-				element,
+				false,
 				[
-					label.labelStyle,
+					label.style,
 					{
 						width: label.width,
 						bold: label.bold,
 						italic: label.italic,
 						textColor: label.color,
+						opacity:
+							label.dim === true ? 0.5 : label.dim === false ? 1 : label.dim,
+						lineBreakMode: label.wrap ? "pre-wrap" : undefined,
+						userSelect: label.selectable || undefined,
 					},
 				],
 				label.position,
 				undefined,
-				true,
 			);
 		}
 	}
@@ -114,10 +118,10 @@ type TextContentProperties = {
 	icon?: StringConvertible;
 	iconSize?: string | number;
 	iconMargin?: string | number;
-	iconColor?: UIColor | string;
+	iconColor?: UIColor;
 	chevron?: "up" | "down" | "back" | "next";
 	chevronSize?: string | number;
-	chevronColor?: UIColor | string;
+	chevronColor?: UIColor;
 };
 
 /** @internal Helper function to set the (text or html) content for given element */
@@ -205,15 +209,12 @@ const _memoizedIcons: { [memo: string]: HTMLElement } = {};
 /** Memoized function to create an icon element for given icon name/content, size, and color */
 function getIconElt(content: TextContentProperties) {
 	let icon = content.icon;
-	if (typeof icon === "string" && icon[0] === "@") {
-		icon = app.theme?.icons.get(icon.slice(1));
-	}
 	let mirrorRTL = false;
 	if (icon instanceof UIIconResource) {
 		if (icon.isMirrorRTL()) mirrorRTL = true;
 	}
 	let size = getCSSLength(content.iconSize, "1.5rem");
-	let color = content.iconColor ? getCSSColor(content.iconColor) : "";
+	let color = content.iconColor ? String(content.iconColor) : "";
 	let iconSource = String(icon || "");
 	let memo = iconSource + ":" + size + ":" + color;
 	if (_memoizedIcons[memo]) {

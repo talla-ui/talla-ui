@@ -1,4 +1,4 @@
-import { app, UISeparator } from "../../../dist/index.js";
+import { app, ui, UISeparator } from "../../../dist/index.js";
 import {
 	describe,
 	expect,
@@ -20,16 +20,16 @@ describe("UISeparator", (scope) => {
 	});
 
 	test("Preset with properties", () => {
-		let MySeparator = UISeparator.with({
+		let MySeparator = ui.separator({
 			thickness: 2,
 			margin: 8,
-			color: "@green",
+			color: ui.color.GREEN,
 			vertical: true,
 		});
 		let sep = new MySeparator();
 		expect(sep).toHaveProperty("thickness").toBe(2);
 		expect(sep).toHaveProperty("margin").toBe(8);
-		expect(sep).toHaveProperty("color").toBe("@green");
+		expect(sep).toHaveProperty("color").toBe(ui.color.GREEN);
 		expect(sep).toHaveProperty("vertical").toBe(true);
 	});
 

@@ -1,5 +1,4 @@
-import { View } from "../../app/index.js";
-import { UIComponent } from "../UIComponent.js";
+import type { View } from "../../app/index.js";
 import { UITheme } from "../UITheme.js";
 import { UIContainer } from "./UIContainer.js";
 
@@ -8,15 +7,13 @@ import { UIContainer } from "./UIContainer.js";
  *
  * @description A row container lays out its contained components horizontally.
  *
- * **JSX tag:** `<row>`
- *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
 export class UIRow extends UIContainer {
 	/** Creates a new row container view object with the provided view content */
 	constructor(...content: View[]) {
 		super(...content);
-		this.spacing = UITheme.getRowSpacing();
+		this.spacing = UITheme.getSpacing();
 	}
 
 	/**
@@ -24,7 +21,7 @@ export class UIRow extends UIContainer {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: UIComponent.ViewPreset<UIContainer, this, "height" | "align">,
+		preset: View.ViewPreset<UIContainer, this, "height" | "align" | "gravity">,
 	) {
 		super.applyViewPreset(preset);
 	}
@@ -34,7 +31,13 @@ export class UIRow extends UIContainer {
 
 	/**
 	 * Alignment of content along the horizontal axis
-	 * - If this property is set, its value overrides `distribution` from the {@link UIContainer.layout} object.
+	 * - If this property is set, its value overrides {@link UIContainer.Layout layout.distribution}.
 	 */
 	align?: UIContainer.Layout["distribution"] = undefined;
+
+	/**
+	 * Alignment of content along the vertical axis
+	 * - If this property is set, its value overrides {@link UIContainer.Layout layout.gravity}.
+	 */
+	gravity?: UIContainer.Layout["gravity"] = undefined;
 }

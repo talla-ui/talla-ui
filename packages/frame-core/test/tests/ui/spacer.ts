@@ -1,4 +1,4 @@
-import { app, UISpacer } from "../../../dist/index.js";
+import { app, ui, UISpacer } from "../../../dist/index.js";
 import {
 	describe,
 	expect,
@@ -24,10 +24,9 @@ describe("UISpacer", (scope) => {
 	});
 
 	test("Preset using dimensions", () => {
-		let widthSpacer = new (UISpacer.withWidth(10))();
-		expect(widthSpacer).toHaveProperty("width").toBe(10);
-		let heightSpacer = new (UISpacer.withHeight(10))();
-		expect(heightSpacer).toHaveProperty("height").toBe(10);
+		let spacer = new (ui.spacer(10, 10))();
+		expect(spacer).toHaveProperty("width").toBe(10);
+		expect(spacer).toHaveProperty("height").toBe(10);
 	});
 
 	test("Rendered", async (t) => {

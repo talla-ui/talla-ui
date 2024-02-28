@@ -2,13 +2,10 @@ import {
 	ManagedChangeEvent,
 	RenderContext,
 	UITextField,
-	UITextFieldStyle,
+	ui,
 } from "@desk-framework/frame-core";
 import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
-import {
-	applyElementClassName,
-	applyElementStyle,
-} from "../../style/DOMStyle.js";
+import { applyStyles } from "../../style/DOMStyle.js";
 
 /** @internal */
 export class UITextFieldRenderer extends BaseObserver<UITextField> {
@@ -21,7 +18,7 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 				"disabled",
 				"readOnly",
 				"width",
-				"textFieldStyle",
+				"style",
 			);
 	}
 
@@ -39,7 +36,7 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 				case "disabled":
 				case "readOnly":
 				case "width":
-				case "textFieldStyle":
+				case "style":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -70,23 +67,21 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 			element.readOnly = !!textField.readOnly;
 
 			// apply other CSS styles
-			applyElementClassName(
+			applyStyles(
+				textField,
 				element,
-				getBaseStyleClass(textField.textFieldStyle) || UITextFieldStyle,
+				getBaseStyleClass(textField.style) || ui.style.TEXTFIELD,
 				undefined,
 				true,
-			);
-			applyElementStyle(
-				element,
+				false,
 				[
-					textField.textFieldStyle,
+					textField.style,
 					textField.width !== undefined
 						? { width: textField.width, minWidth: 0 }
 						: undefined,
 				],
 				textField.position,
 				undefined,
-				true,
 			);
 		}
 	}

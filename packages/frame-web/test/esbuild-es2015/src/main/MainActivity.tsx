@@ -1,9 +1,9 @@
 import {
 	app,
 	UIButton,
-	UIColor,
 	ViewEvent,
 	Activity,
+	ui,
 } from "../../../../lib/desk-framework-web.es2015.esm.min";
 import { CountActivity } from "../count/CountActivity";
 import body from "./body";
@@ -28,8 +28,12 @@ export class MainActivity extends Activity {
 		this.selectedTheme = e.source.value!;
 		app.theme = app.theme.clone();
 		app.theme.colors.set(
-			"background",
-			this.selectedTheme === "dark" ? "#111" : UIColor["@white"],
+			"Background",
+			this.selectedTheme === "dark" ? ui.color("#111") : ui.color.WHITE,
+		);
+		app.theme.colors.set(
+			"Primary",
+			this.selectedTheme === "dark" ? ui.color.GREEN : ui.color.BLUE,
 		);
 	}
 }

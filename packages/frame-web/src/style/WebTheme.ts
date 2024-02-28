@@ -15,6 +15,7 @@ import {
 import { MessageDialog } from "./MessageDialog.js";
 import { ModalMenu } from "./ModalMenu.js";
 import { animations } from "./defaults/animations.js";
+import { effects } from "./defaults/effects.js";
 import { colors } from "./defaults/colors.js";
 import { makeBaseCSS } from "./defaults/css.js";
 import { icons } from "./defaults/icons.js";
@@ -77,6 +78,7 @@ export class WebTheme extends UITheme {
 		this.modalFactory = new ModalFactory();
 		this.icons = new Map(icons);
 		this.animations = new Map(animations);
+		this.effects = new Map(effects);
 		this.colors = new Map(colors);
 		this.styles = new Map(styles) as any;
 	}

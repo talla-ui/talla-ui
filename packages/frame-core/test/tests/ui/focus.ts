@@ -1,16 +1,17 @@
 import {
-	app,
-	UIButton,
-	UICell,
-	ViewComposite,
-	ViewEvent,
-} from "../../../dist/index.js";
-import {
 	describe,
 	expect,
 	test,
 	useTestContext,
 } from "@desk-framework/frame-test";
+import {
+	UIButton,
+	UICell,
+	ViewComposite,
+	ViewEvent,
+	app,
+	ui,
+} from "../../../dist/index.js";
 
 describe("Focus management", (scope) => {
 	scope.beforeEach(() => {
@@ -20,7 +21,7 @@ describe("Focus management", (scope) => {
 	});
 
 	test("Single element, initial focus", async (t) => {
-		let MyCell = UICell.with({ requestFocus: true, allowFocus: true });
+		let MyCell = ui.cell({ requestFocus: true, allowFocus: true });
 		let cell = new MyCell();
 		app.showPage(cell);
 		let elt = (await t.expectOutputAsync(100, { type: "cell" })).getSingle();
@@ -28,7 +29,7 @@ describe("Focus management", (scope) => {
 	});
 
 	test("Single element, request focus", async (t) => {
-		let MyCell = UICell.with({ allowFocus: true });
+		let MyCell = ui.cell({ allowFocus: true });
 		let cell = new MyCell();
 		app.showPage(cell);
 		await t.expectOutputAsync(100, { type: "cell" });
@@ -37,12 +38,8 @@ describe("Focus management", (scope) => {
 	});
 
 	test("Single view composite, request focus", async (t) => {
-		const Preset = UICell.with({ allowFocus: true });
-		class MyView extends ViewComposite {
-			protected override createView() {
-				return new Preset();
-			}
-		}
+		const Preset = ui.cell({ allowFocus: true });
+		const MyView = ViewComposite.withPreset({}, Preset);
 		let view = new MyView();
 		app.showPage(view);
 		await t.expectOutputAsync(100, { type: "cell" });
@@ -51,9 +48,9 @@ describe("Focus management", (scope) => {
 	});
 
 	test("Focus requests", async (t) => {
-		let MyCell = UICell.with(
-			UIButton.withLabel("first").with({ requestFocus: true }),
-			UIButton.withLabel("second"),
+		let MyCell = ui.cell(
+			ui.button({ requestFocus: true, label: "first" }),
+			ui.button("second"),
 		);
 
 		t.log("Focusing first");
@@ -72,14 +69,14 @@ describe("Focus management", (scope) => {
 	test("Focusing one element blurs another", async (t) => {
 		let events: string[] = [];
 		let done = false;
-		const Preset = UICell.with(
-			UICell.with({
+		const Preset = ui.cell(
+			ui.cell({
 				onBeforeRender: "Cell1Ref",
 				onFocusIn: "+Cell1Focus",
 				onFocusOut: "+Cell1Focus",
 				allowFocus: true,
 			}),
-			UICell.with({
+			ui.cell({
 				onBeforeRender: "Cell2Ref",
 				onFocusIn: "+Done",
 				allowFocus: true,

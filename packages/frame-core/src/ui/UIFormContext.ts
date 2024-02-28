@@ -20,21 +20,21 @@ export const _boundFormContext = bound("formContext");
  *
  * The overall validity of the form context can be determined using the {@link UIFormContext.validateAll()} method and the {@link UIFormContext.valid valid} property.
  *
- * To use a UIFormContext object with {@link UITextField} or {@link UIToggle} components, set their `formField` property to a field name, and include them in a {@link UIForm} container or {@link UIFormController} view. These view objects both contain a `formContext` property, which is bound and used by the input components. Alternatively, add a `formContext` property directly to your activity (see examples).
+ * To use a UIFormContext object with {@link UITextField} or {@link UIToggle} components, set their `formField` property to a field name, and include them in a {@link UIForm} container or add a `formContext` property directly to your activity or view composite (see examples).
  *
  * To use a UIFormContext object with any other (custom) view, add a `formContext` property binding and handle changes to obtain the current input value using the {@link UIFormContext.get()} method. When the user inputs a new value, use the {@link UIFormContext.set()} method to set and validate the value.
  *
  * @example
  * // Use form fields in a form
- * const FormView = UIForm.with(
+ * const FormView = ui.form(
  *   { formContext: bound("fooForm") },
- *   UITextField.with({ formField: "foo" }),
- *   UILabel.with({
+ *   ui.textField({ formField: "foo" }),
+ *   ui.label({
  *     style: myStyles.errorLabel,
  *     hidden: bound.not("fooForm.errors.foo"),
  *     text: bound.string("fooForm.errors.foo.message")
  *   }),
- *   UIPrimaryButton.withLabel("Go", "Submit")
+ *   ui.button("Go", "Submit")
  * );
  *
  * class MyActivity extends Activity {
@@ -57,8 +57,8 @@ export const _boundFormContext = bound("formContext");
  *
  * @example
  * // Use form fields with formContext on the activity
- * const MyView = UICell.with(
- *   UITextField.with({ formField: "foo" }),
+ * const MyView = ui.cell(
+ *   ui.textField({ formField: "foo" }),
  *   // ...
  * );
  *

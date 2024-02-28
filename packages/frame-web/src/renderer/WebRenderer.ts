@@ -3,6 +3,7 @@ import {
 	AsyncTaskQueue,
 	Observer,
 	RenderContext,
+	UIColor,
 	View,
 	app,
 } from "@desk-framework/frame-core";
@@ -26,6 +27,8 @@ export class WebRenderer extends RenderContext {
 			},
 		);
 		if (options.reducedMotion) this.setReducedMotion(true);
+		this._pageBackground = options.pageBackground;
+		this._modalBackground = options.modalShadeBackground;
 	}
 
 	/** Schedules the provided callback in the rendering queue */
@@ -82,7 +85,7 @@ export class WebRenderer extends RenderContext {
 								}
 								break;
 							case "page":
-								mount.createPageElement();
+								mount.createPageElement(this._pageBackground);
 								this.setDocumentTitle(output.source);
 								break;
 							case "modal":
@@ -90,9 +93,9 @@ export class WebRenderer extends RenderContext {
 							case "dialog":
 								mount.createModalElement(
 									autoCloseModal,
-									output.place.shade,
 									output.place.ref && (output.place.ref.element as any),
 									this._reducedMotion,
+									output.place.shade ? this._modalBackground : "transparent",
 								);
 								break;
 							default: // "none"
@@ -190,5 +193,7 @@ export class WebRenderer extends RenderContext {
 	private _mounts: Map<number, OutputMount>;
 	private _queue: AsyncTaskQueue;
 	private _reducedMotion?: boolean;
+	private _pageBackground: UIColor | string;
+	private _modalBackground: UIColor | string;
 	private _raf?: any;
 }

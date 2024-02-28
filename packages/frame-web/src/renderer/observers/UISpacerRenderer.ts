@@ -3,7 +3,7 @@ import {
 	RenderContext,
 	UISpacer,
 } from "@desk-framework/frame-core";
-import { applyElementStyle } from "../../style/DOMStyle.js";
+import { applyStyles } from "../../style/DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
 
 /** @internal */
@@ -48,8 +48,13 @@ export class UISpacerRenderer extends BaseObserver<UISpacer> {
 			let { width, height, minWidth, minHeight } = spacer;
 			let hasMinimum = minWidth !== undefined || minHeight !== undefined;
 			let hasFixed = width !== undefined || height !== undefined;
-			applyElementStyle(
+			applyStyles(
+				spacer,
 				element,
+				undefined,
+				undefined,
+				false,
+				false,
 				[
 					{
 						width,

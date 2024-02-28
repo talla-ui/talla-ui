@@ -260,10 +260,11 @@ export class WebOutputTransform implements RenderContext.OutputTransform {
 		if (!this._duration || elt.dataset[DATA_REDUCE_MOTION]) {
 			elt.style.transition = "";
 		} else {
-			elt.style.transitionProperty = "transform,filter";
-			elt.style.transitionDelay = this._delay + "ms";
-			elt.style.transitionDuration = this._duration + "ms";
-			elt.style.transitionTimingFunction = this._timingFunction || "linear";
+			let transition =
+				this._duration + "ms " + (this._timingFunction || "linear");
+			if (this._delay) transition += " " + this._delay + "ms";
+			elt.style.transition =
+				"transform " + transition + ", filter " + transition;
 		}
 		elt.style.filter = this._filter.join(" ") || "none";
 		elt.style.transform = this._transform.join(" ") || "none";

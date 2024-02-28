@@ -4,10 +4,9 @@ import {
 	ManagedObject,
 	app,
 	UILabel,
-	UIList,
+	UIListView,
 	UIRow,
-	UICell,
-	UIButton,
+	ui,
 } from "../../../dist/index.js";
 import {
 	describe,
@@ -16,7 +15,7 @@ import {
 	useTestContext,
 } from "@desk-framework/frame-test";
 
-describe("UIList", (scope) => {
+describe("UIListView", (scope) => {
 	scope.beforeEach(() => {
 		useTestContext((options) => {
 			options.renderFrequency = 5;
@@ -24,10 +23,10 @@ describe("UIList", (scope) => {
 	});
 
 	// helper function to get the text content of a list
-	function getListText(list: UIList) {
+	function getListText(list: UIListView) {
 		return list.body.content.map((c) =>
 			String(
-				c instanceof UIList.ItemController
+				c instanceof UIListView.ItemControllerView
 					? c.body instanceof UILabel && c.body.text
 					: c instanceof UILabel && c.text,
 			),
@@ -54,14 +53,14 @@ describe("UIList", (scope) => {
 	}
 
 	test("Constructor", () => {
-		let list = new UIList();
+		let list = new UIListView();
 		expect(list.items).toBeUndefined();
 		expect(list.firstIndex).toBe(0);
 		expect(list.maxItems).toBeUndefined();
 	});
 
 	test("Empty list, rendered", async (t) => {
-		let MyList = UIList.with({}, UILabel);
+		let MyList = ui.list({}, UILabel);
 		app.showPage(new MyList());
 		await t.expectOutputAsync(50, { type: "column" });
 	});
@@ -70,11 +69,7 @@ describe("UIList", (scope) => {
 		let list = new ManagedList(...getObjects());
 
 		t.log("Creating instance");
-		let MyList = UIList.with(
-			{ items: list },
-			UILabel.withText(bound("item.name")),
-			UIRow,
-		);
+		let MyList = ui.list({ items: list }, ui.label(bound("item.name")), UIRow);
 		let instance = new MyList();
 
 		t.log("Rendering");
@@ -98,12 +93,12 @@ describe("UIList", (scope) => {
 				super();
 				this.autoAttach("view");
 			}
-			declare view?: UIList;
+			declare view?: UIListView;
 			array = ["a", "b", "c"];
 		}
-		let MyList = UIList.with(
+		let MyList = ui.list(
 			{ items: bound("array") },
-			UILabel.withText(bound("item")),
+			ui.label(bound("item")),
 			UIRow,
 		);
 		let instance = new MyList();
@@ -121,9 +116,9 @@ describe("UIList", (scope) => {
 		let list = new ManagedList(a, b, c);
 
 		t.log("Creating instance");
-		let MyList = UIList.with(
+		let MyList = ui.list(
 			{ items: list, animation: { duration: 100 } },
-			UILabel.withText(bound("item.name")),
+			ui.label(bound("item.name")),
 			UIRow,
 		);
 		let instance = new MyList();
@@ -142,10 +137,10 @@ describe("UIList", (scope) => {
 	});
 
 	test("Event propagation through list", async (t) => {
-		let Preset = UIRow.with(
-			UIList.with(
+		let Preset = ui.row(
+			ui.list(
 				{ items: new ManagedList(...getObjects()) },
-				UILabel.with({ text: bound("item.name"), onClick: "Foo" }),
+				ui.label({ text: bound("item.name"), onClick: "Foo" }),
 				UIRow,
 			),
 		);
@@ -155,9 +150,10 @@ describe("UIList", (scope) => {
 		view.listen((event) => {
 			if (event.name === "Foo") {
 				t.count("foo");
-				if (!(event.delegate instanceof UIList.ItemController))
+				if (!(event.delegate instanceof UIListView.ItemControllerView))
 					t.fail("Wrong delegate type");
-				let delegate = event.delegate as UIList.ItemController<NamedObject>;
+				let delegate =
+					event.delegate as UIListView.ItemControllerView<NamedObject>;
 				t.count(delegate.item.name);
 			}
 		});
@@ -174,11 +170,11 @@ describe("UIList", (scope) => {
 
 	test("Bookend", async (t) => {
 		t.log("Creating instance");
-		let MyList = UIList.with(
+		let MyList = ui.list(
 			{ items: new ManagedList(...getObjects()) },
-			UILabel.withText(bound("item.name")),
+			ui.label(bound("item.name")),
 			UIRow,
-			UILabel.withText("end"),
+			ui.label("end"),
 		);
 		let instance = new MyList();
 
@@ -195,9 +191,9 @@ describe("UIList", (scope) => {
 
 	test("Pagination", async (t) => {
 		t.log("Creating instance");
-		let MyList = UIList.with(
+		let MyList = ui.list(
 			{ items: new ManagedList(...getObjects()), maxItems: 2 },
-			UILabel.withText(bound("item.name")),
+			ui.label(bound("item.name")),
 			UIRow,
 		);
 		let instance = new MyList();
@@ -230,9 +226,9 @@ describe("UIList", (scope) => {
 	});
 
 	test("Get indices for components", async (t) => {
-		let Preset = UIList.with(
+		let Preset = ui.list(
 			{ items: new ManagedList(...getObjects()) },
-			UILabel.with({ text: bound("item.name"), allowFocus: true }),
+			ui.label({ text: bound("item.name"), allowFocus: true }),
 		);
 		let list = new Preset();
 		app.showPage(list);
@@ -244,11 +240,11 @@ describe("UIList", (scope) => {
 	});
 
 	test("Request focus on list focuses previous item", async (t) => {
-		let Preset = UICell.with(
-			UIButton.withLabel("button"),
-			UIList.with(
+		let Preset = ui.cell(
+			ui.button("button"),
+			ui.list(
 				{ items: new ManagedList(...getObjects()), allowKeyboardFocus: true },
-				UILabel.with({ text: bound("item.name"), allowFocus: true }),
+				ui.label({ text: bound("item.name"), allowFocus: true }),
 			),
 		);
 		app.showPage(new Preset());
@@ -269,9 +265,9 @@ describe("UIList", (scope) => {
 	});
 
 	test("Arrow key focus, single list", async (t) => {
-		let Preset = UIList.with(
+		let Preset = ui.list(
 			{ items: new ManagedList(...getObjects()), allowKeyboardFocus: true },
-			UILabel.with({
+			ui.label({
 				text: bound("item.name"),
 				allowFocus: true,
 				onArrowDownKeyPress: "FocusNext",

@@ -2,13 +2,9 @@ import {
 	ManagedChangeEvent,
 	RenderContext,
 	UIToggle,
-	UIToggleLabelStyle,
-	UIToggleStyle,
+	ui,
 } from "@desk-framework/frame-core";
-import {
-	applyElementClassName,
-	applyElementStyle,
-} from "../../style/DOMStyle.js";
+import { applyStyles } from "../../style/DOMStyle.js";
 import { CLASS_TOGGLE_WRAPPER } from "../../style/defaults/css.js";
 import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 
@@ -23,7 +19,7 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 				"label",
 				"state",
 				"disabled",
-				"toggleStyle",
+				"style",
 				"labelStyle",
 			);
 	}
@@ -40,7 +36,7 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 					this.scheduleUpdate(this.element);
 					return;
 				case "disabled":
-				case "toggleStyle":
+				case "style":
 				case "labelStyle":
 					this.scheduleUpdate(undefined, this.element);
 					return;
@@ -76,22 +72,30 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 		let toggle = this.observed;
 		if (toggle) {
 			// set element (wrapper) style
-			applyElementClassName(
+			applyStyles(
+				toggle,
 				element,
-				getBaseStyleClass(toggle.toggleStyle) || UIToggleStyle,
+				getBaseStyleClass(toggle.style) || ui.style.TOGGLE,
 				CLASS_TOGGLE_WRAPPER,
+				false,
+				false,
+				[toggle.style],
+				toggle.position,
 			);
-			applyElementStyle(element, [toggle.toggleStyle], toggle.position);
 
 			// set label style
 			let label = element.lastChild as HTMLLabelElement;
-			applyElementClassName(
+			applyStyles(
+				toggle,
 				label,
-				getBaseStyleClass(toggle.labelStyle) || UIToggleLabelStyle,
+				getBaseStyleClass(toggle.labelStyle) || ui.style.TOGGLE_LABEL,
 				undefined,
 				true,
+				false,
+				[toggle.labelStyle],
+				undefined,
+				undefined,
 			);
-			applyElementStyle(label, [toggle.labelStyle], undefined, undefined, true);
 
 			// set disabled state
 			let checkbox = element.firstChild as HTMLInputElement;

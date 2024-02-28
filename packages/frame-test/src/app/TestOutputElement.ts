@@ -71,7 +71,7 @@ export class TestOutputElement {
 
 	/**
 	 * A combination of all style overrides applied to this element
-	 * - Styles are copied as specified in objects such as {@link UIButton.buttonStyle}, {@link UICell.cellStyle}, etc.
+	 * - Styles are copied as specified in objects such as {@link UIButton.style}, {@link UICell.style}, etc.
 	 * - While styles are usually applied to the rendered element in a platform-dependent way, the test renderer simply stores all properties in this object, which therefore has no specific type.
 	 */
 	styles: Record<string, any> = {};

@@ -35,7 +35,7 @@ export interface OutputSelectFilter {
 	accessibleLabel?: string;
 	/** A set of style overrides that must be applied to a matching element (values for e.g. `bold`, `textColor`, and `background`) */
 	styles?: Record<string, any>;
-	/** A base style class that must be applied to a matching element (e.g. a subclass of {@link UIButtonStyle}, {@link UICellStyle}, and {@link UIToggleStyle}) */
+	/** A base style class that must be applied to a matching element (i.e. a subclass of {@link UIStyle}) */
 	styleClass?: any;
 }
 

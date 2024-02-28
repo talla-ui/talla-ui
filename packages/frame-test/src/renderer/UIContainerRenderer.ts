@@ -5,7 +5,7 @@ import {
 	UIContainer,
 	UIRow,
 	UIScrollContainer,
-	UITheme,
+	UIStyle,
 	View,
 	app,
 } from "@desk-framework/frame-core";
@@ -102,7 +102,7 @@ export class UIContainerRenderer<
 
 	override updateStyle(
 		element: TestOutputElement,
-		BaseStyle?: new () => UITheme.BaseStyle<string, any>,
+		BaseStyle?: UIStyle.Type<any>,
 		styles?: any[],
 	) {
 		let container = this.observed;

@@ -42,6 +42,8 @@ export function makeBaseCSS() {
 			textOverflow: "ellipsis",
 			textDecoration: "none",
 			fontWeight: "normal",
+			userSelect: "none",
+			webkitUserSelect: "none",
 		},
 		[`.${CLASS_UI}.${CLASS_CONTAINER}`]: {
 			position: "relative",
@@ -58,10 +60,16 @@ export function makeBaseCSS() {
 			flexDirection: "row",
 			alignItems: "center",
 			flexGrow: "0",
+			// make sure row is full width for gravity=overlay:
+			left: 0,
+			right: 0,
 		},
 		[`.${CLASS_UI}.${CLASS_COLUMN}`]: {
 			alignItems: "center",
 			flexGrow: "0",
+			// make sure column is full height for gravity=overlay:
+			top: "0",
+			bottom: 0,
 		},
 		[`.${CLASS_UI}.${CLASS_CELL}`]: {
 			justifyContent: "center",
@@ -70,6 +78,9 @@ export function makeBaseCSS() {
 			top: "0",
 			minHeight: "0",
 			flexShrink: "0",
+		},
+		[`.${CLASS_UI}.${CLASS_CELL}>.${CLASS_COLUMN}`]: {
+			flexGrow: "1",
 		},
 
 		// set sensible placeholder style
@@ -130,10 +141,9 @@ export function makeBaseCSS() {
 			cursor: "default",
 		},
 		[`.${CLASS_MODAL_WRAPPER}`]: {
-			flexDirection: "row",
-			justifyContent: "center",
-			alignContent: "center",
 			display: "flex",
+			flexDirection: "column",
+			justifyContent: "start", // otherwise tall modals expand above frame
 			position: "absolute",
 			width: "100%",
 			height: "100%",
@@ -176,27 +186,33 @@ export function makeBaseCSS() {
 			left: "2px",
 			outlineOffset: "0",
 			color: "inherit",
-			border: "1px solid currentcolor",
-			borderRadius: "0",
+			borderStyle: "solid",
+			borderWidth: "1px",
+			borderColor: "inherit",
+			borderRadius: "2px",
 			width: "1rem",
 			height: "1rem",
 			padding: "0",
 			margin: "0",
 			cursor: "inherit",
 		},
+		[`.${CLASS_UI}.${CLASS_TOGGLE_WRAPPER}>input:checked`]: {
+			background: "currentColor",
+			borderColor: "transparent",
+		},
 		[`.${CLASS_UI}.${CLASS_TOGGLE_WRAPPER}>input:checked::after`]: {
 			content: "''",
 			boxSizing: "border-box",
 			display: "block",
 			position: "absolute",
-			top: "0.015rem",
+			top: "0",
 			left: ".25rem",
-			height: ".7rem",
+			height: ".65rem",
 			width: ".4rem",
 			transform: "rotate(45deg)",
-			borderWidth: "0 2.5px 2.5px 0",
+			borderWidth: "0 2px 2px 0",
 			borderStyle: "solid",
-			borderColor: "inherit",
+			borderColor: "#fff",
 		},
 	};
 }

@@ -8,14 +8,8 @@ import {
 	ManagedEvent,
 	Activity,
 	UIButton,
-	UICell,
-	UIIconButton,
-	UIIconButtonStyle,
-	UIPlainButton,
-	UIPlainButtonStyle,
-	UIPrimaryButton,
-	UIPrimaryButtonStyle,
 	app,
+	ui,
 } from "../../../dist/index.js";
 
 describe("UIButton", (scope) => {
@@ -31,42 +25,21 @@ describe("UIButton", (scope) => {
 		expect(button).toHaveProperty("label").asString().toBe("foo");
 	});
 
-	test("Sub type constructors", () => {
-		let buttons = [
-			new UIButton("foo"),
-			new UIPrimaryButton("foo"),
-			new UIPlainButton("foo"),
-			new UIIconButton("foo"),
-		];
-		expect(buttons.map((b) => b.buttonStyle)).toBeArray([
-			undefined,
-			UIPrimaryButtonStyle,
-			UIPlainButtonStyle,
-			UIIconButtonStyle,
-		]);
-	});
-
 	test("Preset with properties", () => {
-		let MyButton = UIButton.with({ label: "foo" });
+		let MyButton = ui.button({ label: "foo" });
 		let button = new MyButton();
 		expect(button).toHaveProperty("label").asString().toBe("foo");
 		expect(button.disableKeyboardFocus).toBeFalsy();
 	});
 
-	test("Preset using withLabel", () => {
-		let MyButton = UIButton.withLabel("foo");
+	test("Preset using label", () => {
+		let MyButton = ui.button("foo");
 		let button = new MyButton();
 		expect(button).toHaveProperty("label").asString().toBe("foo");
 	});
 
-	test("Preset using withIcon", () => {
-		let MyButton = UIButton.withIcon("@foo");
-		let button = new MyButton();
-		expect(button).toHaveProperty("icon").asString().toBe("@foo");
-	});
-
 	test("Preset with +Event:target", () => {
-		let MyButton = UIButton.with({ label: "foo", onClick: "+Test:foo" });
+		let MyButton = ui.button({ label: "foo", onClick: "+Test:foo" });
 		let button = new MyButton();
 		let events: ManagedEvent[] = [];
 		button.listen((e) => {
@@ -83,7 +56,7 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Rendered with label", async (t) => {
-		let MyButton = UIButton.with({
+		let MyButton = ui.button({
 			label: "foo",
 			accessibleLabel: "My button",
 		});
@@ -95,10 +68,10 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Rendered with styles", async (t) => {
-		let MyButton = UIButton.with({
+		let MyButton = ui.button({
 			label: "foo",
-			buttonStyle: {
-				borderColor: "@orange",
+			style: {
+				borderColor: ui.color.ORANGE,
 				bold: true,
 			},
 		});
@@ -106,14 +79,14 @@ describe("UIButton", (scope) => {
 		await t.expectOutputAsync(100, {
 			text: "foo",
 			styles: {
-				borderColor: "@orange",
+				borderColor: ui.color.ORANGE,
 				bold: true,
 			},
 		});
 	});
 
 	test("Click event propagation", async (t) => {
-		const ViewBody = UICell.with(UIButton.withLabel("Button", "ButtonClicked"));
+		const ViewBody = ui.cell(ui.button("Button", "ButtonClicked"));
 		class MyActivity extends Activity {
 			protected override ready() {
 				this.view = new ViewBody();
@@ -130,7 +103,7 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Button navigation with navigateTo", async (t) => {
-		let MyButton = UIButton.with({
+		let MyButton = ui.button({
 			label: "foo",
 			navigateTo: "/foo",
 		});

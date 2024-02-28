@@ -2,7 +2,7 @@ import {
 	ManagedChangeEvent,
 	RenderContext,
 	UIButton,
-	UIButtonStyle,
+	ui,
 } from "@desk-framework/frame-core";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import {
@@ -23,7 +23,7 @@ export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 				"disabled",
 				"width",
 				"pressed",
-				"buttonStyle",
+				"style",
 			);
 	}
 
@@ -42,7 +42,7 @@ export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 				case "disabled":
 				case "pressed":
 				case "width":
-				case "buttonStyle":
+				case "style":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -84,11 +84,12 @@ export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 
 			// set styles
 			element.styleClass =
-				getBaseStyleClass(button.buttonStyle) || UIButtonStyle;
+				getBaseStyleClass(button.style) ||
+				(button.primary ? ui.style.BUTTON_PRIMARY : ui.style.BUTTON);
 			applyElementStyle(
 				element,
 				[
-					button.buttonStyle,
+					button.style,
 					button.width !== undefined
 						? { width: button.width, minWidth: 0 }
 						: undefined,

@@ -1,9 +1,12 @@
 import { app } from "../app/index.js";
 
-// Use string constants to avoid repetition
+// Use string constants for some common values
 const STR_BLACK = "#000";
 const STR_WHITE = "#fff";
 const STR_CLEAR = "transparent";
+
+let DarkText: UIColor;
+let LightText: UIColor;
 
 /**
  * An object that represents a single color value
@@ -13,7 +16,7 @@ const STR_CLEAR = "transparent";
  *
  * UIColor instances can be created with a base color such as `#000` or `rgba(0, 0, 0, 0.5)`, **or** a color defined by the current theme (see {@link UITheme}). Afterwards, UIColor methods can be used to create derived colors — changing brightness, transparency, or mixing colors together.
  *
- * A set of base colors corresponding to the default theme colors are available as static properties of UIColor. Use these as a starting point wherever possible.
+ * A set of base colors corresponding to the default theme colors are available as static properties of `ui.color()`. Use these as a starting point wherever possible.
  *
  * @example
  * // Different ways to create UIColor objects
@@ -22,43 +25,20 @@ const STR_CLEAR = "transparent";
  * new UIColor("rgb(0,0,0)")
  * new UIColor("rgb(0,0,0,0.5)")
  *
- * new UIColor("@black") // theme color name
- * UIColor["@black"] // same as above, recommended
+ * new UIColor("Black") // theme color name
+ * ui.color.BLACK // same as above, recommended
  *
- * UIColor["@green"].alpha(0.5)
- * UIColor["@primary"].text()
- * UIColor["@primary"].brighten(0.2).text()
+ * ui.color.GREEN.alpha(0.5)
+ * ui.color.PRIMARY_BG.text()
+ * ui.color.PRIMARY_BG.brighten(0.2).text()
  */
 export class UIColor {
-	static readonly ["@clear"] = new UIColor(STR_CLEAR);
-	static readonly ["@black"] = new UIColor("@black");
-	static readonly ["@darkerGray"] = new UIColor("@darkerGray");
-	static readonly ["@darkGray"] = new UIColor("@darkGray");
-	static readonly ["@gray"] = new UIColor("@gray");
-	static readonly ["@lightGray"] = new UIColor("@lightGray");
-	static readonly ["@white"] = new UIColor("@white");
-	static readonly ["@slate"] = new UIColor("@slate");
-	static readonly ["@lightSlate"] = new UIColor("@lightSlate");
-	static readonly ["@red"] = new UIColor("@red");
-	static readonly ["@orange"] = new UIColor("@orange");
-	static readonly ["@yellow"] = new UIColor("@yellow");
-	static readonly ["@lime"] = new UIColor("@lime");
-	static readonly ["@green"] = new UIColor("@green");
-	static readonly ["@turquoise"] = new UIColor("@turquoise");
-	static readonly ["@cyan"] = new UIColor("@cyan");
-	static readonly ["@blue"] = new UIColor("@blue");
-	static readonly ["@violet"] = new UIColor("@violet");
-	static readonly ["@purple"] = new UIColor("@purple");
-	static readonly ["@magenta"] = new UIColor("@magenta");
-	static readonly ["@primary"] = new UIColor("@primary");
-	static readonly ["@primaryBackground"] = new UIColor("@primaryBackground");
-	static readonly ["@accent"] = new UIColor("@accent");
-	static readonly ["@background"] = new UIColor("@background");
-	static readonly ["@pageBackground"] = new UIColor("@pageBackground");
-	static readonly ["@text"] = new UIColor("@text");
-	static readonly ["@separator"] = new UIColor("@separator");
-	static readonly ["@controlBase"] = new UIColor("@controlBase");
-	static readonly ["@modalShade"] = new UIColor("@modalShade");
+	static {
+		DarkText = new UIColor();
+		DarkText._f = () => app.theme!.darkTextColor || STR_BLACK;
+		LightText = new UIColor();
+		LightText._f = () => app.theme!.lightTextColor || STR_WHITE;
+	}
 
 	/**
 	 * Returns true if the pseudo-brightness of the specified color is greater than 55%
@@ -145,17 +125,13 @@ export class UIColor {
 
 	/**
 	 * Creates a new UIColor instance
-	 * - Use one of the static UIColor properties for theme colors when possible (e.g. `UIColor["@green"]` or `UIColor["@background"]`), instead of creating UIColor instances for custom colors.
-	 * @param color The base color, in hex format `#112233` or `#123`, or rgb(a) format `rgb(255, 255, 255)`, or a reference to a theme color with `@` prefix, e.g. `@green` or `@background`
+	 * - Use one of the static `ui.color()` properties for theme colors when possible (e.g. `ui.color.GREEN` or `ui.color.BACKGROUND`), instead of creating UIColor instances for custom colors.
+	 * - You can also use the `ui.color()` function as an alias for this constructor.
+	 * @param color The base color, in hex format `#112233` or `#123`, or rgb(a) format `rgb(255, 255, 255)`, or a theme color name, as defined in {@link UITheme.colors}.
 	 */
 	constructor(color?: string) {
 		if (color) {
-			if (color[0] === "@") {
-				color = color.slice(1);
-				this._f = () => String(app.theme?.colors.get(color!) || STR_CLEAR);
-			} else {
-				this._f = () => color!;
-			}
+			this._f = () => String(app.theme?.colors.get(color!) || String(color));
 		}
 	}
 
@@ -166,8 +142,8 @@ export class UIColor {
 	 *
 	 * @example
 	 * // Modifying a theme color
-	 * UICell.with(
-	 *   { background: UIColor["@background"].alpha(0.5) },
+	 * ui.cell(
+	 *   { background: ui.color.BACKGROUND.alpha(0.5) },
 	 *   // ...
 	 * )
 	 */
@@ -182,10 +158,10 @@ export class UIColor {
 	 *
 	 * @example
 	 * // Modifying a theme color
-	 * UICell.with(
+	 * ui.cell(
 	 *   {
-	 *     background: UIColor["@primary"].brighten(0.5),
-	 *     textColor: UIColor["@primary"].brighten(0.5).text()
+	 *     background: ui.color.PRIMARY.brighten(0.5),
+	 *     textColor: ui.color.PRIMARY_BG.brighten(0.5).text()
 	 *   },
 	 *   // ...
 	 * )
@@ -201,7 +177,7 @@ export class UIColor {
 	 *
 	 * @example
 	 * // Modifying a theme color
-	 * UISeparator.with({ color: UIColor["@primary"].contrast(-0.2) })
+	 * ui.separator({ color: ui.color.PRIMARY.contrast(-0.2) })
 	 */
 	contrast(d: number) {
 		let result = new UIColor();
@@ -226,27 +202,35 @@ export class UIColor {
 	}
 
 	/**
+	 * Returns a new {@link UIColor} instance for a suitable foreground color based on the current color
+	 * - This method first determines if the current color is bright or dark, and then returns the corresponding color from the provided parameters.
+	 * @returns A new instance of UIColor.
+	 */
+	fg(colorOnLight: UIColor | string, colorOnDark: UIColor | string) {
+		let result = new UIColor();
+		result._f = () =>
+			UIColor.isBrightColor(this) ? String(colorOnLight) : String(colorOnDark);
+		return result;
+	}
+
+	/**
 	 * Returns a new {@link UIColor} instance for a suitable text color (black or white)
-	 * - The resulting color is always black or white, with slight transparency applied. Lighter colors (above 55% pseudo-brightness value) result in mostly-black text, others in mostly-white.
+	 * - This method uses theme colors to determine a contrasting text color for the current color.
+	 * - Set {@link UITheme.darkTextColor} and {@link UITheme.lightTextColor} to override the default black and white text colors.
 	 * @returns A new instance of UIColor.
 	 *
 	 * @example
-	 * // Using a suitable text color on the primary theme color
-	 * UICell.with(
+	 * // Using a suitable text color on the primary theme background color
+	 * ui.cell(
 	 *   {
-	 *     background: UIColor["@primary"],
-	 *     textColor: UIColor["@primary"].text()
+	 *     background: ui.color.PRIMARY_BG,
+	 *     textColor: ui.color.PRIMARY_BG.text()
 	 *   },
 	 *   // ...
 	 * )
 	 */
 	text() {
-		let result = new UIColor();
-		result._f = () =>
-			UIColor.isBrightColor(this)
-				? app.theme?.darkTextColor ?? STR_BLACK
-				: app.theme?.lightTextColor ?? STR_WHITE;
-		return result;
+		return this.fg(DarkText, LightText);
 	}
 
 	/**

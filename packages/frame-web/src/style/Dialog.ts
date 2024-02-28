@@ -1,15 +1,12 @@
 import {
 	RenderContext,
-	UICell,
-	UICellStyle,
-	UIColor,
 	UIComponent,
 	UITheme,
-	UIViewRenderer,
 	View,
 	ViewComposite,
 	app,
 	bound,
+	ui,
 } from "@desk-framework/frame-core";
 
 /**
@@ -20,19 +17,23 @@ import {
 export class DialogStyles {
 	/**
 	 * The cell style used for the outer dialog container
-	 * - The default style includes properties for dimensions, background, border radius, and drop shadow
+	 * - The default style is based on `ui.style.CELL_BG` and includes properties for dimensions and border radius
 	 */
-	ContainerStyle: UITheme.StyleClassType<UICellStyle> = UICellStyle.extend({
-		background: UIColor["@pageBackground"],
-		borderRadius: 12,
-		dropShadow: 0.8,
+	ContainerStyle = ui.style.CELL_BG.extend({
 		width: "auto",
 		minWidth: 360,
 		grow: 0,
+		borderRadius: 12,
 	});
 
-	/** The margin that is applied to the outer dialog container, to position the dialog itself */
+	/**
+	 * The margin that is set on the outer dialog container, to position the dialog on the screen
+	 * - By default, the dialog is centered on the screen using `auto` margins all around
+	 */
 	margin: UIComponent.Offsets = "auto";
+
+	/** The output effect that is applied to the outer dialog container, defaults to Elevate */
+	effect: RenderContext.OutputEffect = ui.effect.ELEVATE;
 }
 
 /** @internal Default modal dialog view; shown synchronously, removed when view is unlinked */
@@ -44,12 +45,13 @@ export class Dialog extends ViewComposite implements UITheme.DialogController {
 	}
 
 	protected override createView() {
-		return new (UICell.with(
+		return new (ui.cell(
 			{
-				cellStyle: Dialog.styles.ContainerStyle,
+				style: Dialog.styles.ContainerStyle,
 				margin: Dialog.styles.margin,
+				effect: Dialog.styles.effect,
 			},
-			UIViewRenderer.with({
+			ui.renderView({
 				view: bound("dialogView"),
 				onViewUnlinked: "DialogViewUnlinked",
 			}),
@@ -64,10 +66,10 @@ export class Dialog extends ViewComposite implements UITheme.DialogController {
 		if (this.dialogView.isUnlinked()) return;
 		app.render(this, {
 			mode: "dialog",
-			shade: UITheme.getModalDialogShadeOpacity(),
+			shade: true,
 			transform: {
-				show: "@show-dialog",
-				hide: "@hide-dialog",
+				show: ui.animation.SHOW_DIALOG,
+				hide: ui.animation.HIDE_DIALOG,
 			},
 			...place,
 		});

@@ -1,30 +1,16 @@
-import { Binding, StringConvertible } from "../../base/index.js";
+import type { View } from "../../app/index.js";
+import type { StringConvertible } from "../../base/index.js";
 import { UIComponent } from "../UIComponent.js";
-import { UITheme } from "../UITheme.js";
+import type { UIStyle } from "../UIStyle.js";
 
 /**
  * A view class that represents an image control
  *
  * @description An image component is rendered on-screen as a rectangular image, loaded from the provided (data or remote) URL.
  *
- * **JSX tag:** `<img>`
- *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
 export class UIImage extends UIComponent {
-	/**
-	 * Creates a preset image class with the specified URL and style
-	 * @param url The URL that refers to the image to be displayed
-	 * @param imageStyle The image style (optional)
-	 * @returns A class that can be used to create instances of this image class with the provided URL and style
-	 */
-	static withUrl(
-		url?: StringConvertible | Binding,
-		imageStyle?: UITheme.StyleConfiguration<UIImageStyle>,
-	) {
-		return this.with({ url, imageStyle });
-	}
-
 	/** Creates a new image view object with the specified URL */
 	constructor(url?: StringConvertible) {
 		super();
@@ -32,10 +18,10 @@ export class UIImage extends UIComponent {
 	}
 
 	override applyViewPreset(
-		preset: UIComponent.ViewPreset<
+		preset: View.ViewPreset<
 			UIComponent,
 			this,
-			"url" | "width" | "height" | "imageStyle"
+			"url" | "width" | "height" | "style"
 		> & {
 			/** True if this image may receive input focus */
 			allowFocus?: boolean;
@@ -72,19 +58,11 @@ export class UIImage extends UIComponent {
 	allowKeyboardFocus?: boolean;
 
 	/** The style to be applied to this image */
-	imageStyle: UITheme.StyleConfiguration<UIImageStyle> = undefined;
+	style?: UIStyle.TypeOrOverrides<UIImage.StyleType> = undefined;
 }
 
-/**
- * A style class that includes default style properties for instances of {@link UIImage}
- * - Default styles are taken from {@link UITheme}.
- * - Extend or override this class to implement custom image styles, see {@link UITheme.BaseStyle} for details.
- */
-export class UIImageStyle extends UITheme.BaseStyle<
-	"Image",
-	UIComponent.DimensionsStyleType & UIComponent.DecorationStyleType
-> {
-	constructor() {
-		super("Image", UIImageStyle);
-	}
+export namespace UIImage {
+	/** The type definition for styles applicable to {@link UIImage.style} */
+	export type StyleType = UIComponent.DimensionsStyleType &
+		UIComponent.DecorationStyleType;
 }
