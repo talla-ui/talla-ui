@@ -8,8 +8,8 @@ import {
 	UIColor,
 	UIComponent,
 } from "@desk-framework/frame-core";
-import { WebHashNavigationPath } from "./path/WebHashNavigationPath.js";
-import { WebHistoryNavigationPath } from "./path/WebHistoryNavigationPath.js";
+import { WebHashNavigationController } from "./path/WebHashNavigationController.js";
+import { WebHistoryNavigationController } from "./path/WebHistoryNavigationController.js";
 import { WebRenderer } from "./renderer/WebRenderer.js";
 import { WebViewportContext } from "./renderer/WebViewportContext.js";
 import { Dialog, DialogStyles } from "./style/Dialog.js";
@@ -23,7 +23,9 @@ import { WebTheme } from "./style/WebTheme.js";
 export type WebContext = GlobalContext & {
 	theme: WebTheme;
 	activities: ActivityContext & {
-		navigationPath: WebHashNavigationPath | WebHistoryNavigationPath;
+		navigationController:
+			| WebHashNavigationController
+			| WebHistoryNavigationController;
 	};
 };
 
@@ -148,9 +150,13 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 
 	// create navigation path
 	if (options.useHistoryAPI) {
-		app.activities.navigationPath = new WebHistoryNavigationPath(options);
+		app.activities.navigationController = new WebHistoryNavigationController(
+			options,
+		);
 	} else {
-		app.activities.navigationPath = new WebHashNavigationPath(options);
+		app.activities.navigationController = new WebHashNavigationController(
+			options,
+		);
 	}
 
 	// enable hot module reload for activities

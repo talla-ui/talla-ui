@@ -119,9 +119,8 @@ export class WebRenderer extends RenderContext {
 	setDocumentTitle(view: View) {
 		let activity = Activity.whence(view);
 		while (activity) {
-			let target = activity.getNavigationTarget();
-			if (target.title) {
-				document.title = String(target.title);
+			if (activity.title) {
+				document.title = String(activity.title);
 				break;
 			}
 			activity = Activity.whence(activity);

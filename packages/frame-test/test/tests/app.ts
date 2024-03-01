@@ -35,7 +35,7 @@ describe("App test", (scope) => {
 	scope.beforeEach(() => {
 		// initialize test app before every test
 		useTestContext((options) => {
-			options.path = "count";
+			options.navigationPageId = "count";
 		});
 		activity = new CountActivity();
 		app.addActivity(activity);
@@ -57,11 +57,11 @@ describe("App test", (scope) => {
 
 	test("Another path inactivates activity", async (t) => {
 		// initial path should be set directly
-		expect(app.getPath()).toBe("count");
+		expect(app.activities.navigationController.pageId).toBe("count");
 
 		// setting another path takes some time
-		app.navigate("/another/path");
-		await t.expectPathAsync(100, "another/path");
+		app.navigate("/another/path/here");
+		await t.expectNavAsync(100, "another", "path/here");
 
 		// by then, the activity should be made inactive
 		await t.pollAsync(() => !activity.isActive(), 5, 100);

@@ -12,7 +12,7 @@ import {
 } from "./object_util.js";
 import { ManagedEvent, ManagedChangeEvent } from "./ManagedEvent.js";
 import { Observer } from "./Observer.js";
-import { err, ERROR, errorHandler } from "../errors.js";
+import { err, ERROR, safeCall } from "../errors.js";
 
 /** Cache Object.prototype.hasOwnProperty */
 const _hOP = Object.prototype.hasOwnProperty;
@@ -173,7 +173,7 @@ export class ManagedObject {
 		// add a single handler if provided
 		if (handler) {
 			addTrap(this, $_traps_event, (target, p, event) => {
-				handler.call(this, event)?.catch?.(errorHandler);
+				safeCall(() => handler.call(this, event));
 			});
 			return;
 		}

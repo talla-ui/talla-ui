@@ -1,17 +1,18 @@
 import {
-	NavigationPath,
+	NavigationController,
 	app,
 	ManagedChangeEvent,
 	RenderContext,
 	UIButton,
 	ui,
+	NavigationTarget,
 } from "@desk-framework/frame-core";
 import { applyStyles } from "../../style/DOMStyle.js";
 import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 import { setTextOrHtmlContent } from "./UILabelRenderer.js";
 
-interface HrefNavigationPath extends NavigationPath {
-	getPathHref(path?: string): string;
+interface HrefNavigationController extends NavigationController {
+	getPathHref(path?: NavigationTarget): string | undefined;
 }
 
 /** @internal */
@@ -67,13 +68,12 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 
 		// set href property if possible
 		if (button.navigateTo) {
-			let navigationPath = app.activities.navigationPath as
-				| HrefNavigationPath
+			let navController = app.activities.navigationController as
+				| HrefNavigationController
 				| undefined;
-			if (navigationPath && typeof navigationPath.getPathHref === "function") {
-				(elt as HTMLAnchorElement).href = navigationPath.getPathHref(
-					String(button.getNavigationTarget()),
-				);
+			if (navController && typeof navController.getPathHref === "function") {
+				let href = navController.getPathHref(button.getNavigationTarget());
+				if (href !== undefined) (elt as HTMLAnchorElement).href = href;
 			}
 		}
 

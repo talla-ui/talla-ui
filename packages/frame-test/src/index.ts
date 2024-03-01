@@ -11,7 +11,7 @@ export {
 	TestResult,
 	TestResultsData,
 };
-export * from "./app/TestNavigationPath.js";
+export * from "./app/TestNavigationController.js";
 export * from "./app/OutputAssertion.js";
 export * from "./app/TestOutputElement.js";
 export * from "./renderer/TestRenderer.js";

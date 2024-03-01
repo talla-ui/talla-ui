@@ -6,9 +6,9 @@ import {
 	Observer,
 	StringConvertible,
 } from "../base/index.js";
-import { err, ERROR, errorHandler } from "../errors.js";
+import { err, ERROR, errorHandler, safeCall } from "../errors.js";
 import type { UIFormContext } from "../ui/index.js";
-import type { NavigationPath } from "./NavigationPath.js";
+import type { NavigationController } from "./NavigationController.js";
 import { app } from "./GlobalContext.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
@@ -36,7 +36,7 @@ const _boundTheme = bound("theme");
  * @example
  * // Create an activity and activate it:
  * class MyActivity extends Activity {
- *   navigationPathId = "foo";
+ *   navigationPageId = "foo";
  *   protected ready() {
  *     this.view = new body(); // imported from a view file
  *     app.showPage(this.view);
@@ -202,11 +202,15 @@ export class Activity extends ManagedObject {
 
 	/**
 	 * Returns a {@link NavigationTarget} instance that refers to this activity
-	 * - The {@link navigationPageId} for this activity is used to determine the target path, and the provided parameters are appended to it.
-	 * @param params An list of one or more values to be concatenated to the target path
+	 * - The {@link navigationPageId} for this activity is used to determine the target page ID, and the provided detail parameter(s) are combined into the detail string.
+	 * @param detail One or more values to be used as detail parts of the navigation path
 	 */
-	getNavigationTarget(...params: StringConvertible[]) {
-		return new NavigationTarget(this).append(...params);
+	getNavigationTarget(...detail: StringConvertible[]): NavigationTarget {
+		return new NavigationTarget({
+			title: this.title,
+			pageId: this.navigationPageId,
+			detail: detail.join("/"),
+		});
 	}
 
 	/**
@@ -215,11 +219,11 @@ export class Activity extends ManagedObject {
 	 * - If the navigation path matches the activity's {@link navigationPageId} exactly, this method is called with an empty string as the `detail` argument.
 	 * - This method can be used to show specific content within the activity's view, e.g. a tab or detail view, or to activate a child activity.
 	 * @param detail The part of the navigation path that comes after the page ID
-	 * @param navigationPath The current navigation path instance
+	 * @param navigationController The current navigation controller instance
 	 */
 	async handleNavigationDetailAsync(
 		detail: string,
-		navigationPath: NavigationPath,
+		navigationController: NavigationController,
 	): Promise<void> {
 		// nothing here, to be overridden
 	}
@@ -250,15 +254,16 @@ export class Activity extends ManagedObject {
 	/**
 	 * Handles navigation to a provided navigation target or path, from the current activity
 	 * - This method is called automatically by {@link onNavigate} when a view object emits the `Navigate` event while this activity is active.
-	 * - The default implementation directly calls {@link NavigationPath.navigateAsync()}. Override this method to handle navigation differently, e.g. to _replace_ the current path for detail view activities.
+	 * - The default implementation directly calls {@link NavigationController.navigateAsync()}. Override this method to handle navigation differently, e.g. to _replace_ the current path for detail view activities.
 	 */
-	protected async navigateAsync(target: string | NavigationTarget) {
-		await app.activities.navigationPath.navigateAsync(target);
+	protected async navigateAsync(target: NavigationTarget) {
+		await app.activities.navigationController.navigateAsync(target);
 	}
 
 	/**
 	 * Handles a `Navigate` event emitted by the current view
 	 * - This method is called when a view object emits the `Navigate` event. Such events are emitted from views that include a `getNavigationTarget` method, such as {@link UIButton}.
+	 * - If the navigation target only includes a `detail` property, the `pageId` is set to the current activity's {@link navigationPageId}.
 	 * - This method calls {@link navigateAsync()} in turn, which may be overridden.
 	 */
 	protected onNavigate(
@@ -267,7 +272,11 @@ export class Activity extends ManagedObject {
 		>,
 	) {
 		if (typeof e.source.getNavigationTarget === "function") {
-			return this.navigateAsync(e.source.getNavigationTarget());
+			let target = new NavigationTarget({
+				pageId: this.navigationPageId,
+				...e.source.getNavigationTarget(),
+			});
+			return this.navigateAsync(target);
 		}
 	}
 
@@ -399,7 +408,7 @@ class ActivationQueue {
 				// invoke callbacks and set activation state
 				await before();
 				this.active = set;
-				after().catch(errorHandler);
+				safeCall(after);
 			}
 		})();
 

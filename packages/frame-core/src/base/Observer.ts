@@ -147,9 +147,7 @@ export class Observer<T extends ManagedObject = ManagedObject> {
 								return this.handlePropertyChange(p, lastValue, lastEvent);
 							}
 						})
-						.catch((err) => {
-							errorHandler(err);
-						});
+						.catch(errorHandler);
 				}
 			});
 		}
@@ -183,9 +181,7 @@ export class Observer<T extends ManagedObject = ManagedObject> {
 							return fa.call(this, event);
 						}
 					})
-					.catch((err) => {
-						errorHandler(err);
-					});
+					.catch(errorHandler);
 			}
 			this._asyncEvents[methodName] = event;
 		}

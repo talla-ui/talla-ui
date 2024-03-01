@@ -6,14 +6,16 @@ import {
 } from "@desk-framework/frame-core";
 import { TestScope } from "../TestScope.js";
 import { TestTheme } from "../style/TestTheme.js";
-import { TestNavigationPath } from "./TestNavigationPath.js";
+import { TestNavigationController } from "./TestNavigationController.js";
 import { TestRenderer } from "../renderer/TestRenderer.js";
 import { TestViewportContext } from "./TestViewportContext.js";
 
 /** Type definition for the global {@link app} context with test-specific render and activity contexts, set by the {@link useTestContext} function */
 export type TestContext = GlobalContext & {
 	renderer: TestRenderer;
-	activities: ActivityContext & { navigationPath: TestNavigationPath };
+	activities: ActivityContext & {
+		navigationController: TestNavigationController;
+	};
 };
 
 /**
@@ -21,11 +23,14 @@ export type TestContext = GlobalContext & {
  * - These options should be set in a configuration callback passed to {@link useTestContext}.
  */
 export class TestContextOptions extends ConfigOptions {
-	/** The initial path on the history stack, defaults to empty string (i.e. `/`) */
-	path = "";
+	/** The initial page ID on the history stack, defaults to empty string */
+	navigationPageId = "";
+
+	/** The initial navigation detail on the history stack */
+	navigationDetail = "";
 
 	/** The delay (in milliseconds) after which path changes are applied, defaults to 5 */
-	pathDelay = 5;
+	navigationDelay = 5;
 
 	/** The frequency (in milliseconds) with which output is added, defaults to 15 */
 	renderFrequency = 15;
@@ -77,7 +82,7 @@ export function useTestContext(config?: ConfigOptions.Arg<TestContextOptions>) {
 	app.viewport = new TestViewportContext();
 
 	// create test navigation path and set initial path
-	app.activities.navigationPath = new TestNavigationPath(options);
+	app.activities.navigationController = new TestNavigationController(options);
 
 	return app as TestContext;
 }

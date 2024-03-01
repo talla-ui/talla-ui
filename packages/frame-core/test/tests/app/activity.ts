@@ -225,7 +225,7 @@ describe("Activity", () => {
 	describe("Global context and parents", (scope) => {
 		scope.beforeEach(() => {
 			useTestContext((options) => {
-				options.pathDelay = 1;
+				options.navigationDelay = 1;
 			});
 		});
 
@@ -265,8 +265,7 @@ describe("Activity", () => {
 			activity.navigationPageId = "foo";
 			app.addActivity(activity);
 			app.navigate(activity);
-			await t.sleep(10);
-			expect(app.getPath()).toBe("foo");
+			await t.expectNavAsync(10, "foo");
 			expect(activity.isActive()).toBeTruthy();
 		});
 
@@ -275,8 +274,7 @@ describe("Activity", () => {
 			activity.navigationPageId = "foo";
 			app.addActivity(activity);
 			app.navigate(activity.getNavigationTarget("bar"));
-			await t.sleep(10);
-			expect(app.getPath()).toBe("foo/bar");
+			await t.expectNavAsync(10, "foo", "bar");
 			expect(activity.isActive()).toBeTruthy();
 		});
 	});

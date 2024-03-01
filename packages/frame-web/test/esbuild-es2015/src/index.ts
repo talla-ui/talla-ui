@@ -11,7 +11,7 @@ class RootActivity extends Activity {
 	navigationPageId = "";
 	protected async afterActiveAsync() {
 		console.log("Redirecting...");
-		app.navigate("/main");
+		app.navigate("main");
 	}
 }
 

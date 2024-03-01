@@ -16,7 +16,7 @@ describe("UIButton", (scope) => {
 	scope.beforeEach(() => {
 		useTestContext((options) => {
 			options.renderFrequency = 5;
-			options.pathDelay = 0;
+			options.navigationDelay = 0;
 		});
 	});
 
@@ -117,6 +117,6 @@ describe("UIButton", (scope) => {
 		let elt = (await t.expectOutputAsync(100, { text: "foo" })).getSingle();
 		elt.click();
 		await t.sleep(2);
-		expect(app.getPath()).toBe("foo");
+		expect(app.activities.navigationController.pageId).toBe("foo");
 	});
 });

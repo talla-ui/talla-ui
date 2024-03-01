@@ -5,15 +5,21 @@ import {
 	ManagedObject,
 	StringConvertible,
 } from "../base/index.js";
-import { ERROR, err, errorHandler, setErrorHandler } from "../errors.js";
+import {
+	ERROR,
+	err,
+	errorHandler,
+	safeCall,
+	setErrorHandler,
+} from "../errors.js";
 import { UITheme } from "../ui/UITheme.js";
 import { ActivityContext } from "./ActivityContext.js";
-import type { NavigationPath } from "./NavigationPath.js";
+import type { NavigationController } from "./NavigationController.js";
 import { Activity } from "./Activity.js";
 import type { I18nProvider } from "./I18nProvider.js";
 import { LogWriter } from "./LogWriter.js";
 import { MessageDialogOptions } from "./MessageDialogOptions.js";
-import type { NavigationTarget } from "./NavigationTarget.js";
+import { NavigationTarget } from "./NavigationTarget.js";
 import { RenderContext } from "./RenderContext.js";
 import { Scheduler } from "./Scheduler.js";
 import { Service } from "./Service.js";
@@ -181,54 +187,46 @@ export class GlobalContext extends ManagedObject {
 
 	/**
 	 * Navigates to the specified path asynchronously
-	 * - The behavior of this method is platform dependent. It uses {@link NavigationPath.navigateAsync()} to navigate to the specified path, which in turn updates the path returned by {@link GlobalContext.getPath app.getPath()} — and may activate or deactivate activities.
-	 * @param target The target location: a path in URL format, or a {@link NavigationTarget} instance
-	 * @param mode The navigation mode, refer to {@link NavigationPath.navigateAsync()}
+	 * - The behavior of this method is platform dependent. It uses {@link NavigationController.navigateAsync()} to navigate to the specified path, which in turn updates the path returned by {@link GlobalContext.getPath app.getPath()} — and may activate or deactivate activities.
+	 * - The target location can be a {@link NavigationTarget} instance, an object that provides a navigation target (i.e. an {@link Activity}), or a URL-like path (i.e. `pageId/detail...`).
+	 * @param target The target location
+	 * @param mode The navigation mode, refer to {@link NavigationController.navigateAsync()}
 	 *
 	 * @example
 	 * // In a web application, navigate to the /foo URL
-	 * app.navigate("/foo");
+	 * app.navigate("foo");
 	 */
 	navigate(
 		target:
-			| StringConvertible
+			| string
 			| NavigationTarget
 			| { getNavigationTarget(): NavigationTarget },
-		mode?: NavigationPath.NavigationMode,
+		mode?: NavigationController.NavigationMode,
 	) {
-		if (this.activities.navigationPath) {
-			if (typeof (target as any).getNavigationTarget === "function") {
-				target = (target as any).getNavigationTarget();
-			}
-			this.activities.navigationPath
-				.navigateAsync(String(target), mode)
-				.catch(errorHandler);
+		if (this.activities.navigationController) {
+			safeCall(() =>
+				this.activities.navigationController.navigateAsync(
+					new NavigationTarget(target),
+					mode,
+				),
+			);
 		}
 		return this;
 	}
 
 	/**
 	 * Navigates back to the previous location in the location history stack
-	 * - The behavior of this method is platform dependent. It uses {@link NavigationPath.navigateAsync()} to navigate back, which in turn updates the path returned by {@link GlobalContext.getPath app.getPath()} — and may activate or deactivate activities.
+	 * - The behavior of this method is platform dependent. It uses {@link NavigationController.navigateAsync()} to navigate back within navigation history, if possible.
 	 */
 	goBack() {
-		if (this.activities.navigationPath) {
-			this.activities.navigationPath
-				.navigateAsync("", { back: true })
-				.catch(errorHandler);
+		if (this.activities.navigationController) {
+			safeCall(() =>
+				this.activities.navigationController.navigateAsync(undefined, {
+					back: true,
+				}),
+			);
 		}
 		return this;
-	}
-
-	/**
-	 * Returns the current application location
-	 *
-	 * @summary
-	 * This method returns {@link NavigationPath.path} from the current {@link ActivityContext} instance. This property is used by the activity context to activate and deactivate activities according to their {@link Activity.navigationPageId} value, if any.
-	 * @note To set the application location (i.e. navigate to a different path), use the {@link GlobalContext.navigate app.navigate()} method.
-	 */
-	getPath() {
-		return this.activities.navigationPath.path;
 	}
 
 	/**

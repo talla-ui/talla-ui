@@ -3,7 +3,7 @@ import {
 	BindingOrValue,
 	StringConvertible,
 } from "../../base/index.js";
-import type { NavigationTarget, View } from "../../app/index.js";
+import { NavigationTarget, View } from "../../app/index.js";
 import type { UIColor } from "../UIColor.js";
 import type { UIIconResource } from "../UIIconResource.js";
 import { UIComponent } from "../UIComponent.js";
@@ -90,10 +90,13 @@ export class UIButton extends UIComponent {
 	chevronColor?: UIColor;
 
 	/**
-	 * Path or navigation target to navigate to when this button is clicked
-	 * - Set this property to `:back` to go navigate back in the location history stack.
+	 * Navigation target to navigate to when this button is clicked
+	 * - When set, the button will emit a `Navigate` event when clicked. This event is handled automatically by a containing {@link Activity}, if any. The target `pageId` will be filled in by the handling activity if it's not set here.
 	 */
-	navigateTo?: StringConvertible | NavigationTarget;
+	navigateTo?:
+		| string
+		| Partial<NavigationTarget>
+		| { getNavigationTarget(): NavigationTarget };
 
 	/**
 	 * The current visual selection state
@@ -128,11 +131,11 @@ export class UIButton extends UIComponent {
 
 	/**
 	 * Returns the navigation target for this button
-	 * - This method only returns a path (or {@link NavigationTarget} instance) if the {@link UIButton.navigateTo} property is set.
+	 * - This method returns a {@link NavigationTarget} based on the {@link UIButton.navigateTo} property.
 	 * - This method is called automatically by {@link Activity.onNavigate()}.
 	 */
 	getNavigationTarget() {
-		return this.navigateTo;
+		return new NavigationTarget(this.navigateTo);
 	}
 }
 

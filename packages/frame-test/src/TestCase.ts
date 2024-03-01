@@ -331,30 +331,40 @@ export class TestCase {
 	}
 
 	/**
-	 * Waits for the global navigation path to match the given string
+	 * Waits for the global navigation location to match the given page ID and detail
 	 *
-	 * @summary This method starts checking the navigation path periodically (using {@link GlobalContext.getPath()}), and waits for the path to match the provided string. If the path still doesn't match after the given timeout (number of milliseconds) this method throws an error.
+	 * @summary This method starts checking the navigation controller periodically, and waits for the path to match the provided string. If the path still doesn't match after the given timeout (number of milliseconds) this method throws an error.
 	 * @note This method is asynchronous and **must** be `await`-ed.
 	 * @param timeout Timeout, in milliseconds
-	 * @param path Path to wait for, must be an exact match
+	 * @param pageId Page ID to wait for, must be an exact match
+	 * @param detail Detail string to wait for (defaults to empty string), must be an exact match
 	 * @returns A promise (void) that's resolved when the patch matches, or rejected when a timeout occurs.
 	 *
 	 * @example
 	 * describe("My scope", () => {
-	 *   test("Wait for path", async (t) => {
+	 *   test("Wait for navigation", async (t) => {
 	 *     // ... navigate to a path somehow
-	 *     await t.expectPathAsync(100, "foo/bar");
+	 *     await t.expectNavAsync(100, "foo");
 	 *   });
 	 * });
 	 */
-	async expectPathAsync(timeout: number, path: string) {
+	async expectNavAsync(timeout: number, pageId: string, detail = "") {
 		await this.pollAsync(
-			() => app.getPath() === path,
+			() =>
+				app.activities.navigationController.pageId === pageId &&
+				app.activities.navigationController.detail === detail,
 			5,
 			timeout,
 			() =>
 				Error(
-					`Expected path ${val2str(path)} but it is ${val2str(app.getPath())}`,
+					"Expected navigation to " +
+						val2str(pageId + "/" + detail) +
+						" but location is " +
+						val2str(
+							app.activities.navigationController.pageId +
+								"/" +
+								app.activities.navigationController.detail,
+						),
 				),
 		);
 	}

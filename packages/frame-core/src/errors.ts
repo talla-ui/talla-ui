@@ -6,6 +6,19 @@ export function setErrorHandler(handler: (err: any) => void) {
 	errorHandler = handler;
 }
 
+/** @internal Call the provided function, catching errors and handling Promise rejections */
+export function safeCall<T>(fn: () => T, thisArg?: any) {
+	try {
+		let result: any = fn.call(thisArg);
+		if (typeof result?.catch === "function") {
+			result.catch(errorHandler);
+		}
+		return result;
+	} catch (err) {
+		errorHandler(err);
+	}
+}
+
 /** @internal Helper function to create an error object with a predefined message (indexed by {@link ERROR}) and an optional parameter */
 export function err(error: ERROR, s?: any) {
 	return Error((messages[error] || "Unknown error") + (s ? ": " + s : ""));
