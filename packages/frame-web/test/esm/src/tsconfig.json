@@ -9,7 +9,7 @@
 		"target": "es2018",
 		"lib": ["dom", "esnext"],
 		"jsx": "react",
-		"jsxFactory": "ui.JSX",
+		"jsxFactory": "ui.jsx",
 		"outDir": "../dist"
 	}
 }

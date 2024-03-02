@@ -6,10 +6,8 @@ import {
 
 export default ViewComposite.withPreset(
 	{ count: 0 },
-	<ui.column>
-		<ui.label>Count:</ui.label>
-		<ui.label style={{ bold: true, fontSize: 36 }}>
-			{bound.number("count")}
-		</ui.label>
-	</ui.column>,
+	<column>
+		<label>Count:</label>
+		<label style={{ bold: true, fontSize: 36 }}>{bound.number("count")}</label>
+	</column>,
 );

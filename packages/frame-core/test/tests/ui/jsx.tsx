@@ -5,7 +5,6 @@ import {
 	useTestContext,
 } from "@desk-framework/frame-test";
 import {
-	JSX,
 	LazyString,
 	StringConvertible,
 	UICell,
@@ -20,13 +19,13 @@ import {
 
 describe("JSX", () => {
 	test("Single component", () => {
-		let MyCell = <ui.cell />;
+		let MyCell = <cell />;
 		let cell = new MyCell();
 		expect(cell).toBeInstanceOf(UICell);
 	});
 
 	test("Single component with preset", () => {
-		let MyCell = <ui.cell padding={8} textColor={ui.color.RED} />;
+		let MyCell = <cell padding={8} textColor={ui.color.RED} />;
 		let cell = new MyCell();
 		expect(cell).toBeInstanceOf(UICell);
 		expect(cell).toHaveProperty("padding").toBe(8);
@@ -34,7 +33,7 @@ describe("JSX", () => {
 	});
 
 	test("Single component with text", () => {
-		let MyLabel = <ui.label>Foo</ui.label>;
+		let MyLabel = <label>Foo</label>;
 		let label = new MyLabel();
 		expect(label).toBeInstanceOf(UILabel);
 		expect(label).toHaveProperty("text").toBeInstanceOf(LazyString);
@@ -42,7 +41,7 @@ describe("JSX", () => {
 	});
 
 	test("Single component with lazy string", () => {
-		let MyLabel = <ui.label>{strf("Foo")}</ui.label>;
+		let MyLabel = <label>{strf("Foo")}</label>;
 		let label = new MyLabel();
 		expect(label).toBeInstanceOf(UILabel);
 		expect(label).toHaveProperty("text").toBeInstanceOf(LazyString);
@@ -51,13 +50,13 @@ describe("JSX", () => {
 
 	test("Component with content", () => {
 		let MyCell = (
-			<ui.cell>
-				<ui.label text={"foo"} />
-				<ui.label>bar</ui.label>
-				<ui.button>button</ui.button>
-				<ui.toggle>toggle</ui.toggle>
-				<ui.textField>placeholder</ui.textField>
-			</ui.cell>
+			<cell>
+				<label text={"foo"} />
+				<label>bar</label>
+				<button>button</button>
+				<toggle>toggle</toggle>
+				<textfield>placeholder</textfield>
+			</cell>
 		);
 		let cell = new MyCell() as UICell;
 		expect(cell.content).asArray().toBeArray(5);
@@ -78,12 +77,12 @@ describe("JSX", () => {
 				/** A single property, not used in view */
 				foo: 0,
 			},
-			<ui.label>test</ui.label>,
+			<label>test</label>,
 		);
 		let MyCell = (
-			<ui.cell>
+			<cell>
 				<MyView foo={123} />
-			</ui.cell>
+			</cell>
 		);
 		let cell = new MyCell() as UICell;
 		expect(cell.content).asArray().toBeArray(1);
@@ -92,15 +91,15 @@ describe("JSX", () => {
 
 	test("Custom view composite with column content", (t) => {
 		const MyColumn = ViewComposite.withPreset({ foo: "" }, (...content) => (
-			<ui.column>{...content}</ui.column>
+			<column>{...content}</column>
 		));
 		let MyCell = (
-			<ui.cell>
+			<cell>
 				<MyColumn foo="bar">
-					<ui.label>foo</ui.label>
-					<ui.label>bar</ui.label>
+					<label>foo</label>
+					<label>bar</label>
 				</MyColumn>
-			</ui.cell>
+			</cell>
 		);
 		let cell = new MyCell() as UICell;
 
@@ -126,7 +125,7 @@ describe("JSX", () => {
 				/** A single property, bound in view */
 				foo: 0,
 			},
-			<ui.label>{bound("foo")}</ui.label>,
+			<label>{bound("foo")}</label>,
 		);
 		useTestContext((options) => {
 			options.renderFrequency = 5;
@@ -141,7 +140,7 @@ describe("JSX", () => {
 				/** A single property, bound in view */
 				foo: StringConvertible.EMPTY,
 			},
-			<ui.label>{strf("Foo is %[foo]")}</ui.label>,
+			<label>{strf("Foo is %[foo]")}</label>,
 		);
 		useTestContext((options) => {
 			options.renderFrequency = 5;
@@ -153,12 +152,12 @@ describe("JSX", () => {
 	test("Component with bound content and text", async (t) => {
 		const MyView = ViewComposite.withPreset(
 			{ foo: 0, bar: undefined as any },
-			<ui.row>
-				<ui.label>foo='{bound("foo")}'</ui.label>
-				<ui.label>bar='%[bar.foo]'</ui.label>
-				<ui.label>baz='%[baz=bar.baz:uc]'</ui.label>
-				<ui.label>nope_bound='{bound("nope", "Nothing")}'</ui.label>
-			</ui.row>,
+			<row>
+				<label>foo='{bound("foo")}'</label>
+				<label>bar='%[bar.foo]'</label>
+				<label>baz='%[baz=bar.baz:uc]'</label>
+				<label>nope_bound='{bound("nope", "Nothing")}'</label>
+			</row>,
 		);
 		useTestContext((options) => {
 			options.renderFrequency = 5;
@@ -179,9 +178,9 @@ describe("JSX", () => {
 	test("Component with bound content and text, translated", async (t) => {
 		const Comp = ViewComposite.withPreset(
 			{ emails: { count: 0 } },
-			<ui.label>
+			<label>
 				You have %[numEmails=emails.count:n] %[numEmails:plural|email|emails]
-			</ui.label>,
+			</label>,
 		);
 		const Preset1 = Comp.preset({ emails: { count: 1 } });
 		const Preset2 = Comp.preset({ emails: { count: 2 } });

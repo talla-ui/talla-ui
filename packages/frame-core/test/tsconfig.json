@@ -13,7 +13,7 @@
 		"target": "esnext",
 		"lib": ["dom", "esnext"],
 		"jsx": "react",
-		"jsxFactory": "JSX",
+		"jsxFactory": "ui.jsx",
 		"outDir": "../.test-run",
 		"sourceMap": true,
 		"pretty": true

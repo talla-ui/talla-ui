@@ -24,22 +24,22 @@ const ToggleButtonStyle = ui.style.BUTTON.extend(
 );
 
 export default (
-	<ui.cell style={{ borderRadius: 16, grow: 0 }}>
-		<ui.row spacing={0}>
-			<ui.button
+	<cell style={{ borderRadius: 16, grow: 0 }}>
+		<row spacing={0}>
+			<button
 				label="Light"
 				value="light"
 				pressed={bound("selectedTheme").matches("light")}
 				style={ToggleButtonStyle}
 				onMouseDown="+SetTheme"
 			/>
-			<ui.button
+			<button
 				label="Dark"
 				value="dark"
 				pressed={bound("selectedTheme").matches("dark")}
 				style={ToggleButtonStyle}
 				onMouseDown="+SetTheme"
 			/>
-		</ui.row>
-	</ui.cell>
+		</row>
+	</cell>
 );

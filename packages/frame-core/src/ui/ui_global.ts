@@ -1,28 +1,33 @@
 import { RenderContext, View, ViewClass, app } from "../app/index.js";
-import { UIColor } from "./UIColor.js";
-import { UIIconResource } from "./UIIconResource.js";
-import { UIStyle } from "./UIStyle.js";
-import { UIAnimationView } from "./composites/UIAnimationView.js";
-import { UIConditionalView } from "./composites/UIConditionalView.js";
-import { UIListView } from "./composites/UIListView.js";
-import { UIViewRenderer } from "./composites/UIViewRenderer.js";
-import { UIAnimatedCell, UICell } from "./containers/UICell.js";
-import { UIColumn } from "./containers/UIColumn.js";
-import { UIContainer } from "./containers/UIContainer.js";
-import { UIForm } from "./containers/UIForm.js";
-import { UIRow } from "./containers/UIRow.js";
-import { UIScrollContainer } from "./containers/UIScrollContainer.js";
-import { UIButton } from "./controls/UIButton.js";
-import { UIImage } from "./controls/UIImage.js";
-import { UILabel } from "./controls/UILabel.js";
-import { UISeparator } from "./controls/UISeparator.js";
-import { UISpacer } from "./controls/UISpacer.js";
-import { UITextField } from "./controls/UITextField.js";
-import { UIToggle } from "./controls/UIToggle.js";
-import { ui } from "./ui_interface.js";
+import {
+	UIAnimatedCell,
+	UIAnimationView,
+	UIButton,
+	UICell,
+	UIColor,
+	UIColumn,
+	UIConditionalView,
+	UIContainer,
+	UIForm,
+	UIIconResource,
+	UIImage,
+	UILabel,
+	UIListView,
+	UIRow,
+	UIScrollContainer,
+	UISeparator,
+	UISpacer,
+	UIStyle,
+	UITextField,
+	UIToggle,
+	UIViewRenderer,
+	ui,
+} from "./index.js";
+import { jsx } from "./jsx.js";
 
 // Use a separate non-readonly variable to store the object first
-const _ui: ui.GlobalType = ui as any;
+const _ui: ui = ui;
+_ui.jsx = jsx;
 
 // memoize result objects by name
 const _colorCache = new Map<string, UIColor>();
@@ -107,7 +112,9 @@ _ui.image = createComponentFactory(UIImage, undefined, (url, style) => ({
 	style,
 }));
 
-_ui.renderView = createComponentFactory(UIViewRenderer);
+_ui.renderView = createComponentFactory(UIViewRenderer, undefined, (view) => ({
+	view,
+}));
 _ui.animate = createComponentFactory(
 	UIAnimationView,
 	undefined,

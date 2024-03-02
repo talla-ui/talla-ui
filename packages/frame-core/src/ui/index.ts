@@ -7,5 +7,5 @@ export * from "./UIFormContext.js";
 export * from "./containers/index.js";
 export * from "./controls/index.js";
 export * from "./composites/index.js";
-export * from "./ui_global.js";
 export * from "./ui_interface.js";
+export * from "./ui_global.js";

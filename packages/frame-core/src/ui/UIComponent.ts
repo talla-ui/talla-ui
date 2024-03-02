@@ -12,7 +12,7 @@ const _viewContent: any[] = Object.freeze([]) as any;
  * @description
  * This class provides common infrastructure for UI components such as {@link UIButton} and {@link UIColumn}. The UIComponent class is an abstract class and can't be instantiated or rendered on its own.
  *
- * UI components can be constructed directly using `new`, but are often created as part of a 'preset' view hierarchy that's defined using JSX or {@link ui} factory functions, e.g. `<ui.button>`, `ui.button({ ... })` or `ui.column(...)`.
+ * UI components can be constructed directly using `new`, but are often created as part of a 'preset' view hierarchy that's defined using JSX or {@link ui} factory functions, e.g. <button>`, `ui.button({ ... })` or `ui.column(...)`.
  *
  * @online_docs Refer to the Desk website for more documentation on using UI components.
  * @hideconstructor

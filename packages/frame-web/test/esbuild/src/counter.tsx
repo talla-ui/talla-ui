@@ -1,16 +1,16 @@
 import { Activity, app, ui } from "../../../dist";
 
 const ViewBody = (
-	<ui.cell>
-		<ui.column distribute="center">
-			<ui.label style={{ bold: true, fontSize: 36 }}>Count: %[count]</ui.label>
-			<ui.spacer height={32} />
-			<ui.row align="center">
-				<ui.button onClick="CountDown">Down</ui.button>
-				<ui.button onClick="CountUp">Up</ui.button>
-			</ui.row>
-		</ui.column>
-	</ui.cell>
+	<cell>
+		<column distribute="center">
+			<label style={{ bold: true, fontSize: 36 }}>Count: %[count]</label>
+			<spacer height={32} />
+			<row align="center">
+				<button onClick="CountDown">Down</button>
+				<button onClick="CountUp">Up</button>
+			</row>
+		</column>
+	</cell>
 );
 
 export class CountActivity extends Activity {

@@ -7,23 +7,19 @@ const MyLabelStyle = ui.style.LABEL.extend({
 });
 
 const ViewBody = (
-	<ui.scroll>
-		<ui.row padding={{ x: 40, y: 16 }}>
-			<ui.label style={ui.style.LABEL_TITLE}>Perf test</ui.label>
-		</ui.row>
-		<ui.list items={bound("items")}>
-			<ui.row height={48}>
-				<ui.label
-					icon={ui.icon.CHEVRON_NEXT}
-					iconMargin={16}
-					style={MyLabelStyle}
-				>
+	<scroll>
+		<row padding={{ x: 40, y: 16 }}>
+			<label style={ui.style.LABEL_TITLE}>Perf test</label>
+		</row>
+		<list items={bound("items")}>
+			<row height={48}>
+				<label icon={ui.icon.CHEVRON_NEXT} iconMargin={16} style={MyLabelStyle}>
 					Hello, this is row %[item]
-				</ui.label>
-			</ui.row>
-			<ui.column layout={{ separator: { lineThickness: 1 } }} />
-		</ui.list>
-	</ui.scroll>
+				</label>
+			</row>
+			<column layout={{ separator: { lineThickness: 1 } }} />
+		</list>
+	</scroll>
 );
 
 export class PerfActivity extends Activity {

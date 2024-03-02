@@ -10,7 +10,7 @@
 		"target": "esnext",
 		"lib": ["dom", "esnext"],
 		"jsx": "react",
-		"jsxFactory": "ui.JSX",
+		"jsxFactory": "ui.jsx",
 		"outDir": "../dist"
 	}
 }
