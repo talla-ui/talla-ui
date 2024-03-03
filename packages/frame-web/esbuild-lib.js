@@ -28,6 +28,16 @@ function buildTarget(target, entryPoint, alias) {
 		entryPoints: [entryPoint],
 		target,
 		write: false,
+		plugins: [
+			{
+				name: "check import extensions",
+				setup(build) {
+					build.onResolve({ filter: /\/\w+$/ }, (args) => {
+						throw Error("Import without extension: " + args.path);
+					});
+				},
+			},
+		],
 	};
 	if (alias) {
 		options.alias = {

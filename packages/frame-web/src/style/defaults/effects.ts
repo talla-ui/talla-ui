@@ -1,5 +1,5 @@
 import { RenderContext, app } from "@desk-framework/frame-core";
-import { CLASS_MODAL_WRAPPER } from "./css";
+import { CLASS_MODAL_WRAPPER } from "./css.js";
 
 // Note: it's tempting to come up with some dazzling effects here,
 // but this would impact bundle size for no good reason. Likely, an
