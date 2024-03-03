@@ -1,6 +1,6 @@
 {
-	"name": "desk",
-	"description": "Desk framework: source monorepo (not published)",
+	"name": "desk-framework",
+	"description": "Desk framework: source monorepo",
 	"version": "0.0.0",
 	"license": "MIT",
 	"private": true,
