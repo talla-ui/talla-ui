@@ -1,7 +1,8 @@
 import {
 	RenderContext,
-	UIComponent,
+	UICell,
 	UITheme,
+	UIVariant,
 	View,
 	ViewComposite,
 	app,
@@ -12,28 +13,25 @@ import {
 /**
  * A class that defines the styles for the default modal dialog view
  * - A default instance of this class is created, and can be modified in the {@link WebContextOptions} configuration callback passed to {@link useWebContext}.
- * - These styles are used by the default message dialog view referenced by the {@link UITheme} implementation — and therefore also by {@link GlobalContext.showAlertDialogAsync app.showAlertDialogAsync()} and {@link GlobalContext.showConfirmDialogAsync app.showConfirmDialogAsync()}.
+ * - These styles are used for dialog views created by the {@link GlobalContext.showDialogAsync app.showDialogAsync()} function. Note that message dialog styles are configured separately using {@link MessageDialogStyles}.
  */
 export class DialogStyles {
 	/**
-	 * The cell style used for the outer dialog container
-	 * - The default style is based on `ui.style.CELL_BG` and includes properties for dimensions and border radius
+	 * The cell variant (and style) used for the outer dialog container
+	 * - The default style is based on `ui.style.CELL_BG` and includes properties for dimensions and border radius.
+	 * - Margin is set to `auto` to center the dialog on the screen if possible.
+	 * - An `Elevate` effect is applied to add a drop shadow to the dialog.
 	 */
-	ContainerStyle = ui.style.CELL_BG.extend({
-		width: "auto",
-		minWidth: 360,
-		grow: 0,
-		borderRadius: 12,
+	containerVariant = new UIVariant(UICell, {
+		margin: "auto",
+		effect: ui.effect.ELEVATE,
+		style: ui.style.CELL_BG.extend({
+			width: "auto",
+			minWidth: 360,
+			grow: 0,
+			borderRadius: 12,
+		}),
 	});
-
-	/**
-	 * The margin that is set on the outer dialog container, to position the dialog on the screen
-	 * - By default, the dialog is centered on the screen using `auto` margins all around
-	 */
-	margin: UIComponent.Offsets = "auto";
-
-	/** The output effect that is applied to the outer dialog container, defaults to Elevate */
-	effect: RenderContext.OutputEffect = ui.effect.ELEVATE;
 }
 
 /** @internal Default modal dialog view; shown synchronously, removed when view is unlinked */
@@ -47,9 +45,7 @@ export class Dialog extends ViewComposite implements UITheme.DialogController {
 	protected override createView() {
 		return new (ui.cell(
 			{
-				style: Dialog.styles.ContainerStyle,
-				margin: Dialog.styles.margin,
-				effect: Dialog.styles.effect,
+				variant: Dialog.styles.containerVariant,
 			},
 			ui.renderView({
 				view: bound("dialogView"),

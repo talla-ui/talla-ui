@@ -24,22 +24,27 @@ const ToggleButtonStyle = ui.style.BUTTON.extend(
 );
 
 export default (
-	<cell style={{ borderRadius: 16, grow: 0 }}>
-		<row spacing={0}>
-			<button
-				label="Light"
-				value="light"
-				pressed={bound("selectedTheme").matches("light")}
-				style={ToggleButtonStyle}
-				onMouseDown="+SetTheme"
-			/>
-			<button
-				label="Dark"
-				value="dark"
-				pressed={bound("selectedTheme").matches("dark")}
-				style={ToggleButtonStyle}
-				onMouseDown="+SetTheme"
-			/>
-		</row>
-	</cell>
+	<row>
+		<button chevron="down" onClick="ZoomMenu">
+			Zoom
+		</button>
+		<cell style={{ borderRadius: 16, grow: 0 }}>
+			<row spacing={0}>
+				<button
+					label="Light"
+					value="light"
+					pressed={bound("selectedTheme").matches("light")}
+					style={ToggleButtonStyle}
+					onMouseDown="+SetTheme"
+				/>
+				<button
+					label="Dark"
+					value="dark"
+					pressed={bound("selectedTheme").matches("dark")}
+					style={ToggleButtonStyle}
+					onMouseDown="+SetTheme"
+				/>
+			</row>
+		</cell>
+	</row>
 );

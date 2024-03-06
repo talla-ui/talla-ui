@@ -1,9 +1,11 @@
 import type { RenderContext, View, ViewClass } from "../app/index.js";
 import type { Binding, BindingOrValue, LazyString } from "../base/index.js";
 import type { UIColor } from "./UIColor.js";
+import { UIComponent } from "./UIComponent.js";
 import type { UIIconResource } from "./UIIconResource.js";
 import { UIStyle } from "./UIStyle.js";
 import type { UITheme } from "./UITheme.js";
+import { UIVariant } from "./UIVariant.js";
 import type { UIAnimationView } from "./composites/UIAnimationView.js";
 import type { UIConditionalView } from "./composites/UIConditionalView.js";
 import type { UIListView } from "./composites/UIListView.js";
@@ -26,23 +28,35 @@ import type { UIToggle } from "./controls/UIToggle.js";
  */
 export const ui: Readonly<ui> = Object.create(null) as any;
 export namespace ui {
+	/**
+	 * Type definition for a UI component preset object
+	 * - This type is used to define the properties, bindings, and event handlers that can be preset on UI components using functions such as `ui.button(...)`.
+	 * - The `variant` property can be used to specify a {@link UIVariant} object.
+	 * @see {@link View.ViewPreset}
+	 * @see {@link UIVariant}
+	 */
+	export type PresetType<T extends UIComponent> = View.ViewPreset<T> & {
+		/** A UI component variant object, applied before other presets */
+		variant?: UIVariant<T>;
+	};
+
 	/** Type definition for using {@link ui.jsx} */
 	export namespace JSX {
 		export type Element = ViewClass;
 		export interface IntrinsicElements {
-			cell: View.ViewPreset<UICell>;
-			column: View.ViewPreset<UIColumn>;
-			row: View.ViewPreset<UIRow>;
-			form: View.ViewPreset<UIForm>;
-			scroll: View.ViewPreset<UIScrollContainer>;
-			animatedcell: View.ViewPreset<UIAnimatedCell>;
-			label: View.ViewPreset<UILabel>;
-			button: View.ViewPreset<UIButton>;
-			textfield: View.ViewPreset<UITextField>;
-			toggle: View.ViewPreset<UIToggle>;
-			separator: View.ViewPreset<UISeparator>;
-			spacer: View.ViewPreset<UISpacer>;
-			image: View.ViewPreset<UIImage>;
+			cell: ui.PresetType<UICell>;
+			column: ui.PresetType<UIColumn>;
+			row: ui.PresetType<UIRow>;
+			form: ui.PresetType<UIForm>;
+			scroll: ui.PresetType<UIScrollContainer>;
+			animatedcell: ui.PresetType<UIAnimatedCell>;
+			label: ui.PresetType<UILabel>;
+			button: ui.PresetType<UIButton>;
+			textfield: ui.PresetType<UITextField>;
+			toggle: ui.PresetType<UIToggle>;
+			separator: ui.PresetType<UISeparator>;
+			spacer: ui.PresetType<UISpacer>;
+			image: ui.PresetType<UIImage>;
 			render: View.ViewPreset<UIViewRenderer>;
 			animate: View.ViewPreset<UIAnimationView>;
 			conditional: View.ViewPreset<UIConditionalView>;
@@ -76,7 +90,7 @@ export interface ui {
 	 * @param content The content that will be added to each instance of the resulting class
 	 * @returns A new class that extends {@link UICell}
 	 */
-	cell(preset: View.ViewPreset<UICell>, content?: ViewClass): ViewClass<UICell>;
+	cell(preset: ui.PresetType<UICell>, content?: ViewClass): ViewClass<UICell>;
 	cell(content: ViewClass): ViewClass<UICell>;
 
 	/**
@@ -86,7 +100,7 @@ export interface ui {
 	 * @returns A new class that extends {@link UIColumn}
 	 */
 	column(
-		preset: View.ViewPreset<UIColumn>,
+		preset: ui.PresetType<UIColumn>,
 		...content: ViewClass[]
 	): ViewClass<UIColumn>;
 	column(...content: ViewClass[]): ViewClass<UIColumn>;
@@ -97,10 +111,7 @@ export interface ui {
 	 * @param content The content that will be added to each instance of the resulting class
 	 * @returns A new class that extends {@link UIRow}
 	 */
-	row(
-		preset: View.ViewPreset<UIRow>,
-		...content: ViewClass[]
-	): ViewClass<UIRow>;
+	row(preset: ui.PresetType<UIRow>, ...content: ViewClass[]): ViewClass<UIRow>;
 	row(...content: ViewClass[]): ViewClass<UIRow>;
 
 	/**
@@ -110,7 +121,7 @@ export interface ui {
 	 * @returns A new class that extends {@link UIForm}
 	 */
 	form(
-		preset: View.ViewPreset<UIForm>,
+		preset: ui.PresetType<UIForm>,
 		...content: ViewClass[]
 	): ViewClass<UIForm>;
 	form(...content: ViewClass[]): ViewClass<UIForm>;
@@ -122,7 +133,7 @@ export interface ui {
 	 * @returns A new class that extends {@link UIScrollContainer}
 	 */
 	scroll(
-		preset: View.ViewPreset<UIScrollContainer>,
+		preset: ui.PresetType<UIScrollContainer>,
 		...content: ViewClass[]
 	): ViewClass<UIScrollContainer>;
 	scroll(...content: ViewClass[]): ViewClass<UIScrollContainer>;
@@ -134,7 +145,7 @@ export interface ui {
 	 * @returns A new class that extends {@link UIAnimatedCell}
 	 */
 	animatedCell(
-		preset: View.ViewPreset<UIAnimatedCell>,
+		preset: ui.PresetType<UIAnimatedCell>,
 		content?: ViewClass,
 	): ViewClass<UIAnimatedCell>;
 
@@ -145,10 +156,14 @@ export interface ui {
 	 * @param style Preset label style (optional)
 	 * @returns A new class that extends {@link UILabel}
 	 */
-	label(preset: View.ViewPreset<UILabel>): ViewClass<UILabel>;
+	label(
+		preset: ui.PresetType<UILabel>,
+		text?: BindingOrValue<string | LazyString>,
+		style?: UIVariant<UILabel> | UIStyle.TypeOrOverrides<UILabel.StyleType>,
+	): ViewClass<UILabel>;
 	label(
 		text?: BindingOrValue<string | LazyString>,
-		style?: UIStyle.TypeOrOverrides<UILabel.StyleType>,
+		style?: UIVariant<UILabel> | UIStyle.TypeOrOverrides<UILabel.StyleType>,
 	): ViewClass<UILabel>;
 
 	/**
@@ -159,11 +174,16 @@ export interface ui {
 	 * @param style Preset button style (optional)
 	 * @returns A new class that extends {@link UILabel}
 	 */
-	button(preset: View.ViewPreset<UIButton>): ViewClass<UIButton>;
+	button(
+		preset: ui.PresetType<UIButton>,
+		label?: BindingOrValue<string | LazyString>,
+		onClick?: string,
+		style?: UIVariant<UIButton> | UIStyle.TypeOrOverrides<UIButton.StyleType>,
+	): ViewClass<UIButton>;
 	button(
 		label?: BindingOrValue<string | LazyString>,
 		onClick?: string,
-		style?: UIStyle.TypeOrOverrides<UIButton.StyleType>,
+		style?: UIVariant<UIButton> | UIStyle.TypeOrOverrides<UIButton.StyleType>,
 	): ViewClass<UIButton>;
 
 	/**
@@ -171,21 +191,21 @@ export interface ui {
 	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
 	 * @returns A new class that extends {@link UITextField}
 	 */
-	textField(preset: View.ViewPreset<UITextField>): ViewClass<UITextField>;
+	textField(preset: ui.PresetType<UITextField>): ViewClass<UITextField>;
 
 	/**
 	 * Creates a preset {@link UIToggle} constructor using the provided options
 	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
 	 * @returns A new class that extends {@link UIToggle}
 	 */
-	toggle(preset: View.ViewPreset<UIToggle>): ViewClass<UIToggle>;
+	toggle(preset: ui.PresetType<UIToggle>): ViewClass<UIToggle>;
 
 	/**
 	 * Creates a preset {@link UISeparator} constructor using the provided options
 	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
 	 * @returns A new class that extends {@link UISeparator}
 	 */
-	separator(preset?: View.ViewPreset<UISeparator>): ViewClass<UISeparator>;
+	separator(preset?: ui.PresetType<UISeparator>): ViewClass<UISeparator>;
 
 	/**
 	 * Creates a preset {@link UISpacer} constructor using the provided options
@@ -196,26 +216,18 @@ export interface ui {
 	 * @param minHeight Preset spacer minimum height
 	 * @returns A new class that extends {@link UISpacer}
 	 */
-	spacer(preset: View.ViewPreset<UISpacer>): ViewClass<UISpacer>;
+	spacer(preset: ui.PresetType<UISpacer>): ViewClass<UISpacer>;
 	spacer(
 		width?: number | string,
 		height?: number | string,
-		minWidth?: number | string,
-		minHeight?: number | string,
 	): ViewClass<UISpacer>;
 
 	/**
 	 * Creates a preset {@link UIImage} constructor using the provided options
 	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @param url Preset image URL
-	 * @param style Preset image style (optional)
 	 * @returns A new class that extends {@link UIImage}
 	 */
-	image(preset: View.ViewPreset<UIImage>): ViewClass<UIImage>;
-	image(
-		url: string,
-		style?: UIStyle.TypeOrOverrides<UIImage.StyleType>,
-	): ViewClass<UIImage>;
+	image(preset: ui.PresetType<UIImage>): ViewClass<UIImage>;
 
 	/**
 	 * Creates a preset {@link UIViewRenderer} constructor using the provided options
@@ -266,6 +278,7 @@ export interface ui {
 	/**
 	 * A function that returns a new UIColor instance for the specified theme color
 	 * - Colors can be defined using {@link UITheme.colors}.
+	 * @see {@link UIColor}
 	 */
 	color: {
 		(name: string): UIColor;
@@ -306,8 +319,9 @@ export interface ui {
 	};
 
 	/**
-	 * A function that returns a new UIIconResource instance for the specified icon
+	 * A function that returns a new icon resource object for the specified icon
 	 * - Icons can be defined using {@link UITheme.icons}.
+	 * @see {@link UIIconResource}
 	 */
 	icon: {
 		(name: string): UIIconResource;
@@ -327,6 +341,7 @@ export interface ui {
 	/**
 	 * A function that returns an animation defined by the current theme
 	 * - Animations can be defined using {@link UITheme.animations}.
+	 * @see {@link RenderContext.OutputTransformer}
 	 */
 	animation: {
 		(name: string): RenderContext.OutputTransformer;
@@ -349,6 +364,7 @@ export interface ui {
 	/**
 	 * A function that returns a (cell) output effect defined by the current theme
 	 * - Effects can be defined using {@link UITheme.effects}.
+	 * @see {@link RenderContext.OutputEffect}
 	 */
 	effect: {
 		(name: string): RenderContext.OutputEffect;
@@ -360,6 +376,7 @@ export interface ui {
 	/**
 	 * A function that returns a new or existing UIStyle (base) class for the specified style
 	 * - Styles for each class can be defined using {@link UITheme.styles}.
+	 * @see {@link UIStyle}
 	 */
 	style: {
 		(name: string): UIStyle.Type<any>;
@@ -373,6 +390,8 @@ export interface ui {
 		readonly BUTTON_PRIMARY: UIStyle.Type<UIButton.StyleType>;
 		readonly BUTTON_PLAIN: UIStyle.Type<UIButton.StyleType>;
 		readonly BUTTON_ICON: UIStyle.Type<UIButton.StyleType>;
+		readonly BUTTON_DANGER: UIStyle.Type<UIButton.StyleType>;
+		readonly BUTTON_SUCCESS: UIStyle.Type<UIButton.StyleType>;
 		readonly TEXTFIELD: UIStyle.Type<UITextField.StyleType>;
 		readonly TOGGLE: UIStyle.Type<UIToggle.StyleType>;
 		readonly TOGGLE_LABEL: UIStyle.Type<UILabel.StyleType>;

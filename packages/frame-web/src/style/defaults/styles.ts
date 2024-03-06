@@ -1,4 +1,4 @@
-import { UIComponent, UIStyle, ui } from "@desk-framework/frame-core";
+import { UIColor, UIComponent, UIStyle, ui } from "@desk-framework/frame-core";
 
 type CombinedStyleType = UIComponent.DimensionsStyleType &
 	UIComponent.DecorationStyleType &
@@ -15,7 +15,6 @@ export const defaultControlTextStyle: CombinedStyleType = {
 
 const _color_clear = ui.color.CLEAR;
 const _color_text = ui.color.TEXT;
-const _color_primaryBackground = ui.color.PRIMARY_BG;
 const _color_controlBase = ui.color.CONTROL_BASE;
 
 const baseButtonStyle: CombinedStyleType = {
@@ -23,8 +22,6 @@ const baseButtonStyle: CombinedStyleType = {
 	borderRadius: 12,
 	borderThickness: 1,
 	borderColor: _color_clear,
-	background: _color_controlBase,
-	textColor: _color_controlBase.text(),
 	fontWeight: 600,
 	textAlign: "center",
 	lineBreakMode: "ellipsis",
@@ -63,6 +60,24 @@ const pressedNotDisabled: CombinedStyleType = {
 	[UIStyle.STATE_DISABLED]: false,
 };
 
+function makeBgButtonStyle(bg: UIColor, baseBg?: UIColor, baseFg?: UIColor) {
+	let fg = bg.text();
+	return [
+		{ ...baseButtonStyle, background: baseBg || bg, textColor: baseFg || fg },
+		{
+			...hoveredNotDisabled,
+			background: bg.contrast(-0.1),
+			textColor: fg,
+		},
+		{
+			...pressedNotDisabled,
+			background: bg.contrast(0.1),
+			textColor: fg,
+		},
+		disabledStyle,
+	];
+}
+
 /** @internal Default styles for `UITheme.styles` */
 export const styles: [
 	name: string,
@@ -81,39 +96,12 @@ export const styles: [
 			},
 		],
 	],
+	["Button", makeBgButtonStyle(_color_controlBase)],
+	["PrimaryButton", makeBgButtonStyle(ui.color.PRIMARY_BG)],
+	["SuccessButton", makeBgButtonStyle(ui.color.SUCCESS_BG)],
 	[
-		"Button",
-		[
-			baseButtonStyle,
-			{
-				...hoveredNotDisabled,
-				background: _color_controlBase.contrast(-0.1),
-			},
-			{
-				...pressedNotDisabled,
-				background: _color_controlBase.contrast(0.1),
-			},
-			disabledStyle,
-		],
-	],
-	[
-		"PrimaryButton",
-		[
-			{
-				...baseButtonStyle,
-				background: _color_primaryBackground,
-				textColor: _color_primaryBackground.text(),
-			},
-			{
-				...hoveredNotDisabled,
-				background: _color_primaryBackground.contrast(0.2),
-			},
-			{
-				...pressedNotDisabled,
-				background: _color_primaryBackground.contrast(-0.1),
-			},
-			disabledStyle,
-		],
+		"DangerButton",
+		makeBgButtonStyle(ui.color.DANGER_BG, _color_controlBase, ui.color.DANGER),
 	],
 	[
 		"PlainButton",
@@ -219,7 +207,7 @@ export const styles: [
 		[
 			{
 				borderColor: _color_text.alpha(0.5),
-				textColor: _color_primaryBackground, // :checked fill
+				textColor: ui.color.PRIMARY_BG, // :checked fill
 				padding: { y: 4 },
 				css: { cursor: "pointer" },
 			},

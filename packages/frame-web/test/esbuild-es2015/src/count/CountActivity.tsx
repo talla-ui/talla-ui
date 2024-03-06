@@ -3,7 +3,7 @@ import {
 	app,
 } from "../../../../lib/desk-framework-web.es2015.esm.min";
 import body from "./body";
-import messages from "./messages";
+import text from "../text";
 
 export class CountActivity extends Activity {
 	count = 0;
@@ -14,7 +14,7 @@ export class CountActivity extends Activity {
 
 	onCountDown() {
 		if (this.count > 0) this.count--;
-		else app.showAlertDialogAsync(messages.negativeError);
+		else app.showAlertDialogAsync(text.negativeError);
 	}
 
 	onCountUp() {

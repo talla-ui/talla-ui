@@ -11,6 +11,7 @@ import {
 	UIColumn,
 	UILabel,
 	ViewComposite,
+	ViewCompositeVariant,
 	app,
 	bound,
 	strf,
@@ -87,6 +88,59 @@ describe("JSX", () => {
 		let cell = new MyCell() as UICell;
 		expect(cell.content).asArray().toBeArray(1);
 		expect(cell.content.first()).toHaveProperty("foo").toBe(123);
+	});
+
+	test("Custom view composite with variant", () => {
+		const MyView = ViewComposite.withPreset(
+			{
+				/** A single property, not used in view */
+				foo: 0,
+			},
+			<label>test</label>,
+		);
+		let myViewVariant = new ViewCompositeVariant(MyView, { foo: 123 });
+		let MyCell = (
+			<cell>
+				<MyView variant={myViewVariant} />
+			</cell>
+		);
+		let cell = new MyCell() as UICell;
+		expect(cell.content).asArray().toBeArray(1);
+		expect(cell.content.first()).toHaveProperty("foo").toBe(123);
+		expect(() => {
+			const OtherView = ViewComposite.withPreset({});
+			let otherVariant = new ViewCompositeVariant(OtherView, {});
+			return new (
+				<cell>
+					<MyView variant={otherVariant} />
+				</cell>
+			)();
+		})
+			.toThrowError()
+			.asString()
+			.toMatchRegExp(/variant/);
+	});
+
+	test("Custom view composite as class, with variant", () => {
+		class MyViewComp extends ViewComposite.withPreset(
+			{
+				/** A single property, not used in view */
+				foo: 0,
+			},
+			<label>test</label>,
+		) {
+			onClick() {
+				// ...
+			}
+		}
+		let TestView = <MyViewComp foo={123} />;
+		let view = new TestView() as MyViewComp;
+		expect(view).toHaveProperty("foo").toBe(123);
+
+		let testVariant = new ViewCompositeVariant(MyViewComp, { foo: 456 });
+		let TestVariantView = <MyViewComp variant={testVariant} />;
+		let variantView = new TestVariantView() as MyViewComp;
+		expect(variantView).toHaveProperty("foo").toBe(456);
 	});
 
 	test("Custom view composite with column content", (t) => {

@@ -4,7 +4,15 @@ import {
 	test,
 	useTestContext,
 } from "@desk-framework/frame-test";
-import { app, ui, UICell, UILabel, UIRow } from "../../../dist/index.js";
+import {
+	app,
+	ui,
+	UIButton,
+	UICell,
+	UILabel,
+	UIRow,
+} from "../../../dist/index.js";
+import { UIVariant } from "../../../dist/ui/UIVariant.js";
 
 describe("UILabel", (scope) => {
 	scope.beforeEach(() => {
@@ -45,6 +53,23 @@ describe("UILabel", (scope) => {
 		let MyLabel = ui.label("foo");
 		let label = new MyLabel();
 		expect(label).toHaveProperty("text").asString().toBe("foo");
+	});
+
+	test("Preset using object and text", () => {
+		let MyLabel = ui.label({ bold: true }, "foo");
+		let label = new MyLabel();
+		expect(label).toHaveProperty("bold").toBeTruthy();
+		expect(label).toHaveProperty("text").asString().toBe("foo");
+	});
+
+	test("Preset using variant", () => {
+		let MyLabel = ui.label("foo", new UIVariant(UILabel, { bold: true }));
+		let label = new MyLabel();
+		expect(label).toHaveProperty("bold").toBeTruthy();
+		expect(label).toHaveProperty("text").asString().toBe("foo");
+		expect(() => {
+			ui.label({ variant: new UIVariant(UIButton, {}) as any });
+		}).toThrowError();
 	});
 
 	test("Rendered with text", async (t) => {

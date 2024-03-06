@@ -4,7 +4,7 @@ import {
 	ManagedObject,
 	Observer,
 } from "../base/index.js";
-import { ERROR, err, errorHandler } from "../errors.js";
+import { ERROR, err, errorHandler, invalidArgErr } from "../errors.js";
 import { RenderContext } from "./RenderContext.js";
 import { View, ViewClass } from "./View.js";
 
@@ -67,7 +67,12 @@ export abstract class ViewComposite<TView extends View = View> extends View {
 			constructor(preset: any, ...content: TContent) {
 				super();
 				this._Content = content;
-				this.applyViewPreset({ ...defaults, ...preset });
+				if (preset?.variant && !(this instanceof preset.variant.type)) {
+					throw invalidArgErr("preset.variant");
+				}
+				let apply = { ...defaults, ...preset?.variant?.preset, ...preset };
+				delete apply.variant;
+				this.applyViewPreset(apply);
 			}
 			protected override createView() {
 				return ViewBody
@@ -214,14 +219,47 @@ export namespace ViewComposite {
 	> = {
 		/** Creates an instance of this view composite */
 		new (
-			preset?: TPreset,
+			preset?: TPreset & {
+				/** A view composite variant object, applied before other presets */
+				variant?: ViewCompositeVariant<TPreset, TObject>;
+			},
 			...content: TContent
 		): ViewComposite<TBodyView> & TObject;
 
 		/** Creates a preset class that further extends this view composite */
 		preset(
-			preset?: TPreset,
+			preset?: TPreset & {
+				/** A view composite variant object, applied before other presets */
+				variant?: ViewCompositeVariant<TPreset, TObject>;
+			},
 			...content: TContent
 		): { new (): ViewComposite<TBodyView> & TObject };
 	};
+}
+
+/**
+ * An object that includes predefined properties for a view composite
+ * - View composite variants can be used for the `variant` property passed to a view composite constructor, in JSX tags and with the static `preset` method.
+ * - Variants can only be used with a specific view composite class, and sub classes.
+ * - To create a new variant for a UI component instead, use {@link UIVariant}.
+ */
+export class ViewCompositeVariant<TPreset, TObject> {
+	/**
+	 * Creates a new view composite variant object
+	 * - The resulting instance can be used for the `variant` property passed to a view composite constructor, in JSX tags and with the static `preset` method.
+	 * @param type The view composite class that the variant will be used with
+	 * @param preset The properties, bindings, and event handlers that will be preset on each object created with this variant
+	 */
+	constructor(
+		public readonly type: ViewComposite.WithPreset<
+			TPreset,
+			any[],
+			View,
+			TObject
+		>,
+		public readonly preset: Readonly<TPreset>,
+	) {
+		this.type = type;
+		this.preset = Object.freeze({ ...preset });
+	}
 }

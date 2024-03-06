@@ -1,4 +1,6 @@
 import { RenderContext, View, ViewClass, app } from "../app/index.js";
+import { invalidArgErr } from "../errors.js";
+import { UIVariant } from "./UIVariant.js";
 import {
 	UIAnimatedCell,
 	UIAnimationView,
@@ -47,29 +49,35 @@ function isPreset(value: any) {
 /** UI component factory helper function */
 function createComponentFactory<TView extends View>(
 	type: new () => TView,
-	init?: (this: TView, ...args: any) => void,
-	makePreset?: (...args: any) => any,
 	extendPreset?: (preset: any, ...args: any) => any,
+	init?: (this: TView, ...args: any) => void,
 ) {
 	return function (...args: any[]) {
-		let preset = isPreset(args[0]) ? args.shift() : makePreset?.(...args) || {};
-		if (extendPreset) extendPreset(preset, ...args);
+		let preset = isPreset(args[0]) ? args.shift() : undefined;
+		if (extendPreset) extendPreset(preset || (preset = {}), ...args);
+		if (preset?.variant) {
+			if (type !== preset.variant.type) {
+				throw invalidArgErr("preset.variant");
+			}
+			preset = { ...preset.variant.preset, ...preset };
+			delete preset.variant;
+		}
 		return class PresetView extends (type as any) {
 			constructor(...newArgs: any[]) {
 				super(...newArgs);
-				this.applyViewPreset({ ...preset });
-				init?.call(this as any, ...(args as any));
+				if (preset) this.applyViewPreset({ ...preset });
+				if (init) init.call(this as any, ...(args as any));
 			}
 		} as any;
 	};
 }
+const createContainerComponentFactory = (V: ViewClass<UIContainer>) =>
+	createComponentFactory(V, undefined, function (...content: ViewClass[]) {
+		for (let C of content) this.content.add(new C());
+	});
 
 // === UI component factory functions
 
-const createContainerComponentFactory = (V: ViewClass<UIContainer>) =>
-	createComponentFactory(V, function (...content: ViewClass[]) {
-		for (let C of content) this.content.add(new C());
-	});
 _ui.cell = createContainerComponentFactory(UICell);
 _ui.column = createContainerComponentFactory(UIColumn);
 _ui.row = createContainerComponentFactory(UIRow);
@@ -77,66 +85,44 @@ _ui.form = createContainerComponentFactory(UIForm);
 _ui.scroll = createContainerComponentFactory(UIScrollContainer);
 _ui.animatedCell = createComponentFactory(UIAnimatedCell);
 
-_ui.label = createComponentFactory(UILabel, undefined, (text, style) => ({
-	text,
-	style,
-}));
+_ui.label = createComponentFactory(UILabel, (preset, text, style) => {
+	if (text) preset.text = text;
+	if (style instanceof UIVariant) preset.variant = style;
+	else if (style) preset.style = style;
+});
 
 _ui.button = createComponentFactory(
 	UIButton,
-	undefined,
-	(label, onClick, style) => ({
-		label,
-		onClick,
-		style,
-	}),
+	(preset, label, onClick, style) => {
+		if (label) preset.label = label;
+		if (onClick) preset.onClick = onClick;
+		if (style instanceof UIVariant) preset.variant = style;
+		else if (style) preset.style = style;
+	},
 );
 
 _ui.textField = createComponentFactory(UITextField);
 _ui.toggle = createComponentFactory(UIToggle);
 _ui.separator = createComponentFactory(UISeparator);
+_ui.image = createComponentFactory(UIImage);
+_ui.spacer = createComponentFactory(UISpacer, (preset, width, height) => {
+	if (width) preset.width = width;
+	if (height) preset.height = height;
+});
 
-_ui.spacer = createComponentFactory(
-	UISpacer,
-	undefined,
-	(width, height, minWidth, minHeight) => ({
-		width,
-		height,
-		minWidth,
-		minHeight,
-	}),
-);
-
-_ui.image = createComponentFactory(UIImage, undefined, (url, style) => ({
-	url,
-	style,
-}));
-
-_ui.renderView = createComponentFactory(UIViewRenderer, undefined, (view) => ({
+_ui.renderView = createComponentFactory(UIViewRenderer, (view) => ({
 	view,
 }));
-_ui.animate = createComponentFactory(
-	UIAnimationView,
-	undefined,
-	undefined,
-	(preset, C) => {
-		preset.Body = C;
-	},
-);
-_ui.conditional = createComponentFactory(
-	UIConditionalView,
-	undefined,
-	undefined,
-	(preset, C) => {
-		preset.Body = C;
-	},
-);
+_ui.animate = createComponentFactory(UIAnimationView, (preset, C) => {
+	preset.Body = C;
+});
+_ui.conditional = createComponentFactory(UIConditionalView, (preset, C) => {
+	preset.Body = C;
+});
 
 const defaultListBody = ui.column({ accessibleRole: "list" });
 _ui.list = createComponentFactory(
 	UIListView,
-	undefined,
-	undefined,
 	(preset, ItemBody, ContainerBody, BookEnd) => {
 		preset.Body = ContainerBody || defaultListBody;
 		preset.Observer = UIListView.createObserver(ItemBody, BookEnd);
@@ -296,6 +282,8 @@ Object.assign(_ui.style, {
 	BUTTON_PRIMARY: ui.style("PrimaryButton"),
 	BUTTON_PLAIN: ui.style("PlainButton"),
 	BUTTON_ICON: ui.style("IconButton"),
+	BUTTON_DANGER: ui.style("DangerButton"),
+	BUTTON_SUCCESS: ui.style("SuccessButton"),
 	TEXTFIELD: ui.style("TextField"),
 	TOGGLE: ui.style("Toggle"),
 	TOGGLE_LABEL: ui.style("ToggleLabel"),

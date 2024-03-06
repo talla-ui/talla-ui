@@ -49,7 +49,7 @@ describe("Focus management", (scope) => {
 
 	test("Focus requests", async (t) => {
 		let MyCell = ui.cell(
-			ui.button({ requestFocus: true, label: "first" }),
+			ui.button({ requestFocus: true }, "first"),
 			ui.button("second"),
 		);
 

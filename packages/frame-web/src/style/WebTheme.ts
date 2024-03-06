@@ -22,6 +22,9 @@ import { icons } from "./defaults/icons.js";
 import { defaultControlTextStyle, styles } from "./defaults/styles.js";
 import { Dialog } from "./Dialog.js";
 
+let _pxScaleOverride: number | undefined;
+let _importedCSS: string[] = [];
+
 /** @internal Modal view implementation for the web context */
 export class ModalFactory implements UITheme.ModalControllerFactory {
 	buildDialog(view: View) {
@@ -44,8 +47,8 @@ export class WebTheme extends UITheme {
 	static initializeCSS(options: WebContextOptions) {
 		resetCSS();
 		setGlobalCSS(makeBaseCSS());
-		setLogicalPxScale(options.logicalPxScale);
-		importStylesheets(options.importCSS);
+		setLogicalPxScale(_pxScaleOverride ?? options.logicalPxScale);
+		importStylesheets([...options.importCSS, ..._importedCSS]);
 		setControlTextStyle({
 			...defaultControlTextStyle,
 			...options.controlTextStyle,
@@ -55,8 +58,12 @@ export class WebTheme extends UITheme {
 		}
 	}
 
-	/** Imports an additional set of style sheets from the provided list of URLs */
+	/**
+	 * Imports an additional set of style sheets from the provided list of URLs
+	 * @note Stylesheets can also be imported using the options callback provided to {@link useWebContext()}.
+	 */
 	static importStylesheets(urls: string[]) {
+		_importedCSS.push(...urls);
 		importStylesheets(urls);
 	}
 
@@ -65,6 +72,7 @@ export class WebTheme extends UITheme {
 	 * @note This value can also be set using the options callback provided to {@link useWebContext()}.
 	 */
 	static setLogicalPxScale(scale: number) {
+		_pxScaleOverride = scale;
 		setLogicalPxScale(scale);
 	}
 

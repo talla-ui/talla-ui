@@ -18,12 +18,6 @@ describe("UIImage", (scope) => {
 		expect(image).toHaveProperty("url").asString().toBe("foo.png");
 	});
 
-	test("Preset using url", () => {
-		let MyImage = ui.image("foo.png");
-		let image = new MyImage();
-		expect(image).toHaveProperty("url").asString().toBe("foo.png");
-	});
-
 	test("Preset with properties", () => {
 		let MyImage = ui.image({ url: "foo.png" });
 		let image = new MyImage();

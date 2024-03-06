@@ -38,6 +38,13 @@ describe("UIButton", (scope) => {
 		expect(button).toHaveProperty("label").asString().toBe("foo");
 	});
 
+	test("Preset using object and label", () => {
+		let MyButton = ui.button({ accessibleLabel: "test" }, "foo");
+		let button = new MyButton();
+		expect(button).toHaveProperty("accessibleLabel").toBe("test");
+		expect(button).toHaveProperty("label").asString().toBe("foo");
+	});
+
 	test("Preset with +Event:target", () => {
 		let MyButton = ui.button({ label: "foo", onClick: "+Test:foo" });
 		let button = new MyButton();
