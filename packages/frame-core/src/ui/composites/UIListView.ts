@@ -220,10 +220,6 @@ export class UIListView extends ViewComposite {
 		return false;
 	}
 
-	protected override delegateViewEvent(event: ManagedEvent) {
-		return super.delegateViewEvent(event) || !!this.emit(event);
-	}
-
 	/**
 	 * FocusIn event handler, stores the index of the focused item as {@link lastFocusedIndex}
 	 * - This method always returns true to avoid propagating focus events to a parent list, if any.

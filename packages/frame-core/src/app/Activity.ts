@@ -14,6 +14,7 @@ import { NavigationTarget } from "./NavigationTarget.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
 import type { Service } from "./Service.js";
 import type { View, ViewClass } from "./View.js";
+import type { RenderContext } from "./RenderContext.js";
 
 /** Global list of activity instances for (old) activity class, for HMR */
 const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
@@ -93,7 +94,10 @@ export class Activity extends ManagedObject {
 				super();
 			}
 			protected override handleEvent(event: ManagedEvent<any>) {
-				if (this.activity.isActive()) {
+				if (
+					this.activity.isActive() &&
+					!(event as RenderContext.RendererEvent).isRendererEvent
+				) {
 					this.activity.delegateViewEvent(event);
 				}
 			}
@@ -236,7 +240,7 @@ export class Activity extends ManagedObject {
 	 * @param event The event to be delegated (from the view)
 	 * @returns True if an event handler was found, and it returned true; false otherwise.
 	 */
-	protected delegateViewEvent(event: ManagedEvent) {
+	protected delegateViewEvent(event: ManagedEvent): boolean | Promise<unknown> {
 		// find own handler method
 		let method = (this as any)["on" + event.name];
 		if (typeof method === "function") {

@@ -1,5 +1,4 @@
 import { View, ViewClass, ViewComposite } from "../../app/index.js";
-import type { ManagedEvent } from "../../base/index.js";
 
 /**
  * A view composite that automatically creates and unlinks the contained view
@@ -40,10 +39,6 @@ export class UIConditionalView extends ViewComposite {
 			delete (preset as any).Body;
 		}
 		super.applyViewPreset(preset);
-	}
-
-	protected override delegateViewEvent(event: ManagedEvent) {
-		return super.delegateViewEvent(event) || !!this.emit(event);
 	}
 
 	/**

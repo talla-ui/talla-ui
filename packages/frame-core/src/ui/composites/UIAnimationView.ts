@@ -1,5 +1,4 @@
 import { app, RenderContext, View, ViewComposite } from "../../app/index.js";
-import type { ManagedEvent } from "../../base/ManagedEvent.js";
 
 let _nextUpdateId = 1;
 
@@ -89,10 +88,6 @@ export class UIAnimationView extends ViewComposite {
 			});
 		}
 		return super.render(callback);
-	}
-
-	protected override delegateViewEvent(event: ManagedEvent) {
-		return super.delegateViewEvent(event) || !!this.emit(event);
 	}
 
 	/** Animation that will be played automatically when the content view is shown */

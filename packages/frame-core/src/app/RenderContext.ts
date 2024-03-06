@@ -197,7 +197,7 @@ export namespace RenderContext {
 
 	/**
 	 * A class that represents a render-related event
-	 * - Events of this type are considered internal to the rendered component, and are ignored when coming from attached view objects. In {@link ViewComposite} instances, the {@link ViewComposite.delegateViewEvent()} method doesn't get invoked for renderer events at all. Similarly, {@link UIContainer} doesn't propagate renderer events from attached views.
+	 * - Events of this type are considered internal to the rendered component. They are ignored when coming from attached view objects of {@link Activity} and {@link ViewComposite} instances, and {@link UIContainer} doesn't propagate renderer events from attached views at all.
 	 */
 	export class RendererEvent extends ManagedEvent {
 		/** Always returns true, can be used for duck-typing this type of events */

@@ -159,12 +159,12 @@ export abstract class ViewComposite<TView extends View = View> extends View {
 	/**
 	 * Delegates events from the current view
 	 * - This method is called automatically when an event is emitted by the current view object.
-	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true`, undefined, or a promise (which is awaited just to be able to handle any errors).
+	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true`, undefined, or a promise (which is awaited just to be able to handle any errors). If the return value is `true` or a promise, the event is considered handled and no further action is taken. Otherwise, the event is emitted again on the ViewComposite instance itself.
 	 * - This method may be overridden to handle events in any other way, e.g. to propagate them by emitting the same event on the ViewComposite instance itself.
 	 * @param event The event to be delegated (from the view)
-	 * @returns True if an event handler was found, and it returned true; false otherwise.
+	 * @returns This method always returns `true` since the event is either handled or emitted again.
 	 */
-	protected delegateViewEvent(event: ManagedEvent) {
+	protected delegateViewEvent(event: ManagedEvent): boolean | Promise<unknown> {
 		// find own handler method
 		let method = (this as any)["on" + event.name];
 		if (typeof method === "function") {
@@ -176,7 +176,8 @@ export abstract class ViewComposite<TView extends View = View> extends View {
 				return (result as Promise<unknown>).catch(errorHandler);
 			}
 		}
-		return false;
+		this.emit(event);
+		return true;
 	}
 
 	/**
