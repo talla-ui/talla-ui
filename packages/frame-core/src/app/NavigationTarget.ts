@@ -1,4 +1,5 @@
-import type { StringConvertible } from "../base/index.js";
+import type { LazyString, StringConvertible } from "../base/index.js";
+import { invalidArgErr } from "../errors.js";
 import { Activity } from "./Activity.js";
 
 /**
@@ -10,17 +11,33 @@ import { Activity } from "./Activity.js";
  * @see {@link GlobalContext.navigate}
  */
 export class NavigationTarget {
+	/**
+	 * Creates a new navigation target object
+	 * - This constructor can be used to create a new navigation target, from a variety of input types.
+	 * - If the target is a string or {@link LazyString} object, it's parsed as a URL-like path (e.g. `page` or `page/detail`).
+	 * - If the target is an object with a `getNavigationTarget` method, the method is called to get the target.
+	 * - Otherwise, the target is assumed to be an object with (optional) `pageId`, `detail`, and `title` properties. Further parameters can be provided to override these properties.
+	 * @param target The navigation target as a string or object
+	 * @param detail Additional detail for the navigation target
+	 * @param title The title of the navigation target, overriding the title provided if the target is an object
+	 * @error This constructor throws an error if the target is a string and starts with a dot (relative paths are not allowed).
+	 */
 	constructor(
 		target?:
 			| string
+			| LazyString
 			| { getNavigationTarget(): NavigationTarget }
 			| Partial<Pick<NavigationTarget, "pageId" | "detail" | "title">>,
 		detail?: string,
 		title?: StringConvertible,
 	) {
-		if (typeof target === "string") {
-			let [pageId, ...detailParts] = target.replace(/^\/+|\/+$/, "").split("/");
-			(this.pageId = pageId), (this.detail = detailParts.join("/"));
+		if (typeof target === "string" || target instanceof String) {
+			let [pageId, ...detailParts] = String(target)
+				.replace(/^\/+|\/+$/, "")
+				.split("/");
+			if (pageId![0] === ".") throw invalidArgErr("target");
+			this.pageId = pageId;
+			this.detail = detailParts.join("/");
 		} else if (target) {
 			if ("getNavigationTarget" in target) {
 				target = target.getNavigationTarget();

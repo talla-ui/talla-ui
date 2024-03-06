@@ -32,6 +32,12 @@ describe("NavigationController and ActivityContext", () => {
 			expect(p.pageId).toBe("");
 			expect(p.detail).toBe("");
 		});
+
+		test("Set invalid path", () => {
+			let p = new NavigationController();
+			expect(() => p.set("foo/bar")).toThrowError();
+			expect(() => p.set(".foo")).toThrowError();
+		});
 	});
 
 	describe("ActivityContext and activities", (scope) => {

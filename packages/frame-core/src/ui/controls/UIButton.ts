@@ -1,6 +1,7 @@
 import {
 	Binding,
 	BindingOrValue,
+	LazyString,
 	StringConvertible,
 } from "../../base/index.js";
 import { NavigationTarget, View } from "../../app/index.js";
@@ -95,6 +96,7 @@ export class UIButton extends UIComponent {
 	 */
 	navigateTo?:
 		| string
+		| LazyString
 		| Partial<NavigationTarget>
 		| { getNavigationTarget(): NavigationTarget };
 

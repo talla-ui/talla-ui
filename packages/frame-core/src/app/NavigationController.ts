@@ -1,4 +1,5 @@
 import { ManagedObject } from "../base/index.js";
+import { invalidArgErr } from "../errors.js";
 import type { NavigationTarget } from "./NavigationTarget.js";
 
 /**
@@ -20,11 +21,14 @@ export class NavigationController extends ManagedObject {
 
 	/**
 	 * Sets the current location
-	 * - This method doesn't affect the navigation history or platform-specific navigation, and doesn't check for slashes in URL-like parameters. To navigate to a new location, use {@link navigateAsync()} instead.
+	 * - This method doesn't affect the navigation history or platform-specific navigation. To navigate to a new location, use {@link navigateAsync()} instead.
+	 * @error This method throws an error if the page ID is invalid (i.e. contains slashes `/` or `\`, or starts with a dot `.`).
 	 */
 	set(pageId: string, detail = "") {
-		this._pageId = pageId || "";
-		this._detail = detail || "";
+		pageId = String(pageId || "");
+		if (/^\.|[\/\\]/.test(pageId)) throw invalidArgErr("pageId");
+		this._pageId = pageId;
+		this._detail = String(detail) || "";
 		this.emitChange();
 		return this;
 	}

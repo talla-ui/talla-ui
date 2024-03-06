@@ -24,6 +24,7 @@ describe("NavigationTarget", () => {
 	test("Constructor with string path", () => {
 		let t = new NavigationTarget("foo/bar/baz");
 		expect(t).toHaveProperties({ pageId: "foo", detail: "bar/baz" });
+		expect(() => new NavigationTarget("./foo")).toThrowError();
 	});
 
 	test("Constructor with activity", () => {

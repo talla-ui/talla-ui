@@ -199,6 +199,7 @@ export class GlobalContext extends ManagedObject {
 	navigate(
 		target:
 			| string
+			| LazyString
 			| NavigationTarget
 			| { getNavigationTarget(): NavigationTarget },
 		mode?: NavigationController.NavigationMode,
