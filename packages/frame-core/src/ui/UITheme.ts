@@ -40,6 +40,9 @@ export class UITheme {
 	/** Default margin around separator components, defaults to 8 */
 	separatorMargin: string | number = BASE_SPACING;
 
+	/** Default icon and chevron icon size, in pixels or string with unit; no default */
+	iconSize?: string | number;
+
 	/** Default dark text color, defaults to `#000000` */
 	darkTextColor: string = BASE_DARK_TEXT_COLOR;
 

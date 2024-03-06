@@ -213,7 +213,7 @@ function getIconElt(content: TextContentProperties) {
 	if (icon instanceof UIIconResource) {
 		if (icon.isMirrorRTL()) mirrorRTL = true;
 	}
-	let size = getCSSLength(content.iconSize, "1.5rem");
+	let size = getCSSLength(content.iconSize ?? app.theme?.iconSize, "1.5rem");
 	let color = content.iconColor ? String(content.iconColor) : "";
 	let iconSource = String(icon || "");
 	let memo = iconSource + ":" + size + ":" + color;
