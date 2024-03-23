@@ -27,5 +27,9 @@ export abstract class ConfigOptions {
 }
 
 export namespace ConfigOptions {
+	/**
+	 * Type definition for a configuration function argument
+	 * - A configuration function is passed to a constructor or factory function, and is used to initialize the options object; alternatively, an instance of the options object can be passed directly.
+	 */
 	export type Arg<TInstance> = TInstance | ((instance: TInstance) => void);
 }

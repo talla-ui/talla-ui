@@ -40,7 +40,10 @@ export namespace ui {
 		variant?: UIVariant<T>;
 	};
 
-	/** Type definition for using {@link ui.jsx} */
+	/**
+	 * Type definition for using {@link ui.jsx}
+	 * @hidedocs
+	 */
 	export namespace JSX {
 		export type Element = ViewClass;
 		export interface IntrinsicElements {

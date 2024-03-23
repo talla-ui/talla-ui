@@ -3,18 +3,32 @@
  * - I18n providers are selected on the global application context. Refer to {@link GlobalContext.i18n app.i18n} for details.
  */
 export interface I18nProvider {
-	/** Returns the locale identifier, usually a combination of language and country codes */
+	/**
+	 * A method that returns information about the locale represented by this provider
+	 * @summary This method must be implemented to provide information about the locale, such as the locale identifier (mandatory), text direction (only true if right-to-left), and decimal separator. The decimal separator defaults to `.` if not provided.
+	 *
+	 * @example
+	 * // Part of an I18nProvider implementation:
+	 * getAttributes(): I18nProvider.Attributes {
+	 *   return {
+	 *     locale: "en-US",
+	 *     rtl: false,
+	 *     decimalSeparator: ".",
+	 *   };
+	 * }
+	 */
 	getAttributes(): Readonly<I18nProvider.Attributes>;
 
 	/**
 	 * A method that's used to localize a string
-	 * @summary This method is called primarily by {@link LazyString} (the result of {@link strf()}), for each string that should be translated. The implementation of this method may use a lookup table to provide a translation for a particular language, or it may return the same string if translation isn't necessary.
+	 * @summary This method is called primarily by {@link LazyString} (the result of {@link strf()}), for each string that should be translated. The implementation of this method may use a lookup table to provide a translation for a particular language, or it may return the same string if translation isn't necessary. Both the input and output strings may start with translation markers (up to the first space, i.e. `##MARKER_ID`) and descriptions (between `:` characters, i.e. `##MARKER_ID:Some description:`). These markers and descriptions can be used by this method, and will be removed from the output string.
 	 * @note The input string may include formatting and plural form placeholders; translated text should include the same placeholders.
 	 *
 	 * @example
 	 * // Part of an I18nProvider implementation:
 	 * getText(text: string): string {
-	 *   return this.translationTable[text] || text;
+	 *   let marker = text.match(/^##([^: ]+)/)?.[1];
+	 *   return this.translationTable[marker || text] || text;
 	 * }
 	 */
 	getText(text: string): string;

@@ -1,0 +1,42 @@
+{
+	"name": "@desk-framework/docs",
+	"private": true,
+	"version": "0.0.0",
+	"license": "MIT",
+	"type": "module",
+	"scripts": {
+		"postinstall": "concurrently npm:postinstall:*",
+		"postinstall:app": "cd app && npm install",
+		"postinstall:docgen": "cd docgen && npm install",
+		"build": "concurrently npm:build:*",
+		"build:docgen": "cd docgen && npm run build",
+		"build:app": "cd app && npm run build",
+		"check-format": "concurrently npm:check-format:*",
+		"check-format:scripts": "prettier --check \"scripts/**/*.js\"",
+		"check-format:docgen": "cd docgen && npm run check-format",
+		"check-format:app": "cd app && npm run check-format",
+		"validate": "node scripts/validate.js",
+		"generate": "rimraf content/en/_generated_ && node scripts/generate.js",
+		"merge": "rimraf ../_site && node scripts/merge.js"
+	},
+	"prettier": {
+		"useTabs": true,
+		"trailingComma": "all",
+		"endOfLine": "lf",
+		"overrides": [
+			{
+				"files": "*.yaml",
+				"options": {
+					"useTabs": false,
+					"tabWidth": 2
+				}
+			}
+		]
+	},
+	"devDependencies": {
+		"@desk-framework/docgen": "file:./docgen",
+		"@desk-framework/frame-core": "file:../packages/frame-core",
+		"@desk-framework/frame-test": "file:../packages/frame-test",
+		"@desk-framework/frame-web": "file:../packages/frame-web"
+	}
+}

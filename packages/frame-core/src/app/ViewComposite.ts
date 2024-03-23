@@ -23,7 +23,7 @@ import { View, ViewClass } from "./View.js";
  * View composites are primarily used in two different ways:
  *
  * - As a way to _control_ an encapsulated view. Refer to e.g. {@link UIConditionalView} and {@link UIListView}, which are built-in ViewComposite classes.
- * - As a way to create reusable view structures. Refer to the static {@link define()} method which can be used to create a ViewComposite class using a function and/or a class.
+ * - As a way to create reusable view structures. Refer to the static {@link withPreset()} method which can be used to create a ViewComposite class using a function and/or a class.
  *
  * Note the similarities with the {@link Activity} class, which also encapsulates a single view object. As a rule, use _activities_ if event handlers or other class methods include business logic. Use view _composites_ if the class is only concerned with the look and feel of a set of UI components, and all content can be preset, bound, or provided by a view model.
  */
@@ -251,15 +251,16 @@ export class ViewCompositeVariant<TPreset, TObject> {
 	 * @param preset The properties, bindings, and event handlers that will be preset on each object created with this variant
 	 */
 	constructor(
-		public readonly type: ViewComposite.WithPreset<
-			TPreset,
-			any[],
-			View,
-			TObject
-		>,
-		public readonly preset: Readonly<TPreset>,
+		type: ViewComposite.WithPreset<TPreset, any[], View, TObject>,
+		preset: Readonly<TPreset>,
 	) {
 		this.type = type;
 		this.preset = Object.freeze({ ...preset });
 	}
+
+	/** The view composite class that the variant will be used with */
+	public readonly type: ViewComposite.WithPreset<TPreset, any[], View, TObject>;
+
+	/** The properties, bindings, and event handlers that will be preset on each object created with this variant */
+	public readonly preset: Readonly<TPreset>;
 }

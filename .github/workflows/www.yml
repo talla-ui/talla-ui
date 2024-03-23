@@ -11,19 +11,17 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-      - name: Use Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/configure-pages@v4
       - run: npm install
       - run: npm run build
-      - run: npm run www
-      - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v2
+      - run: npm run generate-docs
+      - run: npm run merge-docs
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: "_site"
-      - name: Deploy to GitHub Pages
+      - uses: actions/deploy-pages@v4
         id: deployment
-        uses: actions/deploy-pages@v2

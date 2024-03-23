@@ -252,7 +252,7 @@ export class ManagedObject {
 	 * - Refer to {@link ManagedObject} for more information on attaching objects.
 	 *
 	 * @param target The object to attach
-	 * @param observer An {@link Observer} class or instance, or a function that's called whenever a change event is emitted by the target object (with target and event arguments, respectively), and when the object is unlinked or moved to another object by re-attaching it (without any arguments)
+	 * @param observer An {@link Observer} instance, or a function that's called whenever a change event is emitted by the target object (with target and event arguments, respectively), and when the object is unlinked or moved to another object by re-attaching it (without any arguments)
 	 * @returns The newly attached object
 	 * @error This method throws an error if the provided object was already attached to this object, or if a circular reference was found.
 	 *
@@ -288,7 +288,7 @@ export class ManagedObject {
 	 * - Refer to {@link ManagedObject} for more information on attaching objects.
 	 *
 	 * @param propertyName The name of the property to watch for references to other managed objects; must be a public property
-	 * @param observer An {@link Observer} class or instance, or a function that's called whenever a change event is emitted by the target object (with target and event arguments, respectively), and when the object is unlinked or moved to another object by re-attaching it (without any arguments)
+	 * @param observer An {@link Observer} instance, or a function that's called whenever a change event is emitted by the target object (with target and event arguments, respectively), and when the object is unlinked or moved to another object by re-attaching it (without any arguments)
 	 *
 	 * @example
 	 * // Attach any object assigned to a property

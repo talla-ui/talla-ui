@@ -83,7 +83,7 @@ export class UITheme {
 	 * A map that defines a set of predefined output transform animations
 	 *
 	 * @description
-	 * The animations defined by this map can be used with the {@link GlobalContext.animateAsync} method, as well as {@link UIAnimationController} and the animations set on the {@link RenderContext.PlacementOptions} object. Default animations are also available as static properties of `ui.animation()`, e.g. `ui.animation.FADE_IN`.
+	 * The animations defined by this map can be used with the {@link GlobalContext.animateAsync} method, as well as {@link UIAnimationView} and the animations set on the {@link RenderContext.PlacementOptions} object. Default animations are also available as static properties of `ui.animation()`, e.g. `ui.animation.FADE_IN`.
 	 */
 	animations = new Map<string, RenderContext.OutputTransformer>();
 
@@ -133,11 +133,15 @@ export namespace UITheme {
 	 * - An object of this type should be assigned to {@link UITheme.modalFactory}, which is used by the `app` methods that display modal view components.
 	 */
 	export interface ModalControllerFactory {
+		/** A factory method that returns an instance that implements the {@link DialogController} interface, for the provided view */
 		buildDialog?: (view: View) => DialogController;
+		/** A factory method that returns an instance that implements the {@link AlertDialogController} interface, using the provided dialog options */
 		buildAlertDialog?: (options: MessageDialogOptions) => AlertDialogController;
+		/** A factory method that returns an instance that implements the {@link ConfirmDialogController} interface, using the provided dialog options */
 		buildConfirmDialog?: (
 			options: MessageDialogOptions,
 		) => ConfirmDialogController;
+		/** A factory method that returns an instance that implements the {@link MenuController} interface, using the provided menu options */
 		buildMenu?: (options: MenuOptions) => MenuController;
 	}
 
@@ -166,6 +170,7 @@ export namespace UITheme {
 	 * @see {@link UITheme.ModalControllerFactory}
 	 */
 	export interface ConfirmDialogController {
+		/** Display the dialog */
 		showAsync(
 			place?: Partial<RenderContext.PlacementOptions>,
 		): Promise<{ confirmed: boolean; other?: boolean }>;

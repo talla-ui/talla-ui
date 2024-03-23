@@ -89,8 +89,8 @@ export abstract class UIComponent extends View {
 	/**
 	 * True if the component should be hidden from view
 	 * - UI components may still be rendered even if they're hidden. However, container component isn't rendered while containers themselves are hidden.
-	 * - Alternatively, use {@link UIConditional} to show and hide content dynamically.
-	 * @see UIConditional
+	 * - Alternatively, use {@link UIConditionalView} to show and hide content dynamically.
+	 * @see UIConditionalView
 	 */
 	hidden = false;
 

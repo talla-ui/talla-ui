@@ -187,7 +187,7 @@ export class GlobalContext extends ManagedObject {
 
 	/**
 	 * Navigates to the specified path asynchronously
-	 * - The behavior of this method is platform dependent. It uses {@link NavigationController.navigateAsync()} to navigate to the specified path, which in turn updates the path returned by {@link GlobalContext.getPath app.getPath()} — and may activate or deactivate activities.
+	 * - The behavior of this method is platform dependent. It uses {@link NavigationController.navigateAsync()} to navigate to the specified path, which may in turn activate or deactivate activities using the {@link Activity.navigationPageId} property.
 	 * - The target location can be a {@link NavigationTarget} instance, an object that provides a navigation target (i.e. an {@link Activity}), or a URL-like path (i.e. `pageId/detail...`).
 	 * @param target The target location
 	 * @param mode The navigation mode, refer to {@link NavigationController.navigateAsync()}
@@ -430,41 +430,6 @@ export class GlobalContext extends ManagedObject {
  *
  * @description
  * Use `app` to access properties and methods of {@link GlobalContext}, e.g. `app.theme` and `app.addActivity(...)`. This instance is available immediately when the application starts, and remains the same throughout its lifetime.
- *
- * ---
- * **Initializing the app** — Use the following methods to initialize the application.
- *
- * - {@ref GlobalContext.addActivity()}
- * - {@ref GlobalContext.addService()}
- *
- * ---
- * **Logging** — Use the `app.log` methods to write messages and data to the application log.
- *
- * - {@ref GlobalContext.log}
- *
- * ---
- * **Navigation** — Use the following methods to move around the application.
- *
- * - {@ref GlobalContext.navigate()}
- * - {@ref GlobalContext.goBack()}
- * - {@ref GlobalContext.getPath()}
- *
- * ---
- * **Rendering** — Use the following methods to render views.
- *
- * - {@ref GlobalContext.showAlertDialogAsync()}
- * - {@ref GlobalContext.showConfirmDialogAsync()}
- * - {@ref GlobalContext.showModalMenuAsync()}
- * - {@ref GlobalContext.render()}
- * - {@ref GlobalContext.animateAsync()}
- *
- * ---
- * **Customization** — Use the following properties and methods to add custom behavior and styles to the application.
- *
- * - {@ref GlobalContext.theme}
- * - {@ref GlobalContext.i18n}
- * - {@ref GlobalContext.addLogHandler()}
- * - {@ref GlobalContext.setErrorHandler()}
  */
 export const app = GlobalContext.instance;
 

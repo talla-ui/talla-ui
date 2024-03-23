@@ -1,0 +1,27 @@
+{
+	"name": "@desk-framework/docs-app",
+	"private": true,
+	"version": "0.0.0",
+	"license": "MIT",
+	"type": "module",
+	"scripts": {
+		"clean": "rimraf dist",
+		"prebuild": "npm run clean && tsc -p src",
+		"build": "esbuild src/app.ts --outfile=dist/bundle.js --bundle --external:@desk-framework/frame-core --external:@desk-framework/frame-web --format=iife --target=es2020 --minify",
+		"check-format": "prettier --check \"src/**/*.{ts,tsx}\""
+	},
+	"prettier": {
+		"useTabs": true,
+		"trailingComma": "all",
+		"endOfLine": "lf",
+		"overrides": [
+			{
+				"files": "*.yaml",
+				"options": {
+					"useTabs": false,
+					"tabWidth": 2
+				}
+			}
+		]
+	}
+}

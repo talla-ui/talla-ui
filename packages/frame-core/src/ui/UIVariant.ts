@@ -15,14 +15,17 @@ export class UIVariant<T extends UIComponent> {
 	 * @param type The UI component class that the variant will be used with, e.g {@link UIButton}
 	 * @param preset The properties, bindings, and event handlers that will be preset on each object created with this variant
 	 */
-	constructor(
-		public readonly type: new () => T,
-		public readonly preset: Readonly<View.ViewPreset<T>>,
-	) {
+	constructor(type: new () => T, preset: Readonly<View.ViewPreset<T>>) {
 		if (!(type.prototype instanceof UIComponent)) {
 			throw invalidArgErr("type");
 		}
 		this.type = type;
 		this.preset = Object.freeze({ ...preset });
 	}
+
+	/** The UI component class that the variant will be used with, e.g. {@link UIButton} */
+	public readonly type: new () => T;
+
+	/** The properties, bindings, and event handlers that will be preset on each object created with this variant */
+	public readonly preset: Readonly<View.ViewPreset<T>>;
 }

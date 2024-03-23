@@ -87,7 +87,7 @@ export namespace UIStyle {
 
 	/**
 	 * Type definition for an object that includes style state options
-	 * @see {@link UITheme.StyleSelectorList}
+	 * @see {@link UIStyle.StyleSelectorList}
 	 */
 	export type StyleStateOptions = {
 		[STATE_HOVERED]?: boolean;
@@ -114,6 +114,7 @@ export namespace UIStyle {
 		overrides: Array<Readonly<TDefinition> | undefined>;
 	};
 
+	/** Type definition for a {@link UIStyle} class (or extended sub class) */
 	export type Type<TDefinition> = {
 		new (): UIStyle<TDefinition>;
 		extend: typeof UIStyle.extend;

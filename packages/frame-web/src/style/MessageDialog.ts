@@ -81,7 +81,7 @@ export class MessageDialogStyles {
 	 * The label style used for the first message label
 	 * - The default style includes centered, bold text, with a maximum width of 480 pixels.
 	 */
-	firstLabelStyle = ui.style.LABEL.extend({
+	firstLabelStyle: typeof ui.style.LABEL = ui.style.LABEL.extend({
 		bold: true,
 		textAlign: "center",
 		maxWidth: 480,
@@ -93,7 +93,7 @@ export class MessageDialogStyles {
 	 * The label style used for all labels except the first
 	 * - The default style includes centered text, with a maximum width of 480 pixels.
 	 */
-	labelStyle = ui.style.LABEL.extend({
+	labelStyle: typeof ui.style.LABEL = ui.style.LABEL.extend({
 		textAlign: "center",
 		maxWidth: 480,
 		lineBreakMode: "pre-wrap",
@@ -104,13 +104,13 @@ export class MessageDialogStyles {
 	 * The button style used for all buttons except the confirm button
 	 * - This property defaults to the default button style.
 	 */
-	buttonStyle = ui.style.BUTTON;
+	buttonStyle: typeof ui.style.BUTTON = ui.style.BUTTON;
 
 	/**
 	 * The button style used for the confirm button
 	 * - This property defaults to the default primary button style.
 	 */
-	confirmButtonStyle = ui.style.BUTTON_PRIMARY;
+	confirmButtonStyle: typeof ui.style.BUTTON = ui.style.BUTTON_PRIMARY;
 }
 
 /** @internal Default modal message dialog view; shown asynchronously and resolves a promise */
