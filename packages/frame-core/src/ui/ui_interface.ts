@@ -12,6 +12,7 @@ import type { UIListView } from "./composites/UIListView.js";
 import type { UIViewRenderer } from "./composites/UIViewRenderer.js";
 import type { UIAnimatedCell, UICell } from "./containers/UICell.js";
 import type { UIColumn } from "./containers/UIColumn.js";
+import type { UIContainer } from "./containers/UIContainer.js";
 import type { UIRow } from "./containers/UIRow.js";
 import type { UIScrollContainer } from "./containers/UIScrollContainer.js";
 import type { UIButton } from "./controls/UIButton.js";
@@ -91,8 +92,11 @@ export interface ui {
 	 * @param content The content that will be added to each instance of the resulting class
 	 * @returns A new class that extends {@link UICell}
 	 */
-	cell(preset: ui.PresetType<UICell>, content?: ViewClass): ViewClass<UICell>;
-	cell(content: ViewClass): ViewClass<UICell>;
+	cell(
+		preset: ui.PresetType<UICell>,
+		...content: ViewClass[]
+	): ViewClass<UICell>;
+	cell(...content: ViewClass[]): ViewClass<UICell>;
 
 	/**
 	 * Creates a preset {@link UIColumn} constructor using the provided options and content
@@ -260,7 +264,7 @@ export interface ui {
 	list(
 		preset: View.ViewPreset<UIListView>,
 		ItemBody: ViewClass,
-		ContainerBody?: ViewClass<UIRow | UIColumn>,
+		ContainerBody?: ViewClass<UIContainer>,
 		BookEnd?: ViewClass,
 	): ViewClass<UIListView>;
 

@@ -1,9 +1,4 @@
-import {
-	ManagedEvent,
-	RenderContext,
-	UICell,
-	ui,
-} from "@desk-framework/frame-core";
+import { ManagedEvent, UICell, ui } from "@desk-framework/frame-core";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import { getBaseStyleClass } from "./TestBaseObserver.js";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
@@ -46,12 +41,17 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 
 	override getOutput() {
 		if (!this.observed) throw ReferenceError();
-		let elt = new TestOutputElement("cell");
-		let output = new RenderContext.Output(this.observed, elt);
-		elt.output = output;
+		let output = super.getOutput();
 		if (this.observed.allowFocus || this.observed.allowKeyboardFocus)
-			elt.focusable = true;
+			output.element.focusable = true;
 		return output;
+	}
+
+	override updateContent(element: TestOutputElement) {
+		let cell = this.observed;
+		if (!cell) return;
+		super.updateContent(element);
+		if (cell.allowFocus || cell.allowKeyboardFocus) element.focusable = true;
 	}
 
 	override updateStyle(element: TestOutputElement) {

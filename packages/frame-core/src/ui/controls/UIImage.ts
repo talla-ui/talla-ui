@@ -21,12 +21,8 @@ export class UIImage extends UIComponent {
 		preset: View.ViewPreset<
 			UIComponent,
 			this,
-			"url" | "width" | "height" | "style"
+			"url" | "width" | "height" | "style" | "allowFocus" | "allowKeyboardFocus"
 		> & {
-			/** True if this image may receive input focus */
-			allowFocus?: boolean;
-			/** True if this image may receive input focus using the keyboard (e.g. Tab key) */
-			allowKeyboardFocus?: boolean;
 			/** Event that's emitted when the image couldn't be loaded */
 			onLoadError?: string;
 		},

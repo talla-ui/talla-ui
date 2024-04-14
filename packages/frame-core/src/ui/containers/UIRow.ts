@@ -10,24 +10,29 @@ import { UIContainer } from "./UIContainer.js";
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
 export class UIRow extends UIContainer {
-	/** Creates a new row container view object with the provided view content */
-	constructor(...content: View[]) {
-		super(...content);
-		this.spacing = UITheme.getSpacing();
-	}
-
 	/**
 	 * Applies the provided preset properties to this object
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: View.ViewPreset<UIContainer, this, "height" | "align" | "gravity">,
+		preset: View.ViewPreset<
+			UIContainer,
+			this,
+			"height" | "spacing" | "align" | "gravity"
+		>,
 	) {
 		super.applyViewPreset(preset);
 	}
 
 	/** Row height, in pixels or CSS length with unit */
 	height?: string | number = undefined;
+
+	/**
+	 * Space between components, in pixels or CSS length with unit
+	 * - This property is set to {@link UITheme.rowSpacing} by default.
+	 * - If this property is set, its value overrides `separator` from the current {@link UIContainer.layout layout} object (if any).
+	 */
+	spacing?: string | number = UITheme.getSpacing();
 
 	/**
 	 * Alignment of content along the horizontal axis

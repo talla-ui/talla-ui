@@ -7,7 +7,7 @@ import {
 	Observer,
 } from "../../base/index.js";
 import { ERROR, err } from "../../errors.js";
-import type { UIColumn, UIRow } from "../containers/index.js";
+import type { UIContainer } from "../containers/index.js";
 
 /**
  * A view composite that manages views for each item in a list of objects or values
@@ -96,20 +96,14 @@ export class UIListView<
 		> & {
 			/** List of objects, either an array, {@link ManagedList} object, or binding for either */
 			items?: BindingOrValue<Iterable<any>>;
-			/** True if the _container_ view object may receive input focus using the keyboard (e.g. Tab key) */
-			allowKeyboardFocus?: boolean;
 			/** Event that's emitted when list item views are rendered */
 			onListItemsChange?: string;
 		},
 	) {
 		super.applyViewPreset(preset);
 		if ((preset as any).Body) {
-			let Body = (preset as any).Body as ViewClass<UIColumn | UIRow>;
-			this.createView = () => {
-				let view = new Body();
-				if (preset.allowKeyboardFocus) view.allowKeyboardFocus = true;
-				return view;
-			};
+			let Body = (preset as any).Body as ViewClass<UIContainer>;
+			this.createView = () => new Body();
 			delete (preset as any).Body;
 		}
 		if ((preset as any).Observer) {
@@ -123,7 +117,7 @@ export class UIListView<
 	 * - On instances of preset UIList classes, this property defaults to a column view without any spacing, but can be preset to another container view.
 	 * - This property should not be changed on existing UIList instances.
 	 */
-	declare body: UIRow | UIColumn;
+	declare body: UIContainer;
 
 	/**
 	 * The list of objects, from which each object is used to construct one view object

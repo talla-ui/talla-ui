@@ -40,15 +40,11 @@ export class UILabel extends UIComponent {
 			| "small"
 			| "dim"
 			| "style"
-		> & {
-			/** True if this label may receive input focus */
-			allowFocus?: boolean;
-			/** True if this label may receive input focus using the keyboard; implies `allowFocus` */
-			allowKeyboardFocus?: boolean;
-		},
+			| "allowFocus"
+			| "allowKeyboardFocus"
+		>,
 	) {
 		if (preset.allowKeyboardFocus) preset.allowFocus = true;
-
 		super.applyViewPreset(preset);
 	}
 

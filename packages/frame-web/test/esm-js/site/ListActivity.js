@@ -28,7 +28,6 @@ class ListItemView extends ViewComposite.withPreset(
 					{ borderThickness: 1, borderColor: ui.color.CLEAR },
 				),
 			padding: { x: 12, y: 4 },
-			margin: { bottom: 8 },
 			allowKeyboardFocus: true,
 			onFocusIn: "+SelectItem",
 			onArrowDownKeyPress: "+FocusNext",
@@ -72,6 +71,7 @@ const page = ui.cell(
 				text: bound.string("item.text"),
 				selected: bound("selectedItem").equals("item"),
 			}),
+			ui.column({ spacing: 8, accessibleRole: "list" }),
 		),
 	),
 );

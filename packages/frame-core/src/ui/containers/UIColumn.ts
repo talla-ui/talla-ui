@@ -9,11 +9,6 @@ import { UIContainer } from "./UIContainer.js";
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
 export class UIColumn extends UIContainer {
-	/** Creates a new column container view object with the provided view content */
-	constructor(...content: View[]) {
-		super(...content);
-	}
-
 	/**
 	 * Applies the provided preset properties to this object
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
@@ -22,7 +17,7 @@ export class UIColumn extends UIContainer {
 		preset: View.ViewPreset<
 			UIContainer,
 			this,
-			"width" | "align" | "distribute"
+			"width" | "spacing" | "align" | "distribute"
 		>,
 	) {
 		super.applyViewPreset(preset);
@@ -30,6 +25,13 @@ export class UIColumn extends UIContainer {
 
 	/** Column width, in pixels or CSS length with unit */
 	width?: string | number = undefined;
+
+	/**
+	 * Space between components, in pixels or CSS length with unit
+	 * - This property is undefined by default.
+	 * - If this property is set, its value overrides `separator` from the current {@link UIContainer.layout layout} object (if any).
+	 */
+	spacing?: string | number = undefined;
 
 	/**
 	 * Alignment of content along the horizontal axis

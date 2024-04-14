@@ -1,6 +1,7 @@
 import {
 	ManagedEvent,
 	RenderContext,
+	UICell,
 	UIColumn,
 	UIContainer,
 	UIRow,
@@ -57,16 +58,15 @@ export class UIContainerRenderer<
 
 	getOutput() {
 		if (!this.observed) throw ReferenceError();
-		let isRow = this.observed instanceof UIRow;
-		let isColumn = this.observed instanceof UIColumn;
-		let isForm = this.observed.accessibleRole === "form";
-		let elt = new TestOutputElement(
-			isRow ? "row" : isColumn ? "column" : isForm ? "form" : "container",
-		);
+		let type: TestOutputElement.TypeString;
+		if (this.observed.accessibleRole === "form") type = "form";
+		else if (this.observed instanceof UICell) type = "cell";
+		else if (this.observed instanceof UIRow) type = "row";
+		else if (this.observed instanceof UIColumn) type = "column";
+		else type = "container";
+		let elt = new TestOutputElement(type);
 		let output = new RenderContext.Output(this.observed, elt);
 		elt.output = output;
-		if (this.observed.allowFocus || this.observed.allowKeyboardFocus)
-			elt.focusable = true;
 		return output;
 	}
 
@@ -83,6 +83,7 @@ export class UIContainerRenderer<
 	updateContent(element: TestOutputElement) {
 		let container = this.observed;
 		if (!container) return;
+
 		if (!this.contentUpdater) {
 			this.contentUpdater = new ContentUpdater(
 				container,
@@ -93,9 +94,6 @@ export class UIContainerRenderer<
 
 		// NOTE: spacing/separators are ignored here because they can't be tested;
 		this.contentUpdater.update(container.content);
-
-		if (container.allowFocus || container.allowKeyboardFocus)
-			element.focusable = true;
 	}
 
 	contentUpdater?: ContentUpdater;

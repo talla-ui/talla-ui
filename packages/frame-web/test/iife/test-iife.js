@@ -3,18 +3,15 @@ const { app, ui, bound } = desk;
 
 (function () {
 	const ViewBody = ui.cell(
-		ui.column(
-			{ distribute: "center" },
-			ui.label(bound.strf("Count: %n", "count"), {
-				bold: true,
-				fontSize: 36,
-			}),
-			ui.spacer(0, 32),
-			ui.row(
-				{ align: "center" },
-				ui.button("Down", "CountDown"),
-				ui.button("Up", "CountUp"),
-			),
+		ui.label(bound.strf("Count: %n", "count"), {
+			bold: true,
+			fontSize: 36,
+		}),
+		ui.spacer(0, 32),
+		ui.row(
+			{ align: "center" },
+			ui.button("Down", "CountDown"),
+			ui.button("Up", "CountUp"),
 		),
 	);
 

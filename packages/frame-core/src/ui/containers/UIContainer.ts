@@ -38,15 +38,9 @@ export abstract class UIContainer extends UIComponent {
 		preset: View.ViewPreset<
 			UIComponent,
 			this,
-			| "layout"
-			| "padding"
-			| "spacing"
-			| "allowFocus"
-			| "allowKeyboardFocus"
-			| "asyncContentRendering"
+			"layout" | "padding" | "asyncContentRendering"
 		>,
 	) {
-		if (preset.allowKeyboardFocus) preset.allowFocus = true;
 		super.applyViewPreset(preset);
 	}
 
@@ -76,30 +70,10 @@ export abstract class UIContainer extends UIComponent {
 	padding?: UIComponent.Offsets = undefined;
 
 	/**
-	 * Space between components, in pixels or CSS length with unit
-	 * - This property is only set by default on {@link UIRow}, to apply {@link UITheme.rowSpacing}.
-	 * - If this property is set, its value overrides `separator` from the current {@link layout} object.
-	 */
-	spacing?: string | number = undefined;
-
-	/**
 	 * True if content views should be rendered asynchronously
 	 * - Setting this property to true should result in smoother updates, especially for containers with many content items. However, for containers with fewer, larger items, content view rendering may be delayed by a few milliseconds which may result in visual artifacts.
 	 */
 	asyncContentRendering?: boolean;
-
-	/**
-	 * True if this container *itself* may receive direct input focus
-	 * - This property can't be changed after rendering.
-	 */
-	allowFocus?: boolean;
-
-	/**
-	 * True if this container *itself* may receive input focus using the keyboard (e.g. Tab key)
-	 * - This property can't be changed after rendering.
-	 * - If this property is set to true, allowFocus is assumed to be true as well and no longer checked.
-	 */
-	allowKeyboardFocus?: boolean;
 }
 
 export namespace UIContainer {

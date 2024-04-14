@@ -82,7 +82,7 @@ export default (
 			</cell>
 			<cell>
 				<scroll position={{ gravity: "cover" }}>
-					<list items={bound.list("results")} maxItems={50} allowKeyboardFocus>
+					<list items={bound.list("results")} maxItems={50}>
 						<cell
 							allowFocus
 							style={ResultCellStyle}
@@ -90,6 +90,7 @@ export default (
 							onEnterKeyPress="GoToResult"
 							onArrowUpKeyPress="FocusPrevious"
 							onArrowDownKeyPress="FocusNext"
+							accessibleRole="listitem"
 						>
 							<column align="start">
 								<row>
@@ -103,6 +104,11 @@ export default (
 								</label>
 							</column>
 						</cell>
+						<cell
+							style={{ grow: 0 }}
+							allowKeyboardFocus
+							accessibleRole="list"
+						/>
 					</list>
 				</scroll>
 			</cell>

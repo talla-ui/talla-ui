@@ -191,15 +191,13 @@ export class MessageDialog
 		if (MessageDialog.styles.reverseButtons) buttons.reverse();
 		return new (ui.cell(
 			{ variant: MessageDialog.styles.containerVariant },
-			ui.column(
-				ui.cell(
-					{ variant: MessageDialog.styles.messageCellVariant },
-					ui.column(...messageLabels),
-				),
-				ui.cell(
-					{ variant: MessageDialog.styles.buttonCellVariant },
-					ui.row({ layout: MessageDialog.styles.buttonRowLayout }, ...buttons),
-				),
+			ui.cell(
+				{ variant: MessageDialog.styles.messageCellVariant },
+				ui.column(...messageLabels),
+			),
+			ui.cell(
+				{ variant: MessageDialog.styles.buttonCellVariant },
+				ui.row({ layout: MessageDialog.styles.buttonRowLayout }, ...buttons),
 			),
 		))();
 	}

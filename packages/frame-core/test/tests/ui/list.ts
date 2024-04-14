@@ -239,8 +239,9 @@ describe("UIListView", (scope) => {
 		let Preset = ui.cell(
 			ui.button("button"),
 			ui.list(
-				{ items: new ManagedList(...getObjects()), allowKeyboardFocus: true },
+				{ items: new ManagedList(...getObjects()) },
 				ui.label({ text: bound("item.name"), allowFocus: true }),
+				ui.cell({ allowKeyboardFocus: true, accessibleRole: "list" }),
 			),
 		);
 		app.showPage(new Preset());
@@ -262,7 +263,7 @@ describe("UIListView", (scope) => {
 
 	test("Arrow key focus, single list", async (t) => {
 		let Preset = ui.list(
-			{ items: new ManagedList(...getObjects()), allowKeyboardFocus: true },
+			{ items: new ManagedList(...getObjects()) },
 			ui.label({
 				text: bound("item.name"),
 				allowFocus: true,

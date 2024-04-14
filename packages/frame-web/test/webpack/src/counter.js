@@ -1,15 +1,12 @@
 import { Activity, app, bound, ui } from "@desk-framework/frame-core";
 
 const ViewBody = ui.cell(
-	ui.column(
-		{ distribute: "center" },
-		ui.label(bound.strf("Count: %i", "count"), { bold: true, fontSize: 36 }),
-		ui.spacer({ height: 32 }),
-		ui.row(
-			{ align: "center" },
-			ui.button("Down", "CountDown"),
-			ui.button("Up", "CountUp"),
-		),
+	ui.label(bound.strf("Count: %i", "count"), { bold: true, fontSize: 36 }),
+	ui.spacer({ height: 32 }),
+	ui.row(
+		{ align: "center" },
+		ui.button("Down", "CountDown"),
+		ui.button("Up", "CountUp"),
 	),
 );
 

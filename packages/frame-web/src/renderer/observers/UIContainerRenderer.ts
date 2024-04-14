@@ -3,15 +3,12 @@ import {
 	ManagedEvent,
 	RenderContext,
 	ui,
-	UICell,
 	UIColumn,
-	UIComponent,
 	UIContainer,
 	UIRow,
 	UIScrollContainer,
 	UIStyle,
 	View,
-	ViewEvent,
 } from "@desk-framework/frame-core";
 import {
 	CLASS_CELL,
@@ -32,15 +29,20 @@ export class UIContainerRenderer<
 	override observe(observed: UIContainer) {
 		let result = super
 			.observe(observed as any)
-			.observePropertyAsync("content", "layout", "padding", "spacing");
+			.observePropertyAsync("content", "layout", "padding");
 		if (observed instanceof UIRow) {
-			result.observePropertyAsync("height" as any, "align" as any);
+			result.observePropertyAsync(
+				"height" as any,
+				"align" as any,
+				"spacing" as any,
+			);
 		}
 		if (observed instanceof UIColumn) {
 			result.observePropertyAsync(
 				"width" as any,
 				"align" as any,
 				"distribute" as any,
+				"spacing" as any,
 			);
 		}
 		return result;
@@ -67,7 +69,7 @@ export class UIContainerRenderer<
 					return;
 				case "layout":
 				case "padding":
-				case "align": // for rows and columns
+				case "align":
 					this.scheduleUpdate(undefined, this.element);
 					return;
 			}
@@ -88,62 +90,7 @@ export class UIContainerRenderer<
 				if (this.observed) this.observed.emit("Submit", { event: e });
 			});
 		}
-
-		// add cell mouse handlers, if needed (not propagated)
-		if (this.observed instanceof UICell) {
-			let cell = this.observed;
-			elt.addEventListener("mouseenter", (e) => {
-				let event = new ManagedEvent(
-					"MouseEnter",
-					cell,
-					{ event: e },
-					undefined,
-					undefined,
-					true,
-				);
-				if (this.observed === cell) cell.emit(event);
-			});
-			elt.addEventListener("mouseleave", (e) => {
-				let event = new ManagedEvent(
-					"MouseLeave",
-					cell,
-					{ event: e },
-					undefined,
-					undefined,
-					true,
-				);
-				if (this.observed === cell) cell.emit(event);
-			});
-		}
-
-		// make (keyboard) focusable, if needed
-		if (this.observed.allowKeyboardFocus) elt.tabIndex = 0;
-		else if (this.observed.allowFocus) elt.tabIndex = -1;
 		return output;
-	}
-
-	/** Last focused component, if this container is keyboard-focusable */
-	lastFocused?: UIComponent;
-
-	/** Switch tabindex on focus */
-	onFocusIn(e: ViewEvent<UIComponent>) {
-		if (!this.observed || !this.element) return;
-		if (e.source !== this.observed && this.observed.allowKeyboardFocus) {
-			// temporarily disable keyboard focus on this parent
-			// to prevent shift-tab from selecting this element
-			this.element.tabIndex = -1;
-			this.lastFocused = e.source;
-		}
-	}
-
-	/** Switch tabindex back on blur */
-	onFocusOut(e: ViewEvent) {
-		if (!this.observed || !this.element) return;
-		if (e.source !== this.observed && this.observed.allowKeyboardFocus) {
-			// make this parent focusable again
-			this.element.tabIndex = 0;
-			this.lastFocused = undefined;
-		}
 	}
 
 	override update(element: HTMLElement) {
@@ -160,6 +107,7 @@ export class UIContainerRenderer<
 	updateContent(element: HTMLElement) {
 		let container = this.observed;
 		if (!container) return;
+
 		if (!this.contentUpdater) {
 			this.contentUpdater = new ContentUpdater(
 				container,
@@ -167,18 +115,7 @@ export class UIContainerRenderer<
 			).setAsyncRendering(container.asyncContentRendering);
 			this.updateSeparator();
 		}
-		let content = container.content;
-		this.contentUpdater.update(content);
-
-		// reset tabindex if needed
-		if (
-			container.allowKeyboardFocus &&
-			this.lastFocused &&
-			!content.includes(this.lastFocused)
-		) {
-			if (this.element) this.element.tabIndex = 0;
-			this.lastFocused = undefined;
-		}
+		this.contentUpdater.update(container.content);
 	}
 
 	contentUpdater?: ContentUpdater;
@@ -254,8 +191,8 @@ export class UIContainerRenderer<
 					? false
 					: this.observed instanceof UIRow;
 			let options = layout?.separator;
-			if (!options && this.observed.spacing) {
-				let space = this.observed.spacing;
+			if (!options && (this.observed as UIRow).spacing) {
+				let space = (this.observed as UIRow).spacing;
 				options =
 					this.lastSeparator &&
 					this.lastSeparator.space === space &&

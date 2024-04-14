@@ -7,7 +7,7 @@ import { UIContainer } from "./UIContainer.js";
 /**
  * A view class that represents a cell container component
  *
- * @description A cell container functions like a regular container component, and lays out other components either vertically (default) or horizontally.
+ * @description A cell container functions like a basic container component (using column layout), taking up as much space as possible by default, and with additional properties for decoration and styling.
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
@@ -28,6 +28,8 @@ export class UICell extends UIContainer {
 			| "opacity"
 			| "effect"
 			| "style"
+			| "allowFocus"
+			| "allowKeyboardFocus"
 		> & {
 			/** Event that's emitted when the mouse cursor enters the cell area */
 			onMouseEnter?: string;
@@ -35,6 +37,7 @@ export class UICell extends UIContainer {
 			onMouseLeave?: string;
 		},
 	) {
+		if (preset.allowKeyboardFocus) preset.allowFocus = true;
 		super.applyViewPreset(preset);
 	}
 
@@ -61,6 +64,22 @@ export class UICell extends UIContainer {
 
 	/** The style to be applied to this cell */
 	style?: UIStyle.TypeOrOverrides<UICell.StyleType> = undefined;
+
+	/** The spacing property exists on {@link UIRow} and {@link UIColumn} and cannot be used on cells */
+	spacing?: never;
+
+	/**
+	 * True if this cell *itself* may receive direct input focus
+	 * - This property can't be changed after rendering.
+	 */
+	allowFocus?: boolean;
+
+	/**
+	 * True if this cell *itself* may receive input focus using the keyboard (e.g. Tab key)
+	 * - This property can't be changed after rendering.
+	 * - If this property is set to true, allowFocus is assumed to be true as well and no longer checked.
+	 */
+	allowKeyboardFocus?: boolean;
 }
 
 export namespace UICell {
