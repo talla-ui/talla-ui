@@ -1,5 +1,5 @@
 import {
-	ManagedChangeEvent,
+	ManagedEvent,
 	RenderContext,
 	UISeparator,
 } from "@desk-framework/frame-core";
@@ -21,7 +21,7 @@ export class UISeparatorRenderer extends BaseObserver<UISeparator> {
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent,
+		event?: ManagedEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {

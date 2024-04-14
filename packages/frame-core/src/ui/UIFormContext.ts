@@ -20,19 +20,15 @@ export const _boundFormContext = bound("formContext");
  *
  * The overall validity of the form context can be determined using the {@link UIFormContext.validateAll()} method and the {@link UIFormContext.valid valid} property.
  *
- * To use a UIFormContext object with {@link UITextField} or {@link UIToggle} components, set their `formField` property to a field name, and include them in a {@link UIForm} container or add a `formContext` property directly to your activity or view composite (see examples).
- *
- * To use a UIFormContext object with any other (custom) view, add a `formContext` property binding and handle changes to obtain the current input value using the {@link UIFormContext.get()} method. When the user inputs a new value, use the {@link UIFormContext.set()} method to set and validate the value.
+ * To use a UIFormContext object with {@link UITextField} or {@link UIToggle} input components (or e.g. a custom view composite object), set their `formField` property to a field name. The input component automatically binds to a `formContext` property from the current activity or a view composite, and gets/sets the input value when needed.
  *
  * @example
- * // Use form fields in a form
- * const FormView = ui.form(
- *   { formContext: bound("fooForm") },
+ * const FormView = ui.column(
  *   ui.textField({ formField: "foo" }),
  *   ui.label({
  *     style: myStyles.errorLabel,
- *     hidden: bound.not("fooForm.errors.foo"),
- *     text: bound.string("fooForm.errors.foo.message")
+ *     hidden: bound.not("formContext.errors.foo"),
+ *     text: bound.string("formContext.errors.foo.message")
  *   }),
  *   ui.button("Go", "Submit")
  * );
@@ -42,32 +38,17 @@ export const _boundFormContext = bound("formContext");
  *     this.view = new FormView();
  *   }
  *
- *   fooForm = new UIFormContext({ foo: "" })
+ *   formContext = new UIFormContext({ foo: "" })
  *     .addTest("foo", (t) => {
  *       t.required();
  *       t.assert(t.value.length > 3, strf("Foo is too short"));
  *     });
  *
  *   onSubmit() {
- *     this.fooForm.validateAll();
- *     // now, this.fooForm.valid is false if
+ *     this.formContext.validateAll();
+ *     // now, this.formContext.valid is false if
  *     // the field 'foo' isn't set or too short
  *   }
- * }
- *
- * @example
- * // Use form fields with formContext on the activity
- * const MyView = ui.cell(
- *   ui.textField({ formField: "foo" }),
- *   // ...
- * );
- *
- * class MyActivity extends Activity {
- *   protected ready() {
- *     this.view = new FormView();
- *   }
- *   formContext = new UIFormContext({ foo: "" });
- *   // ...
  * }
  */
 export class UIFormContext<TData = any> extends ManagedObject {

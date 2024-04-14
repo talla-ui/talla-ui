@@ -692,7 +692,7 @@ describe("ManagedList", () => {
 				this.countsSeen.push(this.observed?.count || 0);
 				if (event.name === "ManagedObjectAdded") this.added++;
 				if (event.name === "ManagedObjectRemoved") this.removed++;
-				if (event.name === "ManagedListChange") this.changed++;
+				if (event.name === "Change") this.changed++;
 				if (event.data && "object" in event.data)
 					this.lastObject = event.data.object;
 			}
@@ -786,9 +786,7 @@ describe("ManagedList", () => {
 			list.clear();
 			expect(observer.removed).toBe(0);
 			expect(observer.changed).toBe(1);
-			expect(observer.lastEvent)
-				.toHaveProperty("name")
-				.toBe("ManagedListChange");
+			expect(observer.lastEvent).toHaveProperty("name").toBe("Change");
 			expect(observer.lastSource).toBe(list);
 		});
 
@@ -799,9 +797,7 @@ describe("ManagedList", () => {
 			list.clear();
 			expect(observer.removed).toBe(0);
 			expect(observer.changed).toBe(1);
-			expect(observer.lastEvent)
-				.toHaveProperty("name")
-				.toBe("ManagedListChange");
+			expect(observer.lastEvent).toHaveProperty("name").toBe("Change");
 			expect(observer.lastSource).toBe(list);
 		});
 

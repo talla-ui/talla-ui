@@ -106,10 +106,7 @@ export abstract class ViewComposite<TView extends View = View> extends View {
 				this.vc.render();
 			}
 			protected override handleEvent(event: ManagedEvent) {
-				if (
-					this.vc.body &&
-					!(event as RenderContext.RendererEvent).isRendererEvent
-				) {
+				if (this.vc.body && !event.noPropagation) {
 					this.vc.delegateViewEvent(event);
 				}
 			}
@@ -163,11 +160,11 @@ export abstract class ViewComposite<TView extends View = View> extends View {
 
 	/**
 	 * Delegates events from the current view
-	 * - This method is called automatically when an event is emitted by the current view object.
-	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true`, undefined, or a promise (which is awaited just to be able to handle any errors). If the return value is `true` or a promise, the event is considered handled and no further action is taken. Otherwise, the event is emitted again on the ViewComposite instance itself.
-	 * - This method may be overridden to handle events in any other way, e.g. to propagate them by emitting the same event on the ViewComposite instance itself.
+	 * - This method is called automatically when an event is emitted by the current view object (except if {@link ManagedEvent.noPropagation} was set).
+	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true` (event handled), false/undefined, or a promise (which is awaited just to be able to handle any errors).
+	 * - If a handler is not found, or it returned false or undefined, a delegate event is re-emitted on the view composite itself (i.e. a new event with `delegate` set to the view composite), and this method returns false.
 	 * @param event The event to be delegated (from the view)
-	 * @returns This method always returns `true` since the event is either handled or emitted again.
+	 * @returns True if an event handler was found, and it returned true; a promise if the handler returned a promise; false otherwise.
 	 */
 	protected delegateViewEvent(event: ManagedEvent): boolean | Promise<unknown> {
 		// find own handler method
@@ -181,8 +178,9 @@ export abstract class ViewComposite<TView extends View = View> extends View {
 				return (result as Promise<unknown>).catch(errorHandler);
 			}
 		}
+		event = ManagedEvent.withDelegate(event, this);
 		this.emit(event);
-		return true;
+		return false;
 	}
 
 	/**

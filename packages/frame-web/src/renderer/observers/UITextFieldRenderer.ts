@@ -1,5 +1,5 @@
 import {
-	ManagedChangeEvent,
+	ManagedEvent,
 	RenderContext,
 	UITextField,
 	ui,
@@ -25,7 +25,7 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent,
+		event?: ManagedEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {

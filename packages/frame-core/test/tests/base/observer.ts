@@ -832,7 +832,7 @@ describe("Observers", () => {
 						if (event) t.count("change");
 						if (target === attached) t.count("observe");
 					});
-					attached.emitChange();
+					attached.emitChange("Change");
 				}
 			}
 			new MyObject().go();

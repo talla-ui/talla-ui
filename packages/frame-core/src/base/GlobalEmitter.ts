@@ -11,25 +11,33 @@ import { hasTraps, $_traps_event } from "./object_util.js";
  *
  * In particular, emitters are used for handling errors and log messages (in {@link LogWriter}), and debugging bindings (see {@link Binding.debug()}). Applications can also use their own instances of `GlobalEmitter` to reduce direct dependencies where needed.
  */
-export class GlobalEmitter<TEvent extends ManagedEvent> extends ManagedObject {
+export class GlobalEmitter<
+	TData extends Record<string, unknown> = any,
+> extends ManagedObject {
 	/**
 	 * Adds a (permanent) event listener
 	 * @param handler A function that will be called for every event that's emitted, with the event as the only argument; if not provided, this method returns an async iterable (see {@link ManagedObject.listen()}
 	 */
 	override listen(
-		handler: (this: unknown, event: TEvent) => void | Promise<void>,
+		handler: (
+			this: unknown,
+			event: ManagedEvent<GlobalEmitter, TData>,
+		) => void | Promise<void>,
 	): void;
-	override listen(): AsyncIterable<TEvent>;
+	override listen(): AsyncIterable<ManagedEvent<GlobalEmitter, TData>>;
 	override listen(
-		handler?: (this: unknown, event: TEvent) => void | Promise<void>,
+		handler?: (
+			this: unknown,
+			event: ManagedEvent<GlobalEmitter, TData>,
+		) => void | Promise<void>,
 	) {
 		return super.listen(handler as any) as any;
 	}
 
 	/** Strongly typed version of {@link ManagedObject.emit()} */
 	declare emit: {
-		(name: TEvent["name"], data?: TEvent["data"]): any;
-		(event: TEvent): any;
+		(name: string, data: TData): any;
+		(event?: ManagedEvent<GlobalEmitter, TData>): any;
 	};
 
 	/** Returns true if any listeners or observers have been added to this emitter */

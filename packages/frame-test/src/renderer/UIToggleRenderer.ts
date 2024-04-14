@@ -1,5 +1,5 @@
 import {
-	ManagedChangeEvent,
+	ManagedEvent,
 	RenderContext,
 	UIToggle,
 	ui,
@@ -28,7 +28,7 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent,
+		event?: ManagedEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {

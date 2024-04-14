@@ -1,5 +1,5 @@
 import {
-	ManagedChangeEvent,
+	ManagedEvent,
 	RenderContext,
 	UIButton,
 	ui,
@@ -30,7 +30,7 @@ export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent,
+		event?: ManagedEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {

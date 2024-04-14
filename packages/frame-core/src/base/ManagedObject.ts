@@ -10,7 +10,7 @@ import {
 	addTrap,
 	$_bindFilter,
 } from "./object_util.js";
-import { ManagedEvent, ManagedChangeEvent } from "./ManagedEvent.js";
+import { ManagedEvent } from "./ManagedEvent.js";
 import { Observer } from "./Observer.js";
 import { err, ERROR, safeCall } from "../errors.js";
 
@@ -19,7 +19,7 @@ const _hOP = Object.prototype.hasOwnProperty;
 
 /** @internal Helper function to duck type ManagedObjects (for performance) */
 export function isManagedObject(object: any): object is ManagedObject {
-	return object && _hOP.call(object, $_unlinked);
+	return !!object && _hOP.call(object, $_unlinked);
 }
 
 /**
@@ -108,12 +108,14 @@ export class ManagedObject {
 	/**
 	 * Emits an event, immediately calling all event handlers
 	 * - Events can be handled using {@link ManagedObject.listen()} or an {@link Observer}. Refer to {@link ManagedEvent} for details.
+	 * - If the first argument is undefined, no event is emitted at all and this method returns quietly
 	 * @param event An instance of ManagedEvent, or an event name; if a name is provided, an instance of ManagedEvent will be created by this method
 	 * @param data Additional data to be set on {@link ManagedEvent.data}, if `event` is a string
 	 */
-	emit(event: ManagedEvent): this;
-	emit(event: string, data?: any): this;
-	emit(event: string | ManagedEvent, data?: any) {
+	emit(event?: ManagedEvent): this;
+	emit(event: string, data?: Record<string, any>): this;
+	emit(event?: string | ManagedEvent, data?: any) {
+		if (event === undefined) return this;
 		if (typeof event === "string") event = new ManagedEvent(event, this, data);
 
 		// trigger traps as if event is written to a property
@@ -122,14 +124,16 @@ export class ManagedObject {
 	}
 
 	/**
-	 * Emits a change event, an instance of {@link ManagedChangeEvent}
-	 * - Events can be handled using {@link ManagedObject.listen()} or an {@link Observer}. Refer to {@link ManagedEvent} for details.
-	 * - Change events are treated differently, e.g. change events are also handled using the callback passed to {@link ManagedObject.attach attach()} and {@link ManagedObject.autoAttach autoAttach()}, and trigger updates of bound (sub) property values.
-	 * @param name An event name; an instance of ManagedChangeEvent with the provided name will be created by this method
-	 * @param data Additional data to be set on {@link ManagedEvent.data}
+	 * Emits a change event
+	 * - A change event can be used to indicate that the state of this object has changed in some way. The event emitted is a regular instance of {@link ManagedEvent}, but includes a data object with a `change` property that references the object itself.
+	 * - Change events can be handled by observers, callback functions provided to {@link ManagedObject.attach} and {@link ManagedObject.autoAttach}, and also update bindings for properties of this object.
+	 * @param name The name of the event; defaults to "Change"
+	 * @param data Additional data to be set on {@link ManagedEvent.data}; will be combined with the `change` property
 	 */
-	emitChange(name = "Change", data?: any) {
-		return this.emit(new ManagedChangeEvent(name, this, data));
+	emitChange(name = "Change", data?: Record<string, any>) {
+		let event = new ManagedEvent(name, this, { change: this, ...data });
+		invokeTrap(this, $_traps_event, event);
+		return this;
 	}
 
 	/**
@@ -336,6 +340,9 @@ export namespace ManagedObject {
 	/** Type definition for the callback function argument passed to {@link ManagedObject.attach()} and {@link ManagedObject.autoAttach()} */
 	export type AttachObserverFunction<T extends ManagedObject> = (
 		target?: T,
-		event?: ManagedChangeEvent<T>,
+		event?: ManagedEvent<
+			T,
+			Record<string, unknown> & { change: ManagedObject }
+		>,
 	) => void;
 }

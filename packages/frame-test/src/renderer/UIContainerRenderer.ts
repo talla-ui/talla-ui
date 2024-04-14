@@ -1,5 +1,5 @@
 import {
-	ManagedChangeEvent,
+	ManagedEvent,
 	RenderContext,
 	UIColumn,
 	UIContainer,
@@ -38,7 +38,7 @@ export class UIContainerRenderer<
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent,
+		event?: ManagedEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -182,9 +182,6 @@ export class ContentUpdater {
 				}
 			}
 
-			// emit renderer event
-			this._emitRendering(outputs);
-
 			// unset parent reference for removed elements
 			for (let old of this.element.content) {
 				if (old.parent === this.element && !elements.includes(old)) {
@@ -246,7 +243,6 @@ export class ContentUpdater {
 				lastOutput = output;
 				if (!output || !output.element) {
 					// no output... delete last element now
-					this._emitRendering();
 					let content = this.element.content;
 					if (lastElt) {
 						for (let i = content.length - 1; i >= 0; i--) {
@@ -260,7 +256,6 @@ export class ContentUpdater {
 					scheduleAfter && scheduleAfter();
 				} else if (lastElt && lastElt.parent) {
 					// can replace...
-					this._emitRendering();
 					if (lastElt !== output.element) {
 						let content = this.element.content;
 						let i;
@@ -323,18 +318,6 @@ export class ContentUpdater {
 			else this.update();
 		}
 		return this._updateP;
-	}
-
-	/** Emit ContentRendering event on container, when deleting or replacing an element */
-	private _emitRendering(output?: Array<RenderContext.Output | undefined>) {
-		let event = new RenderContext.RendererEvent(
-			"ContentRendering",
-			this.container,
-			{
-				output: output || this.content.map((c) => this._output.get(c)),
-			},
-		);
-		this.container.emit(event);
 	}
 
 	private _stopped?: boolean;

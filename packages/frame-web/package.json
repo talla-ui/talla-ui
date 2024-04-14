@@ -31,6 +31,7 @@
 		"test-esbuild": "cd test/esbuild && node esbuild",
 		"test-esbuild-es2015": "cd test/esbuild-es2015 && node esbuild",
 		"test-esm": "cd test/esm && npm install && npm run test",
+		"test-esm-js": "cd test/esm-js && npm install && npm run test",
 		"test-parcel": "cd test/parcel && npm install && npm run test",
 		"test-webpack": "cd test/webpack && npm install && npm run test",
 		"test-perf": "cd test/perf && node esbuild",

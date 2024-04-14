@@ -1,6 +1,6 @@
 import {
 	app,
-	ManagedChangeEvent,
+	ManagedEvent,
 	RenderContext,
 	ui,
 	UICell,
@@ -55,7 +55,7 @@ export class UIContainerRenderer<
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent,
+		event?: ManagedEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -89,13 +89,30 @@ export class UIContainerRenderer<
 			});
 		}
 
-		// add cell mouse handlers, if needed
+		// add cell mouse handlers, if needed (not propagated)
 		if (this.observed instanceof UICell) {
+			let cell = this.observed;
 			elt.addEventListener("mouseenter", (e) => {
-				if (this.observed) this.observed.emit("MouseEnter", { event: e });
+				let event = new ManagedEvent(
+					"MouseEnter",
+					cell,
+					{ event: e },
+					undefined,
+					undefined,
+					true,
+				);
+				if (this.observed === cell) cell.emit(event);
 			});
 			elt.addEventListener("mouseleave", (e) => {
-				if (this.observed) this.observed.emit("MouseLeave", { event: e });
+				let event = new ManagedEvent(
+					"MouseLeave",
+					cell,
+					{ event: e },
+					undefined,
+					undefined,
+					true,
+				);
+				if (this.observed === cell) cell.emit(event);
 			});
 		}
 
@@ -351,9 +368,6 @@ export class ContentUpdater {
 				output.push(this.getItemOutput(it));
 			}
 
-			// emit renderer event to allow e.g. animated list content
-			this._emitRendering(output);
-
 			// STEP 1: find deleted content and delete elements
 			let hasSeparators = this._sepTemplate;
 			for (let it of this.content) {
@@ -459,14 +473,12 @@ export class ContentUpdater {
 				lastOutput = output;
 				if (!output || !output.element) {
 					// no output... delete last element (and separator) now
-					this._emitRendering();
 					let sep = this._separators.get(item);
 					if (sep && sep.parentNode) this.element.removeChild(sep);
 					if (lastElt && lastElt.parentNode) this.element.removeChild(lastElt);
 					scheduleAfter && scheduleAfter();
 				} else if (lastElt && lastElt.parentNode) {
 					// can replace... (and add/move separator if needed)
-					this._emitRendering();
 					if (lastElt.previousSibling) {
 						let sep = this._getSeparatorFor(item);
 						if (sep) this.element.insertBefore(sep, lastElt);
@@ -519,20 +531,6 @@ export class ContentUpdater {
 			else this.update();
 		}
 		return this._updateP;
-	}
-
-	/** Emits a ContentRendering event on container, when deleting or replacing an element */
-	private _emitRendering(
-		output?: Array<RenderContext.Output<Node> | undefined>,
-	) {
-		let event = new RenderContext.RendererEvent(
-			"ContentRendering",
-			this.container,
-			{
-				output: output || this.content.map((c) => this._output.get(c)),
-			},
-		);
-		this.container.emit(event);
 	}
 
 	/** Returns a separator HTML element (if needed) for given content view; if an element already exists it's used, otherwise a new element is created */

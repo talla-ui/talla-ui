@@ -116,11 +116,7 @@ describe("UIListView", (scope) => {
 		let list = new ManagedList(a, b, c);
 
 		t.log("Creating instance");
-		let MyList = ui.list(
-			{ items: list, animation: { duration: 100 } },
-			ui.label(bound("item.name")),
-			UIRow,
-		);
+		let MyList = ui.list({ items: list }, ui.label(bound("item.name")), UIRow);
 		let instance = new MyList();
 
 		t.log("Rendering");

@@ -10,7 +10,6 @@ import {
 	UIColumn,
 	UIConditionalView,
 	UIContainer,
-	UIForm,
 	UIIconResource,
 	UIImage,
 	UILabel,
@@ -81,7 +80,6 @@ const createContainerComponentFactory = (V: ViewClass<UIContainer>) =>
 _ui.cell = createContainerComponentFactory(UICell);
 _ui.column = createContainerComponentFactory(UIColumn);
 _ui.row = createContainerComponentFactory(UIRow);
-_ui.form = createContainerComponentFactory(UIForm);
 _ui.scroll = createContainerComponentFactory(UIScrollContainer);
 _ui.animatedCell = createComponentFactory(UIAnimatedCell);
 

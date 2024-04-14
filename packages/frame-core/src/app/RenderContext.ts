@@ -1,4 +1,4 @@
-import { ManagedEvent, ManagedObject, Observer } from "../base/index.js";
+import { ManagedObject, Observer } from "../base/index.js";
 import { invalidArgErr } from "../errors.js";
 import { app } from "./GlobalContext.js";
 import { View } from "./View.js";
@@ -193,20 +193,6 @@ export namespace RenderContext {
 		 * - This method may be set by a previous renderer, to be able to remove the view element from a container element before displaying it as part of another container.
 		 */
 		detach?: () => void;
-	}
-
-	/**
-	 * A class that represents a render-related event
-	 * - Events of this type are considered internal to the rendered component. They are ignored when coming from attached view objects of {@link Activity} and {@link ViewComposite} instances, and {@link UIContainer} doesn't propagate renderer events from attached views at all.
-	 */
-	export class RendererEvent extends ManagedEvent {
-		/** Always returns true, can be used for duck-typing this type of events */
-		isRendererEvent(): true {
-			return true;
-		}
-
-		/** Render callback, only used for `Render` events to capture output */
-		render?: RenderCallback;
 	}
 
 	/**

@@ -29,7 +29,7 @@ export class NavigationController extends ManagedObject {
 		if (/^\.|[\/\\]/.test(pageId)) throw invalidArgErr("pageId");
 		this._pageId = pageId;
 		this._detail = String(detail) || "";
-		this.emitChange();
+		this.emitChange("Set");
 		return this;
 	}
 

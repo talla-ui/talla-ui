@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noUncheckedIndexedAccess": true,
+		"module": "esnext",
+		"moduleResolution": "node",
+		"target": "es2018",
+		"lib": ["dom", "esnext"],
+		"outDir": "../dist"
+	}
+}

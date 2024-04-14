@@ -1,6 +1,5 @@
 import { invalidArgErr } from "../errors.js";
 import { LazyString } from "./LazyString.js";
-import { ManagedEvent } from "./ManagedEvent.js";
 import { ManagedObject } from "./ManagedObject.js";
 import type { GlobalEmitter } from "./GlobalEmitter.js";
 import {
@@ -68,7 +67,7 @@ export namespace BindingOrValue {
  */
 export class Binding<T = any> {
 	/** Event emitter used by {@link Binding.debug()} */
-	declare static debugEmitter: GlobalEmitter<Binding.DebugEvent>;
+	declare static debugEmitter: GlobalEmitter<Binding.DebugEventData>;
 
 	/**
 	 * Restricts bindings that can be bound to (attached parent objects of) the specified object, if the object itself does not include a corresponding property
@@ -460,7 +459,7 @@ export class Binding<T = any> {
 
 	/**
 	 * Adds a filter, to emit an event whenever the bound value changes.
-	 * - For every change, an event will be emitted on {@link Binding.debugEmitter}. Events include both a reference to the binding and its new value, see {@link Binding.DebugEvent}.
+	 * - For every change, an event will be emitted on {@link Binding.debugEmitter}. Events include both a reference to the binding and its new value, see {@link Binding.DebugEventData}.
 	 * @returns The binding itself, with debug events enabled
 	 */
 	debug() {
@@ -690,12 +689,15 @@ export class StringFormatBinding<
 }
 
 export namespace Binding {
-	/** The type of event that's emitted by {@link Binding.debugEmitter} */
-	export type DebugEvent = ManagedEvent<
-		GlobalEmitter<DebugEvent>,
-		{ binding: Binding; value?: any; bound: boolean },
-		"Debug"
-	>;
+	/** Data object that's included with events emitted by {@link Binding.debugEmitter} */
+	export type DebugEventData = {
+		/** The binding that has been updated */
+		binding: Binding;
+		/** The current value, if any */
+		value?: any;
+		/** True if the binding is currently bound to a source property */
+		bound: boolean;
+	};
 
 	/** A type that's used to check binding path strings */
 	export type ValidPathString<S> = S extends `${string}${

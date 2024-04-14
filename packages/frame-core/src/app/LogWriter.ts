@@ -1,4 +1,4 @@
-import { GlobalEmitter, LazyString, ManagedEvent } from "../base/index.js";
+import { GlobalEmitter, LazyString } from "../base/index.js";
 import { AppException } from "./AppException.js";
 
 /** Helper function that puts together event data for a log message */
@@ -127,8 +127,8 @@ export class LogWriter {
 		this._write(5, message);
 	}
 
-	/** An event emitter for all log messages, emits events of type {@link LogWriter.LogMessageEvent} */
-	emitter = new GlobalEmitter<LogWriter.LogMessageEvent>();
+	/** An event emitter for all log messages */
+	emitter = new GlobalEmitter<LogWriter.LogMessageData>();
 
 	/** Private implementation to emit a log message event, or write to the console */
 	private _write(level: number, message: unknown) {
@@ -148,7 +148,7 @@ export class LogWriter {
 
 export namespace LogWriter {
 	/**
-	 * The data structure contained by each {@link LogMessageEvent}
+	 * The data structure contained by each log event, emitted by {@link LogWriter.emitter}
 	 *
 	 * @description
 	 * Each log message written by {@link LogWriter} is emitted as an event on {@link LogWriter.emitter}. The data contained by the event contains the following properties:
@@ -163,13 +163,4 @@ export namespace LogWriter {
 		data: any[];
 		level: number;
 	}>;
-
-	/**
-	 * An event that's emitted by the application log writer for each log message
-	 */
-	export type LogMessageEvent = ManagedEvent<
-		GlobalEmitter<LogMessageEvent>,
-		LogMessageData,
-		"LogMessage"
-	>;
 }

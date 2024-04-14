@@ -14,11 +14,8 @@ export type ViewClass<T extends View = View> = new (...args: any[]) => T;
 /** Type definition for an event that's emitted on a view object */
 export type ViewEvent<
 	TSource extends View = View,
-	TData extends Record<string, unknown> | undefined =
-		| Record<string, unknown>
-		| undefined,
-	TName extends string = string,
-> = ManagedEvent<TSource, TData, TName>;
+	TData extends Record<string, unknown> = Record<string, unknown>,
+> = ManagedEvent<TSource, TData>;
 
 /**
  * An abstract class that represents a view
@@ -95,7 +92,8 @@ export abstract class View extends ManagedObject {
 		// override emit method if forwarding or intercepting events
 		if (events) {
 			let _emit = this.emit.bind(this);
-			this.emit = function (event, data?) {
+			this.emit = function (event, data?: any) {
+				if (event === undefined) return this;
 				if (typeof event === "string") {
 					event = new ManagedEvent(event, this, data);
 				} else {
@@ -120,7 +118,8 @@ export abstract class View extends ManagedObject {
 				}
 
 				// emit intercept event with original event as `inner`
-				return this.emit(new ManagedEvent(v, this, data, undefined, event));
+				event = new ManagedEvent(v, this, data, undefined, event);
+				return this.emit(event);
 			};
 		}
 	}

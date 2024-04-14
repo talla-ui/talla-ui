@@ -105,16 +105,9 @@ class UIViewRendererObserver extends Observer<UIViewRenderer> {
 			}
 			protected override handleEvent(event: ManagedEvent) {
 				// propagate events from view to UIViewRenderer itself
-				if (!(event as RenderContext.RendererEvent).isRendererEvent) {
-					this.vr.emit(
-						new ManagedEvent(
-							event.name,
-							event.source,
-							event.data,
-							this.vr,
-							event,
-						),
-					);
+				if (!event.noPropagation) {
+					event = ManagedEvent.withDelegate(event, this.vr);
+					this.vr.emit(event);
 				}
 			}
 		}

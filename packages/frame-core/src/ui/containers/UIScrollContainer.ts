@@ -1,6 +1,11 @@
-import { RenderContext, View } from "../../app/index.js";
-import type { ManagedEvent } from "../../base/index.js";
+import type { View } from "../../app/index.js";
+import { ManagedEvent } from "../../base/index.js";
 import { UIContainer } from "./UIContainer.js";
+
+/** @internal Helper function to emit a scroll event */
+function emitScroll(source: View, name: string, data: any) {
+	source.emit(new ManagedEvent(name, source, data, undefined, undefined, true));
+}
 
 /**
  * A view class that represents a container component that allows users to scroll, emitting asynchronous scroll events
@@ -29,9 +34,9 @@ export class UIScrollContainer extends UIContainer {
 			| "verticalScrollEnabled"
 			| "horizontalScrollEnabled"
 		> & {
-			/** Event that's emitted when the visible area is scrolled */
+			/** Event that's emitted when the visible area is scrolled, a {@link UIScrollContainer.ScrollEvent} */
 			onScroll?: string;
-			/** Event that's emitted after the visible area has been scrolled */
+			/** Event that's emitted after the visible area has been scrolled, a {@link UIScrollContainer.ScrollEvent} */
 			onScrollEnd?: string;
 		},
 	) {
@@ -58,12 +63,7 @@ export class UIScrollContainer extends UIContainer {
 	 * @note Positioning is platform dependent and may also change with text direction. Use only offset values taken from {@link UIScrollContainer.ScrollEventData}.
 	 */
 	scrollTo(yOffset?: number, xOffset?: number) {
-		this.emit(
-			new RenderContext.RendererEvent("UIScrollTarget", this, {
-				yOffset,
-				xOffset,
-			}),
-		);
+		emitScroll(this, "UIScrollTarget", { yOffset, xOffset });
 	}
 
 	/**
@@ -71,11 +71,7 @@ export class UIScrollContainer extends UIContainer {
 	 * - This action may be handled asynchronously, and may not take effect immediately.
 	 */
 	scrollToTop() {
-		this.emit(
-			new RenderContext.RendererEvent("UIScrollTarget", this, {
-				target: "top",
-			}),
-		);
+		emitScroll(this, "UIScrollTarget", { target: "top" });
 	}
 
 	/**
@@ -83,21 +79,16 @@ export class UIScrollContainer extends UIContainer {
 	 * - This action may be handled asynchronously, and may not take effect immediately.
 	 */
 	scrollToBottom() {
-		this.emit(
-			new RenderContext.RendererEvent("UIScrollTarget", this, {
-				target: "bottom",
-			}),
-		);
+		emitScroll(this, "UIScrollTarget", { target: "bottom" });
 	}
 }
 
 export namespace UIScrollContainer {
-	/** Type definition for an event that's emitted when the user scrolls up, down, left, or right in a {@link UIScrollContainer} */
-	export type ScrollEvent = ManagedEvent<
-		UIScrollContainer,
-		ScrollEventData,
-		"Scroll" | "ScrollEnd"
-	>;
+	/**
+	 * Type definition for an event that's emitted when the user scrolls up, down, left, or right in a {@link UIScrollContainer}
+	 * - Scroll events are emitted either as `Scroll` or `ScrollEnd` events. The latter is emitted after the user has stopped scrolling.
+	 */
+	export type ScrollEvent = ManagedEvent<UIScrollContainer, ScrollEventData>;
 
 	/**
 	 * The data structure contained by each {@link UIScrollContainer.ScrollEvent}

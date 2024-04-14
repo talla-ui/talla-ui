@@ -5,6 +5,7 @@ import {
 	ManagedObject,
 	Observer,
 	GlobalEmitter,
+	ManagedEvent,
 } from "../../../dist/index.js";
 import { describe, expect, test } from "@desk-framework/frame-test";
 
@@ -353,7 +354,7 @@ describe("Bindings", () => {
 			expect(p.bound).toHaveProperty("a").toBe(1);
 			p.changeable.nonObserved = 2;
 			expect(p.bound).toHaveProperty("a").toBe(1);
-			p.changeable.emitChange();
+			p.changeable.emitChange("Update");
 			expect(p.bound).toHaveProperty("a").toBe(2);
 		});
 
@@ -447,12 +448,14 @@ describe("Bindings", () => {
 
 		test("Debug handler", (t) => {
 			let { TestObject } = setup();
-			class DebugObserver extends Observer<GlobalEmitter<Binding.DebugEvent>> {
+			class DebugObserver extends Observer<
+				GlobalEmitter<Binding.DebugEventData>
+			> {
 				override observe(observed: any) {
 					t.count("start");
 					return super.observe(observed);
 				}
-				onDebug(e: Binding.DebugEvent) {
+				onDebug(e: ManagedEvent<GlobalEmitter, Binding.DebugEventData>) {
 					if (e.data.binding.toString() !== "bound(a)")
 						t.fail("Binding mismatch");
 					if (e.data.value !== 1) t.fail("Value mismatch");

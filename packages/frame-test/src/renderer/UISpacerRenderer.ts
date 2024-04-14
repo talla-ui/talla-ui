@@ -1,5 +1,5 @@
 import {
-	ManagedChangeEvent,
+	ManagedEvent,
 	RenderContext,
 	UISpacer,
 } from "@desk-framework/frame-core";
@@ -17,7 +17,7 @@ export class UISpacerRenderer extends TestBaseObserver<UISpacer> {
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent,
+		event?: ManagedEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {

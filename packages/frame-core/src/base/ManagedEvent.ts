@@ -1,4 +1,8 @@
-import type { ManagedObject } from "./ManagedObject.js";
+import { isManagedObject, type ManagedObject } from "./ManagedObject.js";
+import { $_unlinked } from "./object_util.js";
+
+// Reuse the same frozen object for events without data
+const NO_DATA = Object.freeze({});
 
 /**
  * An object that represents an event, to be emitted on a {@link ManagedObject}
@@ -8,13 +12,11 @@ import type { ManagedObject } from "./ManagedObject.js";
  *
  * In most cases, instances of ManagedEvent are created by {@link ManagedObject.emit()} itself, when provided with just the event name and data (if any). When handling events, the implicitly created ManagedEvent will be passed to the handler.
  *
- * **Types** — Events are identified by their name at runtime. In the application source code, a specific event can be identified using the type arguments of ManagedEvent. These refer to the source object type, data object, and name, respectively — e.g. `ManagedEvent<MyView, { foo: number }, "Foo">`, which is a type definition for an event emitted by instances of MyView, with name Foo and a data object that includes a `foo` number property.
+ * **Types** — Events are identified by their name at runtime. In the application source code, a specific event can be identified using the type arguments of ManagedEvent. These refer to the source object type and data object, respectively — e.g. `ManagedEvent<MyView, { foo: number }>`, which is a type definition for an event emitted by instances of MyView, with name Foo and a data object that includes a `foo` number property.
  *
- * Several types are already defined, such as {@link DelegatedEvent}, {@link ViewEvent}, {@link UIListView.ItemEvent}, and {@link ManagedList.ChangeEvent}.
+ * TODO: describe change events
  *
- * Alternatively a sub class can be defined, such as {@link ManagedChangeEvent}, if a type of event may be used with different names.
- *
- * **Delegation** — If an object handles an event by re-emitting the same event on its own, but both the original source object _and_ the delegating object should be available, a new event should be created that includes the `delegate` property. The original source can be traced back using the `source` property, while the second object is available as `delegate`. Refer to {@link DelegatedEvent} and the example below.
+ * **Delegation** — If an object handles an event by re-emitting the same event on its own, but both the original source object _and_ the delegating object should be available, a new event should be created that includes the `delegate` property. The original source can be traced back using the `source` property, while the second object is available as `delegate`.
  *
  * **Forwarding and intercepting events** — When an event is forwarded or intercepted by a preset view (using `on...` properties of the object passed to e.g. `ui.cell({ ... })`), the original event is stored in the `inner` property.
  *
@@ -62,11 +64,40 @@ import type { ManagedObject } from "./ManagedObject.js";
  */
 export class ManagedEvent<
 	TSource extends ManagedObject = ManagedObject,
-	TData extends Record<string, unknown> | undefined =
-		| Record<string, unknown>
-		| undefined,
-	TName extends string = string,
+	TData extends Record<string, unknown> = Record<string, unknown>,
 > {
+	/**
+	 * Returns true if the provided event is a change event
+	 * - Change events are special events that indicate that the source object has been modified in some way.
+	 * - This method returns false if the event doesn't have a `change` property in its data, or if the referenced object has been unlinked.
+	 */
+	static isChange(event?: ManagedEvent) {
+		return (
+			!!event &&
+			isManagedObject(event.data.change) &&
+			!event.data.change[$_unlinked]
+		);
+	}
+
+	/**
+	 * Creates a new event with the same properties as the original event, and the specified delegate
+	 * @param event The original event
+	 * @param delegate The managed object to set as the delegate
+	 * @returns A new event object with the specified delegate
+	 */
+	static withDelegate(
+		event: ManagedEvent,
+		delegate?: ManagedObject,
+	): ManagedEvent {
+		return new ManagedEvent(
+			event.name,
+			event.source,
+			event.data,
+			delegate,
+			event,
+		);
+	}
+
 	/**
 	 * Creates a new event with the specified name
 	 * @param name The name of the event
@@ -74,63 +105,35 @@ export class ManagedEvent<
 	 * @param data Object that contains further details about the specific event
 	 * @param delegate Managed object that delegated the event, if any
 	 * @param inner Encapsulated event, if any (intercepted or forwarded)
+	 * @param noPropagation True if the event should not be propagated
 	 */
 	constructor(
-		name: TName,
+		name: string,
 		source: TSource,
 		data?: TData,
 		delegate?: ManagedObject,
 		inner?: ManagedEvent,
+		noPropagation?: boolean,
 	) {
 		this.name = name;
 		this.source = source;
-		this.data = data as TData;
+		this.data = data || (NO_DATA as TData);
 		this.delegate = delegate;
 		this.inner = inner;
+		this.noPropagation = noPropagation;
+		Object.freeze(this);
 	}
 
 	/** The name of the event, should start with a capital letter */
-	readonly name: TName;
+	readonly name: string;
 	/** The object that's emitted (or will emit) the event */
 	readonly source: TSource;
 	/** Object that contains arbitrary event data (if any) */
 	readonly data: Readonly<TData>;
-	/** An object that delegated the event, if any, e.g. {@link UIForm} or {@link UIListView.ItemControllerView} */
+	/** An object that delegated the event, if any */
 	readonly delegate?: ManagedObject;
 	/** The original event, if the event was intercepted or propagated */
 	readonly inner?: ManagedEvent;
+	/** True if the event should not be propagated or delegated (by managed lists, activities, views, etc.) */
+	readonly noPropagation?: boolean;
 }
-
-/**
- * An object that represents an event, emitted on a {@link ManagedObject} when its internal state changes
- * - Events of this type can be emitted using the {@link ManagedObject.emitChange()} method.
- * - Change events are handled specially by {@link Observer}, and trigger the callback provided to {@link ManagedObject.attach()} and {@link ManagedObject.autoAttach()}.
- */
-export class ManagedChangeEvent<
-	TSource extends ManagedObject = ManagedObject,
-	TData extends Record<string, unknown> | undefined =
-		| Record<string, unknown>
-		| undefined,
-	TName extends string = string,
-> extends ManagedEvent<TSource, TData, TName> {
-	/** A method that always returns true, can be used for duck-typing this type of events */
-	isChangeEvent(): true {
-		return true;
-	}
-}
-
-/**
- * A generic type definition for an event that has been propagated by a delegate object
- * - The `source` property refers to the object that originally emitted (or intercepted) the event; however, the `delegate` property can be used to find the object that delegated the event, e.g. {@link UIForm} or {@link UIListView.ItemControllerView}.
- */
-export type DelegatedEvent<
-	TDelegate extends ManagedObject,
-	TSource extends ManagedObject = ManagedObject,
-	TData extends Record<string, unknown> | undefined =
-		| Record<string, unknown>
-		| undefined,
-	TName extends string = string,
-> = ManagedEvent<TSource, TData, TName> & {
-	/** The object that delegated the event, e.g. {@link UIForm} or {@link UIListView.ItemControllerView} */
-	readonly delegate: TDelegate;
-};

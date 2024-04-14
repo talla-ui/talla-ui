@@ -1,10 +1,10 @@
 import {
 	app,
-	ManagedChangeEvent,
 	Observer,
 	UIComponent,
 	RenderContext,
 	UIStyle,
+	ManagedEvent,
 } from "@desk-framework/frame-core";
 import { ELT_HND_PROP } from "../events.js";
 import { WebRenderer } from "../WebRenderer.js";
@@ -20,14 +20,24 @@ export abstract class BaseObserver<
 	TUIComponent extends UIComponent,
 > extends Observer<TUIComponent> {
 	override observe(observed: TUIComponent) {
+		this._thisRenderedEvent = new ManagedEvent(
+			"Rendered",
+			observed,
+			undefined,
+			undefined,
+			undefined,
+			true,
+		);
 		return super.observe(observed).observePropertyAsync("hidden", "position");
 	}
+
+	private _thisRenderedEvent?: ManagedEvent;
 
 	/** Handler for base property changes; must be overridden to handle other UI component properties */
 	protected override async handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent,
+		event?: ManagedEvent,
 	) {
 		if (this.observed && this.element) {
 			switch (property) {
@@ -104,8 +114,13 @@ export abstract class BaseObserver<
 	private _hidden?: boolean;
 
 	/** Render event handler, calls encapsulated render callback with existing or new output */
-	onRender(event: RenderContext.RendererEvent) {
-		if (event.render && event.source === this.observed) {
+	onRender(
+		event: ManagedEvent<UIComponent, { render: RenderContext.RenderCallback }>,
+	) {
+		if (
+			typeof event.data.render === "function" &&
+			event.source === this.observed
+		) {
 			if (!this.element || !this.element.parentNode) {
 				// create output element if needed
 				let output = (this.output = this.getOutput());
@@ -118,7 +133,7 @@ export abstract class BaseObserver<
 			this.update(this.element);
 
 			// call render callback with new element
-			this.updateCallback = event.render.call(
+			this.updateCallback = event.data.render.call(
 				undefined,
 				this._hidden ? undefined : this.output,
 				() => {
@@ -130,9 +145,7 @@ export abstract class BaseObserver<
 
 					// emit Rendered event
 					if (this.observed && !this.observed.isUnlinked()) {
-						this.observed.emit(
-							new RenderContext.RendererEvent("Rendered", this.observed),
-						);
+						this.observed.emit(this._thisRenderedEvent);
 					}
 				},
 			);
@@ -147,7 +160,7 @@ export abstract class BaseObserver<
 	}
 
 	/** Focuses current element if possible */
-	onRequestFocus(event: RenderContext.RendererEvent) {
+	onRequestFocus(event: ManagedEvent) {
 		if (event.source === this.observed) {
 			if (this.element)
 				(app.renderer as WebRenderer).tryFocusElement(this.element);
@@ -158,7 +171,7 @@ export abstract class BaseObserver<
 	private _requestedFocus?: boolean;
 
 	/** Focuses next sibling element if possible */
-	onRequestFocusNext(event: RenderContext.RendererEvent) {
+	onRequestFocusNext(event: ManagedEvent) {
 		if (event.source === this.observed && this.element) {
 			let siblings = this._getFocusableSiblings();
 			if (!siblings) return;
@@ -177,7 +190,7 @@ export abstract class BaseObserver<
 	}
 
 	/** Focuses previous sibling element if possible */
-	onRequestFocusPrevious(event: RenderContext.RendererEvent) {
+	onRequestFocusPrevious(event: ManagedEvent) {
 		if (event.source === this.observed && this.element) {
 			let siblings = this._getFocusableSiblings();
 			if (!siblings) return;

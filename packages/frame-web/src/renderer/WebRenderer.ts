@@ -174,10 +174,10 @@ export class WebRenderer extends RenderContext {
 
 	/**
 	 * Re-renders all mounted content to appear in (new or existing) elements with corresponding ID
-	 * - This method also emits a change event on the renderer, to trigger a full re-render
+	 * - This method also emits a `Remount` change event on the renderer, to trigger a full re-render
 	 */
 	remount() {
-		this.emitChange();
+		this.emitChange("Remount");
 		for (let mount of this._mounts.values()) {
 			mount.remount();
 		}

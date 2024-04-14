@@ -1,6 +1,6 @@
 import { err, ERROR, errorHandler, invalidArgErr } from "../errors.js";
 import { NullableArray, removeFromNullableArray } from "./NullableArray.js";
-import { ManagedChangeEvent, ManagedEvent } from "./ManagedEvent.js";
+import { ManagedEvent } from "./ManagedEvent.js";
 import { isManagedObject, ManagedObject } from "./ManagedObject.js";
 import {
 	addTrap,
@@ -13,7 +13,7 @@ import {
 } from "./object_util.js";
 
 /** Type definition for the callback registered with a trap */
-type TrapCallback = (p: string, value: any, event?: ManagedChangeEvent) => void;
+type TrapCallback = (p: string, value: any, event?: ManagedEvent) => void;
 
 /** Symbol used as a property on observers */
 const $_observed = Symbol("observed");
@@ -111,7 +111,7 @@ export class Observer<T extends ManagedObject = ManagedObject> {
 
 	/**
 	 * Starts observing one or more properties
-	 * - Property changes are triggered when the property is assigned a different value, or when a referenced managed object emits a {@link ManagedChangeEvent}.
+	 * - Property changes are triggered when the property is assigned a different value, or when a referenced managed object emits a change event
 	 * - Changes are handled by {@link Observer.handlePropertyChange()} first, which may be overridden. The base implementation of that method looks for a method called `on...Change` (e.g. `onFooChange` for the `foo` property) and calls it with the property value and possibly a change event as arguments.
 	 * @see {@link Observer.observePropertyAsync}
 	 * @see {@link Observer.handlePropertyChange}
@@ -125,7 +125,7 @@ export class Observer<T extends ManagedObject = ManagedObject> {
 
 	/**
 	 * Starts observing one or more properties, asynchronously
-	 * - Property changes are triggered when the property is assigned a different value, or when a referenced managed object emits a {@link ManagedChangeEvent}.
+	 * - Property changes are triggered when the property is assigned a different value, or when a referenced managed object emits a change event
 	 * - Changes are handled by {@link Observer.handlePropertyChange()} asynchronously, which may be overridden. The base implementation of that method looks for a method called `on...Change` (e.g. `onFooChange` for the `foo` property) and calls it with the the _latest_ property value and possibly a change event as arguments. Returned promises are awaited to handle errors, if needed.
 	 * @see {@link Observer.observeProperty}
 	 * @see {@link Observer.handlePropertyChange}
@@ -201,7 +201,7 @@ export class Observer<T extends ManagedObject = ManagedObject> {
 	protected handlePropertyChange(
 		property: string,
 		value: any,
-		event?: ManagedChangeEvent,
+		event?: ManagedEvent,
 	): Promise<void> | void {
 		if (!property) return;
 		let methodName =
@@ -267,10 +267,7 @@ export class Observer<T extends ManagedObject = ManagedObject> {
 				$_traps_event,
 				(_t, _p, event) => {
 					// event emitted, handle only if change event
-					if (
-						this[$_observed] === object &&
-						event instanceof ManagedChangeEvent
-					) {
+					if (this[$_observed] === object && ManagedEvent.isChange(event)) {
 						this._callbacks[p]!(p, target, event);
 					}
 				},
@@ -347,7 +344,7 @@ export namespace Observer {
 		result.stop = withInvoke(result.stop);
 		result.handleUnlink = withInvoke(result.handleUnlink);
 		result.handleEvent = function (this: Observer<T>, event: ManagedEvent) {
-			if (typeof (event as ManagedChangeEvent).isChangeEvent === "function") {
+			if (ManagedEvent.isChange(event)) {
 				f(this.observed, event);
 			}
 		};

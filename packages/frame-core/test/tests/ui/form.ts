@@ -17,7 +17,7 @@ import {
 	ui,
 } from "../../../dist/index.js";
 
-describe("UIForm and UIFormContext", () => {
+describe("UIFormContext", () => {
 	// helper class to observe a form context and count events
 	class ChangeCounter extends Observer<UIFormContext> {
 		changes = 0;
@@ -192,16 +192,19 @@ describe("UIForm and UIFormContext", () => {
 			.toMatchRegExp(/Too short/);
 	});
 
-	test("Form container, rendered", async (t) => {
+	test("Custom form container, rendered", async (t) => {
 		useTestContext((options) => {
 			options.renderFrequency = 5;
 		});
+		const FormContainer = ViewComposite.withPreset<{
+			formContext?: UIFormContext;
+		}>({}, (...content) => ui.column(...content));
 		const ViewBody = ui.row(
-			ui.form(
+			FormContainer.preset(
 				{ formContext: bound("form1") },
 				ui.textField({ formField: "text" }),
 			),
-			ui.form(
+			FormContainer.preset(
 				{ formContext: bound("form2") },
 				ui.textField({ formField: "text" }),
 			),

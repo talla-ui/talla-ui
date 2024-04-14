@@ -1,6 +1,5 @@
 import {
 	GlobalEmitter,
-	ManagedChangeEvent,
 	ManagedEvent,
 	ManagedObject,
 } from "../../../dist/index.js";
@@ -13,9 +12,10 @@ describe("Events", () => {
 	});
 
 	test("Change event", () => {
-		let e = new ManagedChangeEvent("Change", new ManagedObject());
+		let o = new ManagedObject();
+		let e = new ManagedEvent("Change", o, { change: o });
 		expect(e).toHaveProperty("name").toBe("Change");
-		expect(e.isChangeEvent()).toBeTruthy();
+		expect(ManagedEvent.isChange(e)).toBeTruthy();
 	});
 
 	describe("Emitting events", () => {
@@ -40,30 +40,6 @@ describe("Events", () => {
 			});
 			c.emit("Testing");
 			c.emit("Testing");
-			t.expectCount("event").toBe(2);
-		});
-
-		test("Handle change events", (t) => {
-			let c = new TestObject();
-			c.listen((event: any) => {
-				expect(event).toBeInstanceOf(ManagedChangeEvent);
-				expect(event).toHaveProperty("name").toBe("Change");
-				t.count("event");
-			});
-			c.emitChange();
-			c.emitChange();
-			t.expectCount("event").toBe(2);
-		});
-
-		test("Handle change events with name", (t) => {
-			let c = new TestObject();
-			c.listen((event: any) => {
-				expect(event).toBeInstanceOf(ManagedChangeEvent);
-				expect(event).toHaveProperty("name").toBe("Foo");
-				t.count("event");
-			});
-			c.emitChange("Foo");
-			c.emitChange("Foo");
 			t.expectCount("event").toBe(2);
 		});
 
@@ -146,8 +122,7 @@ describe("Events", () => {
 	});
 
 	test("GlobalEmitter", (t) => {
-		type MyEvent = ManagedEvent<ManagedObject, { foo: string }, "Foo">;
-		let emitter = new GlobalEmitter<MyEvent>();
+		let emitter = new GlobalEmitter<{ foo: string }>();
 		emitter.listen((e) => {
 			if (e.name === "Foo") t.count(e.data.foo);
 		});

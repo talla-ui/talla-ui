@@ -1,0 +1,15 @@
+{
+	"private": true,
+	"name": "test-esm-js",
+	"scripts": {
+		"postinstall": "node setup/copy-lib",
+		"test": "http-server site -o"
+	},
+	"dependencies": {
+		"@desk-framework/frame-core": "../../node_modules/@desk-framework/frame-core",
+		"@desk-framework/frame-web": "../../"
+	},
+	"devDependencies": {
+		"http-server": "^14.1.1"
+	}
+}

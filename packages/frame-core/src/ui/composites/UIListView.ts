@@ -1,14 +1,13 @@
-import { View, ViewClass, ViewComposite, app } from "../../app/index.js";
+import { View, ViewClass, ViewComposite } from "../../app/index.js";
 import {
 	BindingOrValue,
-	DelegatedEvent,
 	ManagedEvent,
 	ManagedList,
 	ManagedObject,
 	Observer,
 } from "../../base/index.js";
 import { ERROR, err } from "../../errors.js";
-import type { UIColumn, UIContainer, UIRow } from "../containers/index.js";
+import type { UIColumn, UIRow } from "../containers/index.js";
 
 /**
  * A view composite that manages views for each item in a list of objects or values
@@ -17,16 +16,11 @@ import type { UIColumn, UIContainer, UIRow } from "../containers/index.js";
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
  */
-export class UIListView extends ViewComposite {
+export class UIListView<
+	TItem extends ManagedObject = ManagedObject,
+> extends ViewComposite {
 	/** @internal Creates an observer that populates the list with the provided item body and book end */
 	static createObserver(ItemBody: ViewClass, BookEnd?: ViewClass) {
-		// use a controller view class for each item
-		class ItemAdapter extends UIListView.ItemControllerView<any> {
-			protected override createView() {
-				return new ItemBody();
-			}
-		}
-
 		// return a unique class for the provided views
 		return class PresetListObserver extends Observer<UIListView> {
 			override observe(observed: UIListView) {
@@ -64,7 +58,7 @@ export class UIListView extends ViewComposite {
 				this._pending = true;
 				await Promise.resolve();
 				this._pending = false;
-				this.observed?._updateItems(ItemAdapter, BookEnd);
+				this.observed?._updateItems(ItemBody, BookEnd);
 			}
 			private _pending?: boolean;
 		};
@@ -98,7 +92,7 @@ export class UIListView extends ViewComposite {
 		preset: View.ViewPreset<
 			ViewComposite,
 			UIListView,
-			"firstIndex" | "maxItems" | "animation"
+			"firstIndex" | "maxItems"
 		> & {
 			/** List of objects, either an array, {@link ManagedList} object, or binding for either */
 			items?: BindingOrValue<Iterable<any>>;
@@ -127,7 +121,7 @@ export class UIListView extends ViewComposite {
 	/**
 	 * The list container component
 	 * - On instances of preset UIList classes, this property defaults to a column view without any spacing, but can be preset to another container view.
-	 * - This property should not be changed on UIList instances.
+	 * - This property should not be changed on existing UIList instances.
 	 */
 	declare body: UIRow | UIColumn;
 
@@ -137,7 +131,7 @@ export class UIListView extends ViewComposite {
 	 * - When set to an array, the property setter _converts_ the array to a {@link ManagedList} automatically, and uses that instead.
 	 * - When updated, a {@link UIListView.ItemControllerView} view instance is created for each list item and added to the {@link body} container.
 	 */
-	declare items?: ManagedList;
+	declare items?: ManagedList<TItem>;
 
 	/**
 	 * Index of first item to be shown in the list
@@ -152,16 +146,6 @@ export class UIListView extends ViewComposite {
 	 * - This property defaults to undefined to show all items in the list.
 	 */
 	maxItems?: number = undefined;
-
-	/**
-	 * List content animation options
-	 * - If this property is set, content changes are animated automatically. Note that this requires the list to be set to a {@link ManagedList} object, not an array.
-	 * - This property should be set to an object containing duration (in milliseconds) and timing (optional cubic bezier control parameters) properties.
-	 */
-	animation?: Readonly<{
-		duration: number;
-		timing?: [number, number, number, number];
-	}>;
 
 	/** The index of the last focused list item view, if any */
 	lastFocusedIndex = 0;
@@ -221,50 +205,48 @@ export class UIListView extends ViewComposite {
 	}
 
 	/**
-	 * FocusIn event handler, stores the index of the focused item as {@link lastFocusedIndex}
-	 * - This method always returns true to avoid propagating focus events to a parent list, if any.
+	 * Override of {@link ViewComposite.delegateViewEvent}
+	 * - This method always emits the original event without updating the delegate property, since the delegate should refer to the list item view controller, not the list view itself.
+	 * - This method also handles focus events to focus the _first list item_ instead of the list container; and handles `FocusPrevious` and `FocusNext` events to move focus within the list (or the parent list). No other events are handled.
 	 */
-	protected onFocusIn(event: ManagedEvent) {
-		if (event.source === this.body) {
-			// focus last focused item or first item instead of container
-			this.requestFocus();
-		} else {
-			// store new focus index
-			let idx = this.getIndexOfView(event.source);
-			this.lastFocusedIndex = Math.max(0, idx);
+	protected override delegateViewEvent(event: ManagedEvent): boolean {
+		switch (event.name) {
+			case "FocusNext":
+				// try to focus the next element in the list
+				if (this.focusNextItem()) return true;
+				break;
+			case "FocusPrevious":
+				// try to focus the previous element in the list
+				if (this.focusPreviousItem()) return true;
+
+				// or try to focus the parent list, don't delegate if so
+				let parentList = UIListView.whence(this);
+				if (parentList) {
+					parentList.requestFocus();
+					return true;
+				}
+				break;
+			case "FocusIn":
+				if (event.source === this.body) {
+					// focus last focused item or first item instead of container
+					this.requestFocus();
+				} else {
+					// store new focus index
+					let idx = this.getIndexOfView(event.source);
+					this.lastFocusedIndex = Math.max(0, idx);
+				}
+
+				// don't propagate the event to a parent list, if any
+				return true;
 		}
 
-		// don't propagate the event to a parent list, if any
-		return true;
-	}
-
-	/**
-	 * FocusPrevious event handler, calls {@link focusPreviousItem()} or moves focus back to a containing list
-	 * - The FocusPrevious event can be emitted by a list item view, e.g. on arrow key press (onArrowUpKeyPress) to move focus within the list.
-	 * - This method always returns true to avoid propagating focus events to a parent list, if any.
-	 */
-	protected onFocusPrevious() {
-		if (!this.focusPreviousItem()) {
-			let parentList = UIListView.whence(this);
-			if (parentList) parentList.requestFocus();
-		}
-		return true;
-	}
-
-	/**
-	 * FocusNext event handler, calls {@link focusNextItem()}
-	 * - The FocusNext event can be emitted by a list item view, e.g. on arrow key press (onArrowDownKeyPress) to move focus within the list.
-	 * - This method returns true if a next item has been found, to avoid propagating focus events to a parent list, if any. Otherwise, the event is propagated to the parent list (to focus the item after the current parent item).
-	 */
-	protected onFocusNext() {
-		return this.focusNextItem();
+		// re-emit regular events
+		this.emit(event);
+		return false;
 	}
 
 	/** Update the container with (existing or new) components, one for each list item; only called from list observer */
-	private _updateItems(
-		Adapter: ViewClass<UIListView.ItemControllerView<ManagedObject>>,
-		BookEnd?: ViewClass,
-	) {
+	private _updateItems(ItemBody: ViewClass, BookEnd?: ViewClass) {
 		if (this.isUnlinked()) return;
 
 		// use entire list, or just a part of it
@@ -284,7 +266,6 @@ export class UIListView extends ViewComposite {
 				: list);
 
 		// update the container's content, if possible
-		this._observeAnimation();
 		let content = this.body?.content;
 		if (!content || !items) {
 			this._contentMap && this._contentMap.clear();
@@ -295,12 +276,12 @@ export class UIListView extends ViewComposite {
 
 		// keep track of existing view instances for each object
 		let existing = this._contentMap;
-		let map = new Map<ManagedObject, View>();
+		let map = new Map<ManagedObject, UIListView.ItemControllerView<TItem>>();
 		let components: View[] = [];
 		for (let item of items) {
 			let component = existing && existing.get(item);
 			if (!component) {
-				component = new Adapter(item);
+				component = new UIListView.ItemControllerView(item, ItemBody);
 			}
 			components.push(component);
 			map.set(item, component);
@@ -316,15 +297,6 @@ export class UIListView extends ViewComposite {
 		this.emit("ListItemsChange");
 	}
 
-	/** observe content updates if animation is enabled */
-	private _observeAnimation() {
-		if (this.animation && this.body && !this._animationObserved) {
-			let observer = new AnimationObserver().observe(this.body);
-			observer.list = this;
-			this._animationObserved = true;
-		}
-	}
-
 	/** Helper function to turn an array into a managed list */
 	private _makeList(v: any[]) {
 		return new ManagedList(
@@ -334,36 +306,16 @@ export class UIListView extends ViewComposite {
 		);
 	}
 
-	/** True if ContentUpdate event is already observed on content component */
-	private _animationObserved = false;
-
 	/** Map of already-created content components */
-	private _contentMap?: Map<ManagedObject, View>;
-}
-
-/** @internal Observer class that's used on the container to animate list items */
-class AnimationObserver extends Observer<UIContainer> {
-	list?: UIListView;
-	onContentRendering(e: UIContainer.ContentRenderingEvent) {
-		let animation = this.list && this.list.animation;
-		if (animation && animation.duration && app.renderer) {
-			// transition all output asynchronously, one by one
-			let output = e.data.output;
-			for (let out of output) {
-				let transform = out && app.renderer.transform(out);
-				if (transform) {
-					transform
-						.smoothOffset()
-						.timing(animation.duration, animation.timing || [0.2, 1, 0.2, 1]);
-				}
-			}
-		}
-	}
+	private _contentMap?: Map<
+		ManagedObject,
+		UIListView.ItemControllerView<TItem>
+	>;
 }
 
 export namespace UIListView {
 	/**
-	 * A managed object class that contains a list (array) item which is itself not a managed object
+	 * A managed object class containing a single list item value
 	 * @see {@link UIListView}
 	 * @see {@link UIListView.ItemControllerView}
 	 */
@@ -390,9 +342,10 @@ export namespace UIListView {
 		 * Creates a new item controller view object
 		 * - This constructor is used by {@link UIListView} and should not be used directly by an application.
 		 */
-		constructor(item: TItem | ItemValueWrapper<TItem>) {
+		constructor(item: TItem | ItemValueWrapper<TItem>, ItemBody: ViewClass) {
 			super();
 			this.item = item instanceof ItemValueWrapper ? item.value : item;
+			this._ItemBody = ItemBody;
 		}
 
 		/** The encapsulated list (or array) item */
@@ -402,11 +355,16 @@ export namespace UIListView {
 		 * Implementation of {@link ViewComposite.delegateViewEvent}, emits events with the `delegate` property set to this object
 		 */
 		protected override delegateViewEvent(event: ManagedEvent) {
-			this.emit(
-				new ManagedEvent(event.name, event.source, event.data, this, event),
-			);
+			event = ManagedEvent.withDelegate(event, this);
+			this.emit(event);
 			return true;
 		}
+
+		protected override createView() {
+			return new this._ItemBody();
+		}
+
+		private _ItemBody: ViewClass;
 	}
 
 	/**
@@ -418,5 +376,8 @@ export namespace UIListView {
 	export type ItemEvent<
 		TItem,
 		TSource extends ManagedObject = ManagedObject,
-	> = DelegatedEvent<ItemControllerView<TItem>, TSource>;
+	> = ManagedEvent<TSource> & {
+		/** The item controller view that delegated the event; can be used to access the list item */
+		delegate: ItemControllerView<TItem>;
+	};
 }

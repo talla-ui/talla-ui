@@ -1,4 +1,5 @@
 import { app, RenderContext, View, ViewComposite } from "../../app/index.js";
+import { errorHandler } from "../../errors.js";
 
 let _nextUpdateId = 1;
 
@@ -61,7 +62,7 @@ export class UIAnimationView extends ViewComposite {
 					let updateId = _nextUpdateId++;
 					this._lastUpdate = updateId;
 					this.playAsync(this.hideAnimation)
-						.catch((err) => app.log.error(err))
+						.catch(errorHandler)
 						.then(() => {
 							if (this._lastUpdate === updateId) {
 								this._lastOutput = undefined;
@@ -73,9 +74,7 @@ export class UIAnimationView extends ViewComposite {
 					this._lastUpdate = _nextUpdateId++;
 					if (this.showAnimation && showing) {
 						// new output: play 'show' animation
-						this.playAsync(this.showAnimation).catch((err) =>
-							app.log.error(err),
-						);
+						this.playAsync(this.showAnimation).catch(errorHandler);
 					}
 					orig = orig(output, afterRender);
 

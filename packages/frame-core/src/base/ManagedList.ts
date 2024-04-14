@@ -6,7 +6,7 @@ import {
 	$_get,
 	unlinkObject,
 } from "./object_util.js";
-import { ManagedChangeEvent, ManagedEvent } from "./ManagedEvent.js";
+import { ManagedEvent } from "./ManagedEvent.js";
 import { err, ERROR, invalidArgErr } from "../errors.js";
 import { Observer } from "./Observer.js";
 
@@ -53,7 +53,7 @@ const $_list = Symbol("list");
  *
  * **Attaching list items** — By default, objects aren't attached to the list, so they could be attached to other objects themselves and still be part of a managed list. However, you can enable auto-attaching of objects in a list using the {@link ManagedList.attachAll()} method — **or** by attaching the list itself to another object. This ensures that objects in a list are only attached to the list itself, and are unlinked when they're removed from the list (and removed from the list when they're no longer attached to it, e.g. when moved to another auto-attaching list).
  *
- * **Events** — Since ManagedList itself inherits from ManagedObject, a list can emit events, too. When any objects are added, moved, or removed, a {@link ManagedList.ChangeEvent} is emitted. In addition, for auto-attaching lists (see {@link ManagedList.attachAll()}) any events that are emitted by an object are re-emitted on the list itself. The {@link ManagedEvent.source} property can be used to find the object that originally emitted the event.
+ * **Events** — Since ManagedList itself inherits from ManagedObject, a list can emit events, too. When any objects are added, moved, or removed, a change event is emitted. In addition, for auto-attaching lists (see {@link ManagedList.attachAll()}) any events that are emitted by an object are re-emitted on the list itself. The {@link ManagedEvent.source} property can be used to find the object that originally emitted the event.
  *
  * **Nested lists** — Managed lists can contain (and even attach to) other managed lists, which allows for building nested or recursive data structures that fully support bindings and events.
  *
@@ -197,7 +197,7 @@ export class ManagedList<
 		if (this._attach) this._attachObject(target);
 
 		// emit event for adding this object
-		this.emitChange("ManagedObjectAdded", { object: target });
+		this.emit("ManagedObjectAdded", { change: this, object: target });
 
 		return this;
 	}
@@ -229,7 +229,7 @@ export class ManagedList<
 			}
 
 			// emit event for removing this object
-			this.emitChange("ManagedObjectRemoved", { object: target });
+			this.emit("ManagedObjectRemoved", { change: this, object: target });
 		}
 		return this;
 	}
@@ -322,7 +322,7 @@ export class ManagedList<
 		}
 
 		// emit event for moves, if needed
-		if (doEmitChange) this.emitChange("ManagedListChange");
+		if (doEmitChange) this.emitChange();
 
 		return this;
 	}
@@ -376,7 +376,7 @@ export class ManagedList<
 					if (object[$_origin] === this) unlinkObject(object);
 				}
 			}
-			this.emitChange("ManagedListChange");
+			this.emitChange();
 		}
 		return this;
 	}
@@ -594,7 +594,7 @@ export class ManagedList<
 	 *
 	 * When enabled, if the list currently contains any objects, they're immediately attached. Note that the feature can't be disabled once it has been enabled and there are any objects in the list.
 	 *
-	 * When enabled, events emitted on any object in the list are automatically re-emitted on the list itself (propagating the event) — unless the `noEventPropagation` argument is set to true.
+	 * When enabled, events emitted on any object in the list are automatically re-emitted on the list itself (propagating the event) — unless the `noEventPropagation` argument is set to true, or the {@link ManagedEvent.noPropagation} property is set on the event itself.
 	 *
 	 * @note Objects in a list that's itself attached to another object are also automatically attached. On a list that's itself attached, you may use this method to _disable_ this feature before adding any objects.
 	 *
@@ -646,16 +646,6 @@ export class ManagedList<
 // set iterator to objects() method
 ManagedList.prototype[Symbol.iterator] = ManagedList.prototype.objects;
 
-export namespace ManagedList {
-	/** Type definition for an event that's emitted when elements are added to, removed from, or moved within a list */
-	export type ChangeEvent<TObject extends ManagedObject = ManagedObject> =
-		ManagedChangeEvent<
-			ManagedList<TObject>,
-			{ object: TObject },
-			"ManagedObjectAdded" | "ManagedObjectRemoved" | "ManagedListChange"
-		>;
-}
-
 /** @internal Observer that's used for attached objects in a list */
 class AttachObserver extends Observer<ManagedList> {
 	constructor(
@@ -671,6 +661,8 @@ class AttachObserver extends Observer<ManagedList> {
 		super.stop();
 	}
 	protected override handleEvent(event: ManagedEvent) {
-		if (this.propagate) this.list.emit(event);
+		if (this.propagate && !event.noPropagation) {
+			this.list.emit(event);
+		}
 	}
 }

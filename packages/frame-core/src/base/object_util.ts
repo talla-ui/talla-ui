@@ -1,8 +1,8 @@
 import { NullableArray, removeFromNullableArray } from "./NullableArray.js";
 import { isManagedObject, ManagedObject } from "./ManagedObject.js";
 import { err, ERROR, errorHandler } from "../errors.js";
-import { ManagedChangeEvent } from "./ManagedEvent.js";
 import { Observer } from "./Observer.js";
+import { ManagedEvent } from "./ManagedEvent.js";
 
 // Symbols used for ManagedObject properties:
 
@@ -659,7 +659,7 @@ function watchFromOrigin(
 	// set a trap on given target for link `i`, just to listen for change events
 	function setEventTrap(target: ManagedObject, i: number, isLast?: boolean) {
 		let trap = (traps[i] = addTrap(target, $_traps_event, function (t, p, v) {
-			if (v instanceof ManagedChangeEvent) {
+			if (ManagedEvent.isChange(v)) {
 				if (trap === traps[i])
 					invoke(isLast ? target : getValue(target, i - 1), true, isLast);
 			}

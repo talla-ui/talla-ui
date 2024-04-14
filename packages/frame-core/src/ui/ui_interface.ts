@@ -12,7 +12,6 @@ import type { UIListView } from "./composites/UIListView.js";
 import type { UIViewRenderer } from "./composites/UIViewRenderer.js";
 import type { UIAnimatedCell, UICell } from "./containers/UICell.js";
 import type { UIColumn } from "./containers/UIColumn.js";
-import type { UIForm } from "./containers/UIForm.js";
 import type { UIRow } from "./containers/UIRow.js";
 import type { UIScrollContainer } from "./containers/UIScrollContainer.js";
 import type { UIButton } from "./controls/UIButton.js";
@@ -50,7 +49,6 @@ export namespace ui {
 			cell: ui.PresetType<UICell>;
 			column: ui.PresetType<UIColumn>;
 			row: ui.PresetType<UIRow>;
-			form: ui.PresetType<UIForm>;
 			scroll: ui.PresetType<UIScrollContainer>;
 			animatedcell: ui.PresetType<UIAnimatedCell>;
 			label: ui.PresetType<UILabel>;
@@ -116,18 +114,6 @@ export interface ui {
 	 */
 	row(preset: ui.PresetType<UIRow>, ...content: ViewClass[]): ViewClass<UIRow>;
 	row(...content: ViewClass[]): ViewClass<UIRow>;
-
-	/**
-	 * Creates a preset {@link UIForm} constructor using the provided options and content
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class (optional)
-	 * @param content The content that will be added to each instance of the resulting class
-	 * @returns A new class that extends {@link UIForm}
-	 */
-	form(
-		preset: ui.PresetType<UIForm>,
-		...content: ViewClass[]
-	): ViewClass<UIForm>;
-	form(...content: ViewClass[]): ViewClass<UIForm>;
 
 	/**
 	 * Creates a preset {@link UIScrollContainer} constructor using the provided options and content

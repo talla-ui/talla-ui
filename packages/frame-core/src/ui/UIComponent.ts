@@ -1,10 +1,22 @@
 import { app, RenderContext, View, ViewClass } from "../app/index.js";
-import { BindingOrValue, StringConvertible } from "../base/index.js";
+import {
+	BindingOrValue,
+	ManagedEvent,
+	StringConvertible,
+} from "../base/index.js";
 import { err, ERROR } from "../errors.js";
 import type { UIColor } from "./UIColor.js";
 
 /** Empty array, used for findViewContent */
 const _viewContent: any[] = Object.freeze([]) as any;
+
+/** @internal Helper function to emit a non-propagated event; returns true */
+function emitRendered(source: View, name: string) {
+	source.emit(
+		new ManagedEvent(name, source, undefined, undefined, undefined, true),
+	);
+	return true;
+}
 
 /**
  * Base class for built-in UI components
@@ -111,8 +123,7 @@ export abstract class UIComponent extends View {
 	 * - This method emits an event, which is handled by the renderer if and when possible.
 	 */
 	requestFocus() {
-		this.emit(new RenderContext.RendererEvent("RequestFocus", this));
-		return this;
+		return emitRendered(this, "RequestFocus");
 	}
 
 	/**
@@ -120,8 +131,7 @@ export abstract class UIComponent extends View {
 	 * - This method emits an event, which is handled by the renderer if and when possible.
 	 */
 	requestFocusNext() {
-		this.emit(new RenderContext.RendererEvent("RequestFocusNext", this));
-		return this;
+		return emitRendered(this, "RequestFocusNext");
 	}
 
 	/**
@@ -129,8 +139,7 @@ export abstract class UIComponent extends View {
 	 * - This method emits an event, which is handled by the renderer if and when possible.
 	 */
 	requestFocusPrevious() {
-		this.emit(new RenderContext.RendererEvent("RequestFocusPrevious", this));
-		return this;
+		return emitRendered(this, "RequestFocusPrevious");
 	}
 
 	/**
@@ -144,10 +153,19 @@ export abstract class UIComponent extends View {
 				app.renderer && app.renderer.createObserver(this));
 			if (!renderer) throw err(ERROR.UIComponent_NoRenderer);
 			renderer.observe(this);
-			this.emit(new RenderContext.RendererEvent("BeforeRender", this));
+			emitRendered(this, "BeforeRender");
 		}
-		let event = new RenderContext.RendererEvent("Render", this);
-		event.render = callback;
+
+		// create Render event with provided callback
+		// (to be handled by platform renderer)
+		let event = new ManagedEvent(
+			"Render",
+			this,
+			{ render: callback },
+			undefined,
+			undefined,
+			true,
+		);
 		this.emit(event);
 		return this;
 	}

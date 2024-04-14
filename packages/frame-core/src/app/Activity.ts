@@ -8,13 +8,12 @@ import {
 } from "../base/index.js";
 import { err, ERROR, errorHandler, safeCall } from "../errors.js";
 import type { UIFormContext } from "../ui/index.js";
-import type { NavigationController } from "./NavigationController.js";
 import { app } from "./GlobalContext.js";
+import type { NavigationController } from "./NavigationController.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
 import type { Service } from "./Service.js";
 import type { View, ViewClass } from "./View.js";
-import type { RenderContext } from "./RenderContext.js";
 
 /** Global list of activity instances for (old) activity class, for HMR */
 const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
@@ -94,10 +93,7 @@ export class Activity extends ManagedObject {
 				super();
 			}
 			protected override handleEvent(event: ManagedEvent<any>) {
-				if (
-					this.activity.isActive() &&
-					!(event as RenderContext.RendererEvent).isRendererEvent
-				) {
+				if (this.activity.isActive() && !event.noPropagation) {
 					this.activity.delegateViewEvent(event);
 				}
 			}
@@ -233,12 +229,12 @@ export class Activity extends ManagedObject {
 	}
 
 	/**
-	 * Delegates events from the current view
-	 * - This method is called automatically when an event is emitted by the current view object.
-	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true`, undefined, or a promise (which is awaited just to be able to handle any errors).
-	 * - This method may be overridden to handle events in any other way, e.g. to propagate them by emitting the same event on the activity object itself.
+	 * Delegates events that were emitted by the view
+	 * - This method is called automatically when an event is emitted by the current view object (except if {@link ManagedEvent.noPropagation} was set).
+	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true` (event handled), false/undefined, or a promise (which is awaited just to be able to handle any errors).
+	 * - If a handler is not found, or it returned false or undefined, a delegate event is re-emitted on the activity itself (i.e. a new event with `delegate` set to the activity), and this method returns false.
 	 * @param event The event to be delegated (from the view)
-	 * @returns True if an event handler was found, and it returned true; false otherwise.
+	 * @returns True if an event handler was found, and it returned true; a promise if the handler returned a promise; false otherwise.
 	 */
 	protected delegateViewEvent(event: ManagedEvent): boolean | Promise<unknown> {
 		// find own handler method
@@ -252,6 +248,8 @@ export class Activity extends ManagedObject {
 				return (result as Promise<unknown>).catch(errorHandler);
 			}
 		}
+		event = ManagedEvent.withDelegate(event, this);
+		this.emit(event);
 		return false;
 	}
 
