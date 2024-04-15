@@ -190,6 +190,9 @@ export class UIListView<
 	 */
 	focusNextItem() {
 		let lastIndex = this.items ? this.items.count - 1 : -1;
+		if (this.maxItems !== undefined) {
+			lastIndex = Math.min(lastIndex, this.maxItems - 1);
+		}
 		if (this.lastFocusedIndex < lastIndex) {
 			this.lastFocusedIndex++;
 			this.requestFocus();
