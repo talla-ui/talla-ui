@@ -1,7 +1,6 @@
 import { invalidArgErr } from "../errors.js";
 import { LazyString } from "./LazyString.js";
 import { ManagedObject } from "./ManagedObject.js";
-import type { GlobalEmitter } from "./GlobalEmitter.js";
 import {
 	$_bindFilter,
 	$_unlinked,
@@ -66,8 +65,12 @@ export namespace BindingOrValue {
  * @see {@link bound.strf}
  */
 export class Binding<T = any> {
-	/** Event emitter used by {@link Binding.debug()} */
-	declare static debugEmitter: GlobalEmitter<Binding.DebugEventData>;
+	/**
+	 * Global debug handler for binding changes
+	 * - This handler is called whenever a binding is updated for which the {@link Binding.debug()} method was called.
+	 * - The handler is not set by default, and can be set to a function if needed (i.e. to analyze issues with bindings in development; do NOT use {@link Binding.debug()} or set this handler in a production application).
+	 */
+	declare static debugHandler?: (data: Binding.DebugUpdate) => void;
 
 	/**
 	 * Restricts bindings that can be bound to (attached parent objects of) the specified object, if the object itself does not include a corresponding property
@@ -459,7 +462,7 @@ export class Binding<T = any> {
 
 	/**
 	 * Adds a filter, to emit an event whenever the bound value changes.
-	 * - For every change, an event will be emitted on {@link Binding.debugEmitter}. Events include both a reference to the binding and its new value, see {@link Binding.DebugEventData}.
+	 * - For every change, the {@link Binding.debugHandler} handler function is called with the new value and a boolean flag indicating whether the value is bound.
 	 * @returns The binding itself, with debug events enabled
 	 */
 	debug() {
@@ -468,16 +471,12 @@ export class Binding<T = any> {
 			let hasValue: boolean | undefined;
 			_apply(register, (value, bound) => {
 				hasValue = true;
-				Binding.debugEmitter.emit("Debug", {
-					binding: this,
-					value,
-					bound,
-				});
+				Binding.debugHandler?.({ binding: this, value, bound });
 				update(value, bound);
 			});
 			setTimeout(() => {
 				if (!hasValue) {
-					Binding.debugEmitter.emit("Debug", { binding: this, bound: false });
+					Binding.debugHandler?.({ binding: this, bound: false });
 				}
 			}, 1);
 		};
@@ -689,8 +688,12 @@ export class StringFormatBinding<
 }
 
 export namespace Binding {
-	/** Data object that's included with events emitted by {@link Binding.debugEmitter} */
-	export type DebugEventData = {
+	/**
+	 * An object that's provided to the global debug handler, if any
+	 * @see {@link Binding.debug}
+	 * @see {@link Binding.debugHandler}
+	 */
+	export type DebugUpdate = {
 		/** The binding that has been updated */
 		binding: Binding;
 		/** The current value, if any */

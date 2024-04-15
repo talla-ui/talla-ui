@@ -65,7 +65,7 @@ export function useTestContext(config?: ConfigOptions.Arg<TestContextOptions>) {
 
 	// add a log sink if required
 	if (options.captureLogs) {
-		app.addLogHandler(0, (msg) => {
+		app.log.addHandler(0, (msg) => {
 			let tests = TestScope.getRunningTests();
 			for (let t of tests) {
 				t.log(msg.message);

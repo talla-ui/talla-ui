@@ -5,5 +5,4 @@ export * from "./ManagedEvent.js";
 export * from "./Observer.js";
 export * from "./Binding.js";
 export * from "./LazyString.js";
-export * from "./GlobalEmitter.js";
 export * from "./ConfigOptions.js";

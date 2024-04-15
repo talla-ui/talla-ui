@@ -1,4 +1,4 @@
-import { app } from "@desk-framework/frame-core";
+import { GlobalContext } from "@desk-framework/frame-core";
 import { testLogsToString } from "./log.js";
 import { TestCase } from "./TestCase.js";
 import { TestResult, TestResultsData } from "./TestResult.js";
@@ -16,7 +16,7 @@ const _exclusiveScopes: TestScope[] = [];
 function handleUnhandledErrors() {
 	if (_handled) return;
 	_handled = true;
-	app.setErrorHandler((error) => {
+	GlobalContext.setErrorHandler((error) => {
 		if (runningTests.length) {
 			for (let t of runningTests) t.fail(error);
 		} else {

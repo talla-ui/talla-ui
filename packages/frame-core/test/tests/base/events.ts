@@ -1,8 +1,4 @@
-import {
-	GlobalEmitter,
-	ManagedEvent,
-	ManagedObject,
-} from "../../../dist/index.js";
+import { ManagedEvent, ManagedObject } from "../../../dist/index.js";
 import { describe, expect, test } from "@desk-framework/frame-test";
 
 describe("Events", () => {
@@ -119,15 +115,5 @@ describe("Events", () => {
 			}
 			t.expectCount("error").toBe(1);
 		});
-	});
-
-	test("GlobalEmitter", (t) => {
-		let emitter = new GlobalEmitter<{ foo: string }>();
-		emitter.listen((e) => {
-			if (e.name === "Foo") t.count(e.data.foo);
-		});
-		expect(emitter.isObserved()).toBeTruthy();
-		emitter.emit("Foo", { foo: "foo" });
-		t.expectCount("foo").toBe(1);
 	});
 });

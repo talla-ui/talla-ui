@@ -1,4 +1,5 @@
-import { GlobalEmitter, LazyString } from "../base/index.js";
+import { LazyString } from "../base/index.js";
+import { safeCall } from "../errors.js";
 import { AppException } from "./AppException.js";
 
 /** Helper function that puts together event data for a log message */
@@ -34,7 +35,7 @@ function makeEventData(
  *
  * Different methods are available for different severity levels, ranging from `verbose` (level 0) to `fatal` (level 5).
  *
- * Log messages are emitted as events on {@link LogWriter.emitter}. A listener can be added there, or using {@link GlobalContext.addLogHandler app.addLogHandler()} to add a log 'sink' for a minimum severity level. If no listeners have been added, log messages are written to the console.
+ * By default, log messages are written to the console. You can add custom log sink handlers to handle log messages in other ways, such as sending them to a server or writing them to a file.
  *
  * @online_docs Refer to the Desk website for more information on error handling and logging.
  */
@@ -127,14 +128,22 @@ export class LogWriter {
 		this._write(5, message);
 	}
 
-	/** An event emitter for all log messages */
-	emitter = new GlobalEmitter<LogWriter.LogMessageData>();
+	/**
+	 * Adds a log sink handler for this log writer
+	 * @param minLevel The minimum log level for which messages are passed to the handler function
+	 * @param f A handler function, which should accept a single {@link LogWriter.LogMessageData} argument
+	 */
+	addHandler(minLevel: number, f: (message: LogWriter.LogMessageData) => void) {
+		this._sink.push((m) => {
+			if (m.level >= minLevel) safeCall(() => f(m));
+		});
+	}
 
 	/** Private implementation to emit a log message event, or write to the console */
 	private _write(level: number, message: unknown) {
 		let data = makeEventData(level, message);
-		if (this.emitter.isObserved()) {
-			this.emitter.emit("LogMessage", data);
+		if (this._sink.length) {
+			for (let s of this._sink) s(data);
 		} else if (level >= 4) {
 			console.error(message);
 			if (data.data.length) console.log(...data.data);
@@ -144,14 +153,17 @@ export class LogWriter {
 				: console.log(data.message);
 		}
 	}
+
+	/** A list of log sink handlers, if any */
+	private _sink: Array<(data: LogWriter.LogMessageData) => void> = [];
 }
 
 export namespace LogWriter {
 	/**
-	 * The data structure contained by each log event, emitted by {@link LogWriter.emitter}
+	 * An object containing log message data, as sent to log sink handlers
 	 *
 	 * @description
-	 * Each log message written by {@link LogWriter} is emitted as an event on {@link LogWriter.emitter}. The data contained by the event contains the following properties:
+	 * Each log message written by {@link LogWriter} is handled by one or more log sink handlers. Each log message is represented by an object with the following properties:
 	 * - `message` — A string representation of the log message.
 	 * - `error` — The original error that was logged, if any.
 	 * - `data` — Additional data, such as error details or format placeholder values.
