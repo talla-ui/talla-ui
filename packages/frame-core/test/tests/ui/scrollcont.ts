@@ -1,10 +1,4 @@
-import {
-	Observer,
-	app,
-	UILabel,
-	UIScrollContainer,
-	ui,
-} from "../../../dist/index.js";
+import { app, UILabel, UIScrollContainer, ui } from "../../../dist/index.js";
 import {
 	describe,
 	test,
@@ -39,14 +33,9 @@ describe("UIScrollContainer", (scope) => {
 
 	test("Scroll target events", (t) => {
 		let cont = new UIScrollContainer();
-
-		// use an observer to capture events
-		class MyObserver extends Observer<UIScrollContainer> {
-			onUIScrollTarget() {
-				t.count("event");
-			}
-		}
-		new MyObserver().observe(cont);
+		cont.listen((e) => {
+			if (e.name === "UIScrollTarget") t.count("event");
+		});
 		cont.scrollTo(0, 0);
 		cont.scrollToTop();
 		cont.scrollToBottom();

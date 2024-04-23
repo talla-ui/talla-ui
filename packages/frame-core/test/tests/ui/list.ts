@@ -24,13 +24,15 @@ describe("UIListView", (scope) => {
 
 	// helper function to get the text content of a list
 	function getListText(list: UIListView) {
-		return list.body.content.map((c) =>
-			String(
-				c instanceof UIListView.ItemControllerView
-					? c.body instanceof UILabel && c.body.text
-					: c instanceof UILabel && c.text,
-			),
-		);
+		return list
+			.getContent()!
+			.map((c) =>
+				String(
+					c instanceof UIListView.ItemControllerView
+						? c.body instanceof UILabel && c.body.text
+						: c instanceof UILabel && c.text,
+				),
+			);
 	}
 
 	// helper function to get a list of managed objects
@@ -88,22 +90,17 @@ describe("UIListView", (scope) => {
 
 	test("List of labels from bound array, rendered", async (t) => {
 		t.log("Creating instance");
-		class ArrayProvider extends ManagedObject {
-			constructor() {
-				super();
-				this.autoAttach("view");
-			}
-			declare view?: UIListView;
-			array = ["a", "b", "c"];
-		}
 		let MyList = ui.list(
 			{ items: bound("array") },
 			ui.label(bound("item")),
 			UIRow,
 		);
-		let instance = new MyList();
+		class ArrayProvider extends ManagedObject {
+			array = ["a", "b", "c"];
+			readonly view = this.attach(new MyList());
+		}
 		let parent = new ArrayProvider();
-		parent.view = instance;
+		let instance = parent.view;
 
 		t.log("Rendering");
 		app.showPage(instance);
@@ -125,7 +122,7 @@ describe("UIListView", (scope) => {
 		let cRendered = out.getSingle();
 
 		t.log("Updating list");
-		list.replace([c, b, d]);
+		list.replaceAll([c, b, d]);
 		await t.expectOutputAsync(50, { text: "d" });
 		expect(getListText(instance)).toBeArray(["c", "b", "d"]);
 		let sameC = await t.expectOutputAsync(50, { type: "row" }, { text: "c" });

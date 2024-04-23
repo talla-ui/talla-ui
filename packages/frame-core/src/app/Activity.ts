@@ -3,17 +3,22 @@ import {
 	ConfigOptions,
 	ManagedEvent,
 	ManagedObject,
-	Observer,
 	StringConvertible,
 } from "../base/index.js";
-import { err, ERROR, errorHandler, safeCall } from "../errors.js";
+import {
+	err,
+	ERROR,
+	errorHandler,
+	invalidArgErr,
+	safeCall,
+} from "../errors.js";
 import type { UIFormContext } from "../ui/index.js";
 import { app } from "./GlobalContext.js";
 import type { NavigationController } from "./NavigationController.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
 import type { Service } from "./Service.js";
-import type { View, ViewClass } from "./View.js";
+import { View, ViewClass } from "./View.js";
 
 /** Global list of activity instances for (old) activity class, for HMR */
 const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
@@ -86,19 +91,12 @@ export class Activity extends ManagedObject {
 				.then(() => this.isActive() && this.ready())
 				.catch(errorHandler),
 		);
-
-		// auto-attach view and delegate events
-		class ViewObserver extends Observer<View> {
-			constructor(public activity: Activity) {
-				super();
-			}
-			protected override handleEvent(event: ManagedEvent<any>) {
-				if (this.activity.isActive() && !event.noPropagation) {
-					this.activity.delegateViewEvent(event);
-				}
-			}
-		}
-		this.autoAttach("view", new ViewObserver(this));
+		Object.defineProperty(this, "view", {
+			configurable: true,
+			enumerable: true,
+			get: () => this._view,
+			set: this._setView.bind(this),
+		});
 	}
 
 	/**
@@ -118,7 +116,7 @@ export class Activity extends ManagedObject {
 
 	/**
 	 * The current view, if any (attached automatically)
-	 * - This property should be set to a view object in the {@link Activity.ready} method, and displayed using the available {@link app} methods.
+	 * - This property should be set to a view object from the {@link Activity.ready} method, and displayed using the available {@link app} methods.
 	 * - The view is automatically unlinked when the activity is deactivated or unlinked.
 	 * - Events emitted by the view are automatically delegated to the activity, see {@link delegateViewEvent()}.
 	 */
@@ -190,7 +188,10 @@ export class Activity extends ManagedObject {
 			false,
 			() => {
 				if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
-				this.view = undefined;
+				if (this._view) {
+					this._view.unlink();
+					this._view = undefined;
+				}
 				return this.beforeInactiveAsync();
 			},
 			() => {
@@ -315,36 +316,29 @@ export class Activity extends ManagedObject {
 		);
 		if (!this._activation.active) queue.pause();
 
-		// observe activity to pause/resume/stop automatically
-		class ActivityQueueObserver extends Observer<Activity> {
-			onActive() {
-				queue.resume();
-			}
-			onInactive() {
-				queue.pause();
-			}
-			override stop(): void {
+		// listen for active/inactive events to pause/resume queue
+		this.listen({
+			handler(_, event) {
+				if (event.name === "Active") queue.resume();
+				else if (event.name === "Inactive") queue.pause();
+			},
+			unlinked() {
 				queue.stop();
-			}
-		}
-		new ActivityQueueObserver().observe(this);
-
+			},
+		});
 		return queue;
 	}
 
 	/**
-	 * Observes a particular service by ID, until the activity is unlinked
+	 * Observes a particular service by ID, until this activity is unlinked
 	 * @param id The ID of the service to be observed
-	 * @param observer An {@link Observer} class or instance, or a function that's called whenever a change event is emitted by the service (with service and event arguments, respectively), and when the current service is unlinked (without any arguments)
-	 * @returns The observer instance, which references the observed service using the {@link Observer.observed observed} property
+	 * @param handler A function that's called when the service changes (registered or unlinked), or when the current service emits an event
 	 */
 	protected observeService<TService extends Service>(
 		id: string,
-		observer:
-			| Observer<TService>
-			| ManagedObject.AttachObserverFunction<TService> = new Observer(),
+		handler: (service?: TService, event?: ManagedEvent) => void,
 	) {
-		return app.services._$observe(id, observer, this);
+		return app.services._$observe(this, id, handler);
 	}
 
 	/** A method that's called on an active activity, to be overridden to create and render the view if needed */
@@ -361,6 +355,33 @@ export class Activity extends ManagedObject {
 
 	/** A method that's called and awaited after the activity is deactivated, to be overridden if needed */
 	protected async afterInactiveAsync() {}
+
+	/** Set the view, used by {@link Activity.view} setter */
+	private _setView(view: View | undefined) {
+		if (view && !(view instanceof View)) throw invalidArgErr("view");
+		if (this._view === view) return;
+		if (this._view) {
+			// replacing old view: unlink first
+			this._view.unlink();
+		}
+		this._view = view;
+		if (view) {
+			// attach new view: delegate events and clear when unlinked
+			this.attach(view, {
+				handler: (_, event) => {
+					if (this.isActive() && !event.noPropagation) {
+						this.delegateViewEvent(event);
+					}
+				},
+				detached: () => {
+					if (this._view === view) this._view = undefined;
+				},
+			});
+		}
+	}
+
+	/** Current view, for setter/getter */
+	private _view?: View;
 
 	/** Activation queue for this activity */
 	private readonly _activation = new ActivationQueue();

@@ -1,7 +1,6 @@
 import {
 	ActivityContext,
 	app,
-	bound,
 	ConfigOptions,
 	GlobalContext,
 	ui,
@@ -141,11 +140,11 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 	app.viewport = viewport;
 	viewport.update();
 
-	// create DOM renderer
-	let renderer = (app.renderer = new WebRenderer(options));
-	bound("theme").bindTo(renderer, () => {
-		WebTheme.initializeCSS(options);
-		Promise.resolve().then(() => renderer.remount());
+	// create DOM renderer, initialize CSS on remount
+	let renderer = new WebRenderer(options);
+	(app as any).renderer = renderer;
+	renderer.listen((e) => {
+		if (e.name === "Remount") WebTheme.initializeCSS(options);
 	});
 
 	// create navigation path

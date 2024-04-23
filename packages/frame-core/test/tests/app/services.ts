@@ -4,7 +4,6 @@ import {
 	ManagedObject,
 	ServiceContext,
 	Activity,
-	Observer,
 } from "../../../dist/index.js";
 import { describe, expect, test } from "@desk-framework/frame-test";
 
@@ -59,46 +58,60 @@ describe("ManagedService", (scope) => {
 		expect([...app.services.getAll()]).toBeArray(0);
 	});
 
-	test("Observe single service", () => {
-		class ObserverService extends Service {
-			id = "Test.Observer";
-			observer = this.observeService("Test.Observed");
-		}
+	test("Observe single service, from service", () => {
 		class ObservedService extends Service {
 			id = "Test.Observed";
 			foo = 1;
 		}
+		class ObserverService extends Service {
+			constructor() {
+				super();
+				this.observeService<ObservedService>("Test.Observed", (service) => {
+					this.observed = service;
+				});
+			}
+			id = "Test.Observer";
+			observed?: ObservedService;
+		}
 		let svc = new ObservedService();
 		let obs = new ObserverService();
 		app.services.add(obs);
-		expect(obs.observer.observed).toBeUndefined();
+		expect(obs.observed).toBeUndefined();
 		app.services.add(svc);
-		expect(obs.observer.observed).toBe(svc);
+		expect(obs.observed).toBe(svc);
 		svc.unlink();
 		obs.unlink();
-		expect(obs.observer.observed).toBeUndefined();
+		expect(obs.observed).toBeUndefined();
 	});
 
-	test("Observe single service, using function in activity", (t) => {
+	test("Observe single service, from activity", (t) => {
 		class ObservedService extends Service {
 			id = "Test.Observed";
 			foo = 1;
 		}
 		class MyActivity extends Activity {
-			observer = this.observeService("Test.Observed", (service, event) => {
-				if (event) t.count("event");
-				if (service) t.count("service");
-				else t.count("unlink");
-			});
+			constructor() {
+				super();
+				this.observeService<ObservedService>(
+					"Test.Observed",
+					(service, event) => {
+						this.observed = service;
+						if (event) t.count("event");
+						if (service) t.count("service");
+						else t.count("unlink");
+					},
+				);
+			}
+			observed?: ObservedService;
 		}
 		let svc = new ObservedService();
 		let act = new MyActivity();
-		expect(act.observer.observed).toBeUndefined();
+		expect(act.observed).toBeUndefined();
 		app.services.add(svc);
-		expect(act.observer.observed).toBe(svc);
+		expect(act.observed).toBe(svc);
 		svc.emitChange();
 		svc.unlink();
-		expect(act.observer.observed).toBeUndefined();
+		expect(act.observed).toBeUndefined();
 		act.unlink();
 		t.expectCount("event").toBe(1);
 		t.expectCount("service").toBe(2);
@@ -111,101 +124,62 @@ describe("ManagedService", (scope) => {
 			foo = 1;
 		}
 		class MyActivity extends Activity {
-			observer = this.observeService("Test.Observed", () => {});
+			constructor() {
+				super();
+				this.observeService<ObservedService>("Test.Observed", (service) => {
+					this.observed = service;
+				});
+			}
+			observed?: ObservedService;
 		}
 		let svc = new ObservedService();
 		let act = new MyActivity();
 		app.services.add(svc);
-		expect(act.observer.observed).toBe(svc);
+		expect(act.observed).toBe(svc);
 		act.unlink();
-		expect(act.observer.observed).toBeUndefined();
 		svc.unlink();
-	});
-
-	test("Observe single service, custom observer", (t) => {
-		class ObservedService extends Service {
-			id = "Test.Observed";
-			foo = 1;
-		}
-		class ObservedServiceObserver extends Observer<ObservedService> {
-			// called when service found:
-			override observe(service: ObservedService) {
-				t.count("observe");
-				return super.observe(service).observeProperty("foo");
-			}
-			onFooChange(value: number) {
-				t.count("foo");
-				if (value !== this.observed?.foo) t.fail("foo property mismatch");
-			}
-			onChange() {
-				t.count("change");
-			}
-			override handleUnlink() {
-				t.count("unlink");
-			}
-		}
-		class MyActivity extends Activity {
-			observer = this.observeService(
-				"Test.Observed",
-				new ObservedServiceObserver(),
-			);
-		}
-		let svc = new ObservedService();
-		app.services.add(svc);
-		let act = new MyActivity();
-
-		// trigger observer handlers
-		svc.foo = 123;
-		svc.emitChange();
-		svc.unlink();
-		act.unlink();
-
-		// check that all handlers were called
-		t.expectCount("observe").toBe(1);
-		t.expectCount("foo").toBe(1);
-		t.expectCount("change").toBe(1);
-		t.expectCount("unlink").toBe(1);
+		expect(act.observed).toBe(svc);
 	});
 
 	test("Observe service changes", (t) => {
+		let idx = 0;
 		class ChangedService extends Service {
 			id = "Test.Changed";
-			foo = 1;
-		}
-		class ChangedServiceObserver extends Observer<ChangedService> {
-			// called when service found/changed:
-			override observe(service: ChangedService) {
-				t.count("observe");
-				return super.observe(service).observeProperty("foo");
-			}
-			onFooChange() {
-				t.count("foo");
-			}
+			idx = ++idx;
 		}
 		class MyActivity extends Activity {
-			observer = this.observeService(
-				"Test.Changed",
-				new ChangedServiceObserver(),
-			);
+			constructor() {
+				super();
+				this.observeService<ChangedService>(
+					"Test.Changed",
+					(service, event) => {
+						t.log("Handled:", service?.idx, event?.name);
+						if (event) t.count(event.name);
+						else if (service) t.count("service");
+						else t.count("unlink");
+					},
+				);
+			}
 		}
 
 		let act = new MyActivity();
 		let svc1 = new ChangedService();
-		app.services.add(svc1);
-		svc1.foo = 2;
+		app.services.add(svc1); // + service
+		svc1.emit("Foo"); // + Foo
 		let svc2 = new ChangedService();
-		app.services.add(svc2);
-		svc1.foo = 3; // not observed
-		svc2.foo = 4;
-		svc2.unlink();
-		svc2.foo = 5; // not observed
+		app.services.add(svc2); // + service
+		svc1.emit("Foo"); // nothing!
+		svc2.emit("Foo"); // + Foo
+		svc2.unlink(); // + unlink
+		svc2.emit("Foo"); // nothing!
 		let svc3 = new ChangedService();
-		app.services.add(svc3);
+		app.services.add(svc3); // + service
 		act.unlink();
 
 		// check that all handlers were called
-		t.expectCount("observe").toBe(3);
-		t.expectCount("foo").toBe(2);
+		t.expectCount("service").toBe(3);
+		t.expectCount("unlink").toBe(1);
+		t.expectCount("Foo").toBe(2);
 
 		// clear services
 		app.services.clear();

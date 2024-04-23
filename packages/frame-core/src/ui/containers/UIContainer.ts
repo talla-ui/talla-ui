@@ -1,4 +1,4 @@
-import { ManagedEvent, ManagedList, Observer } from "../../base/index.js";
+import { ManagedList } from "../../base/index.js";
 import { View, ViewClass } from "../../app/index.js";
 import { UIComponent } from "../UIComponent.js";
 import type { UIColor } from "../UIColor.js";
@@ -14,17 +14,11 @@ export abstract class UIContainer extends UIComponent {
 		super();
 
 		// create content list and delegate events
-		class ContentObserver extends Observer<ManagedList<View>> {
-			constructor(public container: UIContainer) {
-				super();
+		this.content = this.attach(new ManagedList(), (event) => {
+			if (event.source instanceof View && !event.noPropagation) {
+				this.emit(event);
 			}
-			protected override handleEvent(event: ManagedEvent) {
-				if (event.source instanceof View && !event.noPropagation) {
-					this.container.emit(event);
-				}
-			}
-		}
-		this.content = this.attach(new ManagedList(), new ContentObserver(this));
+		});
 
 		// add the provided content
 		if (content.length) this.content.add(...content);

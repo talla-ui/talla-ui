@@ -1,6 +1,5 @@
 import {
 	AsyncTaskQueue,
-	Observer,
 	RenderContext,
 	View,
 	app,
@@ -142,7 +141,7 @@ export class TestRenderer extends RenderContext {
 	transform(_output: RenderContext.Output) {}
 
 	/** Attaches a renderer to the the provided UI component (called internally) */
-	createObserver<T extends View>(target: T): Observer<T> | undefined {
+	createObserver(target: View): unknown {
 		return makeObserver(target);
 	}
 

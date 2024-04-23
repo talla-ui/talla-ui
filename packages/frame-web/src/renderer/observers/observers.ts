@@ -1,5 +1,4 @@
 import {
-	Observer,
 	UIButton,
 	UICell,
 	UIContainer,
@@ -12,6 +11,7 @@ import {
 	UIToggle,
 	View,
 } from "@desk-framework/frame-core";
+import { BaseObserver } from "./BaseObserver.js";
 import { UIButtonRenderer } from "./UIButtonRenderer.js";
 import { UICellRenderer } from "./UICellRenderer.js";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
@@ -24,30 +24,28 @@ import { UITextFieldRenderer } from "./UITextFieldRenderer.js";
 import { UIToggleRenderer } from "./UIToggleRenderer.js";
 
 /** @internal Helper function to create the appropriate renderer for given object */
-export function makeObserver<T extends View>(
-	target: T,
-): Observer<T> | undefined {
+export function makeObserver(target: View): BaseObserver<any> | undefined {
 	return (
 		target instanceof UICell
-			? new UICellRenderer()
+			? new UICellRenderer(target)
 			: target instanceof UIScrollContainer
-			? new UIScrollContainerRenderer()
+			? new UIScrollContainerRenderer(target)
 			: target instanceof UIContainer
-			? new UIContainerRenderer()
+			? new UIContainerRenderer(target)
 			: target instanceof UILabel
-			? new UILabelRenderer()
+			? new UILabelRenderer(target)
 			: target instanceof UIButton
-			? new UIButtonRenderer()
+			? new UIButtonRenderer(target)
 			: target instanceof UIImage
-			? new UIImageRenderer()
+			? new UIImageRenderer(target)
 			: target instanceof UISeparator
-			? new UISeparatorRenderer()
+			? new UISeparatorRenderer(target)
 			: target instanceof UISpacer
-			? new UISpacerRenderer()
+			? new UISpacerRenderer(target)
 			: target instanceof UITextField
-			? new UITextFieldRenderer()
+			? new UITextFieldRenderer(target)
 			: target instanceof UIToggle
-			? new UIToggleRenderer()
+			? new UIToggleRenderer(target)
 			: undefined
 	) as any;
 }

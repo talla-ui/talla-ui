@@ -12,8 +12,9 @@ import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
 /** @internal */
 export class UICellRenderer extends UIContainerRenderer<UICell> {
-	override observe(observed: UICell) {
-		return super.observe(observed).observePropertyAsync(
+	constructor(observed: UICell) {
+		super(observed);
+		this.observeProperties(
 			// note some properties are handled by container (e.g. padding)
 			"textDirection",
 			"margin",
@@ -26,32 +27,27 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 		);
 	}
 
-	protected override async handlePropertyChange(
-		property: string,
-		value: any,
-		event?: ManagedEvent,
-	) {
-		if (this.observed && this.element) {
-			switch (property) {
-				case "textDirection":
-				case "margin":
-				case "borderRadius":
-				case "background":
-				case "textColor":
-				case "opacity":
-				case "effect":
-				case "style":
-					this.scheduleUpdate(undefined, this.element);
-					return;
-			}
+	protected override propertyChange(property: string, value: any) {
+		if (!this.element) return;
+		switch (property) {
+			case "textDirection":
+			case "margin":
+			case "borderRadius":
+			case "background":
+			case "textColor":
+			case "opacity":
+			case "effect":
+			case "style":
+				this.scheduleUpdate(undefined, this.element);
+				return;
 		}
-		await super.handlePropertyChange(property, value, event);
+		super.propertyChange(property, value);
 	}
 
 	override getOutput() {
 		let output = super.getOutput();
 		let elt = output.element;
-		let cell = this.observed!;
+		let cell = this.observed;
 
 		// make (keyboard) focusable, if needed
 		if (cell.allowKeyboardFocus) elt.tabIndex = 0;
@@ -85,7 +81,6 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 
 	override updateStyle(element: HTMLElement) {
 		let cell = this.observed;
-		if (!cell) return;
 		super.updateStyle(element, getBaseStyleClass(cell.style) || ui.style.CELL, [
 			cell.style,
 			{
@@ -128,7 +123,6 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 
 	override updateContent(element: HTMLElement) {
 		let cell = this.observed as UICell;
-		if (!cell) return;
 		super.updateContent(element);
 
 		// reset tabindex if needed
@@ -144,7 +138,7 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 
 	/** Switch tabindex on focus */
 	onFocusIn(e: ViewEvent<UIComponent>) {
-		if (!this.observed || !this.element) return;
+		if (!this.element) return;
 		if (e.source !== this.observed && this.observed.allowKeyboardFocus) {
 			// temporarily disable keyboard focus on this parent
 			// to prevent shift-tab from selecting this element
@@ -155,7 +149,7 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 
 	/** Switch tabindex back on blur */
 	onFocusOut(e: ViewEvent) {
-		if (!this.observed || !this.element) return;
+		if (!this.element) return;
 		if (e.source !== this.observed && this.observed.allowKeyboardFocus) {
 			// make this parent focusable again
 			this.element.tabIndex = 0;

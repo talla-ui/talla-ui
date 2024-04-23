@@ -1,6 +1,5 @@
 import {
 	app,
-	ManagedEvent,
 	RenderContext,
 	ui,
 	UIColumn,
@@ -26,59 +25,56 @@ import { BaseObserver } from "./BaseObserver.js";
 export class UIContainerRenderer<
 	TContainer extends UIContainer,
 > extends BaseObserver<TContainer> {
-	override observe(observed: UIContainer) {
-		let result = super
-			.observe(observed as any)
-			.observePropertyAsync("content", "layout", "padding");
+	constructor(observed: TContainer) {
+		super(observed);
+		this.observeProperties("layout", "padding");
 		if (observed instanceof UIRow) {
-			result.observePropertyAsync(
-				"height" as any,
-				"align" as any,
-				"spacing" as any,
-			);
+			this.observeProperties("height" as any, "align" as any, "spacing" as any);
 		}
 		if (observed instanceof UIColumn) {
-			result.observePropertyAsync(
+			this.observeProperties(
 				"width" as any,
 				"align" as any,
 				"distribute" as any,
 				"spacing" as any,
 			);
 		}
-		return result;
-	}
 
-	override handleUnlink() {
-		if (this.contentUpdater) this.contentUpdater.stop();
-		this.contentUpdater = undefined;
-		super.handleUnlink();
-	}
-
-	protected override async handlePropertyChange(
-		property: string,
-		value: any,
-		event?: ManagedEvent,
-	) {
-		if (this.observed && this.element) {
-			switch (property) {
-				case "content":
-					this.scheduleUpdate(this.element);
-					return;
-				case "spacing":
-					this.updateSeparator();
-					return;
-				case "layout":
-				case "padding":
-				case "align":
-					this.scheduleUpdate(undefined, this.element);
-					return;
+		// observe content changes
+		observed.content.listen((e) => {
+			if (this.element && e.source === observed.content) {
+				this.scheduleUpdate(this.element);
 			}
+		});
+
+		// observe unlink, to stop content updater right away
+		observed.listen({
+			unlinked: () => {
+				if (this.contentUpdater) this.contentUpdater.stop();
+				this.contentUpdater = undefined;
+			},
+		});
+	}
+
+	protected override propertyChange(property: string, value: any) {
+		if (!this.element) return;
+		switch (property) {
+			case "spacing":
+				this.updateSeparator();
+				return;
+			case "layout":
+			case "padding":
+			case "align":
+			case "height":
+			case "width":
+			case "distribute":
+				this.scheduleUpdate(undefined, this.element);
+				return;
 		}
-		await super.handlePropertyChange(property, value, event);
+		super.propertyChange(property, value);
 	}
 
 	getOutput() {
-		if (!this.observed) throw ReferenceError();
 		let isForm = this.observed.accessibleRole === "form";
 		let elt = document.createElement(isForm ? "form" : "container");
 		let output = new RenderContext.Output(this.observed, elt);
@@ -106,8 +102,6 @@ export class UIContainerRenderer<
 
 	updateContent(element: HTMLElement) {
 		let container = this.observed;
-		if (!container) return;
-
 		if (!this.contentUpdater) {
 			this.contentUpdater = new ContentUpdater(
 				container,
@@ -125,56 +119,54 @@ export class UIContainerRenderer<
 		BaseStyle?: UIStyle.Type<any>,
 		styles?: any[],
 	) {
+		// set styles based on type of container
 		let container = this.observed;
-		if (container) {
-			// set styles based on type of container
-			let systemName: string;
-			let layout = container.layout;
-			if (container instanceof UIRow) {
-				systemName = CLASS_ROW;
-				styles = [{ height: container.height, padding: container.padding }];
-				if (container.align || container.gravity) {
-					layout = Object.assign(
-						{},
-						layout,
-						container.align ? { distribution: container.align } : undefined,
-						container.gravity ? { gravity: container.gravity } : undefined,
-					);
-				}
-			} else if (container instanceof UIColumn) {
-				systemName = CLASS_COLUMN;
-				styles = [{ width: container.width, padding: container.padding }];
-				if (container.align || container.distribute) {
-					layout = Object.assign(
-						{},
-						layout,
-						container.align ? { gravity: container.align } : undefined,
-						container.distribute
-							? { distribution: container.distribute }
-							: undefined,
-					);
-				}
-			} else if (container instanceof UIScrollContainer) {
-				systemName = CLASS_SCROLL;
-				styles = [{ padding: container.padding }];
-			} else {
-				// (use styles passed in by cell renderer)
-				systemName = CLASS_CELL;
+		let systemName: string;
+		let layout = container.layout;
+		if (container instanceof UIRow) {
+			systemName = CLASS_ROW;
+			styles = [{ height: container.height, padding: container.padding }];
+			if (container.align || container.gravity) {
+				layout = Object.assign(
+					{},
+					layout,
+					container.align ? { distribution: container.align } : undefined,
+					container.gravity ? { gravity: container.gravity } : undefined,
+				);
 			}
-
-			applyStyles(
-				container,
-				element,
-				BaseStyle,
-				systemName,
-				false,
-				true,
-				styles,
-				container.position,
-				layout,
-			);
-			this.updateSeparator();
+		} else if (container instanceof UIColumn) {
+			systemName = CLASS_COLUMN;
+			styles = [{ width: container.width, padding: container.padding }];
+			if (container.align || container.distribute) {
+				layout = Object.assign(
+					{},
+					layout,
+					container.align ? { gravity: container.align } : undefined,
+					container.distribute
+						? { distribution: container.distribute }
+						: undefined,
+				);
+			}
+		} else if (container instanceof UIScrollContainer) {
+			systemName = CLASS_SCROLL;
+			styles = [{ padding: container.padding }];
+		} else {
+			// (use styles passed in by cell renderer)
+			systemName = CLASS_CELL;
 		}
+
+		applyStyles(
+			container,
+			element,
+			BaseStyle,
+			systemName,
+			false,
+			true,
+			styles,
+			container.position,
+			layout,
+		);
+		this.updateSeparator();
 	}
 
 	updateSeparator() {

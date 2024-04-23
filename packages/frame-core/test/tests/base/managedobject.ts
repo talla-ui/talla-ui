@@ -43,12 +43,12 @@ describe("ManagedObject", () => {
 			readonly another = this.attach(new AnotherObject());
 		}
 		class TestObject extends ManagedObject {
-			constructor() {
+			constructor(child: ChildObject = new ChildObject()) {
 				super();
-				this.autoAttach("child");
+				this.child = this.attach(child);
 			}
 			id = id++;
-			child?: ChildObject = new ChildObject();
+			child: ChildObject;
 		}
 
 		function setup() {
@@ -85,55 +85,109 @@ describe("ManagedObject", () => {
 			expect(child.isUnlinked()).toBeTruthy();
 		});
 
-		test("Unlink children by setting property", () => {
-			let { parent, child, another } = setup();
-			parent.child = undefined;
-			expect(another.isUnlinked(), "another is unlinked").toBeTruthy();
-			expect(child.isUnlinked(), "child is unlinked").toBeTruthy();
-		});
-
-		test("Unlink children, check references", () => {
-			let { parent, child } = setup();
-			child.unlink();
-			expect(parent).toHaveProperty("child").toBeUndefined();
-			expect(child).toHaveProperty("another").toBeDefined();
-		});
-
 		test("Move child to new parent", () => {
-			let { child, another } = setup();
-			let newParent = new TestObject();
-			let oldNewChild = newParent.child!;
-			newParent.child = child;
-			expect(newParent.child).toHaveProperty("id").toBe(child.id);
-			expect(oldNewChild.isUnlinked()).toBeTruthy();
+			let { parent, child, another } = setup();
+			expect(TestObject.whence(another)).toBe(parent);
+			let newParent = new TestObject(child);
 			expect(child.isUnlinked()).toBeFalsy();
 			expect(another.isUnlinked()).toBeFalsy();
+			expect(TestObject.whence(another)).toBe(newParent);
+		});
+
+		test("Event handler on attach", (t) => {
+			class TestObject extends ManagedObject {
+				constructor() {
+					super();
+					this.child = this.attach(new ChildObject(), (e) => {
+						t.count(e.name);
+					});
+				}
+				child: ChildObject;
+			}
+			let parent = new TestObject();
+			parent.child.emit("Foo");
+			parent.child.emit("Foo");
+			parent.child.unlink();
+			t.expectCount("Foo").toBe(2);
+		});
+
+		test("Event handler on attach, use callback object", (t) => {
+			class TestObject extends ManagedObject {
+				constructor() {
+					super();
+					this.child = this.attach(new ChildObject(), {
+						handler: (object, e) => {
+							if (object !== this.child) t.fail("Not the same object");
+							t.count(e.name);
+						},
+					});
+				}
+				child: ChildObject;
+			}
+			let parent = new TestObject();
+			parent.child.emit("Foo");
+			parent.child.emit("Foo");
+			parent.child.unlink();
+			t.expectCount("Foo").toBe(2);
+		});
+
+		test("Detach handler on attach, then unlink", (t) => {
+			class TestObject extends ManagedObject {
+				constructor() {
+					super();
+					this.child = this.attach(new ChildObject(), {
+						detached: (object) => {
+							if (object !== this.child) t.fail("Not the same object");
+							t.count("detached");
+						},
+					});
+				}
+				child: ChildObject;
+			}
+			let parent = new TestObject();
+			parent.child.unlink();
+			t.expectCount("detached").toBe(1);
+		});
+
+		test("Detach handler on attach, then move", (t) => {
+			class TestObject extends ManagedObject {
+				constructor(child: ChildObject = new ChildObject()) {
+					super();
+					this.child = this.attach(child, {
+						handler: (_, e) => {
+							t.count(e.name);
+						},
+						detached: (object) => {
+							if (object !== this.child) t.fail("Not the same object");
+							t.count("detached");
+						},
+					});
+				}
+				child: ChildObject;
+			}
+			let parent = new TestObject();
+			parent.child.emit("Foo"); // handled by parent
+			new TestObject(parent.child);
+			parent.child.emit("Foo"); // handled by parent2
+			t.expectCount("detached").toBe(1);
+			t.expectCount("Foo").toBe(2);
 		});
 
 		test("Enforce strict hierarchy without loops", () => {
 			class MyLoop extends ManagedObject {
-				constructor() {
-					super();
-					this.autoAttach("loop");
-				}
 				loop?: MyLoop;
-				attachLoop() {
+				attachSelf() {
 					this.attach(this);
+				}
+				attachLoop(loop = new MyLoop()) {
+					return (this.loop = this.attach(loop));
 				}
 			}
 			let parent = new MyLoop();
-			expect(parent).toHaveProperty("loop").toBeUndefined();
-			parent.loop = parent;
-			expect(ManagedObject.whence(parent)).toBeUndefined();
-			parent.loop = new MyLoop();
-			parent.loop!.loop = parent;
-			expect(ManagedObject.whence(parent)).toBeUndefined();
-			parent.loop.loop = new MyLoop();
-			parent.loop!.loop!.loop = parent;
-			expect(ManagedObject.whence(parent)).toBeUndefined();
-			parent.loop!.loop!.loop = undefined;
-			expect(parent.isUnlinked()).toBeFalsy();
-			expect(() => parent.attachLoop()).toThrowError();
+			let loop = parent.attachLoop();
+			let loop2 = loop.attachLoop();
+			expect(() => loop2.attachLoop(parent)).toThrowError();
+			expect(() => parent.attachSelf()).toThrowError();
 		});
 	});
 });

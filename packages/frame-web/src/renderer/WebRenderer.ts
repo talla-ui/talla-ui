@@ -1,7 +1,6 @@
 import {
 	Activity,
 	AsyncTaskQueue,
-	Observer,
 	RenderContext,
 	UIColor,
 	View,
@@ -145,7 +144,7 @@ export class WebRenderer extends RenderContext {
 	private _elementToFocus?: HTMLElement;
 
 	/** Attaches a renderer to given UI component */
-	createObserver<T extends View>(target: T): Observer<T> | undefined {
+	createObserver(target: View): unknown {
 		return makeObserver(target);
 	}
 

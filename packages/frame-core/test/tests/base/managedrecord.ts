@@ -1,5 +1,4 @@
 import {
-	ManagedEvent,
 	ManagedList,
 	ManagedObject,
 	ManagedRecord,
@@ -20,19 +19,6 @@ describe("ManagedRecord", () => {
 		let r = MyRecord.create({ foo: 123 });
 		expect(r).toBeInstanceOf(ManagedRecord);
 		expect(r).toHaveProperty("foo").toBe(123);
-	});
-
-	test("Emit and handle change event", (t) => {
-		class MyRecord extends ManagedRecord {
-			foo = this.attach(ManagedRecord.create({ bar: 123 }), (_, e) => {
-				if (!e) return;
-				if (!ManagedEvent.isChange(e)) t.fail("Not a change event");
-				t.count("change");
-			});
-		}
-		let r = new MyRecord();
-		r.foo.emitChange();
-		t.expectCount("change").toBe(1);
 	});
 
 	test("Find sibling records", () => {

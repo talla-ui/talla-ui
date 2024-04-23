@@ -149,10 +149,9 @@ export abstract class UIComponent extends View {
 	 */
 	render(callback: RenderContext.RenderCallback) {
 		if (!this._renderer) {
-			let renderer = (this._renderer =
-				app.renderer && app.renderer.createObserver(this));
+			let renderer = app.renderer?.createObserver(this);
 			if (!renderer) throw err(ERROR.UIComponent_NoRenderer);
-			renderer.observe(this);
+			this._renderer = renderer;
 			emitRendered(this, "BeforeRender");
 		}
 

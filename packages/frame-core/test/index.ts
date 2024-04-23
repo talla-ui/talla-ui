@@ -16,7 +16,7 @@ await fs.writeFile(
 		.filter((r) => r.state !== "wait")
 		.map(
 			(r) =>
-				`[${r.state}] ${r.name}` +
+				`[${r.state}] ${r.name} (${r.time}ms)` +
 				(r.logs ? "\n" + r.logs : "") +
 				(r.stack ? "\n---\n" + r.stack : ""),
 		)

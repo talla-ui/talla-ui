@@ -11,7 +11,8 @@ describe("Events", () => {
 		let o = new ManagedObject();
 		let e = new ManagedEvent("Change", o, { change: o });
 		expect(e).toHaveProperty("name").toBe("Change");
-		expect(ManagedEvent.isChange(e)).toBeTruthy();
+		expect(e).toHaveProperty("source").toBe(o);
+		expect(e.data).toHaveProperty("change").toBe(o);
 	});
 
 	describe("Emitting events", () => {

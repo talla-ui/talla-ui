@@ -2,7 +2,6 @@ import {
 	ManagedObject,
 	ManagedList,
 	ManagedEvent,
-	Observer,
 	bound,
 } from "../../../dist/index.js";
 import { describe, expect, test } from "@desk-framework/frame-test";
@@ -217,28 +216,39 @@ describe("ManagedList", () => {
 			expect(list.last()).toBe(c);
 		});
 
+		test("Replace: single object", () => {
+			let list = new ManagedList(a, b, c);
+			let d = new NamedObject("d");
+			let e = new NamedObject("e");
+			list.replaceObject(b, d);
+			expect(list.count).toBe(3);
+			expect(list.toArray()).toBeArray([a, d, c]);
+			list.replaceObject(d, e);
+			expect(list.toArray()).toBeArray([a, e, c]);
+		});
+
 		test("Replace: insert only", () => {
 			let list = new ManagedList<NamedObject>();
-			list.replace([a, b, undefined, , null as any, c]); // gaps
+			list.replaceAll([a, b, undefined, , null as any, c]); // gaps
 			expect(list.count).toBe(3);
 			expect(list.toArray()).toBeArray([a, b, c]);
 		});
 
 		test("Replace: remove only", () => {
 			let list = new ManagedList(a, b, c);
-			list.replace([]);
+			list.replaceAll([]);
 			expect(list.count).toBe(0);
 			expect(list.toArray()).toBeArray(0);
 		});
 
 		test("Replace: move only", () => {
 			let list = new ManagedList(a, b, c);
-			list.replace([c, b, a]);
+			list.replaceAll([c, b, a]);
 			expect(list.count).toBe(3);
 			expect(list.toArray()).toBeArray([c, b, a]);
 			expect(list.takeLast(3)).toBeArray([c, b, a]);
-			list.replace([c, b, a]);
-			list.replace([b, c, a]);
+			list.replaceAll([c, b, a]);
+			list.replaceAll([b, c, a]);
 			expect(list.count).toBe(3);
 			expect(list.toArray()).toBeArray([b, c, a]);
 			expect(list.takeLast(3)).toBeArray([b, c, a]);
@@ -251,7 +261,7 @@ describe("ManagedList", () => {
 			}
 			let list = new ManagedList(items[0]!, items[1]!, items[2]!);
 			let order = [6, 7, 8, 9, 1, 3, 4, 0, 5];
-			list.replace(order.map((i) => items[i]));
+			list.replaceAll(order.map((i) => items[i]));
 			expect(list.map((o) => +o.name)).toBeArray(order);
 		});
 
@@ -280,7 +290,7 @@ describe("ManagedList", () => {
 			expect(() => list.remove(a)).not.toThrowError();
 			expect(() => list.add(a)).toThrowError();
 			expect(() => list.splice(a)).toThrowError();
-			expect(() => list.replace([])).toThrowError();
+			expect(() => list.replaceAll([])).toThrowError();
 			expect(() => list.reverse()).toThrowError();
 			expect(list.get(0)).toBeUndefined();
 			expect(list.take(3)).toBeArray(0);
@@ -644,7 +654,7 @@ describe("ManagedList", () => {
 			let a = new NamedObject("a");
 			let b = new NamedObject("b");
 			let list = new ManagedList(a, b).attachAll(true);
-			list.replace([b, a]);
+			list.replaceAll([b, a]);
 			expect(a.isUnlinked()).toBeFalsy();
 			expect(b.isUnlinked()).toBeFalsy();
 		});
@@ -678,7 +688,11 @@ describe("ManagedList", () => {
 
 	// ------------------------------------------------------
 	describe("Events and observation", () => {
-		class ListEventObserver extends Observer<ManagedList> {
+		class ListEventObserver {
+			constructor(list: ManagedList) {
+				list.listen(this);
+			}
+
 			added = 0;
 			removed = 0;
 			changed = 0;
@@ -686,10 +700,11 @@ describe("ManagedList", () => {
 			lastObject?: any;
 			lastSource?: any;
 			countsSeen: number[] = [];
-			protected override handleEvent(event: any) {
+
+			handler(list: ManagedList, event: any) {
 				this.lastEvent = event;
 				this.lastSource = event.source;
-				this.countsSeen.push(this.observed?.count || 0);
+				this.countsSeen.push(list.count || 0);
 				if (event.name === "ManagedObjectAdded") this.added++;
 				if (event.name === "ManagedObjectRemoved") this.removed++;
 				if (event.name === "Change") this.changed++;
@@ -700,7 +715,7 @@ describe("ManagedList", () => {
 
 		test("Object added event: add, insert", () => {
 			let list = new ManagedList();
-			let observer = new ListEventObserver().observe(list);
+			let observer = new ListEventObserver(list);
 			let a = new NamedObject("a");
 			list.add(a);
 			let b = new NamedObject("b");
@@ -719,7 +734,7 @@ describe("ManagedList", () => {
 		test("Object removed event: remove", () => {
 			let a = new NamedObject("a");
 			let list = new ManagedList(a);
-			let observer = new ListEventObserver().observe(list);
+			let observer = new ListEventObserver(list);
 			list.remove(a);
 			expect(observer.removed).toBe(1);
 			expect(observer.lastEvent)
@@ -733,7 +748,7 @@ describe("ManagedList", () => {
 		test("Object removed event: unlink attached object", () => {
 			let a = new NamedObject("a");
 			let list = new ManagedList(a).attachAll(true);
-			let observer = new ListEventObserver().observe(list);
+			let observer = new ListEventObserver(list);
 			a.unlink();
 			expect(observer.removed).toBe(1);
 			expect(observer.lastEvent)
@@ -750,7 +765,7 @@ describe("ManagedList", () => {
 			expect(ManagedObject.whence(a)).toBe(list);
 			t.log(list.toArray());
 			let other = new ManagedList().attachAll(true);
-			let observer = new ListEventObserver().observe(list);
+			let observer = new ListEventObserver(list);
 			other.add(a);
 			expect(ManagedObject.whence(a)).toBe(other);
 			t.log(list.toArray());
@@ -772,8 +787,8 @@ describe("ManagedList", () => {
 				new NamedObject("d"),
 			];
 			let list = new ManagedList(a, b, c);
-			let observer = new ListEventObserver().observe(list);
-			list.replace([b, a, d]);
+			let observer = new ListEventObserver(list);
+			list.replaceAll([b, a, d]);
 			expect(observer.added).toBe(1);
 			expect(observer.removed).toBe(1);
 			expect(observer.changed).toBe(1);
@@ -782,7 +797,7 @@ describe("ManagedList", () => {
 		test("List change event: clear", () => {
 			let a = new NamedObject("a");
 			let list = new ManagedList(a);
-			let observer = new ListEventObserver().observe(list);
+			let observer = new ListEventObserver(list);
 			list.clear();
 			expect(observer.removed).toBe(0);
 			expect(observer.changed).toBe(1);
@@ -793,7 +808,7 @@ describe("ManagedList", () => {
 		test("List change event: clear (attached)", () => {
 			let a = new NamedObject("a");
 			let list = new ManagedList(a).attachAll(true);
-			let observer = new ListEventObserver().observe(list);
+			let observer = new ListEventObserver(list);
 			list.clear();
 			expect(observer.removed).toBe(0);
 			expect(observer.changed).toBe(1);

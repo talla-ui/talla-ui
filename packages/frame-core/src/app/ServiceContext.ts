@@ -1,6 +1,7 @@
+import { ManagedEvent } from "../base/ManagedEvent.js";
 import { ManagedList } from "../base/ManagedList.js";
 import { ManagedObject } from "../base/ManagedObject.js";
-import { Observer } from "../base/Observer.js";
+import { invalidArgErr } from "../errors.js";
 import { Service } from "./Service.js";
 
 /**
@@ -32,9 +33,15 @@ export class ServiceContext extends ManagedObject {
 	 * - If a service with the same ID is currently registered, it will be unlinked and replaced with the new service
 	 */
 	add(service: Service) {
-		// Note: we want this operation to be atomic so we use replace()
+		if (!(service instanceof Service)) throw invalidArgErr("service");
 		let id = service.id;
-		this._list.replace([...this._list.filter((s) => s.id !== id), service]);
+		let oldService = this._map?.get(id);
+		if (oldService === service) return this;
+		if (oldService) {
+			this._list.replaceObject(oldService, service);
+		} else {
+			this._list.add(service);
+		}
 		return this;
 	}
 
@@ -50,74 +57,62 @@ export class ServiceContext extends ManagedObject {
 	}
 
 	/**
-	 * @internal Attaches an observer to a particular service by ID, until the specified parent object is unlinked
+	 * @internal Attaches a handler to a particular service by ID, until the specified parent object is unlinked
+	 * @param parent The parent object to watch (for unlinking)
 	 * @param id The ID of the service to be observed
-	 * @param observer An observer instance or change event callback
-	 * @param parent The parent object to observe (for unlinking)
-	 * @returns The observer instance
+	 * @param handler A function that's called when the service changes (registered or unlinked), or when the current service emits an event
 	 */
 	_$observe<TService extends Service>(
-		id: string,
-		observer:
-			| Observer<TService>
-			| ManagedObject.AttachObserverFunction<TService> = new Observer(),
 		parent: ManagedObject,
+		id: string,
+		handler: (service?: TService, event?: ManagedEvent) => void,
 	) {
-		if (typeof observer === "function") {
-			observer = Observer.fromChangeHandler<Observer<TService>, TService>(
-				observer,
-				Observer,
-			);
-		}
-		new ServiceContextObserver(id, observer, parent).observe(this);
-		return observer;
+		// keep track of current service and listen for events
+		let service: TService | undefined;
+		let serviceStop: (() => void) | undefined;
+		const listChanged = () => {
+			let newService = this._map?.get(id) as TService | undefined;
+			if (newService !== service) {
+				serviceStop?.();
+				service = newService;
+
+				// listen for events on new service
+				service?.listen({
+					init(_, stop) {
+						serviceStop = stop;
+					},
+					handler,
+				});
+
+				// invoke handler with new service
+				handler(service);
+			}
+		};
+
+		// watch the parent object and the service list
+		let listStop: () => void;
+		parent.listen({
+			unlinked() {
+				listStop();
+				serviceStop?.();
+			},
+		});
+		this._list.listen({
+			init(_, stop) {
+				listStop = stop;
+			},
+			handler(list, event) {
+				if (event.source === list) listChanged();
+			},
+		});
 	}
 
 	// keep track of services in a list, and forward events
 	private _map?: Map<string, Service>;
-	private _list = this.attach(new ManagedList<Service>(), (list) => {
-		this._map = new Map(list?.map((s) => [s.id, s]));
-		this.emitChange();
+	private _list = this.attach(new ManagedList<Service>(), (e) => {
+		// if list changed, update map too
+		if (e.source === this._list) {
+			this._map = new Map(this._list.map((s) => [s.id, s]));
+		}
 	});
-}
-
-/** Context observer used by _$observe */
-class ServiceContextObserver<
-	TService extends Service,
-> extends Observer<ServiceContext> {
-	constructor(
-		public id: string,
-		public observer: Observer<TService>,
-		parent: ManagedObject,
-	) {
-		super();
-		new ServiceContextObserver.ParentObserver(this).observe(parent);
-	}
-	override observe(observed: ServiceContext) {
-		super.observe(observed);
-		let service = observed.get(this.id);
-		if (service) this.observer.observe(service as TService);
-		return this;
-	}
-	override stop() {
-		super.stop();
-		this.observer.stop();
-	}
-	protected override handleEvent() {
-		let newService = this.observed!.get(this.id);
-		if (newService && newService !== this.observer.observed) {
-			this.observer.observe(newService as TService);
-		}
-	}
-
-	/** Observer to stop a context observer when parent object (e.g. activity) is unlinked */
-	static ParentObserver = class extends Observer<ManagedObject> {
-		constructor(public contextObserver: ServiceContextObserver<Service>) {
-			super();
-		}
-		override stop() {
-			super.stop();
-			this.contextObserver.stop();
-		}
-	};
 }

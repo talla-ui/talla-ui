@@ -101,11 +101,6 @@ describe("UIViewRenderer", (scope) => {
 
 		// containing activity
 		class MyActivity extends Activity {
-			constructor() {
-				super();
-				this.autoAttach("second");
-				this.second = new MySecondActivity();
-			}
 			protected override ready() {
 				const ViewBody = ui.cell(
 					{ accessibleLabel: "outer" },
@@ -114,7 +109,7 @@ describe("UIViewRenderer", (scope) => {
 				this.view = new ViewBody();
 				app.showPage(this.view);
 			}
-			declare second?: MySecondActivity;
+			readonly second = this.attach(new MySecondActivity());
 			onButtonPress(e: ManagedEvent) {
 				t.count("foo-outer");
 				if (e.delegate instanceof UIViewRenderer) t.count("delegate");
@@ -149,7 +144,7 @@ describe("UIViewRenderer", (scope) => {
 		// destroying the second activity should clear the view
 		t.log("Destroying `second`...");
 		activity.second!.unlink();
-		expect(activity).toHaveProperty("second").toBeUndefined();
+		expect(activity.second).toHaveProperty("view").toBeUndefined();
 		out = await t.expectOutputAsync(50, {
 			type: "cell",
 			accessibleLabel: "outer",

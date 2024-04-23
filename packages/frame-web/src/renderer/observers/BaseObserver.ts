@@ -1,13 +1,13 @@
 import {
-	app,
-	Observer,
-	UIComponent,
-	RenderContext,
-	UIStyle,
 	ManagedEvent,
+	ManagedObject,
+	RenderContext,
+	UIComponent,
+	UIStyle,
+	app,
 } from "@desk-framework/frame-core";
-import { ELT_HND_PROP } from "../events.js";
 import { WebRenderer } from "../WebRenderer.js";
+import { ELT_HND_PROP } from "../events.js";
 
 /** @internal Helper function to find the base style (class) from a style/overrides object (e.g. `UILabel.labelStyle`), if any */
 export function getBaseStyleClass(object: any): undefined | UIStyle.Type<any> {
@@ -16,10 +16,8 @@ export function getBaseStyleClass(object: any): undefined | UIStyle.Type<any> {
 }
 
 /** @internal Abstract observer class for all `UIComponent` instances, to create output and call render callback; implemented for all types of UI components */
-export abstract class BaseObserver<
-	TUIComponent extends UIComponent,
-> extends Observer<TUIComponent> {
-	override observe(observed: TUIComponent) {
+export abstract class BaseObserver<TUIComponent extends UIComponent> {
+	constructor(public observed: TUIComponent) {
 		this._thisRenderedEvent = new ManagedEvent(
 			"Rendered",
 			observed,
@@ -28,49 +26,50 @@ export abstract class BaseObserver<
 			undefined,
 			true,
 		);
-		return super.observe(observed).observePropertyAsync("hidden", "position");
+		this.observeProperties("hidden", "position");
+		observed.listen((e) => {
+			let handler = (this as any)["on" + e.name];
+			if (typeof handler === "function") handler.call(this, e);
+		});
 	}
 
-	private _thisRenderedEvent?: ManagedEvent;
+	/** Set up one or more property listeners, to call {@link propertyChange} on this observer */
+	protected observeProperties(...properties: (keyof this["observed"])[]) {
+		ManagedObject.observe(this.observed, properties, (_, p, v) =>
+			this.propertyChange(p as any, v),
+		);
+	}
 
 	/** Handler for base property changes; must be overridden to handle other UI component properties */
-	protected override async handlePropertyChange(
-		property: string,
-		value: any,
-		event?: ManagedEvent,
-	) {
-		if (this.observed && this.element) {
-			switch (property) {
-				case "hidden":
-					this._hidden = this.observed.hidden;
-					if (!this._hidden) this.updateStyle(this.element);
-					if (this.updateCallback) {
-						this.updateCallback = this.updateCallback.call(
-							undefined,
-							this._hidden ? undefined : this.output,
-						);
-					}
-					return;
-				case "position":
-					this.scheduleUpdate(undefined, this.element);
-					return;
-			}
+	protected propertyChange(property: string, value: any) {
+		if (!this.element) return;
+		switch (property) {
+			case "hidden":
+				this.scheduleHide(value);
+				return;
+			case "position":
+				this.scheduleUpdate(undefined, this.element);
+				return;
 		}
-		await super.handlePropertyChange(property, value, event);
 	}
-
-	/** Rendered output, if any; set by `onRender` handler based on return value of `getOutput()` method */
-	output?: RenderContext.Output<HTMLElement>;
 
 	/** Rendered element, if any; set by `onRender` handler based on return value of `getOutput()` method */
 	element?: HTMLElement;
 
+	/** Rendered output, if any; set by `onRender` handler based on return value of `getOutput()` method */
+	output?: RenderContext.Output<HTMLElement>;
+
 	/** Creates output (with element to render) for the observed UI component; called before rendering, must be overridden to create instances of `RenderContext.Output` */
 	abstract getOutput(): RenderContext.Output & { element: HTMLElement };
 
+	/** Updates the specified output element with content: either from properties (e.g. text content) or from other UI components; called automatically by `update()`, but can also be called when state properties change; must be overridden */
+	abstract updateContent(element: HTMLElement): void;
+
+	/** Updates the specified output element with all style properties; called automatically by `update()`, but can also be called when state properties change; must be overridden to update output styles */
+	abstract updateStyle(element: HTMLElement): void;
+
 	/** Updates the specified output element with all properties of the UI component; called automatically before rendering (after `getOutput`), but can also be called when state properties change */
 	update(element: HTMLElement) {
-		if (!this.observed) return;
 		this._hidden = this.observed.hidden;
 		this._asyncContentUp = undefined;
 		this._asyncStyleUp = undefined;
@@ -91,6 +90,7 @@ export abstract class BaseObserver<
 		if (updateStyle) this._asyncStyleUp = updateStyle;
 		if (!this._asyncUp && app.renderer) {
 			app.renderer.schedule(() => {
+				if (this.observed.isUnlinked()) return;
 				this._asyncUp = false;
 				if (this._asyncContentUp) this.updateContent(this._asyncContentUp);
 				this._asyncContentUp = undefined;
@@ -105,11 +105,21 @@ export abstract class BaseObserver<
 	private _asyncContentUp?: HTMLElement;
 	private _asyncStyleUp?: HTMLElement;
 
-	/** Updates the specified output element with content: either from properties (e.g. text content) or from other UI components; called automatically by `update()`, but can also be called when state properties change; must be overridden */
-	abstract updateContent(element: HTMLElement): void;
-
-	/** Updates the specified output element with all style properties; called automatically by `update()`, but can also be called when state properties change; must be overridden to update output styles */
-	abstract updateStyle(element: HTMLElement): void;
+	/** Schedules an asynchronous update to show or hide the output */
+	scheduleHide(hidden?: boolean) {
+		app.renderer?.schedule(() => {
+			let elt = this.element;
+			if (!elt) return;
+			this._hidden = hidden;
+			if (!hidden) this.updateStyle(elt);
+			if (this._updateCallback) {
+				this._updateCallback = this._updateCallback.call(
+					undefined,
+					hidden ? undefined : this.output,
+				);
+			}
+		});
+	}
 
 	private _hidden?: boolean;
 
@@ -133,10 +143,12 @@ export abstract class BaseObserver<
 			this.update(this.element);
 
 			// call render callback with new element
-			this.updateCallback = event.data.render.call(
+			this._updateCallback = event.data.render.call(
 				undefined,
 				this._hidden ? undefined : this.output,
 				() => {
+					if (this.observed.isUnlinked()) return;
+
 					// try to focus if requested
 					if (this._requestedFocus && this.element && !this._hidden) {
 						this._requestedFocus = false;
@@ -144,15 +156,11 @@ export abstract class BaseObserver<
 					}
 
 					// emit Rendered event
-					if (this.observed && !this.observed.isUnlinked()) {
-						this.observed.emit(this._thisRenderedEvent);
-					}
+					this.observed.emit(this._thisRenderedEvent);
 				},
 			);
 		}
 	}
-
-	updateCallback?: RenderContext.RenderCallback;
 
 	/** Called before handling DOM events, for some components (see `events.ts`); the component has already been checked here and must be defined */
 	onDOMEvent(event: Event) {
@@ -228,4 +236,7 @@ export abstract class BaseObserver<
 			}
 		}
 	}
+
+	private _updateCallback?: RenderContext.RenderCallback;
+	private _thisRenderedEvent?: ManagedEvent;
 }

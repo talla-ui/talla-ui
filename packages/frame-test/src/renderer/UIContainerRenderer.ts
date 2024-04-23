@@ -1,5 +1,4 @@
 import {
-	ManagedEvent,
 	RenderContext,
 	UICell,
 	UIColumn,
@@ -17,47 +16,47 @@ import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 export class UIContainerRenderer<
 	TContainer extends UIContainer,
 > extends TestBaseObserver<TContainer> {
-	override observe(observed: UIContainer) {
-		let result = super
-			.observe(observed as any)
-			.observePropertyAsync("content", "layout", "padding");
+	constructor(observed: TContainer) {
+		super(observed);
+		this.observeProperties("layout", "padding");
 		if (observed instanceof UIRow) {
-			result.observePropertyAsync("height" as any, "align" as any);
+			this.observeProperties("height" as any, "align" as any);
 		}
 		if (observed instanceof UIColumn) {
-			result.observePropertyAsync("width" as any, "align" as any);
+			this.observeProperties("width" as any, "align" as any);
 		}
-		return result;
-	}
 
-	override handleUnlink() {
-		if (this.contentUpdater) this.contentUpdater.stop();
-		this.contentUpdater = undefined;
-		super.handleUnlink();
-	}
-
-	protected override async handlePropertyChange(
-		property: string,
-		value: any,
-		event?: ManagedEvent,
-	) {
-		if (this.observed && this.element) {
-			switch (property) {
-				case "content":
-					this.scheduleUpdate(this.element);
-					return;
-				case "layout":
-				case "padding":
-				case "align": // for rows and columns
-					this.scheduleUpdate(undefined, this.element);
-					return;
+		// observe content changes
+		observed.content.listen((e) => {
+			if (this.element && e.source === observed.content) {
+				this.scheduleUpdate(this.element);
 			}
+		});
+
+		// observe unlink, to stop content updater right away
+		observed.listen({
+			unlinked: () => {
+				if (this.contentUpdater) this.contentUpdater.stop();
+				this.contentUpdater = undefined;
+			},
+		});
+	}
+
+	protected override propertyChange(property: string, value: any) {
+		if (!this.element) return;
+		switch (property) {
+			case "layout":
+			case "padding":
+			case "align": // for rows and columns
+			case "height": // for rows
+			case "width": // for columns
+				this.scheduleUpdate(undefined, this.element);
+				return;
 		}
-		await super.handlePropertyChange(property, value, event);
+		super.propertyChange(property, value);
 	}
 
 	getOutput() {
-		if (!this.observed) throw ReferenceError();
 		let type: TestOutputElement.TypeString;
 		if (this.observed.accessibleRole === "form") type = "form";
 		else if (this.observed instanceof UICell) type = "cell";
@@ -82,8 +81,6 @@ export class UIContainerRenderer<
 
 	updateContent(element: TestOutputElement) {
 		let container = this.observed;
-		if (!container) return;
-
 		if (!this.contentUpdater) {
 			this.contentUpdater = new ContentUpdater(
 				container,
@@ -104,26 +101,24 @@ export class UIContainerRenderer<
 		styles?: any[],
 	) {
 		let container = this.observed;
-		if (container) {
-			let layout = container.layout;
-			if (container instanceof UIRow) {
-				styles = [{ height: container.height, padding: container.padding }];
-				if (container.align) {
-					layout = { ...layout, distribution: container.align };
-				}
-			} else if (container instanceof UIColumn) {
-				styles = [{ width: container.width, padding: container.padding }];
-				if (container.align) {
-					layout = { ...layout, gravity: container.align };
-				}
-			} else if (container instanceof UIScrollContainer) {
-				styles = [{ padding: container.padding }];
+		let layout = container.layout;
+		if (container instanceof UIRow) {
+			styles = [{ height: container.height, padding: container.padding }];
+			if (container.align) {
+				layout = { ...layout, distribution: container.align };
 			}
-
-			// apply styles
-			element.styleClass = BaseStyle;
-			applyElementStyle(element, styles, container.position, layout);
+		} else if (container instanceof UIColumn) {
+			styles = [{ width: container.width, padding: container.padding }];
+			if (container.align) {
+				layout = { ...layout, gravity: container.align };
+			}
+		} else if (container instanceof UIScrollContainer) {
+			styles = [{ padding: container.padding }];
 		}
+
+		// apply styles
+		element.styleClass = BaseStyle;
+		applyElementStyle(element, styles, container.position, layout);
 	}
 }
 

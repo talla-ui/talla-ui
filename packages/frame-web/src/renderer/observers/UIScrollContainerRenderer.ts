@@ -12,7 +12,6 @@ export class UIScrollContainerRenderer extends UIContainerRenderer<UIScrollConta
 	}
 
 	override updateStyle(element: HTMLElement) {
-		if (!this.observed) return;
 		super.updateStyle(element);
 
 		// set scroll styles

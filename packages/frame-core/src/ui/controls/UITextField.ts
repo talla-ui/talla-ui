@@ -1,7 +1,7 @@
 import type { View } from "../../app/index.js";
-import { ManagedEvent, Observer, StringConvertible } from "../../base/index.js";
+import { StringConvertible } from "../../base/index.js";
 import { UIComponent } from "../UIComponent.js";
-import { UIFormContext, _boundFormContext } from "../UIFormContext.js";
+import { UIFormContext } from "../UIFormContext.js";
 import type { UIStyle } from "../UIStyle.js";
 
 /**
@@ -17,8 +17,17 @@ export class UITextField extends UIComponent {
 		super();
 		this.placeholder = placeholder;
 		this.value = value || "";
-		_boundFormContext.bindTo(this, "formContext");
-		new UITextFieldObserver().observe(this);
+
+		// get and set form context value using `formContext` binding
+		UIFormContext.bindFormContext(
+			this,
+			function (value) {
+				this.value = value === undefined ? "" : String(value);
+			},
+			function () {
+				return this.value;
+			},
+		);
 	}
 
 	/**
@@ -90,13 +99,6 @@ export class UITextField extends UIComponent {
 	/** True if spell and/or grammar checks should be disabled, where supported */
 	disableSpellCheck?: boolean;
 
-	/**
-	 * The nearest containing form context
-	 * - This property is bound automatically, such that it refers to the `formContext` property of the nearest container or view composite.
-	 * @see {@link UIFormContext}
-	 */
-	formContext?: UIFormContext;
-
 	/** True if user input should be disabled on this control */
 	disabled = false;
 
@@ -108,30 +110,6 @@ export class UITextField extends UIComponent {
 
 	/** The style to be applied to the text field */
 	style?: UIStyle.TypeOrOverrides<UITextField.StyleType> = undefined;
-}
-
-/** @internal Text field UI component observer to manage the input value automatically */
-class UITextFieldObserver extends Observer<UITextField> {
-	override observe(observed: UITextField) {
-		return super.observe(observed).observeProperty("formContext", "formField");
-	}
-	onFormFieldChange() {
-		this.onFormContextChange();
-	}
-	onFormContextChange() {
-		if (this.observed && this.observed.formContext && this.observed.formField) {
-			let value = this.observed.formContext.get(this.observed.formField);
-			this.observed.value = value === undefined ? "" : String(value);
-		}
-	}
-	protected override handleEvent(event: ManagedEvent) {
-		if (event.name === "Input" || event.name === "Change") {
-			let tf = this.observed;
-			if (tf && tf.formContext && tf.formField) {
-				tf.formContext.set(tf.formField, tf.value, true);
-			}
-		}
-	}
 }
 
 export namespace UITextField {

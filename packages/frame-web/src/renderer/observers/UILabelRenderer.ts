@@ -1,6 +1,5 @@
 import {
 	app,
-	ManagedEvent,
 	RenderContext,
 	StringConvertible,
 	ui,
@@ -20,47 +19,40 @@ const CHEVRON_ICONS = {
 
 /** @internal */
 export class UILabelRenderer extends BaseObserver<UILabel> {
-	override observe(observed: UILabel) {
-		return super
-			.observe(observed)
-			.observePropertyAsync(
-				"text",
-				"icon",
-				"bold",
-				"italic",
-				"color",
-				"width",
-				"dim",
-				"style",
-			);
+	constructor(observed: UILabel) {
+		super(observed);
+		this.observeProperties(
+			"text",
+			"icon",
+			"bold",
+			"italic",
+			"color",
+			"width",
+			"dim",
+			"style",
+		);
 	}
 
-	protected override async handlePropertyChange(
-		property: string,
-		value: any,
-		event?: ManagedEvent,
-	) {
-		if (this.observed && this.element) {
-			switch (property) {
-				case "text":
-				case "icon":
-					this.scheduleUpdate(this.element);
-					return;
-				case "bold":
-				case "italic":
-				case "color":
-				case "width":
-				case "dim":
-				case "style":
-					this.scheduleUpdate(undefined, this.element);
-					return;
-			}
+	protected override propertyChange(property: string, value: any) {
+		if (!this.element) return;
+		switch (property) {
+			case "text":
+			case "icon":
+				this.scheduleUpdate(this.element);
+				return;
+			case "bold":
+			case "italic":
+			case "color":
+			case "width":
+			case "dim":
+			case "style":
+				this.scheduleUpdate(undefined, this.element);
+				return;
 		}
-		await super.handlePropertyChange(property, value, event);
+		super.propertyChange(property, value);
 	}
 
 	getOutput() {
-		if (!this.observed) throw ReferenceError();
 		let elt = document.createElement(
 			this.observed.headingLevel ? "h" + this.observed.headingLevel : "span",
 		);
@@ -74,40 +66,37 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 
 	override updateStyle(element: HTMLElement) {
 		let label = this.observed;
-		if (label) {
-			applyStyles(
-				label,
-				element,
-				getBaseStyleClass(label.style) ||
-					(label.title
-						? ui.style.LABEL_TITLE
-						: label.small
-						? ui.style.LABEL_SMALL
-						: ui.style.LABEL),
-				undefined,
-				true,
-				false,
-				[
-					label.style,
-					{
-						width: label.width,
-						bold: label.bold,
-						italic: label.italic,
-						textColor: label.color,
-						opacity:
-							label.dim === true ? 0.5 : label.dim === false ? 1 : label.dim,
-						lineBreakMode: label.wrap ? "pre-wrap" : undefined,
-						userSelect: label.selectable || undefined,
-					},
-				],
-				label.position,
-				undefined,
-			);
-		}
+		applyStyles(
+			label,
+			element,
+			getBaseStyleClass(label.style) ||
+				(label.title
+					? ui.style.LABEL_TITLE
+					: label.small
+					? ui.style.LABEL_SMALL
+					: ui.style.LABEL),
+			undefined,
+			true,
+			false,
+			[
+				label.style,
+				{
+					width: label.width,
+					bold: label.bold,
+					italic: label.italic,
+					textColor: label.color,
+					opacity:
+						label.dim === true ? 0.5 : label.dim === false ? 1 : label.dim,
+					lineBreakMode: label.wrap ? "pre-wrap" : undefined,
+					userSelect: label.selectable || undefined,
+				},
+			],
+			label.position,
+			undefined,
+		);
 	}
 
 	updateContent(element: HTMLSpanElement) {
-		if (!this.observed) return;
 		setTextOrHtmlContent(element, this.observed);
 	}
 }

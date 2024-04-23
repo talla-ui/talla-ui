@@ -6,7 +6,7 @@ import {
 } from "@desk-framework/frame-test";
 import {
 	Activity,
-	Observer,
+	ManagedEvent,
 	UIFormContext,
 	UILabel,
 	UIRow,
@@ -19,11 +19,14 @@ import {
 
 describe("UIFormContext", () => {
 	// helper class to observe a form context and count events
-	class ChangeCounter extends Observer<UIFormContext> {
-		changes = 0;
-		onFormChange() {
-			this.changes++;
+	class ChangeCounter {
+		constructor(formContext: UIFormContext) {
+			formContext.listen(this);
 		}
+		handler(formContext: UIFormContext, event: ManagedEvent) {
+			if (event.name === "FormChange") this.changes++;
+		}
+		changes = 0;
 	}
 
 	test("Constructor", () => {
@@ -35,7 +38,7 @@ describe("UIFormContext", () => {
 
 	test("Set, no validation", () => {
 		let ctx = new UIFormContext();
-		let counter = new ChangeCounter().observe(ctx);
+		let counter = new ChangeCounter(ctx);
 		ctx.set("foo", "bar");
 		expect(ctx.values).toHaveProperty("foo").toBe("bar");
 		ctx.set("", 123);
@@ -82,7 +85,7 @@ describe("UIFormContext", () => {
 
 	test("Test that always passes", () => {
 		let ctx = new UIFormContext().addTest("foo", () => {});
-		let counter = new ChangeCounter().observe(ctx);
+		let counter = new ChangeCounter(ctx);
 		expect(ctx.validate("foo")).toBe(true);
 		ctx.set("foo", "bar", true);
 		expect(counter.changes).toBe(1);
@@ -96,7 +99,7 @@ describe("UIFormContext", () => {
 			.addTest("foo", (t) =>
 				t.assert(String(t.value).length >= 3, "Too short"),
 			);
-		let counter = new ChangeCounter().observe(ctx);
+		let counter = new ChangeCounter(ctx);
 		ctx.set("baz", 123, true); // nothing happens
 		ctx.set("foo", "b"); // no validation
 		ctx.set("baz", undefined); // no validation
@@ -177,7 +180,6 @@ describe("UIFormContext", () => {
 		view.formContext = ctx;
 
 		// set and check text field
-		expect(tf).toHaveProperty("formContext").toBe(ctx);
 		expect(tf.value).toBe("bar");
 		ctx.set("foo", "123");
 		expect(tf.value).toBe("123");

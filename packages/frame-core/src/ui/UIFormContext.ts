@@ -1,14 +1,12 @@
 import { bound, ManagedObject, StringConvertible } from "../base/index.js";
 import { AppException } from "../app/index.js";
+import { UIComponent } from "./UIComponent.js";
 
 /** Error that's used when a required property is missing */
 const REQUIRED_ERROR = AppException.type(
 	"FORM_REQUIRED",
 	"This field is required",
 );
-
-/** @internal Binding for path "formContext" */
-export const _boundFormContext = bound("formContext");
 
 /**
  * An object that contains form field data along with validation tests
@@ -317,4 +315,36 @@ export namespace UIFormContext {
 			return this;
 		}
 	}
+
+	/** @internal Bind to the `formContext` property and get/set values (reused for textfield and toggle) */
+	export function bindFormContext<
+		THost extends UIComponent & { formField?: string },
+	>(
+		host: THost,
+		setValue: (this: THost, value: any) => void,
+		getValue: (this: THost) => any,
+	) {
+		let formContext: UIFormContext | undefined;
+		_boundFormContext.bindTo(host, (ctx, bound) => {
+			formContext = ctx;
+			if (ctx && host.formField) {
+				setValue.call(host, ctx.get(host.formField));
+			}
+		});
+		ManagedObject.observe(host, ["formField"], (host, _, value) => {
+			if (formContext && value) {
+				setValue.call(host, formContext.get(value as any));
+			}
+		});
+		host.listen((event) => {
+			if (event.name === "Change" || event.name === "Input") {
+				if (formContext && host.formField) {
+					let value = getValue.call(host);
+					formContext.set(host.formField, value, true);
+				}
+			}
+		});
+	}
+
+	const _boundFormContext = bound("formContext.*");
 }

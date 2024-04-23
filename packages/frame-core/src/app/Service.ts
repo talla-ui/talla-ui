@@ -1,4 +1,4 @@
-import { ManagedObject, Observer } from "../base/index.js";
+import { ManagedEvent, ManagedObject } from "../base/index.js";
 import { app } from "./GlobalContext.js";
 import { ServiceContext } from "./ServiceContext.js";
 
@@ -31,15 +31,12 @@ export abstract class Service extends ManagedObject {
 	/**
 	 * Observes another service by ID, until the current service is unlinked
 	 * @param id The ID of the service to be observed
-	 * @param observer An {@link Observer} class or instance, or a function that's called whenever a change event is emitted by the target service (with service and event arguments, respectively), and when the target service is unlinked (without any arguments)
-	 * @returns The observer instance, which references the observed service using the {@link Observer.observed observed} property
+	 * @param handler A function that's called when the service changes (registered or unlinked), or when the current service emits an event
 	 */
 	protected observeService<TService extends Service>(
 		id: string,
-		observer:
-			| Observer<TService>
-			| ManagedObject.AttachObserverFunction<TService> = new Observer(),
+		handler: (service?: TService, event?: ManagedEvent) => void,
 	) {
-		return app.services._$observe(id, observer, this);
+		return app.services._$observe(this, id, handler);
 	}
 }

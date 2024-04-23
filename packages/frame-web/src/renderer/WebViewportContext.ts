@@ -1,21 +1,16 @@
-import { ManagedObject, ViewportContext } from "@desk-framework/frame-core";
+import {
+	ManagedObject,
+	ViewportContext,
+	app,
+} from "@desk-framework/frame-core";
 import type { WebContextOptions } from "../WebContext.js";
 import {
 	getWindowInnerHeight,
 	getWindowInnerWidth,
 } from "../style/DOMStyle.js";
 
-// keep track of the current instance, and update it when possible
-let _instance: WebViewportContext | undefined;
-function update() {
-	if (_instance) {
-		if (_instance.isUnlinked()) _instance = undefined;
-		else _instance.update();
-	}
-	return false;
-}
-window.addEventListener("resize", update);
-setInterval(update, 800);
+// True if the (gloabl) WebViewportContext event handler has been added
+let _handlerAdded = false;
 
 /** @internal */
 export class WebViewportContext
@@ -24,9 +19,9 @@ export class WebViewportContext
 {
 	constructor(options: WebContextOptions) {
 		super();
-		_instance = this;
 		this._smallBreakpoint = options.smallBreakpoint;
 		this._largeBreakpoint = options.largeBreakpoint;
+		this._addHandler();
 	}
 
 	width?: number;
@@ -76,6 +71,19 @@ export class WebViewportContext
 			changed = true;
 		}
 		if (changed) this.emitChange("Resize");
+	}
+
+	private _addHandler() {
+		if (_handlerAdded) return;
+		_handlerAdded = true;
+		function update() {
+			if (app.viewport instanceof WebViewportContext) {
+				app.viewport.update();
+			}
+			return false;
+		}
+		window.addEventListener("resize", update);
+		setInterval(update, 800);
 	}
 
 	private _smallBreakpoint: number;

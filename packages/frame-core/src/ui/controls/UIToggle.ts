@@ -1,7 +1,7 @@
 import type { View } from "../../app/index.js";
-import { ManagedEvent, Observer, StringConvertible } from "../../base/index.js";
+import { StringConvertible } from "../../base/index.js";
 import { UIComponent } from "../UIComponent.js";
-import { UIFormContext, _boundFormContext } from "../UIFormContext.js";
+import { UIFormContext } from "../UIFormContext.js";
 import type { UIStyle } from "../UIStyle.js";
 
 /**
@@ -18,8 +18,16 @@ export class UIToggle extends UIComponent {
 		this.label = label;
 		this.state = !!state;
 
-		_boundFormContext.bindTo(this, "formContext");
-		new UIToggleObserver().observe(this);
+		// get and set form context value using `formContext` binding
+		UIFormContext.bindFormContext(
+			this,
+			function (value) {
+				this.state = !!value;
+			},
+			function () {
+				return this.state;
+			},
+		);
 	}
 
 	/**
@@ -53,13 +61,6 @@ export class UIToggle extends UIComponent {
 	/** Form context field name, used with {@link UIFormContext} */
 	formField?: string = undefined;
 
-	/**
-	 * The nearest containing form context
-	 * - This property is bound automatically, such that it refers to the `formContext` property of the nearest container or view composite.
-	 * @see {@link UIFormContext}
-	 */
-	formContext?: UIFormContext;
-
 	/** True if user input should be disabled on this control */
 	disabled = false;
 
@@ -86,28 +87,4 @@ export namespace UIToggle {
 	/** The type definition for styles applicable to {@link UIToggle.labelStyle} */
 	export type LabelStyleType = UIComponent.DecorationStyleType &
 		UIComponent.TextStyleType;
-}
-
-/** @internal Toggle UI component observer to manage the input value automatically */
-class UIToggleObserver extends Observer<UIToggle> {
-	override observe(observed: UIToggle) {
-		return super.observe(observed).observeProperty("formContext", "formField");
-	}
-	onFormFieldChange() {
-		this.onFormContextChange();
-	}
-	onFormContextChange() {
-		if (this.observed && this.observed.formContext && this.observed.formField) {
-			let value = this.observed.formContext.get(this.observed.formField);
-			this.observed.state = !!value;
-		}
-	}
-	protected override handleEvent(event: ManagedEvent) {
-		if (event.name === "Change") {
-			let cb = this.observed;
-			if (cb && cb.formContext && cb.formField) {
-				cb.formContext.set(cb.formField, cb.state, true);
-			}
-		}
-	}
 }

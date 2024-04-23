@@ -1,5 +1,4 @@
 import {
-	Observer,
 	UIButton,
 	UICell,
 	UIContainer,
@@ -20,30 +19,29 @@ import { UISeparatorRenderer } from "./UISeparatorRenderer.js";
 import { UISpacerRenderer } from "./UISpacerRenderer.js";
 import { UITextFieldRenderer } from "./UITextFieldRenderer.js";
 import { UIToggleRenderer } from "./UIToggleRenderer.js";
+import { TestBaseObserver } from "./TestBaseObserver.js";
 
 /** @internal */
-export function makeObserver<T extends View>(
-	target: T,
-): Observer<T> | undefined {
+export function makeObserver(target: View): TestBaseObserver<any> | undefined {
 	return (
 		target instanceof UICell
-			? new UICellRenderer()
+			? new UICellRenderer(target)
 			: target instanceof UIContainer
-			? new UIContainerRenderer()
+			? new UIContainerRenderer(target)
 			: target instanceof UILabel
-			? new UILabelRenderer()
+			? new UILabelRenderer(target)
 			: target instanceof UIButton
-			? new UIButtonRenderer()
+			? new UIButtonRenderer(target)
 			: target instanceof UIImage
-			? new UIImageRenderer()
+			? new UIImageRenderer(target)
 			: target instanceof UISeparator
-			? new UISeparatorRenderer()
+			? new UISeparatorRenderer(target)
 			: target instanceof UISpacer
-			? new UISpacerRenderer()
+			? new UISpacerRenderer(target)
 			: target instanceof UITextField
-			? new UITextFieldRenderer()
+			? new UITextFieldRenderer(target)
 			: target instanceof UIToggle
-			? new UIToggleRenderer()
+			? new UIToggleRenderer(target)
 			: undefined
 	) as any;
 }

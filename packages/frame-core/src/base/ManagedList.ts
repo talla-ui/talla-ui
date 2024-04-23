@@ -1,14 +1,7 @@
 import { ManagedObject } from "./ManagedObject.js";
-import {
-	addTrap,
-	attachObject,
-	$_origin,
-	$_get,
-	unlinkObject,
-} from "./object_util.js";
+import { addTrap, $_origin, $_get, unlinkObject } from "./object_util.js";
 import { ManagedEvent } from "./ManagedEvent.js";
 import { err, ERROR, invalidArgErr } from "../errors.js";
-import { Observer } from "./Observer.js";
 
 /** Private structure that's used to maintain a doubly-linked list */
 type LinkedList<TObject extends ManagedObject> = {
@@ -110,9 +103,16 @@ export class ManagedList<
 
 	/** @internal Property getter for non-observable property bindings */
 	[$_get](propertyName: string) {
-		if (propertyName === "count") return this.count;
-		if (propertyName === "#first") return this.first();
-		if (propertyName === "#last") return this.last();
+		switch (propertyName) {
+			case "count":
+				return this.count;
+			case "#first":
+				return this.first();
+			case "#last":
+				return this.last();
+			case "*":
+				return this;
+		}
 		let idx = parseInt(propertyName);
 		return idx >= 0 && idx < this[$_list].map.size ? this.get(idx) : undefined;
 	}
@@ -264,13 +264,48 @@ export class ManagedList<
 	}
 
 	/**
+	 * Replaces the specified target object with another object in-place
+	 * @param target The object to replace
+	 * @param replacement The object to replace the target with
+	 * @error This method throws an error if the target object isn't in the list, or if the replacement object is already in the list.
+	 */
+	replaceObject(target: T, replacement: T) {
+		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
+		if (!replacement || replacement.isUnlinked())
+			throw invalidArgErr("replace");
+		if (!(replacement instanceof (this._restriction || ManagedObject)))
+			throw err(ERROR.List_Restriction);
+		let map = this[$_list].map;
+		if (map.has(replacement)) throw err(ERROR.List_Duplicate);
+
+		// find link and update its reference in place
+		let link = map.get(target);
+		if (!link) throw invalidArgErr("target");
+		link.o = replacement;
+
+		// update the object-link map
+		map.delete(target);
+		map.set(replacement, link);
+
+		// attach/unlink objects if needed
+		if (this._attach) {
+			if (target[$_origin] === this) {
+				unlinkObject(target);
+			}
+			this._attachObject(replacement);
+		}
+		this.emitChange();
+		return this;
+	}
+
+	/**
 	 * Replaces (or moves) all items in this list with the specified items
 	 * - Existing items can be moved within the list if they're included in the new list of objects.
 	 * - Items that aren't included in the provided list are removed from the managed list.
 	 * - Items in the provided list that are not yet in the managed list are added such that the order of items matches that of the provided list.
 	 * @param objects The objects that this list should contain; either in an array or another ManagedList instance
 	 */
-	replace(objects: Iterable<T | undefined>) {
+	replaceAll(objects: Iterable<T | undefined>) {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 
 		// keep track of objects that were seen, to delete others
@@ -626,8 +661,17 @@ export class ManagedList<
 	}
 
 	private _attachObject(target: T) {
-		// attach object, check for unlink/move and events
-		attachObject(this, target, new AttachObserver(this, !this._noPropagation));
+		// attach object, check for unlink/move and propagate events
+		this.attach(target, {
+			handler: (_, event) => {
+				if (!this._noPropagation && !event.noPropagation) {
+					this.emit(event);
+				}
+			},
+			detached: (target) => {
+				this.remove(target as T);
+			},
+		});
 	}
 
 	/** True if objects should be attached to this list when added (and no duplicates allowed) */
@@ -645,24 +689,3 @@ export class ManagedList<
 
 // set iterator to objects() method
 ManagedList.prototype[Symbol.iterator] = ManagedList.prototype.objects;
-
-/** @internal Observer that's used for attached objects in a list */
-class AttachObserver extends Observer<ManagedList> {
-	constructor(
-		public list: ManagedList,
-		public propagate?: boolean,
-	) {
-		super();
-	}
-	override stop() {
-		// if observer stops, object is moved or unlinked,
-		// so remove from this list if needed
-		this.list.remove(this.observed!);
-		super.stop();
-	}
-	protected override handleEvent(event: ManagedEvent) {
-		if (this.propagate && !event.noPropagation) {
-			this.list.emit(event);
-		}
-	}
-}

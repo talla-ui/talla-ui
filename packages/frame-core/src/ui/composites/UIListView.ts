@@ -4,10 +4,10 @@ import {
 	ManagedEvent,
 	ManagedList,
 	ManagedObject,
-	Observer,
+	bound,
 } from "../../base/index.js";
 import { ERROR, err } from "../../errors.js";
-import type { UIContainer } from "../containers/index.js";
+import { UIContainer } from "../containers/index.js";
 
 /**
  * A view composite that manages views for each item in a list of objects or values
@@ -21,44 +21,29 @@ export class UIListView<
 > extends ViewComposite {
 	/** @internal Creates an observer that populates the list with the provided item body and book end */
 	static createObserver(ItemBody: ViewClass, BookEnd?: ViewClass) {
-		// return a unique class for the provided views
-		return class PresetListObserver extends Observer<UIListView> {
-			override observe(observed: UIListView) {
-				super
-					.observe(observed)
-					.observePropertyAsync("items", "firstIndex", "maxItems");
+		// return a unique class for the provided views, to be attached
+		return class PresetListObserver extends ManagedObject {
+			constructor(public list: UIListView) {
+				super();
+				let doUpdate = this.doUpdateAsync.bind(this);
+				bound("items.*").bindTo(this, doUpdate);
+				bound("firstIndex").bindTo(this, doUpdate);
+				bound("maxItems").bindTo(this, doUpdate);
 
 				// create view already to avoid unnecessary async updates
-				observed.body = observed.createView() as any;
+				list.body = list.createView() as any;
 				this.doUpdateAsync();
-				return this;
 			}
-
-			// when unlinked, always clear content to help GC
-			override handleUnlink() {
-				this.observed?._contentMap?.clear();
-				super.handleUnlink();
+			override beforeUnlink() {
+				// when unlinked, always clear content to help GC
+				this.list._contentMap?.clear();
 			}
-
-			// handle other updates asynchronously, catching all errors
-			async onItemsChange(v?: any, e?: ManagedEvent) {
-				if (!e || e.source === this.observed?.items) {
-					await this.doUpdateAsync();
-				}
-			}
-			async onFirstIndexChange() {
-				await this.doUpdateAsync();
-			}
-			async onMaxItemsChange() {
-				await this.doUpdateAsync();
-			}
-
 			async doUpdateAsync() {
 				if (this._pending) return;
 				this._pending = true;
 				await Promise.resolve();
 				this._pending = false;
-				this.observed?._updateItems(ItemBody, BookEnd);
+				this.list?._updateItems(ItemBody, BookEnd);
 			}
 			private _pending?: boolean;
 		};
@@ -107,23 +92,16 @@ export class UIListView<
 			delete (preset as any).Body;
 		}
 		if ((preset as any).Observer) {
-			new (preset as any).Observer().observe(this);
+			this.attach(new (preset as any).Observer(this));
 			delete (preset as any).Observer;
 		}
 	}
 
 	/**
-	 * The list container component
-	 * - On instances of preset UIList classes, this property defaults to a column view without any spacing, but can be preset to another container view.
-	 * - This property should not be changed on existing UIList instances.
-	 */
-	declare body: UIContainer;
-
-	/**
 	 * The list of objects, from which each object is used to construct one view object
 	 * - This property should be set or bound to a {@link ManagedList} object or an array.
 	 * - When set to an array, the property setter _converts_ the array to a {@link ManagedList} automatically, and uses that instead.
-	 * - When updated, a {@link UIListView.ItemControllerView} view instance is created for each list item and added to the {@link body} container.
+	 * - When updated, a {@link UIListView.ItemControllerView} view instance is created for each list item and added to the {@link ViewComposite.body} container.
 	 */
 	declare items?: ManagedList<TItem>;
 
@@ -149,23 +127,28 @@ export class UIListView<
 	 * - If the specified view object is (currently) not contained within the list container, this method returns -1.
 	 */
 	getIndexOfView(view?: ManagedObject) {
-		let container = this.body;
-		if (!container) return -1;
-		while (view && ManagedObject.whence(view) !== container.content) {
+		let content = this.getContent();
+		if (!content) return -1;
+		while (view && ManagedObject.whence(view) !== content) {
 			view = ManagedObject.whence(view);
 		}
-		if (view) return container.content.indexOf(view as any);
+		if (view) return content.indexOf(view as any);
 		return -1;
+	}
+
+	/** Returns the current content of the list item view container (a managed list of views), if any */
+	getContent() {
+		return this.body instanceof UIContainer ? this.body.content : undefined;
 	}
 
 	/** Requests input focus on the last-focused list view object, or the first one, if possible */
 	override requestFocus() {
 		// pass on to last focused component (or first)
-		let container = this.body;
-		if (container && container.content.count > 0) {
+		let content = this.getContent();
+		if (content && content.count > 0) {
 			let lastFocusedIdx = Math.max(this.lastFocusedIndex, 0);
-			let index = Math.min(container.content.count - 1, lastFocusedIdx);
-			let goFocus: any = container.content.get(index);
+			let index = Math.min(content.count - 1, lastFocusedIdx);
+			let goFocus: any = content.get(index);
 			if (typeof goFocus.requestFocus === "function") goFocus.requestFocus();
 		}
 		return this;
@@ -263,7 +246,7 @@ export class UIListView<
 				: list);
 
 		// update the container's content, if possible
-		let content = this.body?.content;
+		let content = this.getContent();
 		if (!content || !items) {
 			this._contentMap && this._contentMap.clear();
 			this._contentMap = undefined;
@@ -288,7 +271,7 @@ export class UIListView<
 			components.push(last instanceof BookEnd ? last : new BookEnd());
 		}
 		this._contentMap = map;
-		content.replace(components);
+		content.replaceAll(components);
 
 		// emit an event specific to this UIList
 		this.emit("ListItemsChange");

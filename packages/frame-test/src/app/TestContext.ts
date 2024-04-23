@@ -75,8 +75,8 @@ export function useTestContext(config?: ConfigOptions.Arg<TestContextOptions>) {
 	}
 
 	// create test renderer
-	app.renderer = new TestRenderer(options);
 	app.theme = new TestTheme();
+	(app as any).renderer = new TestRenderer(options);
 
 	// create no-op viewport context
 	app.viewport = new TestViewportContext();

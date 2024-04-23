@@ -1,9 +1,4 @@
-import {
-	ManagedEvent,
-	RenderContext,
-	UIToggle,
-	ui,
-} from "@desk-framework/frame-core";
+import { RenderContext, UIToggle, ui } from "@desk-framework/frame-core";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import {
 	TestBaseObserver,
@@ -13,37 +8,25 @@ import {
 
 /** @internal */
 export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
-	override observe(observed: UIToggle) {
-		return super
-			.observe(observed)
-			.observePropertyAsync(
-				"label",
-				"state",
-				"disabled",
-				"style",
-				"labelStyle",
-			);
+	constructor(observed: UIToggle) {
+		super(observed);
+		this.observeProperties("label", "state", "disabled", "style", "labelStyle");
 	}
 
-	protected override async handlePropertyChange(
-		property: string,
-		value: any,
-		event?: ManagedEvent,
-	) {
-		if (this.observed && this.element) {
-			switch (property) {
-				case "label":
-				case "state":
-					this.scheduleUpdate(this.element);
-					return;
-				case "disabled":
-				case "style":
-				case "labelStyle":
-					this.scheduleUpdate(undefined, this.element);
-					return;
-			}
+	protected override propertyChange(property: string, value: any) {
+		if (!this.element) return;
+		switch (property) {
+			case "label":
+			case "state":
+				this.scheduleUpdate(this.element);
+				return;
+			case "disabled":
+			case "style":
+			case "labelStyle":
+				this.scheduleUpdate(undefined, this.element);
+				return;
 		}
-		await super.handlePropertyChange(property, value, event);
+		super.propertyChange(property, value);
 	}
 
 	override handlePlatformEvent(
@@ -60,7 +43,6 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 	}
 
 	getOutput() {
-		if (!this.observed) throw ReferenceError();
 		let elt = new TestOutputElement("toggle");
 		let output = new RenderContext.Output(this.observed, elt);
 		elt.output = output;
@@ -70,18 +52,16 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 
 	override updateStyle(element: TestOutputElement) {
 		let toggle = this.observed;
-		if (toggle) {
-			// set disabled state
-			element.disabled = toggle.disabled;
 
-			// set styles
-			element.styleClass = getBaseStyleClass(toggle.style) || ui.style.TOGGLE;
-			applyElementStyle(element, [toggle.style], toggle.position);
-		}
+		// set disabled state
+		element.disabled = toggle.disabled;
+
+		// set styles
+		element.styleClass = getBaseStyleClass(toggle.style) || ui.style.TOGGLE;
+		applyElementStyle(element, [toggle.style], toggle.position);
 	}
 
 	updateContent(element: TestOutputElement) {
-		if (!this.observed) return;
 		element.text = String(this.observed.label || "");
 		element.checked = !!this.observed.state;
 	}

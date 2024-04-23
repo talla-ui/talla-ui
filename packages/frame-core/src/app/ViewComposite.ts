@@ -1,9 +1,4 @@
-import {
-	BindingOrValue,
-	ManagedEvent,
-	ManagedObject,
-	Observer,
-} from "../base/index.js";
+import { BindingOrValue, ManagedEvent } from "../base/index.js";
 import { ERROR, err, errorHandler, invalidArgErr } from "../errors.js";
 import { RenderContext } from "./RenderContext.js";
 import { View, ViewClass } from "./View.js";
@@ -16,7 +11,7 @@ import { View, ViewClass } from "./View.js";
  *
  * The encapsulated view is referenced by the {@link ViewComposite.body body} property, which is usually set automatically, either when the ViewComposite is instantiated or right before rendering. It may be changed or unlinked at any time; the rendered view will be updated accordingly by the ViewComposite itself.
  *
- * The {@link ViewComposite.body body} property is watched using {@link ManagedObject.autoAttach}, which means that setting it to a view instance automatically attaches the object to the ViewComposite. Setting the property to undefined will unlink the existing view, and setting it to a new view will unlink an existing one. Therefore, the ViewComposite instance can only contain a single view object at a time.
+ * The {@link ViewComposite.body body} property is managed using a setter and getter. Setting it to a view instance automatically attaches the view to the ViewComposite. Setting the property to undefined will unlink the existing view, and setting it to a new view will unlink an existing one. Therefore, the ViewComposite instance can only contain a single view object at a time.
  *
  * Since the view is attached to the ViewComposite object, bindings continue to work, and events can be handled either by the ViewComposite object or by a containing object.
  *
@@ -91,27 +86,6 @@ export abstract class ViewComposite<TView extends View = View> extends View {
 	 */
 	constructor() {
 		super();
-
-		// auto-attach view, render when changed, delegate events
-		class ViewObserver extends Observer<TView> {
-			constructor(public vc: ViewComposite) {
-				super();
-			}
-			override observe(observed: TView) {
-				super.observe(observed);
-				this.vc.render();
-				return this;
-			}
-			override stop() {
-				this.vc.render();
-			}
-			protected override handleEvent(event: ManagedEvent) {
-				if (this.vc.body && !event.noPropagation) {
-					this.vc.delegateViewEvent(event);
-				}
-			}
-		}
-		this.autoAttach("body", new ViewObserver(this));
 	}
 
 	/**
@@ -119,7 +93,30 @@ export abstract class ViewComposite<TView extends View = View> extends View {
 	 * - Initially, this property is undefined. The view object is only created (using {@link ViewComposite.createView createView()}) when the ViewComposite instance is first rendered. Override {@link ViewComposite.beforeRender beforeRender()} to manipulate the view before rendering, if needed.
 	 * - View objects assigned to this property are automatically attached to the ViewComposite object.
 	 */
-	declare body?: TView;
+	set body(body: TView | undefined) {
+		if (body && !(body instanceof View)) throw invalidArgErr("body");
+		if (this._body === body) return;
+
+		// unlink old view, if any
+		if (this._body) this._body.unlink();
+
+		// attach new view: delegate events and clear when unlinked
+		this._body = body;
+		if (body) {
+			this.attach(body, {
+				handler: (_, event) => {
+					if (!event.noPropagation) this.delegateViewEvent(event);
+				},
+				detached: () => {
+					if (this._body === body) this._body = undefined;
+				},
+			});
+			this.render();
+		}
+	}
+	get body(): TView | undefined {
+		return this._body;
+	}
 
 	/**
 	 * Creates the encapsulated view object, to be overridden if needed
@@ -203,6 +200,9 @@ export abstract class ViewComposite<TView extends View = View> extends View {
 
 	/** Stateful renderer wrapper, handles content component */
 	private _renderer = new RenderContext.DynamicRendererWrapper();
+
+	/** The current view body, accessed through setter/getter */
+	private _body: TView | undefined;
 }
 
 export namespace ViewComposite {

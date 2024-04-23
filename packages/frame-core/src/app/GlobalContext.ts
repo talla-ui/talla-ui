@@ -49,13 +49,12 @@ export class GlobalContext extends ManagedObject {
 		if (GlobalContext.instance) throw Error;
 		super();
 		Binding.limitTo(this);
-		this.autoAttach("services");
-		this.autoAttach("activities");
-		this.autoAttach("renderer");
 
 		// define i18n property and handle new objects when set
 		let i18n: I18nProvider | undefined;
 		Object.defineProperty(this, "i18n", {
+			configurable: true,
+			enumerable: true,
 			get() {
 				return i18n;
 			},
@@ -65,6 +64,24 @@ export class GlobalContext extends ManagedObject {
 				LazyString.invalidateCache();
 			},
 		});
+
+		// define theme property and remount renderer when set
+		let theme: UITheme | undefined;
+		Object.defineProperty(this, "theme", {
+			configurable: true,
+			enumerable: true,
+			get() {
+				return theme;
+			},
+			set(v: any) {
+				theme = v;
+				Promise.resolve().then(() => {
+					if (v && this.renderer) {
+						this.renderer.remount();
+					}
+				});
+			},
+		});
 	}
 
 	/**
@@ -72,17 +89,20 @@ export class GlobalContext extends ManagedObject {
 	 * - This object (indirectly) contains all activity instances, as well as the current location path object.
 	 * @note To add an activity to the application, use the {@link GlobalContext.addActivity app.addActivity()} method instead.
 	 */
-	readonly activities = new ActivityContext();
+	readonly activities = this.attach(new ActivityContext());
 
 	/**
 	 * The current service context, an instance of {@link ServiceContext}
 	 * - This object contains all current service instances, and provides methods to observe any changes.
 	 * @note To add a service to the application, use the {@link GlobalContext.addService app.addService()} method instead.
 	 */
-	readonly services = new ServiceContext();
+	readonly services = this.attach(new ServiceContext());
 
-	/** The current application output renderer, an instance of {@link RenderContext} */
-	declare renderer?: RenderContext;
+	/**
+	 * The current application output renderer, an instance of {@link RenderContext}
+	 * - This property will be set by the platform-specific renderer package
+	 */
+	declare readonly renderer?: RenderContext;
 
 	/**
 	 * An object containing information about the user's viewport, e.g. browser window
@@ -119,7 +139,7 @@ export class GlobalContext extends ManagedObject {
 	 * - Refer to {@link UITheme} for available properties and methods of `app.theme`.
 	 * @see {@link UITheme}
 	 */
-	theme?: UITheme;
+	declare theme?: UITheme;
 
 	/**
 	 * The global asynchronous task scheduler, an instance of {@link Scheduler}

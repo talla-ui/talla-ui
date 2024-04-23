@@ -1,47 +1,36 @@
-import {
-	ManagedEvent,
-	RenderContext,
-	UITextField,
-	ui,
-} from "@desk-framework/frame-core";
+import { RenderContext, UITextField, ui } from "@desk-framework/frame-core";
 import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 import { applyStyles } from "../../style/DOMStyle.js";
 
 /** @internal */
 export class UITextFieldRenderer extends BaseObserver<UITextField> {
-	override observe(observed: UITextField) {
-		return super
-			.observe(observed)
-			.observePropertyAsync(
-				"placeholder",
-				"value",
-				"disabled",
-				"readOnly",
-				"width",
-				"style",
-			);
+	constructor(observed: UITextField) {
+		super(observed);
+		this.observeProperties(
+			"placeholder",
+			"value",
+			"disabled",
+			"readOnly",
+			"width",
+			"style",
+		);
 	}
 
-	protected override async handlePropertyChange(
-		property: string,
-		value: any,
-		event?: ManagedEvent,
-	) {
-		if (this.observed && this.element) {
-			switch (property) {
-				case "placeholder":
-				case "value":
-					this.scheduleUpdate(this.element);
-					return;
-				case "disabled":
-				case "readOnly":
-				case "width":
-				case "style":
-					this.scheduleUpdate(undefined, this.element);
-					return;
-			}
+	protected override propertyChange(property: string, value: any) {
+		if (!this.element) return;
+		switch (property) {
+			case "placeholder":
+			case "value":
+				this.scheduleUpdate(this.element);
+				return;
+			case "disabled":
+			case "readOnly":
+			case "width":
+			case "style":
+				this.scheduleUpdate(undefined, this.element);
+				return;
 		}
-		await super.handlePropertyChange(property, value, event);
+		super.propertyChange(property, value);
 	}
 
 	override onDOMEvent() {
@@ -50,7 +39,6 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 	}
 
 	getOutput() {
-		if (!this.observed) throw ReferenceError();
 		let elt = document.createElement(
 			this.observed.multiline ? "textarea" : "input",
 		);
@@ -61,33 +49,30 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 
 	override updateStyle(element: HTMLInputElement) {
 		let textField = this.observed;
-		if (textField) {
-			// set state
-			element.disabled = !!textField.disabled;
-			element.readOnly = !!textField.readOnly;
+		// set state
+		element.disabled = !!textField.disabled;
+		element.readOnly = !!textField.readOnly;
 
-			// apply other CSS styles
-			applyStyles(
-				textField,
-				element,
-				getBaseStyleClass(textField.style) || ui.style.TEXTFIELD,
-				undefined,
-				true,
-				false,
-				[
-					textField.style,
-					textField.width !== undefined
-						? { width: textField.width, minWidth: 0 }
-						: undefined,
-				],
-				textField.position,
-				undefined,
-			);
-		}
+		// apply other CSS styles
+		applyStyles(
+			textField,
+			element,
+			getBaseStyleClass(textField.style) || ui.style.TEXTFIELD,
+			undefined,
+			true,
+			false,
+			[
+				textField.style,
+				textField.width !== undefined
+					? { width: textField.width, minWidth: 0 }
+					: undefined,
+			],
+			textField.position,
+			undefined,
+		);
 	}
 
 	updateContent(element: HTMLInputElement) {
-		if (!this.observed) return;
 		let placeholder = String(this.observed.placeholder || " "); // layout workaround
 		if (element.placeholder !== placeholder) {
 			element.placeholder = placeholder;

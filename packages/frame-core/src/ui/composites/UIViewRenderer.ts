@@ -1,5 +1,6 @@
 import { RenderContext, View, ViewClass } from "../../app/index.js";
-import { Binding, ManagedEvent, Observer } from "../../base/index.js";
+import { Binding, ManagedEvent } from "../../base/index.js";
+import { invalidArgErr } from "../../errors.js";
 
 /**
  * A view object that dynamically renders a referenced (bound) view
@@ -11,11 +12,6 @@ import { Binding, ManagedEvent, Observer } from "../../base/index.js";
  * - The rendered view is not attached to the view renderer object itself. Therefore, it must be attached to another object, such as an activity.
  */
 export class UIViewRenderer extends View {
-	constructor() {
-		super();
-		new UIViewRendererObserver().observe(this);
-	}
-
 	/**
 	 * Applies the provided preset properties to this object
 	 * - This method is called automatically. Do not call this method after constructing an instance
@@ -35,7 +31,23 @@ export class UIViewRenderer extends View {
 	 * - View objects can't be rendered twice, hence the bound object can't be part of the view hierarchy on its own or referenced by another {@link UIViewRenderer} instance.
 	 * - If the view is unlinked after rendering, a ViewUnlinked event is emitted by the {@link UIViewRenderer} instance.
 	 */
-	view?: View = undefined;
+	set view(view: View | undefined) {
+		if (view && !(view instanceof View)) throw invalidArgErr("view");
+		if (this._view === view) return;
+
+		// stop observing old view, if any
+		if (this._view) this._listener?.stop();
+
+		// observe new view to delegate events and watch for unlinking
+		this._view = view;
+		if (view) this._listener = new ViewListener(this, view);
+
+		// re-render with new view (or empty)
+		this.render();
+	}
+	get view(): View | undefined {
+		return this._view;
+	}
 
 	render(callback?: RenderContext.RenderCallback) {
 		// skip extra rendering if view didn't actually change
@@ -69,49 +81,33 @@ export class UIViewRenderer extends View {
 		return this;
 	}
 
+	private _view?: View;
+	private _listener?: ViewListener;
 	private _renderer?: RenderContext.DynamicRendererWrapper;
 }
 
-/** @internal */
-class UIViewRendererObserver extends Observer<UIViewRenderer> {
-	override observe(observed: UIViewRenderer) {
-		return super.observe(observed).observeProperty("view");
+/** @internal A listener that's used to observe rendered content views */
+class ViewListener {
+	constructor(
+		public host: UIViewRenderer,
+		view: View,
+	) {
+		view.listen(this);
 	}
-	protected override handlePropertyChange(property: string) {
-		// render new view when property changes
-		if (!this.observed) return;
-		this.observeViewEvents();
-		this.observed.render();
+	init(_view: View, stop: () => void) {
+		this.stop = stop;
 	}
-	override stop() {
-		super.stop();
-		if (this._viewObserver) this._viewObserver.stop();
-	}
-	observeViewEvents() {
-		if (this._viewObserver) this._viewObserver.stop();
-		let view = this.observed?.view;
-		if (!view || view.isUnlinked()) return;
-
-		class ViewObserver extends Observer {
-			constructor(public vr: UIViewRenderer) {
-				super();
-			}
-			protected override handleUnlink(): void {
-				if (this.vr.view === this.observed) {
-					this.vr.view = undefined;
-				}
-				this.vr.emit("ViewUnlinked");
-				super.handleUnlink();
-			}
-			protected override handleEvent(event: ManagedEvent) {
-				// propagate events from view to UIViewRenderer itself
-				if (!event.noPropagation) {
-					event = ManagedEvent.withDelegate(event, this.vr);
-					this.vr.emit(event);
-				}
-			}
+	handler(_view: View, event: ManagedEvent) {
+		if (!event.noPropagation) {
+			event = ManagedEvent.withDelegate(event, this.host);
+			this.host.emit(event);
 		}
-		this._viewObserver = new ViewObserver(this.observed!).observe(view);
 	}
-	private _viewObserver?: Observer;
+	unlinked(view: View) {
+		if (this.host.view === view) {
+			this.host.emit("ViewUnlinked");
+			this.host.view = undefined;
+		}
+	}
+	declare stop: () => void;
 }

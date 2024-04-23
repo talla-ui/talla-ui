@@ -1,4 +1,11 @@
-import { UIToggle, UIFormContext, app, strf, ui } from "../../../dist/index.js";
+import {
+	UIToggle,
+	UIFormContext,
+	app,
+	strf,
+	ui,
+	ManagedObject,
+} from "../../../dist/index.js";
 import {
 	describe,
 	expect,
@@ -25,15 +32,11 @@ describe("UIToggle", (scope) => {
 		expect(toggle).toHaveProperty("state").toBe(true);
 	});
 
-	test("Preset using form field and form context", () => {
+	test("Preset using form field", () => {
 		let MyToggle = ui.toggle({ formField: "foo", label: strf("Foo") });
 		let toggle = new MyToggle();
 		expect(toggle).toHaveProperty("formField").toBe("foo");
 		expect(toggle).toHaveProperty("label").asString().toBe("Foo");
-		let formCtx = new UIFormContext({ foo: false });
-		toggle.formContext = formCtx;
-		formCtx.set("foo", true);
-		expect(toggle).toHaveProperty("state").toBe(true);
 	});
 
 	test("Rendered with label", async (t) => {
@@ -56,12 +59,16 @@ describe("UIToggle", (scope) => {
 	});
 
 	test("User input with form context", async (t) => {
-		let toggle = new UIToggle();
+		class Host extends ManagedObject {
+			// note that formContext must exist before it can be bound
+			readonly formContext = new UIFormContext({ foo: true });
+			readonly toggle = this.attach(new UIToggle());
+		}
+		let host = new Host();
+		let toggle = host.toggle;
 
 		// use form context to check toggle
-		let formCtx = new UIFormContext({ foo: true });
 		toggle.formField = "foo";
-		toggle.formContext = formCtx;
 		expect(toggle.state).toBe(true);
 
 		// render field, check that checkbox is checked
@@ -76,6 +83,6 @@ describe("UIToggle", (scope) => {
 		t.log("Updating element to set form context");
 		toggleElt.checked = false;
 		toggleElt.sendPlatformEvent("change");
-		expect(formCtx.get("foo")).toBe(false);
+		expect(host.formContext.get("foo")).toBe(false);
 	});
 });
