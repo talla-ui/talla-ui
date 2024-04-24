@@ -17,7 +17,6 @@ import { app } from "./GlobalContext.js";
 import type { NavigationController } from "./NavigationController.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
-import type { Service } from "./Service.js";
 import { View, ViewClass } from "./View.js";
 
 /** Global list of activity instances for (old) activity class, for HMR */
@@ -327,18 +326,6 @@ export class Activity extends ManagedObject {
 			},
 		});
 		return queue;
-	}
-
-	/**
-	 * Observes a particular service by ID, until this activity is unlinked
-	 * @param id The ID of the service to be observed
-	 * @param handler A function that's called when the service changes (registered or unlinked), or when the current service emits an event
-	 */
-	protected observeService<TService extends Service>(
-		id: string,
-		handler: (service?: TService, event?: ManagedEvent) => void,
-	) {
-		return app.services._$observe(this, id, handler);
 	}
 
 	/** A method that's called on an active activity, to be overridden to create and render the view if needed */

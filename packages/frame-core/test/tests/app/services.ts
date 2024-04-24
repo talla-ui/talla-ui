@@ -13,6 +13,11 @@ describe("ManagedService", (scope) => {
 		expect(app.services.getAll()).toBeArray(0);
 	});
 
+	class MyService extends Service {
+		id = "Test.MyService";
+		foo = 1;
+	}
+
 	test("Service context reference", () => {
 		expect(app.services).toBeInstanceOf(ServiceContext);
 		expect(ManagedObject.whence(app.services)).toBe(app);
@@ -22,10 +27,6 @@ describe("ManagedService", (scope) => {
 		// if this fails, don't bother testing more because can't guarantee global state
 		t.breakOnFail();
 
-		class MyService extends Service {
-			id = "Test.MyService";
-			foo = 1;
-		}
 		let svc = new MyService();
 		expect(svc.isServiceRegistered()).toBe(false);
 		app.addService(svc);
@@ -40,10 +41,6 @@ describe("ManagedService", (scope) => {
 	});
 
 	test("Change service", () => {
-		class MyService extends Service {
-			id = "Test.MyService";
-			foo = 1;
-		}
 		let svc1 = new MyService();
 		app.services.add(svc1);
 		expect([...app.services.getAll()]).toBeArray([svc1]);
@@ -58,130 +55,106 @@ describe("ManagedService", (scope) => {
 		expect([...app.services.getAll()]).toBeArray(0);
 	});
 
-	test("Observe single service, from service", () => {
-		class ObservedService extends Service {
-			id = "Test.Observed";
-			foo = 1;
-		}
-		class ObserverService extends Service {
-			constructor() {
-				super();
-				this.observeService<ObservedService>("Test.Observed", (service) => {
-					this.observed = service;
-				});
-			}
-			id = "Test.Observer";
-			observed?: ObservedService;
-		}
-		let svc = new ObservedService();
-		let obs = new ObserverService();
-		app.services.add(obs);
-		expect(obs.observed).toBeUndefined();
+	test("Observe single service, after adding", () => {
+		let svc = new MyService();
 		app.services.add(svc);
-		expect(obs.observed).toBe(svc);
-		svc.unlink();
-		obs.unlink();
-		expect(obs.observed).toBeUndefined();
-	});
-
-	test("Observe single service, from activity", (t) => {
-		class ObservedService extends Service {
-			id = "Test.Observed";
-			foo = 1;
-		}
-		class MyActivity extends Activity {
-			constructor() {
-				super();
-				this.observeService<ObservedService>(
-					"Test.Observed",
-					(service, event) => {
-						this.observed = service;
-						if (event) t.count("event");
-						if (service) t.count("service");
-						else t.count("unlink");
-					},
-				);
-			}
-			observed?: ObservedService;
-		}
-		let svc = new ObservedService();
-		let act = new MyActivity();
-		expect(act.observed).toBeUndefined();
-		app.services.add(svc);
-		expect(act.observed).toBe(svc);
-		svc.emitChange();
-		svc.unlink();
-		expect(act.observed).toBeUndefined();
-		act.unlink();
-		t.expectCount("event").toBe(1);
-		t.expectCount("service").toBe(2);
-		t.expectCount("unlink").toBe(1);
-	});
-
-	test("Stop observing by unlinking activity", (t) => {
-		class ObservedService extends Service {
-			id = "Test.Observed";
-			foo = 1;
-		}
-		class MyActivity extends Activity {
-			constructor() {
-				super();
-				this.observeService<ObservedService>("Test.Observed", (service) => {
-					this.observed = service;
-				});
-			}
-			observed?: ObservedService;
-		}
-		let svc = new ObservedService();
-		let act = new MyActivity();
-		app.services.add(svc);
-		expect(act.observed).toBe(svc);
-		act.unlink();
-		svc.unlink();
-		expect(act.observed).toBe(svc);
-	});
-
-	test("Observe service changes", (t) => {
-		let idx = 0;
-		class ChangedService extends Service {
-			id = "Test.Changed";
-			idx = ++idx;
-		}
-		class MyActivity extends Activity {
-			constructor() {
-				super();
-				this.observeService<ChangedService>(
-					"Test.Changed",
-					(service, event) => {
-						t.log("Handled:", service?.idx, event?.name);
-						if (event) t.count(event.name);
-						else if (service) t.count("service");
-						else t.count("unlink");
-					},
-				);
-			}
-		}
-
-		let act = new MyActivity();
-		let svc1 = new ChangedService();
-		app.services.add(svc1); // + service
-		svc1.emit("Foo"); // + Foo
-		let svc2 = new ChangedService();
-		app.services.add(svc2); // + service
-		svc1.emit("Foo"); // nothing!
-		svc2.emit("Foo"); // + Foo
-		svc2.unlink(); // + unlink
-		svc2.emit("Foo"); // nothing!
-		let svc3 = new ChangedService();
-		app.services.add(svc3); // + service
-		act.unlink();
-
-		// check that all handlers were called
-		t.expectCount("service").toBe(3);
-		t.expectCount("unlink").toBe(1);
-		t.expectCount("Foo").toBe(2);
-
-		// clear services
+		let observer = app.services.observe<MyService>("Test.MyService");
+		expect(observer).toHaveProperty("service").toBe(svc);
+		observer.unlink();
+		expect(observer).toHaveProperty("service").toBeUndefined();
 		app.services.clear();
+	});
+
+	test("Observe single service, before adding", () => {
+		let svc = new MyService();
+		let observer = app.services.observe<MyService>("Test.MyService");
+		expect(observer).toHaveProperty("service").toBeUndefined();
+		app.services.add(svc);
+		expect(observer).toHaveProperty("service").toBe(svc);
+		svc.unlink();
+		expect(observer).toHaveProperty("service").toBeUndefined();
+		observer.unlink();
+	});
+
+	test("Observe service change", () => {
+		let svc1 = new MyService();
+		let svc2 = new MyService();
+		app.services.add(svc1);
+		let observer = app.services.observe<MyService>("Test.MyService");
+		expect(observer).toHaveProperty("service").toBe(svc1);
+		app.services.add(svc2);
+		expect(observer).toHaveProperty("service").toBe(svc2);
+		observer.unlink();
+		app.services.clear();
+	});
+
+	test("Listen for service events, after adding", (t) => {
+		let svc = new MyService();
+		app.services.add(svc); // + service
+		let observer = app.services.observe<MyService>(
+			"Test.MyService",
+			(service, event) => {
+				if (service && service !== svc) t.fail("Service mismatch");
+				if (service) t.count("service");
+				else t.count("unlinked");
+				if (event) t.count(event.name);
+			},
+		);
+		svc.emit("Foo"); // + service, + Foo
+		svc.unlink(); // + unlinked
+		observer.unlink();
+		t.expectCount("service").toBe(2);
+		t.expectCount("unlinked").toBe(1);
+		t.expectCount("Foo").toBe(1);
+	});
+
+	test("Listen for service events, before adding, then change", (t) => {
+		let svc1 = new MyService();
+		let svc2 = new MyService();
+		let observer = app.services.observe<MyService>(
+			"Test.MyService",
+			(service, event) => {
+				if (service === svc1) t.count("svc1");
+				else if (service === svc2) t.count("svc2");
+				else if (!service) t.count("unlinked");
+				if (event) t.count(event.name);
+			},
+		);
+		app.services.add(svc1); // + svc1
+		svc1.emit("Foo"); // + svc1, + Foo
+		app.services.add(svc2); // + svc2
+		svc2.emit("Bar"); // + svc2, + Bar
+		svc2.unlink(); // + unlinked
+		observer.unlink();
+		t.expectCount("svc1").toBe(2);
+		t.expectCount("svc2").toBe(2);
+		t.expectCount("unlinked").toBe(1);
+		t.expectCount("Foo").toBe(1);
+		t.expectCount("Bar").toBe(1);
+	});
+
+	test("Observe service from activity", (t) => {
+		let svc = new MyService();
+		app.services.add(svc); // + service
+		class MyActivity extends Activity {
+			myService = this.attach(
+				app.services.observe<MyService>(
+					"Test.MyService",
+					(svc) => svc && this.update(),
+				),
+			);
+			update() {
+				// note: this.myService may not actually be set yet here
+				t.count("update");
+			}
+		}
+		let act = new MyActivity();
+		expect(act.myService).toHaveProperty("service").toBe(svc);
+		svc.emitChange();
+		t.expectCount("update").toBe(2);
+		act.unlink();
+		expect(act.myService).toHaveProperty("service").toBeUndefined();
+		expect(act.myService.isUnlinked()).toBe(true);
+		svc.unlink();
 	});
 });
