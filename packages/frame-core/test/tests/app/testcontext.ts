@@ -128,16 +128,16 @@ describe("TestContext", () => {
 			t.sleep(1);
 		});
 
-		test("Cell view from single instance", async () => {
+		test("Cell view from single instance", async (t) => {
 			let view = new UICell();
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
-			app.showPage(view);
+			t.render(view);
 			await app.renderer.expectOutputAsync(100, { source: view });
 		});
 
-		test("Cell view from single composite", async () => {
+		test("Cell view from single composite", async (t) => {
 			class MyView extends ViewComposite {
 				override createView = () => new UICell();
 			}
@@ -145,7 +145,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
-			app.showPage(view);
+			t.render(view);
 			await app.renderer.expectOutputAsync(100, { source: view.body! });
 		});
 
@@ -160,7 +160,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
-			app.showPage(view);
+			t.render(view);
 			let out = await app.renderer.expectOutputAsync(500, {
 				source: view.body!,
 			});
@@ -173,7 +173,7 @@ describe("TestContext", () => {
 				.toMatchRegExp(/Catch me/);
 		});
 
-		test("Remove view after rendering", async () => {
+		test("Remove view after rendering", async (t) => {
 			class MyView extends ViewComposite {
 				override createView = () => new UICell();
 			}
@@ -181,33 +181,32 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
-			let rendered = app.render(view, { mode: "page" });
+			let rendered = t.render(view);
 			await app.renderer.expectOutputAsync(100, { source: view.body! });
 			await rendered.removeAsync();
 			app.renderer.expectOutput({ type: "cell" }).toBeEmpty();
 		});
 
-		test("View is not rendered twice", async () => {
+		test("View is not rendered twice", async (t) => {
 			const view = new UICell(new UILabel("Test"));
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
-			app.showPage(view);
+			t.render(view);
 			let out1 = await app.renderer.expectOutputAsync(100, { type: "label" });
 			view.findViewContent(UILabel)[0]!.text = "Foo";
-			app.showPage(view);
+			t.render(view);
 			let out2 = await app.renderer.expectOutputAsync(100, { type: "label" });
 			expect(out2.elements).toBeArray(out1.elements);
 		});
 
 		test("Cell view from root activity", async () => {
 			class MyActivity extends Activity {
-				protected override ready() {
-					this.view = new UICell();
-					app.showPage(this.view);
+				protected override createView() {
+					return new UICell();
 				}
 			}
-			let activity = new MyActivity();
+			let activity = new MyActivity({ renderPlacement: { mode: "page" } });
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
@@ -217,12 +216,11 @@ describe("TestContext", () => {
 
 		test("Remove view by deactivating activity", async (t) => {
 			class MyActivity extends Activity {
-				protected override ready() {
-					this.view = new UICell();
-					app.showPage(this.view);
+				protected override createView() {
+					return new UICell();
 				}
 			}
-			let activity = new MyActivity();
+			let activity = new MyActivity({ renderPlacement: { mode: "page" } });
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
@@ -237,12 +235,11 @@ describe("TestContext", () => {
 
 		test("Show dialog", async (t) => {
 			class MyActivity extends Activity {
-				protected override ready() {
-					this.view = new UICell(new UILabel("foo"));
-					app.showDialog(this.view);
+				protected override createView() {
+					return new UICell(new UILabel("foo"));
 				}
 			}
-			let activity = new MyActivity();
+			let activity = new MyActivity({ showDialog: true });
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
@@ -349,7 +346,7 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			let button = new UIButton("Test");
-			app.showPage(button);
+			t.render(button);
 			await t.expectOutputAsync(100, { type: "button" });
 			let p = app.showModalMenuAsync(
 				new UITheme.MenuOptions([

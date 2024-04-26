@@ -1,4 +1,4 @@
-import { app, ui, UISpacer } from "../../../dist/index.js";
+import { ui, UISpacer } from "../../../dist/index.js";
 import {
 	describe,
 	expect,
@@ -30,7 +30,7 @@ describe("UISpacer", (scope) => {
 	});
 
 	test("Rendered", async (t) => {
-		app.showPage(new UISpacer());
+		t.render(new UISpacer());
 		await t.expectOutputAsync(50, { type: "spacer" });
 	});
 });

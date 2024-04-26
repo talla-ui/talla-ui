@@ -10,9 +10,8 @@ import { Search, SearchResult } from "./Search";
 import SearchView from "./SearchView";
 
 export class SearchActivity extends Activity {
-	protected override ready() {
-		this.view = new SearchView();
-		app.render(this.view!, "docpage-search");
+	protected override createView() {
+		return new SearchView();
 	}
 
 	search = new Search();

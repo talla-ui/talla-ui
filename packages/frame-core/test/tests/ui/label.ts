@@ -4,14 +4,7 @@ import {
 	test,
 	useTestContext,
 } from "@desk-framework/frame-test";
-import {
-	app,
-	ui,
-	UIButton,
-	UICell,
-	UILabel,
-	UIRow,
-} from "../../../dist/index.js";
+import { ui, UIButton, UICell, UILabel, UIRow } from "../../../dist/index.js";
 import { UIVariant } from "../../../dist/ui/UIVariant.js";
 
 describe("UILabel", (scope) => {
@@ -78,7 +71,7 @@ describe("UILabel", (scope) => {
 			accessibleLabel: "My label",
 		});
 		let label = new MyLabel();
-		app.showPage(label);
+		t.render(label);
 		await t.expectOutputAsync(100, {
 			text: "foo",
 			accessibleLabel: "My label",
@@ -88,7 +81,7 @@ describe("UILabel", (scope) => {
 	test("Rendered with styles (using text preset)", async (t) => {
 		let MyLabel1 = ui.label("one", ui.style.LABEL.override({ bold: true }));
 		let MyLabel2 = ui.label("two", { bold: true });
-		app.showPage(new UIRow(new MyLabel1(), new MyLabel2()));
+		t.render(new UIRow(new MyLabel1(), new MyLabel2()));
 		let match = await t.expectOutputAsync(100, {
 			type: "label",
 			styles: { bold: true },
@@ -103,7 +96,7 @@ describe("UILabel", (scope) => {
 			style: { bold: true },
 		});
 		let label = new MyLabel();
-		app.showPage(label);
+		t.render(label);
 		await t.expectOutputAsync(100, {
 			text: "foo",
 			styles: { width: 100, bold: true },
@@ -113,7 +106,7 @@ describe("UILabel", (scope) => {
 	test("Rendered, hidden and shown", async (t) => {
 		let label = new UILabel("foo");
 		let view = new UICell(label);
-		app.showPage(view);
+		t.render(view);
 		await t.expectOutputAsync(100, { type: "label", text: "foo" });
 		label.hidden = true;
 		let out = await t.expectOutputAsync(100, {

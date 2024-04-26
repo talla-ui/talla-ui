@@ -23,7 +23,7 @@ export type ViewEvent<
  * @description
  * The view is one of the main architectural components of a Desk application. It provides a method to render its encapsulated content, either directly or using a collection of built-in UI components.
  *
- * Views can be rendered on their own (using {@link GlobalContext.render app.render()}, {@link GlobalContext.showPage app.showPage()}, or {@link GlobalContext.showDialog app.showDialog()}) or included as content within another view. In most cases, a top-level view is rendered from the {@link Activity.ready()} method.
+ * Views can be rendered on their own (using {@link GlobalContext.render app.render()}) or included as content within another view. In most cases, a top-level view is created from the {@link Activity.createView()} method.
  *
  * The View class can't be used on its own. Instead, define views using the following classes and methods:
  * - {@link UIComponent} classes, and the various {@link ui} factory functions (e.g. `ui.button(...)`) that create **preset** constructors for built-in UI components.
@@ -42,6 +42,13 @@ export abstract class View extends ManagedObject {
 	 * - The view may be rendered asynchronously, providing output as well as any updates to the provided renderer callback.
 	 */
 	abstract render(callback: RenderContext.RenderCallback): void;
+
+	/**
+	 * Render placement options used when this view is rendered directly
+	 * - This property is only relevant when the view is rendered directly, e.g. as the view of an activity.
+	 * - Use {@link ui.page()}, {@link ui.mount()}, or the JSX `<mount>` tag to control placement options in a preset view hierarchy.
+	 */
+	renderPlacement?: RenderContext.PlacementOptions;
 
 	/** A method that should be implemented to request input focus on the view output element */
 	abstract requestFocus(): void;

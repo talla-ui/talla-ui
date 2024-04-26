@@ -1,4 +1,4 @@
-import { app, UICell, UILabel, ui } from "../../../dist/index.js";
+import { UICell, UILabel, ui } from "../../../dist/index.js";
 import {
 	describe,
 	expect,
@@ -59,13 +59,13 @@ describe("UICell", (scope) => {
 
 	test("Rendered as cell", async (t) => {
 		let cell = new UICell();
-		app.showPage(cell);
+		t.render(cell);
 		await t.expectOutputAsync(100, { type: "cell" });
 	});
 
 	test("Rendered with content", async (t) => {
 		let MyCell = ui.cell({ layout: { gravity: "end" } }, ui.label("foo"));
-		app.showPage(new MyCell());
+		t.render(new MyCell());
 		let out = await t.expectOutputAsync(100, {
 			type: "cell",
 			styles: { gravity: "end" },
@@ -82,7 +82,7 @@ describe("UICell", (scope) => {
 			},
 			ui.label("foo"),
 		);
-		app.showPage(new MyCell());
+		t.render(new MyCell());
 		await t.expectOutputAsync(100, {
 			type: "cell",
 			styles: {
@@ -96,7 +96,7 @@ describe("UICell", (scope) => {
 
 	test("Rendered, then update style", async (t) => {
 		let cell = new UICell();
-		app.showPage(cell);
+		t.render(cell);
 		await t.expectOutputAsync(100, { type: "cell" });
 		cell.borderRadius = 8;
 		cell.layout = { distribution: "start" };
@@ -110,7 +110,7 @@ describe("UICell", (scope) => {
 
 	test("Rendered, then update content", async (t) => {
 		let cell = new UICell(new UILabel("foo"), new UILabel("bar"));
-		app.showPage(cell);
+		t.render(cell);
 		await t.expectOutputAsync(100, { type: "cell" });
 		cell.content.add(new UILabel("baz"));
 		let out = await t.expectOutputAsync(100, { type: "cell" });
@@ -129,7 +129,7 @@ describe("UICell", (scope) => {
 		let cell2 = new UICell();
 
 		// render cell 1 with labels first
-		app.showPage(new UICell(cell1, cell2));
+		t.render(new UICell(cell1, cell2));
 		let out1 = await t.expectOutputAsync(
 			100,
 			{ source: cell1 },

@@ -130,7 +130,7 @@ export class UITheme {
 export namespace UITheme {
 	/**
 	 * An interface that defines methods for creating modal views
-	 * - An object of this type should be assigned to {@link UITheme.modalFactory}, which is used by the `app` methods that display modal view components.
+	 * - An object of this type should be assigned to {@link UITheme.modalFactory}, which is used by the `app` methods that display modal view components, as well as {@link Activity} if the {@link Activity.Options.showDialog} option is used.
 	 */
 	export interface ModalControllerFactory {
 		/** A factory method that returns an instance that implements the {@link DialogController} interface, for the provided view */

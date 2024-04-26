@@ -1,4 +1,4 @@
-import { app, ui, UIImage } from "../../../dist/index.js";
+import { ui, UIImage } from "../../../dist/index.js";
 import {
 	describe,
 	expect,
@@ -39,7 +39,7 @@ describe("UIImage", (scope) => {
 			accessibleLabel: "My image",
 		});
 		let image = new MyImage();
-		app.showPage(image);
+		t.render(image);
 		await t.expectOutputAsync(100, {
 			type: "image",
 			imageUrl: "foo.png",

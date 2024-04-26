@@ -7,25 +7,30 @@ const MyLabelStyle = ui.style.LABEL.extend({
 });
 
 const ViewBody = (
-	<scroll>
-		<row padding={{ x: 40, y: 16 }}>
-			<label style={ui.style.LABEL_TITLE}>Perf test</label>
-		</row>
-		<list items={bound("items")}>
-			<row height={48}>
-				<label icon={ui.icon.CHEVRON_NEXT} iconMargin={16} style={MyLabelStyle}>
-					Hello, this is row %[item]
-				</label>
+	<mount page>
+		<scroll>
+			<row padding={{ x: 40, y: 16 }}>
+				<label style={ui.style.LABEL_TITLE}>Perf test</label>
 			</row>
-			<column layout={{ separator: { lineThickness: 1 } }} />
-		</list>
-	</scroll>
+			<list items={bound("items")}>
+				<row height={48}>
+					<label
+						icon={ui.icon.CHEVRON_NEXT}
+						iconMargin={16}
+						style={MyLabelStyle}
+					>
+						Hello, this is row %[item]
+					</label>
+				</row>
+				<column layout={{ separator: { lineThickness: 1 } }} />
+			</list>
+		</scroll>
+	</mount>
 );
 
 export class PerfActivity extends Activity {
-	protected override ready() {
-		this.view = new ViewBody();
-		app.showPage(this.view);
+	protected override createView() {
+		return new ViewBody();
 	}
 	protected override async beforeActiveAsync() {
 		this.items = new Array(MAX);

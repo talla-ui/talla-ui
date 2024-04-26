@@ -14,6 +14,14 @@ import {
 } from "@desk-framework/frame-test";
 
 describe("Activity", () => {
+	const mockApp = Object.assign(new ManagedObject(), {
+		add<T extends Activity>(a: T) {
+			return (this as any).attach(a) as T;
+		},
+		navigationController: {},
+		renderer: {},
+	});
+
 	describe("Activation and deactivation, standalone", () => {
 		function setup() {
 			class MyActivity extends Activity {
@@ -32,14 +40,14 @@ describe("Activity", () => {
 		}
 
 		test("Activate base class", async () => {
-			let a = new Activity();
+			let a = mockApp.add(new Activity());
 			expect(a.isActive()).toBeFalsy();
 			await a.activateAsync();
 			expect(a.isActive()).toBeTruthy();
 		});
 
 		test("Deactivate base class", async () => {
-			let a = new Activity();
+			let a = mockApp.add(new Activity());
 			await a.activateAsync();
 			expect(a.isActive()).toBeTruthy();
 			await a.deactivateAsync();
@@ -47,7 +55,7 @@ describe("Activity", () => {
 		});
 
 		test("Activate base class twice, awaited", async () => {
-			let a = new Activity();
+			let a = mockApp.add(new Activity());
 			await a.activateAsync();
 			expect(a.isActive()).toBeTruthy();
 			await a.activateAsync();
@@ -55,7 +63,7 @@ describe("Activity", () => {
 		});
 
 		test("Activate base class twice, not awaited", async (t) => {
-			let a = new Activity();
+			let a = mockApp.add(new Activity());
 			a.activateAsync().catch((err) => t.fail(err));
 			expect(a.isActive()).toBeFalsy();
 			expect(a.isActivating()).toBeTruthy();
@@ -64,7 +72,7 @@ describe("Activity", () => {
 		});
 
 		test("Deactivate base class twice, awaited", async () => {
-			let a = new Activity();
+			let a = mockApp.add(new Activity());
 			await a.activateAsync();
 			await a.deactivateAsync();
 			expect(a.isActive()).toBeFalsy();
@@ -73,7 +81,7 @@ describe("Activity", () => {
 		});
 
 		test("Deactivate base class twice, not awaited", async (t) => {
-			let a = new Activity();
+			let a = mockApp.add(new Activity());
 			await a.activateAsync();
 			a.deactivateAsync().catch((err) => t.fail(err));
 			expect(a.isActive()).toBeTruthy();
@@ -84,7 +92,7 @@ describe("Activity", () => {
 
 		test("Handlers called on derived class", async () => {
 			let { MyActivity } = setup();
-			let a = new MyActivity();
+			let a = mockApp.add(new MyActivity());
 			await a.activateAsync();
 			await a.deactivateAsync();
 			expect(a).toHaveProperty("beforeActiveCalled").toBe(1);
@@ -93,7 +101,7 @@ describe("Activity", () => {
 
 		test("Activation events", async (t) => {
 			let { MyActivity } = setup();
-			let a = new MyActivity();
+			let a = mockApp.add(new MyActivity());
 			a.listen((e) => {
 				if (e.name === "Active") t.count("active");
 				if (e.name === "Inactive") t.count("inactive");
@@ -108,7 +116,7 @@ describe("Activity", () => {
 
 		test("Deactivate while activating runs after", async (t) => {
 			let { MyActivity } = setup();
-			let a = new MyActivity();
+			let a = mockApp.add(new MyActivity());
 			let p = a.activateAsync().catch((err) => t.fail(err));
 			await new Promise((r) => {
 				setTimeout(r, 1);
@@ -125,7 +133,7 @@ describe("Activity", () => {
 		test("Cancelling and skipping based on activation queue", async () => {
 			let { MyActivity } = setup();
 			let cancelled = 0;
-			let a = new MyActivity();
+			let a = mockApp.add(new MyActivity());
 			a.activateAsync().catch(() => cancelled++); // activates
 			a.activateAsync().catch(() => cancelled++); // skips
 			a.deactivateAsync().catch(() => cancelled++); // cancelled
@@ -138,7 +146,7 @@ describe("Activity", () => {
 
 		test("Switch 5 times only switches once", async (t) => {
 			let { MyActivity } = setup();
-			let a = new MyActivity();
+			let a = mockApp.add(new MyActivity());
 			a.listen((e) => {
 				if (e.name === "Active") t.count("active");
 				if (e.name === "Inactive") t.count("inactive");
@@ -163,18 +171,18 @@ describe("Activity", () => {
 		});
 
 		test("Unlinked activity can't be transitioned", async () => {
-			let a = new Activity();
+			let a = mockApp.add(new Activity());
 			a.unlink();
 			await expect(() => a.activateAsync()).toThrowErrorAsync();
 			await expect(() => a.deactivateAsync()).toThrowErrorAsync();
 		});
 
 		test("Unlinked activity can't be transitioned async", async () => {
-			let a = new Activity();
+			let a = mockApp.add(new Activity());
 			let p = expect(() => a.activateAsync()).toThrowErrorAsync();
 			a.unlink();
 			await p;
-			let b = new Activity();
+			let b = mockApp.add(new Activity());
 			await b.activateAsync();
 			let q = expect(() => b.deactivateAsync()).toThrowErrorAsync();
 			b.unlink();
@@ -190,7 +198,7 @@ describe("Activity", () => {
 		}
 
 		test("Queue starts when activated", async (t) => {
-			let activity = new MyActivity();
+			let activity = mockApp.add(new MyActivity());
 			expect(activity.q).toBeInstanceOf(AsyncTaskQueue);
 			expect(activity.q.options.maxSyncTime).toBe(10);
 			activity.q.add(() => t.count("task"));
@@ -202,7 +210,7 @@ describe("Activity", () => {
 		});
 
 		test("Queue pauses when inactivated", async () => {
-			let activity = new MyActivity();
+			let activity = mockApp.add(new MyActivity());
 			await activity.activateAsync();
 			await activity.q.waitAsync();
 			await activity.deactivateAsync();
@@ -210,7 +218,7 @@ describe("Activity", () => {
 		});
 
 		test("Queue stops when unlinked", async (t) => {
-			let activity = new MyActivity();
+			let activity = mockApp.add(new MyActivity());
 			await activity.activateAsync();
 			activity.q.add(() => t.count("task"));
 			let p = t.tryRunAsync(() => activity.q.waitAsync());
@@ -261,8 +269,7 @@ describe("Activity", () => {
 		});
 
 		test("Navigate app to activity path", async (t) => {
-			let activity = new Activity();
-			activity.navigationPageId = "foo";
+			let activity = new Activity({ navigationPageId: "foo" });
 			app.addActivity(activity);
 			app.navigate(activity);
 			await t.expectNavAsync(10, "foo");
@@ -270,8 +277,7 @@ describe("Activity", () => {
 		});
 
 		test("Navigate app to activity path with detail", async (t) => {
-			let activity = new Activity();
-			activity.navigationPageId = "foo";
+			let activity = new Activity({ navigationPageId: "foo" });
 			app.addActivity(activity);
 			app.navigate(activity.getNavigationTarget("bar"));
 			await t.expectNavAsync(10, "foo", "bar");

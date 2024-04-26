@@ -34,18 +34,21 @@ export class TestMessageDialog
 	cancelLabel?: StringConvertible;
 	otherLabel?: StringConvertible;
 
-	showAsync(place?: Partial<RenderContext.PlacementOptions>) {
-		// return a promise that's resolved when one of the buttons is pressed
-		return new Promise<{ confirmed: boolean; other?: boolean }>((r) => {
-			app.render(this, {
-				mode: "dialog",
-				...place,
-			});
-			this._resolve = (result) => {
-				this.unlink();
-				r(result);
-			};
+	async showAsync(place?: Partial<RenderContext.PlacementOptions>) {
+		app.render(this, {
+			mode: "dialog",
+			...place,
 		});
+		let confirmed = false;
+		let other = false;
+		for await (let e of this.listen()) {
+			if (e.name === "Cancel" || e.name === "EscapeKeyPress") confirmed = false;
+			else if (e.name === "Confirm") confirmed = true;
+			else if (e.name === "Other") other = true;
+			else continue;
+			this.unlink();
+		}
+		return { confirmed, other };
 	}
 
 	protected override createView() {
@@ -69,19 +72,4 @@ export class TestMessageDialog
 			}),
 		))();
 	}
-
-	onConfirm() {
-		this._resolve?.({ confirmed: true });
-	}
-	onOther() {
-		this._resolve?.({ confirmed: false, other: true });
-	}
-	onCancel() {
-		this._resolve?.({ confirmed: false });
-	}
-	onEscapeKeyPress() {
-		this._resolve?.({ confirmed: false });
-	}
-
-	private _resolve?: (result: { confirmed: boolean; other?: boolean }) => void;
 }

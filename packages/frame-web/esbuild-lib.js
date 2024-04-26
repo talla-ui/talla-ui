@@ -22,8 +22,8 @@ async function buildAndCompress(options) {
 function buildTarget(target, entryPoint, alias) {
 	let options = {
 		bundle: true,
-		minify: true,
-		mangleProps: /^_/,
+		// minify: true,
+		// mangleProps: /^_/,
 		sourcemap: true,
 		entryPoints: [entryPoint],
 		target,

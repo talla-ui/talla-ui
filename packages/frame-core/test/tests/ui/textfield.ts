@@ -1,7 +1,6 @@
 import {
 	UITextField,
 	UIFormContext,
-	app,
 	strf,
 	ui,
 	ManagedObject,
@@ -42,7 +41,7 @@ describe("UITextField", (scope) => {
 	});
 
 	test("Rendered with placeholder", async (t) => {
-		app.showPage(new UITextField("foo", "bar"));
+		t.render(new UITextField("foo", "bar"));
 		await t.expectOutputAsync(100, {
 			text: "foo",
 			value: "bar",
@@ -51,7 +50,7 @@ describe("UITextField", (scope) => {
 
 	test("User input, directly setting value", async (t) => {
 		let tf = new UITextField();
-		app.showPage(tf);
+		t.render(tf);
 		let tfElt = (
 			await t.expectOutputAsync(100, { type: "textfield" })
 		).getSingle();
@@ -75,7 +74,7 @@ describe("UITextField", (scope) => {
 
 		// render field, check that value is 'bar'
 		t.log("Rendering with value");
-		app.showPage(tf);
+		t.render(tf);
 		let tfElt = (
 			await t.expectOutputAsync(100, { type: "textfield" })
 		).getSingle();

@@ -1,4 +1,4 @@
-import { app } from "@desk-framework/frame-core";
+import { RenderContext, View, app } from "@desk-framework/frame-core";
 import { Assertion } from "./Assertion.js";
 import { TestScope } from "./TestScope.js";
 import { OutputAssertion, OutputSelectFilter } from "./app/OutputAssertion.js";
@@ -386,15 +386,10 @@ export class TestCase {
 	 * });
 	 */
 	async expectOutputAsync(timeout: number, ...select: OutputSelectFilter[]) {
-		if (!(app.renderer instanceof TestRenderer)) {
-			throw Error("Test renderer not found, run `useTestContext()` first");
-		}
+		let renderer = this._getRenderer();
 		this._awaiting++;
 		try {
-			return await (app.renderer as TestRenderer).expectOutputAsync(
-				timeout,
-				...select,
-			);
+			return await renderer.expectOutputAsync(timeout, ...select);
 		} catch (err) {
 			this.fail(err);
 			if (!this._done) throw err;
@@ -429,18 +424,24 @@ export class TestCase {
 		timeout: number,
 		...match: Array<string | RegExp>
 	): Promise<RenderedTestMessageDialog> {
-		if (!(app.renderer instanceof TestRenderer)) {
-			throw Error("Test renderer not found, run `useTestContext()` first");
-		}
+		let renderer = this._getRenderer();
 		this._awaiting++;
 		try {
-			return await (app.renderer as TestRenderer).expectMessageDialogAsync(
-				timeout,
-				...match,
-			);
+			return await renderer.expectMessageDialogAsync(timeout, ...match);
 		} finally {
 			this._awaiting--;
 		}
+	}
+
+	/**
+	 * Renders the specified view using the current test application context
+	 * - This method is provided as a shortcut to render a view exclusively. It clears all rendered test output, if any, and then renders the specified view.
+	 * - The test application context must be initialized using {@link useTestContext()} before calling this method.
+	 */
+	render(view: View): RenderContext.ViewController {
+		let renderer = this._getRenderer();
+		renderer.clear();
+		return app.render(view, { mode: "page" });
 	}
 
 	/** Runs this test case (used by {@link TestScope}) */
@@ -485,6 +486,13 @@ export class TestCase {
 				}
 			})(),
 		]);
+	}
+
+	private _getRenderer() {
+		if (!(app.renderer instanceof TestRenderer)) {
+			throw Error("Test renderer not found, run `useTestContext()` first");
+		}
+		return app.renderer;
 	}
 
 	private _awaiting = 0;

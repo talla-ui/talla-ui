@@ -9,7 +9,6 @@ import {
 	UICell,
 	ViewComposite,
 	ViewEvent,
-	app,
 	ui,
 } from "../../../dist/index.js";
 
@@ -23,7 +22,7 @@ describe("Focus management", (scope) => {
 	test("Single element, initial focus", async (t) => {
 		let MyCell = ui.cell({ requestFocus: true, allowFocus: true });
 		let cell = new MyCell();
-		app.showPage(cell);
+		t.render(cell);
 		let elt = (await t.expectOutputAsync(100, { type: "cell" })).getSingle();
 		expect(elt.hasFocus()).toBeTruthy();
 	});
@@ -31,7 +30,7 @@ describe("Focus management", (scope) => {
 	test("Single element, request focus", async (t) => {
 		let MyCell = ui.cell({ allowFocus: true });
 		let cell = new MyCell();
-		app.showPage(cell);
+		t.render(cell);
 		await t.expectOutputAsync(100, { type: "cell" });
 		cell.requestFocus();
 		await t.expectOutputAsync(100, { type: "cell", focused: true });
@@ -41,7 +40,7 @@ describe("Focus management", (scope) => {
 		const Preset = ui.cell({ allowFocus: true });
 		const MyView = ViewComposite.withPreset({}, Preset);
 		let view = new MyView();
-		app.showPage(view);
+		t.render(view);
 		await t.expectOutputAsync(100, { type: "cell" });
 		view.requestFocus();
 		await t.expectOutputAsync(100, { type: "cell", focused: true });
@@ -54,7 +53,7 @@ describe("Focus management", (scope) => {
 		);
 
 		t.log("Focusing first");
-		app.showPage(new MyCell());
+		t.render(new MyCell());
 		let out = await t.expectOutputAsync(100, { text: "first", focused: true });
 
 		t.log("Focusing next");
@@ -102,7 +101,7 @@ describe("Focus management", (scope) => {
 				done = true;
 			}
 		}
-		app.showPage(new MyView());
+		t.render(new MyView());
 		await t.pollAsync(() => done, 5);
 		expect(events).toBeArray(["FocusIn", "FocusOut"]);
 	});

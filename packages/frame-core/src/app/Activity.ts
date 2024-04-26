@@ -5,25 +5,25 @@ import {
 	ManagedObject,
 	StringConvertible,
 } from "../base/index.js";
-import {
-	err,
-	ERROR,
-	errorHandler,
-	invalidArgErr,
-	safeCall,
-} from "../errors.js";
-import type { UIFormContext } from "../ui/index.js";
-import { app } from "./GlobalContext.js";
+import { err, ERROR, errorHandler, safeCall } from "../errors.js";
+import type { UIFormContext, UITheme } from "../ui/index.js";
 import type { NavigationController } from "./NavigationController.js";
 import { NavigationTarget } from "./NavigationTarget.js";
+import { RenderContext } from "./RenderContext.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
 import { View, ViewClass } from "./View.js";
 
 /** Global list of activity instances for (old) activity class, for HMR */
 const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
 
-/** Reused binding for global theme reference */
-const _boundTheme = bound("theme");
+/** Reused binding for the navigation controller */
+const _navigationControllerBinding = bound("navigationController");
+
+/** Reused binding for the global renderer instance, also listens for change events */
+const _rendererBinding = bound("renderer.*");
+
+/** Reused binding for the global theme instance */
+const _themeBinding = bound("theme");
 
 /**
  * A class that represents a part of the application that can be activated when the user navigates to it
@@ -35,15 +35,14 @@ const _boundTheme = bound("theme");
  *
  * Activities emit `Active` and `Inactive` change events when state transitions occur.
  *
- * This class also provides a {@link Activity.view view} property, which can be set to a view object. Usually, this property is set in the {@link Activity.ready()} method. Afterwards, if the activity corresponds to a full page or dialog, this method should call {@link app} methods to show the view. The view is automatically unlinked when the activity is deactivated, and the property is set to undefined.
+ * This class also provides a {@link Activity.view view} property, which is set using the result of the {@link Activity.createView()} method. If the activity corresponds to a full page or dialog, the activity automatically renders the view. The view is automatically unlinked when the activity is deactivated, and the property is set to undefined.
  *
  * @example
  * // Create an activity and activate it:
  * class MyActivity extends Activity {
  *   navigationPageId = "foo";
- *   protected ready() {
- *     this.view = new body(); // imported from a view file
- *     app.showPage(this.view);
+ *   protected createView() {
+ *     return new body(); // imported from a view file
  *   }
  * }
  *
@@ -73,55 +72,70 @@ export class Activity extends ManagedObject {
 		if (Old && Updated.prototype instanceof Activity) {
 			let instances = _hotInstances.get(Old);
 			if (instances) {
-				for (let activity of instances) activity.ready();
+				for (let activity of instances) activity._showView(true);
 			}
 		}
 	}
 
 	/**
 	 * Creates a new activity instance
-	 * @note For automatic activation based on {@link Activity.navigationPageId} to work, the activity must be added to the {@link ActivityContext} using the {@link GlobalContext.addActivity app.addActivity()} method.
+	 * @note Activities must be added to the application using {@link GlobalContext.addActivity app.addActivity()} before they can be activated.
+	 * @see {@link GlobalContext.addActivity}
 	 */
-	constructor() {
+	constructor(options?: ConfigOptions.Arg<Activity.Options>) {
 		super();
-		_boundTheme.bindTo(this, () =>
-			// re-render view when theme changes, async
-			Promise.resolve()
-				.then(() => this.isActive() && this.ready())
-				.catch(errorHandler),
-		);
-		Object.defineProperty(this, "view", {
-			configurable: true,
-			enumerable: true,
-			get: () => this._view,
-			set: this._setView.bind(this),
+		_navigationControllerBinding.bindTo(this, (controller) => {
+			this._boundNavCtrl = controller;
 		});
+		_themeBinding.bindTo(this, (theme) => {
+			this._boundTheme = theme;
+		});
+		_rendererBinding.bindTo(this, (renderer) => {
+			this._boundRenderer = renderer;
+
+			// on remount, asynchronously recreate view from scratch
+			if (renderer && this.view) {
+				return Promise.resolve()
+					.then(() => this.isActive() && this._showView(true))
+					.catch(errorHandler);
+			}
+		});
+
+		this._options = options = Activity.Options.init(options);
+		if (options.title) this.title = options.title;
+		if (options.navigationPageId)
+			this.navigationPageId = options.navigationPageId;
+		if (options.formContext) this.formContext = options.formContext;
 	}
 
 	/**
 	 * A user-facing name of this activity, if any
+	 * - This property must be set using the {@link Options} object in the constructor.
 	 * - This property may be set to any object that includes a `toString()` method, notably {@link LazyString} — the result of a call to {@link strf()}. This way, the activity title is localized automatically using {@link GlobalContext.i18n}.
 	 * - The title string of an active activity may be displayed as the current window or document title.
 	 */
-	title?: StringConvertible;
+	readonly title?: StringConvertible;
 
 	/**
 	 * The page ID associated with this activity, to match the (first part of the) navigation path
-	 * - If this property is set to a string, the activity will be activated automatically when the first part of the current path matches this value, and deactivated when it doesn't.
-	 * - The activity must be added to the activity context using {@link GlobalContext.addActivity app.addActivity()}, or attached to an existing activity, for the navigation path to be matched.
+	 * - This property must be set using the {@link Options} object in the constructor.
+	 * - If the page ID is set to a string, the activity will be activated automatically when the first part of the current path matches this value, and deactivated when it doesn't.
 	 * - To match the root path (`/`), set this property to an empty string
 	 */
-	navigationPageId?: string = undefined;
+	readonly navigationPageId?: string = undefined;
 
 	/**
 	 * The current view, if any (attached automatically)
-	 * - This property should be set to a view object from the {@link Activity.ready} method, and displayed using the available {@link app} methods.
+	 * - This property is set automatically when active, using the result of the {@link Activity.createView()} method, and then displayed if the view corresponds to a full page, dialog, or mounted view.
 	 * - The view is automatically unlinked when the activity is deactivated or unlinked.
 	 * - Events emitted by the view are automatically delegated to the activity, see {@link delegateViewEvent()}.
 	 */
-	declare view?: View;
+	view?: View = undefined;
 
-	/** Default form context used with input elements, if any */
+	/**
+	 * Default form context used with input elements, if any
+	 * - This property can be set using the {@link Options} object in the constructor.
+	 */
 	formContext?: UIFormContext = undefined;
 
 	/** Returns true if this activity is currently active */
@@ -150,7 +164,7 @@ export class Activity extends ManagedObject {
 	/**
 	 * Activates the activity asynchronously
 	 * - If the activity is currently transitioning between active and inactive states, the transition will be allowed to finish before the activity is activated.
-	 * - After activation, the activity's {@link ready()} method is called automatically.
+	 * - After activation, the activity's view is (re-) created automatically, and displayed if needed.
 	 * @error This method throws an error if the activity has been unlinked.
 	 */
 	async activateAsync() {
@@ -160,6 +174,7 @@ export class Activity extends ManagedObject {
 		await this._activation.waitAndSetAsync(
 			true,
 			() => {
+				if (!this._boundNavCtrl) throw err(ERROR.Activity_NotAttached);
 				if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 				return this.beforeActiveAsync();
 			},
@@ -168,7 +183,7 @@ export class Activity extends ManagedObject {
 				this.emitChange("Active");
 				this._hotInstances?.add(this);
 				await this.afterActiveAsync();
-				this.ready();
+				this._showView();
 			},
 		);
 	}
@@ -187,9 +202,9 @@ export class Activity extends ManagedObject {
 			false,
 			() => {
 				if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
-				if (this._view) {
-					this._view.unlink();
-					this._view = undefined;
+				if (this.view) {
+					this.view.unlink();
+					this.view = undefined;
 				}
 				return this.beforeInactiveAsync();
 			},
@@ -198,6 +213,73 @@ export class Activity extends ManagedObject {
 				return this.afterInactiveAsync();
 			},
 		);
+	}
+
+	/** A method that's called and awaited before the activity is activated, to be overridden if needed */
+	protected async beforeActiveAsync() {}
+
+	/** A method that's called and awaited after the activity is activated, to be overridden if needed */
+	protected async afterActiveAsync() {}
+
+	/** A method that's called and awaited before the activity is deactivated, to be overridden if needed */
+	protected async beforeInactiveAsync() {}
+
+	/** A method that's called and awaited after the activity is deactivated, to be overridden if needed */
+	protected async afterInactiveAsync() {}
+
+	/**
+	 * Creates the encapsulated view object, to be overridden
+	 * - The base implementation of this method in the Activity class does nothing. To associate an activity with a view, subclasses should implement their own method that returns a view object.
+	 * - This method is called automatically when the activity is activated, or the view needs to be recreated (e.g. for hot module replacement in development). The result is attached to the activity object, and assigned to {@link Activity.view}. If the view is unlinked, the {@link Activity.view} property is set to undefined again.
+	 */
+	protected createView(): View | undefined | void {
+		// nothing here
+	}
+
+	/** Creates and/or renders the activity's view, called automatically after activation */
+	private _showView(forceCreate?: boolean) {
+		if (!this.isActive()) return;
+		let view = this.view;
+
+		// create view and attach it
+		if (!view || forceCreate) {
+			let newView = this.createView();
+			if (!newView) return;
+			if (!(newView instanceof View)) throw err(ERROR.View_Invalid);
+			this.view = this.attach(newView, {
+				handler: (_, event) => {
+					this.delegateViewEvent(event);
+				},
+				detached: (view) => {
+					if (this.view === view) this.view = undefined;
+				},
+			});
+			if (view) view.unlink();
+			view = newView;
+		}
+
+		// assert that view makes sense
+		if (ManagedObject.whence(view) !== this) {
+			throw err(ERROR.View_NotAttached);
+		}
+		if (!this._boundRenderer) throw err(ERROR.Render_Unavailable);
+
+		// render view using theme dialog controller if needed
+		let options = this._options;
+		if (options.showDialog) {
+			let controller = this._boundTheme?.modalFactory?.buildDialog?.(view);
+			if (!controller) throw err(ERROR.Render_NoModal);
+			controller.show();
+			return this;
+		}
+
+		// render view normally if placed
+		if (options.renderPlacement || view.renderPlacement) {
+			let callback = this._boundRenderer.getRenderCallback();
+			let wrapper = new RenderContext.ViewController();
+			wrapper.render(view, callback, options.renderPlacement);
+		}
+		return this;
 	}
 
 	/**
@@ -237,6 +319,8 @@ export class Activity extends ManagedObject {
 	 * @returns True if an event handler was found, and it returned true; a promise if the handler returned a promise; false otherwise.
 	 */
 	protected delegateViewEvent(event: ManagedEvent): boolean | Promise<unknown> {
+		if (!this.isActive() || event.noPropagation) return false;
+
 		// find own handler method
 		let method = (this as any)["on" + event.name];
 		if (typeof method === "function") {
@@ -259,7 +343,7 @@ export class Activity extends ManagedObject {
 	 * - The default implementation directly calls {@link NavigationController.navigateAsync()}. Override this method to handle navigation differently, e.g. to _replace_ the current path for detail view activities.
 	 */
 	protected async navigateAsync(target: NavigationTarget) {
-		await app.activities.navigationController.navigateAsync(target);
+		await this._boundNavCtrl?.navigateAsync(target);
 	}
 
 	/**
@@ -328,59 +412,54 @@ export class Activity extends ManagedObject {
 		return queue;
 	}
 
-	/** A method that's called on an active activity, to be overridden to create and render the view if needed */
-	protected ready() {}
+	/** Activity options that were passed to constructor */
+	private _options: Activity.Options;
 
-	/** A method that's called and awaited before the activity is activated, to be overridden if needed */
-	protected async beforeActiveAsync() {}
-
-	/** A method that's called and awaited after the activity is activated, to be overridden if needed */
-	protected async afterActiveAsync() {}
-
-	/** A method that's called and awaited before the activity is deactivated, to be overridden if needed */
-	protected async beforeInactiveAsync() {}
-
-	/** A method that's called and awaited after the activity is deactivated, to be overridden if needed */
-	protected async afterInactiveAsync() {}
-
-	/** Set the view, used by {@link Activity.view} setter */
-	private _setView(view: View | undefined) {
-		if (view && !(view instanceof View)) throw invalidArgErr("view");
-		if (this._view === view) return;
-		if (this._view) {
-			// replacing old view: unlink first
-			this._view.unlink();
-		}
-		this._view = view;
-		if (view) {
-			// attach new view: delegate events and clear when unlinked
-			this.attach(view, {
-				handler: (_, event) => {
-					if (this.isActive() && !event.noPropagation) {
-						this.delegateViewEvent(event);
-					}
-				},
-				detached: () => {
-					if (this._view === view) this._view = undefined;
-				},
-			});
-		}
-	}
-
-	/** Current view, for setter/getter */
-	private _view?: View;
-
-	/** Activation queue for this activity */
+	/** @internal Activation queue for this activity */
 	private readonly _activation = new ActivationQueue();
 
-	/** Original class that's been updated using hot reload (set on prototype) */
+	/** @internal Last (bound) navigation controller instance */
+	private _boundNavCtrl?: NavigationController;
+
+	/** @internal Last (bound) renderer instance */
+	private _boundRenderer?: RenderContext;
+
+	/** @internal Last (bound) theme instance */
+	private _boundTheme?: UITheme;
+
+	/** @internal Original class that's been updated using hot reload (set on prototype) */
 	private declare _OrigClass?: typeof Activity;
 
-	/** Set of instances, if hot reload has been enabled for this activity (set on prototype) */
+	/** @internal Set of instances, if hot reload has been enabled for this activity (set on prototype) */
 	private declare _hotInstances?: Set<Activity>;
 }
 
-/** Helper class that contains activation state, and runs callbacks on activation/deactivation asynchronously */
+export namespace Activity {
+	/** Options that can be provided to the {@link Activity} constructor */
+	export class Options extends ConfigOptions {
+		/** The user-facing name of this activity, if any */
+		title?: StringConvertible;
+
+		/** The page ID associated with this activity, to match the (first part of the) navigation path */
+		navigationPageId?: string;
+
+		/** Default form context used with input elements, if any */
+		formContext?: UIFormContext;
+
+		/**
+		 * True if the view should be rendered within a dialog (using the current theme)
+		 * - If this option is set, the view is rendered using the theme's modal dialog factory instead of being rendered directly.
+		 * - This option cannot be used together with `renderPlacement`
+		 * @see {@link UITheme.ModalControllerFactory}
+		 */
+		showDialog?: boolean;
+
+		/** Render placement options, for custom rendering */
+		renderPlacement?: RenderContext.PlacementOptions;
+	}
+}
+
+/** @internal Helper class that contains activation state, and runs callbacks on activation/deactivation asynchronously */
 class ActivationQueue {
 	/** Current state */
 	active = false;

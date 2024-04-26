@@ -28,9 +28,7 @@ describe("NavigationTarget", () => {
 	});
 
 	test("Constructor with activity", () => {
-		let activity = new Activity();
-		activity.navigationPageId = "foo";
-		activity.title = "Foo";
+		let activity = new Activity({ navigationPageId: "foo", title: "Foo" });
 		let t = new NavigationTarget(activity);
 		expect(t).toHaveProperties({ pageId: "foo", detail: "", title: "Foo" });
 	});

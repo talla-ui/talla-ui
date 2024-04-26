@@ -101,6 +101,11 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 	}
 
 	async showAsync(place?: Partial<RenderContext.PlacementOptions>) {
+		// TODO(refactor): together with TestModalMenu this is
+		// a good candidate for refactoring. Refer to modal dialog
+		// implementation for a loop based approach. Would just
+		// need to find a way to associate an event with a menu item.
+
 		// return a promise that's resolved when one of the items is selected
 		// or when the menu is dismissed otherwise
 		return new Promise<{ key: string } | undefined>((r) => {

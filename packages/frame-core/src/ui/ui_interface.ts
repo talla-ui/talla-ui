@@ -41,6 +41,22 @@ export namespace ui {
 	};
 
 	/**
+	 * Placement attributes to be used with `<mount>` or {@link ui.mount()}
+	 * - Use only the `page` property to render the view as a full-screen page
+	 * - Use only the `id` property to render the view with a specific mount ID (e.g. HTML element `id`)
+	 * - Otherwise, set the `place` property to a custom {@link RenderContext.PlacementOptions} object
+	 * @see {@link ui.mount}
+	 */
+	export type MountPlacement = {
+		/** True if the view should be rendered as a full-screen page */
+		page?: true;
+		/** Target mount ID (e.g. HTML element `id`) */
+		id?: string;
+		/** Custom placement options */
+		place?: RenderContext.PlacementOptions;
+	};
+
+	/**
 	 * Type definition for using {@link ui.jsx}
 	 * @hidedocs
 	 */
@@ -63,6 +79,7 @@ export namespace ui {
 			animate: View.ViewPreset<UIAnimationView>;
 			conditional: View.ViewPreset<UIConditionalView>;
 			list: View.ViewPreset<UIListView>;
+			mount: ui.MountPlacement;
 		}
 	}
 }
@@ -85,6 +102,21 @@ export interface ui {
 	 * - `Foo: %[foo=some.numProp:?||None]` — inserts a binding for `some.numProp`, but allows for localization of `Foo: %[foo:?||None]` instead (and inserts `None` if the value for `some.numProp` is undefined or an empty string).
 	 */
 	jsx(f: string, presets: any, ...rest: any[]): ViewClass;
+
+	/**
+	 * Creates a preset view that renders the embedded view as a full-screen page
+	 * - This function is equivalent to `ui.mount({ page: true }, content)`
+	 */
+	page(content: ViewClass): ViewClass;
+
+	/**
+	 * Creates a preset view that renders the embedded view with the specified placement options
+	 * @param options A set of properties indicating how the view should be placed
+	 * @param content The content that will be rendered
+	 * @returns A new view class with the specified placement options
+	 * @see {@link ui.MountPlacement}
+	 */
+	mount(options: ui.MountPlacement, content: ViewClass): ViewClass;
 
 	/**
 	 * Creates a preset {@link UICell} constructor using the provided options and content

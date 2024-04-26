@@ -59,7 +59,7 @@ export namespace RenderContext {
 	 * Type definition for global rendering placement options
 	 *
 	 * @description
-	 * An object of this type can be provided when rendering a view object using {@link GlobalContext.render app.render()}, or {@link RenderContext.DynamicRendererWrapper}.
+	 * An object of this type can be provided when rendering a view object using {@link GlobalContext.render app.render()}, or {@link RenderContext.ViewController}.
 	 *
 	 * The following properties determine how root view elements are placed on the screen:
 	 * - `mode` — One of the {@link RenderContext.PlacementMode} options.
@@ -201,7 +201,7 @@ export namespace RenderContext {
 	 *
 	 * @hideconstructor
 	 */
-	export class DynamicRendererWrapper {
+	export class ViewController {
 		/** The current render callback, if any */
 		callback?: RenderCallback;
 
@@ -217,18 +217,14 @@ export namespace RenderContext {
 		}
 
 		/** Renders the provided view using a new callback, or previously stored callback */
-		render(
-			content?: View,
-			callback?: RenderCallback,
-			place?: PlacementOptions,
-		) {
+		render(view?: View, callback?: RenderCallback, place?: PlacementOptions) {
 			let isNewCallback = callback && callback !== this.callback;
-			if (content && typeof content.render !== "function") {
+			if (view && typeof view.render !== "function") {
 				throw invalidArgErr("content");
 			}
 
 			// use old callback to remove output
-			(!content || isNewCallback) &&
+			(!view || isNewCallback) &&
 				this.callback &&
 				this.lastRenderOutput &&
 				this._clear();
@@ -237,13 +233,16 @@ export namespace RenderContext {
 			else if (!callback) callback = this.callback;
 
 			// render content if possible, and clear when unlinked
-			if (content && callback) {
+			if (view && callback) {
 				if (!this._ownCallback || isNewCallback) {
-					this._ownCallback = this._wrap(callback, place);
+					this._ownCallback = this._wrap(
+						callback,
+						place || view.renderPlacement,
+					);
 				}
-				this.lastView = content;
-				this._listener = new DynamicListener(this, content);
-				content.render(this._ownCallback);
+				this.lastView = view;
+				this._listener = new ViewListener(this, view);
+				view.render(this._ownCallback);
 			}
 			return this;
 		}
@@ -288,15 +287,15 @@ export namespace RenderContext {
 			});
 		}
 
-		private _listener?: DynamicListener;
+		private _listener?: ViewListener;
 		private _ownCallback: any;
 		private _seq = 0;
 	}
 
 	/** @internal A listener that's used to observe dynamically rendered content views */
-	class DynamicListener {
+	class ViewListener {
 		constructor(
-			public wrapper: DynamicRendererWrapper,
+			public wrapper: ViewController,
 			view: View,
 		) {
 			view.listen(this);

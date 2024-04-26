@@ -131,7 +131,7 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 			typeof event.data.render === "function" &&
 			event.source === this.observed
 		) {
-			if (!this.element || !this.element.parentNode) {
+			if (!this.element) {
 				// create output element if needed
 				let output = (this.output = this.getOutput());
 				this.element = output.element;

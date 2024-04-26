@@ -47,39 +47,40 @@ class ListItemView extends ViewComposite.withPreset(
 	// ...
 }
 
-const page = ui.cell(
-	{ padding: 16 },
-	ui.column(
-		{ width: 400, position: { gravity: "center" } },
-		ui.row(
-			{
-				accessibleRole: "form",
-				accessibleLabel: "New item form",
-				onSubmit: "+AddItem",
-			},
-			ui.textField({
-				formField: "text",
-				style: { grow: 1 },
-				requestFocus: true,
-			}),
-			ui.button("Add", "Submit", ui.style.BUTTON_PRIMARY),
-		),
-		ui.spacer(0, 8),
-		ui.list(
-			{ items: bound.list("items") },
-			ListItemView.preset({
-				text: bound.string("item.text"),
-				selected: bound("selectedItem").equals("item"),
-			}),
-			ui.column({ spacing: 8, accessibleRole: "list" }),
+const page = ui.page(
+	ui.cell(
+		{ padding: 16 },
+		ui.column(
+			{ width: 400, position: { gravity: "center" } },
+			ui.row(
+				{
+					accessibleRole: "form",
+					accessibleLabel: "New item form",
+					onSubmit: "+AddItem",
+				},
+				ui.textField({
+					formField: "text",
+					style: { grow: 1 },
+					requestFocus: true,
+				}),
+				ui.button("Add", "Submit", ui.style.BUTTON_PRIMARY),
+			),
+			ui.spacer(0, 8),
+			ui.list(
+				{ items: bound.list("items") },
+				ListItemView.preset({
+					text: bound.string("item.text"),
+					selected: bound("selectedItem").equals("item"),
+				}),
+				ui.column({ spacing: 8, accessibleRole: "list" }),
+			),
 		),
 	),
 );
 
 export class ListActivity extends Activity {
-	ready() {
-		this.view = new page();
-		app.showPage(this.view);
+	createView() {
+		return new page();
 	}
 
 	formContext = new UIFormContext({ text: "" });

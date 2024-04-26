@@ -34,7 +34,7 @@ describe("UIViewRenderer", (scope) => {
 		let MyCell = ui.cell(ui.label("foo"));
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new MyCell();
-		app.showPage(viewRenderer);
+		t.render(viewRenderer);
 		await t.expectOutputAsync(50, { text: "foo" });
 		expect(viewRenderer.findViewContent(UILabel)).toBeArray(1);
 	});
@@ -44,7 +44,7 @@ describe("UIViewRenderer", (scope) => {
 		let MyCell2 = ui.cell(ui.label("bar"));
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new MyCell1();
-		app.showPage(viewRenderer);
+		t.render(viewRenderer);
 		await t.expectOutputAsync(50, { text: "foo" });
 		viewRenderer.view = new MyCell2();
 		await t.expectOutputAsync(50, { text: "bar" });
@@ -54,7 +54,7 @@ describe("UIViewRenderer", (scope) => {
 		let MyCell = ui.cell(ui.label("foo"));
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new MyCell();
-		app.showPage(viewRenderer);
+		t.render(viewRenderer);
 		await t.expectOutputAsync(50, { text: "foo" });
 		viewRenderer.view.unlink();
 		await t.sleep(20);
@@ -68,9 +68,8 @@ describe("UIViewRenderer", (scope) => {
 		);
 		const Preset = CompView.preset({ text: "foo" });
 		class MyActivity extends Activity {
-			protected override ready() {
-				this.view = new (ui.renderView({ view: bound("vc") }))();
-				app.showPage(this.view);
+			protected override createView() {
+				return new (ui.page(ui.renderView({ view: bound("vc") })))();
 			}
 			vc = this.attach(new Preset());
 		}
@@ -81,7 +80,7 @@ describe("UIViewRenderer", (scope) => {
 	test("Set view and focus", async (t) => {
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new UITextField();
-		app.showPage(viewRenderer);
+		t.render(viewRenderer);
 		await t.expectOutputAsync(50, { type: "textfield", focused: false });
 		viewRenderer.requestFocus();
 		await t.expectOutputAsync(50, { type: "textfield", focused: true });
@@ -90,9 +89,8 @@ describe("UIViewRenderer", (scope) => {
 	test("Use activity view and render", async (t) => {
 		// activity that will be rendered as nested view
 		class MySecondActivity extends Activity {
-			protected override ready() {
-				const ViewBody = ui.cell(ui.button("foo", "+ButtonPress"));
-				this.view = new ViewBody();
+			protected override createView() {
+				return new (ui.page(ui.cell(ui.button("foo", "+ButtonPress"))))();
 			}
 			onButtonPress() {
 				t.count("foo-second");
@@ -101,13 +99,14 @@ describe("UIViewRenderer", (scope) => {
 
 		// containing activity
 		class MyActivity extends Activity {
-			protected override ready() {
-				const ViewBody = ui.cell(
-					{ accessibleLabel: "outer" },
-					ui.renderView({ view: bound("second.view") }),
+			protected override createView() {
+				const ViewBody = ui.page(
+					ui.cell(
+						{ accessibleLabel: "outer" },
+						ui.renderView({ view: bound("second.view") }),
+					),
 				);
-				this.view = new ViewBody();
-				app.showPage(this.view);
+				return new ViewBody();
 			}
 			readonly second = this.attach(new MySecondActivity());
 			onButtonPress(e: ManagedEvent) {

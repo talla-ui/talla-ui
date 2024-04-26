@@ -19,9 +19,17 @@ export class UIConditionalView extends ViewComposite {
 				return state;
 			},
 			set(this: UIConditionalView, v) {
-				state = v;
-				if (!!this.body !== !!v) {
-					this.body = (v && this._Body && new this._Body()) || undefined;
+				state = !!v;
+				if (!!this.body !== state) {
+					if (state && this._Body) {
+						this.body = this.attach(new this._Body(), (e) => {
+							this.delegateViewEvent(e);
+						});
+					} else {
+						if (this.body) this.body.unlink();
+						this.body = undefined;
+					}
+					this.render();
 				}
 			},
 		});

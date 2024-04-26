@@ -18,9 +18,8 @@ export class MainActivity extends Activity {
 		await this.countActivity.activateAsync();
 	}
 
-	protected override ready() {
-		this.view = new body();
-		app.showPage(this.view);
+	protected override createView() {
+		return new body();
 	}
 
 	selectedTheme: string = "light";

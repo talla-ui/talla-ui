@@ -67,7 +67,7 @@ describe("UIButton", (scope) => {
 			label: "foo",
 			accessibleLabel: "My button",
 		});
-		app.showPage(new MyButton());
+		t.render(new MyButton());
 		await t.expectOutputAsync(100, {
 			text: "foo",
 			accessibleLabel: "My button",
@@ -82,7 +82,7 @@ describe("UIButton", (scope) => {
 				bold: true,
 			},
 		});
-		app.showPage(new MyButton());
+		t.render(new MyButton());
 		await t.expectOutputAsync(100, {
 			text: "foo",
 			styles: {
@@ -93,11 +93,10 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Click event propagation", async (t) => {
-		const ViewBody = ui.cell(ui.button("Button", "ButtonClicked"));
+		const ViewBody = ui.page(ui.cell(ui.button("Button", "ButtonClicked")));
 		class MyActivity extends Activity {
-			protected override ready() {
-				this.view = new ViewBody();
-				app.showPage(this.view);
+			protected override createView() {
+				return new ViewBody();
 			}
 			onButtonClicked() {
 				t.count("clicked");
@@ -115,9 +114,11 @@ describe("UIButton", (scope) => {
 			navigateTo: "/foo",
 		});
 		class MyActivity extends Activity {
-			protected override ready() {
-				this.view = new MyButton();
-				app.showPage(this.view);
+			constructor() {
+				super({ renderPlacement: { mode: "page" } });
+			}
+			protected override createView() {
+				return new MyButton();
 			}
 		}
 		app.addActivity(new MyActivity(), true);

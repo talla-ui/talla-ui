@@ -45,73 +45,75 @@ const ResultCellStyle = ui.style.CELL.extend(
 );
 
 export default (
-	<cell style={{ shrink: 1 }}>
-		<column padding={{ start: 16 }}>
-			<cell
-				style={{
-					height: 72,
-					grow: 0,
-					shrink: 0,
-					padding: { start: 8, end: 12 },
-				}}
-			>
-				<row>
-					<textfield
-						style={TextFieldStyle}
-						requestFocus
-						disableSpellCheck
-						onInput="SearchInput"
-						onArrowDownKeyPress="ArrowDownOnInput"
-						onEnterKeyPress="GoToFirstResult"
-					>
-						Search...
-					</textfield>
-					<button
-						style={CloseButtonStyle}
-						icon={ui.icon.CLOSE}
-						iconColor={ui.color("inherit")}
-						onClick="Close"
-					/>
-				</row>
-			</cell>
-			<cell
-				hidden={bound.boolean("!hasInput").or("!loading")}
-				padding={{ y: 32 }}
-			>
-				<label>Loading...</label>
-			</cell>
-			<cell>
-				<scroll position={{ gravity: "cover" }}>
-					<list items={bound.list("results")} maxItems={50}>
-						<cell
-							allowFocus
-							style={ResultCellStyle}
-							onClick="GoToResult"
-							onEnterKeyPress="GoToResult"
-							onArrowUpKeyPress="FocusPrevious"
-							onArrowDownKeyPress="FocusNext"
-							accessibleRole="listitem"
+	<mount id="docpage-search">
+		<cell style={{ shrink: 1 }}>
+			<column padding={{ start: 16 }}>
+				<cell
+					style={{
+						height: 72,
+						grow: 0,
+						shrink: 0,
+						padding: { start: 8, end: 12 },
+					}}
+				>
+					<row>
+						<textfield
+							style={TextFieldStyle}
+							requestFocus
+							disableSpellCheck
+							onInput="SearchInput"
+							onArrowDownKeyPress="ArrowDownOnInput"
+							onEnterKeyPress="GoToFirstResult"
 						>
-							<column align="start">
-								<row>
-									<label style={{ fontWeight: 500, shrink: 0 }}>
-										{bound.string("item.title")}
-									</label>
-									<label dim>{bound.string("item.showId")}</label>
-								</row>
-								<label style={{ padding: 0, fontSize: 14 }} htmlFormat>
-									{bound.string("item.abstract")}
-								</label>
-							</column>
-						</cell>
-						<cell
-							style={{ grow: 0 }}
-							allowKeyboardFocus
-							accessibleRole="list"
+							Search...
+						</textfield>
+						<button
+							style={CloseButtonStyle}
+							icon={ui.icon.CLOSE}
+							iconColor={ui.color("inherit")}
+							onClick="Close"
 						/>
-					</list>
-				</scroll>
-			</cell>
-		</column>
-	</cell>
+					</row>
+				</cell>
+				<cell
+					hidden={bound.boolean("!hasInput").or("!loading")}
+					padding={{ y: 32 }}
+				>
+					<label>Loading...</label>
+				</cell>
+				<cell>
+					<scroll position={{ gravity: "cover" }}>
+						<list items={bound.list("results")} maxItems={50}>
+							<cell
+								allowFocus
+								style={ResultCellStyle}
+								onClick="GoToResult"
+								onEnterKeyPress="GoToResult"
+								onArrowUpKeyPress="FocusPrevious"
+								onArrowDownKeyPress="FocusNext"
+								accessibleRole="listitem"
+							>
+								<column align="start">
+									<row>
+										<label style={{ fontWeight: 500, shrink: 0 }}>
+											{bound.string("item.title")}
+										</label>
+										<label dim>{bound.string("item.showId")}</label>
+									</row>
+									<label style={{ padding: 0, fontSize: 14 }} htmlFormat>
+										{bound.string("item.abstract")}
+									</label>
+								</column>
+							</cell>
+							<cell
+								style={{ grow: 0 }}
+								allowKeyboardFocus
+								accessibleRole="list"
+							/>
+						</list>
+					</scroll>
+				</cell>
+			</column>
+		</cell>
+	</mount>
 );

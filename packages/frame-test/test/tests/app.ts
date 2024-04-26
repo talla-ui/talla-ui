@@ -12,12 +12,13 @@ import { describe, expect, test, useTestContext } from "../../dist/index.js";
 // ... from "@desk-framework/frame-test"
 
 class CountActivity extends Activity {
-	protected override ready() {
-		this.view = new (ui.cell(
-			ui.textField({ value: bound("count"), onInput: "SetCount" }),
-			ui.button("+", "CountUp"),
+	protected override createView() {
+		return new (ui.page(
+			ui.cell(
+				ui.textField({ value: bound("count"), onInput: "SetCount" }),
+				ui.button("+", "CountUp"),
+			),
 		))();
-		app.showPage(this.view);
 	}
 	override navigationPageId = "count";
 	count = 0;
@@ -47,7 +48,7 @@ describe("App test", (scope) => {
 			ui.label(bound.string("title")),
 		).preset({ title: "TEST" });
 		let myView = new MyView();
-		app.showPage(myView);
+		t.render(myView);
 		await t.expectOutputAsync(100, { text: "TEST" });
 	});
 

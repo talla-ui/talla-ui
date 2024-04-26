@@ -55,7 +55,7 @@ export class UIViewRenderer extends View {
 
 		// use given callback to (re-) render view
 		if (!this._renderer) {
-			this._renderer = new RenderContext.DynamicRendererWrapper();
+			this._renderer = new RenderContext.ViewController();
 		}
 		this._renderer.render(this.view, callback);
 		return this;
@@ -83,7 +83,7 @@ export class UIViewRenderer extends View {
 
 	private _view?: View;
 	private _listener?: ViewListener;
-	private _renderer?: RenderContext.DynamicRendererWrapper;
+	private _renderer?: RenderContext.ViewController;
 }
 
 /** @internal A listener that's used to observe rendered content views */

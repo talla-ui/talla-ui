@@ -201,20 +201,21 @@ describe("UIFormContext", () => {
 		const FormContainer = ViewComposite.withPreset<{
 			formContext?: UIFormContext;
 		}>({}, (...content) => ui.column(...content));
-		const ViewBody = ui.row(
-			FormContainer.preset(
-				{ formContext: bound("form1") },
-				ui.textField({ formField: "text" }),
-			),
-			FormContainer.preset(
-				{ formContext: bound("form2") },
-				ui.textField({ formField: "text" }),
+		const ViewBody = ui.page(
+			ui.row(
+				FormContainer.preset(
+					{ formContext: bound("form1") },
+					ui.textField({ formField: "text" }),
+				),
+				FormContainer.preset(
+					{ formContext: bound("form2") },
+					ui.textField({ formField: "text" }),
+				),
 			),
 		);
 		class MyActivity extends Activity {
-			protected override ready() {
-				this.view = new ViewBody();
-				app.showPage(this.view);
+			protected override createView() {
+				return new ViewBody();
 			}
 			form1 = new UIFormContext({ text: "foo" });
 			form2 = new UIFormContext({ text: "bar" });

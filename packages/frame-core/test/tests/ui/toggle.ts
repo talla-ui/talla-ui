@@ -1,7 +1,6 @@
 import {
 	UIToggle,
 	UIFormContext,
-	app,
 	strf,
 	ui,
 	ManagedObject,
@@ -40,7 +39,7 @@ describe("UIToggle", (scope) => {
 	});
 
 	test("Rendered with label", async (t) => {
-		app.showPage(new UIToggle("foo", true));
+		t.render(new UIToggle("foo", true));
 		await t.expectOutputAsync(100, {
 			text: "foo",
 			checked: true,
@@ -49,7 +48,7 @@ describe("UIToggle", (scope) => {
 
 	test("User input, directly setting checked value", async (t) => {
 		let toggle = new UIToggle();
-		app.showPage(toggle);
+		t.render(toggle);
 		let toggleElt = (
 			await t.expectOutputAsync(100, { type: "toggle" })
 		).getSingle();
@@ -73,7 +72,7 @@ describe("UIToggle", (scope) => {
 
 		// render field, check that checkbox is checked
 		t.log("Rendering with state");
-		app.showPage(toggle);
+		t.render(toggle);
 		let toggleElt = (
 			await t.expectOutputAsync(100, { type: "toggle" })
 		).getSingle();

@@ -1,4 +1,4 @@
-import { app, UILabel, UIScrollContainer, ui } from "../../../dist/index.js";
+import { UILabel, UIScrollContainer, ui } from "../../../dist/index.js";
 import {
 	describe,
 	test,
@@ -45,7 +45,7 @@ describe("UIScrollContainer", (scope) => {
 	test("Rendered as container", async (t) => {
 		let cont = new UIScrollContainer();
 		cont.content.add(new UILabel("foo"));
-		app.showPage(cont);
+		t.render(cont);
 		await t.expectOutputAsync(50, { type: "container" }, { text: "foo" });
 	});
 });

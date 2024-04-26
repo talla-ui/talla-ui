@@ -1,4 +1,4 @@
-import { app, ui, UIColumn, UILabel, UIRow } from "../../../dist/index.js";
+import { ui, UIColumn, UILabel, UIRow } from "../../../dist/index.js";
 import {
 	describe,
 	test,
@@ -43,13 +43,13 @@ describe("UIRow and UIColumn", (scope) => {
 
 	test("Rendered as row", async (t) => {
 		let row = new UIRow();
-		app.showPage(row);
+		t.render(row);
 		await t.expectOutputAsync(100, { type: "row" });
 	});
 
 	test("Rendered as column", async (t) => {
 		let col = new UIColumn();
-		app.showPage(col);
+		t.render(col);
 		await t.expectOutputAsync(100, { type: "column" });
 	});
 
@@ -58,7 +58,7 @@ describe("UIRow and UIColumn", (scope) => {
 			{ height: 123 },
 			ui.column({ width: 123 }, ui.label("foo")),
 		);
-		app.showPage(new Preset());
+		t.render(new Preset());
 
 		// wait for row > col > label to be rendered
 		// and check row height

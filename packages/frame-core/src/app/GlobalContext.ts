@@ -254,48 +254,14 @@ export class GlobalContext extends ManagedObject {
 	 *
 	 * @param view The view object to be rendered
 	 * @param place Mount element ID, or global view placement options, refer to {@link RenderContext.PlacementOptions}
-	 * @returns A new {@link RenderContext.DynamicRendererWrapper} instance, which can be used to control the rendered view
+	 * @returns A new {@link RenderContext.ViewController} instance, which can be used to control the rendered view
 	 * @error This method throws an error if the renderer hasn't been initialized yet.
 	 */
-	render(view: View, place: string | RenderContext.PlacementOptions) {
-		if (!this.renderer) throw err(ERROR.GlobalContext_NoRenderer);
-		return new RenderContext.DynamicRendererWrapper().render(
-			view,
-			this.renderer.getRenderCallback(),
-			typeof place === "string" ? { mode: "mount", mountId: place } : place,
-		);
-	}
-
-	/**
-	 * Displays a full-screen page with the specified content view
-	 * - The page will be displayed until the view is unlinked. Further rendered content will be placed on top, if any.
-	 * - The same view cannot be shown twice. A second call with the same view will be ignored.
-	 * @param view The view object to be displayed
-	 * @error This method throws an error if the renderer hasn't been initialized yet.
-	 */
-	showPage(view?: View) {
-		if (!view || shownViews.has(view)) return;
-		shownViews.set(view, true);
-
-		// render view directly, removes itself when unlinked
-		this.render(view, { mode: "page" });
-	}
-
-	/**
-	 * Displays a modal dialog with the specified content view
-	 * - The dialog will be displayed until the view is unlinked. View events are not handled, so add a listener separately if the view is not already attached to an activity.
-	 * - The same view cannot be shown twice. A second call with the same view will be ignored.
-	 * @param view The view object to be displayed within a modal dialog
-	 * @error This method throws an error if the theme modal dialog controller can't be initialized (i.e. there's no current theme, or the theme doesn't support modal dialog views).
-	 */
-	showDialog(view?: View) {
-		if (!view || shownViews.has(view)) return;
-		shownViews.set(view, true);
-
-		// use theme modal dialog controller to render view
-		let controller = this.theme?.modalFactory?.buildDialog?.(view);
-		if (!controller) throw err(ERROR.GlobalContext_NoModal);
-		controller.show();
+	render(view: View, place?: RenderContext.PlacementOptions) {
+		if (!this.renderer) throw err(ERROR.Render_Unavailable);
+		let callback = this.renderer.getRenderCallback();
+		let result = new RenderContext.ViewController();
+		return result.render(view, callback, place);
 	}
 
 	/**
@@ -319,7 +285,7 @@ export class GlobalContext extends ManagedObject {
 				? MessageDialogOptions.init(config)
 				: new MessageDialogOptions(config, buttonLabel),
 		);
-		if (!controller) throw err(ERROR.GlobalContext_NoModal);
+		if (!controller) throw err(ERROR.Render_NoModal);
 		await controller.showAsync();
 	}
 
@@ -346,7 +312,7 @@ export class GlobalContext extends ManagedObject {
 				? MessageDialogOptions.init(config)
 				: new MessageDialogOptions(config, confirmLabel, cancelLabel),
 		);
-		if (!controller) throw err(ERROR.GlobalContext_NoModal);
+		if (!controller) throw err(ERROR.Render_NoModal);
 		let result = await controller.showAsync();
 		return result.confirmed ? true : result.other ? 0 : false;
 	}
@@ -372,7 +338,7 @@ export class GlobalContext extends ManagedObject {
 		let controller = this.theme?.modalFactory?.buildMenu?.(
 			UITheme.MenuOptions.init(config),
 		);
-		if (!controller) throw err(ERROR.GlobalContext_NoModal);
+		if (!controller) throw err(ERROR.Render_NoModal);
 		let result = await controller.showAsync({
 			ref: ref && ref.lastRenderOutput,
 		});
@@ -395,7 +361,7 @@ export class GlobalContext extends ManagedObject {
 		ref: { lastRenderOutput?: RenderContext.Output },
 		animation?: RenderContext.OutputTransformer,
 	) {
-		if (!this.renderer) throw err(ERROR.GlobalContext_NoRenderer);
+		if (!this.renderer) throw err(ERROR.Render_Unavailable);
 		let out = ref.lastRenderOutput;
 		if (out && animation) {
 			await this.renderer.animateAsync(out, animation);
@@ -404,7 +370,7 @@ export class GlobalContext extends ManagedObject {
 
 	/**
 	 * Adds a hot-reload handler for the provided module handle, to update instances of a particular activity
-	 * - Where supported, hot-reloading the provided module will update instances of the specified activity: updating methods (but not properties), and calling {@link Activity.ready()}.
+	 * - Where supported, hot-reloading the provided module will update instances of the specified activity: updating methods (but not properties), and re-rendering its view.
 	 * - If hot-reloading isn't supported, e.g. if the application is compiled in production mode, this method does nothing.
 	 * @param handle The module that contains the activity to be hot-reloaded, or hot-reload handle (e.g. `import.meta.hot`, depending on build system)
 	 * @param ActivityClass The activity that should be updated and re-rendered
@@ -425,9 +391,6 @@ export class GlobalContext extends ManagedObject {
  * Use `app` to access properties and methods of {@link GlobalContext}, e.g. `app.theme` and `app.addActivity(...)`. This instance is available immediately when the application starts, and remains the same throughout its lifetime.
  */
 export const app = GlobalContext.instance;
-
-/** A map to keep track of views that have already been displayed with showPage and showDialog, and shouldn't be re-rendered */
-const shownViews = new WeakMap<View, boolean>();
 
 // use default error handler
 setErrorHandler((err) => {

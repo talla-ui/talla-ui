@@ -8,7 +8,6 @@ import {
 	ManagedObject,
 	UICell,
 	ViewComposite,
-	app,
 	bound,
 	ui,
 } from "../../../dist/index.js";
@@ -33,7 +32,7 @@ describe("UIConditionalView", () => {
 		cell.listen((e) => {
 			if (e.name === "ButtonClick") t.count("click");
 		});
-		app.showPage(cell);
+		t.render(cell);
 		let expectButton = await t.expectOutputAsync(500, { type: "button" });
 
 		t.log("Clicking button");
@@ -61,7 +60,7 @@ describe("UIConditionalView", () => {
 		let myView = new MyView();
 
 		t.log("Rendering view");
-		app.showPage(myView);
+		t.render(myView);
 
 		// after rendering, there should be a cell but no label
 		t.log("Checking for cell but no label");
