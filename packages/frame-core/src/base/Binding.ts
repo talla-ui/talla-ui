@@ -145,7 +145,7 @@ export class Binding<T = any> {
 
 		if (typeof propertyOrFunction !== "function") {
 			let p = propertyOrFunction;
-			propertyOrFunction = function (v: any) {
+			propertyOrFunction = function setBoundProperty(v: any) {
 				(target as any)[p] = v;
 			};
 

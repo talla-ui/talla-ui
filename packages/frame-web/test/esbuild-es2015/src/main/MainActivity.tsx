@@ -11,16 +11,19 @@ import text from "../text";
 import body from "./body";
 
 export class MainActivity extends Activity {
-	navigationPageId = "main";
-	countActivity = this.attach(new CountActivity());
+	constructor() {
+		super({ navigationPageId: "main" });
+	}
+
+	protected createView() {
+		return new body();
+	}
 
 	protected async afterActiveAsync() {
 		await this.countActivity.activateAsync();
 	}
 
-	protected override createView() {
-		return new body();
-	}
+	countActivity = this.attach(new CountActivity());
 
 	selectedTheme: string = "light";
 

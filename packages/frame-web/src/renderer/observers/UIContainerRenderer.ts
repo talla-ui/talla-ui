@@ -403,10 +403,14 @@ export class ContentUpdater {
 				if (!output || !output.element) {
 					// no output... delete last element (and separator) now
 					let sep = this._separators.get(item);
-					if (sep && sep.parentNode) this.element.removeChild(sep);
-					if (lastElt && lastElt.parentNode) this.element.removeChild(lastElt);
+					if (sep && sep.parentNode === this.element) {
+						this.element.removeChild(sep);
+					}
+					if (lastElt && lastElt.parentNode === this.element) {
+						this.element.removeChild(lastElt);
+					}
 					scheduleAfter && scheduleAfter();
-				} else if (lastElt && lastElt.parentNode) {
+				} else if (lastElt && lastElt.parentNode === this.element) {
 					// can replace... (and add/move separator if needed)
 					if (lastElt.previousSibling) {
 						let sep = this._getSeparatorFor(item);

@@ -1,7 +1,7 @@
 import { ManagedEvent } from "../base/ManagedEvent.js";
 import { ManagedList } from "../base/ManagedList.js";
 import { ManagedObject } from "../base/ManagedObject.js";
-import { invalidArgErr } from "../errors.js";
+import { invalidArgErr, safeCall } from "../errors.js";
 import { Service } from "./Service.js";
 
 /**
@@ -155,7 +155,7 @@ export namespace ServiceContext {
 			});
 
 			// initialize in case service is already registered
-			contextChange();
+			safeCall(contextChange);
 		}
 
 		/**

@@ -55,29 +55,58 @@ export abstract class ViewComposite<TView extends View = View> extends View {
 		defaults: TDefaults,
 		ViewBody?: ViewClass<TView> | ((...content: TContent) => ViewClass<TView>),
 	): ViewComposite.WithPreset<TPreset, TContent, TView, TDefaults> {
-		return class extends ViewComposite<TView> {
-			static preset() {
-				return (this as any).bind(undefined, ...arguments);
-			}
-			constructor(preset: any, ...content: TContent) {
-				super();
-				this._Content = content;
-				if (preset?.variant && !(this instanceof preset.variant.type)) {
-					throw invalidArgErr("preset.variant");
+		function applyTo(c: ViewComposite, ...presets: any[]) {
+			let apply: any = {};
+			for (let p of presets) {
+				if (!p) continue;
+				if (p.variant) {
+					if (!(c instanceof p.variant.type)) {
+						throw invalidArgErr("preset.variant");
+					}
+					Object.assign(apply, p.variant.preset);
 				}
-				let apply = { ...defaults, ...preset?.variant?.preset, ...preset };
-				delete apply.variant;
-				this.applyViewPreset(apply);
+				Object.assign(apply, p);
 			}
-			protected override createView() {
-				return ViewBody
-					? ViewBody.prototype instanceof View
-						? new (ViewBody as ViewClass)()
-						: new ((ViewBody as Function)(...this._Content))()
-					: undefined;
-			}
-			private _Content: TContent;
-		} as any;
+			delete apply.variant;
+			c.applyViewPreset(apply);
+		}
+		function makePresetClass(ViewBody?: ViewClass, ...presets: any[]): any {
+			return class PresetViewComposite extends ViewComposite<TView> {
+				static preset() {
+					return (this as any).bind(undefined, ...arguments);
+				}
+				constructor(preset: any) {
+					super();
+					applyTo(this, ...presets, preset);
+				}
+				protected override createView() {
+					if (ViewBody) return new ViewBody() as TView;
+				}
+			};
+		}
+		if (!ViewBody || ViewBody.prototype instanceof View) {
+			return makePresetClass(ViewBody as any, defaults) as any;
+		} else if (typeof ViewBody === "function") {
+			// return a ViewComposite that can be further preset with content
+			return class PresetViewComposite extends ViewComposite<TView> {
+				static preset(preset: any, ...content: TContent) {
+					// now preset with given content, if any
+					let PresetViewBody = (ViewBody as Function)(...content);
+					return makePresetClass(PresetViewBody, defaults, preset);
+				}
+				constructor(preset: any, ...content: TContent) {
+					super();
+					applyTo(this, defaults, preset);
+					this._Content = content;
+				}
+				protected override createView() {
+					return new ((ViewBody as Function)(...this._Content))();
+				}
+				private _Content: TContent;
+			} as any;
+		} else {
+			throw invalidArgErr("ViewBody");
+		}
 	}
 
 	/**

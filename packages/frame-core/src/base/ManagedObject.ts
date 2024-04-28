@@ -176,7 +176,7 @@ export class ManagedObject {
 	listen(listener?: ManagedObject.Listener<this>) {
 		// add a single handler if provided
 		if (typeof listener === "function") {
-			addTrap(this, $_traps_event, function (target, p, event) {
+			addTrap(this, $_traps_event, function listen(target, p, event) {
 				safeCall(function () {
 					listener.call(target as any, event as ManagedEvent);
 				});
@@ -187,7 +187,7 @@ export class ManagedObject {
 			let trap = addTrap(
 				this,
 				$_traps_event,
-				function (target, p, event) {
+				function trap(target, p, event) {
 					handler &&
 						safeCall(function () {
 							handler.call(listener, target as any, event as ManagedEvent);

@@ -247,7 +247,7 @@ export class ContentUpdater {
 						}
 					}
 					scheduleAfter && scheduleAfter();
-				} else if (lastElt && lastElt.parent) {
+				} else if (lastElt && lastElt.parent === this.element) {
 					// can replace...
 					if (lastElt !== output.element) {
 						let content = this.element.content;

@@ -28,6 +28,7 @@ export class DialogStyles {
 		style: ui.style.CELL_BG.extend({
 			width: "auto",
 			minWidth: 360,
+			maxWidth: "100vw",
 			grow: 0,
 			borderRadius: 12,
 		}),

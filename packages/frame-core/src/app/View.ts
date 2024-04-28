@@ -99,7 +99,7 @@ export abstract class View extends ManagedObject {
 		// override emit method if forwarding or intercepting events
 		if (events) {
 			let _emit = this.emit.bind(this);
-			this.emit = function (event, data?: any) {
+			this.emit = function emit(event, data?: any) {
 				if (event === undefined) return this;
 				if (typeof event === "string") {
 					event = new ManagedEvent(event, this, data);

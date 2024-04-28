@@ -33,21 +33,19 @@ const _themeBinding = bound("theme");
  *
  * This class provides infrastructure for path-based routing, based on the application's navigation path (such as the browser's current URL). However, activities can also be activated and deactivated manually, or activated immediately when added using {@link GlobalContext.addActivity app.addActivity()}.
  *
- * Activities emit `Active` and `Inactive` change events when state transitions occur.
+ * Activities emit `Active` and `Inactive` change events when state transitions occur. Several methods can be used to add custom behavior when the activity is activated or deactivated – i.e. {@link beforeActiveAsync}, {@link afterActiveAsync}, {@link beforeInactiveAsync}, and {@link afterInactiveAsync}. In addition, the {@link createView()} method must be overridden to create the view and set the {@link view} property when the activity is active.
  *
- * This class also provides a {@link Activity.view view} property, which is set using the result of the {@link Activity.createView()} method. If the activity corresponds to a full page or dialog, the activity automatically renders the view. The view is automatically unlinked when the activity is deactivated, and the property is set to undefined.
+ * If the view corresponds to a full page or dialog (or one of the render options is set in {@link Activity.Options}), the activity automatically renders and displays it. The view is unlinked when the activity is deactivated, and the {@link view} property is set to undefined.
  *
  * @example
  * // Create an activity and activate it:
  * class MyActivity extends Activity {
- *   navigationPageId = "foo";
  *   protected createView() {
  *     return new body(); // imported from a view file
  *   }
  * }
  *
- * app.addActivity(new MyActivity());
- * app.navigate("foo");
+ * app.addActivity(new MyActivity(), true);
  */
 export class Activity extends ManagedObject {
 	/** @internal Update prototype for given class with newer prototype, and rebuild view */
@@ -109,20 +107,20 @@ export class Activity extends ManagedObject {
 	}
 
 	/**
-	 * A user-facing name of this activity, if any
-	 * - This property must be set using the {@link Options} object in the constructor.
-	 * - This property may be set to any object that includes a `toString()` method, notably {@link LazyString} — the result of a call to {@link strf()}. This way, the activity title is localized automatically using {@link GlobalContext.i18n}.
-	 * - The title string of an active activity may be displayed as the current window or document title.
-	 */
-	readonly title?: StringConvertible;
-
-	/**
 	 * The page ID associated with this activity, to match the (first part of the) navigation path
 	 * - This property must be set using the {@link Options} object in the constructor.
 	 * - If the page ID is set to a string, the activity will be activated automatically when the first part of the current path matches this value, and deactivated when it doesn't.
 	 * - To match the root path (`/`), set this property to an empty string
 	 */
 	readonly navigationPageId?: string = undefined;
+
+	/**
+	 * A user-facing name of this activity, if any
+	 * - The title string of an active activity may be displayed as the current window or document title.
+	 * - This property can be set using the {@link Options} object in the constructor.
+	 * - This property may be set to any object that includes a `toString()` method, notably {@link LazyString} — the result of a call to {@link strf()}. This way, the activity title is localized automatically using {@link GlobalContext.i18n}.
+	 */
+	title?: StringConvertible;
 
 	/**
 	 * The current view, if any (attached automatically)
@@ -229,8 +227,8 @@ export class Activity extends ManagedObject {
 
 	/**
 	 * Creates the encapsulated view object, to be overridden
-	 * - The base implementation of this method in the Activity class does nothing. To associate an activity with a view, subclasses should implement their own method that returns a view object.
-	 * - This method is called automatically when the activity is activated, or the view needs to be recreated (e.g. for hot module replacement in development). The result is attached to the activity object, and assigned to {@link Activity.view}. If the view is unlinked, the {@link Activity.view} property is set to undefined again.
+	 * - The base implementation of this method in the Activity class does nothing. This method must be overridden to create (and return) the activity's view instance.
+	 * - This method is called automatically when the activity is activated, or when the view needs to be recreated (e.g. for hot module replacement in development). The result is attached to the activity object, and assigned to {@link Activity.view}. If the view is unlinked, the {@link Activity.view} property is set to undefined again.
 	 */
 	protected createView(): View | undefined | void {
 		// nothing here
