@@ -4,13 +4,14 @@ import {
 	StringConvertible,
 	UICell,
 	UIContainer,
+	UIStyle,
 	UITheme,
-	UIVariant,
 	ViewComposite,
 	app,
 	strf,
 	ui,
 } from "@desk-framework/frame-core";
+import { DialogStyles } from "./Dialog.js";
 
 /**
  * A class that defines the styles for the default modal message dialog view
@@ -21,45 +22,30 @@ import {
  * @see {@link WebContextOptions}
  * @see {@link UITheme.ModalControllerFactory}
  */
-export class MessageDialogStyles {
-	/**
-	 * The cell variant (and style) used for the outer dialog container
-	 * - The default style is based on `ui.style.CELL_BG` and includes properties for dimensions and border radius.
-	 * - Margin is set to `auto` to center the dialog on the screen if possible.
-	 * - An `Elevate` effect is applied to add a drop shadow to the dialog.
-	 */
-	containerVariant = new UIVariant(UICell, {
-		accessibleRole: "alertdialog",
-		margin: "auto",
-		effect: ui.effect.ELEVATE,
-		style: ui.style.CELL_BG.extend({
-			width: "auto",
-			minWidth: 360,
-			maxWidth: "95vw",
-			grow: 0,
-			borderRadius: 12,
-		}),
-	});
+export class MessageDialogStyles extends DialogStyles {
+	constructor() {
+		super();
+
+		// restrict message dialogs to 95vw width
+		this.containerStyle = (
+			this.containerStyle as UIStyle.Type<UICell.StyleType>
+		).extend({ maxWidth: "95vw" });
+	}
 
 	/**
-	 * The cell variant used for the block of messages
+	 * The cell style used for the block of messages
 	 * - The default style only includes padding. A `DragModal` effect is applied to the container to use the cell as a grab handle for the entire dialog.
 	 */
-	messageCellVariant = new UIVariant(UICell, {
-		effect: ui.effect("DragModal"),
-		style: ui.style.CELL.extend({
-			padding: 16,
-		}),
+	messageCellStyle: ui.CellStyle = ui.style.CELL.extend({
+		padding: 16,
 	});
 
 	/**
-	 * The cell variant used for the block of buttons
-	 * - The default style includes properties for padding and background
+	 * The cell style used for the block of buttons
+	 * - The default style only includes padding.
 	 */
-	buttonCellVariant = new UIVariant(UICell, {
-		style: ui.style.CELL.extend({
-			padding: 16,
-		}),
+	buttonCellStyle: ui.CellStyle = ui.style.CELL.extend({
+		padding: 16,
 	});
 
 	/**
@@ -81,7 +67,7 @@ export class MessageDialogStyles {
 	 * The label style used for the first message label
 	 * - The default style includes centered, bold text, with a maximum width of 480 pixels.
 	 */
-	firstLabelStyle: typeof ui.style.LABEL = ui.style.LABEL.extend({
+	firstLabelStyle: ui.LabelStyle = ui.style.LABEL.extend({
 		bold: true,
 		textAlign: "center",
 		maxWidth: 480,
@@ -93,7 +79,7 @@ export class MessageDialogStyles {
 	 * The label style used for all labels except the first
 	 * - The default style includes centered text, with a maximum width of 480 pixels.
 	 */
-	labelStyle: typeof ui.style.LABEL = ui.style.LABEL.extend({
+	labelStyle: ui.LabelStyle = ui.style.LABEL.extend({
 		textAlign: "center",
 		maxWidth: 480,
 		lineBreakMode: "pre-wrap",
@@ -104,13 +90,13 @@ export class MessageDialogStyles {
 	 * The button style used for all buttons except the confirm button
 	 * - This property defaults to the default button style.
 	 */
-	buttonStyle: typeof ui.style.BUTTON = ui.style.BUTTON;
+	buttonStyle: ui.ButtonStyle = ui.style.BUTTON;
 
 	/**
 	 * The button style used for the confirm button
 	 * - This property defaults to the default primary button style.
 	 */
-	confirmButtonStyle: typeof ui.style.BUTTON = ui.style.BUTTON_PRIMARY;
+	confirmButtonStyle: ui.ButtonStyle = ui.style.BUTTON_PRIMARY;
 }
 
 /** @internal Default modal message dialog view; shown asynchronously and resolves a promise */
@@ -193,13 +179,21 @@ export class MessageDialog
 		];
 		if (MessageDialog.styles.reverseButtons) buttons.reverse();
 		return new (ui.cell(
-			{ variant: MessageDialog.styles.containerVariant },
+			{
+				accessibleRole: "alertdialog",
+				margin: MessageDialog.styles.margin,
+				effect: MessageDialog.styles.effect,
+				style: MessageDialog.styles.containerStyle,
+			},
 			ui.cell(
-				{ variant: MessageDialog.styles.messageCellVariant },
+				{
+					effect: ui.effect("DragModal"),
+					style: MessageDialog.styles.messageCellStyle,
+				},
 				ui.column(...messageLabels),
 			),
 			ui.cell(
-				{ variant: MessageDialog.styles.buttonCellVariant },
+				{ style: MessageDialog.styles.buttonCellStyle },
 				ui.row({ layout: MessageDialog.styles.buttonRowLayout }, ...buttons),
 			),
 		))();

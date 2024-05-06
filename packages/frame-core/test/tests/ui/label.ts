@@ -4,8 +4,7 @@ import {
 	test,
 	useTestContext,
 } from "@desk-framework/frame-test";
-import { ui, UIButton, UICell, UILabel, UIRow } from "../../../dist/index.js";
-import { UIVariant } from "../../../dist/ui/UIVariant.js";
+import { UICell, UILabel, UIRow, ui } from "../../../dist/index.js";
 
 describe("UILabel", (scope) => {
 	scope.beforeEach(() => {
@@ -55,16 +54,6 @@ describe("UILabel", (scope) => {
 		expect(label).toHaveProperty("text").asString().toBe("foo");
 	});
 
-	test("Preset using variant", () => {
-		let MyLabel = ui.label("foo", new UIVariant(UILabel, { bold: true }));
-		let label = new MyLabel();
-		expect(label).toHaveProperty("bold").toBeTruthy();
-		expect(label).toHaveProperty("text").asString().toBe("foo");
-		expect(() => {
-			ui.label({ variant: new UIVariant(UIButton, {}) as any });
-		}).toThrowError();
-	});
-
 	test("Rendered with text", async (t) => {
 		let MyLabel = ui.label({
 			text: "foo",
@@ -87,6 +76,23 @@ describe("UILabel", (scope) => {
 			styles: { bold: true },
 		});
 		expect(match.elements).toBeArray(2);
+	});
+
+	test("Rendered with combined styles", async (t) => {
+		let MyLabel = ui.label(
+			"foo",
+			ui.style(
+				ui.style.LABEL_SMALL, // ignored
+				ui.style.LABEL.override({ bold: true }), // base
+				{ italic: true }, // override
+			),
+		);
+		t.render(new UIRow(new MyLabel()));
+		let match = await t.expectOutputAsync(100, {
+			type: "label",
+			styles: { bold: true, italic: true },
+		});
+		expect(match.elements).toBeArray(1);
 	});
 
 	test("Rendered with styles", async (t) => {

@@ -75,7 +75,7 @@ export class UIListView<
 	 * - This method is called automatically. Do not call this method after constructing an instance
 	 */
 	override applyViewPreset(
-		preset: View.ViewPreset<
+		preset: View.ExtendPreset<
 			ViewComposite,
 			UIListView,
 			"firstIndex" | "maxItems"

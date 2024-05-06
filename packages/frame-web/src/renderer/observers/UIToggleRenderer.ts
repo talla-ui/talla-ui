@@ -1,6 +1,6 @@
 import { RenderContext, UIToggle, ui } from "@desk-framework/frame-core";
 import { applyStyles } from "../../style/DOMStyle.js";
-import { CLASS_TOGGLE_WRAPPER } from "../../style/defaults/css.js";
+import { CLASS_TOGGLE_TYPE, CLASS_TOGGLE } from "../../style/defaults/css.js";
 import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 
 let _nextId = 0;
@@ -28,11 +28,12 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 		super.propertyChange(property, value);
 	}
 
-	override onDOMEvent() {
+	override onDOMEvent(e: Event, data: any) {
 		let checkbox = this.element!.firstChild as HTMLInputElement;
 		if (this.observed!.state !== checkbox.checked) {
 			this.observed!.state = checkbox.checked;
 		}
+		data.state = checkbox.checked;
 	}
 
 	getOutput() {
@@ -42,6 +43,8 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 		checkbox.type = "checkbox";
 		checkbox.checked = !!this.observed.state;
 		checkbox.id = "UIToggle::" + _nextId;
+		let name = this.observed.name || this.observed.formField;
+		if (name) checkbox.name = name;
 		let label = document.createElement("label");
 		label.htmlFor = "UIToggle::" + _nextId++;
 		elt.appendChild(checkbox);
@@ -58,10 +61,13 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 			toggle,
 			element,
 			getBaseStyleClass(toggle.style) || ui.style.TOGGLE,
-			CLASS_TOGGLE_WRAPPER,
+			CLASS_TOGGLE + " " + CLASS_TOGGLE_TYPE[toggle.type],
 			false,
 			false,
-			[toggle.style],
+			[
+				toggle.style,
+				toggle.width !== undefined ? { width: toggle.width } : undefined,
+			],
 			toggle.position,
 		);
 

@@ -25,9 +25,10 @@ describe("UITextField", (scope) => {
 	});
 
 	test("Preset with properties", () => {
-		let MyTF = ui.textField({ placeholder: "foo" });
+		let MyTF = ui.textField({ placeholder: "foo", name: "bar" });
 		let tf = new MyTF();
 		expect(tf).toHaveProperty("placeholder").asString().toBe("foo");
+		expect(tf).toHaveProperty("name").toBe("bar");
 	});
 
 	test("Preset using form field", () => {
@@ -57,6 +58,21 @@ describe("UITextField", (scope) => {
 		tfElt.value = "foo";
 		tfElt.sendPlatformEvent("input");
 		expect(tf.value).toBe("foo");
+	});
+
+	test("User input, value on event", async (t) => {
+		let tf = new UITextField();
+		let eventValue: any;
+		tf.listen((e) => {
+			eventValue = e.data.value;
+		});
+		t.render(tf);
+		let tfElt = (
+			await t.expectOutputAsync(100, { type: "textfield" })
+		).getSingle();
+		tfElt.value = "foo";
+		tfElt.sendPlatformEvent("input");
+		expect(eventValue).toBe("foo");
 	});
 
 	test("User input with form context", async (t) => {

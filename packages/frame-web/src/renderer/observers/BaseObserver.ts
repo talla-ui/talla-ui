@@ -135,6 +135,9 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 				// create output element if needed
 				let output = (this.output = this.getOutput());
 				this.element = output.element;
+				if (this.observed.name) {
+					this.element.dataset.name = this.observed.name;
+				}
 				this.observed.lastRenderOutput = output;
 				(output.element as any)[ELT_HND_PROP] = this;
 			}
@@ -163,7 +166,7 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 	}
 
 	/** Called before handling DOM events, for some components (see `events.ts`); the component has already been checked here and must be defined */
-	onDOMEvent(event: Event) {
+	onDOMEvent(event: Event, data: any) {
 		// nothing here
 	}
 

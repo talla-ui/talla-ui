@@ -18,7 +18,7 @@ export class UIImage extends UIComponent {
 	}
 
 	override applyViewPreset(
-		preset: View.ViewPreset<
+		preset: View.ExtendPreset<
 			UIComponent,
 			this,
 			"url" | "width" | "height" | "style" | "allowFocus" | "allowKeyboardFocus"

@@ -1,5 +1,4 @@
 export * from "./UIStyle.js";
-export * from "./UIVariant.js";
 export * from "./UITheme.js";
 export * from "./UIColor.js";
 export * from "./UIIconResource.js";

@@ -1,5 +1,5 @@
 import { BindingOrValue, ManagedEvent, ManagedObject } from "../base/index.js";
-import { ERROR, err, errorHandler, invalidArgErr } from "../errors.js";
+import { ERROR, err, errorHandler } from "../errors.js";
 import { RenderContext } from "./RenderContext.js";
 import { View, ViewClass } from "./View.js";
 
@@ -18,103 +18,59 @@ import { View, ViewClass } from "./View.js";
  * View composites are primarily used in two different ways:
  *
  * - As a way to _control_ an encapsulated view. Refer to e.g. {@link UIConditionalView} and {@link UIListView}, which are built-in ViewComposite classes.
- * - As a way to create reusable view structures. Refer to the static {@link withPreset()} method which can be used to create a ViewComposite class using a function and/or a class.
+ * - As a way to create reusable view structures. Refer to the static {@link define()} method which can be used to create a ViewComposite class using a function and/or a class.
  *
  * Note the similarities with the {@link Activity} class, which also encapsulates a single view object. As a rule, use _activities_ if event handlers or other class methods include business logic. Use view _composites_ if the class is only concerned with the look and feel of a set of UI components, and all content can be preset, bound, or provided by a view model.
  */
-export abstract class ViewComposite<TView extends View = View> extends View {
+export class ViewComposite extends View {
 	/**
 	 * Creates a reusable view composite class
 	 *
-	 * @summary This method can be used to define a reusable view, containing built-in UI components or other views. The resulting class can be used directly in a view.
+	 * @summary This method can be used to define a reusable view, with specified properties and preset view content. The resulting class can itself be included directly in a view, either using the {@link ui.use()} function or using a JSX tag.
 	 *
 	 * Common use cases for view composites include complex field inputs such as date and time pickers, containers such as cards, accordions, tabs, and split views, and application layout templates.
 	 *
-	 * @param defaults A set of default property values, bindings, and event handlers that will be applied to each instance of the view composite; also determines the preset object type and JSX tag attributes
-	 * @param ViewBody A view class, or a function that returns a view class; an instance of this view will be encapsulated by each view composite object — moreover, if a function is provided, it is also used to define rest parameters for the preset method
-	 * @returns A new class that extends `ViewComposite`
+	 * @param defaults A set of default (preset) property values to be applied to each instance of the view composite; these can be overridden by the containing view using preset properties (or JSX attributes)
+	 * @param defineView A view class, or a function that returns a view class; an instance of the resulting view will be encapsulated by each view composite object
+	 * @returns A new class that extends `ViewComposite`, with a constructor that takes a single preset object argument that mirrors the properties of the `defaults` parameter
 	 *
 	 * @description
-	 * This method creates a new class that extends {@link ViewComposite}, which encapsulates and renders a view object. The constructor of the resulting class takes a single object argument, a preset object, which is applied to the instance using {@link View.applyViewPreset()} — setting properties, applying bindings, and adding event handlers. The preset object type follows from the type parameters and/or the provided defaults object.
+	 * This method creates a new class that extends {@link ViewComposite}, which encapsulates and renders a contained view. The constructor of the resulting class takes a single object argument, a preset object, which is applied to the instance using {@link View.applyViewPreset()} — setting properties, applying bindings, and adding event aliases. The preset object type follows from the provided defaults object.
 	 *
-	 * The resulting class can be used as a JSX tag on its own, with attributes corresponding to the properties of the (default) preset object. Note that the JSX tag does't create an instance, but a class that _further_ extends the view composite class. Outside of JSX code, the static `preset()` method can be used for the same purpose.
+	 * The resulting class can be used as a JSX tag on its own, with attributes corresponding to the properties of the (default) preset object. Note that the JSX tag does't create an instance, but a class that _further_ extends the view composite class. Outside of JSX code, the {@link ui.use()} function can be used for the same purpose.
 	 *
 	 * @note Note that while view _composites_ and view _activities_ are very similar, as a rule, view composites should not include any business logic (in event handlers or other methods). Hence, use this function only to define groups of UI components and determine their look and feel. Where more code is required, consider either view activities, or view models that can be passed around in your code.
 	 */
-	static withPreset<
+	static define<
 		TDefaults extends {},
-		TContent extends ViewClass[] = ViewClass[],
-		TDeclaredEvents extends string = never,
-		TPreset = {
-			[k in keyof TDefaults]?: BindingOrValue<TDefaults[k]>;
+		TPreset extends {} = {
+			[p in keyof TDefaults]?: BindingOrValue<TDefaults[p]>;
 		} & {
-			[e in `on${TDeclaredEvents}`]?: string;
+			[k in `on${Capitalize<string>}`]?: string;
 		},
-		TView extends View = View,
 	>(
 		defaults: TDefaults,
-		ViewBody?: ViewClass<TView> | ((...content: TContent) => ViewClass<TView>),
-	): ViewComposite.WithPreset<TPreset, TContent, TView, TDefaults> {
-		function applyTo(c: ViewComposite, ...presets: any[]) {
-			let apply: any = {};
-			for (let p of presets) {
-				if (!p) continue;
-				if (p.variant) {
-					if (!(c instanceof p.variant.type)) {
-						throw invalidArgErr("preset.variant");
-					}
-					Object.assign(apply, p.variant.preset);
-				}
-				Object.assign(apply, p);
+		defineView?:
+			| ViewClass
+			| ((values: TDefaults, ...content: ViewClass[]) => ViewClass),
+	): {
+		new (preset?: TPreset): ViewComposite & TDefaults;
+	} {
+		return class DefaultsViewComposite extends ViewComposite {
+			constructor(p?: TPreset) {
+				super();
+				this.applyViewPreset(p ? { ...defaults, ...p } : defaults);
 			}
-			delete apply.variant;
-			c.applyViewPreset(apply);
-		}
-		function makePresetClass(ViewBody?: ViewClass, ...presets: any[]): any {
-			return class PresetViewComposite extends ViewComposite<TView> {
-				static preset() {
-					return (this as any).bind(undefined, ...arguments);
+			protected override defineView(
+				...content: ViewClass[]
+			): ViewClass | undefined | void {
+				if (defineView) {
+					if (defineView.prototype instanceof View)
+						return defineView as ViewClass;
+					return (defineView as Function)(this as any, ...content);
 				}
-				constructor(preset: any) {
-					super();
-					applyTo(this, ...presets, preset);
-				}
-				protected override createView() {
-					if (ViewBody) return new ViewBody() as TView;
-				}
-			};
-		}
-		if (!ViewBody || ViewBody.prototype instanceof View) {
-			return makePresetClass(ViewBody as any, defaults) as any;
-		} else if (typeof ViewBody === "function") {
-			// return a ViewComposite that can be further preset with content
-			return class PresetViewComposite extends ViewComposite<TView> {
-				static preset(preset: any, ...content: TContent) {
-					// now preset with given content, if any
-					let PresetViewBody = (ViewBody as Function)(...content);
-					return makePresetClass(PresetViewBody, defaults, preset);
-				}
-				constructor(preset: any, ...content: TContent) {
-					super();
-					applyTo(this, defaults, preset);
-					this._Content = content;
-				}
-				protected override createView() {
-					return new ((ViewBody as Function)(...this._Content))();
-				}
-				private _Content: TContent;
-			} as any;
-		} else {
-			throw invalidArgErr("ViewBody");
-		}
-	}
-
-	/**
-	 * Creates a new instance of this view composite
-	 * - View composites should not be instantiated directly by an application; instead, they should be used as part of the (static) view hierarchy.
-	 */
-	constructor() {
-		super();
+			}
+		} as any;
 	}
 
 	/**
@@ -122,15 +78,27 @@ export abstract class ViewComposite<TView extends View = View> extends View {
 	 * - Initially, this property is undefined. The view object is only created (using {@link ViewComposite.createView createView()}) when the ViewComposite instance is first rendered.
 	 * - Alternatively, you can set it yourself, e.g. in the constructor. In this case, ensure that the object is a {@link View} instance that's attached directly to this view composite, and events are delegated using {@link ViewComposite.delegateViewEvent}.
 	 */
-	body?: TView;
+	body?: View;
 
 	/**
-	 * Creates the encapsulated view object, to be overridden if needed
-	 * - The base implementation of this method in the ViewComposite class does nothing. Subclasses should implement their own method, or set the {@link ViewComposite.body body} property in their constructor.
-	 * - This method is called automatically when rendering a view composite. The result is attached to the view composite object, and assigned to {@link ViewComposite.body}. If the view is unlinked, the {@link ViewComposite.body} property is set to undefined again.
+	 * Creates a preset view structure for this view composite, to be overridden
+	 * - This method is called automatically by {@link createView()} when rendering a view composite. Custom view composite subclasses should either override this method or {@link createView()}, or set the {@link ViewComposite.body} property directly (to an attached view object).
+	 * - This method may be called only once for each _preset_ view composite (class), since the result may be reused for multiple instances. Do not use any data in this method that's not preset or static.
+	 * @param content Preset content that should be included in the view composite, if any
+	 * @returns A view class that can be used to create a view object (i.e. {@link body})
 	 */
-	protected createView(): TView | undefined | void {
-		// nothing here
+	protected defineView(...content: ViewClass[]): ViewClass | undefined | void {
+		// nothing here.
+	}
+
+	/**
+	 * Creates the encapsulated view object, using the result from {@link defineView()}
+	 * - This method is called automatically when rendering a view composite. The result is attached to the view composite object, and assigned to {@link ViewComposite.body}. If the view is unlinked, the {@link ViewComposite.body} property is set to undefined again.
+	 * - The base implementation of this method in the ViewComposite class uses {@link defineView()} to obtain a preset view. Subclasses should either override {@link defineView}, override {@link createView}, or set the {@link ViewComposite.body} property directly (to an attached view object).
+	 */
+	protected createView(): View | undefined | void {
+		let PresetView = this.defineView();
+		return (PresetView && new PresetView()) || undefined;
 	}
 
 	/** A method that's called before the view is rendered, to be overridden if needed */
@@ -217,62 +185,4 @@ export abstract class ViewComposite<TView extends View = View> extends View {
 
 	/** Stateful renderer wrapper, handles content component */
 	private _renderer = new RenderContext.ViewController();
-}
-
-export namespace ViewComposite {
-	/**
-	 * Type definition for an extended view composite class, result of {@link ViewComposite.withPreset()}
-	 */
-	export type WithPreset<
-		TPreset,
-		TContent extends any[],
-		TBodyView extends View,
-		TObject,
-	> = {
-		/** Creates an instance of this view composite */
-		new (
-			preset?: TPreset & {
-				/** A view composite variant object, applied before other presets */
-				variant?: ViewCompositeVariant<TPreset, TObject>;
-			},
-			...content: TContent
-		): ViewComposite<TBodyView> & TObject;
-
-		/** Creates a preset class that further extends this view composite */
-		preset(
-			preset?: TPreset & {
-				/** A view composite variant object, applied before other presets */
-				variant?: ViewCompositeVariant<TPreset, TObject>;
-			},
-			...content: TContent
-		): { new (): ViewComposite<TBodyView> & TObject };
-	};
-}
-
-/**
- * An object that includes predefined properties for a view composite
- * - View composite variants can be used for the `variant` property passed to a view composite constructor, in JSX tags and with the static `preset` method.
- * - Variants can only be used with a specific view composite class, and sub classes.
- * - To create a new variant for a UI component instead, use {@link UIVariant}.
- */
-export class ViewCompositeVariant<TPreset, TObject> {
-	/**
-	 * Creates a new view composite variant object
-	 * - The resulting instance can be used for the `variant` property passed to a view composite constructor, in JSX tags and with the static `preset` method.
-	 * @param type The view composite class that the variant will be used with
-	 * @param preset The properties, bindings, and event handlers that will be preset on each object created with this variant
-	 */
-	constructor(
-		type: ViewComposite.WithPreset<TPreset, any[], View, TObject>,
-		preset: Readonly<TPreset>,
-	) {
-		this.type = type;
-		this.preset = Object.freeze({ ...preset });
-	}
-
-	/** The view composite class that the variant will be used with */
-	public readonly type: ViewComposite.WithPreset<TPreset, any[], View, TObject>;
-
-	/** The properties, bindings, and event handlers that will be preset on each object created with this variant */
-	public readonly preset: Readonly<TPreset>;
 }

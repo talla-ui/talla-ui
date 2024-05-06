@@ -33,9 +33,10 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 		super.propertyChange(property, value);
 	}
 
-	override onDOMEvent() {
+	override onDOMEvent(e: Event, data: any) {
 		let value = (this.element as HTMLInputElement).value;
 		if (this.observed!.value !== value) this.observed!.value = value;
+		data.value = value;
 	}
 
 	getOutput() {
@@ -43,6 +44,8 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 			this.observed.multiline ? "textarea" : "input",
 		);
 		elt.tabIndex = 0;
+		let name = this.observed.name || this.observed.formField;
+		if (name) elt.name = name;
 		let output = new RenderContext.Output(this.observed, elt);
 		return output;
 	}

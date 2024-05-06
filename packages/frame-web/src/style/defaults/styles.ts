@@ -13,6 +13,7 @@ export const defaultControlTextStyle: CombinedStyleType = {
 	lineHeight: "1.25",
 };
 
+const _color_bg = ui.color.BACKGROUND;
 const _color_clear = ui.color.CLEAR;
 const _color_text = ui.color.TEXT;
 const _color_controlBase = ui.color.CONTROL_BASE;
@@ -87,9 +88,9 @@ export const styles: [
 		"BackgroundCell",
 		[
 			{
-				background: ui.color.BACKGROUND,
+				background: _color_bg,
 				borderThickness: 1,
-				borderColor: ui.color.BACKGROUND.fg(
+				borderColor: _color_bg.fg(
 					ui.color.TEXT.alpha(0.1),
 					ui.color.TEXT.alpha(0.2),
 				),
@@ -162,7 +163,7 @@ export const styles: [
 		],
 	],
 	["SmallLabel", [{ ...baseLabelStyle, fontSize: "0.75em", lineHeight: 1.25 }]],
-	["TitleLabel", [{ ...baseLabelStyle, fontSize: "1.75em", fontWeight: 600 }]],
+	["TitleLabel", [{ ...baseLabelStyle, fontSize: "1.5em", fontWeight: 600 }]],
 	[
 		"CloseLabel",
 		[
@@ -177,7 +178,7 @@ export const styles: [
 		"TextField",
 		[
 			{
-				background: _color_clear,
+				background: _color_bg,
 				textColor: _color_text,
 				borderThickness: 1,
 				borderColor: _color_text.alpha(0.25),
@@ -206,14 +207,14 @@ export const styles: [
 		"Toggle",
 		[
 			{
-				borderColor: _color_text.alpha(0.5),
+				borderColor: _color_text.alpha(0.25),
 				textColor: ui.color.PRIMARY_BG, // :checked fill
 				padding: { y: 4 },
 				css: { cursor: "pointer" },
 			},
 			{
 				...hoveredNotDisabled,
-				borderColor: _color_text.alpha(0.75),
+				borderColor: _color_text.alpha(0.5),
 			},
 			disabledStyle,
 		],
@@ -225,7 +226,7 @@ export const styles: [
 				textColor: _color_text, // (don't inherit :checked fill)
 				lineBreakMode: "pre-wrap",
 				lineHeight: 1.5,
-				padding: { y: 6, x: 8 },
+				padding: { y: 6 },
 				css: { display: "inline" },
 			},
 		],

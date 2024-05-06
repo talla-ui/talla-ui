@@ -13,14 +13,15 @@ let _nextId = 1;
 export class OutputMount {
 	readonly id = _nextId++;
 
-	/** Creates a fixed full-page root element, i.e. for placement mode "page" */
-	createPageElement(background: UIColor | string) {
+	/** Creates a fixed full-page root element, i.e. for placement modes "screen" and "page" */
+	createPageElement(background: UIColor | string, scroll?: boolean) {
 		let elt =
 			(this._outer =
 			this._inner =
 				document.createElement("desk-page-root"));
-		elt.className = CLASS_PAGE_ROOT;
 		elt.ariaAtomic = "true";
+		elt.className = CLASS_PAGE_ROOT;
+		if (scroll) elt.style.overflow = "auto";
 		this._remount = () => {
 			elt.dir = app.i18n?.getAttributes().rtl ? "rtl" : "ltr";
 			elt.style.background = String(background);
@@ -35,6 +36,7 @@ export class OutputMount {
 	createModalElement(
 		autoCloseModal?: boolean,
 		refElt?: HTMLElement,
+		refOffset?: number | [number, number],
 		reducedMotion?: boolean,
 		shadeBackground?: UIColor | string,
 	) {
@@ -80,6 +82,9 @@ export class OutputMount {
 			wrapper.style.left = Math.floor(rect.left) + "px";
 			wrapper.style.width = Math.floor(rect.width) + "px";
 			wrapper.style.height = Math.floor(rect.height) + "px";
+			wrapper.style.margin = Array.isArray(refOffset)
+				? refOffset[1] + "px " + refOffset[0] + "px"
+				: (refOffset || 0) + "px";
 		}
 
 		// send `CloseModal` event if clicked outside modal, or pressed escape

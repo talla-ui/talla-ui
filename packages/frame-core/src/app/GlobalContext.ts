@@ -328,12 +328,14 @@ export class GlobalContext extends ManagedObject {
 	 *
 	 * @param config An instance of {@link UITheme.MenuOptions}, including a list of menu items; or a callback function to set options for the menu to be displayed
 	 * @param ref The related UI component
+	 * @param offset The offset from the component (in pixels), either as a single number or as a tuple with separate X and Y offsets
 	 * @returns A promise that resolves to the selected item key, if any
 	 * @error This method throws an error if the theme modal menu controller can't be initialized (i.e. there's no current theme, or the theme doesn't support modal menu views).
 	 */
 	async showModalMenuAsync(
 		config: ConfigOptions.Arg<UITheme.MenuOptions>,
 		ref?: { lastRenderOutput?: RenderContext.Output },
+		offset?: number | [number, number],
 	) {
 		let controller = this.theme?.modalFactory?.buildMenu?.(
 			UITheme.MenuOptions.init(config),
@@ -341,6 +343,7 @@ export class GlobalContext extends ManagedObject {
 		if (!controller) throw err(ERROR.Render_NoModal);
 		let result = await controller.showAsync({
 			ref: ref && ref.lastRenderOutput,
+			refOffset: offset,
 		});
 		return result && result.key;
 	}

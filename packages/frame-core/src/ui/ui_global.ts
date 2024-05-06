@@ -1,6 +1,10 @@
-import { RenderContext, View, ViewClass, app } from "../app/index.js";
-import { invalidArgErr } from "../errors.js";
-import { UIVariant } from "./UIVariant.js";
+import {
+	RenderContext,
+	View,
+	ViewClass,
+	ViewComposite,
+	app,
+} from "../app/index.js";
 import {
 	UIAnimatedCell,
 	UIAnimationView,
@@ -54,13 +58,6 @@ function createComponentFactory<TView extends View>(
 	return function (...args: any[]) {
 		let preset = isPreset(args[0]) ? args.shift() : undefined;
 		if (extendPreset) extendPreset(preset || (preset = {}), ...args);
-		if (preset?.variant) {
-			if (type !== preset.variant.type) {
-				throw invalidArgErr("preset.variant");
-			}
-			preset = { ...preset.variant.preset, ...preset };
-			delete preset.variant;
-		}
 		return class PresetView extends (type as any) {
 			constructor(...newArgs: any[]) {
 				super(...newArgs);
@@ -91,6 +88,8 @@ _ui.mount = function (
 	let place: RenderContext.PlacementOptions =
 		"page" in options && options.page
 			? { mode: "page" }
+			: "screen" in options && options.screen
+			? { mode: "screen" }
 			: "id" in options
 			? { mode: "mount", mountId: options.id }
 			: "place" in options
@@ -110,15 +109,6 @@ _ui.mount = function (
 		declare render;
 		declare requestFocus;
 		declare findViewContent;
-		// override render(callback: any) {
-		// 	this.view.render(callback);
-		// }
-		// override requestFocus() {
-		// 	this.view.requestFocus();
-		// }
-		// override findViewContent(type: any): any {
-		// 	this.view.findViewContent(type);
-		// }
 	};
 };
 
@@ -132,8 +122,7 @@ _ui.animatedCell = createComponentFactory(UIAnimatedCell);
 
 _ui.label = createComponentFactory(UILabel, (preset, text, style) => {
 	if (text) preset.text = text;
-	if (style instanceof UIVariant) preset.variant = style;
-	else if (style) preset.style = style;
+	if (style) preset.style = style;
 });
 
 _ui.button = createComponentFactory(
@@ -141,8 +130,7 @@ _ui.button = createComponentFactory(
 	(preset, label, onClick, style) => {
 		if (label) preset.label = label;
 		if (onClick) preset.onClick = onClick;
-		if (style instanceof UIVariant) preset.variant = style;
-		else if (style) preset.style = style;
+		if (style) preset.style = style;
 	},
 );
 
@@ -173,6 +161,22 @@ _ui.list = createComponentFactory(
 		preset.Observer = UIListView.createObserver(ItemBody, BookEnd);
 	},
 );
+
+_ui.use = function <TPreset extends {}, TInstance extends ViewComposite>(
+	viewComposite: { new (preset?: TPreset): TInstance },
+	preset: NoInfer<TPreset>,
+	...content: ViewClass[]
+): typeof viewComposite {
+	let C: ViewClass | undefined | void;
+	return class PresetViewComposite extends (viewComposite as any) {
+		constructor(p?: TPreset) {
+			super(p ? { ...preset, ...p } : preset);
+		}
+		defineView() {
+			return C || (C = super.defineView(...content));
+		}
+	} as any;
+};
 
 // === Other factory functions
 
@@ -220,17 +224,47 @@ _ui.effect = function (name: string) {
 	return result;
 } as any; // constants added below
 
-_ui.style = function (name: string) {
-	let result = _styleTypeCache.get(name);
-	if (!result) {
-		result = class BaseStyle extends UIStyle<any> {
-			constructor() {
-				super(name, BaseStyle);
+_ui.style = function (...args: any[]) {
+	let result:
+		| UIStyle.Type<unknown>
+		| UIStyle.StyleOverrides<unknown>
+		| undefined;
+	let overrides: any[] | undefined;
+	for (let style of args) {
+		if (!style) continue;
+		if (typeof style === "string") {
+			let name = style;
+			style = _styleTypeCache.get(name);
+			if (!result) {
+				style = class BaseStyle extends UIStyle<any> {
+					constructor() {
+						super(name, BaseStyle);
+					}
+				};
+				_styleTypeCache.set(name, style);
 			}
-		};
-		_styleTypeCache.set(name, result);
+		}
+		if (
+			(style as typeof UIStyle).isUIStyleType ||
+			UIStyle.OVERRIDES_BASE in style
+		) {
+			result = style;
+			overrides = undefined;
+		} else {
+			if (!overrides) overrides = [];
+			overrides.push(style);
+		}
 	}
-	return result;
+	if (!overrides) return result || {};
+	if (!result) {
+		return overrides.reduce((o, a) => Object.assign(o, a), {} as any);
+	}
+	return UIStyle.OVERRIDES_BASE in result
+		? {
+				[UIStyle.OVERRIDES_BASE]: result[UIStyle.OVERRIDES_BASE],
+				overrides: [...result.overrides, ...overrides],
+		  }
+		: result.extend(...overrides);
 } as any; // base styles added below
 
 // add color constants to ui.color function

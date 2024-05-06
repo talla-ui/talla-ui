@@ -219,11 +219,12 @@ export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
 			if (!this.element) {
 				// create output element if needed
 				let output = (this.output = this.getOutput());
+				output.element.name = this.observed.name;
 				this.element = output.element;
 				this.observed.lastRenderOutput = output;
 			}
 			this.element.sendPlatformEvent = (name, data) => {
-				this.handlePlatformEvent(name, data);
+				this.handlePlatformEvent(name, { ...data });
 				return this.element!;
 			};
 

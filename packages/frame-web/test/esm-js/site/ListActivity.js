@@ -14,7 +14,7 @@ class ListItem extends ManagedRecord {
 	text = "";
 }
 
-class ListItemView extends ViewComposite.withPreset(
+const ListItemView = ViewComposite.define(
 	{ text: undefined, selected: false },
 	ui.cell(
 		{
@@ -43,9 +43,7 @@ class ListItemView extends ViewComposite.withPreset(
 			}),
 		),
 	),
-) {
-	// ...
-}
+);
 
 const page = ui.page(
 	ui.cell(
@@ -68,7 +66,7 @@ const page = ui.page(
 			ui.spacer(0, 8),
 			ui.list(
 				{ items: bound.list("items") },
-				ListItemView.preset({
+				ui.use(ListItemView, {
 					text: bound.string("item.text"),
 					selected: bound("selectedItem").equals("item"),
 				}),

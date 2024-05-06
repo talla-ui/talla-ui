@@ -162,8 +162,9 @@ function handleObserverEvent(observer: BaseObserver<UIComponent>, e: Event) {
 	let uiEventName = _eventNames[e.type];
 	let component = observer.observed;
 	if (!uiEventName || !component) return;
-	observer.onDOMEvent(e);
-	component.emit(uiEventName, { event: e });
+	let data = { event: e };
+	observer.onDOMEvent(e, data);
+	component.emit(uiEventName, data);
 
 	// set time of last touch event, and watch for moves
 	if (uiEventName === "TouchStart") {

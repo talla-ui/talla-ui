@@ -4,7 +4,7 @@ import {
 	ui,
 } from "../../../../lib/desk-framework-web.es2015.esm.min";
 
-export default ViewComposite.withPreset(
+export default ViewComposite.define(
 	{ count: 0 },
 	<column>
 		<label>Count:</label>

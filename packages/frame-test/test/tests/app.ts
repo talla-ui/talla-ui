@@ -43,11 +43,12 @@ describe("App test", (scope) => {
 	});
 
 	test("Single view is rendered", async (t) => {
-		const MyView = ViewComposite.withPreset(
+		const MyView = ViewComposite.define(
 			{ title: StringConvertible.EMPTY },
-			ui.label(bound.string("title")),
-		).preset({ title: "TEST" });
-		let myView = new MyView();
+			ui.label(bound("title")),
+		);
+		let Preset = ui.use(MyView, { title: "TEST" });
+		let myView = new Preset();
 		t.render(myView);
 		await t.expectOutputAsync(100, { text: "TEST" });
 	});

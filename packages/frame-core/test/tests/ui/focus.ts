@@ -37,8 +37,7 @@ describe("Focus management", (scope) => {
 	});
 
 	test("Single view composite, request focus", async (t) => {
-		const Preset = ui.cell({ allowFocus: true });
-		const MyView = ViewComposite.withPreset({}, Preset);
+		const MyView = ViewComposite.define({}, ui.cell({ allowFocus: true }));
 		let view = new MyView();
 		t.render(view);
 		await t.expectOutputAsync(100, { type: "cell" });
@@ -82,8 +81,8 @@ describe("Focus management", (scope) => {
 			}),
 		);
 		class MyView extends ViewComposite {
-			protected override createView() {
-				return new Preset();
+			protected override defineView() {
+				return Preset;
 			}
 			onCell1Ref(e: ViewEvent<UICell>) {
 				e.source.requestFocus();

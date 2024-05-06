@@ -39,6 +39,7 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 			this.observed!.state = !!checkbox.checked;
 		}
 
+		data.state = this.observed?.state;
 		super.handlePlatformEvent(name, data);
 	}
 
@@ -58,7 +59,14 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 
 		// set styles
 		element.styleClass = getBaseStyleClass(toggle.style) || ui.style.TOGGLE;
-		applyElementStyle(element, [toggle.style], toggle.position);
+		applyElementStyle(
+			element,
+			[
+				toggle.style,
+				toggle.width !== undefined ? { width: toggle.width } : undefined,
+			],
+			toggle.position,
+		);
 	}
 
 	updateContent(element: TestOutputElement) {

@@ -47,7 +47,7 @@ const ResultCellStyle = ui.style.CELL.extend(
 export default (
 	<mount id="docpage-search">
 		<cell style={{ shrink: 1 }}>
-			<column padding={{ start: 16 }}>
+			<column layout={{ padding: { start: 16 } }}>
 				<cell
 					style={{
 						height: 72,

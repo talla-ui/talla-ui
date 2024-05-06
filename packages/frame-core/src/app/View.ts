@@ -29,7 +29,7 @@ export type ViewEvent<
  * - {@link UIComponent} classes, and the various {@link ui} factory functions (e.g. `ui.button(...)`) that create **preset** constructors for built-in UI components.
  * - Specifically, {@link UIContainer} classes such as {@link UICell}, {@link UIRow}, and {@link UIColumn}, which represent containers that contain further UI components (and containers). These can be used to lay out your UI.
  * - Built-in {@link ViewComposite} classes, which control an encapsulated view — such as {@link UIConditionalView} and {@link UIListView}.
- * - The {@link ViewComposite.withPreset()} function, which creates a custom {@link ViewComposite} subclass.
+ * - The {@link ViewComposite.define()} function, which creates a custom {@link ViewComposite} subclass.
  *
  * Use the View class itself as a _type_, along with {@link ViewClass}, when referencing variables or parameters that should refer to any other view.
  *
@@ -59,9 +59,9 @@ export abstract class View extends ManagedObject {
 	/**
 	 * Applies the provided preset properties to this object
 	 *
-	 * @summary This method is called from the constructor of **preset** view classes, e.g. the result of `ui.label(...)` and {@link ViewComposite.withPreset()}. The provided object may contain property values, bindings, and event specifiers.
+	 * @summary This method is called from the constructor of **preset** view classes, e.g. the result of `ui.label(...)` and {@link ViewComposite.define()}. The provided object may contain property values, bindings, and event specifiers.
 	 *
-	 * **Property values** — These are set directly on the view object. Each property is set to the corresponding value.
+	 * **Property values** — These are set directly on the view object. Each property is set to the corresponding value. However, property names starting with an underscore are ignored. Undefined preset property values are also ignored, except if the property was never set before on the target view (i.e. initializing a new undefined property).
 	 *
 	 * **Bindings** — These are applied on properties the view object. Each property may be bound using an instance of the {@link Binding} class (i.e. the result of {@link bound()} functions), creating the target property and taking effect immediately.
 	 *
@@ -71,9 +71,11 @@ export abstract class View extends ManagedObject {
 	 *
 	 * @note This method is called automatically. Do not call this method after constructing a view object.
 	 */
-	applyViewPreset(preset: {}) {
+	applyViewPreset(preset?: {}) {
+		if (!preset) return;
 		let events: { [eventName: string]: string } | undefined;
 		for (let p in preset) {
+			if (p[0] === "_") continue;
 			let v = (preset as any)[p];
 
 			// intercept and/or forward events: remember all first
@@ -140,7 +142,7 @@ export namespace View {
 	 * - TView is used to infer the type of a property.
 	 * - K is a string type containing all properties to take from TView.
 	 */
-	export type ViewPreset<
+	export type ExtendPreset<
 		TBase extends View,
 		TView = any,
 		K extends keyof TView = never,

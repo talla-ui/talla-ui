@@ -27,7 +27,7 @@ export class UIContainerRenderer<
 > extends BaseObserver<TContainer> {
 	constructor(observed: TContainer) {
 		super(observed);
-		this.observeProperties("layout", "padding");
+		this.observeProperties("layout");
 		if (observed instanceof UIRow) {
 			this.observeProperties("height" as any, "align" as any, "spacing" as any);
 		}
@@ -63,7 +63,6 @@ export class UIContainerRenderer<
 				this.updateSeparator();
 				return;
 			case "layout":
-			case "padding":
 			case "align":
 			case "height":
 			case "width":
@@ -125,7 +124,7 @@ export class UIContainerRenderer<
 		let layout = container.layout;
 		if (container instanceof UIRow) {
 			systemName = CLASS_ROW;
-			styles = [{ height: container.height, padding: container.padding }];
+			styles = [{ height: container.height }];
 			if (container.align || container.gravity) {
 				layout = Object.assign(
 					{},
@@ -136,7 +135,7 @@ export class UIContainerRenderer<
 			}
 		} else if (container instanceof UIColumn) {
 			systemName = CLASS_COLUMN;
-			styles = [{ width: container.width, padding: container.padding }];
+			styles = [{ width: container.width }];
 			if (container.align || container.distribute) {
 				layout = Object.assign(
 					{},
@@ -149,7 +148,6 @@ export class UIContainerRenderer<
 			}
 		} else if (container instanceof UIScrollContainer) {
 			systemName = CLASS_SCROLL;
-			styles = [{ padding: container.padding }];
 		} else {
 			// (use styles passed in by cell renderer)
 			systemName = CLASS_CELL;

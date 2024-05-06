@@ -17,11 +17,12 @@ export class UICell extends UIContainer {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: View.ViewPreset<
+		preset: View.ExtendPreset<
 			UIContainer,
 			this,
 			| "textDirection"
 			| "margin"
+			| "padding"
 			| "background"
 			| "textColor"
 			| "borderRadius"
@@ -47,6 +48,12 @@ export class UICell extends UIContainer {
 	/** Additional space to be added around the entire cell, in pixels or CSS length with unit, **or** an object with separate offset values */
 	margin?: UIComponent.Offsets = undefined;
 
+	/**
+	 * Padding around contained elements, in pixels or CSS length with unit, **or** an object with separate offset values
+	 * - If this property is set, its value overrides `padding` from the current cell style.
+	 */
+	padding?: UIComponent.Offsets = undefined;
+
 	/** Border radius, in pixels or CSS length with unit */
 	borderRadius?: string | number = undefined;
 
@@ -64,9 +71,6 @@ export class UICell extends UIContainer {
 
 	/** The style to be applied to this cell */
 	style?: UIStyle.TypeOrOverrides<UICell.StyleType> = undefined;
-
-	/** The spacing property exists on {@link UIRow} and {@link UIColumn} and cannot be used on cells */
-	spacing?: never;
 
 	/**
 	 * True if this cell *itself* may receive direct input focus
@@ -101,7 +105,7 @@ export class UIAnimatedCell extends UICell {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: View.ViewPreset<
+		preset: View.ExtendPreset<
 			UICell,
 			this,
 			"animationDuration" | "animationTiming"

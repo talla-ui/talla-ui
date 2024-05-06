@@ -9,7 +9,7 @@ const MyLabelStyle = ui.style.LABEL.extend({
 const ViewBody = (
 	<mount page>
 		<scroll>
-			<row padding={{ x: 40, y: 16 }}>
+			<row layout={{ padding: { x: 40, y: 16 } }}>
 				<label style={ui.style.LABEL_TITLE}>Perf test</label>
 			</row>
 			<list items={bound("items")}>

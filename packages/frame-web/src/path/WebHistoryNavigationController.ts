@@ -37,7 +37,7 @@ export class WebHistoryNavigationController extends NavigationController {
 	 * - This method is also used by the `UIButton` renderer to set the `href` attribute for buttons that are rendered as anchor elements.
 	 */
 	getPathHref(target?: NavigationTarget): string | undefined {
-		if (!target || !target.pageId) return;
+		if (!target || typeof target.pageId !== "string") return;
 		let path = (target.pageId + "/" + target.detail)
 			.replace(/^\/+|\/+$/g, "")
 			.replace(/\/+/g, "/");

@@ -35,10 +35,17 @@ export class UIToggle extends UIComponent {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: View.ViewPreset<
+		preset: View.ExtendPreset<
 			UIComponent,
 			this,
-			"label" | "state" | "formField" | "disabled" | "style" | "labelStyle"
+			| "label"
+			| "state"
+			| "formField"
+			| "disabled"
+			| "width"
+			| "type"
+			| "style"
+			| "labelStyle"
 		> & {
 			/** Event that's emitted when the toggle state has changed */
 			onChange?: string;
@@ -58,11 +65,17 @@ export class UIToggle extends UIComponent {
 	/** The toggle label to be displayed, if any */
 	label?: StringConvertible;
 
+	/** The toggle visual presentation type, defaults to checkbox */
+	type: "none" | "checkbox" | "switch" = "checkbox";
+
 	/** Form context field name, used with {@link UIFormContext} */
 	formField?: string = undefined;
 
 	/** True if user input should be disabled on this control */
 	disabled = false;
+
+	/** Target width of the toggle, in pixels or CSS length with unit */
+	width?: string | number = undefined;
 
 	/** The style to be applied to the toggle control as a whole */
 	style?: UIStyle.TypeOrOverrides<UIToggle.StyleType> = undefined;

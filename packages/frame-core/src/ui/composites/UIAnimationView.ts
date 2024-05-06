@@ -16,7 +16,7 @@ export class UIAnimationView extends ViewComposite {
 	 * - This method is called automatically. Do not call this method after constructing an instance
 	 */
 	override applyViewPreset(
-		preset: View.ViewPreset<
+		preset: View.ExtendPreset<
 			ViewComposite,
 			UIAnimationView,
 			"showAnimation" | "hideAnimation" | "repeatAnimation"

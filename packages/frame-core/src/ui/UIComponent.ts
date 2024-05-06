@@ -35,6 +35,8 @@ export abstract class UIComponent extends View {
 	 * - This method is called automatically. Don't call this method after constructing a UI component.
 	 */
 	override applyViewPreset(preset: {
+		/** An identifier for this component */
+		name?: string;
 		/** True if this component should be hidden from view (doesn't stop the component from being rendered) */
 		hidden?: BindingOrValue<boolean>;
 		/** Options for the positioning of this component within parent component(s) (overrides) */
@@ -97,6 +99,13 @@ export abstract class UIComponent extends View {
 		// apply all other property values, bindings, and event handlers
 		super.applyViewPreset(preset);
 	}
+
+	/**
+	 * An identifier for this component
+	 * - Identifiers don't have to be unique, but can be used to identify components in a part of the view hierarchy.
+	 * - Depending on the platform, this identifier may be exposed in the rendered output (e.g. HTML attribute), but only once.
+	 */
+	name?: string;
 
 	/**
 	 * True if the component should be hidden from view

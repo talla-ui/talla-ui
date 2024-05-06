@@ -92,6 +92,22 @@ describe("UIButton", (scope) => {
 		});
 	});
 
+	test("Rendered and clicked, event has value", async (t) => {
+		let MyButton = ui.button({
+			label: "Foo button",
+			value: "foo",
+		});
+		let btn = new MyButton();
+		let clickValue: any;
+		btn.listen((e) => {
+			if (e.name === "Click") clickValue = e.data.value;
+		});
+		t.render(btn);
+		let out = await t.expectOutputAsync(100, { type: "button" });
+		out.getSingle().click();
+		expect(clickValue).toBe("foo");
+	});
+
 	test("Click event propagation", async (t) => {
 		const ViewBody = ui.page(ui.cell(ui.button("Button", "ButtonClicked")));
 		class MyActivity extends Activity {

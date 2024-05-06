@@ -62,11 +62,11 @@ describe("UIViewRenderer", (scope) => {
 	});
 
 	test("Set view using view composite, and render", async (t) => {
-		const CompView = ViewComposite.withPreset(
+		const CompView = ViewComposite.define(
 			{ text: StringConvertible.EMPTY },
 			ui.label(bound("text")),
 		);
-		const Preset = CompView.preset({ text: "foo" });
+		const Preset = ui.use(CompView, { text: "foo" });
 		class MyActivity extends Activity {
 			protected override createView() {
 				return new (ui.page(ui.renderView({ view: bound("vc") })))();

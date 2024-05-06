@@ -40,7 +40,7 @@ export class UIConditionalView extends ViewComposite {
 	 * - This method is called automatically. Do not call this method after constructing an instance
 	 */
 	override applyViewPreset(
-		preset: View.ViewPreset<ViewComposite, UIConditionalView, "state">,
+		preset: View.ExtendPreset<ViewComposite, UIConditionalView, "state">,
 	) {
 		if ((preset as any).Body) {
 			this._Body = (preset as any).Body;

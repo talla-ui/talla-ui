@@ -2,7 +2,7 @@ import { UIComponent, UIContainer, UIStyle } from "@desk-framework/frame-core";
 import {
 	CLASS_CONTAINER,
 	CLASS_TEXTCONTROL,
-	CLASS_TOGGLE_WRAPPER,
+	CLASS_TOGGLE,
 	CLASS_UI,
 } from "./defaults/css.js";
 
@@ -115,7 +115,7 @@ export function setFocusDecoration(
 	setGlobalCSS({
 		[`.${CLASS_UI}:focus`]: { outline: "0", outlineOffset: "0" },
 		[`.${CLASS_UI}[tabindex]:focus-visible`]: styles,
-		[`.${CLASS_TOGGLE_WRAPPER}>input:focus-visible`]: styles,
+		[`.${CLASS_TOGGLE}>input:focus-visible`]: styles,
 	});
 }
 
@@ -416,6 +416,7 @@ function addTextStyleCSS(
 	if (textStyle.userSelect) {
 		result.userSelect = "text";
 		(result as any).webkitUserSelect = "text";
+		result.cursor = "text";
 	}
 }
 
@@ -439,18 +440,12 @@ function addDecorationStyleCSS(
 	let borderRadius = decoration.borderRadius;
 	if (borderRadius !== undefined)
 		result.borderRadius = getCSSLength(decoration.borderRadius);
-	let padding = decoration.padding;
-	if (padding !== undefined) result.padding = getCSSLength(padding);
-	if (typeof padding === "object") {
-		if ("start" in padding)
-			result.paddingInlineStart = getCSSLength(padding.start);
-		if ("end" in padding) result.paddingInlineEnd = getCSSLength(padding.end);
-	}
 	if (decoration.opacity! >= 0) result.opacity = String(decoration.opacity);
 	if (decoration.css) {
 		// copy all properties to result
 		for (let p in decoration.css) result[p] = decoration.css[p];
 	}
+	addPadding(result, decoration.padding);
 }
 
 /** Helper function to append CSS styles to given object for a given `ContainerLayout` object */
@@ -472,6 +467,19 @@ function addContainerLayoutCSS(
 		result.flexWrap = wrapContent ? "wrap" : "nowrap";
 	let clip = layout.clip;
 	if (clip !== undefined) result.overflow = clip ? "hidden" : "visible";
+	addPadding(result, layout.padding);
+}
+
+function addPadding(
+	result: Partial<CSSStyleDeclaration>,
+	padding?: UIComponent.Offsets,
+) {
+	if (padding !== undefined) result.padding = getCSSLength(padding);
+	if (typeof padding === "object") {
+		if ("start" in padding)
+			result.paddingInlineStart = getCSSLength(padding.start);
+		if ("end" in padding) result.paddingInlineEnd = getCSSLength(padding.end);
+	}
 }
 
 /** Helper function to turn given CSS properties into a single string */

@@ -25,6 +25,9 @@ export class TestOutputElement {
 	/** A reference back to the rendered output object */
 	output?: RenderContext.Output & { element: TestOutputElement };
 
+	/** Component name, if any */
+	name?: string;
+
 	/** True if input has been disabled for a control element */
 	disabled?: boolean;
 

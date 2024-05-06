@@ -4,7 +4,7 @@ import _themeToggle from "./_themeToggle";
 export default (
 	<mount page>
 		<scroll>
-			<row padding={16} position={{ gravity: "overlay" }}>
+			<row layout={{ padding: 16 }} position={{ gravity: "overlay" }}>
 				<label title>Sample</label>
 				<spacer />
 				{_themeToggle}

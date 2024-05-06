@@ -43,13 +43,14 @@ export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 		name: TestOutputElement.PlatformEvent,
 		data?: any,
 	) {
+		data.value = this.observed?.value;
 		super.handlePlatformEvent(name, data);
 		let button = this.observed;
 		if (
 			name === "click" &&
 			button &&
 			!button.isUnlinked() &&
-			button.navigateTo
+			button.navigateTo !== undefined
 		) {
 			button.emit("Navigate");
 		}

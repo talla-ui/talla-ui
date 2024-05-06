@@ -3,13 +3,11 @@ import {
 	UICell,
 	UIColumn,
 	UIContainer,
-	UILabel,
 	UIRow,
 	UISeparator,
 	UISpacer,
 	UIStyle,
 	UITheme,
-	UIVariant,
 	ViewComposite,
 	ViewEvent,
 	app,
@@ -34,58 +32,54 @@ const _containerPosition = {
  * @see {@link UITheme.ModalControllerFactory}
  */
 export class ModalMenuStyles {
-	/**
-	 * The cell variant used for the outer menu container
-	 * - The default style includes properties for padding, background, and border radius. A drop shadow effect is also applied to the container.
-	 */
-	containerVariant = new UIVariant(UICell, {
-		accessibleRole: "menu",
-		effect: ui.effect.ELEVATE,
-		style: ui.style.CELL_BG.extend({
-			padding: { y: 8 },
-			borderRadius: 12,
-			grow: 0,
-		}),
-	});
+	/** The effect that's applied to the container, defaults to `Elevate` */
+	effect = ui.effect.ELEVATE;
 
 	/** The default width that's used if none is specified in menu options */
 	defaultWidth = 260;
 
 	/**
-	 * The cell variant used for each menu item
+	 * The cell style used for the outer menu container
+	 * - The default style includes properties for padding, background, and border radius.
+	 */
+	containerStyle: ui.CellStyle = ui.style.CELL_BG.extend({
+		padding: { y: 8 },
+		borderRadius: 8,
+		grow: 0,
+	});
+
+	/**
+	 * The cell style used for each menu item
 	 * - The default style includes properties for padding, cursor, and (hover/focus) background color
 	 */
-	itemCellVariant = new UIVariant(UICell, {
-		accessibleRole: "menuitem",
-		style: ui.style.CELL.extend(
-			{
-				padding: { x: 16 },
-				css: { cursor: "pointer" },
-			},
-			{
-				[UIStyle.STATE_HOVERED]: true,
-				background: ui.color.PRIMARY_BG,
-				textColor: ui.color.PRIMARY_BG.text(),
-			},
-			{
-				[UIStyle.STATE_FOCUSED]: true,
-				background: ui.color.PRIMARY_BG,
-				textColor: ui.color.PRIMARY_BG.text(),
-			},
-		),
-	});
+	itemCellStyle: ui.CellStyle = ui.style.CELL.extend(
+		{
+			padding: { x: 16 },
+			css: { cursor: "pointer", outlineOffset: "-2px" },
+		},
+		{
+			[UIStyle.STATE_HOVERED]: true,
+			background: ui.color.PRIMARY_BG,
+			textColor: ui.color.PRIMARY_BG.text(),
+		},
+		{
+			[UIStyle.STATE_FOCUSED]: true,
+			background: ui.color.PRIMARY_BG,
+			textColor: ui.color.PRIMARY_BG.text(),
+		},
+	);
 
 	/**
 	 * The label style used for each menu item label
 	 * - This property defaults to the default label style.
 	 */
-	labelStyle = ui.style.LABEL;
+	labelStyle: ui.LabelStyle = ui.style.LABEL;
 
 	/**
 	 * The label style used for each menu item hint
 	 * - The default style includes a smaller font size and reduced opacity
 	 */
-	hintStyle = ui.style.LABEL.extend({
+	hintStyle: ui.LabelStyle = ui.style.LABEL.extend({
 		opacity: 0.5,
 		fontSize: 12,
 		shrink: 0,
@@ -128,7 +122,9 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 		// create modal container and items column
 		let column = new UIColumn();
 		let Outer = ui.cell({
-			variant: ModalMenu.styles.containerVariant,
+			accessibleRole: "menu",
+			effect: ModalMenu.styles.effect,
+			style: ModalMenu.styles.containerStyle,
 			position: _containerPosition,
 		});
 		let container = new Outer(column);
@@ -141,7 +137,8 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 
 		// add menu items with label and/or hint
 		const MenuItemCell = ui.cell({
-			variant: ModalMenu.styles.itemCellVariant,
+			accessibleRole: "menuitem",
+			style: ModalMenu.styles.itemCellStyle,
 			allowFocus: true,
 			allowKeyboardFocus: true,
 		});
@@ -156,29 +153,49 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 			let itemRow = new UIRow();
 			let itemCell = new MenuItemCell(itemRow);
 			column.content.add(itemCell);
-			let itemLabel = new UILabel(item.text);
-			itemRow.content.add(itemLabel);
-			if (item.icon) itemLabel.icon = item.icon;
-			itemLabel.style = item.labelStyle
-				? ModalMenu.styles.labelStyle.override(item.labelStyle)
-				: ModalMenu.styles.labelStyle;
+			let ItemLabel = ui.label({
+				text: item.text,
+				icon: item.icon,
+				iconSize: item.iconSize,
+				style: ui.style(
+					ui.style.LABEL,
+					ModalMenu.styles.labelStyle,
+					item.labelStyle,
+				),
+			});
+			itemRow.content.add(new ItemLabel());
 			if (item.hint || item.hintIcon) {
-				let hintLabel = new UILabel(item.hint);
-				if (item.hintIcon) hintLabel.icon = item.hintIcon;
-				hintLabel.style = item.hintStyle
-					? ModalMenu.styles.hintStyle.override(item.hintStyle)
-					: ModalMenu.styles.hintStyle;
+				let HintLabel = ui.label({
+					text: item.hint,
+					icon: item.hintIcon,
+					iconSize: item.hintIconSize,
+					style: ui.style(
+						ui.style.LABEL,
+						ModalMenu.styles.hintStyle,
+						item.hintStyle,
+					),
+				});
 				let spacer = new UISpacer();
 				spacer.minWidth = 8;
-				itemRow.content.add(spacer, hintLabel);
+				itemRow.content.add(spacer, new HintLabel());
 			}
 
 			// add a listener to register clicks and keyboard input
 			itemCell.listen((e) => {
-				if (e.name === "Click") this._resolve?.(item.key);
-				else if (e.name === "EnterKeyPress") this._resolve?.(item.key);
-				else if (e.name === "ArrowDownKeyPress") itemCell.requestFocusNext();
-				else if (e.name === "ArrowUpKeyPress") itemCell.requestFocusPrevious();
+				switch (e.name) {
+					case "Click":
+					case "MouseUp":
+					case "EnterKeyPress":
+					case "SpacebarPress":
+						this._resolve?.(item.key);
+						break;
+					case "ArrowDownKeyPress":
+						itemCell.requestFocusNext();
+						break;
+					case "ArrowUpKeyPress":
+						itemCell.requestFocusPrevious();
+						break;
+				}
 			});
 		}
 		return container;
@@ -186,7 +203,7 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 
 	onArrowDownKeyPress(e: ViewEvent) {
 		if (e.source !== this.body) return;
-		let content = this.body && (this.body as UICell).content;
+		let content = this.findViewContent(UIColumn)[0]?.content;
 		if (content) {
 			for (let item of content) {
 				if (item instanceof UIContainer) {
@@ -199,7 +216,7 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 
 	onArrowUpKeyPress(e: ViewEvent) {
 		if (e.source !== this.body) return;
-		let content = this.body && (this.body as UICell).content;
+		let content = this.findViewContent(UIColumn)[0]?.content;
 		if (content) {
 			let lastItem = content.last();
 			if (lastItem instanceof UIContainer) {

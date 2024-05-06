@@ -35,7 +35,7 @@ export class UITextField extends UIComponent {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: View.ViewPreset<
+		preset: View.ExtendPreset<
 			UIComponent,
 			this,
 			| "placeholder"

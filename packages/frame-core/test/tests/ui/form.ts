@@ -163,10 +163,8 @@ describe("UIFormContext", () => {
 		let ctx = new UIFormContext({ foo: "bar" }).addTest("foo", (t) => {
 			t.assert(t.value && t.value.length > 1, "Too short");
 		});
-		let MyComp = ViewComposite.withPreset<{
-			formContext?: UIFormContext;
-		}>(
-			{ formContext: undefined },
+		const MyComp = ViewComposite.define(
+			{ formContext: undefined as UIFormContext | undefined },
 			ui.row(
 				ui.label(bound("formContext.errors.foo")),
 				ui.textField({ formField: "foo" }),
@@ -198,16 +196,19 @@ describe("UIFormContext", () => {
 		useTestContext((options) => {
 			options.renderFrequency = 5;
 		});
-		const FormContainer = ViewComposite.withPreset<{
-			formContext?: UIFormContext;
-		}>({}, (...content) => ui.column(...content));
+		const FormContainer = ViewComposite.define(
+			{ formContext: undefined as UIFormContext | undefined },
+			(_, ...content) => ui.column(...content),
+		);
 		const ViewBody = ui.page(
 			ui.row(
-				FormContainer.preset(
+				ui.use(
+					FormContainer,
 					{ formContext: bound("form1") },
 					ui.textField({ formField: "text" }),
 				),
-				FormContainer.preset(
+				ui.use(
+					FormContainer,
 					{ formContext: bound("form2") },
 					ui.textField({ formField: "text" }),
 				),

@@ -62,8 +62,8 @@ export class UITheme {
 	 *
 	 * @example
 	 * useWebContext((options) => {
-	 *   options.theme.colors.set("background", ui.color.DARKER_GRAY);
-	 *   options.theme.colors.set("foo", ui.color("#e0b0ff"))
+	 *   options.theme.colors.set("Background", ui.color.DARKER_GRAY);
+	 *   options.theme.colors.set("Foo", ui.color("#e0b0ff"))
 	 *   // ...
 	 * });
 	 */
@@ -196,8 +196,10 @@ export namespace UITheme {
 				key: string;
 				text?: StringConvertible;
 				icon?: UIIconResource;
+				iconSize?: string | number;
 				hint?: StringConvertible;
 				hintIcon?: UIIconResource;
+				hintIconSize?: string | number;
 				labelStyle?: UIComponent.TextStyleType;
 				hintStyle?: UIComponent.TextStyleType;
 				separate?: never;

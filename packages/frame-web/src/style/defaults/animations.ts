@@ -17,8 +17,8 @@ export const animations: [
 	["FadeOutRight", _anim([[], [0.1, 0]], [1, 0], false, true)],
 	["ShowDialog", _anim([[0, 0.1], []], [0, 1])],
 	["HideDialog", _anim([[], []], [1, 0], true, true)],
-	["ShowMenu", _anim([[0, -0.1], []], [0, 1], false, false, 100)],
-	["HideMenu", _anim([[], []], [1, 0], true, true, 100)],
+	["ShowMenu", _anim([[0, -0.1], []], [0, 1], false, false, 50)],
+	["HideMenu", _anim([[], []], [1, 0], true, true, 50)],
 ];
 
 /** Helper function to compose an animation transform function */

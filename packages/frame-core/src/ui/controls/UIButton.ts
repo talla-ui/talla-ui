@@ -29,7 +29,7 @@ export class UIButton extends UIComponent {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: View.ViewPreset<
+		preset: View.ExtendPreset<
 			UIComponent,
 			this,
 			| "label"
@@ -59,7 +59,7 @@ export class UIButton extends UIComponent {
 		}
 
 		// use a 'link' role automatically if navigation target is specified
-		if (preset.navigateTo && !preset.accessibleRole) {
+		if (preset.navigateTo !== undefined && !preset.accessibleRole) {
 			preset.accessibleRole = "link";
 		}
 

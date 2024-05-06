@@ -82,7 +82,7 @@ export function jsx(tag: any, presets: any, ...rest: any[]): ViewClass {
 	let f = typeof tag === "string" ? (ui as any)[tagNames[tag] || tag] : tag;
 	if (typeof f !== "function") throw err(ERROR.JSX_InvalidTag, String(tag));
 	if (f.prototype instanceof ViewComposite) {
-		return f.preset(merged, ...components);
+		return ui.use(f, merged, ...components);
 	}
 	if (f.prototype instanceof View) {
 		throw err(ERROR.JSX_InvalidTag, f.name);

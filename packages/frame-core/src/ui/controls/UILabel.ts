@@ -20,7 +20,7 @@ export class UILabel extends UIComponent {
 	}
 
 	override applyViewPreset(
-		preset: View.ViewPreset<
+		preset: View.ExtendPreset<
 			UIComponent,
 			this,
 			| "headingLevel"

@@ -41,8 +41,8 @@ describe("UIConditionalView", () => {
 	});
 
 	test("Rendering content using bound state", async (t) => {
-		const MyViewComposite = ViewComposite.withPreset<{ condition?: boolean }>(
-			{},
+		const MyViewComposite = ViewComposite.define(
+			{ condition: false },
 			ui.cell(
 				ui.conditional(
 					{ state: bound("condition") },
@@ -51,7 +51,7 @@ describe("UIConditionalView", () => {
 				),
 			),
 		);
-		const MyView = MyViewComposite.preset({ condition: false });
+		const MyView = ui.use(MyViewComposite, { condition: false });
 
 		t.log("Creating view");
 		useTestContext((options) => {

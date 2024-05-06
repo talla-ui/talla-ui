@@ -18,7 +18,7 @@ export class UIContainerRenderer<
 > extends TestBaseObserver<TContainer> {
 	constructor(observed: TContainer) {
 		super(observed);
-		this.observeProperties("layout", "padding");
+		this.observeProperties("layout");
 		if (observed instanceof UIRow) {
 			this.observeProperties("height" as any, "align" as any);
 		}
@@ -46,7 +46,6 @@ export class UIContainerRenderer<
 		if (!this.element) return;
 		switch (property) {
 			case "layout":
-			case "padding":
 			case "align": // for rows and columns
 			case "height": // for rows
 			case "width": // for columns
@@ -103,17 +102,17 @@ export class UIContainerRenderer<
 		let container = this.observed;
 		let layout = container.layout;
 		if (container instanceof UIRow) {
-			styles = [{ height: container.height, padding: container.padding }];
+			styles = [{ height: container.height }];
 			if (container.align) {
 				layout = { ...layout, distribution: container.align };
 			}
 		} else if (container instanceof UIColumn) {
-			styles = [{ width: container.width, padding: container.padding }];
+			styles = [{ width: container.width }];
 			if (container.align) {
 				layout = { ...layout, gravity: container.align };
 			}
 		} else if (container instanceof UIScrollContainer) {
-			styles = [{ padding: container.padding }];
+			styles = [];
 		}
 
 		// apply styles

@@ -25,7 +25,13 @@ export const CLASS_CELL = "_Cell";
 /** @internal Additional scroll container class name */
 export const CLASS_SCROLL = "_Scroll";
 /** @internal Additional toggle wrapper class name */
-export const CLASS_TOGGLE_WRAPPER = "_Toggle";
+export const CLASS_TOGGLE = "_Toggle";
+/** @internal Additional toggle wrapper class names by type */
+export const CLASS_TOGGLE_TYPE = {
+	checkbox: "_Toggle--checkbox",
+	switch: "_Toggle--switch",
+	none: "_Toggle--none",
+} as const;
 
 /** @internal Returns an object with necessary global CSS classes */
 export function makeBaseCSS() {
@@ -175,15 +181,26 @@ export function makeBaseCSS() {
 		},
 
 		// add custom toggle styles
-		[`.${CLASS_UI}.${CLASS_TOGGLE_WRAPPER}>input`]: {
+		[`.${CLASS_UI}.${CLASS_TOGGLE}`]: {
+			display: "inline-flex",
+			alignItems: "center",
+		},
+		[`.${CLASS_UI}.${CLASS_TOGGLE}>input`]: {
 			webkitAppearance: "none",
 			mozAppearance: "none",
 			appearance: "none",
-			position: "relative",
+		},
+		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.none}>input`]: {
+			display: "none",
+		},
+		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.checkbox}>input+label`]:
+			{
+				padding: "0 0 0 0.35rem",
+			},
+		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.checkbox}>input`]: {
+			margin: "2px",
 			display: "inline-block",
-			verticalAlign: "middle",
-			top: "-0.1rem",
-			left: "2px",
+			position: "relative",
 			outlineOffset: "0",
 			color: "inherit",
 			borderStyle: "solid",
@@ -193,26 +210,73 @@ export function makeBaseCSS() {
 			width: "1rem",
 			height: "1rem",
 			padding: "0",
-			margin: "0",
 			cursor: "inherit",
 		},
-		[`.${CLASS_UI}.${CLASS_TOGGLE_WRAPPER}>input:checked`]: {
-			background: "currentColor",
-			borderColor: "transparent",
+		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.checkbox}>input:checked`]:
+			{
+				background: "currentColor",
+				borderColor: "transparent",
+			},
+		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.checkbox}>input:checked::after`]:
+			{
+				content: "''",
+				boxSizing: "border-box",
+				display: "block",
+				position: "absolute",
+				top: "0",
+				left: ".25rem",
+				height: ".65rem",
+				width: ".4rem",
+				transform: "rotate(45deg)",
+				borderWidth: "0 2px 2px 0",
+				borderStyle: "solid",
+				borderColor: "#fff",
+			},
+		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.switch}>input+label`]: {
+			flexGrow: "1",
 		},
-		[`.${CLASS_UI}.${CLASS_TOGGLE_WRAPPER}>input:checked::after`]: {
-			content: "''",
-			boxSizing: "border-box",
-			display: "block",
-			position: "absolute",
-			top: "0",
-			left: ".25rem",
-			height: ".65rem",
-			width: ".4rem",
-			transform: "rotate(45deg)",
-			borderWidth: "0 2px 2px 0",
+		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.switch}>input`]: {
+			order: "2",
+			flexShrink: "0",
+			margin: "2px 2px 2px .35rem",
+			display: "inline-block",
+			position: "relative",
+			outlineOffset: "0",
+			color: "inherit",
 			borderStyle: "solid",
-			borderColor: "#fff",
+			borderWidth: "1px",
+			borderColor: "inherit",
+			borderRadius: "1rem",
+			background: "rgba(128,128,128,.5)",
+			width: "2.5rem",
+			height: "1.5rem",
+			cursor: "inherit",
 		},
+		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.switch}>input:checked`]:
+			{
+				background: "currentColor",
+				borderColor: "transparent",
+				opacity: "1",
+				boxShadow: "none",
+			},
+		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.switch}>input::after`]: {
+			content: "''",
+			display: "block",
+			boxSizing: "border-box",
+			position: "absolute",
+			top: "calc(0.125rem - 1px)",
+			left: ".125rem",
+			height: "1.25rem",
+			width: "1.25rem",
+			borderRadius: "1rem",
+			background: "#fff",
+			boxShadow: "0 2px 4px rgba(0,0,0,.5)",
+			transition: "all 0.1s ease",
+		},
+		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.switch}>input:checked::after`]:
+			{
+				left: "1.05rem",
+				borderColor: "transparent",
+			},
 	};
 }

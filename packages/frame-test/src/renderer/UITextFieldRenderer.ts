@@ -46,6 +46,7 @@ export class UITextFieldRenderer extends TestBaseObserver<UITextField> {
 			this.observed.value = this.element.value || "";
 		}
 
+		data.value = this.observed?.value;
 		super.handlePlatformEvent(name, data);
 	}
 
@@ -60,6 +61,7 @@ export class UITextFieldRenderer extends TestBaseObserver<UITextField> {
 
 	override updateStyle(element: TestOutputElement) {
 		let textField = this.observed;
+
 		// set state
 		element.disabled = textField.disabled;
 		element.readOnly = textField.readOnly;

@@ -9,6 +9,9 @@ let _nextStyleId = 0x1234;
  * - For custom styles used by an application, extend base styles using the {@link extend()} method, or create override objects using the {@link override()} method.
  */
 export class UIStyle<TDefinition> {
+	/** Always true, can be used for duck typing */
+	static readonly isUIStyleType: true = true;
+
 	/**
 	 * Creates a new subclass that includes the original styles as well as new styles
 	 * @param styles A list of style definitions to be added to the extended style; this may include multiple objects with different state options (see {@link StyleStateOptions}).
@@ -116,6 +119,7 @@ export namespace UIStyle {
 
 	/** Type definition for a {@link UIStyle} class (or extended sub class) */
 	export type Type<TDefinition> = {
+		isUIStyleType: true;
 		new (): UIStyle<TDefinition>;
 		extend: typeof UIStyle.extend;
 		override: typeof UIStyle.override;

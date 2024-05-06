@@ -5,13 +5,14 @@ import {
 	useTestContext,
 } from "@desk-framework/frame-test";
 import {
+	BindingOrValue,
 	LazyString,
 	StringConvertible,
+	UIButton,
 	UICell,
 	UIColumn,
 	UILabel,
 	ViewComposite,
-	ViewCompositeVariant,
 	app,
 	bound,
 	strf,
@@ -73,13 +74,16 @@ describe("JSX", () => {
 	});
 
 	test("Custom view composite", () => {
-		const MyView = ViewComposite.withPreset(
-			{
-				/** A single property, not used in view */
-				foo: 0,
-			},
-			<label>test</label>,
-		);
+		class MyView extends ViewComposite {
+			constructor(p: { foo?: BindingOrValue<number> }) {
+				super();
+				this.applyViewPreset(p);
+			}
+			foo?: number = undefined;
+			override defineView() {
+				return <label>test</label>;
+			}
+		}
 		let MyCell = (
 			<cell>
 				<MyView foo={123} />
@@ -90,63 +94,60 @@ describe("JSX", () => {
 		expect(cell.content.first()).toHaveProperty("foo").toBe(123);
 	});
 
-	test("Custom view composite with variant", () => {
-		const MyView = ViewComposite.withPreset(
-			{
-				/** A single property, not used in view */
-				foo: 0,
-			},
-			<label>test</label>,
+	test("Custom view composite, with defaults", () => {
+		const MyView = ViewComposite.define({ foo: "" }, <label>Foo</label>);
+		let ViewPreset = <MyView foo="bar" />;
+		let c = new ViewPreset() as ViewComposite;
+		c.render();
+		expect(c).toHaveProperty("foo").toBe("bar");
+		expect(c.findViewContent(UILabel)[0])
+			.toHaveProperty("text")
+			.asString()
+			.toBe("Foo");
+	});
+
+	test("Custom view composite, with defaults, half class", () => {
+		class MyView extends ViewComposite.define({ foo: "" }) {
+			override defineView() {
+				return <label>Foo</label>;
+			}
+		}
+		let ViewPreset = <MyView foo="bar" />;
+		let c = new ViewPreset() as ViewComposite;
+		c.render();
+		expect(c).toHaveProperty("foo").toBe("bar");
+		expect(c.findViewContent(UILabel)[0])
+			.toHaveProperty("text")
+			.asString()
+			.toBe("Foo");
+	});
+
+	test("Custom view composite, with defaults, using function", () => {
+		const MyView = ViewComposite.define(
+			{ chevron: "up" as "up" | "down" },
+			(v) => <button chevron={v.chevron}>test</button>,
 		);
-		let myViewVariant = new ViewCompositeVariant(MyView, { foo: 123 });
 		let MyCell = (
 			<cell>
-				<MyView variant={myViewVariant} />
+				<MyView chevron="down" />
 			</cell>
 		);
 		let cell = new MyCell() as UICell;
 		expect(cell.content).asArray().toBeArray(1);
-		expect(cell.content.first()).toHaveProperty("foo").toBe(123);
-		expect(() => {
-			const OtherView = ViewComposite.withPreset({});
-			let otherVariant = new ViewCompositeVariant(OtherView, {});
-			return new (
-				<cell>
-					<MyView variant={otherVariant} />
-				</cell>
-			)();
-		})
-			.toThrowError()
-			.asString()
-			.toMatchRegExp(/variant/);
+		expect(cell.content.first()).toHaveProperty("chevron").toBe("down");
+		(cell.content.first() as ViewComposite).render();
+		expect(cell.findViewContent(UIButton)[0])
+			.toHaveProperty("chevron")
+			.toBe("down");
 	});
 
-	test("Custom view composite as class, with variant", () => {
-		class MyViewComp extends ViewComposite.withPreset(
-			{
-				/** A single property, not used in view */
-				foo: 0,
-			},
-			<label>test</label>,
-		) {
-			onClick() {
-				// ...
-			}
-		}
-		let TestView = <MyViewComp foo={123} />;
-		let view = new TestView() as MyViewComp;
-		expect(view).toHaveProperty("foo").toBe(123);
-
-		let testVariant = new ViewCompositeVariant(MyViewComp, { foo: 456 });
-		let TestVariantView = <MyViewComp variant={testVariant} />;
-		let variantView = new TestVariantView() as MyViewComp;
-		expect(variantView).toHaveProperty("foo").toBe(456);
-	});
-
-	test("Custom view composite with column content", (t) => {
-		const MyColumn = ViewComposite.withPreset({ foo: "" }, (...content) => (
-			<column>{...content}</column>
-		));
+	test("Custom view composite with column content and styles", (t) => {
+		const MyColumn = ViewComposite.define(
+			{ foo: "", styles: { spacing: 8 } },
+			(v, ...content) => (
+				<column spacing={v.styles.spacing}>{...content}</column>
+			),
+		);
 		let MyCell = (
 			<cell>
 				<MyColumn foo="bar">
@@ -165,6 +166,7 @@ describe("JSX", () => {
 		viewComposite.render();
 		let column = viewComposite.findViewContent(UIColumn)[0];
 		expect(column).toBe(viewComposite.body);
+		expect(column).toHaveProperty("spacing").toBe(8);
 
 		t.log("Label content inside column");
 		let labels = column!.content.toArray();
@@ -174,37 +176,60 @@ describe("JSX", () => {
 	});
 
 	test("Component with bound content", async (t) => {
-		const MyView = ViewComposite.withPreset(
-			{
-				/** A single property, bound in view */
-				foo: 0,
-			},
-			<label>{bound("foo")}</label>,
-		);
+		class MyView extends ViewComposite {
+			constructor(p?: { foo?: BindingOrValue<number> }) {
+				super();
+				this.applyViewPreset(p);
+			}
+			foo: number = 0;
+			override defineView() {
+				return <label>{bound("foo")}</label>;
+			}
+		}
 		useTestContext((options) => {
 			options.renderFrequency = 5;
 		});
-		t.render(new (MyView.preset({ foo: 123 }))());
+		let instance = new (ui.use(MyView, { foo: 123 }))();
+		t.render(instance);
 		await t.expectOutputAsync(50, { text: "123" });
 	});
 
 	test("Component with bound content using lazy string", async (t) => {
-		const MyView = ViewComposite.withPreset(
-			{
-				/** A single property, bound in view */
-				foo: StringConvertible.EMPTY,
-			},
+		const MyView = ViewComposite.define(
+			{ foo: StringConvertible.EMPTY },
 			<label>{strf("Foo is %[foo]")}</label>,
 		);
 		useTestContext((options) => {
 			options.renderFrequency = 5;
 		});
-		t.render(new (MyView.preset({ foo: strf("123") }))());
+		t.render(new (ui.use(MyView, { foo: strf("123") }))());
 		await t.expectOutputAsync(50, { text: "Foo is 123" });
 	});
 
+	test("Component with event handler", async (t) => {
+		class MyView extends ViewComposite {
+			override defineView() {
+				return (
+					<cell>
+						<button onClick="FooClicked">Foo</button>
+					</cell>
+				);
+			}
+			onFooClicked() {
+				t.count("FooClicked");
+			}
+		}
+		useTestContext((options) => {
+			options.renderFrequency = 5;
+		});
+		t.render(new MyView());
+		let buttonOut = await t.expectOutputAsync(50, { type: "button" });
+		buttonOut.getSingle().click();
+		t.expectCount("FooClicked").toBe(1);
+	});
+
 	test("Component with bound content and text", async (t) => {
-		const MyView = ViewComposite.withPreset(
+		const MyView = ViewComposite.define(
 			{ foo: 0, bar: undefined as any },
 			<row>
 				<label>foo='{bound("foo")}'</label>
@@ -216,7 +241,7 @@ describe("JSX", () => {
 		useTestContext((options) => {
 			options.renderFrequency = 5;
 		});
-		let V = MyView.preset({ foo: 123, bar: { foo: 456, baz: "abc" } });
+		let V = ui.use(MyView, { foo: 123, bar: { foo: 456, baz: "abc" } });
 		t.render(new V());
 		let expectRow = await t.expectOutputAsync(50, { type: "row" });
 		t.log("straight binding");
@@ -230,14 +255,14 @@ describe("JSX", () => {
 	});
 
 	test("Component with bound content and text, translated", async (t) => {
-		const Comp = ViewComposite.withPreset(
+		const Comp = ViewComposite.define(
 			{ emails: { count: 0 } },
 			<label>
 				You have %[numEmails=emails.count:n] %[numEmails:plural|email|emails]
 			</label>,
 		);
-		const Preset1 = Comp.preset({ emails: { count: 1 } });
-		const Preset2 = Comp.preset({ emails: { count: 2 } });
+		const Preset1 = ui.use(Comp, { emails: { count: 1 } });
+		const Preset2 = ui.use(Comp, { emails: { count: 2 } });
 
 		useTestContext((options) => {
 			options.renderFrequency = 5;
