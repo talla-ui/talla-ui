@@ -1,4 +1,3 @@
-/// <reference path="../../lib/desk-framework-web.iife.d.ts" />
 const { app, ui, bound } = desk;
 
 (function () {

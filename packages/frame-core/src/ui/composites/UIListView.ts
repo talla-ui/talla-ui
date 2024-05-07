@@ -336,6 +336,8 @@ export namespace UIListView {
 		 * Implementation of {@link ViewComposite.delegateViewEvent}, emits events with the `delegate` property set to this object
 		 */
 		protected override delegateViewEvent(event: ManagedEvent) {
+			if (this.isUnlinked() || event.noPropagation) return false;
+
 			event = ManagedEvent.withDelegate(event, this);
 			this.emit(event);
 			return true;

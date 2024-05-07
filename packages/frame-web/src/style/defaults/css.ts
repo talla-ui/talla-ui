@@ -207,8 +207,10 @@ export function makeBaseCSS() {
 			borderWidth: "1px",
 			borderColor: "inherit",
 			borderRadius: "2px",
+			background: "#fff",
 			width: "1rem",
 			height: "1rem",
+			flexShrink: "0",
 			padding: "0",
 			cursor: "inherit",
 		},
@@ -237,6 +239,8 @@ export function makeBaseCSS() {
 		},
 		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.switch}>input`]: {
 			order: "2",
+			width: "2.5rem",
+			height: "1.5rem",
 			flexShrink: "0",
 			margin: "2px 2px 2px .35rem",
 			display: "inline-block",
@@ -248,8 +252,6 @@ export function makeBaseCSS() {
 			borderColor: "inherit",
 			borderRadius: "1rem",
 			background: "rgba(128,128,128,.5)",
-			width: "2.5rem",
-			height: "1.5rem",
 			cursor: "inherit",
 		},
 		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.switch}>input:checked`]:

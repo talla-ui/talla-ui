@@ -111,6 +111,7 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 		// update label
 		let label = element.lastChild as HTMLLabelElement;
 		let text = toggle.label;
+		label.style.display = text ? "" : "none";
 		label.textContent = text == null ? "" : String(text);
 	}
 }

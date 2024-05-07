@@ -131,8 +131,12 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 		column.width = this.options.width || ModalMenu.styles.defaultWidth;
 
 		// reposition the menu after rendering
+		let shown = Date.now();
 		container.listen((e) => {
-			if (e.name === "Rendered") this._fixPosition();
+			if (e.name === "Rendered") {
+				shown = Date.now();
+				this._fixPosition();
+			}
 		});
 
 		// add menu items with label and/or hint
@@ -183,8 +187,9 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 			// add a listener to register clicks and keyboard input
 			itemCell.listen((e) => {
 				switch (e.name) {
-					case "Click":
 					case "MouseUp":
+						if (Date.now() - shown < 200) break;
+					case "Click":
 					case "EnterKeyPress":
 					case "SpacebarPress":
 						this._resolve?.(item.key);
