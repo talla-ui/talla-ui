@@ -93,8 +93,8 @@ export abstract class UIComponent extends View {
 		// request focus (renderer will remember)
 		if (preset.requestFocus) {
 			setTimeout(() => this.requestFocus(), 1);
-			delete preset.requestFocus;
 		}
+		delete preset.requestFocus;
 
 		// apply all other property values, bindings, and event handlers
 		super.applyViewPreset(preset);
