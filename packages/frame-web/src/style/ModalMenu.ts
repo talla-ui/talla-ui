@@ -217,6 +217,7 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 				}
 			}
 		}
+		return true;
 	}
 
 	onArrowUpKeyPress(e: ViewEvent) {
@@ -228,14 +229,17 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 				lastItem.requestFocus();
 			}
 		}
+		return true;
 	}
 
 	onEscapeKeyPress() {
 		this._resolve?.();
+		return true;
 	}
 
 	onCloseModal() {
 		this._resolve?.();
+		return true;
 	}
 
 	private _fixPosition() {

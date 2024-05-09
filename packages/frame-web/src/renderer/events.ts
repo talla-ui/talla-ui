@@ -1,6 +1,5 @@
 import { UIComponent } from "@desk-framework/frame-core";
 import { BaseObserver } from "./observers/BaseObserver.js";
-import { CLASS_MODAL_SHADER } from "../style/defaults/css.js";
 
 /** @internal Unique ID that's used as a property name for output references on DOM elements */
 export const ELT_HND_PROP =
@@ -8,6 +7,9 @@ export const ELT_HND_PROP =
 	((window as any).DOM_UI_RENDER_MODULE_ID =
 		((window as any).DOM_UI_RENDER_MODULE_ID || 1000) + 1) +
 	Math.floor(Math.random() * 1e6);
+
+/** @internal Dataset property name for boolean on page and modal mount elements */
+const DATA_MOUNT_PROP = "desk__focusmount";
 
 /** UI component event names that are used for DOM events */
 const _eventNames: { [domEventName: string]: string } = {
@@ -58,6 +60,14 @@ const _listKeysPreventDefault: { [keyName: string]: boolean } = {
 	ArrowDown: true,
 };
 
+/** Roles for which keyboard default actions should be prevented */
+const _listRolesPreventKeys: { [roleName: string]: boolean } = {
+	list: true,
+	listitem: true,
+	table: true,
+	cell: true,
+};
+
 /** Last time a touch event was handled, used for blocking clicks after touches */
 let _lastTouchT = 0;
 
@@ -68,29 +78,28 @@ let _lastTouchObserver: any;
 let _touchMoveHandler: any;
 
 /** @internal Helper function that adds event handlers for all used DOM events */
-export function registerHandlers(elt: HTMLElement) {
+export function registerHandlers(elt: HTMLElement, isFullMount?: boolean) {
 	elt.removeEventListener("focusin", detractFocus, true);
 	elt.addEventListener("focusin", detractFocus, true);
-
 	for (let name of Object.keys(_eventNames)) {
 		elt.removeEventListener(name, eventHandler);
 		elt.addEventListener(name, eventHandler);
 	}
+	if (isFullMount) elt.dataset[DATA_MOUNT_PROP] = "1";
 }
 
 /** Helper function that handles DOM events on all UI components, max 2 levels up from target element */
 function eventHandler(this: HTMLElement, e: Event) {
 	let target = e.target as Node | null;
 
-	// don't handle any events if before (last) active modal
+	// don't handle any events if before (last) page/modal mount
 	// (these may happen with e.g. screen readers)
-	let shaders = document.querySelectorAll("." + CLASS_MODAL_SHADER);
-	let lastShader = shaders.item(shaders.length - 1);
+	let mountElts = document.querySelectorAll("[data-" + DATA_MOUNT_PROP + "]");
+	let lastPage = mountElts.item(mountElts.length - 1);
 	if (
-		lastShader &&
+		lastPage &&
 		target &&
-		lastShader.compareDocumentPosition(target) &
-			Node.DOCUMENT_POSITION_PRECEDING
+		lastPage.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_PRECEDING
 	)
 		return;
 
@@ -132,11 +141,11 @@ function eventHandler(this: HTMLElement, e: Event) {
 	}
 }
 
-/** Helper function that works as an event handler to stop input focus outside the last modal element, if any */
+/** Helper function that works as an event handler to stop input focus outside the last page/modal element, if any */
 function detractFocus(this: HTMLElement, e: Event) {
-	let modals = document.querySelectorAll("." + CLASS_MODAL_SHADER);
-	if (!modals.length) return;
-	let lastModal = modals.item(modals.length - 1) as HTMLElement;
+	let mountElts = document.querySelectorAll("[data-" + DATA_MOUNT_PROP + "]");
+	if (!mountElts.length) return;
+	let lastModal = mountElts.item(mountElts.length - 1) as HTMLElement;
 	if (lastModal && e.target && e.target !== lastModal) {
 		let pos = lastModal.compareDocumentPosition(e.target as any);
 		if (!(pos & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
@@ -203,11 +212,12 @@ function handleObserverEvent(observer: BaseObserver<UIComponent>, e: Event) {
 			ignore = nodeName === "button" || nodeName === "textarea";
 		}
 		if (_listKeysPreventDefault[key]) {
-			let role =
-				target &&
-				(target.getAttribute("role") ||
-					(target.parentElement && target.parentElement.getAttribute("role")));
-			if (role === "list" || role === "listitem") {
+			let role = target && target.getAttribute("role");
+			if (!role) {
+				let parentElt = target.parentElement;
+				role = parentElt && parentElt.getAttribute("role");
+			}
+			if (role && _listRolesPreventKeys[role]) {
 				e.preventDefault();
 			}
 		}

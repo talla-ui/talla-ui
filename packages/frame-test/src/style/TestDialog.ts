@@ -32,6 +32,6 @@ export class TestDialog
 
 	show(place?: Partial<RenderContext.PlacementOptions>) {
 		if (this.dialogView.isUnlinked()) return;
-		app.render(this, { mode: "dialog", ...place });
+		app.render(this, { mode: "modal", ...place });
 	}
 }

@@ -128,7 +128,7 @@ export class MessageDialog
 
 	async showAsync(place?: Partial<RenderContext.PlacementOptions>) {
 		app.render(this, {
-			mode: "dialog",
+			mode: "modal",
 			shade: true,
 			transform: {
 				show: ui.animation.SHOW_DIALOG,

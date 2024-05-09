@@ -35,10 +35,7 @@ export class TestMessageDialog
 	otherLabel?: StringConvertible;
 
 	async showAsync(place?: Partial<RenderContext.PlacementOptions>) {
-		app.render(this, {
-			mode: "dialog",
-			...place,
-		});
+		app.render(this, { mode: "modal", ...place });
 		let confirmed = false;
 		let other = false;
 		for await (let e of this.listen()) {

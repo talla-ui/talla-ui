@@ -14,13 +14,18 @@ export class OutputMount {
 	readonly id = _nextId++;
 
 	/** Creates a fixed full-page root element, i.e. for placement modes "screen" and "page" */
-	createPageElement(background: UIColor | string, scroll?: boolean) {
+	createPageElement(
+		background: UIColor | string,
+		scroll?: boolean,
+		title?: string,
+	) {
 		let elt =
 			(this._outer =
 			this._inner =
 				document.createElement("desk-page-root"));
 		elt.ariaAtomic = "true";
 		elt.className = CLASS_PAGE_ROOT;
+		elt.dataset.title = title || "";
 		if (scroll) elt.style.overflow = "auto";
 		this._remount = () => {
 			elt.dir = app.i18n?.getAttributes().rtl ? "rtl" : "ltr";
@@ -28,13 +33,13 @@ export class OutputMount {
 			elt.style.color = String(new UIColor("Text"));
 		};
 		this._remount();
-		registerHandlers(elt);
+		registerHandlers(elt, true);
 		document.body.appendChild(elt);
+		this._updateTitle();
 	}
 
 	/** Creates a modal root element, for use with various modal placement modes */
 	createModalElement(
-		autoCloseModal?: boolean,
 		refElt?: HTMLElement,
 		refOffset?: number | [number, number],
 		reducedMotion?: boolean,
@@ -44,7 +49,7 @@ export class OutputMount {
 		shader.className = CLASS_MODAL_SHADER;
 		shader.tabIndex = 0;
 		document.body.appendChild(shader);
-		registerHandlers(shader);
+		registerHandlers(shader, true);
 
 		// darken shader after rendering, and focus
 		function setFocus() {
@@ -88,27 +93,24 @@ export class OutputMount {
 		}
 
 		// send `CloseModal` event if clicked outside modal, or pressed escape
-		if (autoCloseModal) {
-			const checkAndClose = (e: Event) => {
-				if (
-					(e.target === shader || e.target === wrapper) &&
-					this._lastView &&
-					!this._lastView.isUnlinked()
-				) {
-					e.stopPropagation();
-					this._lastView.emit("CloseModal");
-				}
-			};
-			shader.addEventListener("click", checkAndClose, true);
-			shader.addEventListener("touchend", checkAndClose, true);
-			shader.addEventListener(
-				"keydown",
-				(e) => {
-					if (e.key === "Escape") checkAndClose(e);
-				},
-				true,
-			);
-		}
+		const checkAndClose = (e: Event) => {
+			if (
+				(e.target === shader || e.target === wrapper) &&
+				this._lastView &&
+				!this._lastView.isUnlinked()
+			) {
+				this._lastView.emit("CloseModal");
+			}
+		};
+		shader.addEventListener("click", checkAndClose, true);
+		shader.addEventListener("touchend", checkAndClose, true);
+		shader.addEventListener(
+			"keydown",
+			(e) => {
+				if (e.key === "Escape") checkAndClose(e);
+			},
+			true,
+		);
 
 		// handle remount by setting colors again
 		this._remount = () => {
@@ -193,10 +195,24 @@ export class OutputMount {
 			this._shader.style.background = "";
 			setTimeout(() => {
 				this._outer!.remove();
+				this._updateTitle();
 			}, 200);
 		} else if (this._outer) {
 			// otherwise, remove outer element right away, if any
 			this._outer.remove();
+			this._updateTitle();
+		}
+	}
+
+	/** Updates the document title according to the title of the last mount in the DOM */
+	private _updateTitle() {
+		let pageRoots = document.querySelectorAll("desk-page-root");
+		for (let i = pageRoots.length - 1; i >= 0; i--) {
+			let title = (pageRoots[i] as HTMLElement).dataset.title;
+			if (title) {
+				document.title = title;
+				break;
+			}
 		}
 	}
 

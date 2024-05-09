@@ -72,10 +72,13 @@ export class TestModalMenu
 
 	onEscapeKeyPress() {
 		this._resolve?.();
+		return true;
 	}
 
 	onCloseModal() {
 		this._resolve?.();
+		return true;
 	}
+
 	private _resolve?: (key?: string) => void;
 }

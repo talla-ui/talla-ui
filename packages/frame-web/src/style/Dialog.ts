@@ -62,7 +62,7 @@ export class Dialog extends ViewComposite implements UITheme.DialogController {
 	show(place?: Partial<RenderContext.PlacementOptions>) {
 		if (this.dialogView.isUnlinked()) return;
 		app.render(this, {
-			mode: "dialog",
+			mode: "modal",
 			shade: true,
 			transform: {
 				show: ui.animation.SHOW_DIALOG,

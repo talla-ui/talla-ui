@@ -46,7 +46,6 @@ export class WebRenderer extends RenderContext {
 	/** Retrieves a render callback for root output */
 	getRenderCallback() {
 		let mount: OutputMount | undefined;
-		let autoCloseModal = false;
 		let prevFocus: HTMLElement | undefined;
 		let callback: RenderContext.RenderCallback = (output, afterRender) => {
 			this.schedule(() => {
@@ -88,14 +87,14 @@ export class WebRenderer extends RenderContext {
 							case "page":
 								scroll = true;
 							case "screen":
-								mount.createPageElement(this._pageBackground, scroll);
-								this.setDocumentTitle(output.source);
+								mount.createPageElement(
+									this._pageBackground,
+									scroll,
+									this._getTitle(output.source),
+								);
 								break;
 							case "modal":
-								autoCloseModal = true;
-							case "dialog":
 								mount.createModalElement(
-									autoCloseModal,
 									place.ref && (place.ref.element as any),
 									place.refOffset,
 									this._reducedMotion,
@@ -117,18 +116,6 @@ export class WebRenderer extends RenderContext {
 			return callback;
 		};
 		return callback;
-	}
-
-	/** Sets the document title according to the activity that contains the provided view */
-	setDocumentTitle(view: View) {
-		let activity = Activity.whence(view);
-		while (activity) {
-			if (activity.title) {
-				document.title = String(activity.title);
-				break;
-			}
-			activity = Activity.whence(activity);
-		}
 	}
 
 	/** Focuses given element asynchronously, waiting for rendering to catch up */
@@ -191,6 +178,17 @@ export class WebRenderer extends RenderContext {
 	/** Enables or disables reduced motion mode (forces all transition timings to 0 if set) */
 	setReducedMotion(enable: boolean) {
 		this._reducedMotion = !!enable;
+	}
+
+	/** Returns the title for the activity that contains the provided view */
+	private _getTitle(view: View) {
+		let activity = Activity.whence(view);
+		while (activity) {
+			if (activity.title) {
+				return String(activity.title);
+			}
+			activity = Activity.whence(activity);
+		}
 	}
 
 	private _mounts: Map<number, OutputMount>;

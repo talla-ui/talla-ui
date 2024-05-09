@@ -54,13 +54,7 @@ export namespace RenderContext {
 	 * - `modal` — The output should appear on top of all other output, surrounded by a shaded margin. A `CloseModal` event is emitted when touching or clicking outside of the modal view area, or pressing the Escape key.
 	 * - `mount` — The output should be 'mounted' within an existing output element, with a specified string ID (e.g. HTML element).
 	 */
-	export type PlacementMode =
-		| "none"
-		| "screen"
-		| "page"
-		| "dialog"
-		| "modal"
-		| "mount";
+	export type PlacementMode = "none" | "screen" | "page" | "modal" | "mount";
 
 	/**
 	 * Type definition for global rendering placement options
