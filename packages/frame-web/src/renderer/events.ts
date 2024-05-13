@@ -16,8 +16,8 @@ const _eventNames: { [domEventName: string]: string } = {
 	click: "Click",
 	dblclick: "DoubleClick",
 	contextmenu: "ContextMenu",
-	mouseup: "MouseUp",
-	mousedown: "MouseDown",
+	mousedown: "Press",
+	mouseup: "Release",
 	touchstart: "TouchStart",
 	touchend: "TouchEnd",
 	keydown: "KeyDown",
@@ -189,14 +189,14 @@ function handleObserverEvent(observer: BaseObserver<UIComponent>, e: Event) {
 				}),
 			);
 		}
-		component.emit("MouseDown", { event: e });
+		component.emit("Press", { event: e });
 	}
 
 	// simulate mouse up and click on touch (if not moved)
 	if (uiEventName === "TouchEnd") {
 		_lastTouchT = Date.now();
 		if (_lastTouchObserver === observer) {
-			component.emit("MouseUp", { event: e });
+			component.emit("Release", { event: e });
 			component.emit("Click", { event: e });
 		}
 	}

@@ -61,10 +61,10 @@ export abstract class UIComponent extends View {
 		onDoubleClick?: string;
 		/** Event that's emitted when a context menu has been requested on the output element */
 		onContextMenu?: string;
-		/** Event that's emitted when a mouse button has been released */
-		onMouseUp?: string;
-		/** Event that's emitted when a mouse button has been pressed down */
-		onMouseDown?: string;
+		/** Event that's emitted when a mouse button or touch input has been pressed */
+		onPress?: string;
+		/** Event that's emitted when a mouse button or touch input has been released */
+		onRelease?: string;
 		/** Event that's emitted when a key button has been released */
 		onKeyUp?: string;
 		/** Event that's emitted when a key button has been pressed down */

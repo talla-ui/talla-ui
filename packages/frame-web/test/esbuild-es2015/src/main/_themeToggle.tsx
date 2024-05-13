@@ -35,14 +35,14 @@ export default (
 					value="light"
 					pressed={bound("selectedTheme").matches("light")}
 					style={ToggleButtonStyle}
-					onMouseDown="+SetTheme"
+					onPress="+SetTheme"
 				/>
 				<button
 					label="Dark"
 					value="dark"
 					pressed={bound("selectedTheme").matches("dark")}
 					style={ToggleButtonStyle}
-					onMouseDown="+SetTheme"
+					onPress="+SetTheme"
 				/>
 			</row>
 		</cell>

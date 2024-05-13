@@ -14,8 +14,8 @@ import type { TestRenderer } from "./TestRenderer.js";
 const _eventNames: { [p in TestOutputElement.PlatformEvent]?: string } = {
 	click: "Click",
 	dblclick: "DoubleClick",
-	mouseup: "MouseUp",
-	mousedown: "MouseDown",
+	mousedown: "Press",
+	mouseup: "Release",
 	mouseenter: "MouseEnter",
 	mouseleave: "MouseLeave",
 	keydown: "KeyDown",
