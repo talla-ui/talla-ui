@@ -35,7 +35,7 @@ export class TestNavigationController extends NavigationController {
 
 		// stop here if path is empty
 		let { pageId, detail } = target || {};
-		if (!pageId) return;
+		if (pageId == null) return;
 
 		// update history after a delay, then finally set path
 		if (this._delay) await this._simulateDelay();

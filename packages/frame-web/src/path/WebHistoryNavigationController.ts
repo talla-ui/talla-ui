@@ -18,6 +18,25 @@ export class WebHistoryNavigationController extends NavigationController {
 	constructor(options: WebContextOptions) {
 		super();
 		this._basePath = options.basePath.replace(/^\//, "");
+
+		// insert initial history entries if needed
+		let initial = this._getPath();
+		let insert: string[] = [];
+		let base = this._basePath + "/";
+		if (options.insertHistory === "root" && initial[0]) {
+			insert.push(base);
+		}
+		if (options.insertHistory && initial[1]) {
+			insert.push(base + initial[0]);
+		}
+		if (insert.length) {
+			insert.push(base + initial.join("/"));
+		}
+		insert.forEach((href, i) =>
+			i ? history.pushState({}, "", href) : history.replaceState({}, "", href),
+		);
+
+		// set event listener for back/forward navigation
 		if (!_eventListenerAdded) {
 			window.addEventListener("popstate", () => {
 				let self = app.activities.navigationController;
@@ -56,7 +75,7 @@ export class WebHistoryNavigationController extends NavigationController {
 		if (mode && mode.back) {
 			// go back, then continue
 			window.history.back();
-			if (target) {
+			if (target && target.pageId != null) {
 				// after going back, navigate to given path
 				await new Promise((r) => setTimeout(r, 1));
 				return this.navigateAsync(target, { ...mode, back: false });
@@ -64,12 +83,8 @@ export class WebHistoryNavigationController extends NavigationController {
 		} else {
 			let href = this.getPathHref(target);
 			if (href) {
-				if (
-					mode &&
-					mode.replace &&
-					typeof window.history.replaceState === "function"
-				) {
-					// replace path if possible
+				if (mode && mode.replace) {
+					// replace path if requested
 					window.history.replaceState({}, document.title, href);
 					this.update();
 				} else {
@@ -86,15 +101,15 @@ export class WebHistoryNavigationController extends NavigationController {
 	 * - This method is called automatically. It shouldn't be necessary to call this method manually in an application.
 	 */
 	update() {
+		this.set(...this._getPath());
+	}
+
+	private _getPath(): [string, string] {
 		let target = String(window.location.pathname || "").replace(/^\//, "");
 		if (target.startsWith(this._basePath)) {
 			target = target.slice(this._basePath.length).replace(/^\//, "");
 		}
-		this._setTarget(target);
-	}
-
-	private _setTarget(target: string) {
 		let parts = target.replace(/\/$/, "").split("/");
-		this.set(parts[0] || "", parts.slice(1).join("/"));
+		return [parts[0] || "", parts.slice(1).join("/")];
 	}
 }

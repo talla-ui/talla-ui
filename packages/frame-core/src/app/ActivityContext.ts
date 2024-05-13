@@ -5,6 +5,9 @@ import { NavigationController } from "./NavigationController.js";
 
 /**
  * A class that contains root activities and the navigation controller, part of the global application context
+ * - An instance of this class is available as {@link GlobalContext.activities app.activities}.
+ * - This class is responsible for matching the page ID from the navigation controller to the activities that have been added to the context.
+ * - The active context emits a `PageMatch` event when the page ID has changed and an activity was matched, and a `PageNotFound` event when no activity matches the current page ID. Note that the {@link matchedPageId} property is updated immediately, but activities may be activated asynchronously.
  * @hideconstructor
  */
 export class ActivityContext extends ManagedObject {
@@ -31,9 +34,15 @@ export class ActivityContext extends ManagedObject {
 	 */
 	declare navigationController: NavigationController;
 
-	/** Returns an array of all activities that are currently active */
+	/**
+	 * The last page ID that was matched to an activity, if any
+	 * - This property is updated immediately when a matching activity has been added, or when the page ID changes. Note that activities may be activated asynchronously. Use the {@link getActive()} method to get the current list of active and activating activities.
+	 */
+	matchedPageId?: string = undefined;
+
+	/** Returns an array of all activities that are currently active _or_ activating */
 	getActive() {
-		return this._list.filter((a) => a.isActive());
+		return this._list.filter((a) => a.isActive() || a.isActivating());
 	}
 
 	/** Returns an array of all current activities */
@@ -46,7 +55,8 @@ export class ActivityContext extends ManagedObject {
 	 */
 	add(activity: Activity) {
 		this._list.add(activity);
-		this._checkActivity(activity);
+		let { pageId, detail } = this.navigationController;
+		this._checkActivity(activity, pageId, detail);
 		return this;
 	}
 
@@ -62,16 +72,18 @@ export class ActivityContext extends ManagedObject {
 
 	/** Activate and deactivate activities based on the current page ID, asynchronously */
 	private _update() {
+		let { pageId, detail } = this.navigationController;
 		for (let activity of this._list) {
-			if (!activity.navigationPageId) continue;
-			this._checkActivity(activity);
+			if (typeof activity.navigationPageId !== "string") continue;
+			this._checkActivity(activity, pageId, detail);
 		}
+		this.emit(this.matchedPageId === pageId ? "PageMatch" : "PageNotFound");
 	}
 
 	/** Activate/deactivate single activity based on navigation location */
-	private _checkActivity(activity: Activity) {
-		let { pageId, detail } = this.navigationController;
+	private _checkActivity(activity: Activity, pageId: string, detail: string) {
 		let match = pageId === activity.navigationPageId;
+		if (match) this.matchedPageId = pageId;
 		let isUp =
 			(activity.isActive() || activity.isActivating()) &&
 			!activity.isDeactivating();

@@ -18,6 +18,25 @@ export class WebHashNavigationController extends NavigationController {
 	constructor(options: WebContextOptions) {
 		super();
 		this._basePath = options.basePath.replace(/^[#\/]+/, "");
+
+		// insert initial history entries if needed
+		let initial = this._getPath();
+		let insert: string[] = [];
+		let base = "#" + this._basePath + "/";
+		if (options.insertHistory === "root" && initial[0]) {
+			insert.push(base);
+		}
+		if (options.insertHistory && initial[1]) {
+			insert.push(base + initial[0]);
+		}
+		if (insert.length) {
+			insert.push(base + initial.join("/"));
+		}
+		insert.forEach((href, i) =>
+			i ? history.pushState({}, "", href) : history.replaceState({}, "", href),
+		);
+
+		// set event listener for direct navigation
 		if (!_eventListenerAdded) {
 			window.addEventListener("hashchange", () => {
 				let self = app.activities.navigationController;
@@ -56,7 +75,7 @@ export class WebHashNavigationController extends NavigationController {
 		if (mode && mode.back) {
 			// go back, then continue
 			window.history.back();
-			if (target && target.pageId) {
+			if (target?.pageId != null) {
 				// after going back, navigate to given path
 				await new Promise((r) => setTimeout(r, 1));
 				return this.navigateAsync(target, { ...mode, back: false });
@@ -64,17 +83,14 @@ export class WebHashNavigationController extends NavigationController {
 		} else {
 			let href = this.getPathHref(target);
 			if (href) {
-				if (
-					mode &&
-					mode.replace &&
-					typeof window.history.replaceState === "function"
-				) {
-					// replace path if possible
+				if (mode?.replace) {
+					// replace path if requested
 					window.history.replaceState({}, document.title, href);
 					this.update(); // above doesn't trigger hash change
 				} else {
-					// just navigate to given path (as hash)
-					window.location.hash = href;
+					// push path on history stack
+					window.history.pushState({}, document.title, href);
+					this.update();
 				}
 			}
 		}
@@ -85,6 +101,10 @@ export class WebHashNavigationController extends NavigationController {
 	 * - This method is called automatically. It shouldn't be necessary to call this method manually in an application.
 	 */
 	update() {
+		this.set(...this._getPath());
+	}
+
+	private _getPath(): [string, string] {
 		let target = String(window.location.hash || "").replace(/^[#\/]+/, "");
 		if (this._basePath) {
 			if (target.startsWith(this._basePath)) {
@@ -93,11 +113,7 @@ export class WebHashNavigationController extends NavigationController {
 				target = "";
 			}
 		}
-		this._setTarget(target);
-	}
-
-	private _setTarget(target: string) {
 		let parts = target.replace(/\/$/, "").split("/");
-		this.set(parts[0] || "", parts.slice(1).join("/"));
+		return [parts[0] || "", parts.slice(1).join("/")];
 	}
 }

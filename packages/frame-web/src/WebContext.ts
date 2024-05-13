@@ -39,6 +39,13 @@ export class WebContextOptions extends ConfigOptions {
 	/** True if the DOM history API should be used, rather than location hashes */
 	useHistoryAPI = false;
 
+	/**
+	 * True if root and/or page entries should be inserted into DOM history when browsing to a page or detail path directly
+	 * - Setting this option to true or `page` will allow users to navigate back to the page even if they opened a detail path in a new tab or from a bookmark.
+	 * - Setting this option to `root` also inserts a root path (i.e. page `""`) into the history.
+	 */
+	insertHistory: boolean | "root" | "page" = false;
+
 	/** A {@link WebTheme} instance that will be set as the active theme */
 	theme = new WebTheme();
 

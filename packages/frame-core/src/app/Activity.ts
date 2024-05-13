@@ -100,9 +100,9 @@ export class Activity extends ManagedObject {
 		});
 
 		this._options = options = Activity.Options.init(options);
-		if (options.title) this.title = options.title;
-		if (options.navigationPageId)
-			this.navigationPageId = options.navigationPageId;
+		if (options.title !== undefined) this.title = options.title;
+		if (options.navigationPageId !== undefined)
+			this.navigationPageId = String(options.navigationPageId);
 		if (options.formContext) this.formContext = options.formContext;
 	}
 
@@ -362,6 +362,14 @@ export class Activity extends ManagedObject {
 			});
 			return this.navigateAsync(target);
 		}
+	}
+
+	/**
+	 * Handles a `NavigateBack` event emitted by the current view
+	 * - This method is called when a view object emits the `NavigateBack` event. This event can be used to go back in the navigation history, e.g. when a back button is clicked.
+	 */
+	protected onNavigateBack() {
+		this._boundNavCtrl?.navigateAsync(undefined, { back: true });
 	}
 
 	/**
