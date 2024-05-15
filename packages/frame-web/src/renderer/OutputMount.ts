@@ -92,8 +92,11 @@ export class OutputMount {
 				: (refOffset || 0) + "px";
 		}
 
-		// send `CloseModal` event if clicked outside modal, or pressed escape
+		// send `CloseModal` event if clicked outside modal, or pressed escape;
+		// note that scroll gestures still need to work, so we listen for click
+		let start = Date.now();
 		const checkAndClose = (e: Event) => {
+			if (e.type !== "keydown" && Date.now() - start < 500) return;
 			if (
 				(e.target === shader || e.target === wrapper) &&
 				this._lastView &&
@@ -103,7 +106,7 @@ export class OutputMount {
 			}
 		};
 		shader.addEventListener("click", checkAndClose, true);
-		shader.addEventListener("touchend", checkAndClose, true);
+		shader.addEventListener("mousedown", checkAndClose, true);
 		shader.addEventListener(
 			"keydown",
 			(e) => {

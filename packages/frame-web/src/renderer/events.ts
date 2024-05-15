@@ -18,8 +18,6 @@ const _eventNames: { [domEventName: string]: string } = {
 	contextmenu: "ContextMenu",
 	mousedown: "Press",
 	mouseup: "Release",
-	touchstart: "TouchStart",
-	touchend: "TouchEnd",
 	keydown: "KeyDown",
 	keyup: "KeyUp",
 	keypress: "KeyPress",
@@ -176,7 +174,7 @@ function handleObserverEvent(observer: BaseObserver<UIComponent>, e: Event) {
 	component.emit(uiEventName, data);
 
 	// set time of last touch event, and watch for moves
-	if (uiEventName === "TouchStart") {
+	if (e.type === "touchstart") {
 		_lastTouchT = Date.now();
 		_lastTouchObserver = observer;
 		if (!_touchMoveHandler) {
@@ -193,7 +191,7 @@ function handleObserverEvent(observer: BaseObserver<UIComponent>, e: Event) {
 	}
 
 	// simulate mouse up and click on touch (if not moved)
-	if (uiEventName === "TouchEnd") {
+	if (e.type === "touchend") {
 		_lastTouchT = Date.now();
 		if (_lastTouchObserver === observer) {
 			component.emit("Release", { event: e });
