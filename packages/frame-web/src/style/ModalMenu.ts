@@ -187,7 +187,7 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 			// add a listener to register clicks and keyboard input
 			itemCell.listen((e) => {
 				switch (e.name) {
-					case "MouseUp":
+					case "Release":
 						if (Date.now() - shown < 200) break;
 					case "Click":
 					case "EnterKeyPress":
