@@ -52,6 +52,7 @@ export function makeBaseCSS() {
 			webkitUserSelect: "none",
 		},
 		[`.${CLASS_UI}.${CLASS_CONTAINER}`]: {
+			pointerEvents: "auto",
 			position: "relative",
 			display: "flex",
 			textAlign: "start||left",

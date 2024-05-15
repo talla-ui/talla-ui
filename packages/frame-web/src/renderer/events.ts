@@ -143,17 +143,20 @@ function eventHandler(this: HTMLElement, e: Event) {
 function detractFocus(this: HTMLElement, e: Event) {
 	let mountElts = document.querySelectorAll("[data-" + DATA_MOUNT_PROP + "]");
 	if (!mountElts.length) return;
-	let lastModal = mountElts.item(mountElts.length - 1) as HTMLElement;
-	if (lastModal && e.target && e.target !== lastModal) {
-		let pos = lastModal.compareDocumentPosition(e.target as any);
-		if (!(pos & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
+	let lastFullElt = mountElts.item(mountElts.length - 1) as HTMLElement;
+	if (lastFullElt && e.target && e.target !== lastFullElt) {
+		let pos = lastFullElt.compareDocumentPosition(e.target as any);
+		if (
+			!(pos & Node.DOCUMENT_POSITION_CONTAINED_BY) &&
+			!(pos & Node.DOCUMENT_POSITION_FOLLOWING)
+		) {
 			e.preventDefault();
 			setTimeout(() => {
 				let detractor = document.createElement("div");
 				detractor.tabIndex = -1;
-				lastModal.insertBefore(detractor, lastModal.firstChild);
+				lastFullElt.insertBefore(detractor, lastFullElt.firstChild);
 				detractor.focus();
-				lastModal.removeChild(detractor);
+				lastFullElt.removeChild(detractor);
 			}, 0);
 		}
 	}

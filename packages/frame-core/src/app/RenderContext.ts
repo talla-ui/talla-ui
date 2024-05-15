@@ -50,11 +50,17 @@ export namespace RenderContext {
 	 * - `none` — No output should be placed at all.
 	 * - `screen` — The output should fill the entire screen, on top of other content.
 	 * - `page` — The output should fill the entire screen, on top of other content; if the content is too large, the content can be scrolled up and down.
-	 * - `dialog` — The output should appear on top of all other output, surrounded by a shaded margin.
 	 * - `modal` — The output should appear on top of all other output, surrounded by a shaded margin. A `CloseModal` event is emitted when touching or clicking outside of the modal view area, or pressing the Escape key.
+	 * - `overlay` — The output should appear on top of all other output, but without blocking input to existing content below.
 	 * - `mount` — The output should be 'mounted' within an existing output element, with a specified string ID (e.g. HTML element).
 	 */
-	export type PlacementMode = "none" | "screen" | "page" | "modal" | "mount";
+	export type PlacementMode =
+		| "none"
+		| "screen"
+		| "page"
+		| "modal"
+		| "overlay"
+		| "mount";
 
 	/**
 	 * Type definition for global rendering placement options
@@ -65,7 +71,7 @@ export namespace RenderContext {
 	 * The following properties determine how root view elements are placed on the screen:
 	 * - `mode` — One of the {@link RenderContext.PlacementMode} options.
 	 * - `mountId` — The mount element ID (e.g. HTML element ID), if `mode` is set to `mount`.
-	 * - `ref` — The existing output element that determines the position of modal view output, if any.
+	 * - `ref` — The existing output element that determines the position of modal or overlay view output, if any.
 	 * - `refOffset` — The offset (in pixels) from the reference output element, if any. May be a single number or two numbers for X and Y, and may also be negative.
 	 * - `shade` — True if the modal element should be surrounded by a backdrop shade.
 	 * - `transform` — A set of functions or names of theme animations that should run for the view output. By default, showing and hiding (or removing) output can be animated.

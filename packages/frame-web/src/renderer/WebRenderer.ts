@@ -74,10 +74,10 @@ export class WebRenderer extends RenderContext {
 					// mount output for given placement mode
 					let place = output.place;
 					if (!mount && place && output.element) {
-						prevFocus = document.activeElement as any;
 						mount = new OutputMount();
 						this._mounts.set(mount.id, mount);
 						let scroll: true | undefined;
+						let isModal: true | undefined;
 						switch (place.mode) {
 							case "mount":
 								if (place.mountId) {
@@ -94,11 +94,15 @@ export class WebRenderer extends RenderContext {
 								);
 								break;
 							case "modal":
-								mount.createModalElement(
+								isModal = true;
+								prevFocus = document.activeElement as any;
+							case "overlay":
+								mount.createOverlayElement(
 									place.ref && (place.ref.element as any),
 									place.refOffset,
 									this._reducedMotion,
 									place.shade ? this._modalBackground : "transparent",
+									isModal,
 								);
 								break;
 							default: // "none"
