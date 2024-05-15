@@ -38,6 +38,9 @@ export class ModalMenuStyles {
 	/** The default width that's used if none is specified in menu options */
 	defaultWidth = 260;
 
+	/** The vertical distance from the reference element, in pixels; defaults to 2 */
+	offset = 2;
+
 	/**
 	 * The cell style used for the outer menu container
 	 * - The default style includes properties for padding, background, and border radius.
@@ -109,6 +112,7 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 					show: ui.animation.SHOW_MENU,
 					hide: ui.animation.HIDE_MENU,
 				},
+				refOffset: [0, ModalMenu.styles.offset],
 				...place,
 			});
 			this._resolve = (key) => {

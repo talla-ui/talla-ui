@@ -94,14 +94,20 @@ export class OutputMount {
 			document.body.contains(refElt) &&
 			refElt.nodeType === Node.ELEMENT_NODE
 		) {
-			let rect = refElt.getBoundingClientRect();
-			wrapper.style.top = Math.floor(rect.top) + "px";
-			wrapper.style.left = Math.floor(rect.left) + "px";
-			wrapper.style.width = Math.floor(rect.width) + "px";
-			wrapper.style.height = Math.floor(rect.height) + "px";
-			wrapper.style.margin = Array.isArray(refOffset)
-				? refOffset[1] + "px " + refOffset[0] + "px"
-				: (refOffset || 0) + "px";
+			const updateRect = () => {
+				if (!this._inner) return;
+				let rect = refElt!.getBoundingClientRect();
+				let scr = shader.getBoundingClientRect();
+				wrapper.style.top = Math.floor(rect.top - scr.top) + "px";
+				wrapper.style.left = Math.floor(rect.left - scr.left) + "px";
+				wrapper.style.width = Math.floor(rect.width) + "px";
+				wrapper.style.height = Math.floor(rect.height) + "px";
+				wrapper.style.margin = Array.isArray(refOffset)
+					? refOffset[1] + "px " + refOffset[0] + "px"
+					: (refOffset || 0) + "px";
+				setTimeout(updateRect, 200);
+			};
+			updateRect();
 		}
 
 		// send `CloseModal` event if clicked outside modal, or pressed escape;
@@ -203,6 +209,7 @@ export class OutputMount {
 		if (this._inner) {
 			// always remove inner element first, if any
 			this._inner.remove();
+			this._inner = undefined;
 		}
 
 		if (this._shader) {
