@@ -360,6 +360,7 @@ Object.assign(_ui.style, {
 	BUTTON: ui.style("Button"),
 	BUTTON_PRIMARY: ui.style("PrimaryButton"),
 	BUTTON_PLAIN: ui.style("PlainButton"),
+	BUTTON_SMALL: ui.style("SmallButton"),
 	BUTTON_ICON: ui.style("IconButton"),
 	BUTTON_DANGER: ui.style("DangerButton"),
 	BUTTON_SUCCESS: ui.style("SuccessButton"),

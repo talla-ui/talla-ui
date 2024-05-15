@@ -457,6 +457,7 @@ export interface ui {
 		readonly BUTTON: UIStyle.Type<UIButton.StyleType>;
 		readonly BUTTON_PRIMARY: UIStyle.Type<UIButton.StyleType>;
 		readonly BUTTON_PLAIN: UIStyle.Type<UIButton.StyleType>;
+		readonly BUTTON_SMALL: UIStyle.Type<UIButton.StyleType>;
 		readonly BUTTON_ICON: UIStyle.Type<UIButton.StyleType>;
 		readonly BUTTON_DANGER: UIStyle.Type<UIButton.StyleType>;
 		readonly BUTTON_SUCCESS: UIStyle.Type<UIButton.StyleType>;
