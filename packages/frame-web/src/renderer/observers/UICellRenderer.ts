@@ -104,6 +104,8 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 				if ("end" in cell.margin)
 					element.style.marginInlineEnd = getCSSLength(cell.margin.end, 0);
 			}
+		} else {
+			element.style.margin = "";
 		}
 
 		if (cell instanceof UIAnimatedCell) {

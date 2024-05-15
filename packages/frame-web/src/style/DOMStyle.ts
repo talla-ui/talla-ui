@@ -550,7 +550,9 @@ function _makeCSSUpdater() {
 		_cssElt.setAttribute("type", "text/css");
 		document.head!.appendChild(_cssElt);
 		_cssElt.textContent =
-			allImports.map((s) => "@import url(" + JSON.stringify(s) + ");\n") + text;
+			allImports
+				.map((s) => "@import url(" + JSON.stringify(s) + ");\n")
+				.join("") + text;
 		setTimeout(() => {
 			old && old.remove();
 		}, 30);

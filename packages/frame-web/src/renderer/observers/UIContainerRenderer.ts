@@ -27,7 +27,7 @@ export class UIContainerRenderer<
 > extends BaseObserver<TContainer> {
 	constructor(observed: TContainer) {
 		super(observed);
-		this.observeProperties("layout");
+		this.observeProperties("padding", "layout");
 		if (observed instanceof UIRow) {
 			this.observeProperties("height" as any, "align" as any, "spacing" as any);
 		}
@@ -62,6 +62,7 @@ export class UIContainerRenderer<
 			case "spacing":
 				this.updateSeparator();
 				return;
+			case "padding":
 			case "layout":
 			case "align":
 			case "height":
@@ -122,6 +123,9 @@ export class UIContainerRenderer<
 		let container = this.observed;
 		let systemName: string;
 		let layout = container.layout;
+		if (container.padding !== undefined) {
+			layout = { ...layout, padding: container.padding };
+		}
 		if (container instanceof UIRow) {
 			systemName = CLASS_ROW;
 			styles = [{ height: container.height }];

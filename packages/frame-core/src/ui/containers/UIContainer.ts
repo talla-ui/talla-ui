@@ -32,7 +32,7 @@ export abstract class UIContainer extends UIComponent {
 		preset: View.ExtendPreset<
 			UIComponent,
 			this,
-			"layout" | "asyncContentRendering"
+			"padding" | "layout" | "asyncContentRendering"
 		>,
 	) {
 		super.applyViewPreset(preset);
@@ -50,6 +50,12 @@ export abstract class UIContainer extends UIComponent {
 
 	/** The list of all content view objects */
 	declare readonly content: ManagedList<View>;
+
+	/**
+	 * Padding around contained elements, in pixels or CSS length with unit, **or** an object with separate offset values
+	 * - If this property is set, its value overrides `padding` from the {@link layout} object.
+	 */
+	padding?: UIComponent.Offsets = undefined;
 
 	/**
 	 * Options related to layout of content components within this container

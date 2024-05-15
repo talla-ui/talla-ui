@@ -346,6 +346,7 @@ export interface ui {
 	 */
 	color: {
 		(name: string): UIColor;
+		fg(onLight: UIColor | string, onDark: UIColor | string): UIColor;
 		readonly CLEAR: UIColor;
 		readonly BLACK: UIColor;
 		readonly DARKER_GRAY: UIColor;

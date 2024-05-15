@@ -86,8 +86,16 @@ export function makeBaseCSS() {
 			minHeight: "0",
 			flexShrink: "0",
 		},
-		[`.${CLASS_UI}.${CLASS_CELL}>.${CLASS_COLUMN}`]: {
+
+		// add special nesting rules for container elements
+		[`.${CLASS_UI}.${CLASS_CELL}>.${CLASS_CONTAINER}`]: {
 			flexGrow: "1",
+		},
+		[`.${CLASS_UI}.${CLASS_COLUMN}>.${CLASS_CONTAINER}`]: {
+			flexShrink: "0",
+		},
+		[`.${CLASS_UI}.${CLASS_ROW}>.${CLASS_CONTAINER}`]: {
+			flexShrink: "0",
 		},
 
 		// set sensible placeholder style

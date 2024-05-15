@@ -269,6 +269,7 @@ _ui.style = function (...args: any[]) {
 
 // add color constants to ui.color function
 Object.assign(ui.color, {
+	fg: UIColor.prototype.fg.bind(ui.color("Background")),
 	CLEAR: new UIColor(),
 	BLACK: ui.color("Black"),
 	DARKER_GRAY: ui.color("DarkerGray"),

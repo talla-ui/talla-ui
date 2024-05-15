@@ -22,7 +22,6 @@ export class UICell extends UIContainer {
 			this,
 			| "textDirection"
 			| "margin"
-			| "padding"
 			| "background"
 			| "textColor"
 			| "borderRadius"
@@ -47,12 +46,6 @@ export class UICell extends UIContainer {
 
 	/** Additional space to be added around the entire cell, in pixels or CSS length with unit, **or** an object with separate offset values */
 	margin?: UIComponent.Offsets = undefined;
-
-	/**
-	 * Padding around contained elements, in pixels or CSS length with unit, **or** an object with separate offset values
-	 * - If this property is set, its value overrides `padding` from the current cell style.
-	 */
-	padding?: UIComponent.Offsets = undefined;
 
 	/** Border radius, in pixels or CSS length with unit */
 	borderRadius?: string | number = undefined;
