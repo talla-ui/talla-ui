@@ -356,11 +356,13 @@ export class Activity extends ManagedObject {
 		>,
 	) {
 		if (typeof e.source.getNavigationTarget === "function") {
-			let target = new NavigationTarget({
-				pageId: this.navigationPageId,
-				...e.source.getNavigationTarget(),
-			});
-			return this.navigateAsync(target);
+			let target = e.source.getNavigationTarget();
+			return this.navigateAsync(
+				new NavigationTarget({
+					...target,
+					pageId: target.pageId || this.navigationPageId,
+				}),
+			);
 		}
 	}
 
