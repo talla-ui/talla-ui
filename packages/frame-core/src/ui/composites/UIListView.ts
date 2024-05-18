@@ -29,10 +29,6 @@ export class UIListView<
 				bound("items.*").bindTo(this, doUpdate);
 				bound("firstIndex").bindTo(this, doUpdate);
 				bound("maxItems").bindTo(this, doUpdate);
-
-				// create view already to avoid unnecessary async updates
-				list.render();
-				if (!list.body) throw Error();
 				this.doUpdateAsync();
 			}
 			override beforeUnlink() {

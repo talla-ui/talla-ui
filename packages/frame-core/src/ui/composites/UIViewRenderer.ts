@@ -77,7 +77,7 @@ export class UIViewRenderer extends View {
 
 	/** Requests input focus on the current view element */
 	requestFocus() {
-		if (this.view) this.view.requestFocus();
+		this.view?.requestFocus();
 		return this;
 	}
 

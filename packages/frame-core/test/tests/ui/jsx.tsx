@@ -20,6 +20,10 @@ import {
 } from "../../../dist/index.js";
 
 describe("JSX", () => {
+	function renderComposite(c: ViewComposite) {
+		c.render((() => {}) as any);
+	}
+
 	test("Single component", () => {
 		let MyCell = <cell />;
 		let cell = new MyCell();
@@ -98,7 +102,7 @@ describe("JSX", () => {
 		const MyView = ViewComposite.define({ foo: "" }, <label>Foo</label>);
 		let ViewPreset = <MyView foo="bar" />;
 		let c = new ViewPreset() as ViewComposite;
-		c.render();
+		renderComposite(c);
 		expect(c).toHaveProperty("foo").toBe("bar");
 		expect(c.findViewContent(UILabel)[0])
 			.toHaveProperty("text")
@@ -114,7 +118,7 @@ describe("JSX", () => {
 		}
 		let ViewPreset = <MyView foo="bar" />;
 		let c = new ViewPreset() as ViewComposite;
-		c.render();
+		renderComposite(c);
 		expect(c).toHaveProperty("foo").toBe("bar");
 		expect(c.findViewContent(UILabel)[0])
 			.toHaveProperty("text")
@@ -135,7 +139,7 @@ describe("JSX", () => {
 		let cell = new MyCell() as UICell;
 		expect(cell.content).asArray().toBeArray(1);
 		expect(cell.content.first()).toHaveProperty("chevron").toBe("down");
-		(cell.content.first() as ViewComposite).render();
+		renderComposite(cell.content.first() as ViewComposite);
 		expect(cell.findViewContent(UIButton)[0])
 			.toHaveProperty("chevron")
 			.toBe("down");
@@ -163,7 +167,7 @@ describe("JSX", () => {
 		expect(viewComposite).toHaveProperty("foo").toBe("bar");
 
 		t.log("Render content of view composite");
-		viewComposite.render();
+		renderComposite(viewComposite);
 		let column = viewComposite.findViewContent(UIColumn)[0];
 		expect(column).toBe(viewComposite.body);
 		expect(column).toHaveProperty("spacing").toBe(8);

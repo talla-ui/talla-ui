@@ -172,7 +172,7 @@ describe("UIFormContext", () => {
 		);
 		let view = new MyComp();
 		expect(view).toHaveProperty("formContext");
-		view.render();
+		view.render((() => {}) as any);
 		let row = view.body as UIRow;
 		let [label, tf] = row.content.toArray() as [UILabel, UITextField];
 		view.formContext = ctx;

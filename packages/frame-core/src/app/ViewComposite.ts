@@ -160,7 +160,7 @@ export class ViewComposite extends View {
 	 * Renders the current view, if any
 	 * - This method is called automatically whenever required. It's not necessary to invoke this method from an application, or to override it.
 	 */
-	render(callback?: RenderContext.RenderCallback) {
+	render(callback: RenderContext.RenderCallback) {
 		if (!this.body) {
 			let body = this.createView();
 			if (body) {
@@ -178,11 +178,10 @@ export class ViewComposite extends View {
 		if (this.body && ManagedObject.whence(this.body) !== this) {
 			throw err(ERROR.View_NotAttached);
 		}
-		if (callback && !this._renderer.isRendered()) this.beforeRender();
-		this._renderer.render(this.body, callback);
+		if (!this._rendered) this.beforeRender();
+		this.body?.render(callback);
 		return this;
 	}
 
-	/** Stateful renderer wrapper, handles content component */
-	private _renderer = new RenderContext.ViewController();
+	private _rendered = false;
 }

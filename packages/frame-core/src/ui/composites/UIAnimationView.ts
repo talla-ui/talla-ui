@@ -48,7 +48,7 @@ export class UIAnimationView extends ViewComposite {
 		}
 	}
 
-	override render(callback?: RenderContext.RenderCallback) {
+	override render(callback: RenderContext.RenderCallback) {
 		if (callback) {
 			let orig = callback;
 			let result: RenderContext.RenderCallback = (callback = (
