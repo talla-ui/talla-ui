@@ -18,11 +18,14 @@ export class UIRow extends UIContainer {
 		preset: View.ExtendPreset<
 			UIContainer,
 			this,
-			"height" | "spacing" | "align" | "gravity"
+			"height" | "spacing" | "align" | "gravity" | "reverse"
 		>,
 	) {
 		super.applyViewPreset(preset);
 	}
+
+	/** True if content should be displayed in reverse order */
+	reverse = false;
 
 	/** Row height, in pixels or CSS length with unit */
 	height?: string | number = undefined;

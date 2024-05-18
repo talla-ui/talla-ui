@@ -53,6 +53,46 @@ describe("UIRow and UIColumn", (scope) => {
 		await t.expectOutputAsync(100, { type: "column" });
 	});
 
+	test("Rendered as row with content", async (t) => {
+		let row = new UIRow(new UILabel("A"), new UILabel("B"));
+		t.render(row);
+		let labelOut = await t.expectOutputAsync(100, { type: "label" });
+		expect(labelOut.elements.map((out) => out.text)).toBeArray(["A", "B"]);
+	});
+
+	test("Rendered as column with content", async (t) => {
+		let col = new UIColumn(new UILabel("A"), new UILabel("B"));
+		t.render(col);
+		let labelOut = await t.expectOutputAsync(100, { type: "label" });
+		expect(labelOut.elements.map((out) => out.text)).toBeArray(["A", "B"]);
+	});
+
+	test("Rendered as row with content, reversed", async (t) => {
+		let row = new UIRow(new UILabel("A"), new UILabel("B"));
+		row.reverse = true;
+		t.render(row);
+		let labelOut = await t.expectOutputAsync(100, { type: "label" });
+		expect(labelOut.elements.map((out) => out.text)).toBeArray(["B", "A"]);
+	});
+
+	test("Rendered as column with content, reversed", async (t) => {
+		let col = new UIColumn(new UILabel("A"), new UILabel("B"));
+		col.reverse = true;
+		t.render(col);
+		let labelOut = await t.expectOutputAsync(100, { type: "label" });
+		expect(labelOut.elements.map((out) => out.text)).toBeArray(["B", "A"]);
+	});
+
+	test("Rendered as row with content, reversed after rendering", async (t) => {
+		let row = new UIRow(new UILabel("A"), new UILabel("B"));
+		t.render(row);
+		let labelOut = await t.expectOutputAsync(100, { type: "label" });
+		expect(labelOut.elements.map((out) => out.text)).toBeArray(["A", "B"]);
+		row.reverse = true;
+		labelOut = await t.expectOutputAsync(100, { type: "label" });
+		expect(labelOut.elements.map((out) => out.text)).toBeArray(["B", "A"]);
+	});
+
 	test("Rendered with height and width", async (t) => {
 		let Preset = ui.row(
 			{ height: 123 },

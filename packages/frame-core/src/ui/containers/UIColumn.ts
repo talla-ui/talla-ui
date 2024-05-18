@@ -17,11 +17,14 @@ export class UIColumn extends UIContainer {
 		preset: View.ExtendPreset<
 			UIContainer,
 			this,
-			"width" | "spacing" | "align" | "distribute"
+			"width" | "spacing" | "align" | "distribute" | "reverse"
 		>,
 	) {
 		super.applyViewPreset(preset);
 	}
+
+	/** True if content should be displayed in reverse order */
+	reverse = false;
 
 	/** Column width, in pixels or CSS length with unit */
 	width?: string | number = undefined;

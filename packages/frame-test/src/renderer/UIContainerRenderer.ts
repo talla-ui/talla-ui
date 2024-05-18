@@ -20,10 +20,10 @@ export class UIContainerRenderer<
 		super(observed);
 		this.observeProperties("padding", "layout");
 		if (observed instanceof UIRow) {
-			this.observeProperties("height" as any, "align" as any);
+			this.observeProperties("height" as any, "align" as any, "reverse" as any);
 		}
 		if (observed instanceof UIColumn) {
-			this.observeProperties("width" as any, "align" as any);
+			this.observeProperties("width" as any, "align" as any, "reverse" as any);
 		}
 
 		// observe content changes
@@ -51,6 +51,9 @@ export class UIContainerRenderer<
 			case "height": // for rows
 			case "width": // for columns
 				this.scheduleUpdate(undefined, this.element);
+				return;
+			case "reverse":
+				this.scheduleUpdate(this.element);
 				return;
 		}
 		super.propertyChange(property, value);
@@ -90,7 +93,11 @@ export class UIContainerRenderer<
 		}
 
 		// NOTE: spacing/separators are ignored here because they can't be tested;
-		this.contentUpdater.update(container.content);
+		let reverse = false;
+		if (container instanceof UIRow || container instanceof UIColumn) {
+			reverse = container.reverse;
+		}
+		this.contentUpdater.update(container.content, reverse);
 	}
 
 	contentUpdater?: ContentUpdater;
@@ -156,7 +163,7 @@ export class ContentUpdater {
 	}
 
 	/** Update the output element with output from given list of content views (or current) */
-	update(content: Iterable<View> = this.content) {
+	update(content: Iterable<View> = this.content, reverse?: boolean) {
 		// resolve the current update promise, or create a resolved promise right away
 		if (this._updateResolve) this._updateResolve();
 		else this._updateP = Promise.resolve();
@@ -167,12 +174,11 @@ export class ContentUpdater {
 			// worry about updating in-place.
 
 			// go through all content items and get their output
-			let outputs: Array<RenderContext.Output> = [];
 			let elements: TestOutputElement[] = [];
+			if (reverse) content = [...content].reverse();
 			for (let it of content) {
 				let output = this.getItemOutput(it);
 				if (output && output.element instanceof TestOutputElement) {
-					outputs.push(output);
 					elements.push(output.element);
 					output.element.parent = this.element;
 				}

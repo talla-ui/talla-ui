@@ -29,7 +29,12 @@ export class UIContainerRenderer<
 		super(observed);
 		this.observeProperties("padding", "layout");
 		if (observed instanceof UIRow) {
-			this.observeProperties("height" as any, "align" as any, "spacing" as any);
+			this.observeProperties(
+				"height" as any,
+				"align" as any,
+				"spacing" as any,
+				"reverse" as any,
+			);
 		}
 		if (observed instanceof UIColumn) {
 			this.observeProperties(
@@ -37,6 +42,7 @@ export class UIContainerRenderer<
 				"align" as any,
 				"distribute" as any,
 				"spacing" as any,
+				"reverse" as any,
 			);
 		}
 
@@ -61,6 +67,9 @@ export class UIContainerRenderer<
 		switch (property) {
 			case "spacing":
 				this.updateSeparator();
+				return;
+			case "reverse":
+				this.scheduleUpdate(this.element);
 				return;
 			case "padding":
 			case "layout":
@@ -109,7 +118,11 @@ export class UIContainerRenderer<
 			).setAsyncRendering(container.asyncContentRendering);
 			this.updateSeparator();
 		}
-		this.contentUpdater.update(container.content);
+		let reverse = false;
+		if (container instanceof UIRow || container instanceof UIColumn) {
+			reverse = container.reverse;
+		}
+		this.contentUpdater.update(container.content, reverse);
 	}
 
 	contentUpdater?: ContentUpdater;
@@ -185,8 +198,8 @@ export class UIContainerRenderer<
 					? false
 					: this.observed instanceof UIRow;
 			let options = layout?.separator;
-			if (!options && (this.observed as UIRow).spacing) {
-				let space = (this.observed as UIRow).spacing;
+			if (!options && (this.observed as unknown as UIRow).spacing) {
+				let space = (this.observed as unknown as UIRow).spacing;
 				options =
 					this.lastSeparator &&
 					this.lastSeparator.space === space &&
@@ -283,84 +296,92 @@ export class ContentUpdater {
 	}
 
 	/** Update the output element with output from given list of content views (or current) */
-	update(content: Iterable<View> = this.content) {
+	update(content: Iterable<View> = this.content, reverse?: boolean) {
 		let element = this.element;
+		if (this._stopped) {
+			this._clearPromises();
+			return;
+		}
+		if (!this._updateP) {
+			this._updateP = Promise.resolve();
+		}
 
-		// resolve the current update promise, or create a resolved promise right away
-		if (this._updateResolve) this._updateResolve();
-		else this._updateP = Promise.resolve();
+		// create new content array, possibly reversed
+		let newContent = [...content];
+		if (reverse) newContent.reverse();
 
-		if (!this._stopped) {
-			// go through all content items and get their output
-			let output: Array<RenderContext.Output<Node> | undefined> = [];
-			let contentSet = new Set<View>();
-			for (let it of content) {
-				contentSet.add(it);
-				output.push(this.getItemOutput(it));
-			}
+		// go through all content items and get their output
+		let output: Array<RenderContext.Output<Node> | undefined> = [];
+		let contentSet = new Set<View>();
+		for (let it of newContent) {
+			contentSet.add(it);
+			output.push(this.getItemOutput(it));
+		}
 
-			// STEP 1: find deleted content and delete elements
-			let hasSeparators = this._sepTemplate;
-			for (let it of this.content) {
-				if (!contentSet.has(it)) {
-					let out = this._output.get(it);
-					if (out) {
-						let elt = out.element as Node;
-						if (elt && elt.parentNode === element) {
-							if (!elt.previousSibling && hasSeparators && elt.nextSibling) {
-								// if first element, remove separator AFTER
-								element.removeChild(elt.nextSibling);
-							}
-							// remove element itself
-							element.removeChild(elt);
+		// STEP 1: find deleted content and delete elements
+		let hasSeparators = this._sepTemplate;
+		for (let it of this.content) {
+			if (!contentSet.has(it)) {
+				let out = this._output.get(it);
+				if (out) {
+					let elt = out.element as Node;
+					if (elt && elt.parentNode === element) {
+						if (!elt.previousSibling && hasSeparators && elt.nextSibling) {
+							// if first element, remove separator AFTER
+							element.removeChild(elt.nextSibling);
 						}
-						this._output.delete(it);
+						// remove element itself
+						element.removeChild(elt);
 					}
-					let sep = hasSeparators && this._getSeparatorFor(it);
-					if (sep && sep.parentNode === element) {
-						// delete separator (before) for this element, if any
-						element.removeChild(sep);
-					}
-					this._separators.delete(it);
+					this._output.delete(it);
 				}
+				let sep = hasSeparators && this._getSeparatorFor(it);
+				if (sep && sep.parentNode === element) {
+					// delete separator (before) for this element, if any
+					element.removeChild(sep);
+				}
+				this._separators.delete(it);
 			}
-			let newContent = (this.content = [...content]);
+		}
+		this.content = newContent;
 
-			// STEP 2: insert/move element content (and separators)
-			let cur = element.firstChild;
-			let hasContent = false;
-			for (let i = 0, len = newContent.length; i < len; i++) {
-				let elt = output[i]?.element;
-				if (!elt || elt.nodeType === Node.COMMENT_NODE) continue;
+		// STEP 2: insert/move element content (and separators)
+		let cur = element.firstChild;
+		let hasContent = false;
+		for (let i = 0, len = newContent.length; i < len; i++) {
+			let elt = output[i]?.element;
+			if (!elt || elt.nodeType === Node.COMMENT_NODE) continue;
 
-				// expect a separator in this position first (if i > 0)
-				if (hasContent && hasSeparators) {
-					let sep = this._getSeparatorFor(newContent[i]!)!;
-					if (cur !== sep) {
-						element.insertBefore(sep, cur);
-					} else {
-						cur = cur && cur.nextSibling;
-					}
-				}
-				hasContent = true;
-
-				// insert correct element next
-				if (cur !== elt) {
-					element.insertBefore(elt, cur);
+			// expect a separator in this position first (if i > 0)
+			if (hasContent && hasSeparators) {
+				let sep = this._getSeparatorFor(newContent[i]!)!;
+				if (cur !== sep) {
+					element.insertBefore(sep, cur);
 				} else {
 					cur = cur && cur.nextSibling;
 				}
 			}
+			hasContent = true;
 
-			// STEP 3: remove all leftover elements
-			if (cur) {
-				while (cur.nextSibling) element.removeChild(cur.nextSibling);
-				element.removeChild(cur!);
+			// insert correct element next
+			if (cur !== elt) {
+				element.insertBefore(elt, cur);
+			} else {
+				cur = cur && cur.nextSibling;
 			}
 		}
 
-		// remove (resolved) promises, so that
-		// new calls to `awaitUpdateAsync()` will schedule an update
+		// STEP 3: remove all leftover elements
+		if (cur) {
+			while (cur.nextSibling) element.removeChild(cur.nextSibling);
+			element.removeChild(cur!);
+		}
+		this._clearPromises();
+	}
+
+	/** Remove (resolved) promises, so that new calls to `awaitUpdateAsync()` will schedule an update */
+	private _clearPromises() {
+		if (this._updateResolve) this._updateResolve();
 		this._updateP = undefined;
 		this._updateResolve = undefined;
 	}
