@@ -16,8 +16,8 @@ import { ManagedObject } from "../base/index.js";
  *
  * @example
  * // Bind to viewport properties from a JSX view:
- * <conditional state={bound("viewport.wide")}>
- *   // ...view for wide viewports
+ * <conditional state={bound("viewport.col3")}>
+ *   // ...view for wide viewports with at least 3 grid 'columns'
  * </conditional>
  */
 export interface ViewportContext extends ManagedObject {
@@ -30,23 +30,35 @@ export interface ViewportContext extends ManagedObject {
 	/** True if the viewport is taller than it is wide */
 	portrait: boolean;
 
-	/** True if the viewport width is below the first breakpoint */
-	narrow: boolean;
+	/** True if the viewport is at least 2 grid columns wide */
+	col2: boolean;
 
-	/** True if the viewport width exceeds the second breakpoint */
-	wide: boolean;
+	/** True if the viewport is at least 3 grid columns wide */
+	col3: boolean;
 
-	/** True if the viewport height is below the first breakpoint */
-	short: boolean;
+	/** True if the viewport is at least 4 grid columns wide */
+	col4: boolean;
 
-	/** True if the viewport height exceeds the second breakpoint */
-	tall: boolean;
+	/** True if the viewport is at least 5 grid columns wide */
+	col5: boolean;
+
+	/** True if the viewport is at least 2 grid columns tall */
+	row2: boolean;
+
+	/** True if the viewport is at least 3 grid columns tall */
+	row3: boolean;
+
+	/** True if the viewport is at least 4 grid columns tall */
+	row4: boolean;
+
+	/** True if the viewport is at least 5 grid columns tall */
+	row5: boolean;
 
 	/**
-	 * Updates breakpoints for narrow, wide, short and tall properties
-	 * - Breakpoints are set, and other properties are updated immediately.
-	 * @param small The first breakpoint (narrow/short and below), in logical pixels
-	 * @param large The second breakpoint (wide/tall and above), in logical pixels
+	 * Sets grid size to determine number of rows and columns
+	 * - Other properties are updated immediately when this method is called.
+	 * @param colSize Column size, in logical pixels
+	 * @param rowSize Row size, in logical pixels
 	 */
-	setBreakpoints(small: number, large: number): void;
+	setGridSize(colSize: number, rowSize: number): void;
 }

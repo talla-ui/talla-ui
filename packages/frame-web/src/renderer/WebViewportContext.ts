@@ -19,58 +19,50 @@ export class WebViewportContext
 {
 	constructor(options: WebContextOptions) {
 		super();
-		this._smallBreakpoint = options.smallBreakpoint;
-		this._largeBreakpoint = options.largeBreakpoint;
+		this._colSize = options.viewportColumnWidth;
+		this._rowSize = options.viewportRowHeight;
 		this._addHandler();
 	}
 
-	width?: number;
-	height?: number;
+	width = 0;
+	height = 0;
 	portrait = false;
-	narrow = false;
-	wide = false;
-	short = false;
-	tall = false;
+	col2 = false;
+	col3 = false;
+	col4 = false;
+	col5 = false;
+	row2 = false;
+	row3 = false;
+	row4 = false;
+	row5 = false;
 
-	setBreakpoints(small: number, large: number) {
-		this._smallBreakpoint = small;
-		this._largeBreakpoint = large;
+	setGridSize(colSize: number, rowSize: number) {
+		this._colSize = colSize;
+		this._rowSize = rowSize;
 		this.update();
 	}
 
 	/** Measure the current viewport and update context properties */
 	update() {
-		let changed = !this.width || !this.height;
 		let w = getWindowInnerWidth();
 		let h = getWindowInnerHeight();
-		let portrait = w < h;
-		let narrow = w < this._smallBreakpoint;
-		let wide = w > this._largeBreakpoint;
-		let short = h < this._smallBreakpoint;
-		let tall = h > this._largeBreakpoint;
-		this.width = w;
-		this.height = h;
-		if (this.portrait !== portrait) {
-			this.portrait = portrait;
-			changed = true;
+		let changed = this.width !== w || this.height !== h;
+		if (changed) {
+			this.width = w;
+			this.height = h;
+			this.portrait = w < h;
+			let gw = Math.floor(w / this._colSize);
+			let gh = Math.floor(h / this._rowSize);
+			this.col2 = gw >= 2;
+			this.col3 = gw >= 3;
+			this.col4 = gw >= 4;
+			this.col5 = gw >= 5;
+			this.row2 = gh >= 2;
+			this.row3 = gh >= 3;
+			this.row4 = gh >= 4;
+			this.row5 = gh >= 5;
+			this.emitChange("Resize");
 		}
-		if (this.narrow !== narrow) {
-			this.narrow = narrow;
-			changed = true;
-		}
-		if (this.wide !== wide) {
-			this.wide = wide;
-			changed = true;
-		}
-		if (this.short !== short) {
-			this.short = short;
-			changed = true;
-		}
-		if (this.tall !== tall) {
-			this.tall = tall;
-			changed = true;
-		}
-		if (changed) this.emitChange("Resize");
 	}
 
 	private _addHandler() {
@@ -86,6 +78,6 @@ export class WebViewportContext
 		setInterval(update, 800);
 	}
 
-	private _smallBreakpoint: number;
-	private _largeBreakpoint: number;
+	private _colSize = 300;
+	private _rowSize = 300;
 }

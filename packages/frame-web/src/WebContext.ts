@@ -92,11 +92,11 @@ export class WebContextOptions extends ConfigOptions {
 	 */
 	modalMenuStyles: ModalMenuStyles = ModalMenu.styles;
 
-	/** Breakpoint (in logical pixels) below which {@link ViewportContext.narrow} and {@link ViewportContext.short} are set */
-	smallBreakpoint = 590;
+	/** Viewport column width in pixels, defaults to 300 */
+	viewportColumnWidth = 300;
 
-	/** Breakpoint (in logical pixels) above which {@link ViewportContext.wide} and {@link ViewportContext.tall} are set */
-	largeBreakpoint = 1150;
+	/** Viewport row height in pixels, defaults to 300 */
+	viewportRowHeight = 300;
 
 	/** True if all anumations should be disabled */
 	reducedMotion = false;
