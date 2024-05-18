@@ -41,8 +41,8 @@ let _cssUpdater:
 	| ((css: { [spec: string]: any }, allImports: string[]) => void)
 	| undefined;
 
-/** CSS classes currently defined, one CSS class name per style class */
-let _cssDefined = new Map<any, UIStyle<any>>();
+/** CSS classes currently defined, one instance per class; or undefined if class doesn't have any styles (e.g. 'Cell') */
+let _cssDefined = new Map<any, UIStyle<any> | undefined>();
 
 /** Pending CSS update, if any */
 let _pendingCSS: { [spec: string]: any } | undefined;
@@ -146,15 +146,19 @@ export function setGlobalCSS(css: {
 export function defineStyleClass(
 	styleClass: UIStyle.Type<any>,
 	isTextStyle?: boolean,
-) {
+): UIStyle<any> | undefined {
 	if (_cssDefined.has(styleClass)) {
 		return _cssDefined.get(styleClass)!;
 	}
 	let instance = new styleClass();
 	let styles = instance.getStyles();
+	if (!styles.length) {
+		_cssDefined.set(styleClass, undefined);
+		return;
+	}
+	_cssDefined.set(styleClass, instance);
 	if (!instance.id) throw RangeError();
 	let selector = "*." + CLASS_UI + "." + instance.id;
-	_cssDefined.set(styleClass, instance);
 
 	// combine all CSS styles
 	let combined: { [spec: string]: Partial<CSSStyleDeclaration> } = {};
@@ -242,7 +246,7 @@ function applyElementBaseStyle(
 	if (systemName) className += " " + systemName;
 	if (BaseStyle) {
 		let style = defineStyleClass(BaseStyle, isTextControl);
-		className += " " + style.id;
+		if (style) className += " " + style.id;
 	}
 	element.className = className;
 }

@@ -1,36 +1,36 @@
 /** @internal UI component class name */
 export const CLASS_UI = "Desk__UI";
 /** @internal Page root element class name */
-export const CLASS_PAGE_ROOT = "Desk__Page";
-/** @internal Modal root (shader) element class name */
-export const CLASS_MODAL_SHADER = "Desk__ModalShader";
-/** @internal Modal wrapper element class name */
-export const CLASS_MODAL_WRAPPER = "Desk__ModalWrapper";
+export const CLASS_PAGE_ROOT = "Desk__Pg";
+/** @internal Modal/overlay root (shader) element class name */
+export const CLASS_OVERLAY_SHADER = "Desk__Ovl";
+/** @internal Modal/overlay wrapper element class name */
+export const CLASS_OVERLAY_WRAPPER = "__Wr";
 /** @internal Container separator element class name: horizontal or vertical line */
-export const CLASS_SEPARATOR_LINE = "Desk__Sep--line";
+export const CLASS_SEPARATOR_LINE = "__Sp-l";
 /** @internal Container separator element class name: vertical line */
-export const CLASS_SEPARATOR_LINE_VERT = "Desk__Sep--line-vert";
+export const CLASS_SEPARATOR_LINE_VERT = "__Sp-lv";
 /** @internal Container separator element class name: spacer */
-export const CLASS_SEPARATOR_SPACER = "Desk__Sep--space";
+export const CLASS_SEPARATOR_SPACER = "__Sp";
 /** @internal Additional text control class name */
-export const CLASS_TEXTCONTROL = "_Text";
+export const CLASS_TEXTCONTROL = "__T";
 /** @internal Additional container class name */
-export const CLASS_CONTAINER = "_Container";
+export const CLASS_CONTAINER = "__C";
 /** @internal Additional column class name */
-export const CLASS_COLUMN = "_Column";
+export const CLASS_COLUMN = "__CC";
 /** @internal Additional row class name */
-export const CLASS_ROW = "_Row";
+export const CLASS_ROW = "__CR";
 /** @internal Additional cell class name */
-export const CLASS_CELL = "_Cell";
+export const CLASS_CELL = "__Cl";
 /** @internal Additional scroll container class name */
-export const CLASS_SCROLL = "_Scroll";
+export const CLASS_SCROLL = "__CS";
 /** @internal Additional toggle wrapper class name */
-export const CLASS_TOGGLE = "_Toggle";
+export const CLASS_TOGGLE = "__Tg";
 /** @internal Additional toggle wrapper class names by type */
 export const CLASS_TOGGLE_TYPE = {
-	checkbox: "_Toggle--checkbox",
-	switch: "_Toggle--switch",
-	none: "_Toggle--none",
+	checkbox: "__Tg-c",
+	switch: "__Tg-s",
+	none: "__Tg-n",
 } as const;
 
 /** @internal Returns an object with necessary global CSS classes */
@@ -50,6 +50,7 @@ export function makeBaseCSS() {
 			fontWeight: "normal",
 			userSelect: "none",
 			webkitUserSelect: "none",
+			webkitTapHighlightColor: "transparent",
 		},
 		[`.${CLASS_UI}.${CLASS_CONTAINER}`]: {
 			pointerEvents: "auto",
@@ -147,7 +148,7 @@ export function makeBaseCSS() {
 			flexDirection: "column",
 			cursor: "default",
 		},
-		[`.${CLASS_MODAL_SHADER}`]: {
+		[`.${CLASS_OVERLAY_SHADER}`]: {
 			zIndex: "1000",
 			position: "fixed",
 			top: "0",
@@ -161,7 +162,7 @@ export function makeBaseCSS() {
 			background: "transparent",
 			cursor: "default",
 		},
-		[`.${CLASS_MODAL_WRAPPER}`]: {
+		[`.${CLASS_OVERLAY_WRAPPER}`]: {
 			display: "flex",
 			flexDirection: "column",
 			justifyContent: "start", // otherwise tall modals expand above frame
@@ -169,7 +170,7 @@ export function makeBaseCSS() {
 			width: "100%",
 			height: "100%",
 		},
-		[`.${CLASS_MODAL_WRAPPER}>.${CLASS_UI}`]: {
+		[`.${CLASS_OVERLAY_WRAPPER}>.${CLASS_UI}`]: {
 			zIndex: "10000",
 		},
 

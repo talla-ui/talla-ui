@@ -1,7 +1,7 @@
 import { RenderContext, UIColor, View, app } from "@desk-framework/frame-core";
 import {
-	CLASS_MODAL_SHADER,
-	CLASS_MODAL_WRAPPER,
+	CLASS_OVERLAY_SHADER,
+	CLASS_OVERLAY_WRAPPER,
 	CLASS_PAGE_ROOT,
 } from "../style/defaults/css.js";
 import { registerHandlers } from "./events.js";
@@ -55,7 +55,7 @@ export class OutputMount {
 			(this._outer =
 			this._shader =
 				document.createElement("desk-overlay"));
-		shader.className = CLASS_MODAL_SHADER;
+		shader.className = CLASS_OVERLAY_SHADER;
 		shader.tabIndex = 0;
 		if (!isModal) shader.style.pointerEvents = "none";
 		document.body.appendChild(shader);
@@ -81,7 +81,7 @@ export class OutputMount {
 
 		// create a flex wrapper to contain content
 		let wrapper = (this._inner = document.createElement("div"));
-		wrapper.className = CLASS_MODAL_WRAPPER;
+		wrapper.className = CLASS_OVERLAY_WRAPPER;
 		wrapper.dir = app.i18n?.getAttributes().rtl ? "rtl" : "ltr";
 		wrapper.ariaModal = "true";
 		wrapper.ariaAtomic = "true";
