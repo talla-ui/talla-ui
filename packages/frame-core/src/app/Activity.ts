@@ -360,7 +360,7 @@ export class Activity extends ManagedObject {
 			return this.navigateAsync(
 				new NavigationTarget({
 					...target,
-					pageId: target.pageId || this.navigationPageId,
+					pageId: target.pageId ?? this.navigationPageId,
 				}),
 			);
 		}
