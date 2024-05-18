@@ -7,7 +7,7 @@ import {
 } from "../base/index.js";
 import { err, ERROR, errorHandler, safeCall } from "../errors.js";
 import type { UIFormContext, UITheme } from "../ui/index.js";
-import type { NavigationController } from "./NavigationController.js";
+import type { NavigationContext } from "./NavigationContext.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { RenderContext } from "./RenderContext.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
@@ -16,8 +16,8 @@ import { View, ViewClass } from "./View.js";
 /** Global list of activity instances for (old) activity class, for HMR */
 const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
 
-/** Reused binding for the navigation controller */
-const _navigationControllerBinding = bound("navigationController");
+/** Reused binding for the navigation context */
+const _navCtxBinding = bound("navigation");
 
 /** Reused binding for the global renderer instance, also listens for change events */
 const _rendererBinding = bound("renderer.*");
@@ -82,8 +82,8 @@ export class Activity extends ManagedObject {
 	 */
 	constructor(options?: ConfigOptions.Arg<Activity.Options>) {
 		super();
-		_navigationControllerBinding.bindTo(this, (controller) => {
-			this._boundNavCtrl = controller;
+		_navCtxBinding.bindTo(this, (ctx) => {
+			this._boundNavCtx = ctx;
 		});
 		_themeBinding.bindTo(this, (theme) => {
 			this._boundTheme = theme;
@@ -172,7 +172,7 @@ export class Activity extends ManagedObject {
 		await this._activation.waitAndSetAsync(
 			true,
 			() => {
-				if (!this._boundNavCtrl) throw err(ERROR.Activity_NotAttached);
+				if (!this._boundNavCtx) throw err(ERROR.Activity_NotAttached);
 				if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 				return this.beforeActiveAsync();
 			},
@@ -299,11 +299,11 @@ export class Activity extends ManagedObject {
 	 * - If the navigation path matches the activity's {@link navigationPageId} exactly, this method is called with an empty string as the `detail` argument.
 	 * - This method can be used to show specific content within the activity's view, e.g. a tab or detail view, or to activate a child activity.
 	 * @param detail The part of the navigation path that comes after the page ID
-	 * @param navigationController The current navigation controller instance
+	 * @param navigationContext The current navigation context instance
 	 */
 	async handleNavigationDetailAsync(
 		detail: string,
-		navigationController: NavigationController,
+		navigationContext: NavigationContext,
 	): Promise<void> {
 		// nothing here, to be overridden
 	}
@@ -338,10 +338,10 @@ export class Activity extends ManagedObject {
 	/**
 	 * Handles navigation to a provided navigation target or path, from the current activity
 	 * - This method is called automatically by {@link onNavigate} when a view object emits the `Navigate` event while this activity is active.
-	 * - The default implementation directly calls {@link NavigationController.navigateAsync()}. Override this method to handle navigation differently, e.g. to _replace_ the current path for detail view activities.
+	 * - The default implementation directly calls {@link NavigationContext.navigateAsync()}. Override this method to handle navigation differently, e.g. to _replace_ the current path for detail view activities.
 	 */
 	protected async navigateAsync(target: NavigationTarget) {
-		await this._boundNavCtrl?.navigateAsync(target);
+		await this._boundNavCtx?.navigateAsync(target);
 	}
 
 	/**
@@ -371,7 +371,7 @@ export class Activity extends ManagedObject {
 	 * - This method is called when a view object emits the `NavigateBack` event. This event can be used to go back in the navigation history, e.g. when a back button is clicked.
 	 */
 	protected onNavigateBack() {
-		this._boundNavCtrl?.navigateAsync(undefined, { back: true });
+		this._boundNavCtx?.navigateAsync(undefined, { back: true });
 	}
 
 	/**
@@ -426,8 +426,8 @@ export class Activity extends ManagedObject {
 	/** @internal Activation queue for this activity */
 	private readonly _activation = new ActivationQueue();
 
-	/** @internal Last (bound) navigation controller instance */
-	private _boundNavCtrl?: NavigationController;
+	/** @internal Last (bound) navigation context instance */
+	private _boundNavCtx?: NavigationContext;
 
 	/** @internal Last (bound) renderer instance */
 	private _boundRenderer?: RenderContext;

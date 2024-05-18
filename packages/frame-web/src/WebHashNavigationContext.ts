@@ -1,28 +1,28 @@
 import {
-	NavigationController,
+	NavigationContext,
 	NavigationTarget,
 	app,
 } from "@desk-framework/frame-core";
-import { type WebContextOptions } from "../WebContext.js";
+import { type WebContextOptions } from "./WebContext.js";
 
 /** Global flag for global (window) event listener, see constructor */
 let _eventListenerAdded = false;
 
 /**
- * A class that manages the application navigation path using the DOM history API
- * - This class is used automatically when {@link WebContextOptions.useHistoryAPI} is set to true.
+ * A class that manages the application navigation path using the DOM location 'hash' value
+ * - This class is used automatically when {@link WebContextOptions.useHistoryAPI} is set to false.
  * @see {@link useWebContext()}
  * @hideconstructor
  */
-export class WebHistoryNavigationController extends NavigationController {
+export class WebHashNavigationContext extends NavigationContext {
 	constructor(options: WebContextOptions) {
 		super();
-		this._basePath = options.basePath.replace(/^\//, "");
+		this._basePath = options.basePath.replace(/^[#\/]+/, "");
 
 		// insert initial history entries if needed
 		let initial = this._getPath();
 		let insert: string[] = [];
-		let base = this._basePath + "/";
+		let base = "#" + this._basePath + "/";
 		if (options.insertHistory === "root" && initial[0]) {
 			insert.push(base);
 		}
@@ -36,11 +36,11 @@ export class WebHistoryNavigationController extends NavigationController {
 			i ? history.pushState({}, "", href) : history.replaceState({}, "", href),
 		);
 
-		// set event listener for back/forward navigation
+		// set event listener for direct navigation
 		if (!_eventListenerAdded) {
-			window.addEventListener("popstate", () => {
-				let self = app.activities.navigationController;
-				if (self instanceof WebHistoryNavigationController) {
+			window.addEventListener("hashchange", () => {
+				let self = app.navigation;
+				if (self instanceof WebHashNavigationContext) {
 					self.update();
 				}
 			});
@@ -52,7 +52,7 @@ export class WebHistoryNavigationController extends NavigationController {
 	private readonly _basePath: string;
 
 	/**
-	 * Converts the specified path into a valid `href` value
+	 * Converts the specified navigation target into a valid `href` value
 	 * - This method is also used by the `UIButton` renderer to set the `href` attribute for buttons that are rendered as anchor elements.
 	 */
 	getPathHref(target?: NavigationTarget): string | undefined {
@@ -60,22 +60,22 @@ export class WebHistoryNavigationController extends NavigationController {
 		let path = (target.pageId + "/" + target.detail)
 			.replace(/^\/+|\/+$/g, "")
 			.replace(/\/+/g, "/");
-		return this._basePath + "/" + path;
+		return "#" + this._basePath + "/" + path;
 	}
 
 	/**
 	 * Navigates to the specified path
 	 * @param target The navigation target
-	 * @param mode The intended mode of navigation, see {@link NavigationController.NavigationMode}
+	 * @param mode The intended mode of navigation, see {@link NavigationContext.NavigationMode}
 	 */
 	override async navigateAsync(
 		target: NavigationTarget,
-		mode?: NavigationController.NavigationMode,
+		mode?: NavigationContext.NavigationMode,
 	): Promise<void> {
 		if (mode && mode.back) {
 			// go back, then continue
 			window.history.back();
-			if (target && target.pageId != null) {
+			if (target?.pageId != null) {
 				// after going back, navigate to given path
 				await new Promise((r) => setTimeout(r, 1));
 				return this.navigateAsync(target, { ...mode, back: false });
@@ -83,10 +83,10 @@ export class WebHistoryNavigationController extends NavigationController {
 		} else {
 			let href = this.getPathHref(target);
 			if (href) {
-				if (mode && mode.replace) {
+				if (mode?.replace) {
 					// replace path if requested
 					window.history.replaceState({}, document.title, href);
-					this.update();
+					this.update(); // above doesn't trigger hash change
 				} else {
 					// push path on history stack
 					window.history.pushState({}, document.title, href);
@@ -97,7 +97,7 @@ export class WebHistoryNavigationController extends NavigationController {
 	}
 
 	/**
-	 * Updates the navigation path from the current window location
+	 * Updates the navigation path from the current location hash value
 	 * - This method is called automatically. It shouldn't be necessary to call this method manually in an application.
 	 */
 	update() {
@@ -105,9 +105,13 @@ export class WebHistoryNavigationController extends NavigationController {
 	}
 
 	private _getPath(): [string, string] {
-		let target = String(window.location.pathname || "").replace(/^\//, "");
-		if (target.startsWith(this._basePath)) {
-			target = target.slice(this._basePath.length).replace(/^\//, "");
+		let target = String(window.location.hash || "").replace(/^[#\/]+/, "");
+		if (this._basePath) {
+			if (target.startsWith(this._basePath)) {
+				target = target.slice(this._basePath.length).replace(/^[#\/]+/, "");
+			} else {
+				target = "";
+			}
 		}
 		let parts = target.replace(/\/$/, "").split("/");
 		return [parts[0] || "", parts.slice(1).join("/")];

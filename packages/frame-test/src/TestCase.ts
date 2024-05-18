@@ -351,8 +351,7 @@ export class TestCase {
 	async expectNavAsync(timeout: number, pageId: string, detail = "") {
 		await this.pollAsync(
 			() =>
-				app.activities.navigationController.pageId === pageId &&
-				app.activities.navigationController.detail === detail,
+				app.navigation.pageId === pageId && app.navigation.detail === detail,
 			5,
 			timeout,
 			() =>
@@ -360,11 +359,7 @@ export class TestCase {
 					"Expected navigation to " +
 						val2str(pageId + "/" + detail) +
 						" but location is " +
-						val2str(
-							app.activities.navigationController.pageId +
-								"/" +
-								app.activities.navigationController.detail,
-						),
+						val2str(app.navigation.pageId + "/" + app.navigation.detail),
 				),
 		);
 	}

@@ -6,16 +6,15 @@ import {
 } from "@desk-framework/frame-core";
 import { TestScope } from "../TestScope.js";
 import { TestTheme } from "../style/TestTheme.js";
-import { TestNavigationController } from "./TestNavigationController.js";
+import { TestNavigationContext } from "./TestNavigationContext.js";
 import { TestRenderer } from "../renderer/TestRenderer.js";
 import { TestViewportContext } from "./TestViewportContext.js";
 
 /** Type definition for the global {@link app} context with test-specific render and activity contexts, set by the {@link useTestContext} function */
 export type TestContext = GlobalContext & {
 	renderer: TestRenderer;
-	activities: ActivityContext & {
-		navigationController: TestNavigationController;
-	};
+	activities: ActivityContext;
+	navigation: TestNavigationContext;
 };
 
 /**
@@ -82,7 +81,7 @@ export function useTestContext(config?: ConfigOptions.Arg<TestContextOptions>) {
 	app.viewport = new TestViewportContext();
 
 	// create test navigation path and set initial path
-	app.activities.navigationController = new TestNavigationController(options);
+	app.navigation = new TestNavigationContext(options);
 
 	return app as TestContext;
 }

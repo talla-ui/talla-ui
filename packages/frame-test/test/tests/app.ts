@@ -59,7 +59,7 @@ describe("App test", (scope) => {
 
 	test("Another path inactivates activity", async (t) => {
 		// initial path should be set directly
-		expect(app.activities.navigationController.pageId).toBe("count");
+		expect(app.navigation.pageId).toBe("count");
 
 		// setting another path takes some time
 		app.navigate("/another/path/here");

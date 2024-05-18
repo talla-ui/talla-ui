@@ -1,11 +1,11 @@
 import {
-	NavigationController,
+	NavigationContext,
 	NavigationTarget,
 } from "@desk-framework/frame-core";
 import { TestContextOptions } from "./TestContext.js";
 
 /** A class that encapsulates the current navigation location, simulating browser-like behavior */
-export class TestNavigationController extends NavigationController {
+export class TestNavigationContext extends NavigationContext {
 	/**
 	 * Creates a new navigation controller instance, used by `useTestContext()`
 	 * @hideconstructor
@@ -20,12 +20,12 @@ export class TestNavigationController extends NavigationController {
 	 * Navigates to the provided target
 	 * - The path is set only after a delay (see {@link TestContextOptions.navigationDelay}), simulating asynchronous browser behavior.
 	 * @param target The navigation target
-	 * @param mode An optional navigation mode (an object that matches {@link NavigationController.NavigationMode})
+	 * @param mode An optional navigation mode (an object that matches {@link NavigationContext.NavigationMode})
 	 * @error This method throws an error if the navigation target is invalid
 	 */
 	override async navigateAsync(
 		target: NavigationTarget,
-		mode?: NavigationController.NavigationMode,
+		mode?: NavigationContext.NavigationMode,
 	) {
 		// go back first, if needed
 		if (mode && mode.back) {

@@ -1,5 +1,5 @@
 import {
-	NavigationController,
+	NavigationContext,
 	app,
 	RenderContext,
 	UIButton,
@@ -10,7 +10,7 @@ import { applyStyles } from "../../style/DOMStyle.js";
 import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 import { setTextOrHtmlContent } from "./UILabelRenderer.js";
 
-interface HrefNavigationController extends NavigationController {
+interface HrefNavigationContext extends NavigationContext {
 	getPathHref(path?: NavigationTarget): string | undefined;
 }
 
@@ -59,9 +59,7 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 
 		// set href property if possible
 		if (button.navigateTo !== undefined) {
-			let navController = app.activities.navigationController as
-				| HrefNavigationController
-				| undefined;
+			let navController = app.navigation as HrefNavigationContext | undefined;
 			if (navController && typeof navController.getPathHref === "function") {
 				let href = navController.getPathHref(button.getNavigationTarget());
 				if (href !== undefined) (elt as HTMLAnchorElement).href = href;

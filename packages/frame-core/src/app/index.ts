@@ -7,7 +7,7 @@ export * from "./RenderContext.js";
 export * from "./ViewportContext.js";
 export * from "./NavigationTarget.js";
 export * from "./ActivityContext.js";
-export * from "./NavigationController.js";
+export * from "./NavigationContext.js";
 export * from "./Activity.js";
 export * from "./View.js";
 export * from "./ViewComposite.js";

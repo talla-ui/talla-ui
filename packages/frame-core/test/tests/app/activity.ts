@@ -18,7 +18,7 @@ describe("Activity", () => {
 		add<T extends Activity>(a: T) {
 			return (this as any).attach(a) as T;
 		},
-		navigationController: {},
+		navigation: {},
 		renderer: {},
 	});
 

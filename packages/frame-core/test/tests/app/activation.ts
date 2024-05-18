@@ -1,6 +1,6 @@
 import {
 	app,
-	NavigationController,
+	NavigationContext,
 	Activity,
 	ManagedObject,
 } from "../../../dist/index.js";
@@ -11,30 +11,30 @@ import {
 	useTestContext,
 } from "@desk-framework/frame-test";
 
-describe("NavigationController and ActivityContext", () => {
-	describe("NavigationController standalone", () => {
+describe("NavigationContext and ActivityContext", () => {
+	describe("NavigationContext standalone", () => {
 		test("Set, get page ID", () => {
-			let p = new NavigationController();
+			let p = new NavigationContext();
 			p.set("foo");
 			expect(p.pageId).toBe("foo");
 		});
 
 		test("Set, get page ID and detail", () => {
-			let p = new NavigationController();
+			let p = new NavigationContext();
 			p.set("foo", "bar");
 			expect(p.pageId).toBe("foo");
 			expect(p.detail).toBe("bar");
 		});
 
 		test("Set, get path undefined", () => {
-			let p = new NavigationController();
+			let p = new NavigationContext();
 			p.set(undefined as any);
 			expect(p.pageId).toBe("");
 			expect(p.detail).toBe("");
 		});
 
 		test("Set invalid path", () => {
-			let p = new NavigationController();
+			let p = new NavigationContext();
 			expect(() => p.set("foo/bar")).toThrowError();
 			expect(() => p.set(".foo")).toThrowError();
 		});
@@ -48,25 +48,20 @@ describe("NavigationController and ActivityContext", () => {
 		});
 
 		function goTo(pageId: string, detail?: string) {
-			app.activities.navigationController.set(pageId, detail);
+			app.navigation.set(pageId, detail);
 		}
 
 		test("Activity context Object and properties", (t) => {
 			expect(ManagedObject.whence(app.activities)).toBe(app);
 			expect(app.activities.getAll()).toBeArray(0);
 			expect(app.activities.getActive()).toBeArray(0);
-			expect(app.activities.navigationController).toBeInstanceOf(
-				NavigationController,
-			);
-			expect(ManagedObject.whence(app.activities.navigationController)).toBe(
-				app.activities,
-			);
+			expect(app.navigation).toBeInstanceOf(NavigationContext);
 		});
 
 		test("Activity activated when added", async (t) => {
 			let activity = new Activity({ navigationPageId: "foo" });
 			goTo("foo");
-			app.activities.add(activity);
+			app.addActivity(activity);
 			await t.sleep(1);
 			expect(activity.isActive()).toBeTruthy();
 		});
@@ -74,7 +69,7 @@ describe("NavigationController and ActivityContext", () => {
 		test("Activity activated when app path changed (async)", async (t) => {
 			let activity = new Activity({ navigationPageId: "foo" });
 			goTo("bar");
-			app.activities.add(activity);
+			app.addActivity(activity);
 			await t.sleep(1);
 			expect(activity.isActive()).toBeFalsy();
 			goTo("foo");
@@ -93,7 +88,7 @@ describe("NavigationController and ActivityContext", () => {
 				}
 			}
 			let activity = new MyActivity();
-			app.activities.add(activity);
+			app.addActivity(activity);
 			goTo("foo");
 			await t.sleep(1);
 			t.expectCount("active").toBe(1);
@@ -109,18 +104,18 @@ describe("NavigationController and ActivityContext", () => {
 				override navigationPageId = "foo";
 				override async handleNavigationDetailAsync(
 					detail: string,
-					navigationPath: NavigationController,
+					navigationPath: NavigationContext,
 				) {
 					t.count("handler");
 					t.log("Detail: ", detail);
 					details.push(detail);
-					if (navigationPath !== app.activities.navigationController)
+					if (navigationPath !== app.navigation)
 						t.fail("Invalid navigation path");
 				}
 			}
 			let activity = new MyActivity();
 			goTo("foo");
-			app.activities.add(activity);
+			app.addActivity(activity);
 			await t.sleep(1);
 			t.expectCount("handler").toBe(1);
 			goTo("foo", "bar");
@@ -149,7 +144,7 @@ describe("NavigationController and ActivityContext", () => {
 
 			// test synchronous changes:
 			let activity = new MyActivity();
-			app.activities.add(activity);
+			app.addActivity(activity);
 			t.log("Setting path synchronously: foo");
 			goTo("foo");
 			t.log("Setting path synchronously: bar");

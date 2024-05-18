@@ -2,14 +2,14 @@ export * from "@desk-framework/frame-core";
 import * as desk from "@desk-framework/frame-core";
 import { WebContextOptions, useWebContext } from "./WebContext.js";
 import { WebTheme } from "./style/WebTheme.js";
-import { WebHashNavigationController } from "./path/WebHashNavigationController.js";
-import { WebHistoryNavigationController } from "./path/WebHistoryNavigationController.js";
+import { WebHashNavigationContext } from "./WebHashNavigationContext.js";
+import { WebHistoryNavigationContext } from "./WebHistoryNavigationContext.js";
 export {
 	useWebContext,
 	WebContextOptions,
 	WebTheme,
-	WebHashNavigationController,
-	WebHistoryNavigationController,
+	WebHashNavigationContext,
+	WebHistoryNavigationContext,
 };
 
 if (!window.require) {
@@ -23,8 +23,8 @@ if (!window.require) {
 				useWebContext,
 				WebContextOptions,
 				WebTheme,
-				WebHashNavigationController,
-				WebHistoryNavigationController,
+				WebHashNavigationContext,
+				WebHistoryNavigationContext,
 			};
 		}
 		throw Error("Invalid require() call");

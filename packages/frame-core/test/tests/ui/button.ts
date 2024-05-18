@@ -141,6 +141,6 @@ describe("UIButton", (scope) => {
 		let elt = (await t.expectOutputAsync(100, { text: "foo" })).getSingle();
 		elt.click();
 		await t.sleep(2);
-		expect(app.activities.navigationController.pageId).toBe("foo");
+		expect(app.navigation.pageId).toBe("foo");
 	});
 });

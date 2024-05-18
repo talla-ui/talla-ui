@@ -1,5 +1,5 @@
 import {
-	TestNavigationController,
+	TestNavigationContext,
 	TestRenderer,
 	describe,
 	expect,
@@ -26,30 +26,28 @@ describe("TestContext", () => {
 		t.breakOnFail();
 		let app = useTestContext();
 		expect(app.renderer).toBeInstanceOf(TestRenderer);
-		expect(app.activities.navigationController).toBeInstanceOf(
-			TestNavigationController,
-		);
+		expect(app.navigation).toBeInstanceOf(TestNavigationContext);
 	});
 
 	describe("Navigation paths", () => {
 		test("Initial path: default", () => {
 			let app = useTestContext();
-			expect(app.activities.navigationController.pageId).toBe("");
-			expect(app.activities.navigationController.detail).toBe("");
+			expect(app.navigation.pageId).toBe("");
+			expect(app.navigation.detail).toBe("");
 		});
 
 		test("Initial path: set in options", () => {
 			let app = useTestContext((options) => {
 				options.navigationPageId = "foo";
 			});
-			expect(app.activities.navigationController.pageId).toBe("foo");
+			expect(app.navigation.pageId).toBe("foo");
 		});
 
 		test("Navigation history: set once", async () => {
 			let app = useTestContext((options) => {
 				options.navigationPageId = "foo";
 			});
-			let nav = app.activities.navigationController;
+			let nav = app.navigation;
 			await nav.navigateAsync(new NavigationTarget("foo/bar"));
 			expect(nav.getHistory()).toBeArray(["foo", "foo/bar"]);
 		});
@@ -58,7 +56,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.navigationPageId = "foo";
 			});
-			let nav = app.activities.navigationController;
+			let nav = app.navigation;
 			await nav.navigateAsync(new NavigationTarget("foo/bar"));
 			await nav.navigateAsync(new NavigationTarget("foo/bar/baz"), {
 				replace: true,
@@ -70,7 +68,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.navigationPageId = "foo";
 			});
-			let nav = app.activities.navigationController;
+			let nav = app.navigation;
 			await nav.navigateAsync(new NavigationTarget("foo"));
 			await nav.navigateAsync(undefined, { back: true });
 			expect(nav.getHistory()).toBeArray(["foo"]);
@@ -94,7 +92,7 @@ describe("TestContext", () => {
 				options.navigationPageId = "foo";
 				options.navigationDelay = 0;
 			});
-			let nav = app.activities.navigationController;
+			let nav = app.navigation;
 			await nav.navigateAsync(new NavigationTarget("foo"));
 			app.goBack();
 			await t.expectNavAsync(100, "foo");
@@ -105,7 +103,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.navigationPageId = "foo";
 			});
-			let nav = app.activities.navigationController;
+			let nav = app.navigation;
 			await nav.navigateAsync(new NavigationTarget("bar"));
 			await nav.navigateAsync(new NavigationTarget("baz"), { back: true });
 			expect(nav.getHistory()).toBeArray(["foo", "baz"]);
@@ -115,7 +113,7 @@ describe("TestContext", () => {
 			let app = useTestContext((options) => {
 				options.navigationPageId = "foo";
 			});
-			let nav = app.activities.navigationController;
+			let nav = app.navigation;
 			await expect(async () =>
 				nav.navigateAsync(undefined, { back: true }),
 			).toThrowErrorAsync();
