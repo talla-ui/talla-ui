@@ -1,6 +1,8 @@
 import { ManagedEvent, UIScrollContainer } from "@desk-framework/frame-core";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
+const EMIT_INTERVAL = 100;
+
 /** @internal */
 export class UIScrollContainerRenderer extends UIContainerRenderer<UIScrollContainer> {
 	override getOutput() {
@@ -82,11 +84,11 @@ export class UIScrollContainerRenderer extends UIContainerRenderer<UIScrollConta
 					Math.abs(horzDist / (window.innerWidth || 1)) / (tDiffSec || 0.1),
 			};
 			scrollContainer.emit("Scroll", eventData);
-			if (lastEventT < lastT - 200) {
+			if (lastEventT < lastT - EMIT_INTERVAL) {
 				scrollContainer.emit("ScrollEnd", eventData);
 				pending = false;
 			} else {
-				setTimeout(checkAndEmit, 250);
+				setTimeout(checkAndEmit, EMIT_INTERVAL);
 				pending = true;
 			}
 		};
