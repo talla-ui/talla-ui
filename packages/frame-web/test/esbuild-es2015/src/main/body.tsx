@@ -1,4 +1,4 @@
-import { bound, ui } from "../../../../lib/desk-framework-web.es2015.esm.min";
+import { bind, ui } from "../../../../lib/desk-framework-web.es2015.esm.min";
 import _themeToggle from "./_themeToggle";
 
 export default (
@@ -10,7 +10,7 @@ export default (
 				{_themeToggle}
 			</row>
 			<cell>
-				<render view={bound("countActivity.view")} />
+				<render view={bind("countActivity.view")} />
 			</cell>
 		</scroll>
 	</mount>

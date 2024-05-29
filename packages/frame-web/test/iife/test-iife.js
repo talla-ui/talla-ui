@@ -1,9 +1,9 @@
-const { app, ui, bound } = desk;
+const { app, ui, bind } = desk;
 
 (function () {
 	const ViewBody = ui.page(
-		ui.cell(
-			ui.label(bound.strf("Count: %n", "count"), {
+		ui.column(
+			ui.label(bind.strf("Count: %n", bind("count")), {
 				bold: true,
 				fontSize: 36,
 			}),

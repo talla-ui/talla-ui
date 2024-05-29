@@ -14,3 +14,5 @@ export * from "./ViewComposite.js";
 export * from "./LogWriter.js";
 export * from "./MessageDialogOptions.js";
 export * from "./GlobalContext.js";
+export * from "./app_binding.js";
+export * from "./app.js";

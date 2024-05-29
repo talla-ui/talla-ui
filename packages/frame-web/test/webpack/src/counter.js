@@ -1,8 +1,11 @@
-import { Activity, app, bound, ui } from "@desk-framework/frame-core";
+import { Activity, app, bind, ui } from "@desk-framework/frame-core";
 
 const ViewBody = ui.page(
-	ui.cell(
-		ui.label(bound.strf("Count: %i", "count"), { bold: true, fontSize: 36 }),
+	ui.column(
+		ui.label(bind.strf("Count: %i", bind("count")), {
+			bold: true,
+			fontSize: 36,
+		}),
 		ui.spacer({ height: 32 }),
 		ui.row(
 			{ align: "center" },

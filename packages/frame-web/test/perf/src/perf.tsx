@@ -1,4 +1,4 @@
-import { app, AsyncTaskQueue, bound, Activity, ui } from "../../../dist";
+import { app, AsyncTaskQueue, Activity, ui, $activity } from "../../../dist";
 
 const MAX = 10000;
 
@@ -12,7 +12,7 @@ const ViewBody = (
 			<row layout={{ padding: { x: 40, y: 16 } }}>
 				<label style={ui.style.LABEL_TITLE}>Perf test</label>
 			</row>
-			<list items={bound("items")}>
+			<list items={$activity.bind("items")}>
 				<row height={48}>
 					<label
 						icon={ui.icon.CHEVRON_NEXT}

@@ -1,12 +1,14 @@
 import {
+	$activity,
+	$list,
+	$view,
 	Activity,
 	ManagedList,
 	ManagedRecord,
+	StringConvertible,
 	UIFormContext,
 	UITextField,
 	ViewComposite,
-	app,
-	bound,
 	ui,
 } from "./lib/desk-framework-web.es2018.esm.min.js";
 
@@ -15,13 +17,13 @@ class ListItem extends ManagedRecord {
 }
 
 const ListItemView = ViewComposite.define(
-	{ text: undefined, selected: false },
+	{ text: StringConvertible.EMPTY, selected: false },
 	ui.cell(
 		{
 			background: ui.color.BACKGROUND,
 			effect: ui.effect.SHADOW,
 			borderRadius: 4,
-			style: bound
+			style: $view
 				.boolean("selected")
 				.select(
 					{ borderThickness: 1, borderColor: ui.color.TEXT },
@@ -34,9 +36,9 @@ const ListItemView = ViewComposite.define(
 			onArrowUpKeyPress: "+FocusPrevious",
 		},
 		ui.row(
-			ui.label({ text: bound("text"), style: { grow: 1 } }),
+			ui.label({ text: $view.string("text"), style: { grow: 1 } }),
 			ui.button({
-				hidden: bound.not("selected"),
+				hidden: $view.not("selected"),
 				icon: ui.icon.CLOSE,
 				style: ui.style.BUTTON_ICON,
 				onClick: "RemoveItem",
@@ -65,10 +67,10 @@ const page = ui.page(
 			),
 			ui.spacer(0, 8),
 			ui.list(
-				{ items: bound.list("items") },
+				{ items: $activity.list("items") },
 				ui.use(ListItemView, {
-					text: bound.string("item.text"),
-					selected: bound("selectedItem").equals("item"),
+					text: $list.string("item.text"),
+					selected: $activity.bind("selectedItem").equals($list.bind("item")),
 				}),
 				ui.column({ spacing: 8, accessibleRole: "list" }),
 			),
@@ -93,7 +95,7 @@ export class ListActivity extends Activity {
 			this.items.first(),
 		);
 		this.formContext.clear();
-		this.findViewContent(UITextField)[0].requestFocus();
+		this.findViewContent(UITextField)[0]?.requestFocus();
 	}
 
 	onSelectItem(e) {

@@ -5,6 +5,7 @@ import {
 	useTestContext,
 } from "@desk-framework/frame-test";
 import {
+	$view,
 	BindingOrValue,
 	LazyString,
 	StringConvertible,
@@ -14,7 +15,6 @@ import {
 	UILabel,
 	ViewComposite,
 	app,
-	bound,
 	strf,
 	ui,
 } from "../../../dist/index.js";
@@ -187,7 +187,7 @@ describe("JSX", () => {
 			}
 			foo: number = 0;
 			override defineView() {
-				return <label>{bound("foo")}</label>;
+				return <label>{$view.bind("foo")}</label>;
 			}
 		}
 		useTestContext((options) => {
@@ -236,10 +236,10 @@ describe("JSX", () => {
 		const MyView = ViewComposite.define(
 			{ foo: 0, bar: undefined as any },
 			<row>
-				<label>foo='{bound("foo")}'</label>
+				<label>foo='{$view.bind("foo")}'</label>
 				<label>bar='%[bar.foo]'</label>
 				<label>baz='%[baz=bar.baz:uc]'</label>
-				<label>nope_bound='{bound("nope", "Nothing")}'</label>
+				<label>nope_bound='{$view.bind("nope", "Nothing")}'</label>
 			</row>,
 		);
 		useTestContext((options) => {

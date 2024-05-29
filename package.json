@@ -22,6 +22,7 @@
 		"test": "npm run test:test && npm run test:core",
 		"test:core": "cd packages/frame-core && npm test",
 		"test:test": "cd packages/frame-test && npm test",
+		"c8": "c8 -r html npm run test",
 		"check-format": " concurrently  npm:check-format:*",
 		"check-format:other": "prettier --check \"**/*.md\" \"**/{package,tsconfig,config,launch,tasks}.json\"",
 		"check-format:core": "cd packages/frame-core && npm run check-format",
@@ -37,7 +38,7 @@
 	},
 	"devDependencies": {
 		"@types/node": "^20.8.7",
-		"c8": "^8.0.1",
+		"c8": "^9.1.0",
 		"concurrently": "^8.2.1",
 		"esbuild": "^0.19.5",
 		"glob": "^10.3.10",

@@ -1,10 +1,10 @@
-import {
-	ManagedObject,
-	ManagedList,
-	ManagedEvent,
-	bound,
-} from "../../../dist/index.js";
 import { describe, expect, test } from "@desk-framework/frame-test";
+import {
+	ManagedEvent,
+	ManagedList,
+	ManagedObject,
+	bind,
+} from "../../../dist/index.js";
 
 describe("ManagedList", () => {
 	/** Class used throughout tests below */
@@ -820,7 +820,7 @@ describe("ManagedList", () => {
 			class MyObject extends ManagedObject {
 				constructor() {
 					super();
-					bound("list.count").bindTo(this, "boundCount");
+					bind("list.count").bindTo(this, "boundCount");
 				}
 				boundCount?: number;
 			}

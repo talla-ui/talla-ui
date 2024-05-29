@@ -1,5 +1,4 @@
 import {
-	Binding,
 	ConfigOptions,
 	LazyString,
 	ManagedObject,
@@ -20,6 +19,10 @@ import { Service } from "./Service.js";
 import { ServiceContext } from "./ServiceContext.js";
 import type { View } from "./View.js";
 import type { ViewportContext } from "./ViewportContext.js";
+import { $_app_bind_label } from "./app_binding.js";
+
+/** @internal Counter that blocks multiple invocations of GlobalContext constructor */
+let once = 0;
 
 /**
  * A singleton class that represents the global application state
@@ -30,9 +33,6 @@ import type { ViewportContext } from "./ViewportContext.js";
  * @hideconstructor
  */
 export class GlobalContext extends ManagedObject {
-	/** @internal The current singleton instance, available as {@link app} */
-	static readonly instance = new GlobalContext();
-
 	/**
 	 * Sets a global unhandled error handler
 	 * - This method _replaces_ the current handler, if any, and is not cleared by {@link GlobalContext.clear()}.
@@ -44,11 +44,14 @@ export class GlobalContext extends ManagedObject {
 		setErrorHandler(f);
 	}
 
-	/** Private constructor, cannot be used */
-	private constructor() {
-		if (GlobalContext.instance) throw Error;
+	/** App constructor, do not use (refer to {@link app} instead) */
+	constructor() {
+		if (once++) throw Error;
 		super();
-		Binding.limitTo(this);
+
+		// set as root object (cannot be attached, no more bindings)
+		ManagedObject.makeRoot(this);
+		(this as any)[$_app_bind_label] = true;
 
 		// define i18n property and handle new objects when set
 		let i18n: I18nProvider | undefined;
@@ -106,7 +109,7 @@ export class GlobalContext extends ManagedObject {
 
 	/**
 	 * An object containing information about the user's viewport, e.g. browser window
-	 * - You can use `app.viewport` directly, or using a binding (bound to `"viewport"`, since all views and activities are ultimately attached to the global application context, i.e. `app`).
+	 * - You can use `app.viewport` directly, or using a binding (see {@link $viewport}).
 	 * - Refer to {@link ViewportContext} for available properties of `app.viewport`.
 	 *
 	 * @see {@link ViewportContext}
@@ -119,7 +122,7 @@ export class GlobalContext extends ManagedObject {
 	 * @example
 	 * // Use the viewport size in a view:
 	 * ui.cell(
-	 *   { hidden: bound("!viewport.portrait") }
+	 *   { hidden: $viewport.not("portrait") }
 	 *   // ... portrait cell content
 	 * )
 	 */
@@ -387,16 +390,3 @@ export class GlobalContext extends ManagedObject {
 		});
 	}
 }
-
-/**
- * The current instance of the global application context
- *
- * @description
- * Use `app` to access properties and methods of {@link GlobalContext}, e.g. `app.theme` and `app.addActivity(...)`. This instance is available immediately when the application starts, and remains the same throughout its lifetime.
- */
-export const app = GlobalContext.instance;
-
-// use default error handler
-setErrorHandler((err) => {
-	app.log.error(err);
-});

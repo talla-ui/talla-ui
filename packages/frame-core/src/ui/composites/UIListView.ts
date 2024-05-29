@@ -1,13 +1,25 @@
 import { View, ViewClass, ViewComposite } from "../../app/index.js";
 import {
+	Binding,
 	BindingOrValue,
 	ManagedEvent,
 	ManagedList,
 	ManagedObject,
-	bound,
+	bind,
 } from "../../base/index.js";
 import { ERROR, err } from "../../errors.js";
 import { UIContainer } from "../containers/index.js";
+
+/** Label property used to filter bindings using $list */
+const $_list_bind_label = Symbol("list");
+
+/**
+ * An object that can be used to create bindings for properties of the containing {@link UIListView.ItemControllerView} object
+ * - The source object includes the `item` property that refers to the list item object, i.e. an element of the list passed to {@link UIListView}.
+ * - Within a list item view, you can bind to properties of the list item object using e.g. `$list.string("item.name")`.
+ */
+export const $list: Binding.Source<`item.${string}` | "item"> =
+	bind.$on($_list_bind_label);
 
 /**
  * A view composite that manages views for each item in a list of objects or values
@@ -26,9 +38,9 @@ export class UIListView<
 			constructor(public list: UIListView) {
 				super();
 				let doUpdate = this.doUpdateAsync.bind(this);
-				bound("items.*").bindTo(this, doUpdate);
-				bound("firstIndex").bindTo(this, doUpdate);
-				bound("maxItems").bindTo(this, doUpdate);
+				bind("items.*").bindTo(this, doUpdate);
+				bind("firstIndex").bindTo(this, doUpdate);
+				bind("maxItems").bindTo(this, doUpdate);
 				this.doUpdateAsync();
 			}
 			override beforeUnlink() {
@@ -324,6 +336,9 @@ export namespace UIListView {
 			this.item = item instanceof ItemValueWrapper ? item.value : item;
 			this._ItemBody = ItemBody;
 		}
+
+		/** @internal */
+		[$_list_bind_label] = true;
 
 		/** The encapsulated list (or array) item */
 		readonly item: TItem;

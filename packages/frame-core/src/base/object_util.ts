@@ -11,11 +11,11 @@ export const $_unlinked = Symbol("unlinked");
 /** @internal Property that refers to the linked origin object */
 export const $_origin = Symbol("origin");
 
+/** @internal Property that is set only on root objects (cannot be attached) */
+export const $_root = Symbol("root");
+
 /** @internal Getter for non-observable properties (used for e.g. list count) */
 export const $_get = Symbol("get");
-
-/** @internal Filter function for bindings that pass along an origin object */
-export const $_bindFilter = Symbol("bndF");
 
 /** @internal Non-existent property, trap is invoked when an event is emitted */
 export const $_traps_event = Symbol("event");
@@ -27,7 +27,7 @@ const _traps = new WeakMap<ManagedObject, TrapLookup>();
 const _attached = new WeakMap<ManagedObject, NullableArray<ManagedObject>>();
 
 /** Map containing a list of active bindings for each managed object */
-const _bindings = new WeakMap<ManagedObject, BindRef[]>();
+const _bindings = new WeakMap<ManagedObject, Bound[]>();
 
 /** Initial binding value, not equal to anything else */
 const NO_VALUE = { none: 0 };
@@ -275,7 +275,8 @@ export function attachObject(
 	// check if target is already unlinked
 	if (target[$_unlinked]) throw err(ERROR.Object_Unlinked, "target");
 
-	// check for circular references
+	// check for root and circular references
+	if (target[$_root]) throw err(ERROR.Object_NoAttach);
 	for (let p = origin; p; p = p[$_origin]!) {
 		if (p === target) throw err(ERROR.Object_NoAttach);
 	}
@@ -324,10 +325,8 @@ export function attachObject(
 		// look for bindings on new origin(s)
 		let bindings = _bindings.get(target);
 		if (bindings) {
-			for (let bindRef of bindings) {
-				if (!bindRef.t) {
-					tryWatchFromOrigin(target, origin, bindRef, nestingLevel);
-				}
+			for (let bound of bindings) {
+				bound.start(origin, nestingLevel);
 			}
 		}
 
@@ -357,13 +356,7 @@ function detachObject(origin: ManagedObject, target: ManagedObject) {
 			// clear bindings from given nesting level
 			let bindings = _bindings.get(target);
 			if (bindings) {
-				for (let w of bindings) {
-					if (w.t && w.i >= nestingLevel) {
-						// remove first trap, which clears others
-						if (w.t[0]) w.t[0].u();
-						else w.t = undefined;
-					}
-				}
+				for (let bound of bindings) bound.clear(nestingLevel);
 			}
 
 			// recurse for attached managed objects, increase level
@@ -378,185 +371,124 @@ function detachObject(origin: ManagedObject, target: ManagedObject) {
 
 // -- Binding functions ----------------------------------------------
 
-/** @internal Object that encapsulates a watched binding path on a managed object instance */
-export type BindRef = {
-	/** Function that's called when value is updated */
-	f: (value: any, bound: boolean) => void;
-	/** Origin nesting level currently bound to, or -1 if not bound, -2 if not bound and already set to undefined */
-	i: number;
-	/** List of traps, if currently bound */
-	t?: TrapRef[];
-	/** Property path to watch */
-	p: ReadonlyArray<string>;
-};
-
 /** @internal Add a watched binding path on origin(s) of given managed object */
 export function watchBinding(
 	managedObject: ManagedObject,
+	label: string | symbol | undefined,
 	path: ReadonlyArray<string>,
 	f: (value: any, bound: boolean) => void,
 ) {
 	if (!managedObject || !path.length) throw TypeError();
 	if (managedObject[$_unlinked]) return;
-	f = guard(f);
-	let bindRef: BindRef = {
-		f,
-		i: -1,
-		t: undefined,
-		p: path,
-	};
 
-	// add BindRef to list of bindings for object
-	if (!_bindings.has(managedObject)) _bindings.set(managedObject, [bindRef]);
-	else _bindings.get(managedObject)!.push(bindRef);
+	// add Bound structure to list of bindings for object
+	let bound = new Bound(managedObject, label, path, guard(f));
+	if (!_bindings.has(managedObject)) _bindings.set(managedObject, [bound]);
+	else _bindings.get(managedObject)!.push(bound);
 
 	// if already attached, try to start watching already
-	if (managedObject[$_origin]) {
-		tryWatchFromOrigin(managedObject, managedObject[$_origin], bindRef);
-	}
+	if (managedObject[$_origin]) bound.start();
 }
 
-/** Search for a possible binding and watch property path if possible (recursive) */
-function tryWatchFromOrigin(
-	managedObject: ManagedObject,
-	origin: ManagedObject | undefined,
-	bindRef: BindRef,
-	nestingLevel = 0,
-): void {
-	if (origin && !origin[$_unlinked]) {
-		// if the linked origin object is a list, skip it right away
+/** @internal Object that encapsulates a watched binding path on a managed object instance */
+class Bound {
+	constructor(
+		/** Object to which the binding is applied (binding target) */
+		public o: ManagedObject,
+		/** Source origin label, if any */
+		public b: string | symbol | undefined,
+		/** Property path to watch */
+		public p: ReadonlyArray<string>,
+		/** Function that's called when value is updated */
+		public f: (value: any, bound: boolean) => void,
+	) {}
+
+	/** Try to start watching from the provided (or original) origin, if not already bound */
+	start(origin?: ManagedObject, nestingLevel = 0) {
+		if (this.t || !this.o || this.o[$_unlinked]) return;
+		if (!origin) {
+			origin = this.o[$_origin];
+		}
+		while (!this._check(origin, nestingLevel)) {
+			origin = origin![$_origin];
+			nestingLevel++;
+		}
+	}
+
+	/** Clear all traps and set to undefined, IF currently bound at or beyond given nesting level */
+	clear(nestingLevel: number) {
+		if (this.i >= nestingLevel) {
+			for (let t of this.t!) removeTrap(t);
+			this.t = undefined;
+			this.i = -2;
+			this._invoke(undefined, true, true);
+		}
+	}
+
+	/** Origin nesting level currently bound to, or -1 if not bound, -2 if not bound and already set to undefined */
+	private i = -1;
+
+	/** List of traps, if currently bound */
+	private t: TrapRef[] | undefined = undefined;
+
+	/** Check for a possible source, and watch property path if possible */
+	private _check(origin: ManagedObject | undefined, nestingLevel: number) {
+		// if can't be bound, set bound value to undefined
+		if (!origin || origin[$_unlinked]) {
+			if (this.i !== -2) {
+				this.t = undefined;
+				this.i = -2;
+				this._invoke(undefined, true, true);
+			}
+			return true;
+		}
+
+		// check source label, and check for lists
 		// (don't bind to e.g. `.count` on containing lists)
-		if (Symbol.iterator in origin) {
-			tryWatchFromOrigin(
-				managedObject,
-				origin[$_origin],
-				bindRef,
-				nestingLevel + 1,
-			);
-		} else {
-			// watch all properties along path if possible
-			let first = bindRef.p[0]!;
-			if (canTrap(origin, first)) {
-				bindRef.i = nestingLevel;
-				watchFromOrigin(managedObject, origin, bindRef);
-			} else {
-				// check if bind filter set, or otherwise unobservable
-				let allowed = !origin[$_bindFilter] || origin[$_bindFilter](first);
-				if (!allowed || first in origin) {
-					let error = err(ERROR.Object_NoObserve, first);
-					errorHandler(error);
-					return;
-				}
-
-				// check on next linked origin, increase nesting level
-				tryWatchFromOrigin(
-					managedObject,
-					origin[$_origin],
-					bindRef,
-					nestingLevel + 1,
-				);
-			}
+		let first = this.p[0]!;
+		let candidate =
+			(this.b === undefined || this.b in origin) &&
+			!(Symbol.iterator in origin);
+		if (candidate && canTrap(origin, first)) {
+			// watch all properties along path
+			this.i = nestingLevel;
+			this.t = [];
+			this._trapProperty(origin, 0);
+			return true;
 		}
-	} else if (bindRef.i !== -2) {
-		// can't be bound, set bound value to undefined
-		bindRef.i = -2;
-		bindRef.f(undefined, false);
-	}
-}
 
-/** Watch property path on given origin object (used by tryWatchFromOrigin when observable property is definitely found) */
-function watchFromOrigin(
-	managedObject: ManagedObject,
-	origin: ManagedObject,
-	bindRef: BindRef,
-) {
-	let pathLen = bindRef.p.length;
-	let lastInvokedWith = NO_VALUE;
-	let traps: TrapRef[] = (bindRef.t = []);
-
-	// add trap(s) on origin object recursively using functions below
-	setChainTrap(origin, 0, makeTrapFunction(0));
-
-	// helper function to invoke the binding callback, if new value
-	function invoke(value: any, unbound?: boolean, force?: boolean) {
-		if (!managedObject[$_unlinked] && (force || value !== lastInvokedWith)) {
-			bindRef.f((lastInvokedWith = value), !unbound);
+		// error if already at root, or property exists
+		if (origin[$_root] || (candidate && first in origin)) {
+			let error = err(ERROR.Object_NoObserve, first);
+			errorHandler(error);
+			return true;
 		}
 	}
 
-	// helper function to get a (nested) value using path
-	function getValue(value: any, i: number) {
-		for (let j = i + 1; j < pathLen; j++) {
-			let nextP = bindRef.p[j]!;
-			if (value == null) break;
-			if (isManagedObject(value)) value = value[$_get](nextP);
-			else value = value[nextP];
-		}
-		return value;
-	}
-
-	// helper function to make a trap handler function for part of the path
-	function makeTrapFunction(i: number): TrapFunction {
-		let next = i + 1;
-		return function (target, p, value) {
-			// remove traps beyond this point
-			for (let j = traps.length - 1; j > i; j--) {
-				removeTrap(traps[j]);
-			}
-			traps.length = next;
-
-			// use new value to invoke binding or keep looking
-			if (next >= pathLen) {
-				// last part of path: invoke with found value
-				invoke(value);
-			} else if (value == undefined || (value as ManagedObject)[$_unlinked]) {
-				// undefined/null or unlinked object, don't look further
-				invoke(undefined);
-			} else if (isManagedObject(value)) {
-				// found a managed object along the way
-				if (canTrap(value, bindRef.p[next]!)) {
-					// observe this property and move on if/when value set
-					setChainTrap(value, next, makeTrapFunction(next));
-				} else {
-					// otherwise, at least watch for change events and unlink
-					setEventTrap(value, next);
-					invoke(getValue(value, i));
-				}
-			} else {
-				// any other value: just get value and invoke with that
-				invoke(getValue(value, i));
-			}
-		};
-	}
-
-	// set a trap on given target for link `i`
-	function setChainTrap(target: ManagedObject, i: number, f: TrapFunction) {
+	/** Add a trap to listen for property changes on given object, for link `i` */
+	private _trapProperty(target: ManagedObject, i: number) {
+		let self = this;
+		let traps = this.t!;
 		let trap: TrapRef | undefined = (traps[i] = addTrap(
 			target,
-			bindRef.p[i]!,
-			f,
+			this.p[i]!,
+			this._makeChainCallback(i),
 			function () {
 				// managed object unlinked and/or detached
 				if (trap === traps[i]) {
 					if (!i) {
 						// if this was the first trap, start all over
 						for (let t of traps) removeTrap(t);
-						bindRef.i = -1;
-						bindRef.t = undefined;
-						if (!managedObject[$_unlinked]) {
-							tryWatchFromOrigin(
-								managedObject,
-								managedObject[$_origin],
-								bindRef,
-							);
-						}
+						self.t = undefined;
+						self.i = -1;
+						self.start();
 					} else {
 						// otherwise, just remove traps from here
 						for (let j = traps.length - 1; j >= i; j--) {
 							removeTrap(traps[j]);
 						}
 						traps.length = i;
-						invoke(undefined, true);
+						self._invoke(undefined, true, true);
 					}
 				}
 			},
@@ -564,19 +496,83 @@ function watchFromOrigin(
 		));
 	}
 
-	// set a trap on given target for link `i`, just to listen for change events
-	function setEventTrap(target: ManagedObject, i: number) {
+	/** Add a trap to listen for change events on given object, for link `i` (always > 0) */
+	private _trapChangeEvent(object: ManagedObject, i: number) {
+		let self = this;
+		let traps = this.t!;
 		let trap = (traps[i] = addTrap(
-			target,
+			object,
 			$_traps_event,
 			function (t, _, v) {
 				if ((v as ManagedEvent).data.change === t) {
-					if (trap === traps[i]) invoke(getValue(target, i - 1), false, true);
+					if (trap === traps[i]) {
+						self._invoke(self._get(object, i - 1), false, true);
+					}
 				}
 			},
 			() => {
-				if (trap === traps[i]) invoke(undefined);
+				if (trap === traps[i]) self._invoke(undefined);
 			},
 		));
 	}
+
+	/** Helper to make a callback that watches link `i` along the binding path */
+	private _makeChainCallback(i: number): TrapFunction {
+		let self = this;
+		let traps = this.t!;
+		let next = i + 1;
+		let nextProp = this.p[next]!;
+		let last = next >= this.p.length;
+		return function (_, _p, value) {
+			// remove traps beyond this point
+			for (let j = traps.length - 1; j > i; j--) {
+				removeTrap(traps[j]);
+			}
+			traps.length = next;
+
+			// use new value to invoke binding or keep looking
+			if (last) {
+				// last part of path: invoke with found value
+				self._invoke(value);
+			} else if (value == undefined || (value as ManagedObject)[$_unlinked]) {
+				// undefined/null or unlinked object, don't look further
+				self._invoke(undefined);
+			} else if (isManagedObject(value)) {
+				// found a managed object along the way
+				if (canTrap(value, nextProp)) {
+					// observe this property and move on if/when value set
+					self._trapProperty(value, next);
+				} else {
+					// otherwise, at least watch for change events and unlink
+					self._trapChangeEvent(value, next);
+					self._invoke(self._get(value, i));
+				}
+			} else {
+				// any other value: just get value and invoke with that
+				self._invoke(self._get(value, i));
+			}
+		};
+	}
+
+	/** Helper method to get a property of given source (may be an object), for link `i` onwards */
+	private _get(source: any, i: number) {
+		let pathLen = this.p.length;
+		for (let j = i + 1; j < pathLen; j++) {
+			let nextP = this.p[j]!;
+			if (source == null) break;
+			if (isManagedObject(source)) source = source[$_get](nextP);
+			else source = source[nextP];
+		}
+		return source;
+	}
+
+	/** Invoke the update function if needed */
+	private _invoke(value: any, unbound?: boolean, force?: boolean) {
+		if (!this.o[$_unlinked] && (force || value !== this._v)) {
+			this.f.call(undefined, (this._v = value), !unbound);
+		}
+	}
+
+	/** Last value for which the update function was invoked */
+	private _v = NO_VALUE;
 }

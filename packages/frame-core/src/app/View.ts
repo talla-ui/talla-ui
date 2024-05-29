@@ -63,7 +63,7 @@ export abstract class View extends ManagedObject {
 	 *
 	 * **Property values** — These are set directly on the view object. Each property is set to the corresponding value. However, property names starting with an underscore are ignored. Undefined preset property values are also ignored, except if the property was never set before on the target view (i.e. initializing a new undefined property).
 	 *
-	 * **Bindings** — These are applied on properties the view object. Each property may be bound using an instance of the {@link Binding} class (i.e. the result of {@link bound()} functions), creating the target property and taking effect immediately.
+	 * **Bindings** — These are applied on properties the view object. Each property may be bound using an instance of the {@link Binding} class (i.e. the result of {@link bind()}), creating the target property and taking effect immediately.
 	 *
 	 * **Events** — Events can be handled in two ways, depending on the value of the `on...` property:
 	 * - `onClick: "RemoveItem"` — this intercepts `Click` events and emits `RemoveItem` events instead. The {@link ManagedEvent.inner} property is set to the original `Click` event.

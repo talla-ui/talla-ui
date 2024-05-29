@@ -6,6 +6,8 @@ import { ManagedObject } from "../base/index.js";
  * @description
  * A ViewportContext object is available on the global application context, as {@link GlobalContext.viewport app.viewport}. This instance can be used to customize the UI for different viewport sizes — either directly or through a binding.
  *
+ * Bindings for viewport context properties can also be created using the {@link $viewport} object.
+ *
  * @online_docs Refer to the Desk website for more information on responsive design and the viewport context.
  *
  * @example
@@ -16,7 +18,7 @@ import { ManagedObject } from "../base/index.js";
  *
  * @example
  * // Bind to viewport properties from a JSX view:
- * <conditional state={bound("viewport.col3")}>
+ * <conditional state={$viewport.bind("col3")}>
  *   // ...view for wide viewports with at least 3 grid 'columns'
  * </conditional>
  */

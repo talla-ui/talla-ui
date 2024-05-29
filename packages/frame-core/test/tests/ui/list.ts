@@ -1,18 +1,19 @@
 import {
-	bound,
+	describe,
+	expect,
+	test,
+	useTestContext,
+} from "@desk-framework/frame-test";
+import {
+	$list,
 	ManagedList,
 	ManagedObject,
 	UILabel,
 	UIListView,
 	UIRow,
+	bind,
 	ui,
 } from "../../../dist/index.js";
-import {
-	describe,
-	test,
-	expect,
-	useTestContext,
-} from "@desk-framework/frame-test";
 
 describe("UIListView", (scope) => {
 	scope.beforeEach(() => {
@@ -70,7 +71,11 @@ describe("UIListView", (scope) => {
 		let list = new ManagedList(...getObjects());
 
 		t.log("Creating instance");
-		let MyList = ui.list({ items: list }, ui.label(bound("item.name")), UIRow);
+		let MyList = ui.list(
+			{ items: list },
+			ui.label($list.string("item.name")),
+			UIRow,
+		);
 		let instance = new MyList();
 
 		t.log("Rendering");
@@ -90,8 +95,8 @@ describe("UIListView", (scope) => {
 	test("List of labels from bound array, rendered", async (t) => {
 		t.log("Creating instance");
 		let MyList = ui.list(
-			{ items: bound("array") },
-			ui.label(bound("item")),
+			{ items: bind("array") },
+			ui.label($list.bind("item")),
 			UIRow,
 		);
 		class ArrayProvider extends ManagedObject {
@@ -112,7 +117,11 @@ describe("UIListView", (scope) => {
 		let list = new ManagedList(a, b, c);
 
 		t.log("Creating instance");
-		let MyList = ui.list({ items: list }, ui.label(bound("item.name")), UIRow);
+		let MyList = ui.list(
+			{ items: list },
+			ui.label($list.string("item.name")),
+			UIRow,
+		);
 		let instance = new MyList();
 
 		t.log("Rendering");
@@ -132,7 +141,7 @@ describe("UIListView", (scope) => {
 		let Preset = ui.row(
 			ui.list(
 				{ items: new ManagedList(...getObjects()) },
-				ui.label({ text: bound("item.name"), onClick: "Foo" }),
+				ui.label({ text: $list.string("item.name"), onClick: "Foo" }),
 				UIRow,
 			),
 		);
@@ -164,7 +173,7 @@ describe("UIListView", (scope) => {
 		t.log("Creating instance");
 		let MyList = ui.list(
 			{ items: new ManagedList(...getObjects()) },
-			ui.label(bound("item.name")),
+			ui.label($list.string("item.name")),
 			UIRow,
 			ui.label("end"),
 		);
@@ -185,7 +194,7 @@ describe("UIListView", (scope) => {
 		t.log("Creating instance");
 		let MyList = ui.list(
 			{ items: new ManagedList(...getObjects()), maxItems: 2 },
-			ui.label(bound("item.name")),
+			ui.label($list.string("item.name")),
 			UIRow,
 		);
 		let instance = new MyList();
@@ -220,7 +229,7 @@ describe("UIListView", (scope) => {
 	test("Get indices for components", async (t) => {
 		let Preset = ui.list(
 			{ items: new ManagedList(...getObjects()) },
-			ui.label({ text: bound("item.name"), allowFocus: true }),
+			ui.label({ text: $list.string("item.name"), allowFocus: true }),
 		);
 		let list = new Preset();
 		t.render(list);
@@ -236,7 +245,7 @@ describe("UIListView", (scope) => {
 			ui.button("button"),
 			ui.list(
 				{ items: new ManagedList(...getObjects()) },
-				ui.label({ text: bound("item.name"), allowFocus: true }),
+				ui.label({ text: $list.string("item.name"), allowFocus: true }),
 				ui.cell({ allowKeyboardFocus: true, accessibleRole: "list" }),
 			),
 		);
@@ -261,7 +270,7 @@ describe("UIListView", (scope) => {
 		let Preset = ui.list(
 			{ items: new ManagedList(...getObjects()) },
 			ui.label({
-				text: bound("item.name"),
+				text: $list.string("item.name"),
 				allowFocus: true,
 				onArrowDownKeyPress: "FocusNext",
 				onArrowUpKeyPress: "FocusPrevious",

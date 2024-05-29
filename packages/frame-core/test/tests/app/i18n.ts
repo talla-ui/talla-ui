@@ -1,6 +1,6 @@
 import {
 	app,
-	bound,
+	bind,
 	I18nProvider,
 	LazyString,
 	ManagedObject,
@@ -178,7 +178,7 @@ describe("I18n", (scope) => {
 		let parent: any = new ManagedObject();
 		parent.value = 123;
 		parent.child = parent.attach(new ManagedObject());
-		bound("value").local("test", "format").bindTo(parent.child, "value");
+		bind("value").local("test", "format").bindTo(parent.child, "value");
 		expect(parent.child).toHaveProperty("value").toBe("{123:test,format}");
 	});
 });

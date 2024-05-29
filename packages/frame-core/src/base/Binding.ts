@@ -1,12 +1,7 @@
 import { invalidArgErr } from "../errors.js";
 import { LazyString } from "./LazyString.js";
 import { ManagedObject } from "./ManagedObject.js";
-import {
-	$_bindFilter,
-	$_unlinked,
-	guard,
-	watchBinding,
-} from "./object_util.js";
+import { $_unlinked, watchBinding } from "./object_util.js";
 
 /** Constant used to check against (new) binding value */
 const NO_VALUE = {};
@@ -45,90 +40,75 @@ export namespace BindingOrValue {
  *
  * As a concrete example, a binding can be used to update the `text` property of a {@link UILabel} view, with the value of a string property `labelText` of the activity. Or perhaps the property `name` of a `user` object referenced by the activity (see example below). Whenever the data in the activity changes, so does the label text.
  *
- * **Creating bindings** — To create a binding, use one of the {@link bound()} functions to bind a number, string, (negated) boolean, list, or a string composed using a format string and one or more embedded bindings, e.g. `bound("anyValue")`, `bound.not("showList")`, `bound.string("labelText")`, or `bound.strf("Value: %i", "lines.count")`.
+ * **Creating bindings** — To create a binding, use the {@link bind()} function, or one of the methods of objects such as {@link $activity} and {@link $view} to bind a number, string, (negated) boolean, list, or a string composed using a format string and one or more embedded bindings, e.g. `bind("anyValue")`, `bind.not("showList")`, `$activity.string("labelText")`, or `bind.strf("Value: %i", $activity.number("lines.count"))`.
  *
  * **Binding to managed lists** — {@link ManagedList} instances include special properties that may be referenced by a binding path. Use `.count` to bind to the list count, `.#first` and `.#last` to bind to the first and last item in the list, respectively.
  *
- * **Applying bindings** — Include the result of {@link bound()} in the preset object or parameters passed to {@link ui} factory functions or `preset` of a custom {@link ViewComposite}, to add a bound property to a view, e.g. `ui.label(bound.string("labelText"))`.
+ * **Binding to services** — Bindings can also be used to maintain references to services, using the {@link $services} object (or e.g. `bind("services.MyService")`). These bindings are updated whenever the service is added or removed from the service registry, as long as the object that the binding is applied to is also part of the app hierarchy.
  *
- * To apply a binding to any other managed object, use to the {@link Binding.bindTo bindTo()} method. This method can be used to bind a target property, or to call a function whenever the source value changes.
+ * **Applying bindings** — Include the result of {@link bind()} in the preset object or parameters passed to {@link ui} factory functions (or JSX attributes), to add a bound property to a view, e.g. `ui.label($activity.string("labelText"))` or `<textfield placeholder={$view.string("placeholderText")} />`.
  *
- * **Adding filters** — To convert the value of the original property, or to combine multiple bindings using boolean operations (and/or), use one of the Binding methods such as {@link Binding.and and()}, {@link Binding.select select()}, {@link Binding.matches matches()}, or {@link Binding.strf strf()}.
+ * To apply a binding to any other managed object, use to the {@link bindTo()} method. This method can be used to bind a target property, or to call a function whenever the source value changes.
+ *
+ * **Adding filters** — To convert the value of the original property, or to combine multiple bindings using boolean operations (and/or), use one of the Binding methods such as {@link Binding.and and()}, {@link Binding.select select()}, or {@link Binding.matches matches()}.
  *
  * @see {@link StringFormatBinding}
- * @see {@link bound}
- * @see {@link bound.number}
- * @see {@link bound.string}
- * @see {@link bound.boolean}
- * @see {@link bound.not}
- * @see {@link bound.list}
- * @see {@link bound.strf}
+ * @see {@link bind}
  */
 export class Binding<T = any> {
 	/**
-	 * Global debug handler for binding changes
+	 * Static (global) debug handler for binding changes
 	 * - This handler is called whenever a binding is updated for which the {@link Binding.debug()} method was called.
 	 * - The handler is not set by default, and can be set to a function if needed (i.e. to analyze issues with bindings in development; do NOT use {@link Binding.debug()} or set this handler in a production application).
 	 */
 	declare static debugHandler?: (data: Binding.DebugUpdate) => void;
 
 	/**
-	 * Restricts bindings that can be bound to (attached parent objects of) the specified object, if the object itself does not include a corresponding property
-	 * @note This method is used automatically on the {@link app} object, since any attempt to bind to a property (e.g. from the view) should at least stop there. For further limitations, call this method with a filter to restrict bindings on any other object.
-	 * @param object The object for which to restrict bindings
-	 * @param filter A function that returns true if a property is allowed to pass, or false if an attempt to bind should result in an unhandled error; if not provided, no properties are allowed
-	 */
-	static limitTo(
-		object: ManagedObject,
-		filter?: (property: string | symbol) => boolean,
-	) {
-		object[$_bindFilter] = filter ? guard(filter) : () => false;
-	}
-
-	/**
-	 * Creates a new binding for given property and default value; use {@link bound()} functions instead
-	 * @note Use the {@link bound} function to create {@link Binding} objects rather than calling this constructor.
-	 * @param source The source path that's used for obtaining the bound value
+	 * Creates a new binding for given property and default value; use {@link bind()} functions instead
+	 * @note Use the {@link bind} function to create {@link Binding} objects rather than calling this constructor.
+	 * @param source The source path that's used for obtaining the bound value, another {@link Binding} to clone from, or an object with advanced options
 	 * @param defaultValue An optional default value that's used when the bound value is undefined
 	 */
-	constructor(source?: string | Binding, defaultValue?: T) {
+	constructor(source?: string | Binding | Binding.Options, defaultValue?: T) {
 		if (isBinding(source)) {
-			this._source = source._source;
+			this._path = source._path;
+			this._prefix = source._prefix;
+			this._label = source._label;
 			this._apply = source._apply;
 			return;
 		}
 
-		if (source !== undefined && typeof source !== "string")
-			throw invalidArgErr("source");
-
-		// initialize new binding from source
-		this._source = "bound(" + (source || "") + ")";
-		let path: string[];
+		// initialize path and other properties
+		if (source && typeof source !== "string") {
+			if (!Array.isArray(source.path)) throw invalidArgErr("source");
+			defaultValue = source.default;
+			this._label = source.label;
+			this._path = [...source.path];
+			if (source.prefix) {
+				this._prefix = true;
+				this._path.unshift(source.prefix);
+			}
+		} else {
+			this._path = source ? source.split(".") : [];
+		}
 
 		// set basic apply method (function bound to this instance)
 		this._apply = !source
 			? function () {}
-			: (register, update) =>
-					register(path, (value, bound) =>
+			: (target, update) =>
+					watchBinding(target, this._label, this._path, (value, bound) =>
 						update(value ?? defaultValue, bound),
 					);
-
-		// parse source path
-		if (!source) {
-			path = [];
-		} else {
-			// TODO(deprecation): Maybe mark this as deprecated? For now, this is just not documented,
-			// in favor of using `bound.not(...)` which is more consistent.
-			// If you find this comment, DO NOT USE this pattern :)
-			while (source[0] === "!") {
-				source = source.slice(1);
-				let _apply = this._apply;
-				this._apply = (register, update) =>
-					_apply(register, (value, bound) => update(!value, bound));
-			}
-			path = source.split(".");
-		}
 	}
+
+	/** Binding source path */
+	private _path: string[];
+
+	/** Property to filter source origin objects, i.e. only consider objects that include this property */
+	private _label?: string | symbol;
+
+	/** True if the first part of the path is a fixed property prefix, e.g. for {@link $viewport} */
+	private _prefix?: boolean;
 
 	/**
 	 * Applies this binding to the specified target object
@@ -152,7 +132,7 @@ export class Binding<T = any> {
 			// create property if it doesn't exist yet
 			if (!(p in target)) target[p] = undefined as any;
 		}
-		this._apply(watchBinding.bind(undefined, target), propertyOrFunction);
+		this._apply(target, propertyOrFunction);
 	}
 
 	/**
@@ -161,16 +141,9 @@ export class Binding<T = any> {
 	 * @returns A new binding, typed as a string
 	 */
 	asString(format?: string): Binding<string> {
-		let result = this.clone();
-		let _apply = this._apply;
-		result._apply = (register, update) =>
-			_apply(register, (value, bound) =>
-				update(
-					format ? LazyString.formatValue(format, value) : String(value ?? ""),
-					bound,
-				),
-			);
-		return result as any;
+		return this._filter((value) =>
+			format ? LazyString.formatValue(format, value) : String(value ?? ""),
+		);
 	}
 
 	/**
@@ -178,11 +151,7 @@ export class Binding<T = any> {
 	 * @returns A new binding, typed as a number
 	 */
 	asNumber(): Binding<number> {
-		let result = this.clone();
-		let _apply = this._apply;
-		result._apply = (register, update) =>
-			_apply(register, (value, bound) => update(+value, bound));
-		return result as any;
+		return this._filter((value) => +value);
 	}
 
 	/**
@@ -192,18 +161,11 @@ export class Binding<T = any> {
 	 * @returns A new binding, typed as an Iterable object
 	 */
 	asList<T = any>(): Binding<Iterable<T>> {
-		let result = this.clone();
-		let _apply = this._apply;
-		result._apply = (register, update) =>
-			_apply(register, (value, bound) =>
-				update(
-					value && typeof value === "object" && Symbol.iterator in value
-						? value
-						: undefined,
-					bound,
-				),
-			);
-		return result as any;
+		return this._filter<any>((value) =>
+			value && typeof value === "object" && Symbol.iterator in value
+				? value
+				: undefined,
+		);
 	}
 
 	/**
@@ -211,11 +173,7 @@ export class Binding<T = any> {
 	 * @returns A new binding, typed as a boolean
 	 */
 	asBoolean(): Binding<boolean> {
-		let result = this.clone();
-		let _apply = this._apply;
-		result._apply = (register, update) =>
-			_apply(register, (value, bound) => update(!!value, bound));
-		return result as any;
+		return this._filter((value) => !!value);
 	}
 
 	/**
@@ -223,50 +181,7 @@ export class Binding<T = any> {
 	 * @returns A new binding, typed as a boolean
 	 */
 	not(): Binding<boolean> {
-		// TODO(code size): all of these methods could use a helper function to set
-		// this._apply and update source string; which would decrease code size
-		let result = this.clone();
-		let _apply = this._apply;
-		result._apply = (register, update) =>
-			_apply(register, (value, bound) => update(!value, bound));
-		return result as any;
-	}
-
-	/**
-	 * Adds a filter, to _include_ the bound value in a formatted string.
-	 *
-	 * @summary This method uses the bound value as a single placeholder value in a formatted string (as if {@link strf()} is used with the provided format string, and the current value of the binding).
-	 *
-	 * Note that you can also use {@link bound.strf()} or {@link Binding.asString()} to create formatted string bindings.
-	 * - Use {@link Binding.asString()} for single values such as numbers, e.g. `bound.number("price").asString(".2f")`.
-	 * - Use {@link bound.strf()} to include _multiple_ bound values in a single string.
-	 * - The {@link bound.strf()} function adds a slight overhead, since it creates an additional binding.
-	 *
-	 * @param format The format string, as if passed to {@link strf()}; may include one placeholder, for the bound value
-	 * @returns A new binding, typed as a string
-	 *
-	 * @example
-	 * // A label with text that includes a bound number property
-	 * ui.label(
-	 *   bound("nEmails")
-	 *     .strf("You have %n email#{/s}")
-	 * )
-	 *
-	 * // Same as the following, at a slight overhead
-	 * ui.label(
-	 *   bound.strf("You have %n email#{/s}", "nEmails")
-	 * )
-	 */
-	strf(format: string): Binding<LazyString> {
-		let result = this.clone();
-		let _apply = this._apply;
-		let str = new LazyString(() => String(format)).translate();
-		result._apply = (register, update) =>
-			_apply(register, (value, bound) =>
-				update(str.format(value).cache(), bound),
-			);
-		if (this._source) result._source += ".strf()";
-		return result as any;
+		return this._filter((value) => !value);
 	}
 
 	/**
@@ -279,18 +194,11 @@ export class Binding<T = any> {
 	 * @example
 	 * // A label that shows a short last-modified date
 	 * ui.label(
-	 *   bound("lastModified").local("date", "short")
+	 *   bind("lastModified").local("date", "short")
 	 * )
 	 */
 	local(...type: string[]): Binding<string> {
-		let result = this.clone();
-		let _apply = this._apply;
-		result._apply = (register, update) =>
-			_apply(register, (value, bound) =>
-				update(LazyString.local(value, ...type), bound),
-			);
-		if (this._source) result._source += ".local()";
-		return result as any;
+		return this._filter((value) => LazyString.local(value, ...type));
 	}
 
 	/**
@@ -306,25 +214,18 @@ export class Binding<T = any> {
 	 * // A label that displays (localized) Yes or No
 	 * // depending on a property value
 	 * ui.label(
-	 *   bound("isEnabled").select(strf("Yes"), strf("No"))
+	 *   bind("isEnabled").select(strf("Yes"), strf("No"))
 	 * )
 	 */
 	select<U, V>(trueValue: U, falseValue?: V): Binding<U | V> {
-		let result = this.clone();
-		let _apply = this._apply;
-		result._apply = (register, update) =>
-			_apply(register, (value, bound) =>
-				update(value ? trueValue : falseValue, bound),
-			);
-		if (this._source) result._source += ".select()";
-		return result as any;
+		return this._filter((value) => (value ? trueValue : falseValue));
 	}
 
 	/**
 	 * Adds a filter, to use the provided value instead of a bound value that's equal to false
 	 *
 	 * @summary This method can be used to substitute the bound value with a fixed value, if the bound value is equal to false (according to the `==` operator), e.g. for bound undefined, null, false, zero, and empty string values.
-	 * @note Alternatively, use the `defaultValue` argument to the {@link bound()} function to specify a default value that's used if the bound value is undefined.
+	 * @note Alternatively, use the `defaultValue` argument to the {@link bind()} function to specify a default value that's used if the bound value is undefined.
 	 *
 	 * @param falseValue The value to be used if the bound value is equal to false
 	 * @returns A new binding, typed like the given value
@@ -332,18 +233,11 @@ export class Binding<T = any> {
 	 * @example
 	 * // A label that displays a value OR (localized) "None"
 	 * ui.label(
-	 *   bound("customer.name").else(strf("None"))
+	 *   bind("customer.name").else(strf("None"))
 	 * )
 	 */
 	else<U>(falseValue: U): Binding<T | U> {
-		let result = this.clone();
-		let _apply = this._apply;
-		result._apply = (register, update) =>
-			_apply(register, (value, bound) =>
-				update(value || (falseValue as any), bound),
-			);
-		if (this._source) result._source += ".else()";
-		return result as any;
+		return this._filter((value) => (value || falseValue) as any);
 	}
 
 	/**
@@ -359,7 +253,7 @@ export class Binding<T = any> {
 	 * @example
 	 * // A cell that's rendered only if a string matches
 	 * ui.conditional(
-	 *   { state: bound("tab").matches("contacts") },
+	 *   { state: $activity.bind("tab").matches("contacts") },
 	 *   ui.cell(
 	 *     // ...
 	 *   )
@@ -368,22 +262,12 @@ export class Binding<T = any> {
 	 * @example
 	 * // A cell that's hidden if a string doesn't match
 	 * ui.cell(
-	 *   { hidden: bound("tab").matches("contacts").not() },
+	 *   { hidden: $activity.bind("tab").matches("contacts").not() },
 	 *   // ...
 	 * )
 	 */
 	matches(...values: any[]): Binding<boolean> {
-		let result = this.clone();
-		let _apply = this._apply;
-		result._apply = (register, update) =>
-			_apply(register, (value, bound) =>
-				update(
-					values.some((a) => a === value),
-					bound,
-				),
-			);
-		if (this._source) result._source += ".matches()";
-		return result as any;
+		return this._filter((value) => values.some((a) => a === value));
 	}
 
 	/**
@@ -393,23 +277,20 @@ export class Binding<T = any> {
 	 *
 	 * To do the opposite, and substitute with false if the bindings match, use the {@link Binding.not not()} method afterwards.
 	 *
-	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bound()}
+	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bind()}
 	 * @returns A new binding, typed as a boolean
 	 *
 	 * @example
 	 * // A cell that's rendered only if two bindings match
 	 * ui.conditional(
-	 *   { state: bound("item").equals("selectedItem") },
+	 *   { state: $list.bind("item").equals("selectedItem") },
 	 *   ui.cell(
 	 *     // ...
 	 *   )
 	 * )
 	 */
 	equals(source: Binding | string): Binding<boolean> {
-		let binding = isBinding(source) ? source : new Binding(source);
-		let result = this._addBool(binding, false, true);
-		if (this._source) result._source += ".equals(" + binding._source + ")";
-		return result as any;
+		return this._addBool(source, false, true) as any;
 	}
 
 	/**
@@ -417,22 +298,19 @@ export class Binding<T = any> {
 	 *
 	 * @summary This method can be used to combine two bindings logically, using the `&&` operator. The resulting bound value is the value of the _other_ binding, if the current bound value is equal to true (according to the `==` operator). The result is the value of the current binding, if its value is equal to false.
 	 *
-	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bound()}
+	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bind()}
 	 * @returns A new binding, typed as a union of both original types
 	 *
 	 * @example
 	 * // A simple boolean AND
-	 * bound.boolean("itemFound").and("hasPrice")
+	 * bind.boolean("itemFound").and("hasPrice")
 	 *
 	 * // A conditional string binding
-	 * bound.boolean("showCustomer")
-	 *   .and(bound.strf("Customer: %s", "customer.name"))
+	 * bind.boolean("showCustomer")
+	 *   .and(bind.strf("Customer: %s", "customer.name"))
 	 */
 	and<U = any>(source: Binding<U> | string): Binding<T | U> {
-		let binding = isBinding<U>(source) ? source : new Binding(source);
-		let result = this._addBool(binding, true);
-		if (this._source) result._source += " and " + String(source);
-		return result as any;
+		return this._addBool(source, true) as any;
 	}
 
 	/**
@@ -440,22 +318,19 @@ export class Binding<T = any> {
 	 *
 	 * @summary This method can be used to combine two bindings logically, using the `||` operator. The resulting bound value is the value of the _other_ binding, if the current bound value is equal to false (according to the `==` operator). The result is the value of the current binding, if its value is equal to true.
 	 *
-	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bound()}
+	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bind()}
 	 * @returns A new binding, typed as a union of both original types
 	 *
 	 * @example
 	 * // A simple boolean OR
-	 * bound.boolean("itemFound").or("hasDefault")
+	 * bind.boolean("itemFound").or("hasDefault")
 	 *
 	 * // A conditional string binding
-	 * bound.string("customer.name")
-	 *   .or(bound.strf("Default: %s", "defaultCustomer.name"))
+	 * bind.string("customer.name")
+	 *   .or(bind.strf("Default: %s", "defaultCustomer.name"))
 	 */
 	or<U = any>(source: Binding<U> | string): Binding<T | U> {
-		let binding = isBinding<U>(source) ? source : new Binding(source);
-		let result = this._addBool(binding);
-		if (this._source) result._source += " or " + String(source);
-		return result as any;
+		return this._addBool(source) as any;
 	}
 
 	/**
@@ -465,9 +340,9 @@ export class Binding<T = any> {
 	 */
 	debug() {
 		let _apply = this._apply;
-		this._apply = (register, update) => {
+		this._apply = (target, update) => {
 			let hasValue: boolean | undefined;
-			_apply(register, (value, bound) => {
+			_apply(target, (value, bound) => {
 				hasValue = true;
 				Binding.debugHandler?.({ binding: this, value, bound });
 				update(value, bound);
@@ -486,7 +361,7 @@ export class Binding<T = any> {
 	 * @returns The string description.
 	 */
 	toString() {
-		return this._source;
+		return "bind(" + this._path.join(".") + ")";
 	}
 
 	/**
@@ -503,22 +378,32 @@ export class Binding<T = any> {
 	/** A method that's used for type checking, doesn't actually exist */
 	declare [BindingOrValue.TYPE_CHECK]: () => T;
 
-	/** @internal Apply this binding to a managed object using given callbacks; cascades down to child bindings (for boolean logic and string bindings) */
+	/** @internal Apply this binding to a managed object using given update callback; cascades down to child bindings (for boolean logic and string bindings) */
 	_apply: (
 		this: unknown,
-		register: (
-			path: readonly string[],
-			callback: (value: any, bound: boolean) => void,
-		) => void,
+		target: ManagedObject,
 		update: (value: any, bound: boolean) => void,
 	) => void;
 
 	/** Implementation for `.and()`, `.or()`, and `.equals()` */
-	private _addBool(binding: Binding, isAnd?: boolean, isEqual?: boolean) {
+	private _addBool(
+		other: string | Binding,
+		isAnd?: boolean,
+		isEqual?: boolean,
+	) {
+		// create other binding (if needed)
+		if (!isBinding(other)) {
+			other = new Binding({
+				path: other.split("."),
+				label: this._label,
+				prefix: this._prefix ? this._path[0] : undefined,
+			});
+		}
+
 		// update apply method to also apply other binding
 		let result = this.clone();
 		let _apply = this._apply;
-		result._apply = (register, update) => {
+		result._apply = (target, update) => {
 			let currentValue = NO_VALUE;
 
 			// keep track of status, only update when both values known
@@ -535,18 +420,23 @@ export class Binding<T = any> {
 			// keep track of both values at the same time
 			let value1: any = undefined;
 			let value2: any = undefined;
-			_apply(register, (value, bound) =>
+			_apply(target, (value, bound) =>
 				set((value1 = value), value2, (flags &= 2), bound),
 			);
-			binding._apply(register, (value, bound) =>
+			other._apply(target, (value, bound) =>
 				set(value1, (value2 = value), (flags &= 1), bound),
 			);
 		};
 		return result;
 	}
 
-	/** Binding source text */
-	private _source?: string;
+	private _filter<V>(f: (value: T) => V | undefined) {
+		let result: Binding<V> = this.clone() as any;
+		let _apply = this._apply;
+		result._apply = (target, update) =>
+			_apply(target, (value, bound) => update(f(value), bound));
+		return result;
+	}
 }
 
 Binding.prototype.isBinding = _isBinding;
@@ -559,71 +449,50 @@ Binding.prototype.isBinding = _isBinding;
  *
  * After binding to an object, the underlying string value is updated whenever any of the nested bindings change — inserting the bound values into the string.
  *
- * Instances of this class can be created using the {@link bound.strf} function.
+ * Instances of this class can be created using the {@link bind.strf} function.
  *
  * @example
  * // String-formatted bindings with positional arguments
- * bound.strf("Today is %s", "dayOfTheWeek")
- * bound.strf("%i table row#{/s}, total %.2f", "rows.length", "calcTotal")
+ * bind.strf("Today is %s", bind("dayOfTheWeek"))
+ * bind.strf("%i table row#{/s}, total %.2f", bind("rows.length"), bind("calcTotal"))
  *
  * @example
  * // String-formatted binding with object argument
- * bound.strf(
+ * bind.strf(
  *   "%[user] is %[age] years old",
  *   {
- *     user: bound("user.name", strf("Unknown user")),
- *     age: bound.number("user.age").else(99)
+ *     user: bind("user.name", strf("Unknown user")),
+ *     age: bind.number("user.age").else(99)
  *   }
  * )
  *
  * @example
  * // A label with bound text
- * // (Note: JSX element text is bound automatically, see `JSX`)
+ * // (Note: JSX element text is bound automatically)
  * ui.label(
- *   bound.strf("Welcome, %s", "user.fullName")
+ *   bind.strf("Welcome, %s", bind("user.fullName"))
  * )
  */
-export class StringFormatBinding<
-	S extends string = string,
-> extends Binding<LazyString> {
+export class StringFormatBinding extends Binding<LazyString> {
 	/**
-	 * Creates a new string-formatted binding using; use {@link bound.strf()} instead
-	 * @note Use the {@link bound.strf()} function to create {@link StringFormatBinding} objects rather than calling this constructor.
+	 * Creates a new string-formatted binding using; use {@link bind.strf()} instead
+	 * @note Use the {@link bind.strf()} function to create {@link StringFormatBinding} objects rather than calling this constructor.
 	 * @param format The format string, containing placeholders similar to {@link strf()}
-	 * @param args A list of associated bindings, or source paths that will be passed to {@link bound()}
+	 * @param args A list of associated bindings
 	 */
-	constructor(format: S, ...args: Binding.StringFormatArgsFor<S>) {
+	constructor(format: string, ...args: Binding[] | [{ [K: string]: Binding }]) {
 		super(undefined);
 		this._format = format;
 		if (!format) return;
-
-		// create bindings for string arguments, obj for first object argument
-		let obj: any;
-		let bindings = args.map((a, i) => {
-			if (!a) return undefined;
-			if (typeof a === "string") return new Binding(a);
-			if (isBinding(a)) return a;
-			if (!i) {
-				obj = a;
-				for (let p in obj) {
-					if (typeof obj[p] === "string") {
-						obj[p] = new Binding(obj[p]);
-					}
-				}
-				return undefined;
-			}
-		});
-
-		// override apply method to update with string value
-		this._makeApply(format, bindings, obj);
+		this._makeApply(format, args);
 	}
 
 	/** Returns a description of this binding, including its original format string. */
 	override toString() {
-		return "bound.strf(" + JSON.stringify(this._format) + ")";
+		return "bind.strf(" + JSON.stringify(this._format) + ")";
 	}
 
-	protected override clone(): StringFormatBinding<S> {
+	protected override clone(): StringFormatBinding {
 		let result = new StringFormatBinding("");
 		result._format = this._format;
 		result._apply = this._apply;
@@ -633,19 +502,20 @@ export class StringFormatBinding<
 	/** Set the _apply method to update the bound string value */
 	private _makeApply(
 		format: string,
-		bindings: (Binding | undefined)[],
-		obj?: any,
+		args: Binding[] | [{ [K: string]: Binding }],
 	) {
 		let base = new LazyString(() => format).translate();
+		let obj = !isBinding(args[0]) ? args[0] : undefined;
+		if (obj) args = [];
 
 		// use shortcut if no interpolation arguments at all
-		if (!bindings.length) {
-			this._apply = (register, update) => update(base.cache(), false);
+		if (!obj && !args.length) {
+			this._apply = (_, update) => update(base.cache(), false);
 			return;
 		}
 
 		// otherwise, use LazyString.format whenever bindings are updated
-		this._apply = (register, update) => {
+		this._apply = (target, update) => {
 			// keep track of all bound interpolation arguments
 			let values: any[] = [];
 			let nBindings = 0;
@@ -658,10 +528,11 @@ export class StringFormatBinding<
 					update(newValue, true);
 				}
 			}
-			for (let i = 0; i < bindings.length; i++) {
-				if (isBinding(bindings[i])) {
+			for (let i = 0; i < args.length; i++) {
+				let binding = args[i];
+				if (isBinding(binding)) {
 					nBindings++;
-					bindings[i]!._apply(register, (value) => {
+					binding._apply(target, (value) => {
 						count++;
 						if (!(i in values) || values[i] !== value) {
 							values[i] = value;
@@ -675,7 +546,7 @@ export class StringFormatBinding<
 				for (let p in obj) {
 					if (isBinding(obj[p])) {
 						nBindings++;
-						obj[p]!._apply(register, (value: any) => {
+						obj[p]!._apply(target, (value: any) => {
 							count++;
 							if (!(p in valueObj) || valueObj[p] !== value) {
 								valueObj[p] = value;
@@ -693,7 +564,22 @@ export class StringFormatBinding<
 
 export namespace Binding {
 	/**
-	 * An object that's provided to the global debug handler, if any
+	 * Options that can be passed to the {@link Binding} constructor, used by {@link Binding.Source}
+	 * @see {@link bind.$on}
+	 */
+	export type Options = {
+		/** The source property path, as an array */
+		path: string[];
+		/** Default value, used when the bound value itself is undefined */
+		default?: any;
+		/** The source label property that's used to filter parent objects */
+		label?: string | symbol;
+		/** An optional property name that's used as a prefix for all bindings */
+		prefix?: string;
+	};
+
+	/**
+	 * An object that's provided to the static debug handler, if any
 	 * @see {@link Binding.debug}
 	 * @see {@link Binding.debugHandler}
 	 */
@@ -706,144 +592,160 @@ export namespace Binding {
 		bound: boolean;
 	};
 
-	/** A type that's used to check binding path strings */
-	export type ValidPathString<S> = S extends `${string}${
-		| " "
-		| "%"
-		| "("
-		| ")"
-		| "["
-		| "]"
-		| "{"
-		| "}"
-		| "|"
-		| "&"
-		| ","
-		| "?"}${string}`
-		? "Error: Invalid character in binding path"
-		: S extends string
-		? S
-		: "Error: Invalid argument";
+	/**
+	 * A class that helps to create bindings for a specific source
+	 * - Instances of this class are created using the {@link bind.$on()} function.
+	 * - All bindings created using this class are bound using a source 'label' (i.e. a unique property), to bind to a specific type of object, e.g. activities or view composites.
+	 * - Additionally, a property name may be used as a prefix for all bindings, e.g. for `services` and `viewport` on the {@link app} object.
+	 * @hideconstructor
+	 */
+	export class Source<TKey extends string = string> {
+		/**
+		 * Creates a new instance, do not use directly
+		 * @see {@link bind.$on}
+		 */
+		constructor(sourceLabel: string | symbol, propertyName?: string) {
+			this._label = sourceLabel;
+			this._prefix = propertyName;
+		}
 
-	/** A type that's used to determine the arguments for {@link bound.strf()} */
-	export type StringFormatArgsFor<S extends string> =
-		S extends `${string}${"%["}${string}`
-			? [{ [p: string]: Binding | string }, ...Array<Binding | string>]
-			: Array<Binding | string>;
+		/** Label used for this binding source */
+		private _label: string | symbol;
+
+		/** Prefix added in front of all binding paths */
+		private _prefix?: string;
+
+		/** Creates a new {@link Binding} object */
+		bind<T = unknown>(source: TKey, defaultValue?: any) {
+			return new Binding({
+				path: source.split("."),
+				default: defaultValue,
+				label: this._label,
+				prefix: this._prefix,
+			});
+		}
+
+		/**
+		 * Creates a new {@link Binding} object with type `string`
+		 * @see {@link Binding.asString}
+		 */
+		string(source: TKey, defaultValue?: string) {
+			return this.bind(source, defaultValue).asString();
+		}
+
+		/**
+		 * Creates a new {@link Binding} object with type `number`
+		 * @see {@link Binding.asNumber}
+		 */
+		number(source: TKey, defaultValue?: number) {
+			return this.bind(source, defaultValue).asNumber();
+		}
+
+		/**
+		 * Creates a new {@link Binding} object with type `boolean`
+		 * @see {@link Binding.asBoolean}
+		 */
+		boolean(source: TKey) {
+			return this.bind(source).asBoolean();
+		}
+
+		/**
+		 * Creates a new {@link Binding} object, negating the bound value
+		 * @see {@link Binding.not}
+		 */
+		not(source: TKey) {
+			return this.bind(source).not();
+		}
+
+		/**
+		 * Creates a new {@link Binding} object, ensuring that the bound value is an iterable list
+		 * @see {@link Binding.asList}
+		 */
+		list<T = any>(source: TKey) {
+			return this.bind(source).asList<T>();
+		}
+	}
 }
 
 /**
- * Creates a new property binding
- * - This function creates a `{@link Binding}<any>` instance. Use {@link bound.number()}, {@link bound.string()}, {@link bound.boolean()}, {@link bound.not()}, and {@link bound.list()} to create typed bindings.
- * - The {@link bound.strf()} function can be used to create a {@link StringFormatBinding} instance.
- * @param source The source property name or path
- * @param defaultValue An optional default value, that's used instead of the bound value when undefined
- * @returns A new {@link Binding} instance.
+ * Creates a new {@link Binding}
+ * @summary This function is used to create a new binding for a specific source path, with an optional default value. Calling this function is equivalent to `new Binding(sourcePath, defaultValue)`, and is the recommended way to create bindings.
+ * @note You can use objects such as {@link $activity}, {@link $view}, {@link $services}, and {@link $viewport} to create bindings for specific sources; or create your own binding method objects using {@link bind.$on()}.
+ * @param sourcePath The source (property) path that's used for obtaining the bound value
+ * @param defaultValue An optional default value that's used when the bound value is undefined
+ * @returns A new {@link Binding} object
  * @see {@link Binding}
  */
-export function bound<S>(
-	source: Binding.ValidPathString<S>,
-	defaultValue?: any,
-) {
-	return new Binding<any>(source, defaultValue);
+export function bind(sourcePath: string, defaultValue?: any) {
+	return new Binding(sourcePath, defaultValue);
 }
 
-export namespace bound {
-	/**
-	 * Creates a new property binding, for a number value
-	 * @param source The source property name or path
-	 * @param defaultValue An optional default value, that's used instead of the bound value when undefined
-	 * @returns A new {@link Binding} instance.
-	 * @see {@link Binding.asNumber}
-	 */
-	export function number<S>(
-		source: Binding.ValidPathString<S>,
-		defaultValue?: number,
-	) {
-		return new Binding(source, defaultValue).asNumber();
-	}
+/**
+ * A property decorator function that applies the provided binding to the decorated property
+ * @param source The source (property) path that's used for obtaining the bound value, or a {@link Binding} instance
+ * @note This decorator can only be used on class fields with TypeScript 5.0 or later, or environments that support the latest ECMAScript standard for decorators.
+ *
+ * @example
+ * class MyActivity extends Activity {
+ *   // ...
+ *
+ *   // keep this property in sync with a parent activity (if any):
+ *   @binding("selectedCustomer")
+ *   customer?: Customer;
+ *
+ *   // set this property to a service using its ID:
+ *   @binding($services.bind("MyService"))
+ *   myService?: MyService;
+ * }
+ */
+export function binding(source: string | Binding) {
+	return function (_: unknown, context: ClassFieldDecoratorContext) {
+		let binding = typeof source === "string" ? new Binding(source) : source;
+		if (!(binding instanceof Binding) || context.kind !== "field") {
+			throw TypeError();
+		}
+		context.addInitializer(function () {
+			if (!(this instanceof ManagedObject)) throw Error();
+			binding.bindTo(this, context.name as any);
+		});
+	};
+}
 
+export namespace bind {
 	/**
-	 * Creates a new property binding, for a string value
-	 * @param source The source property name or path
-	 * @param defaultValue An optional default value, that's used instead of the bound value when undefined
-	 * @returns A new {@link Binding} instance.
-	 * @see {@link Binding.asString}
-	 */
-	export function string<S>(
-		source: Binding.ValidPathString<S>,
-		defaultValue?: string,
-	) {
-		return new Binding(source, defaultValue).asString();
-	}
-
-	/**
-	 * Creates a new property binding, for a boolean value
-	 * @param source The source property name or path
-	 * @param defaultValue An optional default value, that's used instead of the bound value when undefined
-	 * @returns A new {@link Binding} instance.
-	 * @see {@link Binding.asBoolean}
-	 */
-	export function boolean<S>(
-		source: Binding.ValidPathString<S>,
-		defaultValue?: boolean,
-	) {
-		return new Binding(source, defaultValue).asBoolean();
-	}
-
-	/**
-	 * Creates a new property binding, negating the bound value using the `!` operator
-	 * @param source The source property name or path
-	 * @param defaultValue An optional default value, that's used instead of the bound value when undefined
-	 * @returns A new {@link Binding} instance.
+	 * Creates a new {@link Binding} object, negating the bound value
 	 * @see {@link Binding.not}
-	 *
-	 * @example
-	 * // Show a cell only when a property is true
-	 * ui.cell(
-	 *   { hidden: bound.not("showCell") },
-	 *   // ...cell content
-	 * )
 	 */
-	export function not<S>(
-		source: Binding.ValidPathString<S>,
-		defaultValue?: boolean,
-	) {
-		return new Binding(source, defaultValue).not();
+	export function not(source: string) {
+		return new Binding(source).not();
 	}
 
 	/**
-	 * Creates a new property binding, for an iterable value (array, Map, ManagedList, and others)
-	 * @param source The source property name or path
-	 * @param defaultValue An optional default value, that's used instead of the bound value when undefined
-	 * @returns A new {@link Binding} instance.
-	 * @see {@link Binding.asList}
-	 *
-	 * @example
-	 * // Bind a list view to a ManagedList (or array) property
-	 * ui.list(
-	 *   { items: bound.list("users") },
-	 *   ui.row(
-	 *     // ...content for each user
-	 *   )
-	 * )
+	 * Creates an object with methods that can be used to create bindings for a specific source
+	 * - This function is used to create objects such as {@link $activity}, {@link $view}, {@link $services}, and {@link $viewport}.
+	 * - You can use this function to create your own binding factory objects, by referencing a specific property of a class (i.e. the binding source label) and/or a property name that should be used as a prefix for all bindings.
+	 * @param sourceLabel The source label property that's used to filter candidate objects
+	 * @param propertyName An optional property name that's used as a prefix for all bindings, must be a property of the source object
 	 */
-	export function list<S>(source: Binding.ValidPathString<S>) {
-		return new Binding(source).asList();
+	export function $on<TKey extends string>(
+		sourceLabel: string | symbol,
+		propertyName?: string,
+	): Binding.Source<TKey> {
+		return new Binding.Source(sourceLabel, propertyName);
 	}
 
 	/**
-	 * Creates a new string-formatted binding, with nested property bindings
-	 * - Refer to {@link StringFormatBinding} for more information on string-formatted bindings.
-	 * - You can also use {@link Binding.asString()} to format single values, e.g. `bound("n").asString(".2f")`, which introduces slightly less overhead.
-	 * @param format The format string
-	 * @param bindings A list of associated bindings, or source paths that will be passed to {@link bound()}
-	 * @returns A new {@link StringFormatBinding} instance.
+	 * Creates a new {@link StringFormatBinding}
+	 * @summary This function is used to create a new binding for a string-formatted value with further embedded bindings. Calling this function is equivalent to `new StringFormatBinding(...)`, and is the recommended way to create such bindings.
+	 * @param format The format string, containing placeholders similar to {@link strf()}
+	 * @param args A list of associated bindings
+	 * @returns A new {@link StringFormatBinding} object
+	 * @see {@link StringFormatBinding}
 	 */
-	export function strf<S extends string>(
-		format: S,
-		...bindings: Binding.StringFormatArgsFor<S>
+	export function strf(
+		format: string,
+		...args: Binding[] | [{ [K: string]: Binding }]
 	) {
-		return new StringFormatBinding<S>(format, ...bindings);
+		return new StringFormatBinding(format, ...args);
 	}
 }

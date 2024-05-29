@@ -10,7 +10,7 @@
 		"importHelpers": true,
 		"module": "esnext",
 		"moduleResolution": "node",
-		"target": "esnext",
+		"target": "ES2022",
 		"lib": ["dom", "esnext"],
 		"jsx": "react",
 		"jsxFactory": "ui.jsx",

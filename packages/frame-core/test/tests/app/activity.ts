@@ -5,6 +5,9 @@ import {
 	ManagedList,
 	ManagedObject,
 	AsyncTaskQueue,
+	$navigation,
+	ui,
+	UILabel,
 } from "../../../dist/index.js";
 import {
 	describe,
@@ -15,6 +18,7 @@ import {
 
 describe("Activity", () => {
 	const mockApp = Object.assign(new ManagedObject(), {
+		[($navigation as any)._label]: true,
 		add<T extends Activity>(a: T) {
 			return (this as any).attach(a) as T;
 		},
@@ -44,6 +48,14 @@ describe("Activity", () => {
 			expect(a.isActive()).toBeFalsy();
 			await a.activateAsync();
 			expect(a.isActive()).toBeTruthy();
+		});
+
+		test("Activate without attaching (error)", async () => {
+			let a = new Activity();
+			let expectError = await expect(async () =>
+				a.activateAsync(),
+			).toThrowErrorAsync();
+			expectError.asString().toMatchRegExp(/attached/);
 		});
 
 		test("Deactivate base class", async () => {
@@ -282,6 +294,37 @@ describe("Activity", () => {
 			app.navigate(activity.getNavigationTarget("bar"));
 			await t.expectNavAsync(10, "foo", "bar");
 			expect(activity.isActive()).toBeTruthy();
+		});
+	});
+
+	describe("View rendering", (scope) => {
+		scope.beforeEach(() => {
+			useTestContext((options) => {
+				options.renderFrequency = 5;
+			});
+		});
+
+		test("Rendered page view", async (t) => {
+			class MyActivity extends Activity {
+				protected override createView() {
+					return new (ui.page(ui.cell(ui.label("Hello, world!"))))();
+				}
+			}
+			let activity = new MyActivity();
+			app.addActivity(activity, true);
+			await t.expectOutputAsync(50, { type: "label" });
+		});
+
+		test("Find views", async (t) => {
+			class MyActivity extends Activity {
+				protected override createView() {
+					return new (ui.page(ui.cell(ui.label("foo"), ui.label("bar"))))();
+				}
+			}
+			let activity = new MyActivity();
+			app.addActivity(activity, true);
+			await t.expectOutputAsync(50, { type: "cell" });
+			expect(activity.findViewContent(UILabel)).toBeArray(2);
 		});
 	});
 });

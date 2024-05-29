@@ -443,8 +443,8 @@ export class Assertion<T> {
 		}
 		try {
 			await this.value.apply(undefined, args);
-		} catch {
-			return new Assertion(undefined, "[function threw error async]");
+		} catch (err) {
+			return new Assertion(err, "[Caught error async]");
 		}
 		throw Error(msg[ASSERT.toThrowError](this.name + " (async)"));
 	}

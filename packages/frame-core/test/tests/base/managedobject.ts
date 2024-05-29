@@ -32,6 +32,33 @@ describe("ManagedObject", () => {
 		t.expectCount("unlink").toBe(1);
 	});
 
+	describe("Observe properties", () => {
+		test("Observe single property", (t) => {
+			class MyObject extends ManagedObject {
+				foo = "foo";
+			}
+			let c = new MyObject();
+			let values: any[] = [];
+			ManagedObject.observe(c, ["foo"], (object, p, value) => {
+				expect(object).toBe(c);
+				expect(p).toBe("foo");
+				values.push(value);
+			});
+			c.foo = "bar";
+			c.foo = "bar";
+			c.foo = "baz";
+			expect(values).toBeArray(["bar", "baz"]);
+		});
+
+		test("Cannot observe unlinked object", () => {
+			let c = new ManagedObject();
+			c.unlink();
+			expect(() =>
+				ManagedObject.observe(c, ["foo"] as any, () => {}),
+			).toThrowError();
+		});
+	});
+
 	describe("Basic attached managed objects", () => {
 		let id = 0;
 
@@ -188,6 +215,20 @@ describe("ManagedObject", () => {
 			let loop2 = loop.attachLoop();
 			expect(() => loop2.attachLoop(parent)).toThrowError();
 			expect(() => parent.attachSelf()).toThrowError();
+		});
+
+		test("Cannot attach root object", () => {
+			let root = new ManagedObject();
+			ManagedObject.makeRoot(root);
+			let parent = new ManagedObject();
+			expect(() => (parent as any).attach(root)).toThrowError();
+		});
+
+		test("Cannot root attached object", () => {
+			let root = new ManagedObject();
+			let parent = new ManagedObject();
+			(parent as any).attach(root);
+			expect(() => ManagedObject.makeRoot(root)).toThrowError();
 		});
 	});
 });

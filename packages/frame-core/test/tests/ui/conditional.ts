@@ -5,10 +5,10 @@ import {
 	useTestContext,
 } from "@desk-framework/frame-test";
 import {
+	$view,
 	ManagedObject,
 	UICell,
 	ViewComposite,
-	bound,
 	ui,
 } from "../../../dist/index.js";
 
@@ -45,7 +45,7 @@ describe("UIConditionalView", () => {
 			{ condition: false },
 			ui.cell(
 				ui.conditional(
-					{ state: bound("condition") },
+					{ state: $view.boolean("condition") },
 					// label should only be rendered when condition is true
 					ui.label("foo"),
 				),

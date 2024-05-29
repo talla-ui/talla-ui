@@ -5,6 +5,7 @@ import type { NavigationTarget } from "./NavigationTarget.js";
 
 /**
  * An object that encapsulates the current location within the application navigation stack, part of the global application context
+ * - An instance of this class is available as {@link GlobalContext.navigation app.navigation}.
  * - This object contains the current location, represented as page ID and detail strings. In a URL-like path, the page ID is the first segment, and the detail is the remainder of the path.
  * - When overridden by a platform-specific (or test) implementation, this object also provides a way to navigate to a new location.
  * @hideconstructor

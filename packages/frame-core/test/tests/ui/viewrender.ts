@@ -6,6 +6,7 @@ import {
 	useTestContext,
 } from "@desk-framework/frame-test";
 import {
+	$view,
 	Activity,
 	ManagedEvent,
 	StringConvertible,
@@ -14,7 +15,7 @@ import {
 	UIViewRenderer,
 	ViewComposite,
 	app,
-	bound,
+	bind,
 	ui,
 } from "../../../dist/index.js";
 
@@ -64,12 +65,12 @@ describe("UIViewRenderer", (scope) => {
 	test("Set view using view composite, and render", async (t) => {
 		const CompView = ViewComposite.define(
 			{ text: StringConvertible.EMPTY },
-			ui.label(bound("text")),
+			ui.label($view.string("text")),
 		);
 		const Preset = ui.use(CompView, { text: "foo" });
 		class MyActivity extends Activity {
 			protected override createView() {
-				return new (ui.page(ui.renderView({ view: bound("vc") })))();
+				return new (ui.page(ui.renderView({ view: bind("vc") })))();
 			}
 			vc = this.attach(new Preset());
 		}
@@ -103,7 +104,7 @@ describe("UIViewRenderer", (scope) => {
 				const ViewBody = ui.page(
 					ui.cell(
 						{ accessibleLabel: "outer" },
-						ui.renderView({ view: bound("second.view") }),
+						ui.renderView({ view: bind("second.view") }),
 					),
 				);
 				return new ViewBody();

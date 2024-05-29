@@ -64,6 +64,7 @@ describe("NavigationContext and ActivityContext", () => {
 			app.addActivity(activity);
 			await t.sleep(1);
 			expect(activity.isActive()).toBeTruthy();
+			expect(app.navigation.matchedPageId).toBe("foo");
 		});
 
 		test("Activity activated when app path changed (async)", async (t) => {

@@ -1,10 +1,10 @@
 import {
+	$view,
 	RenderContext,
 	UITheme,
 	View,
 	ViewComposite,
 	app,
-	bound,
 	ui,
 } from "@desk-framework/frame-core";
 
@@ -49,7 +49,7 @@ export class Dialog extends ViewComposite implements UITheme.DialogController {
 				style: Dialog.styles.containerStyle,
 			},
 			ui.renderView({
-				view: bound("dialogView"),
+				view: $view.bind("dialogView"),
 				onViewUnlinked: "DialogViewUnlinked",
 			}),
 		))();

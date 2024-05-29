@@ -1,17 +1,17 @@
-import {
-	$_origin,
-	$_unlinked,
-	$_get,
-	$_traps_event,
-	unlinkObject,
-	invokeTrap,
-	attachObject,
-	addTrap,
-	$_bindFilter,
-	removeTrap,
-} from "./object_util.js";
-import { ManagedEvent } from "./ManagedEvent.js";
 import { invalidArgErr, safeCall } from "../errors.js";
+import { ManagedEvent } from "./ManagedEvent.js";
+import {
+	$_get,
+	$_origin,
+	$_root,
+	$_traps_event,
+	$_unlinked,
+	addTrap,
+	attachObject,
+	invokeTrap,
+	removeTrap,
+	unlinkObject,
+} from "./object_util.js";
 
 /** Cache Object.prototype.hasOwnProperty */
 const _hOP = Object.prototype.hasOwnProperty;
@@ -79,6 +79,20 @@ export class ManagedObject {
 		return object;
 	}
 
+	/**
+	 * Turns this object into a root object that cannot be attached
+	 * - This method is used to mark an object as a 'root' object, which cannot be attached to another object. This also implies that any bindings cannot go beyond this object in the tree structure, and any bindings that are still unbound after an object is attached to the root object will result in an error.
+	 * - This method is called automatically on the {@link app} object.
+	 * @error This method throws an error if the object is _already_ attached to another object.
+	 */
+	static makeRoot(object: ManagedObject) {
+		if (object[$_origin]) {
+			// cannot make an attached object a root object
+			throw invalidArgErr("object");
+		}
+		object[$_root] = true;
+	}
+
 	/** Creates a new managed object */
 	constructor() {
 		Object.defineProperty(this, $_unlinked, {
@@ -98,8 +112,8 @@ export class ManagedObject {
 	/** @internal Reference to origin (parent) managed object, if any */
 	declare [$_origin]?: ManagedObject;
 
-	/** @internal A function that's used to filter applicable bindings on this object */
-	declare [$_bindFilter]?: (property: string | symbol) => boolean;
+	/** @internal Property that is set only on root objects (cannot be attached) */
+	declare [$_root]?: boolean;
 
 	/** @internal Property getter for non-observable property bindings, overridden on managed lists */
 	[$_get](propertyName: string) {
@@ -320,6 +334,11 @@ export namespace ManagedObject {
 	export type Constructor<T extends ManagedObject = ManagedObject> = {
 		new (...args: any[]): T;
 	};
+
+	/** Generic type definition that evaluates to the (non-method) properties of `T` */
+	export type PropertiesOf<T> = {
+		[K in string & keyof T]: T[K] extends Function ? never : K;
+	}[string & keyof T];
 
 	/**
 	 * Type definition for a callback, or set of callbacks that can be passed to the {@link ManagedObject.listen} method

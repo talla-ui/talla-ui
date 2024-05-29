@@ -1,6 +1,6 @@
 import { ManagedObject } from "../base/index.js";
 import { invalidArgErr, safeCall } from "../errors.js";
-import { app } from "./GlobalContext.js";
+import { app } from "./app.js";
 import { View } from "./View.js";
 
 /**

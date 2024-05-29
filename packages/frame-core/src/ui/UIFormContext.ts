@@ -1,4 +1,4 @@
-import { bound, ManagedObject, StringConvertible } from "../base/index.js";
+import { bind, ManagedObject, StringConvertible } from "../base/index.js";
 import { AppException } from "../app/index.js";
 import { UIComponent } from "./UIComponent.js";
 
@@ -25,8 +25,8 @@ const REQUIRED_ERROR = AppException.type(
  *   ui.textField({ formField: "foo" }),
  *   ui.label({
  *     style: myStyles.errorLabel,
- *     hidden: bound.not("formContext.errors.foo"),
- *     text: bound.string("formContext.errors.foo.message")
+ *     hidden: $activity.not("formContext.errors.foo"),
+ *     text: $activity.string("formContext.errors.foo.message")
  *   }),
  *   ui.button("Go", "Submit")
  * );
@@ -346,5 +346,5 @@ export namespace UIFormContext {
 		});
 	}
 
-	const _boundFormContext = bound("formContext.*");
+	const _boundFormContext = bind("formContext.*");
 }

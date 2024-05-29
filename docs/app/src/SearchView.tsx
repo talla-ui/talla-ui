@@ -1,4 +1,4 @@
-import { UIStyle, bound, ui } from "@desk-framework/frame-core";
+import { $activity, $list, UIStyle, ui } from "@desk-framework/frame-core";
 
 const TextFieldStyle = ui.style.TEXTFIELD.extend(
 	{
@@ -76,14 +76,14 @@ export default (
 					</row>
 				</cell>
 				<cell
-					hidden={bound.boolean("!hasInput").or("!loading")}
+					hidden={$activity.bind("hasInput").and("loading").not()}
 					padding={{ y: 32 }}
 				>
 					<label>Loading...</label>
 				</cell>
 				<cell>
 					<scroll position={{ gravity: "cover" }}>
-						<list items={bound.list("results")} maxItems={50}>
+						<list items={$activity.list("results")} maxItems={50}>
 							<cell
 								allowFocus
 								style={ResultCellStyle}
@@ -96,12 +96,12 @@ export default (
 								<column align="start">
 									<row>
 										<label style={{ fontWeight: 500, shrink: 0 }}>
-											{bound.string("item.title")}
+											{$list.string("item.title")}
 										</label>
-										<label dim>{bound.string("item.showId")}</label>
+										<label dim>{$list.string("item.showId")}</label>
 									</row>
 									<label style={{ padding: 0, fontSize: 14 }} htmlFormat>
-										{bound.string("item.abstract")}
+										{$list.string("item.abstract")}
 									</label>
 								</column>
 							</cell>

@@ -1,29 +1,43 @@
 import {
-	bound,
+	Binding,
 	ConfigOptions,
 	ManagedEvent,
 	ManagedObject,
 	StringConvertible,
+	bind,
 } from "../base/index.js";
-import { err, ERROR, errorHandler, safeCall } from "../errors.js";
+import { ERROR, err, errorHandler, safeCall } from "../errors.js";
 import type { UIFormContext, UITheme } from "../ui/index.js";
+import { $_app_bind_label } from "./app_binding.js";
+import type { GlobalContext } from "./GlobalContext.js";
 import type { NavigationContext } from "./NavigationContext.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { RenderContext } from "./RenderContext.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
 import { View, ViewClass } from "./View.js";
 
+/** Label property used to filter bindings using $activity */
+const $_bind_label = Symbol("activity");
+
+/** Binding source for the app object itself */
+const $app = bind.$on($_app_bind_label);
+
 /** Global list of activity instances for (old) activity class, for HMR */
 const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
 
 /** Reused binding for the navigation context */
-const _navCtxBinding = bound("navigation");
+const _navCtxBinding = $app.bind<NavigationContext>("navigation");
 
 /** Reused binding for the global renderer instance, also listens for change events */
-const _rendererBinding = bound("renderer.*");
+const _rendererBinding = $app.bind<RenderContext>("renderer.*");
 
 /** Reused binding for the global theme instance */
-const _themeBinding = bound("theme");
+const _themeBinding = $app.bind<UITheme>("theme");
+
+/** An object that can be used to create bindings for properties of the nearest activity */
+export const $activity: Binding.Source<
+	(string & {}) | "formContext" | `formContext.${string}` | "title"
+> = bind.$on($_bind_label);
 
 /**
  * A class that represents a part of the application that can be activated when the user navigates to it
@@ -105,6 +119,9 @@ export class Activity extends ManagedObject {
 			this.navigationPageId = String(options.navigationPageId);
 		if (options.formContext) this.formContext = options.formContext;
 	}
+
+	/** @internal */
+	[$_bind_label] = true;
 
 	/**
 	 * The page ID associated with this activity, to match the (first part of the) navigation path

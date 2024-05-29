@@ -1,11 +1,12 @@
 import {
+	$activity,
+	$view,
 	Activity,
 	StringConvertible,
 	UITextField,
 	ViewComposite,
 	ViewEvent,
 	app,
-	bound,
 	ui,
 } from "@desk-framework/frame-core";
 import { describe, expect, test, useTestContext } from "../../dist/index.js";
@@ -15,7 +16,7 @@ class CountActivity extends Activity {
 	protected override createView() {
 		return new (ui.page(
 			ui.cell(
-				ui.textField({ value: bound("count"), onInput: "SetCount" }),
+				ui.textField({ value: $activity.string("count"), onInput: "SetCount" }),
 				ui.button("+", "CountUp"),
 			),
 		))();
@@ -45,7 +46,7 @@ describe("App test", (scope) => {
 	test("Single view is rendered", async (t) => {
 		const MyView = ViewComposite.define(
 			{ title: StringConvertible.EMPTY },
-			ui.label(bound("title")),
+			ui.label($view.bind("title")),
 		);
 		let Preset = ui.use(MyView, { title: "TEST" });
 		let myView = new Preset();
