@@ -6,6 +6,7 @@ const { app, ui, bind } = desk;
 			ui.label(bind.strf("Count: %n", bind("count")), {
 				bold: true,
 				fontSize: 36,
+				tabularNums: true,
 			}),
 			ui.spacer(0, 32),
 			ui.row(

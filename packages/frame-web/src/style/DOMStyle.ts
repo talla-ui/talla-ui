@@ -409,6 +409,9 @@ function addTextStyleCSS(
 	let smallCaps = textStyle.smallCaps;
 	if (smallCaps !== undefined)
 		result.fontVariant = smallCaps ? "small-caps" : "normal";
+	let tabularNums = textStyle.tabularNums;
+	if (tabularNums !== undefined)
+		result.fontVariantNumeric = tabularNums ? "tabular-nums" : "normal";
 	let underline = textStyle.underline;
 	let strikeThrough = textStyle.strikeThrough;
 	if (underline)

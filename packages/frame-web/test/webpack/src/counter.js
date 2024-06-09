@@ -5,6 +5,7 @@ const ViewBody = ui.page(
 		ui.label(bind.strf("Count: %i", bind("count")), {
 			bold: true,
 			fontSize: 36,
+			tabularNums: true,
 		}),
 		ui.spacer({ height: 32 }),
 		ui.row(

@@ -8,6 +8,8 @@ export default ViewComposite.define(
 	{ count: 0 },
 	<column>
 		<label>Count:</label>
-		<label style={{ bold: true, fontSize: 36 }}>{$view.number("count")}</label>
+		<label style={{ bold: true, fontSize: 36, tabularNums: true }}>
+			{$view.number("count")}
+		</label>
 	</column>,
 );

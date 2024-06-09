@@ -301,6 +301,8 @@ export namespace UIComponent {
 		fontWeight?: string | number;
 		/** Letter spacing (pixels or string with unit) */
 		letterSpacing?: string | number;
+		/** True for monospaced (tabular) numeric characters */
+		tabularNums?: boolean;
 		/** Line height (CSS relative to font size, *not* in pixels) */
 		lineHeight?: string | number;
 		/** Line break handling mode (CSS white-space) */
