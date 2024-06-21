@@ -29,6 +29,9 @@
 		"trailingComma": "all",
 		"endOfLine": "lf"
 	},
+	"files": [
+		"dist"
+	],
 	"dependencies": {
 		"@desk-framework/frame-core": "file:../frame-core"
 	}
