@@ -123,12 +123,6 @@ export function makeBaseCSS() {
 			top: 0,
 			height: "100%",
 		},
-		[`a.${CLASS_UI} span`]: {
-			verticalAlign: "middle",
-		},
-		[`button.${CLASS_UI} span`]: {
-			verticalAlign: "middle",
-		},
 
 		// flip icons in RTL mode
 		[`[dir="rtl"] ._RTL-flip`]: {
