@@ -89,12 +89,12 @@ _ui.mount = function (
 		"page" in options && options.page
 			? { mode: "page" }
 			: "screen" in options && options.screen
-			? { mode: "screen" }
-			: "id" in options
-			? { mode: "mount", mountId: options.id }
-			: "place" in options
-			? options.place
-			: { mode: "none" };
+				? { mode: "screen" }
+				: "id" in options
+					? { mode: "mount", mountId: options.id }
+					: "place" in options
+						? options.place
+						: { mode: "none" };
 	return class PresetMount extends View {
 		constructor() {
 			super();
@@ -263,7 +263,7 @@ _ui.style = function (...args: any[]) {
 		? {
 				[UIStyle.OVERRIDES_BASE]: result[UIStyle.OVERRIDES_BASE],
 				overrides: [...result.overrides, ...overrides],
-		  }
+			}
 		: result.extend(...overrides);
 } as any; // base styles added below
 

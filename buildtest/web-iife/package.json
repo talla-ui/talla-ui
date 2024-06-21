@@ -1,0 +1,17 @@
+{
+	"name": "web-iife",
+	"private": true,
+	"version": "0.0.0",
+	"description": "A build test using IIFE in pure JS",
+	"scripts": {
+		"postinstall": "node setup/copy-lib",
+		"start": "http-server site -o"
+	},
+	"dependencies": {
+		"@desk-framework/frame-core": "../../packages/frame-core",
+		"@desk-framework/frame-web": "../../packages/frame-web"
+	},
+	"devDependencies": {
+		"http-server": "*"
+	}
+}

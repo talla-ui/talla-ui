@@ -1,0 +1,16 @@
+{
+	"name": "web-esm-tsc",
+	"private": true,
+	"version": "0.0.0",
+	"description": "A build test using ES modules and TypeScript",
+	"scripts": {
+		"prestart": "node setup/copy-lib && tsc -p .",
+		"start": "concurrently npm:serve npm:watch",
+		"watch": "tsc -p . -w",
+		"serve": "http-server -o index.html"
+	},
+	"dependencies": {
+		"@desk-framework/frame-core": "../../packages/frame-core",
+		"@desk-framework/frame-web": "../../packages/frame-web"
+	}
+}

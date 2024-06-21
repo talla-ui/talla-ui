@@ -116,8 +116,8 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 				typeof cell.animationTiming === "string"
 					? cell.animationTiming
 					: Array.isArray(cell.animationTiming)
-					? "cubic-bezier(" + cell.animationTiming.join(",") + ")"
-					: "ease";
+						? "cubic-bezier(" + cell.animationTiming.join(",") + ")"
+						: "ease";
 			element.style.transitionTimingFunction = timing;
 		}
 

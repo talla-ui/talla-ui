@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"lib": ["dom", "esnext"],
+		"jsx": "react",
+		"jsxFactory": "ui.jsx",
+		"strict": true,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noUncheckedIndexedAccess": true,
+		"useDefineForClassFields": true,
+		"outDir": "../dist"
+	}
+}

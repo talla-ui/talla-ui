@@ -22,4 +22,4 @@ For information related to developing the framework itself, refer to `README.md`
 
 This code is free and open source. Copyright and [MIT](https://opensource.org/licenses/MIT) license terms still apply.
 
-Copyright &copy; 2023 Jelmer Cormont
+Copyright &copy; 2024 Jelmer Cormont

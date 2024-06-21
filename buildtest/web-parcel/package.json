@@ -1,0 +1,19 @@
+{
+	"name": "web-parcel",
+	"private": true,
+	"version": "0.0.0",
+	"description": "A build test using Parcel",
+	"scripts": {
+		"postinstall": "rimraf .parcel-cache",
+		"start": "parcel src/index.html --open"
+	},
+	"dependencies": {
+		"@desk-framework/frame-core": "../../packages/frame-core",
+		"@desk-framework/frame-web": "../../packages/frame-web"
+	},
+	"devDependencies": {
+		"parcel": "^2.8.3",
+		"@types/node": "^18.11.19",
+		"rimraf": "^5.0.7"
+	}
+}

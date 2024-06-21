@@ -1,0 +1,15 @@
+{
+	"name": "web-vite",
+	"version": "0.0.0",
+	"description": "A build test using Vite",
+	"scripts": {
+		"start": "vite"
+	},
+	"devDependencies": {
+		"@desk-framework/frame-core": "4.0.0-dev.29",
+		"@desk-framework/frame-web": "4.0.0-dev.29",
+		"@desk-framework/frame-test": "4.0.0-dev.29",
+		"typescript": "^5.4.5",
+		"vite": "^5.3.1"
+	}
+}

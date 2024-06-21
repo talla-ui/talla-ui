@@ -1,8 +1,0 @@
-{
-	"compilerOptions": {
-		"allowJs": true,
-		"strict": true,
-		"noUnusedLocals": true,
-		"types": ["../../../../../frame-web/lib/desk-framework-web.iife.d.ts"]
-	}
-}

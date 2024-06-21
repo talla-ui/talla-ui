@@ -195,8 +195,8 @@ export class UIContainerRenderer<
 				layout?.axis === "horizontal"
 					? true
 					: layout?.axis === "vertical"
-					? false
-					: this.observed instanceof UIRow;
+						? false
+						: this.observed instanceof UIRow;
 			let options = layout?.separator;
 			if (!options && (this.observed as unknown as UIRow).spacing) {
 				let space = (this.observed as unknown as UIRow).spacing;

@@ -17,25 +17,13 @@
 	"module": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"clean": "concurrently npm:clean:*",
-		"clean:build": "rimraf dist dist-* lib",
+		"clean": "npm run clean:build && npm run clean:test",
+		"clean:build": "rimraf dist lib",
 		"clean:test": "rimraf test/esbuild/public/dist test/esm/dist test/esm/lib test/esm/node_modules test/parcel/.parcel-cache test/parcel/dist test/parcel/node_modules",
 		"prebuild": "npm run clean",
-		"build": "concurrently npm:build:*",
-		"build:esnext": "tsc -p src --declaration",
-		"build:es2020": "tsc -p src --target es2020 --outdir dist-es2020",
-		"build:es2018": "tsc -p src --target es2018 --outdir dist-es2018",
-		"build:es2015": "tsc -p src --target es2015 --outdir dist-es2015",
+		"build": "tsc -p src --declaration",
 		"postbuild": "node esbuild-lib",
-		"test-iife": "npx open-cli test/iife/test-iife.html",
-		"test-esbuild": "cd test/esbuild && node esbuild",
-		"test-esbuild-es2015": "cd test/esbuild-es2015 && node esbuild",
-		"test-esm": "cd test/esm && npm install && npm run test",
-		"test-esm-js": "cd test/esm-js && npm install && npm run test",
-		"test-parcel": "cd test/parcel && npm install && npm run test",
-		"test-webpack": "cd test/webpack && npm install && npm run test",
-		"test-perf": "cd test/perf && node esbuild",
-		"check-format": "prettier --check \"src/**/*.{ts,tsx}\" \"test/*/src/**/*.{ts,tsx}\""
+		"check-format": "prettier --check \"src/**/*.{ts,tsx}\""
 	},
 	"prettier": {
 		"useTabs": true,
@@ -44,13 +32,10 @@
 	},
 	"files": [
 		"dist",
-		"dist-es2015",
-		"dist-es2018",
-		"dist-es2020",
 		"lib"
 	],
 	"dependencies": {
 		"@desk-framework/frame-core": "file:../frame-core",
-		"tslib": "^2.6.2"
+		"tslib": "^2.6.3"
 	}
 }

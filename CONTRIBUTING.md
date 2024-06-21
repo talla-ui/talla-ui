@@ -64,9 +64,9 @@ npm run clean
 
 All packages include a build step to compile TypeScript source code to JavaScript.
 
-**Output folders** — Code is compiled for multiple EcmaScript version targets, starting with ES2015. The output for ES2015 target is stored in the `dist-es2015` folder, while ESNext (latest version) output is stored in the `dist` folder itself, along with `.d.ts` type definition files.
+**Output folder** — Code is compiled directly for the "ESNext" target, along with `.d.ts` type definition files, and placed into the `dist` folder.
 
-**Web formats** — The `frame-web` package also bundles several versions of all Desk framework code into specific output files. These files are stored in the `lib` folder and published along with the `dist` folder on NPM.
+**Web formats** — The `frame-web` package also bundles transpiled versions of all Desk framework code into specific output files. These files are stored in the `lib` folder and published along with the `dist` folder on NPM.
 
 - IIFE format: `*.iife.min.js`, `*.iife.min.js.map`, and `*.iife.d.ts` with type definitions for the global `desk` variable.
 - ESM format: `*.esm.min.js`, `*.esm.min.js.map`, and `*.esm.min.d.ts` for direct import using ES Modules.

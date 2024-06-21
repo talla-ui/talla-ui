@@ -34,4 +34,4 @@ For information related to developing and building the framework itself, refer t
 
 This code is free and open source. Copyright and [MIT](https://opensource.org/licenses/MIT) license terms still apply.
 
-Copyright &copy; 2023 Jelmer Cormont
+Copyright &copy; 2024 Jelmer Cormont

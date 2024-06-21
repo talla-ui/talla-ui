@@ -298,7 +298,7 @@ export function attachObject(
 		let eventTrap = listen
 			? addTrap(target, $_traps_event, function (t, p, v) {
 					listen(t, v as any);
-			  })
+				})
 			: undefined;
 		let detachTrap = addTrap(
 			target,

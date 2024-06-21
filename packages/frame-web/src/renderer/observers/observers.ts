@@ -29,23 +29,23 @@ export function makeObserver(target: View): BaseObserver<any> | undefined {
 		target instanceof UICell
 			? new UICellRenderer(target)
 			: target instanceof UIScrollContainer
-			? new UIScrollContainerRenderer(target)
-			: target instanceof UIContainer
-			? new UIContainerRenderer(target)
-			: target instanceof UILabel
-			? new UILabelRenderer(target)
-			: target instanceof UIButton
-			? new UIButtonRenderer(target)
-			: target instanceof UIImage
-			? new UIImageRenderer(target)
-			: target instanceof UISeparator
-			? new UISeparatorRenderer(target)
-			: target instanceof UISpacer
-			? new UISpacerRenderer(target)
-			: target instanceof UITextField
-			? new UITextFieldRenderer(target)
-			: target instanceof UIToggle
-			? new UIToggleRenderer(target)
-			: undefined
+				? new UIScrollContainerRenderer(target)
+				: target instanceof UIContainer
+					? new UIContainerRenderer(target)
+					: target instanceof UILabel
+						? new UILabelRenderer(target)
+						: target instanceof UIButton
+							? new UIButtonRenderer(target)
+							: target instanceof UIImage
+								? new UIImageRenderer(target)
+								: target instanceof UISeparator
+									? new UISeparatorRenderer(target)
+									: target instanceof UISpacer
+										? new UISpacerRenderer(target)
+										: target instanceof UITextField
+											? new UITextFieldRenderer(target)
+											: target instanceof UIToggle
+												? new UIToggleRenderer(target)
+												: undefined
 	) as any;
 }

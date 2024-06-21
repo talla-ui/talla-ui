@@ -56,8 +56,8 @@ function _matchElement(select: OutputSelectFilter, elt: TestOutputElement) {
 			(typeof select.text === "string"
 				? elt.text !== select.text
 				: select.text instanceof RegExp
-				? !select.text.test(elt.text || "")
-				: true)) ||
+					? !select.text.test(elt.text || "")
+					: true)) ||
 		(select.icon !== undefined && elt.icon !== select.icon) ||
 		(select.chevron !== undefined && elt.chevron !== select.chevron) ||
 		(select.imageUrl !== undefined && elt.imageUrl !== select.imageUrl) ||

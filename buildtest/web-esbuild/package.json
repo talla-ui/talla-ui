@@ -1,0 +1,16 @@
+{
+	"name": "web-esbuild",
+	"private": true,
+	"version": "0.0.0",
+	"description": "A build test using esbuild",
+	"main": "esbuild.js",
+	"type": "module",
+	"scripts": {
+		"start": "node esbuild"
+	},
+	"license": "MIT",
+	"dependencies": {
+		"@desk-framework/frame-core": "../../packages/frame-core",
+		"@desk-framework/frame-web": "../../packages/frame-web"
+	}
+}

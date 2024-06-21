@@ -57,8 +57,8 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 			(label.title
 				? ui.style.LABEL_TITLE
 				: label.small
-				? ui.style.LABEL_SMALL
-				: ui.style.LABEL);
+					? ui.style.LABEL_SMALL
+					: ui.style.LABEL);
 		applyElementStyle(
 			element,
 			[

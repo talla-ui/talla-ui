@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noUncheckedIndexedAccess": true,
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"target": "ES2015",
+		"lib": ["dom", "esnext"],
+		"jsx": "react",
+		"jsxFactory": "ui.jsx",
+		"outDir": "dist"
+	}
+}

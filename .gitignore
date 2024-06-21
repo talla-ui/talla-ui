@@ -1,11 +1,9 @@
 /_site
 dist/
-dist-*/
 lib/
 node_modules/
 build/
 .test-run/
 coverage/
-.parcel-cache/
 *.log
 npm-debug.log*

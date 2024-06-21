@@ -254,9 +254,7 @@ describe("Bindings", () => {
 			let nested2 = nested.attachNested();
 			nested2.bind("aa", "child.nested.aa");
 			nested.aa = 3;
-			expect(c.child.nested?.nested)
-				.toHaveProperty("aa")
-				.toBe(3);
+			expect(c.child.nested?.nested).toHaveProperty("aa").toBe(3);
 		});
 
 		test("Single binding with 3-step path, change first", () => {

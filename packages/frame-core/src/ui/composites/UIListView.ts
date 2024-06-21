@@ -250,7 +250,7 @@ export class UIListView<
 					? list.take(
 							maxItems! >= 0 ? maxItems! : list.count,
 							list.get(firstIndex),
-					  )
+						)
 					: undefined
 				: list);
 

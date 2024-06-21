@@ -19,13 +19,13 @@ async function buildAndCompress(options) {
 	}
 }
 
-function buildTarget(target, entryPoint, alias) {
+function buildTarget(target) {
 	let options = {
 		bundle: true,
 		minify: true,
 		mangleProps: /^_/,
 		sourcemap: true,
-		entryPoints: [entryPoint],
+		entryPoints: ["dist/index.js"],
 		target,
 		write: false,
 		plugins: [
@@ -39,11 +39,6 @@ function buildTarget(target, entryPoint, alias) {
 			},
 		],
 	};
-	if (alias) {
-		options.alias = {
-			"@desk-framework/frame-core": "@desk-framework/frame-core/" + alias,
-		};
-	}
 	return Promise.all([
 		buildAndCompress({
 			format: "esm",
@@ -63,12 +58,7 @@ function buildTarget(target, entryPoint, alias) {
 if (!existsSync("lib")) await fs.mkdir("lib");
 
 // Build ESM and IIFE bundles for all build targets
-await Promise.all([
-	buildTarget("esnext", "dist/index.js"),
-	buildTarget("es2020", "dist-es2020/index.js", "dist-es2020"),
-	buildTarget("es2018", "dist-es2018/index.js", "dist-es2018"),
-	buildTarget("es2015", "dist-es2015/index.js", "dist-es2015"),
-]);
+await Promise.all([buildTarget("es2022"), buildTarget("es2015")]);
 
 // Create appropriate .d.ts files to reference dist folder
 let exportLine = 'export * from "@desk-framework/frame-web";';
@@ -78,6 +68,4 @@ await fs.writeFile(
 		'\ndeclare global { const desk: typeof import("@desk-framework/frame-web") }',
 );
 await fs.writeFile("lib/desk-framework-web.es2015.esm.min.d.ts", exportLine);
-await fs.writeFile("lib/desk-framework-web.es2018.esm.min.d.ts", exportLine);
-await fs.writeFile("lib/desk-framework-web.es2020.esm.min.d.ts", exportLine);
-await fs.writeFile("lib/desk-framework-web.esnext.esm.min.d.ts", exportLine);
+await fs.writeFile("lib/desk-framework-web.es2022.esm.min.d.ts", exportLine);

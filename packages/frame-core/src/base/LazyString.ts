@@ -275,8 +275,8 @@ export class LazyString extends String {
 					let value = prop
 						? args[0][prop]
 						: param
-						? args[param - 1]
-						: args[idx++];
+							? args[param - 1]
+							: args[idx++];
 
 					// special case plain strings
 					if (fmt === "s" && typeof value === "string") return value;

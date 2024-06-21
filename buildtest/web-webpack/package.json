@@ -1,0 +1,21 @@
+{
+	"name": "web-webpack",
+	"private": true,
+	"version": "0.0.0",
+	"description": "A build test using Webpack",
+	"type": "module",
+	"scripts": {
+		"start": "webpack serve --mode development"
+	},
+	"dependencies": {
+		"@desk-framework/frame-core": "../../packages/frame-core",
+		"@desk-framework/frame-web": "../../packages/frame-web"
+	},
+	"devDependencies": {
+		"html-webpack-plugin": "^5.6.0",
+		"webpack": "^5.90.3",
+		"webpack-cli": "^5.1.4",
+		"webpack-dev-server": "^5.0.2",
+		"ts-loader": "^9.5.1"
+	}
+}

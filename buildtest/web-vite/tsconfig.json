@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noUncheckedIndexedAccess": true,
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"target": "ES2022",
+		"noEmit": true,
+		"isolatedModules": true,
+		"moduleDetection": "force",
+		"lib": ["dom", "esnext"],
+		"jsx": "react",
+		"jsxFactory": "ui.jsx",
+		"types": ["vite/client"]
+	}
+}

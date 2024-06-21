@@ -5,6 +5,10 @@
 	"license": "MIT",
 	"type": "module",
 	"scripts": {
+		"clean": "concurrently npm:clean:*",
+		"clean:docgen": "cd docgen && npm run clean",
+		"clean:app": "cd app && npm run clean",
+		"clean:content": "rimraf content/en/_generated_ ../_site",
 		"postinstall": "concurrently npm:postinstall:*",
 		"postinstall:app": "cd app && npm install",
 		"postinstall:docgen": "cd docgen && npm install",

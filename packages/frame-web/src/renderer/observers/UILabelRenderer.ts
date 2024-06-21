@@ -73,8 +73,8 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 				(label.title
 					? ui.style.LABEL_TITLE
 					: label.small
-					? ui.style.LABEL_SMALL
-					: ui.style.LABEL),
+						? ui.style.LABEL_SMALL
+						: ui.style.LABEL),
 			undefined,
 			true,
 			false,

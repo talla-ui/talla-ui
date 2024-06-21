@@ -18,13 +18,9 @@
 	"module": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"clean": "rimraf coverage dist dist-* .test-run",
+		"clean": "rimraf coverage dist .test-run",
 		"prebuild": "npm run clean",
-		"build": "concurrently npm:build:*",
-		"build:esnext": "tsc -p src --declaration",
-		"build:es2020": "tsc -p src --target es2020 --outdir dist-es2020",
-		"build:es2018": "tsc -p src --target es2018 --outdir dist-es2018",
-		"build:es2015": "tsc -p src --target es2015 --outdir dist-es2015",
+		"build": "tsc -p src --declaration",
 		"pretest": "tsc -p test",
 		"test": "node .test-run",
 		"posttest": "rimraf .test-run",
@@ -47,13 +43,10 @@
 		]
 	},
 	"files": [
-		"dist",
-		"dist-es2015",
-		"dist-es2018",
-		"dist-es2020"
+		"dist"
 	],
 	"dependencies": {
-		"tslib": "^2.6.2"
+		"tslib": "^2.6.3"
 	},
 	"devDependencies": {
 		"@desk-framework/frame-test": "file:../frame-test"

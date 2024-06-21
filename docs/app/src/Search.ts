@@ -110,23 +110,23 @@ export class Query {
 			(it.id.startsWith(cap)
 				? 1200
 				: it.id.endsWith("." + part)
-				? 1000
-				: it.lcId.startsWith(part)
-				? 800
-				: it.lcId.indexOf(" " + part) > 0
-				? 400
-				: it.lcId.indexOf("_" + part) > 0
-				? 400
-				: it.lcId.indexOf("." + part) > 0
-				? 200
-				: it.id.indexOf(cap) > 0
-				? 100
-				: 0) +
+					? 1000
+					: it.lcId.startsWith(part)
+						? 800
+						: it.lcId.indexOf(" " + part) > 0
+							? 400
+							: it.lcId.indexOf("_" + part) > 0
+								? 400
+								: it.lcId.indexOf("." + part) > 0
+									? 200
+									: it.id.indexOf(cap) > 0
+										? 100
+										: 0) +
 			(it.lcId.startsWith(lcSearch)
 				? 1000
 				: /^(class|interface|type) /.test(it.title)
-				? 500
-				: 0)
+					? 500
+					: 0)
 		);
 	}
 
