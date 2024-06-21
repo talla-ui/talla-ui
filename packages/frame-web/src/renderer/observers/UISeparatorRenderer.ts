@@ -36,7 +36,7 @@ export class UISeparatorRenderer extends BaseObserver<UISeparator> {
 	override updateStyle(element: HTMLElement) {
 		let sep = this.observed;
 		let systemName = CLASS_SEPARATOR_LINE;
-		if (sep.vertical) systemName += CLASS_SEPARATOR_LINE_VERT;
+		if (sep.vertical) systemName += " " + CLASS_SEPARATOR_LINE_VERT;
 		applyStyles(
 			sep,
 			element,
