@@ -208,6 +208,12 @@ export class TestRenderer extends RenderContext {
 	 * });
 	 */
 	async expectOutputAsync(timeout: number, ...select: OutputSelectFilter[]) {
+		// prepare timeout error first, to capture accurate stack trace
+		let timeoutError = Error(
+			"expectOutputAsync timeout: " + select.map((s) => val2str(s)).join(" "),
+		);
+
+		// start polling
 		let startT = Date.now();
 		return new Promise<OutputAssertion>((resolve, reject) => {
 			let poll = () => {
@@ -219,13 +225,7 @@ export class TestRenderer extends RenderContext {
 						if (assertion.elements.length) return resolve(assertion);
 					}
 					if (timeout && Date.now() > startT + timeout) {
-						// reject because of timeout
-						return reject(
-							new Error(
-								"expectOutputAsync timeout: " +
-									select.map((s) => val2str(s)).join(" "),
-							),
-						);
+						return reject(timeoutError);
 					}
 					poll();
 				}, 2);

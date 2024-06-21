@@ -349,18 +349,23 @@ export class TestCase {
 	 * });
 	 */
 	async expectNavAsync(timeout: number, pageId: string, detail = "") {
+		// create error first, to capture accurate stack trace
+		let error = Error(
+			"Expected navigation to " + val2str(pageId + "/" + detail),
+		);
+
+		// start polling
 		await this.pollAsync(
 			() =>
 				app.navigation.pageId === pageId && app.navigation.detail === detail,
 			5,
 			timeout,
-			() =>
-				Error(
-					"Expected navigation to " +
-						val2str(pageId + "/" + detail) +
-						" but location is " +
-						val2str(app.navigation.pageId + "/" + app.navigation.detail),
-				),
+			() => {
+				error.message +=
+					", but location is " +
+					val2str(app.navigation.pageId + "/" + app.navigation.detail);
+				return error;
+			},
 		);
 	}
 
