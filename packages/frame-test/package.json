@@ -32,7 +32,7 @@
 	"files": [
 		"dist"
 	],
-	"dependencies": {
+	"devDependencies": {
 		"@desk-framework/frame-core": "file:../frame-core"
 	}
 }

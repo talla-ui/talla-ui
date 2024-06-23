@@ -31,8 +31,10 @@
 		"cli/index.js"
 	],
 	"dependencies": {
-		"@desk-framework/frame-test": "file:../frame-test",
 		"esbuild": "^0.21.5",
 		"source-map-support": "^0.5.21"
+	},
+	"devDependencies": {
+		"@desk-framework/frame-test": "file:../frame-test"
 	}
 }

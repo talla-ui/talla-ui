@@ -35,7 +35,9 @@
 		"lib"
 	],
 	"dependencies": {
-		"@desk-framework/frame-core": "file:../frame-core",
 		"tslib": "^2.6.3"
+	},
+	"devDependencies": {
+		"@desk-framework/frame-core": "file:../frame-core"
 	}
 }
