@@ -2,13 +2,16 @@
 	"name": "web-vite",
 	"version": "0.0.0",
 	"description": "A build test using Vite",
+	"type": "module",
 	"scripts": {
-		"start": "vite"
+		"start": "vite",
+		"test": "test-runner-esbuild src/test.ts"
 	},
 	"devDependencies": {
-		"@desk-framework/frame-core": "4.0.0-dev.29",
-		"@desk-framework/frame-web": "4.0.0-dev.29",
-		"@desk-framework/frame-test": "4.0.0-dev.29",
+		"@desk-framework/frame-core": "../../packages/frame-core",
+		"@desk-framework/frame-web": "../../packages/frame-web",
+		"@desk-framework/frame-test": "../../packages/frame-test",
+		"@desk-framework/test-runner-esbuild": "../../packages/test-runner-esbuild",
 		"typescript": "^5.4.5",
 		"vite": "^5.3.1"
 	}
