@@ -220,13 +220,12 @@ export class UIListView<
 					// focus last focused item or first item instead of container
 					this.requestFocus();
 				} else {
-					// store new focus index
-					let idx = this.getIndexOfView(event.source);
-					this.lastFocusedIndex = Math.max(0, idx);
+					// store new focus index (if directly focused content)
+					let controller = UIListView.ItemControllerView.whence(event.source);
+					let content = this.getContent();
+					let idx = controller && content?.indexOf(controller);
+					this.lastFocusedIndex = idx ? Math.max(0, idx) : 0;
 				}
-
-				// don't propagate the event to a parent list, if any
-				return true;
 		}
 
 		// re-emit regular events

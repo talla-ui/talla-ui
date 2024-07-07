@@ -40,6 +40,7 @@ const _keyNames: { [keyName: string]: string } = {
 	Del: "DeleteKey",
 	Escape: "EscapeKey",
 	Esc: "EscapeKey",
+	Tab: "TabKey",
 	ArrowLeft: "ArrowLeftKey",
 	Left: "ArrowLeftKey",
 	ArrowUp: "ArrowUpKey",
@@ -52,6 +53,8 @@ const _keyNames: { [keyName: string]: string } = {
 
 /** Keys for which OS actions should be prevented if used on lists and list items */
 const _listKeysPreventDefault: { [keyName: string]: boolean } = {
+	Spacebar: true,
+	" ": true,
 	ArrowLeft: true,
 	ArrowRight: true,
 	ArrowUp: true,

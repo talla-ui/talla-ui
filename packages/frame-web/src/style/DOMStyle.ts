@@ -115,6 +115,7 @@ export function setFocusDecoration(
 	setGlobalCSS({
 		[`.${CLASS_UI}:focus`]: { outline: "0", outlineOffset: "0" },
 		[`.${CLASS_UI}[tabindex]:focus-visible`]: styles,
+		[`.${CLASS_UI}[role=listitem]:focus`]: styles,
 		[`.${CLASS_TOGGLE}>input:focus-visible`]: styles,
 	});
 }
@@ -175,9 +176,9 @@ export function defineStyleClass(
 		if (style[UIStyle.STATE_HOVERED]) stateSelector += ":hover";
 		else if (style[UIStyle.STATE_HOVERED] === false)
 			stateSelector += ":not(:hover)";
-		if (style[UIStyle.STATE_FOCUSED]) stateSelector += ":focus-visible";
+		if (style[UIStyle.STATE_FOCUSED]) stateSelector += ":focus";
 		else if (style[UIStyle.STATE_FOCUSED] === false)
-			stateSelector += ":not(:focus-visible)";
+			stateSelector += ":not(:focus)";
 
 		// pressed state is controlled by two selectors
 		if (style[UIStyle.STATE_PRESSED]) {
