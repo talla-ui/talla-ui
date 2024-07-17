@@ -59,6 +59,36 @@ export class ManagedRecord extends ManagedObject {
 	}
 
 	/**
+	 * Creates a new subclass of `ManagedRecord` or any class that derives from it, with the provided default property values.
+	 * - The provided values are assigned to properties of each instance, by the constructor of the resulting class.
+	 * - Note that objects and arrays are _not_ copied, and will be reused across all instances.
+	 *
+	 * @example
+	 * // Define a record type with default values
+	 * const MyRecord = ManagedRecord.define({ foo: "", bar: 0 });
+	 * let myRecord = new MyRecord();
+	 * // OR:
+	 * let myRecord = MyRecord.create({ bar: 123 });
+	 */
+	static define<
+		TSelf extends ManagedRecord,
+		TDefaults extends Record<string, any>,
+	>(
+		this: { new (): TSelf },
+		defaults: TDefaults,
+	): {
+		new (): TSelf & TDefaults;
+		create: typeof ManagedRecord.create;
+	} {
+		return class DefinedRecord extends (this as any) {
+			constructor() {
+				super();
+				Object.assign(this, defaults);
+			}
+		} as any;
+	}
+
+	/**
 	 * Returns the parent record (or parent's parent, etc.) that's an instance of the provided class
 	 * - If no class is provided, the closest ManagedRecord parent is returned, if any.
 	 */

@@ -21,6 +21,18 @@ describe("ManagedRecord", () => {
 		expect(r).toHaveProperty("foo").toBe(123);
 	});
 
+	test("Create subclass using define", () => {
+		class MyRecord extends ManagedRecord.define({ foo: 1, bar: 2 }) {
+			getBar() {
+				return this.bar;
+			}
+		}
+		let r = MyRecord.create({ foo: 123 });
+		expect(r).toBeInstanceOf(ManagedRecord);
+		expect(r).toHaveProperty("foo").toBe(123);
+		expect(r).toHaveMethod("getBar").not.toThrowError().toBe(2);
+	});
+
 	test("Find sibling records", () => {
 		let list = new ManagedList().attachAll(true);
 		let a = ManagedRecord.create({ name: "a" });
