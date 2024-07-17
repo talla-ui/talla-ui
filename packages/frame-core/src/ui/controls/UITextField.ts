@@ -45,6 +45,7 @@ export class UITextField extends UIComponent {
 			| "formField"
 			| "enterKeyHint"
 			| "disableSpellCheck"
+			| "selectOnFocus"
 			| "disabled"
 			| "readOnly"
 			| "width"
@@ -98,6 +99,9 @@ export class UITextField extends UIComponent {
 
 	/** True if spell and/or grammar checks should be disabled, where supported */
 	disableSpellCheck?: boolean;
+
+	/** True if the entire text in the text field should be selected whenever it gains input focus */
+	selectOnFocus?: boolean;
 
 	/** True if user input should be disabled on this control */
 	disabled = false;

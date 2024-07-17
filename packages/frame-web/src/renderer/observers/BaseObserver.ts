@@ -155,7 +155,8 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 					// try to focus if requested
 					if (this._requestedFocus && this.element && !this._hidden) {
 						this._requestedFocus = false;
-						(app.renderer as WebRenderer).tryFocusElement(this.element);
+						let elt = this._getFocusElement();
+						if (elt) (app.renderer as WebRenderer).tryFocusElement(elt);
 					}
 
 					// emit Rendered event
@@ -173,8 +174,8 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 	/** Focuses current element if possible */
 	onRequestFocus(event: ManagedEvent) {
 		if (event.source === this.observed) {
-			if (this.element)
-				(app.renderer as WebRenderer).tryFocusElement(this.element);
+			let elt = this._getFocusElement();
+			if (elt) (app.renderer as WebRenderer).tryFocusElement(elt);
 			else this._requestedFocus = true;
 		}
 	}
@@ -220,6 +221,14 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 				}
 			}
 		}
+	}
+
+	/** Helper method that returns a focusable (sub) element, with tabIndex */
+	private _getFocusElement() {
+		let element = this.element;
+		if (!element) return;
+		if (element.hasAttribute("tabIndex")) return element;
+		return element.querySelectorAll<HTMLElement>("[tabIndex]")[0];
 	}
 
 	/** Helper method that returns a list of all focusable siblings (with tabIndex) */

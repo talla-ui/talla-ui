@@ -71,10 +71,12 @@ export abstract class UIComponent extends View {
 		onKeyDown?: string;
 		/** Event that's emitted when a key button has been pressed */
 		onKeyPress?: string;
-		/** Event that's emitted when the Enter key button has been pressed */
-		onEnterKeyPress?: string;
-		/** Event that's emitted when the space bar button has been pressed */
+		/** Event that's emitted when the space bar has been pressed */
 		onSpacebarPress?: string;
+		/** Event that's emitted when the Enter key has been pressed */
+		onEnterKeyPress?: string;
+		/** Event that's emitted when the Tab key has been pressed */
+		onTabKeyPress?: string;
 		/** Event that's emitted when the Backspace key has been pressed */
 		onBackspaceKeyPress?: string;
 		/** Event that's emitted when the Delete key has been pressed */

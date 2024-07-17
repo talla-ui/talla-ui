@@ -300,8 +300,6 @@ Object.assign(ui.color, {
 	SUCCESS_BG: ui.color("SuccessBackground"),
 	PRIMARY: ui.color("Primary"),
 	PRIMARY_BG: ui.color("PrimaryBackground"),
-	ACCENT: ui.color("Accent"),
-	ACCENT_BG: ui.color("AccentBackground"),
 	BRAND: ui.color("Brand"),
 	BRAND_BG: ui.color("BrandBackground"),
 });
@@ -314,6 +312,7 @@ Object.assign(ui.icon, {
 	CHECK: ui.icon("Check"),
 	MENU: ui.icon("Menu"),
 	MORE: ui.icon("More"),
+	SEARCH: ui.icon("Search"),
 	PLUS: ui.icon("Plus"),
 	MINUS: ui.icon("Minus"),
 	CHEVRON_DOWN: ui.icon("ChevronDown"),

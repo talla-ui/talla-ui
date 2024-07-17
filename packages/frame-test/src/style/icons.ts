@@ -19,4 +19,5 @@ export const icons: [name: string, icon: UIIconResource][] = [
 	["Minus", new UIIconResource(`<svg id="test-minus"></svg>`)],
 	["Menu", new UIIconResource(`<svg id="test-menu"></svg>`)],
 	["More", new UIIconResource(`<svg id="test-more"></svg>`)],
+	["Search", new UIIconResource(`<svg id="test-search"></svg>`)],
 ];

@@ -87,6 +87,7 @@ export function makeBaseCSS() {
 			top: "0",
 			minHeight: "0",
 			flexShrink: "0",
+			zIndex: "0", // every cell has its own stacking context
 		},
 
 		// add special nesting rules for container elements

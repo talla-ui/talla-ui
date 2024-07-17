@@ -139,6 +139,7 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 				iconMargin: button.iconMargin,
 				chevron: button.chevron,
 				chevronSize: button.chevronSize,
+				chevronInset: button.chevronInset,
 				chevronColor: button.chevronColor,
 			},
 			true,

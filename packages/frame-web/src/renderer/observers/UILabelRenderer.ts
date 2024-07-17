@@ -110,6 +110,7 @@ type TextContentProperties = {
 	iconColor?: UIColor;
 	chevron?: "up" | "down" | "back" | "next";
 	chevronSize?: string | number;
+	chevronInset?: string | number;
 	chevronColor?: UIColor;
 };
 
@@ -182,6 +183,9 @@ export function setTextOrHtmlContent(
 		element.appendChild(chevronSpacer);
 		let chevronWrapper = document.createElement("span");
 		chevronWrapper.className = "_chevron-wrapper";
+		if (content.chevronInset !== undefined) {
+			chevronWrapper.style.insetInlineEnd = getCSSLength(content.chevronInset);
+		}
 		let chevronElement = getIconElt({
 			icon: CHEVRON_ICONS[content.chevron],
 			iconSize: content.chevronSize,

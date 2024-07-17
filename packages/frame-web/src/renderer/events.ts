@@ -67,6 +67,7 @@ const _listRolesPreventKeys: { [roleName: string]: boolean } = {
 	listitem: true,
 	table: true,
 	cell: true,
+	option: true,
 };
 
 /** Last time a touch event was handled, used for blocking clicks after touches */

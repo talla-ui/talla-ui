@@ -129,13 +129,17 @@ export class OutputMount {
 		// note that scroll gestures still need to work, so we listen for click
 		let start = Date.now();
 		const checkAndClose = (e: Event) => {
+			let view = this._lastView;
 			if (e.type !== "keydown" && Date.now() - start < 500) return;
 			if (
 				(e.target === shader || e.target === wrapper) &&
-				this._lastView &&
-				!this._lastView.isUnlinked()
+				view &&
+				!view.isUnlinked()
 			) {
-				this._lastView.emit("CloseModal");
+				view.emit("CloseModal");
+				if (e.type === "keydown" && !view.isUnlinked()) {
+					view.emit("EscapeKeyPress", { event: e });
+				}
 			}
 		};
 		shader.addEventListener("click", checkAndClose, true);

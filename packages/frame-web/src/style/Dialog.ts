@@ -4,6 +4,7 @@ import {
 	UITheme,
 	View,
 	ViewComposite,
+	ViewEvent,
 	app,
 	ui,
 } from "@desk-framework/frame-core";
@@ -57,6 +58,13 @@ export class Dialog extends ViewComposite implements UITheme.DialogController {
 
 	onDialogViewUnlinked() {
 		this.unlink();
+	}
+
+	onEscapeKeyPress(e: ViewEvent) {
+		if (e.source === this.body) {
+			// redirect escape key press on modal shader to inner view
+			this.dialogView?.emit("EscapeKeyPress", e.data);
+		}
 	}
 
 	show(place?: Partial<RenderContext.PlacementOptions>) {

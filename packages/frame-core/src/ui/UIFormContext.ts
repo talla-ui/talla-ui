@@ -1,4 +1,9 @@
-import { bind, ManagedObject, StringConvertible } from "../base/index.js";
+import {
+	bind,
+	Binding,
+	ManagedObject,
+	StringConvertible,
+} from "../base/index.js";
 import { AppException } from "../app/index.js";
 import { UIComponent } from "./UIComponent.js";
 
@@ -7,6 +12,16 @@ const REQUIRED_ERROR = AppException.type(
 	"FORM_REQUIRED",
 	"This field is required",
 );
+
+/** An object that can be used to create bindings for properties of the nearest `formContext` property */
+export const $formContext: Binding.Source<
+	| "values"
+	| `values.${string}`
+	| "errors"
+	| `errors.${string}`
+	| "errorCount"
+	| "valid"
+> = bind.$on("formContext", "formContext");
 
 /**
  * An object that contains form field data along with validation tests

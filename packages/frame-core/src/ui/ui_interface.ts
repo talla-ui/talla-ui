@@ -288,7 +288,6 @@ export interface ui {
 	 * @returns A new class that extends {@link UIViewRenderer}
 	 */
 	renderView(preset: ui.PresetType<UIViewRenderer>): ViewClass<UIViewRenderer>;
-	renderView(view: BindingOrValue<ViewClass>): ViewClass<UIViewRenderer>;
 
 	/**
 	 * Creates a preset {@link UIAnimationView} constructor using the provided options
@@ -377,8 +376,6 @@ export interface ui {
 		readonly SUCCESS_BG: UIColor;
 		readonly PRIMARY: UIColor;
 		readonly PRIMARY_BG: UIColor;
-		readonly ACCENT: UIColor;
-		readonly ACCENT_BG: UIColor;
 		readonly BRAND: UIColor;
 		readonly BRAND_BG: UIColor;
 	};
@@ -395,6 +392,7 @@ export interface ui {
 		readonly CHECK: UIIconResource;
 		readonly MENU: UIIconResource;
 		readonly MORE: UIIconResource;
+		readonly SEARCH: UIIconResource;
 		readonly PLUS: UIIconResource;
 		readonly MINUS: UIIconResource;
 		readonly CHEVRON_DOWN: UIIconResource;

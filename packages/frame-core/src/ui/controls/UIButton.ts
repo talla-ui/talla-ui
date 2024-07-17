@@ -87,6 +87,9 @@ export class UIButton extends UIComponent {
 	/** Chevron icon size (in pixels or string with unit) */
 	chevronSize?: string | number;
 
+	/** Space between chevron and the outside of the button (in pixels or string with unit) */
+	chevronInset?: string | number;
+
 	/** Chevron icon color */
 	chevronColor?: UIColor;
 

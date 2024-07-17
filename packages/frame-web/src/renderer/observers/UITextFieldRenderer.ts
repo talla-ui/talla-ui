@@ -37,6 +37,9 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 		let value = (this.element as HTMLInputElement).value;
 		if (this.observed!.value !== value) this.observed!.value = value;
 		data.value = value;
+		if (e.type === "focusin" && this.observed.selectOnFocus) {
+			(this.element as HTMLInputElement).select();
+		}
 	}
 
 	getOutput() {

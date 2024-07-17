@@ -31,8 +31,6 @@ export const colors: [name: string, color: UIColor][] = [
 	["SuccessBackground", new UIColor("Success")],
 	["Primary", new UIColor("Blue")],
 	["PrimaryBackground", new UIColor("Primary")],
-	["Accent", new UIColor("Purple")],
-	["AccentBackground", new UIColor("Accent")],
 	["Brand", new UIColor("Primary")],
 	["BrandBackground", new UIColor("Brand")],
 ];

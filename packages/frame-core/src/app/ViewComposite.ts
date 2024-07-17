@@ -67,6 +67,7 @@ export class ViewComposite extends View {
 			| ((values: TDefaults, ...content: ViewClass[]) => ViewClass),
 	): {
 		new (preset?: TPreset): ViewComposite & TDefaults;
+		whence: typeof ManagedObject.whence;
 	} {
 		return class DefaultsViewComposite extends ViewComposite {
 			constructor(p?: TPreset) {

@@ -19,7 +19,7 @@ export class UIAnimationView extends ViewComposite {
 		preset: View.ExtendPreset<
 			ViewComposite,
 			UIAnimationView,
-			"showAnimation" | "hideAnimation" | "repeatAnimation"
+			"showAnimation" | "hideAnimation" | "repeatAnimation" | "ignoreFirstShow"
 		>,
 	) {
 		if ((preset as any).Body) {
@@ -72,9 +72,13 @@ export class UIAnimationView extends ViewComposite {
 				} else {
 					this._lastOutput = output;
 					this._lastUpdate = _nextUpdateId++;
-					if (this.showAnimation && showing) {
-						// new output: play 'show' animation
-						this.playAsync(this.showAnimation).catch(errorHandler);
+					if (showing && (this._shown || !this.ignoreFirstShow)) {
+						// new output: play 'show' animation or clear
+						if (this.showAnimation) {
+							this.playAsync(this.showAnimation).catch(errorHandler);
+						} else if (output) {
+							this.playAsync({ async applyTransform(_) {} });
+						}
 					}
 					orig = orig(output, afterRender);
 
@@ -83,6 +87,7 @@ export class UIAnimationView extends ViewComposite {
 						this.playAsync(this.repeatAnimation, true);
 					}
 				}
+				if (showing) this._shown = true;
 				return result;
 			});
 		}
@@ -98,6 +103,10 @@ export class UIAnimationView extends ViewComposite {
 	/** Animation that will be played repeatedly after the content view is shown */
 	repeatAnimation?: RenderContext.OutputTransformer;
 
+	/** True if first appearance should not be animated */
+	ignoreFirstShow?: boolean;
+
 	private _lastOutput?: RenderContext.Output;
 	private _lastUpdate?: number;
+	private _shown?: boolean;
 }

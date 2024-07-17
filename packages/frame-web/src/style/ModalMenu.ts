@@ -260,7 +260,7 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 		let isLow: boolean | undefined;
 		let isRhs: boolean | undefined;
 		let isLhs: boolean | undefined;
-		if (bounds && bounds.height) {
+		if (bounds.height) {
 			if (bounds.bottom > window.innerHeight * 0.75) isLow = true;
 			if (bounds.left > window.innerWidth - 300) isRhs = true;
 			if (bounds.right < 300) isLhs = true;
@@ -285,21 +285,24 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 		}
 
 		// after rendering the menu, check that it fits on the screen
-		// (vertically), and move it up if needed
-		if (!isLow) {
-			let fixedVert = 0;
-			function checkFit() {
-				let menuBounds = elt.getBoundingClientRect();
-				if (!fixedVert && menuBounds && menuBounds.height) {
-					let roomBelow = window.innerHeight - menuBounds.bottom;
-					if (roomBelow < fixedVert) {
-						fixedVert = roomBelow;
-						elt.style.top = roomBelow + bounds.height - 4 + "px";
-					}
+		// (vertically), and move it up or down if needed
+		function checkFit() {
+			let menuBounds = elt.getBoundingClientRect();
+			if (menuBounds.top < 0) {
+				elt.style.bottom = "auto";
+				elt.style.top = -bounds.top - 4 + "px";
+			} else if (!isLow && menuBounds.height > 0) {
+				let roomBelow = window.innerHeight - menuBounds.bottom;
+				if (roomBelow < 0) {
+					let adjust = Math.max(-bounds.top, roomBelow + bounds.height - 4);
+					elt.style.top = adjust + "px";
 				}
 			}
-			setTimeout(checkFit, 250);
+
+			// now that animation is completed, make shader scrollable again
+			modalShader.style.overflow = "auto";
 		}
+		setTimeout(checkFit, 250);
 	}
 
 	private _resolve?: (key?: string) => void;
