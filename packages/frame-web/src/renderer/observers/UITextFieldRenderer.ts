@@ -83,13 +83,25 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 		if (element.placeholder !== placeholder) {
 			element.placeholder = placeholder;
 		}
-		if (!this.observed.multiline && element.type !== this.observed.type) {
-			element.type = this.observed.type;
+		if (!this.observed.multiline) {
+			if (
+				this.observed.type === "numeric" ||
+				this.observed.type === "decimal"
+			) {
+				element.inputMode = this.observed.type;
+				element.type = "text";
+			} else {
+				element.type = this.observed.type;
+				element.inputMode = "text";
+			}
 		}
 		if (this.observed.formField) element.name = this.observed.formField;
-		if (this.observed.enterKeyHint)
-			element.enterKeyHint = this.observed.enterKeyHint;
-		element.spellcheck = !this.observed.disableSpellCheck;
+		if (this.observed.enterKeyHint || element.hasAttribute("enterkeyhint")) {
+			element.enterKeyHint = this.observed.enterKeyHint || "";
+		}
+		if (this.observed.disableSpellCheck || element.hasAttribute("spellcheck")) {
+			element.spellcheck = !this.observed.disableSpellCheck;
+		}
 
 		let value = this.observed.value;
 		value = value == null ? "" : String(value);

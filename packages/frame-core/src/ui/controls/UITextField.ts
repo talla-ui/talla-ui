@@ -91,7 +91,11 @@ export class UITextField extends UIComponent {
 	/** Form context field name, used with {@link UIFormContext} */
 	formField?: string = undefined;
 
-	/** The input field type, defaults to `text` */
+	/**
+	 * The input field type, defaults to `text`
+	 * - The accepted values for this property are platform dependent. Examples that work well in most environments include `text`, `password`, `email`, `url`, `tel`, and `search`.
+	 * - For numeric input, the `number` type often changes alignment, validation, and adds built-in UI controls (a 'spinner' with up and down buttons). Since this is often not desirable, the special `numeric` and `decimal` types can be used with the web (DOM) renderer to control the touch screen keyboard type without changing the look and feel of the input element itself.
+	 */
 	type: UITextField.InputType | string = "text";
 
 	/** An optional type that determines the text to be displayed on touch screen 'enter' keys, where supported */
