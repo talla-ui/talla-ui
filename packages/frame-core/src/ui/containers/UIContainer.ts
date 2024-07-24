@@ -29,11 +29,7 @@ export abstract class UIContainer extends UIComponent {
 	 * - This method is called automatically. Do not call this method after constructing a UI component.
 	 */
 	override applyViewPreset(
-		preset: View.ExtendPreset<
-			UIComponent,
-			this,
-			"padding" | "layout" | "asyncContentRendering"
-		>,
+		preset: View.ExtendPreset<UIComponent, this, "padding" | "layout">,
 	) {
 		super.applyViewPreset(preset);
 	}
@@ -62,12 +58,6 @@ export abstract class UIContainer extends UIComponent {
 	 * - These options _override_ the defaults for the type of container.
 	 */
 	layout?: Readonly<UIContainer.Layout> = undefined;
-
-	/**
-	 * True if content views should be rendered asynchronously
-	 * - Setting this property to true should result in smoother updates, especially for containers with many content items. However, for containers with fewer, larger items, content view rendering may be delayed by a few milliseconds which may result in visual artifacts.
-	 */
-	asyncContentRendering?: boolean;
 }
 
 export namespace UIContainer {

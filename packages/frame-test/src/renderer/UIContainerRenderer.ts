@@ -85,10 +85,7 @@ export class UIContainerRenderer<
 	updateContent(element: TestOutputElement) {
 		let container = this.observed;
 		if (!this.contentUpdater) {
-			this.contentUpdater = new ContentUpdater(
-				container,
-				element,
-			).setAsyncRendering(container.asyncContentRendering);
+			this.contentUpdater = new ContentUpdater(container, element);
 			this.contentUpdater.awaitUpdateAsync();
 		}
 
@@ -148,12 +145,6 @@ export class ContentUpdater {
 	/** Current list of content items */
 	content: View[] = [];
 
-	/** Set async rendering flag; when enabled, all content is rendered asynchronously */
-	setAsyncRendering(async?: boolean) {
-		this._async = async;
-		return this;
-	}
-
 	/** Stop updating content asynchronously */
 	stop() {
 		this._stopped = true;
@@ -208,10 +199,11 @@ export class ContentUpdater {
 		if (!this._output.has(item)) {
 			// set output to undefined first, to avoid rendering again
 			this._output.set(item, undefined);
-			let isSync = true;
-			let lastOutput: RenderContext.Output<TestOutputElement> | undefined;
+			if (this._stopped) return;
 
 			// define rendering callback
+			let isSync = true;
+			let lastOutput: RenderContext.Output<TestOutputElement> | undefined;
 			const callback: RenderContext.RenderCallback<TestOutputElement> = (
 				output,
 				afterRender,
@@ -278,18 +270,12 @@ export class ContentUpdater {
 				return callback;
 			};
 
-			// invoke render method now or async
-			const doRender = () => {
-				if (this._stopped) return;
-				try {
-					item.render(callback as any);
-				} catch (err) {
-					app.log.error(err);
-				}
-			};
-			this._async && app.renderer
-				? app.renderer.schedule(() => doRender(), true)
-				: doRender();
+			// invoke render method
+			try {
+				item.render(callback as any);
+			} catch (err) {
+				app.log.error(err);
+			}
 
 			// set placeholder output if needed, to reduce diffing later
 			isSync = false;
@@ -309,21 +295,15 @@ export class ContentUpdater {
 	/** Returns a promise that's resolved after the current update ends; OR schedules a new update and returns a new promise */
 	async awaitUpdateAsync() {
 		if (this._updateP) return this._updateP;
-		if (this._async) {
-			await new Promise((r) => setTimeout(r, 1));
-		}
-		if (!this._updateP) {
-			this._updateP = new Promise((r) => {
-				this._updateResolve = r;
-			});
-			if (app.renderer) app.renderer.schedule(() => this.update());
-			else this.update();
-		}
+		this._updateP = new Promise((r) => {
+			this._updateResolve = r;
+		});
+		if (app.renderer) app.renderer.schedule(() => this.update());
+		else this.update();
 		return this._updateP;
 	}
 
 	private _stopped?: boolean;
-	private _async?: boolean;
 	private _updateP?: Promise<void>;
 	private _updateResolve?: () => void;
 	private _output = new Map<View, RenderContext.Output | undefined>();

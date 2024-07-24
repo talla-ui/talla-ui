@@ -10,6 +10,8 @@ import {
 import { ERROR, err } from "../../errors.js";
 import { UIContainer } from "../containers/index.js";
 
+const ASYNC_BATCH_SIZE = 100;
+
 /** Label property used to filter bindings using $list */
 const $_list_bind_label = Symbol("list");
 
@@ -48,13 +50,16 @@ export class UIListView<
 				this.list._contentMap?.clear();
 			}
 			async doUpdateAsync() {
-				if (this._pending) return;
-				this._pending = true;
+				if (this._sync) return;
+				this._sync = true;
 				await Promise.resolve();
-				this._pending = false;
-				this.list?._updateItems(ItemBody, BookEnd);
+				this._sync = false;
+				if (this._running) this._running.abort = true;
+				this._running = { abort: false };
+				this.list?._updateItems(ItemBody, BookEnd, this._running);
 			}
-			private _pending?: boolean;
+			private _sync?: boolean;
+			private _running?: { abort: boolean };
 		};
 	}
 
@@ -86,7 +91,7 @@ export class UIListView<
 		preset: View.ExtendPreset<
 			ViewComposite,
 			UIListView,
-			"firstIndex" | "maxItems"
+			"firstIndex" | "maxItems" | "asyncUpdate"
 		> & {
 			/** List of objects, either an array, {@link ManagedList} object, or binding for either */
 			items?: BindingOrValue<Iterable<any>>;
@@ -113,6 +118,9 @@ export class UIListView<
 	 * - When updated, a {@link UIListView.ItemControllerView} view instance is created for each list item and added to the {@link ViewComposite.body} container.
 	 */
 	declare items?: ManagedList<TItem>;
+
+	/** True if the list should be populated asynchronously, to avoid blocking other UI updates */
+	asyncUpdate = false;
 
 	/**
 	 * Index of first item to be shown in the list
@@ -234,7 +242,11 @@ export class UIListView<
 	}
 
 	/** Update the container with (existing or new) components, one for each list item; only called from list observer */
-	private _updateItems(ItemBody: ViewClass, BookEnd?: ViewClass) {
+	private async _updateItems(
+		ItemBody: ViewClass,
+		BookEnd?: ViewClass,
+		cancel?: { abort?: boolean },
+	) {
 		if (this.isUnlinked()) return;
 
 		// use entire list, or just a part of it
@@ -273,12 +285,20 @@ export class UIListView<
 			}
 			components.push(component);
 			map.set(item, component);
+			if (this.asyncUpdate) {
+				if (cancel?.abort) return;
+				if (components.length % ASYNC_BATCH_SIZE === 0) {
+					await new Promise((r) => setTimeout(r, 0));
+					content.replaceAll(components);
+				}
+			}
 		}
 		if (BookEnd) {
 			let last = content.last();
 			components.push(last instanceof BookEnd ? last : new BookEnd());
 		}
 		this._contentMap = map;
+		if (cancel?.abort) return;
 		content.replaceAll(components);
 
 		// emit an event specific to this UIList
