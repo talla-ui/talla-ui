@@ -17,6 +17,7 @@ const _color_bg = ui.color.BACKGROUND;
 const _color_clear = ui.color.CLEAR;
 const _color_text = ui.color.TEXT;
 const _color_controlBase = ui.color.CONTROL_BASE;
+const _color_inherit = ui.color("inherit");
 
 const baseButtonStyle: CombinedStyleType = {
 	padding: { y: 6, x: 12 },
@@ -64,10 +65,10 @@ const pressedNotDisabled: CombinedStyleType = {
 function makeButtonStyle(
 	styles: CombinedStyleType | undefined,
 	bg: UIColor,
+	fg = bg.text(),
 	baseBg?: UIColor,
 	baseFg?: UIColor,
 ) {
-	let fg = bg.text();
 	return [
 		{
 			...baseButtonStyle,
@@ -115,6 +116,7 @@ export const styles: [
 		makeButtonStyle(
 			undefined,
 			ui.color.DANGER_BG,
+			undefined,
 			_color_controlBase,
 			ui.color.DANGER,
 		),
@@ -123,9 +125,10 @@ export const styles: [
 		"PlainButton",
 		makeButtonStyle(
 			{ minWidth: 0 },
-			_color_controlBase,
+			_color_text.alpha(0.1),
+			_color_inherit,
 			_color_clear,
-			_color_text,
+			_color_inherit,
 		),
 	],
 	[
@@ -157,9 +160,10 @@ export const styles: [
 					transition: "background 0.2s ease, border-color 0.2s ease",
 				},
 			},
-			_color_controlBase,
+			_color_text.alpha(0.1),
+			_color_inherit,
 			_color_clear,
-			_color_text,
+			_color_inherit,
 		),
 	],
 	[

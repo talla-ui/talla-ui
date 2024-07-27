@@ -132,10 +132,16 @@ export interface ui {
 	jsx(f: string, presets: any, ...rest: any[]): ViewClass;
 
 	/**
-	 * Creates a preset view that renders the embedded view as a full-screen page
+	 * Creates a preset view that renders the embedded view as a full-screen scrollable page
 	 * - This function is equivalent to `ui.mount({ page: true }, content)`
 	 */
 	page(content: ViewClass): ViewClass;
+
+	/**
+	 * Creates a preset view that renders the embedded view as a full-screen view
+	 * - This function is equivalent to `ui.mount({ screen: true }, content)`
+	 */
+	screen(content: ViewClass): ViewClass;
 
 	/**
 	 * Creates a preset view that renders the embedded view with the specified placement options
@@ -335,6 +341,10 @@ export interface ui {
 	use<TPreset extends {}, TInstance extends ViewComposite>(
 		viewComposite: { new (preset?: TPreset): TInstance },
 		preset: NoInfer<TPreset>,
+		...content: ViewClass[]
+	): typeof viewComposite;
+	use<TInstance extends ViewComposite>(
+		viewComposite: { new (preset?: {}): TInstance },
 		...content: ViewClass[]
 	): typeof viewComposite;
 

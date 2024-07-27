@@ -179,6 +179,29 @@ describe("JSX", () => {
 		expect(labels[1]).toHaveProperty("text").asString().toBe("bar");
 	});
 
+	test("Component with defaults", async (t) => {
+		const MyView = ViewComposite.define(
+			{ foo: 123 },
+			<label>{strf("Foo is %[foo]")}</label>,
+		);
+		useTestContext((options) => {
+			options.renderFrequency = 5;
+		});
+		t.render(new (ui.use(MyView))());
+		await t.expectOutputAsync(50, { text: "Foo is 123" });
+	});
+
+	test("Component with content", async (t) => {
+		const MyView = ViewComposite.define({}, (_values, ...content) => (
+			<row>{...content}</row>
+		));
+		useTestContext((options) => {
+			options.renderFrequency = 5;
+		});
+		t.render(new (ui.use(MyView, ui.label("Foo")))());
+		await t.expectOutputAsync(50, { text: "Foo" });
+	});
+
 	test("Component with bound content", async (t) => {
 		class MyView extends ViewComposite {
 			constructor(p?: { foo?: BindingOrValue<number> }) {

@@ -1,4 +1,4 @@
-import { RenderContext, app } from "@desk-framework/frame-core";
+import { RenderContext, app, View } from "@desk-framework/frame-core";
 import { CLASS_OVERLAY_WRAPPER } from "./css.js";
 
 // Note: it's tempting to come up with some dazzling effects here,
@@ -21,12 +21,8 @@ export const effects: [
 			"20",
 		),
 	],
-	[
-		"DragModal",
-		{
-			applyEffect: applyDraggable,
-		},
-	],
+	["DragModal", { applyEffect: applyDragModal }],
+	["DragRelative", { applyEffect: applyDragRelative }],
 ];
 
 function makeBoxShadowEffect(
@@ -47,7 +43,7 @@ let _dragStart = 0;
 // keep track of elements that were already dragged
 let _draggedElements = new WeakMap<HTMLElement, { x: number; y: number }>();
 
-function applyDraggable(element: HTMLElement) {
+function applyDragModal(element: HTMLElement) {
 	if (element.dataset.appliedDragModalEffect) return;
 	element.dataset.appliedDragModalEffect = "true";
 	element.addEventListener("mousedown", handlePress);
@@ -136,4 +132,97 @@ function applyDraggable(element: HTMLElement) {
 		window.addEventListener("mouseup", upHandler, true);
 		window.addEventListener("click", upHandler, true);
 	}
+}
+
+function applyDragRelative(element: HTMLElement, source: View) {
+	let lastEvent: MouseEvent | TouchEvent | undefined;
+	let lastRect: DOMRect | undefined;
+	let lastParentRect: DOMRect | undefined;
+	let lastWidth = 0;
+	let lastHeight = 0;
+	let lastParentWidth = 0;
+	let lastParentHeight = 0;
+	let lastScrollTop = 0;
+	let lastScrollLeft = 0;
+	let pending = false;
+	let parentElts: HTMLElement[] | undefined;
+
+	function findParentElts() {
+		parentElts = [];
+		let p = element.parentElement;
+		while (p) {
+			parentElts.unshift(p);
+			let classes = p.className.split(/\s+/);
+			if (classes.includes("__Cl")) return;
+			p = p.parentElement;
+		}
+	}
+
+	function handleMoveEvent(e: MouseEvent | TouchEvent) {
+		if (!parentElts || !parentElts.length) return;
+		let parentElt = parentElts[0] as HTMLElement;
+		lastEvent = e;
+		lastRect = element.getBoundingClientRect();
+		lastParentRect = parentElt.getBoundingClientRect();
+		lastWidth = element.scrollWidth;
+		lastHeight = element.scrollHeight;
+		lastParentWidth = parentElt.scrollWidth;
+		lastParentHeight = parentElt.scrollHeight;
+		lastScrollLeft = parentElts.reduce((s, p) => s + p.scrollLeft, 0);
+		lastScrollTop = parentElts.reduce((s, p) => s + p.scrollTop, 0);
+		if (pending) return;
+		app.renderer!.schedule(() => {
+			pending = false;
+			if (!lastEvent || !lastRect || !lastParentRect) return;
+			let clientX =
+				(e as MouseEvent).clientX ?? (e as TouchEvent).touches[0]?.clientX;
+			let clientY =
+				(e as MouseEvent).clientY ?? (e as TouchEvent).touches[0]?.clientY;
+			let left = clientX - lastRect.x + lastScrollLeft;
+			let top = clientY - lastRect.y + lastScrollTop;
+			let parentLeft = clientX - lastParentRect.x + lastScrollLeft;
+			let parentTop = clientY - lastParentRect.y + lastScrollTop;
+			source.emit("DragRelative", {
+				event: lastEvent,
+				left,
+				top,
+				parentLeft,
+				parentTop,
+				right: lastWidth - left,
+				bottom: lastHeight - top,
+				parentRight: lastParentWidth - parentLeft,
+				parentBottom: lastParentHeight - parentTop,
+			});
+		}, true);
+		pending = true;
+	}
+
+	function handleUpEvent() {
+		window.removeEventListener("mouseup", handleUpEvent, { capture: true });
+		window.removeEventListener("mousemove", handleMoveEvent, {
+			capture: true,
+		});
+		window.removeEventListener("touchend", handleUpEvent, {
+			capture: true,
+		});
+		window.removeEventListener("touchmove", handleMoveEvent, {
+			capture: true,
+		});
+	}
+
+	element.addEventListener("mousedown", () => {
+		findParentElts();
+		window.addEventListener("mouseup", handleUpEvent, { capture: true });
+		window.addEventListener("mousemove", handleMoveEvent, {
+			capture: true,
+		});
+	});
+
+	element.addEventListener("touchstart", () => {
+		findParentElts();
+		window.addEventListener("touchend", handleUpEvent, { capture: true });
+		window.addEventListener("touchmove", handleMoveEvent, {
+			capture: true,
+		});
+	});
 }

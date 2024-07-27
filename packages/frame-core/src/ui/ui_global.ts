@@ -78,6 +78,10 @@ _ui.page = function (content: ViewClass) {
 	return _ui.mount({ page: true }, content);
 };
 
+_ui.screen = function (content: ViewClass) {
+	return _ui.mount({ screen: true }, content);
+};
+
 _ui.mount = function (
 	options:
 		| { page: true }
@@ -167,6 +171,10 @@ _ui.use = function <TPreset extends {}, TInstance extends ViewComposite>(
 	preset: NoInfer<TPreset>,
 	...content: ViewClass[]
 ): typeof viewComposite {
+	if (typeof preset === "function") {
+		content.unshift(preset as any);
+		preset = {} as any;
+	}
 	let C: ViewClass | undefined | void;
 	return class PresetViewComposite extends (viewComposite as any) {
 		constructor(p?: TPreset) {

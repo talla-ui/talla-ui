@@ -42,6 +42,7 @@ export class UIAnimationView extends ViewComposite {
 
 		// loop if repeating, otherwise run transform just once
 		let update = this._lastUpdate;
+		await Promise.resolve();
 		while (this.body && this._lastUpdate === update) {
 			await renderer.animateAsync(output, animation);
 			if (!repeat) return;
@@ -65,10 +66,10 @@ export class UIAnimationView extends ViewComposite {
 						.catch(errorHandler)
 						.then(() => {
 							if (this._lastUpdate === updateId) {
-								this._lastOutput = undefined;
 								orig = orig(output, afterRender);
 							}
 						});
+					this._lastOutput = undefined;
 				} else {
 					this._lastOutput = output;
 					this._lastUpdate = _nextUpdateId++;
