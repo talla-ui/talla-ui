@@ -46,6 +46,21 @@ describe("JSX", () => {
 		expect(label).toHaveProperty("text").asString().toBe("Foo");
 	});
 
+	test("Single component with interpolated text", () => {
+		let MyLabel = <label>Foo {"foo"}</label>;
+		expect(new MyLabel()).toHaveProperty("text").asString().toBe("Foo foo");
+	});
+
+	test("Single component with interpolated text, number", () => {
+		let MyLabel = <label>Foo {123}</label>;
+		expect(new MyLabel()).toHaveProperty("text").asString().toBe("Foo 123");
+	});
+
+	test("Single component with interpolated text, number upfront", () => {
+		let MyLabel = <label>{123}. Foo</label>;
+		expect(new MyLabel()).toHaveProperty("text").asString().toBe("123. Foo");
+	});
+
 	test("Single component with lazy string", () => {
 		let MyLabel = <label>{strf("Foo")}</label>;
 		let label = new MyLabel();

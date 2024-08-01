@@ -11,6 +11,7 @@ import { ERROR, err } from "../../errors.js";
 import { UIContainer } from "../containers/index.js";
 
 const ASYNC_BATCH_SIZE = 100;
+const DEFAULT_MAX_DELAY_COUNT = 100;
 
 /** Label property used to filter bindings using $list */
 const $_list_bind_label = Symbol("list");
@@ -91,7 +92,7 @@ export class UIListView<
 		preset: View.ExtendPreset<
 			ViewComposite,
 			UIListView,
-			"firstIndex" | "maxItems" | "asyncUpdate"
+			"firstIndex" | "maxItems" | "renderOptions"
 		> & {
 			/** List of objects, either an array, {@link ManagedList} object, or binding for either */
 			items?: BindingOrValue<Iterable<any>>;
@@ -119,8 +120,11 @@ export class UIListView<
 	 */
 	declare items?: ManagedList<TItem>;
 
-	/** True if the list should be populated asynchronously, to avoid blocking other UI updates */
-	asyncUpdate = false;
+	/**
+	 * Render options, including asynchronous and delayed rendering
+	 * - These options can be used for staggered animation, or to avoid blocking other parts of the UI while rendering lists with many items all in one go.
+	 */
+	renderOptions?: UIListView.RenderOptions;
 
 	/**
 	 * Index of first item to be shown in the list
@@ -278,6 +282,10 @@ export class UIListView<
 		let existing = this._contentMap;
 		let map = new Map<ManagedObject, UIListView.ItemControllerView<TItem>>();
 		let components: View[] = [];
+		let { async, delayEach, maxDelayCount } = this.renderOptions || {};
+		if (delayEach) async = true;
+		if (!maxDelayCount) maxDelayCount = DEFAULT_MAX_DELAY_COUNT;
+		let n = 0;
 		for (let item of items) {
 			let component = existing && existing.get(item);
 			if (!component) {
@@ -285,13 +293,18 @@ export class UIListView<
 			}
 			components.push(component);
 			map.set(item, component);
-			if (this.asyncUpdate) {
+			if (async) {
 				if (cancel?.abort) return;
-				if (components.length % ASYNC_BATCH_SIZE === 0) {
-					await new Promise((r) => setTimeout(r, 0));
+				let timeout = delayEach || 0;
+				if (
+					(delayEach && n < maxDelayCount) ||
+					components.length % ASYNC_BATCH_SIZE === 0
+				) {
 					content.replaceAll(components);
+					await new Promise((r) => setTimeout(r, timeout));
 				}
 			}
+			n++;
 		}
 		if (BookEnd) {
 			let last = content.last();
@@ -322,6 +335,21 @@ export class UIListView<
 }
 
 export namespace UIListView {
+	/**
+	 * An object that contains options for (asynchronous) list rendering
+	 * - Set `async` to true to enable asynchronous rendering.
+	 * - Set `delayEach` to a number of milliseconds, to delay rendering eah consecutive item in the list.
+	 * - Set `maxDelayCount` to the maximum number of items to render with delay (to avoid taking too long to render a long list)
+	 */
+	export type RenderOptions = {
+		/** Set to true to enable asynchronous rendering */
+		async?: boolean;
+		/** Set to a number of milliseconds to delay rendering each consecutive item in the list */
+		delayEach?: number;
+		/** The maximum number of items to render with delay (to avoid taking too long to render a long list) */
+		maxDelayCount?: number;
+	};
+
 	/**
 	 * A managed object class containing a single list item value
 	 * @see {@link UIListView}

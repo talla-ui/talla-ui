@@ -1,6 +1,6 @@
 import { RenderContext, UITextField, ui } from "@desk-framework/frame-core";
-import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 import { applyStyles } from "../../style/DOMStyle.js";
+import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 
 /** @internal */
 export class UITextFieldRenderer extends BaseObserver<UITextField> {
@@ -34,12 +34,15 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 	}
 
 	override onDOMEvent(e: Event, data: any) {
-		let value = (this.element as HTMLInputElement).value;
-		if (this.observed!.value !== value) this.observed!.value = value;
-		data.value = value;
 		if (e.type === "focusin" && this.observed.selectOnFocus) {
 			(this.element as HTMLInputElement).select();
 		}
+		if (e.type !== "input" && e.type !== "change") return;
+		let value = (this.element as HTMLInputElement).value;
+		if (this.observed!.value !== value) {
+			this.observed!.value = value;
+		}
+		data.value = value;
 	}
 
 	getOutput() {

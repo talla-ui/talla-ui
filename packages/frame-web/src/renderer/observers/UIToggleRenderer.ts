@@ -1,6 +1,6 @@
 import { RenderContext, UIToggle, ui } from "@desk-framework/frame-core";
 import { applyStyles } from "../../style/DOMStyle.js";
-import { CLASS_TOGGLE_TYPE, CLASS_TOGGLE } from "../../style/defaults/css.js";
+import { CLASS_TOGGLE, CLASS_TOGGLE_TYPE } from "../../style/defaults/css.js";
 import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 
 let _nextId = 0;
@@ -29,6 +29,7 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 	}
 
 	override onDOMEvent(e: Event, data: any) {
+		if (e.type !== "input" && e.type !== "change") return;
 		let checkbox = this.element!.firstChild as HTMLInputElement;
 		if (this.observed!.state !== checkbox.checked) {
 			this.observed!.state = checkbox.checked;

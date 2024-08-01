@@ -40,8 +40,14 @@ export function jsx(tag: any, presets: any, ...rest: any[]): ViewClass {
 		if (r instanceof LazyString) {
 			r = String(r.getOriginal());
 		}
-		if (typeof r === "string") {
-			fmt += r.replace(
+		if (r instanceof Binding) {
+			bindings[nBindings] = r;
+			fmt += "%[" + nBindings + "]";
+			nBindings++;
+		} else if (typeof r === "function") {
+			components.push(r);
+		} else {
+			fmt += String(r).replace(
 				/\%\[([^\]\:\s\=]+)(?:\=([^\]\:\s]*))?/g,
 				(s, id, path) => {
 					if (!bindings[id]) {
@@ -52,12 +58,6 @@ export function jsx(tag: any, presets: any, ...rest: any[]): ViewClass {
 				},
 			);
 			hasText = true;
-		} else if (r instanceof Binding) {
-			bindings[nBindings] = r;
-			fmt += "%[" + nBindings + "]";
-			nBindings++;
-		} else {
-			components.push(r);
 		}
 	}
 

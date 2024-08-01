@@ -1,11 +1,10 @@
+import { AppException, View } from "../app/index.js";
 import {
 	bind,
 	Binding,
 	ManagedObject,
 	StringConvertible,
 } from "../base/index.js";
-import { AppException } from "../app/index.js";
-import { UIComponent } from "./UIComponent.js";
 
 /** Error that's used when a required property is missing */
 const REQUIRED_ERROR = AppException.type(
@@ -331,16 +330,24 @@ export namespace UIFormContext {
 		}
 	}
 
-	/** @internal Bind to the `formContext` property and get/set values (reused for textfield and toggle) */
-	export function bindFormContext<
-		THost extends UIComponent & { formField?: string },
-	>(
+	/**
+	 * Maintain the intrinsic value of a view based on its `formField` property and the closest (bound) `formContext` reference
+	 *
+	 * @summary This function is used by {@link UITextField} and {@link UIToggle} to keep their values in sync with a bound {@link UIFormContext}, if their `formField` property has been set. This function can also be used on custom views such as {@link ViewComposite} instances, to support the use of {@link UIFormContext} to keep track of an intrinsic value.
+	 *
+	 * @note Do not call this function more than once for the same view instance. In most cases, it should be called only from the view constructor or `beforeRender` method of a {@link ViewComposite} object.
+	 *
+	 * @param host The view instance that contains a `formField` property
+	 * @param setValue A function that's used to update the view's intrinsic value, called with the new value as a single parameter
+	 * @param getValue A function that's used to get the view's intrinsic value, to update the form context after a 'Change' or 'Input' event has been emitted by the view.
+	 */
+	export function listen<THost extends View & { formField?: string }>(
 		host: THost,
 		setValue: (this: THost, value: any) => void,
 		getValue: (this: THost) => any,
 	) {
 		let formContext: UIFormContext | undefined;
-		_boundFormContext.bindTo(host, (ctx, bound) => {
+		_boundFormContext.bindTo(host, (ctx) => {
 			formContext = ctx;
 			if (ctx && host.formField) {
 				setValue.call(host, ctx.get(host.formField));

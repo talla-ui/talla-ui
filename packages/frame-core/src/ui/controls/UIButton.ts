@@ -1,13 +1,13 @@
+import { NavigationTarget, View } from "../../app/index.js";
 import {
 	Binding,
 	BindingOrValue,
 	LazyString,
 	StringConvertible,
 } from "../../base/index.js";
-import { NavigationTarget, View } from "../../app/index.js";
 import type { UIColor } from "../UIColor.js";
-import type { UIIconResource } from "../UIIconResource.js";
 import { UIComponent } from "../UIComponent.js";
+import type { UIIconResource } from "../UIIconResource.js";
 import type { UIStyle } from "../UIStyle.js";
 
 /**
@@ -113,7 +113,7 @@ export class UIButton extends UIComponent {
 	 * An option value that this button represents, if any
 	 * - This property isn't rendered in any way, but it may be used to find out which button was clicked in a group of buttons.
 	 */
-	value?: string;
+	value?: unknown;
 
 	/** True to disable keyboard focus (e.g. Tab key) for this button */
 	disableKeyboardFocus?: boolean;

@@ -19,7 +19,7 @@ export class UIToggle extends UIComponent {
 		this.state = !!state;
 
 		// get and set form context value using `formContext` binding
-		UIFormContext.bindFormContext(
+		UIFormContext.listen(
 			this,
 			function (value) {
 				this.state = !!value;

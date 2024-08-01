@@ -19,7 +19,7 @@ export class UITextField extends UIComponent {
 		this.value = value || "";
 
 		// get and set form context value using `formContext` binding
-		UIFormContext.bindFormContext(
+		UIFormContext.listen(
 			this,
 			function (value) {
 				this.value = value === undefined ? "" : String(value);
