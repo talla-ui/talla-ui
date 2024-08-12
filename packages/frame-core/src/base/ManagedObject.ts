@@ -25,7 +25,7 @@ export function isManagedObject(object: any): object is ManagedObject {
  * The base class of all managed objects, which can be placed into a tree structure to enable event handling and data binding
  *
  * @description
- * The ManagedObject class is the core construct that powers framework concepts such as event handling and property binding. Many of the other classes are derived from ManagedObject, including {@link ManagedList} and {@link ManagedRecord}. This class provides the following features:
+ * The ManagedObject class is the core construct that powers framework concepts such as event handling and property binding. Many of the other classes are derived from ManagedObject, including {@link ManagedList}. This class provides the following features:
  *
  * **Object lifecycle** — The {@link ManagedObject.unlink unlink()} method marks an object as stale, and disables the other features below. Objects can add additional lifecycle behavior by overriding the {@link ManagedObject.beforeUnlink beforeUnlink()} method.
  *

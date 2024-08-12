@@ -15,6 +15,7 @@ import {
 	UITextField,
 	ViewComposite,
 	app,
+	strf,
 	ui,
 } from "../../../dist/index.js";
 
@@ -33,8 +34,8 @@ describe("UIFormContext", () => {
 	test("Constructor", () => {
 		let ctx = new UIFormContext();
 		expect(ctx.values).toBeDefined();
+		expect(ctx.errors).toBeDefined();
 		expect(ctx.valid).toBe(true);
-		expect(ctx.get("foo")).toBeUndefined();
 	});
 
 	test("Set, no validation", () => {
@@ -42,155 +43,101 @@ describe("UIFormContext", () => {
 		let counter = new ChangeCounter(ctx);
 		ctx.set("foo", "bar");
 		expect(ctx.values).toHaveProperty("foo").toBe("bar");
-		ctx.set("", 123);
+		ctx.set("" as any, 123);
 		expect(ctx.values).not.toHaveProperty("");
 		expect(counter.changes).toBe(1);
 	});
 
-	test("Set all, with validation", () => {
+	test("Clear values", () => {
 		let ctx = new UIFormContext();
-		ctx.addRequired("foo");
-		ctx.setAll({ foo: "bar", baz: 123 }, true);
-		expect(ctx.errorCount).toBe(0);
-		ctx.setAll({ foo: "", baz: 321 }, true);
-		expect(ctx.errorCount).toBe(1);
-	});
-
-	test("Serialization", () => {
-		let ctx = new UIFormContext({ foo: "bar", baz: 123 });
-		let serialized = ctx.serialize();
-		ctx.set("foo", "1234");
-		expect(serialized)
-			.asJSONString()
-			.toMatchRegExp(/"foo":"bar"/);
-		expect(serialized)
-			.asJSONString()
-			.toMatchRegExp(/"baz":123/);
-	});
-
-	test("Automatic number conversion", () => {
-		let ctx = new UIFormContext();
-		ctx.set("baz", 123);
-		ctx.set("baz", "1234");
-		expect(ctx.values).toHaveProperty("baz").toBe(1234);
-	});
-
-	test("Test that always fails", () => {
-		let ctx = new UIFormContext().addTest("foo", () => {
-			throw Error();
-		});
-		expect(ctx.validate("foo")).toBe(false);
-		expect(ctx.errors).toHaveProperty("foo");
-		expect(ctx.valid).toBe(false);
-	});
-
-	test("Test that always passes", () => {
-		let ctx = new UIFormContext().addTest("foo", () => {});
-		let counter = new ChangeCounter(ctx);
-		expect(ctx.validate("foo")).toBe(true);
-		ctx.set("foo", "bar", true);
-		expect(counter.changes).toBe(1);
-		expect(ctx.errors).not.toHaveProperty("foo");
+		ctx.set("foo", "bar");
+		expect(ctx.values).toHaveProperty("foo");
+		ctx.clear();
+		expect(ctx.values).toBeDefined();
+		expect(ctx.errors).toBeDefined();
+		expect(ctx.values).not.toHaveProperty("foo");
 		expect(ctx.valid).toBe(true);
 	});
 
-	test("Multiple validations", (t) => {
-		let ctx = new UIFormContext({ foo: "bar", baz: 123 })
-			.addRequired("baz")
-			.addTest("foo", (t) =>
-				t.assert(String(t.value).length >= 3, "Too short"),
-			);
+	test("Validation", (t) => {
+		let ctx = new UIFormContext({
+			foo: {
+				string: {
+					required: { err: "Foo is required" },
+					min: { length: 3, err: "Too short" },
+				},
+			},
+			baz: { number: {}, optional: true },
+		});
+
+		t.log("No validation yet");
 		let counter = new ChangeCounter(ctx);
-		ctx.set("baz", 123, true); // nothing happens
+		ctx.set("baz", 123); // no validation
+		ctx.set("baz", 123); // nothing happens
 		ctx.set("foo", "b"); // no validation
 		ctx.set("baz", undefined); // no validation
-		t.log("Test no-validation");
-		expect(counter.changes, "Change counter").toBe(2);
+		expect(counter.changes, "Change counter").toBe(3);
+		expect(ctx.valid).toBe(true);
 		expect(ctx.errors).not.toHaveProperty("foo");
 		expect(ctx.errors).not.toHaveProperty("baz");
 
-		t.log("Validate all");
-		ctx.validateAll();
-		ctx.validate("nonExistent" as any);
+		t.log("Calling validate()");
+		expect(ctx.validate(), "validate() result").toBeUndefined();
 		expect(ctx.errors).toHaveProperty("foo");
 		expect(ctx.errors.foo)
 			.asString()
 			.toMatchRegExp(/Too short/);
-		expect(ctx.errors).toHaveProperty("baz");
-		expect(ctx.errorCount, "Error count").toBe(2);
+		expect(ctx.errors).not.toHaveProperty("baz");
 		expect(ctx.valid).toBe(false);
-		expect(counter.changes, "Change counter").toBe(3);
-
-		t.log("Validate using set");
-		ctx.set("foo", "b", true);
-		expect(counter.changes, "Change counter").toBe(3);
-		ctx.set("foo", "123", true);
-		expect(ctx.errorCount, "Error count").toBe(1);
 		expect(counter.changes, "Change counter").toBe(4);
 
-		t.log("Add empty test");
-		ctx.addTest("baz", () => {});
-		ctx.set("baz", undefined, true);
-		expect(ctx.errorCount, "Error count").toBe(0);
+		t.log("Set again after validation");
+		ctx.set("foo", "b");
+		expect(counter.changes, "Change counter").toBe(4);
+		ctx.set("foo", "c");
+		expect(ctx.errors).toHaveProperty("foo");
+		expect(ctx.valid).toBe(false);
 		expect(counter.changes, "Change counter").toBe(5);
-	});
-
-	test("Unset", () => {
-		let ctx = new UIFormContext({ foo: "bar", baz: 123 }).addTest("foo", () => {
-			throw Error();
-		});
-		ctx.set("foo", "bar");
-		ctx.unset("foo");
-		expect(ctx.values).not.toHaveProperty("foo");
-		expect(ctx.values).toHaveProperty("baz");
+		ctx.set("foo", "123");
 		expect(ctx.errors).not.toHaveProperty("foo");
-
-		expect(() => ctx.unset("boo" as any)).not.toThrowError();
-	});
-
-	test("Clear", () => {
-		let ctx = new UIFormContext({ foo: "bar", baz: 123 });
-		ctx.addTest("x" as any, () => {
-			throw Error();
-		});
-		ctx.validateAll();
-		ctx.clear();
-		expect(ctx.values).not.toHaveProperty("foo");
-		expect(ctx.values).not.toHaveProperty("baz");
-		expect(ctx.errors).not.toHaveProperty("x");
+		expect(ctx.valid).toBe(true);
+		expect(ctx.validate()).toBeDefined();
+		expect(counter.changes, "Change counter").toBe(6);
 	});
 
 	test("Composite, binding to value and error", () => {
-		let ctx = new UIFormContext({ foo: "bar" }).addTest("foo", (t) => {
-			t.assert(t.value && t.value.length > 1, "Too short");
-		});
+		let ERR = "Foo must have at least 3 characters";
+		let ctx = new UIFormContext({
+			foo: { string: { min: { length: 3, err: strf(ERR) } } },
+		}).set("foo", "bar");
+
 		const MyComp = ViewComposite.define(
 			{ formContext: undefined as UIFormContext | undefined },
 			ui.row(
-				ui.label($view.bind("formContext.errors.foo")),
+				ui.label($view.bind("formContext.errors.foo.message")),
 				ui.textField({ formField: "foo" }),
 			),
 		);
+
 		let view = new MyComp();
 		expect(view).toHaveProperty("formContext");
-		view.render((() => {}) as any);
+		view.render((() => {}) as any); // force render to get reference to body
 		let row = view.body as UIRow;
 		let [label, tf] = row.content.toArray() as [UILabel, UITextField];
 		view.formContext = ctx;
 
 		// set and check text field
 		expect(tf.value).toBe("bar");
-		ctx.set("foo", "123");
+		ctx.set("foo", 123);
 		expect(tf.value).toBe("123");
 		expect(label.text).toBe(undefined);
 
-		// set invalid (other way around) and check label
+		// set invalid (using text box), validate, and check label
 		tf.value = "1";
 		tf.emit("Change");
+		expect(ctx.validate(), "validate() result").toBeUndefined();
 		expect(ctx.errors, "formContext errors").toHaveProperty("foo");
-		expect(label.text)
-			.asString()
-			.toMatchRegExp(/Too short/);
+		expect(label.text).asString().toBe(ERR);
 	});
 
 	test("Custom form container, rendered", async (t) => {
@@ -219,8 +166,8 @@ describe("UIFormContext", () => {
 			protected override createView() {
 				return new ViewBody();
 			}
-			form1 = new UIFormContext({ text: "foo" });
-			form2 = new UIFormContext({ text: "bar" });
+			form1 = new UIFormContext().set("text", "foo");
+			form2 = new UIFormContext().set("text", "bar");
 		}
 		let activity = new MyActivity();
 		app.addActivity(activity, true);
@@ -231,7 +178,7 @@ describe("UIFormContext", () => {
 		).getSingle();
 		elt1.value = "123";
 		elt1.sendPlatformEvent("change");
-		expect(activity.form1.get("text")).toBe("123");
+		expect(activity.form1.values.text).toBe("123");
 
 		// find second text field and set value
 		let elt2 = (
@@ -239,6 +186,6 @@ describe("UIFormContext", () => {
 		).getSingle();
 		elt2.value = "456";
 		elt2.sendPlatformEvent("change");
-		expect(activity.form2.get("text")).toBe("456");
+		expect(activity.form2.values.text).toBe("456");
 	});
 });

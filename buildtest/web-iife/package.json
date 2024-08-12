@@ -5,7 +5,7 @@
 	"description": "A build test using IIFE in pure JS",
 	"scripts": {
 		"postinstall": "node setup/copy-lib",
-		"start": "http-server site -o"
+		"start": "http-server site -o -g"
 	},
 	"dependencies": {
 		"@desk-framework/frame-core": "../../packages/frame-core",

@@ -7,6 +7,12 @@ fs.writeFileSync(
 	fs.readFileSync("node_modules/@desk-framework/frame-web/" + baseName + ".js"),
 );
 fs.writeFileSync(
+	"site/" + baseName + ".js.gz",
+	fs.readFileSync(
+		"node_modules/@desk-framework/frame-web/" + baseName + ".js.gz",
+	),
+);
+fs.writeFileSync(
 	"site/" + baseName + ".js.map",
 	fs.readFileSync(
 		"node_modules/@desk-framework/frame-web/" + baseName + ".js.map",

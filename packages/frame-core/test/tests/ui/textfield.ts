@@ -78,7 +78,7 @@ describe("UITextField", (scope) => {
 	test("User input with form context", async (t) => {
 		class Host extends ManagedObject {
 			// note that formContext must exist before it can be bound
-			readonly formContext = new UIFormContext({ foo: "bar" });
+			readonly formContext = new UIFormContext().set("foo", "bar");
 			readonly tf = this.attach(new UITextField());
 		}
 		let host = new Host();
@@ -100,6 +100,6 @@ describe("UITextField", (scope) => {
 		t.log("Updating element to set form context");
 		tfElt.value = "baz";
 		tfElt.sendPlatformEvent("input");
-		expect(host.formContext.get("foo")).toBe("baz");
+		expect(host.formContext.values.foo).toBe("baz");
 	});
 });

@@ -8,6 +8,7 @@ import {
 } from "@desk-framework/frame-test";
 import {
 	Activity,
+	AppSettings,
 	MessageDialogOptions,
 	NavigationTarget,
 	UIButton,
@@ -27,6 +28,34 @@ describe("TestContext", () => {
 		let app = useTestContext();
 		expect(app.renderer).toBeInstanceOf(TestRenderer);
 		expect(app.navigation).toBeInstanceOf(TestNavigationContext);
+	});
+
+	describe("App settings", () => {
+		test("Empty app settings", () => {
+			let app = useTestContext();
+			expect(app.settings).toBeInstanceOf(AppSettings);
+			expect(app.settings.read({ foo: { optional: true } }))
+				.toHaveProperty("0")
+				.toHaveProperty("foo")
+				.toBeUndefined();
+		});
+
+		test("Specified app settings", () => {
+			let app = useTestContext({ appSettings: { foo: 123 } });
+			expect(app.settings.read({ foo: { number: {} } }))
+				.toHaveProperty("0")
+				.toHaveProperty("foo")
+				.toBe(123);
+		});
+
+		test("Write and read app settings", () => {
+			let app = useTestContext({ appSettings: { foo: 123 } });
+			app.settings.write({ foo: 321 });
+			expect(app.settings.read({ foo: { number: {} } }))
+				.toHaveProperty("0")
+				.toHaveProperty("foo")
+				.toBe(321);
+		});
 	});
 
 	describe("Navigation paths", () => {

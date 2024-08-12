@@ -719,7 +719,19 @@ export class FileParser {
 		this._log(cur, "expectSingleType");
 
 		// parse type prefixes
-		if (this.expectToken(cur, TokenType.Keyword, "infer")) cur++;
+		if (this.expectToken(cur, TokenType.Keyword, "infer")) {
+			// peek ahead to catch `infer X extends ...` patterns
+			if (
+				this.expectToken(cur + 1, TokenType.Keyword) &&
+				this.expectToken(cur + 2, TokenType.Keyword, "extends")
+			) {
+				// swallow all `infer X extends` tokens to parse type after it
+				cur += 3;
+			} else {
+				// this is just an `infer X` pattern, read it by itself
+				cur++;
+			}
+		}
 		if (this.expectToken(cur, TokenType.Keyword, "keyof")) cur++;
 		if (this.expectToken(cur, TokenType.Keyword, "typeof")) cur++;
 		if (this.expectToken(cur, TokenType.Keyword, "unique")) cur++;

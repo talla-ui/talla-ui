@@ -60,7 +60,7 @@ describe("UIToggle", (scope) => {
 	test("User input with form context", async (t) => {
 		class Host extends ManagedObject {
 			// note that formContext must exist before it can be bound
-			readonly formContext = new UIFormContext({ foo: true });
+			readonly formContext = new UIFormContext().set("foo", true);
 			readonly toggle = this.attach(new UIToggle());
 		}
 		let host = new Host();
@@ -82,6 +82,6 @@ describe("UIToggle", (scope) => {
 		t.log("Updating element to set form context");
 		toggleElt.checked = false;
 		toggleElt.sendPlatformEvent("change");
-		expect(host.formContext.get("foo")).toBe(false);
+		expect(host.formContext.values.foo).toBe(false);
 	});
 });

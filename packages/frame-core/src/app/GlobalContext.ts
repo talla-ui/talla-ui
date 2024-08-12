@@ -8,6 +8,7 @@ import { ERROR, err, safeCall, setErrorHandler } from "../errors.js";
 import { UITheme } from "../ui/UITheme.js";
 import { Activity } from "./Activity.js";
 import { ActivityContext } from "./ActivityContext.js";
+import { AppSettings } from "./AppSettings.js";
 import type { I18nProvider } from "./I18nProvider.js";
 import { LogWriter } from "./LogWriter.js";
 import { MessageDialogOptions } from "./MessageDialogOptions.js";
@@ -164,6 +165,12 @@ export class GlobalContext extends ManagedObject {
 	 * - Refer to {@link LogWriter} for available methods of `app.log`.
 	 */
 	log = new LogWriter();
+
+	/**
+	 * Persisted settings data, made available as an instance of {@link AppSettings}
+	 * - Settings data is persisted in a platform-dependent way. While testing, settings data is only persisted during the lifetime of the global test context.
+	 */
+	settings = new AppSettings();
 
 	/**
 	 * Clears the state of the global application context

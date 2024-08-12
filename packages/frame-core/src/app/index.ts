@@ -12,6 +12,7 @@ export * from "./Activity.js";
 export * from "./View.js";
 export * from "./ViewComposite.js";
 export * from "./LogWriter.js";
+export * from "./AppSettings.js";
 export * from "./MessageDialogOptions.js";
 export * from "./GlobalContext.js";
 export * from "./app_binding.js";

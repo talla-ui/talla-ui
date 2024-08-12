@@ -1,6 +1,6 @@
-import { ManagedRecord } from "@desk-framework/frame-core";
+import { ManagedObject } from "@desk-framework/frame-core";
 
-export class SearchResult extends ManagedRecord {
+export class SearchResult extends ManagedObject {
 	constructor(
 		public id: string,
 		public title: string,
@@ -28,6 +28,7 @@ export class Search {
 	index: SearchResult[] = [];
 
 	async loadJsonAsync(url: string) {
+		// TODO: use ObjectReader
 		let request = await fetch(url);
 		let json = request.ok ? await request.json() : undefined;
 		if (Array.isArray(json)) {

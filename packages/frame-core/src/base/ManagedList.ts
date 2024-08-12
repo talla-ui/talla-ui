@@ -52,11 +52,11 @@ const $_list = Symbol("list");
  *
  * @example
  * // Create a list, add and remove objects
- * let a = ManagedRecord.create({ foo: "a" });
- * let b = ManagedRecord.create({ foo: "b" });
+ * let a = Object.assign(new ManagedObject(), { foo: "a" })
+ * let b = Object.assign(new ManagedObject(), { foo: "b" })
  * let list = new ManagedList(a, b);
  *
- * let c = ManagedRecord.create({ foo: "c" });
+ * let c = Object.assign(new ManagedObject(), { foo: "c" })
  * list.add(c);
  * list.count // => 3
  *

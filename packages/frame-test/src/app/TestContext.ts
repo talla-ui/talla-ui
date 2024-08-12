@@ -1,5 +1,6 @@
 import {
 	ActivityContext,
+	AppSettings,
 	ConfigOptions,
 	GlobalContext,
 	app,
@@ -36,6 +37,9 @@ export class TestContextOptions extends ConfigOptions {
 
 	/** True if all logs (using `app.log`) should be captured and added to currently running test(s) */
 	captureLogs = false;
+
+	/** App settings, i.e. data made available through `app.settings`; must be serializable as JSON */
+	appSettings: Record<string, unknown> = {};
 }
 
 /**
@@ -82,6 +86,10 @@ export function useTestContext(config?: ConfigOptions.Arg<TestContextOptions>) {
 
 	// create test navigation path and set initial path
 	app.navigation = new TestNavigationContext(options);
+
+	// reset app settings
+	app.settings = new AppSettings();
+	app.settings.write(options.appSettings);
 
 	return app as TestContext;
 }

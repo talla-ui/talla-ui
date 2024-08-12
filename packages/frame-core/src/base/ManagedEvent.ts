@@ -21,7 +21,7 @@ const NO_DATA = Object.freeze({});
  *
  * @example
  * // Emitting an event from a managed object
- * let obj = ManagedRecord.create({ foo: "bar" });
+ * let obj = Object.assign(new ManagedObject(), { foo: "bar" });
  * obj.emit("Foo");
  * obj.emit("Foo", { baz: 123 })
  *
