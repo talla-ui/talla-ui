@@ -58,7 +58,7 @@ export const $formContext: Binding.Source<
 export class UIFormContext<
 	TSchema extends ObjectReader.Schema = Record<string, ObjectReader.SchemaRule>,
 > extends ManagedObject {
-	/** Creates a new instance with the provided (default) values */
+	/** Creates a new instance with the provided validation schema */
 	constructor(schema?: TSchema) {
 		super();
 		this.schema = schema || ({} as any);
