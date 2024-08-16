@@ -107,7 +107,7 @@ export class UIButton extends UIComponent {
 	 * The current visual selection state
 	 * - This property is not set automatically. It can be set manually, or bound using {@link Binding.matches()} to select and deselect the button based on the current value of a property.
 	 */
-	pressed = false;
+	pressed?: boolean = undefined;
 
 	/**
 	 * An option value that this button represents, if any
