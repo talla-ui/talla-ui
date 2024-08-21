@@ -78,6 +78,8 @@ export namespace ui {
 		page?: true;
 		/** True if the view should be rendered as a full-screen page */
 		screen?: true;
+		/** Window background color */
+		background?: UIColor;
 		/** Target mount ID (e.g. HTML element `id`) */
 		id?: string;
 		/** Custom placement options */

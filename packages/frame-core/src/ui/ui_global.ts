@@ -82,23 +82,18 @@ _ui.screen = function (content: ViewClass) {
 	return _ui.mount({ screen: true }, content);
 };
 
-_ui.mount = function (
-	options:
-		| { page: true }
-		| { id: string }
-		| { place: RenderContext.PlacementOptions },
-	content: ViewClass,
-) {
-	let place: RenderContext.PlacementOptions =
+_ui.mount = function (options: ui.MountPlacement, content: ViewClass) {
+	let place: RenderContext.PlacementOptions | undefined =
 		"page" in options && options.page
 			? { mode: "page" }
 			: "screen" in options && options.screen
 				? { mode: "screen" }
 				: "id" in options
 					? { mode: "mount", mountId: options.id }
-					: "place" in options
-						? options.place
-						: { mode: "none" };
+					: options.place || { mode: "none" };
+	if (options.background) {
+		place = { ...place, background: options.background };
+	}
 	return class PresetMount extends View {
 		constructor() {
 			super();

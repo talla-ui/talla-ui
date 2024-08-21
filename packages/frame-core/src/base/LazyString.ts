@@ -227,7 +227,7 @@ export class LazyString extends String {
 	 * - `#{a/b}`, `#{a/b/c}` for pluralization: select an option based on the quantity (a number) from the _first_ value in the parameter list (e.g. `strf("%i file#{/s}", n)`)
 	 * - `#n${a/b}`, `#n${a/b/c}` to select an option based on a quantity that's passed as a different argument, at position _n_ (1-based index, e.g. `strf("User %s has %i message#2${/s}", userName, nMessages)`)
 	 * - `%[property:plural|a|b]` for pluralization based on a property from the first argument
-	 * - `%n` (non-standard) general-purpose number format, never results in exponential notation
+	 * - `%n` (non-standard) general-purpose number format, avoids some rounding issues and turns NaN into blank string
 	 * - `%_` to insert nothing at all (blank string)
 	 * - `%{uc}`, `%{lc}` to convert strings to uppercase or lowercase
 	 * - `%{s|abc}` to insert a string, or `abc` if the string is empty or not defined
@@ -373,7 +373,7 @@ export namespace LazyString {
 					break;
 				case "n":
 				case "N":
-					s = v.toFixed(p6);
+					s = isNaN(v) ? "" : v.toFixed(p6);
 					if (s.indexOf(".") >= 0) s = s.replace(/\.?0+$/, "");
 					break;
 				case "f":

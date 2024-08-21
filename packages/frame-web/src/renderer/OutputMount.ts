@@ -225,24 +225,25 @@ export class OutputMount {
 			return;
 		}
 
-		if (this._inner) {
-			// always remove inner element first, if any
+		// remove the inner element (if it's not the same as outer)
+		if (this._inner && this._inner !== this._outer) {
 			this._inner.remove();
 			this._inner = undefined;
 		}
 
 		if (this._shader) {
-			// fade out background within 200ms
+			// fade out background (within 200ms, see below)
 			this._shader.style.background = "";
-			setTimeout(() => {
+		}
+
+		// remove the outer element, asynchronously
+		setTimeout(
+			() => {
 				this._outer!.remove();
 				this._updateTitle();
-			}, 200);
-		} else if (this._outer) {
-			// otherwise, remove outer element right away, if any
-			this._outer.remove();
-			this._updateTitle();
-		}
+			},
+			this._shader ? 200 : 20,
+		);
 	}
 
 	/** Updates the document title according to the title of the last mount in the DOM */

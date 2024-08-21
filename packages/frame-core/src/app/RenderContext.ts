@@ -1,4 +1,5 @@
 import { ManagedObject } from "../base/index.js";
+import { UIColor } from "../ui/index.js";
 import { invalidArgErr, safeCall } from "../errors.js";
 import { app } from "./app.js";
 import { View } from "./View.js";
@@ -82,6 +83,7 @@ export namespace RenderContext {
 		ref?: Output;
 		refOffset?: number | [number, number];
 		shade?: boolean;
+		background?: UIColor;
 		transform?: Readonly<{
 			show?: OutputTransformer;
 			hide?: OutputTransformer;

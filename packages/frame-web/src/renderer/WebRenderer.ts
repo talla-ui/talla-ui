@@ -88,7 +88,7 @@ export class WebRenderer extends RenderContext {
 								scroll = true;
 							case "screen":
 								mount.createPageElement(
-									this._pageBackground,
+									place.background || this._pageBackground,
 									scroll,
 									this._getTitle(output.source),
 								);
@@ -101,7 +101,8 @@ export class WebRenderer extends RenderContext {
 									place.ref && (place.ref.element as any),
 									place.refOffset,
 									this._reducedMotion,
-									place.shade ? this._modalBackground : "transparent",
+									place.background ||
+										(place.shade ? this._modalBackground : "transparent"),
 									isModal,
 								);
 								break;
