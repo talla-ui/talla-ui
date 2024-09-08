@@ -33,8 +33,9 @@ export class Search {
 		let json = request.ok ? await request.json() : undefined;
 		if (Array.isArray(json)) {
 			for (let it of json) {
-				let [id, title, abstract, url] = it;
-				this.index.push(new SearchResult(id, title, abstract, url));
+				let [id, urlId, title, abstract] = it;
+				if (urlId === "index") continue;
+				this.index.push(new SearchResult(id, title, abstract, urlId + ".html"));
 			}
 			this._baseQuery = new Query("", this.index);
 		}

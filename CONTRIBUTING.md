@@ -97,7 +97,7 @@ To generate and view a coverage report (using the C8 tool), use the following co
 
 ```sh
 npm run test-c8
-npx http-server coverage
+npx http-server .coverage
 ```
 
 `frame-web` package — there are currently no automated tests for this package. However, several different output formats can be tested using the following commands.

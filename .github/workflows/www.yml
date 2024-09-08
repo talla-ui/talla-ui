@@ -18,10 +18,9 @@ jobs:
       - uses: actions/configure-pages@v4
       - run: npm install
       - run: npm run build
-      - run: npm run generate-docs
-      - run: npm run merge-docs
+      - run: npm run www-build
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: "_site"
+          path: "docs/_site"
       - uses: actions/deploy-pages@v4
         id: deployment

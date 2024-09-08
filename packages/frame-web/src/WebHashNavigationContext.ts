@@ -12,9 +12,10 @@ let _eventListenerAdded = false;
  * A class that manages the application navigation path using the DOM location 'hash' value
  * - This class is used automatically when {@link WebContextOptions.useHistoryAPI} is set to false.
  * @see {@link useWebContext()}
- * @hideconstructor
+ * @docgen {hideconstructor}
  */
 export class WebHashNavigationContext extends NavigationContext {
+	/** Creates a new instance; do not use directly */
 	constructor(options: WebContextOptions) {
 		super();
 		this._basePath = options.basePath.replace(/^[#\/]+/, "");

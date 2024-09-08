@@ -1,9 +1,9 @@
-/_site
+_site/
 dist/
 lib/
 node_modules/
 build/
 .test-run/
-coverage/
+.coverage/
 *.log
 npm-debug.log*

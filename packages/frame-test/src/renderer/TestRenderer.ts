@@ -18,9 +18,10 @@ const MAX_SCHED_RUNTIME = 30;
  * A class that represents a rendered message dialog (for testing)
  * - This class can be used to validate the contents of a message dialog, and to click its buttons (asynchronously).
  * - To wait for a message dialog to be rendered, use the {@link TestCase.expectMessageDialogAsync()} method and use the returned object.
- * @hideconstructor
+ * @docgen {hideconstructor}
  */
 export class RenderedTestMessageDialog {
+	/** Creates a new instance; do not use directly */
 	constructor(dialogOutput: OutputAssertion) {
 		this.labels.push(...dialogOutput.containing({ type: "label" }).elements);
 		this.buttons.push(...dialogOutput.containing({ type: "button" }).elements);
@@ -62,12 +63,10 @@ export class RenderedTestMessageDialog {
 /**
  * A class that represents an in-memory application render context
  * - This class behaves mostly like a 'real' renderer, but only keeps rendered elements in memory. The elements can be queried and validated using e.g. {@link TestCase.expectOutputAsync()}.
+ * @docgen {hideconstructor}
  */
 export class TestRenderer extends RenderContext {
-	/**
-	 * Creates a new render context instance, used by {@link useTestContext()}
-	 * @hideconstructor
-	 */
+	/** Creates a new render context instance, used by {@link useTestContext()} */
 	constructor(options: TestContextOptions) {
 		super();
 		this._queue = app.scheduler.createQueue(

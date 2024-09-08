@@ -49,7 +49,7 @@ function initPage() {
 	// 	let doc = iframe.contentDocument!;
 	// 	doc.write(`
 	// 		<!DOCTYPE html><body></body>
-	// 		<script src=\"/lib/desk-framework-web.es2018.iife.min.js\"></script>
+	// 		<script src=\"/lib/desk-framework-web.es2015.iife.min.js\"></script>
 	// 		<script src="${jsUrl}"></script>
 	// 	`);
 	// 	doc.close();
@@ -116,7 +116,8 @@ function setPage(text: string, url: string, back?: HistoryState) {
 		document.body.replaceWith(doc.body);
 		app.renderer!.remount();
 		initPage();
-		(window as any).docs_initPage?.();
+		(window as any).init_docspage?.();
+		(window as any).init_icons?.();
 		window.scrollTo(0, back?._scroll || 0);
 		document.documentElement.style.scrollBehavior = "";
 		return true;

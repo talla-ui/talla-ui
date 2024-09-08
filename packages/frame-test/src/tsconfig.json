@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
-		"pretty": true,
 		"declaration": true,
+		"pretty": true,
 		"stripInternal": true,
 		"strict": true,
 		"noImplicitAny": true,

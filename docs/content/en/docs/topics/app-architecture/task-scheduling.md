@@ -1,20 +1,17 @@
 ---
-title: Task scheduling
 folder: topics
 abstract: Use task queues to manage lists of prioritized asynchronous tasks.
 ---
 
 # Task scheduling
 
-> {@include abstract}
-
-## Overview {#overview}
+## Overview <!--{#overview}-->
 
 Task scheduling is a common requirement in many applications, whether to control or throttle a long series of callbacks, or to manage a group of asynchronous parallel tasks. Desk provides a simple way to manage such tasks, with the ability to start, pause, resume, and cancel tasks as needed, using the {@link AsyncTaskQueue} object.
 
 - {@link AsyncTaskQueue +}
 
-## Creating a task queue {#creating}
+## Creating a task queue <!--{#creating}-->
 
 Task queues can be created either using the {@link Activity} class, or using the global {@link Scheduler} object that's part of the app context, available as `app.scheduler`.
 
@@ -54,7 +51,7 @@ const apiFetchQueue = app.scheduler.createQueue(
 );
 ```
 
-## Controlling a task queue {#controlling}
+## Controlling a task queue <!--{#controlling}-->
 
 Once a task queue has been created, tasks will start running as soon as they're added to the queue. You can control the queue using the following methods:
 
@@ -64,7 +61,7 @@ Once a task queue has been created, tasks will start running as soon as they're 
 
 > **Note:** Currently running (already-called) tasks can't be stopped, but any tasks that haven’t been invoked will no longer run on a stopped queue. Asynchronous tasks that have already been started should check the `cancelled` property of the AsyncTaskQueue.Task function argument if needed (see below).
 
-## Adding tasks to a queue {#adding}
+## Adding tasks to a queue <!--{#adding}-->
 
 To add a task to a queue, use the {@link AsyncTaskQueue.add()} method with a function argument. The function will be called when the task is started (asynchronously), and if the function returns a promise, the promise will be awaited before the task is considered complete.
 
@@ -108,7 +105,7 @@ queue.add(async (task) => {
 });
 ```
 
-## Waiting for tasks to complete {#waiting}
+## Waiting for tasks to complete <!--{#waiting}-->
 
 **Checking the current count** — After tasks have been added and the queue has been started, you can use the read-only `count` property to check the number of pending tasks in the queue (including those that are currently being awaited).
 

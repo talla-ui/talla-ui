@@ -8,7 +8,7 @@ import { View } from "./View.js";
  * An abstract class that supports global view rendering, part of the global application context
  * - This class is implemented by a platform renderer, e.g. to render components to the browser DOM, or in-memory (for testing). Most of these methods should not be used directly by an application.
  * - The current renderer, once initialized, should be available as {@link GlobalContext.renderer app.renderer}.
- * @hideconstructor
+ * @docgen {hideconstructor}
  */
 export abstract class RenderContext extends ManagedObject {
 	/** Returns a render callback for root view output; do not use directly */
@@ -181,9 +181,10 @@ export namespace RenderContext {
 
 	/**
 	 * An object that encapsulates a rendered output element, created by the global rendering context
-	 * @hideconstructor
+	 * @docgen {hideconstructor}
 	 */
 	export class Output<TElement = unknown> {
+		/** Creates a new output object; do not use directly */
 		constructor(source: View, element: TElement, place?: PlacementOptions) {
 			this.source = source;
 			this.element = element;
@@ -210,7 +211,7 @@ export namespace RenderContext {
 	 * A class that's used to render a view referenced by a property
 	 * - Objects of this type are created by the {@link GlobalContext.render app.render()} method, and are mostly used internally to keep track of rendering state asynchronously.
 	 *
-	 * @hideconstructor
+	 * @docgen {hideconstructor}
 	 */
 	export class ViewController {
 		/** The current render callback, if any */

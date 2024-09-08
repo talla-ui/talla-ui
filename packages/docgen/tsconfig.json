@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noImplicitOverride": true,
+		"noUncheckedIndexedAccess": true,
+		"skipLibCheck": true,
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"declaration": true,
+		"target": "ES2020",
+		"types": ["@types/node"],
+		"outDir": "dist"
+	},
+	"include": ["src/*"]
+}

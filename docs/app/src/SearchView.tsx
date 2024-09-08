@@ -12,7 +12,7 @@ const TextFieldStyle = ui.style.TEXTFIELD.extend(
 	},
 	{
 		[UIStyle.STATE_FOCUSED]: true,
-		borderColor: ui.color.PRIMARY,
+		borderColor: ui.color("var(--primary-boldest)"),
 	},
 );
 const CloseButtonStyle = ui.style.BUTTON_ICON.extend(
@@ -39,7 +39,7 @@ const ResultCellStyle = ui.style.CELL.extend(
 	},
 	{
 		[UIStyle.STATE_FOCUSED]: true,
-		borderColor: ui.color.PRIMARY,
+		borderColor: ui.color("var(--primary-boldest)"),
 		borderThickness: 2,
 	},
 );
@@ -95,7 +95,9 @@ export default (
 							>
 								<column align="start">
 									<row>
-										<label style={{ fontWeight: 500, shrink: 0 }}>
+										<label
+											style={{ fontWeight: "var(--bold-weight)", shrink: 0 }}
+										>
 											{$list.string("item.title")}
 										</label>
 										<label dim>{$list.string("item.showId")}</label>

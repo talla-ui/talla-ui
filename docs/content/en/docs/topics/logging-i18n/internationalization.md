@@ -1,14 +1,11 @@
 ---
-title: Internationalization
 folder: topics
 abstract: Learn how to make your Desk application adaptable to different languages and regions, using the built-in internationalization features.
 ---
 
 # Internationalization
 
-> {@include abstract}
-
-## Overview {#overview}
+## Overview <!--{#overview}-->
 
 To make your application adaptable to different languages and regions, you'll need to prepare your code so that it can be easily localized (i.e. internationalize your application). The Desk framework provides a number of features to help you with this.
 
@@ -20,7 +17,7 @@ In general, the following areas of your application may need to be adapted:
 
 While views are typically flexible enough to adapt to different languages, starting off with a good internationalization strategy can help to avoid issues with text and formatting as your app grows in complexity.
 
-## Making text localizable {#text}
+## Making text localizable <!--{#text}-->
 
 To make sure that user-facing text is localizable using the Desk framework, avoid handling text in the following ways:
 
@@ -168,7 +165,7 @@ For more information on message dialogs, refer to the following article:
 
 - {@link message-dialogs}
 
-## Creating an i18n provider {#provider}
+## Creating an i18n provider <!--{#provider}-->
 
 The mechanism by which Desk translates and formats lazily-evaluated strings includes an **i18n provider**. This provider is responsible for providing translations, pluralizers, and formatters for the current locale.
 
@@ -278,7 +275,7 @@ class MyI18nProvider implements I18nProvider {
 }
 ```
 
-## Adjusting views {#views}
+## Adjusting views <!--{#views}-->
 
 To accommodate for translated text in your app, your may need to adjust your view layout.
 

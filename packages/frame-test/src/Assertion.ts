@@ -452,7 +452,7 @@ export class Assertion<T> {
 
 /**
  * Represents a value ready to be asserted, using inverse logic
- * @hideconstructor
+ * @docgen {hideconstructor}
  */
 export class NegatedAssertion<T> extends Assertion<T> {
 	/** Asserts that the value is not strictly equal to given value (using the `!==` operator) */

@@ -35,6 +35,8 @@ export type ViewEvent<
  *
  * @see {@link UIComponent}
  * @see {@link ViewComposite}
+ *
+ * @docgen {hideconstructor}
  */
 export abstract class View extends ManagedObject {
 	/**

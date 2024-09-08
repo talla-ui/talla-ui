@@ -21,7 +21,10 @@
 		"clean": "rimraf dist .test-run",
 		"prebuild": "npm run clean",
 		"build": "tsc -p src",
-		"test": "tsc -p test && node .test-run/test",
+		"postbuild": "prettier --log-level error --write \"dist/**/*.d.ts\"",
+		"pretest": "tsc -p test",
+		"test": "node .test-run/test",
+		"posttest": "rimraf .test-run",
 		"check-format": "prettier --check \"{src,test}/**/*.{ts,tsx}\""
 	},
 	"prettier": {

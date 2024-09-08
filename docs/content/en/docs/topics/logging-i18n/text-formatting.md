@@ -1,14 +1,11 @@
 ---
-title: Text formatting
 folder: topics
 abstract: Learn how text and data can be formatted, combined, and translated using Desk functions and classes.
 ---
 
 # Text formatting
 
-> {@include abstract}
-
-## Overview {#overview}
+## Overview <!--{#overview}-->
 
 Text formatting is a core concept in Desk, that's tightly integrated with many other parts of the framework.
 
@@ -20,7 +17,7 @@ User-facing text is therefore typically represented using the {@link StringConve
 
 - {@link StringConvertible +}
 
-## Creating a formatted string {#strf}
+## Creating a formatted string <!--{#strf}-->
 
 To create an object that represents a formatted and translatable string, with or without placeholders (see below), you can use the {@link strf()} function. This function returns a {@link LazyString} object, with its own `toString()` method.
 
@@ -38,7 +35,7 @@ The `toString()` method of the lazily evaluated string returned by `strf(...)` �
 - Uses {@link LazyString.format()} to fill in any placeholders with formatted values, if any
 - Uses {@link LazyString.cache()} to retain the result (typically, until the current {@link I18nProvider} is changed)
 
-## Using placeholders {#placeholders}
+## Using placeholders <!--{#placeholders}-->
 
 The string that's passed to `strf()` can contain placeholders for data that should be filled in when the string is evaluated. Placeholders are loosely based on the syntax of the `printf()` function in C, starting with a `%` character.
 
@@ -73,7 +70,7 @@ Some useful placeholders include:
 - `%[name:i]` — A named placeholder with an integer value
 - `%[name:local|date]` — A named placeholder with a value that should be formatted as a date, using the current i18n provider (see {@link internationalization})
 
-## Creating a formatted string binding {#bound-strf}
+## Creating a formatted string binding <!--{#bound-strf}-->
 
 The same features that make `strf()` useful for creating internationalized and formatted strings can be used to create a **binding** that represents a lazily formatted string. Using a string-formatted binding, you can automatically update text properties based on the value of _multiple_ other properties, combined into a single string.
 
@@ -97,7 +94,7 @@ The syntax of the format string is the same as for `strf()`, and the placeholder
 
 > **Note:** The resulting string is only initialized when _all_ individual bindings are bound. For example, a string-formatted binding that depends on bindings `user.name` and `dayOfTheWeek` only takes a (string) value when both `user` and `dayOfTheWeek` are found on any attached parent. Bindings may be bound to different containing objects, and the resulting string will be updated whenever _any_ of the individual bound values change.
 
-## Displaying formatted text {#ui}
+## Displaying formatted text <!--{#ui}-->
 
 You can assign the result of `strf()` directly to a property any UI component that displays text, such as a label, button, or text field (for its placeholder text).
 
@@ -174,7 +171,7 @@ For more information, refer to the following article:
 
 - {@link message-dialogs}
 
-## Formatting log messages {#logs}
+## Formatting log messages <!--{#logs}-->
 
 Log messages can also be formatted using the `strf()` function. When the result is passed to a {@link LogWriter} method, the log message is formatted **and** any data that was passed to `strf()` can be stored in a structured format (if supported by the log output sink).
 

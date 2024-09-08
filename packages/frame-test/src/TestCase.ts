@@ -27,12 +27,11 @@ let stopAll = false;
  *     t.fail(new Error("Whoops!"));
  *   });
  * });
+ *
+ * @docgen {hideconstructor}
  */
 export class TestCase {
-	/**
-	 * Creates a new test case; do not use directly.
-	 * @hideconstructor
-	 */
+	/** Creates a new test case; do not use directly */
 	constructor(
 		scope: TestScope,
 		name: string,

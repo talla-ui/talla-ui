@@ -1,20 +1,17 @@
 ---
-title: Assertions
 folder: topics
 abstract: Learn how to create and use assertions using the `expect()` function.
 ---
 
 # Assertions
 
-> {@include abstract}
-
-## Overview {#overview}
+## Overview <!--{#overview}-->
 
 When testing your application, a test run consists of several different _test cases_, typically run in quick succession. Each test is meant to either return successfully or throw an error. Sometimes a failing test 'naturally' throws an error (from elsewhere in your code), but more often tests include _assertions_ to validate certain values during the test run. An assertion compares a particular value based on an expected condition, and throws an error if the condition isn't met.
 
 The Desk test library provides a fluent API for creating assertions, including a wide range of assertion methods for different types of values. Assertions throw errors that are caught by the test (scope) runner, which then marks the test as failed with a detailed error message that includes the assertion and actual value(s).
 
-## Creating an assertion {#expect}
+## Creating an assertion <!--{#expect}-->
 
 The {@link expect()} function creates an assertion object for a particular value. However, the assertion itself doesn't actually validate anything yet. The returned object is an instance of {@link Assertion}, which contains different methods to compare the encapsulated value based on a particular condition — for example, the `.toBe()` method which checks for strict equality with another specified value.
 
@@ -97,7 +94,7 @@ These methods _fail_ if the function or method doesn't throw an error. They can 
 
 If you're not sure whether a function or method throws an error, but also don't want to fail if an error was thrown, you can use the {@link TestCase.tryRun()} and {@link TestCase.tryRunAsync()} methods.
 
-## Conversion {#conversion}
+## Conversion <!--{#conversion}-->
 
 The following assertion methods return _another assertion_, encapsulating a value that's converted from the original asserted value to a particular type.
 
@@ -107,7 +104,7 @@ The following assertion methods return _another assertion_, encapsulating a valu
 - {@link Assertion.asArray}
 - {@link Assertion.asJSONString}
 
-## Chaining assertions {#chaining}
+## Chaining assertions <!--{#chaining}-->
 
 Several {@link Assertion} methods return a new assertion, which can be used for further validation by 'chaining' {@link Assertion} methods.
 

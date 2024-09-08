@@ -8,6 +8,7 @@ import { invalidArgErr } from "../../errors.js";
  * @description An view renderer component renders unattached view content within its parent view component.
  *
  * @online_docs Refer to the Desk website for more documentation on using this UI component class.
+ * @docgen {hideconstructor}
  *
  * - The rendered view is not attached to the view renderer object itself. Therefore, it must be attached to another object, such as an activity.
  */

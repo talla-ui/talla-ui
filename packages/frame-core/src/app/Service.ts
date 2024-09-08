@@ -10,6 +10,7 @@ import { ServiceContext } from "./ServiceContext.js";
  * To add a service, extend the Service class, create an instance, assign an ID, and add it to the service context using {@link GlobalContext.addService app.addService()}. When another service is added with the same ID, the existing service is replaced and unlinked.
  *
  * @see {@link ServiceContext}
+ * @docgen {hideconstructor}
  */
 export abstract class Service extends ManagedObject {
 	/** Returns true if this service is currently registered */

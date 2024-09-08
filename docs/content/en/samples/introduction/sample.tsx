@@ -19,7 +19,7 @@ const CounterLabelStyle = ui.style.LABEL.extend({
 // Define the page view using JSX
 const AppPage = (
 	<column>
-		<label style={CounterLabelStyle}>Count: %[count]</label>
+		<label style={CounterLabelStyle}>Counter: %[count]</label>
 		<row align="center">
 			<button onClick="CountDown">Down</button>
 			<button onClick="CountUp">Up</button>
@@ -32,7 +32,7 @@ const AppPage = (
 	// @doc-start introduction:sample-view
 	// Define the page view using static method calls
 	const AppPage = ui.column(
-		ui.label(bound.strf("Count: %s", "count"), CounterLabelStyle),
+		ui.label(bound.strf("Counter: %s", "count"), CounterLabelStyle),
 		ui.row(
 			{ align: "center" },
 			ui.button("Down", "CountDown"),
@@ -45,7 +45,7 @@ const AppPage = (
 {
 	ui.column(
 		// @doc-start introduction:sample-inline-style-jsx
-		<label style={{ bold: true, fontSize: 36 }}>Count: %[count]</label>,
+		<label style={{ bold: true, fontSize: 36 }}>Counter: %[count]</label>,
 		// @doc-end
 	);
 }

@@ -1,0 +1,30 @@
+{
+	"input": [
+		"../packages/frame-core/dist/**/*.d.ts",
+		"../packages/frame-test/dist/**/*.d.ts",
+		"../packages/frame-web/dist/**/*.d.ts",
+		"./content/en/**/*.md"
+	],
+	"samples": ["./content/en/samples/**/*.{ts,tsx}"],
+	"refFolder": "ref",
+	"output": {
+		"index": {
+			"file": "_site/docs/en/search.json",
+			"urlPrefix": "/docs/en/"
+		},
+		"markdown": {
+			"path": "_site/docs/en"
+		},
+		"html": {
+			"path": "_site/docs/en",
+			"templates": "templates/en",
+			"defaultTemplate": "ref"
+		}
+	},
+	"assets": {
+		"../packages/frame-web/lib": "_site/lib",
+		"app/dist": "_site",
+		"content/en/assets": "_site/docs/en/assets",
+		"content/index": "_site"
+	}
+}

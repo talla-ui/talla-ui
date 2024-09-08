@@ -1,0 +1,51 @@
+{
+	"private": true,
+	"name": "@desk-framework/docgen",
+	"version": "0.0.0",
+	"publishConfig": {
+		"tag": "dev"
+	},
+	"description": "Documentation generator for Desk framework source packages",
+	"author": "Jelmer Cormont",
+	"license": "MIT",
+	"type": "module",
+	"main": "dist/cli.js",
+	"bin": {
+		"docgen": "./cli/index.js"
+	},
+	"scripts": {
+		"prebuild": "rimraf dist",
+		"build": "tsc",
+		"check-format": "prettier --check \"**/*.js\""
+	},
+	"prettier": {
+		"useTabs": true,
+		"trailingComma": "all",
+		"endOfLine": "lf"
+	},
+	"files": [
+		"dist",
+		"cli"
+	],
+	"dependencies": {
+		"glob": "^11.0.0",
+		"js-yaml": "^4.1.0",
+		"html-entities": "^2.5.2",
+		"marked": "^9.0.3",
+		"marked-highlight": "^2.0.6",
+		"marked-smartypants": "^1.1.3",
+		"highlight.js": "^11.8.0",
+		"html-minifier-terser": "^7.2.0",
+		"clean-css": "^5.3.3",
+		"terser": "^5.31.6"
+	},
+	"devDependencies": {
+		"@types/node": "latest",
+		"@types/js-yaml": "^4.0.9",
+		"@types/marked": "^5.0.1",
+		"@types/html-minifier-terser": "^7.0.2",
+		"@types/clean-css": "^4.2.11",
+		"rimraf": "^6.0.1",
+		"typescript": "latest"
+	}
+}

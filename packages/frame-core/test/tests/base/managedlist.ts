@@ -659,6 +659,20 @@ describe("ManagedList", () => {
 			expect(b.isUnlinked()).toBeFalsy();
 		});
 
+		test("Attached objects can be moved to another list", () => {
+			let a = new NamedObject("a");
+			let b = new NamedObject("b");
+			let list1 = new ManagedList(a, b).attachAll(true);
+			let list2 = new ManagedList().attachAll(true);
+			list2.add(a);
+			expect(list1.count).toBe(1);
+			expect(list2.count).toBe(1);
+			expect(a.isUnlinked()).toBeFalsy();
+			expect(b.isUnlinked()).toBeFalsy();
+			expect(ManagedObject.whence(a)).toBe(list2);
+			expect(ManagedObject.whence(b)).toBe(list1);
+		});
+
 		test("Remove attached object when unlinked", () => {
 			let a = new NamedObject("a");
 			let list = new ManagedList(a).attachAll(true);

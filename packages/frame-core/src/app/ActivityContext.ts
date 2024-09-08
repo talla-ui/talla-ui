@@ -5,7 +5,7 @@ import { Activity } from "./Activity.js";
  * A class that contains all root activities, part of the global application context
  * - An instance of this class is available as {@link GlobalContext.activities app.activities}.
  * - To add an activity to the context, use the {@link GlobalContext.addActivity} method. This method also coordinates the activation and deactivation of activities based on the current navigation location.
- * @hideconstructor
+ * @docgen {hideconstructor}
  */
 export class ActivityContext extends ManagedObject {
 	/** Returns an array of all activities that are currently active _or_ activating */

@@ -1,5 +1,5 @@
-(function docs_initPage() {
-	window.docs_initPage = docs_initPage;
+(function init_docspage() {
+	window.init_docspage = init_docspage;
 
 	// scroll current menu item into view
 	function scrollMenuItem() {
@@ -10,26 +10,34 @@
 	}
 	scrollMenuItem();
 
+	// helper function to set click event handler
+	function handle(id, f) {
+		let element = document.getElementById(id);
+		if (element) element.onclick = f;
+	}
+
 	// scroll to top using script
-	document.getElementById("back-to-top").onclick = function () {
+	handle("back-to-top", backToTop);
+	handle("search-back-to-top", backToTop);
+	function backToTop() {
 		window.scrollTo(0, 0);
 		scrollMenuItem();
 		return false;
-	};
+	}
 
 	// show and hide navbar
-	document.getElementById("breadcrumb-menubutton").onclick = function () {
+	handle("breadcrumb-menubutton", () => {
 		document.body.className = "docpage show_navbar";
 		setTimeout(scrollMenuItem, 100);
-	};
-	document.getElementById("navbar-closebutton").onclick = function () {
+	});
+	handle("navbar-closebutton", () => {
 		document.body.className = "docpage";
-	};
-	document.getElementById("docpage-navbar").onclick = function (e) {
+	});
+	handle("docpage-navbar", (e) => {
 		if (e.target.nodeName === "A") {
 			document.body.className = "docpage";
 		}
-	};
+	});
 
 	// show and hide search (app)
 	function showSearch() {
@@ -38,8 +46,8 @@
 		input.value = "";
 		input.focus();
 	}
-	document.getElementById("breadcrumb-searchbutton").onclick = showSearch;
-	document.getElementById("navbar-searchbutton").onclick = showSearch;
+	handle("breadcrumb-searchbutton", showSearch);
+	handle("navbar-searchbutton", showSearch);
 
 	// use keyboard shortcut to do the same
 	window.addEventListener("keypress", (e) => {

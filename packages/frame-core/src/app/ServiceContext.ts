@@ -15,7 +15,7 @@ import { Service } from "./Service.js";
  * - Unlink a service to remove (unregister) it.
  * - Whenever services are added, removed, or replaced, this object emits a change event.
  *
- * @hideconstructor
+ * @docgen {hideconstructor}
  */
 export class ServiceContext extends ManagedObject {
 	/** Removes all services that are currently registered */

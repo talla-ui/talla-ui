@@ -1,14 +1,11 @@
 ---
-title: Errors and logging
 folder: topics
 abstract: Understand how errors are handled, and how you can use built-in logging features to help observe and debug your application.
 ---
 
 # Errors and logging
 
-> {@include abstract}
-
-## Overview {#overview}
+## Overview <!--{#overview}-->
 
 In a larger application, it's important to monitor and handle application behavior and errors in a consistent way. Errors that are thrown by event handlers or asynchronous code should be caught, and important events can be logged to help with debugging (in development) and monitoring remotely (in production).
 
@@ -18,7 +15,7 @@ In a larger application, it's important to monitor and handle application behavi
 
 Refer to the following sections for more information.
 
-## Error handling {#error-handling}
+## Error handling <!--{#error-handling}-->
 
 Error handling in asynchronous JavaScript code can be complex. By default, errors that are thrown in `Promise` or `setTimeout` callbacks are ignored. If an error is thrown in an event handler, the application may look like it's not responding to user input.
 
@@ -29,12 +26,12 @@ In a Desk application, your code is often called by the framework itself. Where 
 - Errors that are thrown within tasks, run by a {@link task-scheduling task queue}
 - Miscellaneous errors, from the framework itself or e.g. an {@link I18nProvider} method
 
-By default, the global error handler logs the error using the global logging functions (see below), but you can override this behavior using the {@link GlobalContext.setErrorHandler setErrorHandler()} method.
+By default, the global error handler logs the error using the global logging functions (see below), but you can override this behavior using the static {@link GlobalContext.setErrorHandler setErrorHandler()} method.
 
 - {@link GlobalContext.setErrorHandler}
 
 ```ts
-app.setErrorHandler((err) => {
+GlobalContext.setErrorHandler((err) => {
 	// keep track of all errors in a list, maybe?
 	myErrors.unshift(err);
 	myErrors.splice(MAX_ERRORS);
@@ -43,7 +40,7 @@ app.setErrorHandler((err) => {
 
 > **Note:** Rather than overriding the global error handler, consider adding a log sink (see below). This way, you can handle both unhandled errors and other error logs (e.g. handled or ignored errors) in one go.
 
-## Custom exceptions {#custom-exceptions}
+## Custom exceptions <!--{#custom-exceptions}-->
 
 For 'intentional' errors, including those that are expected but _exceptional_ conditions in your application (e.g. timeouts, validation errors, empty result sets), it's often a good idea to use custom exception classes.
 
@@ -78,7 +75,7 @@ Error messages are lazily evaluated, and can be translated and formatted using t
 - {@link text-formatting}
 - {@link internationalization}
 
-## Logging {#logging}
+## Logging <!--{#logging}-->
 
 While most JavaScript runtime environments provide a built-in `console` object, its functionality is limited. Once a message is written to the console in one part of your application, there isn't a (standard) way to collect and send these messages elsewhere for analysis.
 
@@ -117,21 +114,21 @@ app.log.error(myError);
 
 ### Adding a log sink
 
-To handle log messages in any other way than sending them to the console, you can add a log 'sink' using the {@link GlobalContext.addLogHandler app.addLogHandler()} method. This method accepts a function that will be called with each log message, as an object of type {@link LogWriter.LogMessageData}.
+To handle log messages in any other way than sending them to the console, you can add a log 'sink' using the {@link LogWriter.addHandler()} method. This method accepts a function that will be called with each log message, as an object of type {@link LogWriter.LogMessageData}.
 
-- {@link GlobalContext.addLogHandler}
+- {@link LogWriter.addHandler}
 - {@link LogWriter.LogMessageData}
 
 > **Note:** After you add _any_ log handler, the default behavior of writing to the console is disabled. If you want to keep the default behavior, you'll need to add a log sink that (also) writes to the console. All subsequent handlers are called in the order they were added.
 
 ```ts
 // add a log sink that writes all messages to the console
-app.addLogHandler(0, (data) => {
+app.log.addHandler(0, (data) => {
 	console.log(data.message);
 });
 
 // add a log sink for 'information' and above
-app.addLogHandler(2, (data) => {
+app.log.addHandler(2, (data) => {
 	// ...if prod, send to a remote server
 });
 ```

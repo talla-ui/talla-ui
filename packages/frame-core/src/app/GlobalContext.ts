@@ -31,7 +31,7 @@ let once = 0;
  * @description
  * An instance of this class is available as {@link app} during the entire lifecycle of the application. Use that to access all properties and methods of GlobalContext, e.g. `app.theme` and `app.addActivity(...)`.
  *
- * @hideconstructor
+ * @docgen {hideconstructor}
  */
 export class GlobalContext extends ManagedObject {
 	/**

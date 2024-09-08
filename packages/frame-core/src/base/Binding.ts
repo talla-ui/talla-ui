@@ -597,7 +597,8 @@ export namespace Binding {
 	 * - Instances of this class are created using the {@link bind.$on()} function.
 	 * - All bindings created using this class are bound using a source 'label' (i.e. a unique property), to bind to a specific type of object, e.g. activities or view composites.
 	 * - Additionally, a property name may be used as a prefix for all bindings, e.g. for `services` and `viewport` on the {@link app} object.
-	 * @hideconstructor
+	 *
+	 * @docgen {hideconstructor}
 	 */
 	export class Source<TKey extends string = string> {
 		/**
@@ -668,19 +669,6 @@ export namespace Binding {
 }
 
 /**
- * Creates a new {@link Binding}
- * @summary This function is used to create a new binding for a specific source path, with an optional default value. Calling this function is equivalent to `new Binding(sourcePath, defaultValue)`, and is the recommended way to create bindings.
- * @note You can use objects such as {@link $activity}, {@link $view}, {@link $services}, and {@link $viewport} to create bindings for specific sources; or create your own binding method objects using {@link bind.$on()}.
- * @param sourcePath The source (property) path that's used for obtaining the bound value
- * @param defaultValue An optional default value that's used when the bound value is undefined
- * @returns A new {@link Binding} object
- * @see {@link Binding}
- */
-export function bind(sourcePath: string, defaultValue?: any) {
-	return new Binding(sourcePath, defaultValue);
-}
-
-/**
  * A property decorator function that applies the provided binding to the decorated property
  * @param source The source (property) path that's used for obtaining the bound value, or a {@link Binding} instance
  * @note This decorator can only be used on class fields with TypeScript 5.0 or later, or environments that support the latest ECMAScript standard for decorators.
@@ -709,6 +697,19 @@ export function binding(source: string | Binding) {
 			binding.bindTo(this, context.name as any);
 		});
 	};
+}
+
+/**
+ * Creates a new {@link Binding}
+ * @summary This function is used to create a new binding for a specific source path, with an optional default value. Calling this function is equivalent to `new Binding(sourcePath, defaultValue)`, and is the recommended way to create bindings.
+ * @note You can use objects such as {@link $activity}, {@link $view}, {@link $services}, and {@link $viewport} to create bindings for specific sources; or create your own binding method objects using {@link bind.$on()}.
+ * @param sourcePath The source (property) path that's used for obtaining the bound value
+ * @param defaultValue An optional default value that's used when the bound value is undefined
+ * @returns A new {@link Binding} object
+ * @see {@link Binding}
+ */
+export function bind(sourcePath: string, defaultValue?: any) {
+	return new Binding(sourcePath, defaultValue);
 }
 
 export namespace bind {

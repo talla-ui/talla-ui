@@ -34,7 +34,7 @@ export class SearchActivity extends Activity {
 	protected override async afterActiveAsync() {
 		await super.afterActiveAsync();
 		this.loading = (async () => {
-			await this.search.loadJsonAsync("/docs/en/index.json");
+			await this.search.loadJsonAsync("/docs/en/search.json");
 			this.loading = undefined;
 		})();
 	}

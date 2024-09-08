@@ -9,6 +9,7 @@ import { ManagedObject } from "../base/index.js";
  * Bindings for viewport context properties can also be created using the {@link $viewport} object.
  *
  * @online_docs Refer to the Desk website for more information on responsive design and the viewport context.
+ * @docgen {hideconstructor}
  *
  * @example
  * // Determine the viewport size directly:

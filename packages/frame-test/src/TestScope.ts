@@ -42,6 +42,8 @@ let runningTests: TestCase[] = [];
  *
  *   test("My test case", () => {});
  * });
+ *
+ * @docgen {hideconstructor}
  */
 export class TestScope {
 	/** Stack of all scopes currently being defined */
@@ -57,10 +59,7 @@ export class TestScope {
 		return runningTests.slice();
 	}
 
-	/**
-	 * Creates a new test scope; do not use directly
-	 * @hideconstructor
-	 */
+	/** Creates a new test scope; do not use directly */
 	private constructor(
 		scope: TestScope | undefined,
 		name: string,

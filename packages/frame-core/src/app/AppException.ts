@@ -5,7 +5,7 @@ import { LazyString, StringConvertible } from "../base/index.js";
  * - AppException classes should be created using the static {@link AppException.type()} factory method, which stores the error name and message format to be used by the new constructor.
  *
  * @online_docs Refer to the Desk website for more information on error handling and logging.
- * @hideconstructor
+ * @docgen {hideconstructor}
  */
 export class AppException extends Error {
 	/**

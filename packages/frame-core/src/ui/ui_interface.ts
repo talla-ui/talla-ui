@@ -88,7 +88,7 @@ export namespace ui {
 
 	/**
 	 * Type definition for using {@link ui.jsx}
-	 * @hidedocs
+	 * @docgen {hide}
 	 */
 	export namespace JSX {
 		export type Element = ViewClass;

@@ -1,0 +1,73 @@
+.diagram {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem 0.5rem;
+}
+
+.diagram entity {
+	background: var(--background-color);
+	display: flex;
+	flex-wrap: wrap;
+	border: 1px solid var(--border-color);
+	margin: 0.5rem;
+	padding: 0.5rem 1rem;
+	border-radius: 1rem;
+	align-items: center;
+	justify-content: center;
+	max-width: 10rem;
+}
+
+.diagram entity.container {
+	max-width: none;
+	background: var(--block-bg-color);
+}
+
+.diagram div.column {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+}
+
+.diagram span {
+	flex-basis: 100%;
+	width: 100%;
+	display: block;
+	text-align: center;
+	font-weight: var(--bold-weight);
+	padding: 0.5rem;
+}
+
+.diagram p {
+	flex-basis: 100%;
+	width: 100%;
+	line-height: 1.1em;
+	font-size: 0.875rem;
+	padding: 0.5rem;
+	margin: 0 0 0.5rem;
+}
+
+@media screen and (max-width: 900px) {
+	.diagram {
+		flex-direction: column;
+	}
+
+	.diagram entity {
+		max-width: 14rem;
+	}
+
+	.diagram entity.container {
+		width: 100%;
+		flex-direction: column;
+	}
+
+	.diagram icon.icon--arrow_forward {
+		transform: rotate(90deg);
+	}
+
+	.diagram icon.icon--arrow_back {
+		transform: rotate(90deg);
+	}
+}

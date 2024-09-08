@@ -18,29 +18,19 @@
 	"module": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"clean": "rimraf coverage dist .test-run",
+		"clean": "rimraf .coverage dist .test-run",
 		"prebuild": "npm run clean",
-		"build": "tsc -p src --declaration",
+		"build": "tsc -p src",
+		"postbuild": "prettier --log-level error --write \"dist/**/*.d.ts\"",
 		"pretest": "tsc -p test",
 		"test": "node .test-run",
 		"posttest": "rimraf .test-run",
-		"pretest-c8": "tsc -p test",
-		"test-c8": "c8 node .test-run",
-		"posttest-c8": "rimraf .test-run",
 		"check-format": "prettier --check \"{src,test}/**/*.{ts,tsx}\""
 	},
 	"prettier": {
 		"useTabs": true,
 		"trailingComma": "all",
 		"endOfLine": "lf"
-	},
-	"c8": {
-		"reporter": [
-			"html"
-		],
-		"exclude": [
-			".test-run"
-		]
 	},
 	"files": [
 		"dist"

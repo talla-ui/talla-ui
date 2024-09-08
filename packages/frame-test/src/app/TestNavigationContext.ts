@@ -4,12 +4,12 @@ import {
 } from "@desk-framework/frame-core";
 import { TestContextOptions } from "./TestContext.js";
 
-/** A class that encapsulates the current navigation location, simulating browser-like behavior */
+/**
+ * A class that encapsulates the current navigation location, simulating browser-like behavior
+ * @docgen {hideconstructor}
+ */
 export class TestNavigationContext extends NavigationContext {
-	/**
-	 * Creates a new navigation controller instance, used by `useTestContext()`
-	 * @hideconstructor
-	 */
+	/** Creates a new navigation controller instance, used by `useTestContext()` */
 	constructor(options: TestContextOptions) {
 		super();
 		this._delay = options.navigationDelay;

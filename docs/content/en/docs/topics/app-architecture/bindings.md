@@ -1,14 +1,18 @@
 ---
-title: Bindings
 folder: topics
 abstract: Learn how to use bindings, to communicate property changes between attached objects.
 ---
 
 # Bindings
 
-> {@include abstract}
+#### Summary
 
-## Overview {#overview}
+- Bindings are used to _handle changes to property data_ and reflect these changes elsewhere.
+- Bindings are applied to managed objects, and watch for changes to attached parent objects and their properties.
+- Most commonly, bindings are used to set view properties dynamically, keeping business logic out of the view itself.
+- Bindings can be created using the {@link bound} function, and further configured using methods of the {@link Binding} class.
+
+## Overview <!--{#overview}-->
 
 In a Desk app, bindings are used to handle changes to property data — for example to update the UI when the state of an activity changes, or when a property of a view model is updated.
 
@@ -22,18 +26,18 @@ Hence, the source object is always the _first parent in the managed object hiera
 
 In addition, bindings provide the following features:
 
-- **Source paths** instead of single property names can be used to watch _nested_ properties instead of a single property.
+- **Source paths** — instead of single property names can be used to watch _nested_ properties instead of a single property.
 - **Filters** can be added to manipulate or combine bound values.
-- **Callback** functions can be used to handle source updates, rather than setting a target property directly.
+- **Callback** functions can be used to handle source updates, rather than setting a target property directly (see Binding properties outside of views below).
 
-## Creating a binding {#create}
+## Creating a binding <!--{#create}-->
 
 To create a binding, you can use the {@link bound()} function (or one of the specific functions for the type of value you want to bind to, see below). This function returns a {@link Binding} object that you can use to configure the binding further, if needed.
 
 - {@link bound +}
 - {@link Binding +}
 
-Bindings are commonly used to set view properties dynamically — keeping business logic and calculations out of the view. View properties can be bound simply by passing the result of the {@link bound} function directly to the `ui` method. In JSX code, you can use the `bound` function directly in the JSX expression, or use the text binding syntax (see below).
+Bindings are commonly used to set view properties dynamically. Using `ui` functions and/or JSX, you can simply pass the result of the {@link bound} function to bind a particular view property. In JSX code, you can also use text binding syntax (see below).
 
 ```tsx
 // bind to the text property of a label
@@ -54,13 +58,13 @@ ui.label(bound("name"));
 >
 > The Desk framework doesn't include a facility for two-way bindings, on purpose. To communicate data back to the source object (e.g. user input) you can use events. For form input (a very specific would-be use case for two-way bindings) Desk provides the {@link form-context form context} view model.
 
-## Setting the binding source {#source}
+## Setting the binding source <!--{#source}-->
 
-The first argument to the {@link bound} function(s) is the binding **source**.
+The first argument to the {@link bound} function(s) is the binding **source**. This can take a number of forms.
 
-**Single property** — In most cases, the binding source is the name of a single property that will be observed on the source object.
+**Single property** — In many cases, the binding source is the name of a single property that will be observed on the source object.
 
-For example, `bound("name")` represents a binding that looks for a `name` property on one of the target's parent object(s), takes its value, and watches for changes.
+For example, `bound("name")` represents a binding that looks for a `name` property on one of the target's parent object(s), then takes its value and watches for changes.
 
 Under the hood, this upgrades the source property with a JavaScript _getter and setter_ that allow the binding (as well as any other bindings and/or observers) to handle changes transparently to the rest of the application.
 
@@ -74,12 +78,12 @@ bound("p.foo.bar");
 
 - Each property is observed individually, where possible, but only the first property is used to find the source object (i.e. the first parent object that includes a `customer` property in the first example).
 - If any of the properties along the path is undefined, null, or an object that doesn't include the next specified property, then the bound value itself becomes `undefined` — i.e. any binding for a source that can't be found resolves to undefined until _all_ properties along the source path are defined.
-- If a property references a managed object, the next property in the path is observed for changes. The managed object itself is also observed to handle change events (see {@link ManagedChangeEvent}).
+- If a property references a managed object, the next property in the path is observed for changes. The managed object itself is also observed to handle change events (see {@link event-handling event handling}).
 - On other objects, the bound value only updates when the previous property changes or when a change event is emitted. E.g. if `p` is a managed object, but `foo` refers to a plain JavaScript object, then the value of the `p.foo.bar` binding is only updated when `p` is set, `p.foo` is set, or a change event is emitted on the `p` object — since `bar` itself can't be observed on a non-managed object.
 
 Note that nested property bindings also work with any of the methods described in the next sections, e.g. `bound.not("customer.isQualified)` and `bound.string("p.foo.bar").matches("X")` work as expected.
 
-## Specifying bound value types {#bound}
+## Specifying bound value types <!--{#bound}-->
 
 You can use the following functions to explicitly convert bound values to a particular type. E.g. `bound.number("x")` represents a binding for a number value (or NaN) even if the source property is undefined or of another type.
 
@@ -91,9 +95,11 @@ In the same vein, you can use the {@link bound.not()} function to create binding
 
 - {@link bound.not}
 
-In practice, boolean bindings are useful for hiding and showing views based on a particular condition. Apply a (negated) binding to the `hidden` property of a UI container, or the `state` property of a {@link UIConditionalView} view composite, and that part of your view will be shown or hidden depending on the value of an Activity property.
+In practice, boolean bindings are often used for hiding and showing views based on a particular condition. Apply a (negated) binding to the `hidden` property of a UI container, or the `state` property of a {@link UIConditionalView} view composite, and that part of your view will be shown or hidden depending on the value of an Activity property.
 
-{@import :hidden}
+```ts
+// {@sample :hidden}
+```
 
 > **Tip:** You don't need to bind to a boolean value to be able to show or hide a section of your view. Any value that's 'falsy' or 'truethy' will do — which includes strings, numbers, and references to objects. For example, you can hide a section with customer details when the `customer` property of your activity is undefined, rather than having to add an explicit `showCustomerDetails` property.
 
@@ -107,7 +113,7 @@ To declare a _type_ in your code that represents either a value or a binding of 
 
 - {@link BindingOrValue +}
 
-## Binding to list data {#list}
+## Binding to list data <!--{#list}-->
 
 To bind _explicitly_ to list data — i.e. an array, Map, or {@link ManagedList} object — you can use the {@link bound.list()} function. This returns a {@link Binding} that's guaranteed to be _iterable_ using a JavaScript iterator, which is especially helpful for use with {@link list-views list views}. If the source value isn't iterable, the value of the resulting binding is set to `undefined` instead.
 
@@ -123,11 +129,13 @@ As a special case, you can refer to the first and last items in a **managed list
 
 The following example view uses a binding to populate a list, as well as a binding for `count` to show an alternative view when the list is empty. Also note that within the `<list>` view (i.e. {@link UIListView} view) the item itself and its properties can be bound using the `item` property.
 
-{@import :list}
+```ts
+// {@sample :list}
+```
 
-## Setting default values {#default}
+## Setting default values <!--{#default}-->
 
-You may have noticed that the `bound` function, as well as e.g. `bound.number` accepts a second argument that's called `defaultValue`. Use this argument to specify a value that's used instead of `undefined` — whenever the bound value would be undefined **or** null (under the hood, the `??` operator is used to determine the final value).
+You may have noticed that the `bound` function, as well as e.g. `bound.number` accepts a second argument called `defaultValue`. Use this argument to specify a value that's used instead of `undefined` — whenever the bound value would be undefined **or** null (under the hood, the `??` operator is used to determine the final value).
 
 - {@link bound}
 
@@ -151,7 +159,7 @@ bound.string("name").else(strf("(Untitled)")); // use strf for i18n
 bound.boolean("inactive").select(ui.icon("x"), ui.icon("check"));
 ```
 
-## Using boolean logic on bound values {#boolean}
+## Using boolean logic on bound values <!--{#boolean}-->
 
 With the below methods, you can **combine** multiple bindings into a single value. Internally, this creates two separate bindings that independently observe their source properties. Whenever one or both of these bindings change their values, the resulting binding is also updated; using either the `&&` or `||` operator to derive the result. Note that the resulting bound value isn't a boolean, since `&&` and `||` may return one of their operands.
 
@@ -173,7 +181,7 @@ bound.not("showDetails").or(bound.not("item.detail"));
 bound("showDetails").and("item.detail").not();
 ```
 
-## Comparing bound values {#compare}
+## Comparing bound values <!--{#compare}-->
 
 For direct comparisons, you can use the following {@link Binding} methods. While {@link Binding.matches matches()} compares a bound value with one or more _literal_ values, the {@link Binding.equals equals()} method creates (or uses) a second binding and compares the values of both bindings each time one or both of the bound values are updated. The result is always a boolean value in either case.
 
@@ -182,7 +190,7 @@ For direct comparisons, you can use the following {@link Binding} methods. While
 
 > **Note:** These methods only support _direct_ comparisons using the `===` operator, and there are no further methods for other comparisons like greater-than, less-than, etc. These are left out on purpose, to avoid adding business logic in the wrong place. If it seems like it would be useful to have comparative bindings, this is usually an indication that business logic is leaking into the view — consider adding such code to the activity (or view composite) instead, or use a dedicated view model.
 
-## Binding to text values and formatted strings {#text}
+## Binding to text values and formatted strings <!--{#text}-->
 
 There are several ways to produce bindings that observe or produce text values. Each of these different options add some functionality on top of a basic `bound("textProperty")` call.
 
@@ -192,7 +200,7 @@ There are several ways to produce bindings that observe or produce text values. 
 
 **String value conversion, with optional format** — You can also convert a value to a string, changing undefined or null to an empty string, using the {@link Binding.asString()} method. This method can be used as a 'filter' on top of an existing binding, e.g. the result of {@link Binding.and()}.
 
-This method takes an optional second parameter, which is used as a formatter. The format string (placeholder) can be one of the common C-style `sprintf` placeholders or a custom one — refer to {@LazyString.format} for details. Note that the `%` sign should _not_ be included in the format string.
+This method takes an optional second parameter, which is used as a formatter. The format string (placeholder) can be one of the common C-style `sprintf` placeholders or a custom one — refer to {@link LazyString.format} for details. Note that the `%` sign should _not_ be included in the format string.
 
 - {@link Binding.asString}
 
@@ -231,7 +239,7 @@ bound.strf("%[user] is %[age] years old", {
 });
 ```
 
-## Binding text using JSX syntax {#jsx}
+## Binding text using JSX syntax <!--{#jsx}-->
 
 Within views that use JSX syntax, text that's passed to e.g. labels and buttons is scanned for `%[...]` placeholders. If one is found, a string-formatted binding is created automatically with the text as the format string (to include bindings with the specified source paths).
 
@@ -240,13 +248,15 @@ For more information, refer to the documentation for JSX views.
 - {@link views}
 - {@link ui.jsx}
 
-{@import bindings:jsx}
+```ts
+// {@sample bindings:jsx}
+```
 
-## Binding properties outside of views {#bindTo}
+## Binding properties outside of views <!--{#bindTo}-->
 
-Many of the above examples have been focused on bindings that are applied to view properties. However, bindings also work outside of views, and have many use cases in e.g. activities and services.
+Many of the above examples have been focused on bindings that are applied to view properties. However, bindings also work outside of views, and can be used in activities, services, and view models as well.
 
-To apply a binding to any managed object, use the {@link Binding.bindTo()} method. Using this method, you can either update a specific property or invoke a callback function with each update.
+To apply a binding to _any_ managed object, use the {@link Binding.bindTo()} method. Using this method, you can either update a specific property or invoke a callback function with each update.
 
 - {@link Binding.bindTo}
 
@@ -268,7 +278,7 @@ class MySubActivity extends Activity {
 }
 ```
 
-## Debugging bindings {#debug}
+## Debugging bindings <!--{#debug}-->
 
 Bindings are meant to do their work _automatically_ and _transparently_ to the rest of the application. However, this makes it difficult to see whether the right values are being applied at the right time, or even if a binding is working at all.
 
@@ -276,6 +286,8 @@ To debug a particular binding, you can use the {@link Binding.debug()} method, w
 
 - {@link Binding.debug}
 
-Before you can see any debug output or set a breakpoint, you'll need to add a listener to the {@link Binding.debugEmitter} global event emitter. Refer to the following code for an example implementation.
+Before you can see any debug output or set a breakpoint, you'll need to write a handler for {@link Binding.debugHandler}. Refer to the following code for an example implementation.
 
-{@import bindings:debug}
+```ts
+// {@sample bindings:debug}
+```

@@ -9,7 +9,7 @@ const app = useWebContext((options) => {
 	options.controlTextStyle = {
 		fontFamily: "inherit",
 		fontSize: 16,
-		fontWeight: "300",
+		fontWeight: "normal",
 	};
 });
 const searchActivity = new SearchActivity();

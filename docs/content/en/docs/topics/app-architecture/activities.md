@@ -1,14 +1,11 @@
 ---
-title: Activities
 folder: topics
 abstract: Learn how to use activities to define the behavior and state of each part of your application.
 ---
 
 # Activities
 
-> {@include abstract}
-
-## Overview {#overview}
+## Overview <!--{#overview}-->
 
 While _views_ define the visual appearance of your application UI, _activities_ define the **behavior** and **state** of a particular part of your UI — usually (but not always) an entire screen or a dialog.
 
@@ -19,7 +16,7 @@ While _views_ define the visual appearance of your application UI, _activities_ 
 
 > **Activities vs. Composite views:** As you learn about {@link views}, you'll notice that 'composite' views can also contain other views, and can be used to define the behavior and state of a (smaller) part of your application. However, view composites are not meant to contain _business logic_ or _state management_ — they're meant to be _reusable_ and only concerned with visual appearance. All business logic should be contained in activities, or (for more complex applications) in services or data models.
 
-## Creating an activity {#creating}
+## Creating an activity <!--{#creating}-->
 
 Activities are represented by classes that extend the {@link Activity} class.
 
@@ -45,11 +42,11 @@ Within the activity class, you can add properties and methods to define the acti
 - Lifecycle methods to handle the activity's state transitions (e.g. `beforeActiveAsync`, `afterInactiveAsync`)
 - A navigation page ID and navigation event handlers, for automatic routing
 
-> **Note: Always assign initial property values**
+> **Always assign initial property values**
 >
 > To ensure that properties can be {@link bindings bound}, you should always assign an initial value to each (bound) property in the class definition, or in the constructor. Depending on the version of TypeScript or JavaScript you're using, declaring a property on a class without an initial value may not actually add the property to the activity object — making it impossible to bind to it.
 
-## Registering an activity {#adding}
+## Registering an activity <!--{#adding}-->
 
 The application context keeps track of all activities in the application, and ensures that they are activated and deactivated using the navigation path if needed.
 
@@ -67,23 +64,30 @@ useWebContext();
 app.addActivity(new MyActivity(), true);
 ```
 
-## Showing views {#showing-views}
+## Showing views <!--{#showing-views}-->
 
 Activities and views are both {@link objects managed objects}, and view objects are automatically _attached_ to the activity when assigned to the activity's `view` property. This ensures that each activity has at most a single view, and views are automatically unlinked — cleaning up any bindings and event handlers.
 
-- Views should be created and assigned to `view` by the activity's `ready` method. This method is called when the activity is activated (see below), or when the renderer is updated (e.g. when the {@link themes-colors theme} changes).
+- Views should be created and assigned to `view` by the activity's `ready` method. This method is called when the activity is activated (see below), or when the renderer is updated (e.g. when the {@link themes theme} changes).
 - After the view object is attached to the activity, all {@link bindings} are updated automatically, and the activity is ready to handle {@link event-handling events} from the view.
 - To show the view, use the {@link GlobalContext.showPage showPage()} or {@link GlobalContext.showDialog showDialog()} methods of the app context.
 - Views are unlinked automatically when the activity is unlinked **or** deactivated.
 
-{@import :showing-views}
+```ts
+// {@sample :showing-views}
+```
 
 - {@link GlobalContext.showPage}
 - {@link GlobalContext.showDialog}
 
 > **Note:** The `ready` method may be called multiple times while the activity is active. You typically don't need to perform any additional checks to ensure that the view is shown only once, since creating the view object shouldn't have any side effects, and both of the above methods only ever render a single view once.
 
-## Activating and deactivating an activity {#activating-deactivating}
+Under the hood, these methods use the {@link GlobalContext.render()} method, which in turn uses the platform-specific renderer (an instance of {@link RenderContext}) to update the application's UI. In practice, both of these are rarely used directly from application code.
+
+- {@link GlobalContext.render}
+- {@link RenderContext +}
+
+## Activating and deactivating an activity <!--{#activating-deactivating}-->
 
 In an application with a single activity, the easiest way to activate an activity is using the {@link GlobalContext.addActivity addActivity()} method of the app context, with the second argument set to `true`.
 
@@ -111,9 +115,11 @@ You can override the activity's _lifecycle methods_ to handle state transitions 
 - {@link Activity.afterInactiveAsync}
 - {@link ManagedObject.beforeUnlink}
 
-{@import :lifecycle}
+```ts
+// {@sample :lifecycle}
+```
 
-## Using paths for automatic routing {#routing}
+## Using paths for automatic routing <!--{#routing}-->
 
 Desk provides a simple path-based routing mechanism that can be used to activate and deactivate activities automatically. Rather than providing full pattern matching and route parameters, the {@link NavigationController} class provides a simple abstraction that breaks down the current path into a single _page ID_ and a _detail_ string.
 
@@ -125,9 +131,11 @@ Note that the detail string doesn't include the page ID itself, and may be empty
 - {@link Activity.navigationPageId}
 - {@link Activity.handleNavigationDetailAsync}
 
-{@import :routing}
+```ts
+// {@sample :routing}
+```
 
-## Handling navigation events {#navigation-events}
+## Handling navigation events <!--{#navigation-events}-->
 
 In addition to reacting to external navigation changes (i.e. using the navigation path), activities may also be interested in navigation events that are triggered by the user from _within_ the current view. These `Navigate` events are emitted by buttons (links) with a special `navigateTo` property.
 
@@ -135,7 +143,9 @@ Navigation events are automatically handled by the default {@link Activity.onNav
 
 - {@link Activity.navigateAsync}
 
-{@import :navigate}
+```ts
+// {@sample :navigate}
+```
 
 Note that the navigation _target_ is a {@link NavigationTarget} object which includes the intended page ID and detail to navigate to, and title text for the destination. This object can be retrieved using the {@link Activity.getNavigationTarget()} method (which uses the {@link Activity.title} property), or constructed manually to include a localized title for any page ID, detail, and title.
 
@@ -145,7 +155,7 @@ Note that the navigation _target_ is a {@link NavigationTarget} object which inc
 
 > **Note:** The `title` property can be used to provide a localized title for the activity when the navigation target is passed to e.g. {@link UIButton.navigateTo}, and the platform renderer may also use this title to update the window or browser's title bar (if applicable).
 
-## Scheduling background tasks {#background-tasks}
+## Scheduling background tasks <!--{#background-tasks}-->
 
 Since activities are activated and deactivated as the user navigates through the application, they have a well-defined _lifecycle_. If you want to perform any tasks during the activity's lifecycle, you can use the following method to create a **task queue**.
 
@@ -153,7 +163,9 @@ Since activities are activated and deactivated as the user navigates through the
 
 A task queue provides a way to safely run asynchronous and synchronous tasks, in parallel, in sequence, or at a specific rate, handling and accumulating errors if needed. This is useful for tasks such as loading data using multiple requests, or submitting data in the background, while the activity is active. Synchronizing the task queue with the activity's lifecycle ensures that pending tasks are paused or stopped when needed.
 
-{@import :schedule}
+```ts
+// {@sample :schedule}
+```
 
 For more information about task queues, refer to the following article.
 

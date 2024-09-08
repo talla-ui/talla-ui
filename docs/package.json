@@ -5,23 +5,15 @@
 	"license": "MIT",
 	"type": "module",
 	"scripts": {
-		"clean": "concurrently npm:clean:*",
-		"clean:docgen": "cd docgen && npm run clean",
-		"clean:app": "cd app && npm run clean",
-		"clean:content": "rimraf content/en/_generated_ ../_site",
-		"postinstall": "concurrently npm:postinstall:*",
-		"postinstall:app": "cd app && npm install",
-		"postinstall:docgen": "cd docgen && npm install",
-		"build": "concurrently npm:build:*",
-		"build:docgen": "cd docgen && npm run build",
+		"postinstall": "cd app && npm install",
+		"clean": "rimraf _site && cd app && npm run clean",
+		"prebuild": "npm run clean && cd app && npm run build",
+		"build": "npm run build:app && npm run build:site",
 		"build:app": "cd app && npm run build",
-		"check-format": "concurrently npm:check-format:*",
-		"check-format:scripts": "prettier --check \"scripts/**/*.js\"",
-		"check-format:docgen": "cd docgen && npm run check-format",
-		"check-format:app": "cd app && npm run check-format",
-		"validate": "node scripts/validate.js",
-		"generate": "rimraf content/en/_generated_ && node scripts/generate.js",
-		"merge": "rimraf ../_site && node scripts/merge.js"
+		"build:site": "docgen",
+		"build-verbose": "npm run prebuild && docgen -v > docgen.log",
+		"check-docs": "docgen check-docs.config.json",
+		"check-format": "prettier --check \"**/*.md\" && cd app && npm run check-format"
 	},
 	"prettier": {
 		"useTabs": true,
@@ -38,7 +30,7 @@
 		]
 	},
 	"devDependencies": {
-		"@desk-framework/docgen": "file:./docgen",
+		"@desk-framework/docgen": "file:../packages/docgen",
 		"@desk-framework/frame-core": "file:../packages/frame-core",
 		"@desk-framework/frame-test": "file:../packages/frame-test",
 		"@desk-framework/frame-web": "file:../packages/frame-web"

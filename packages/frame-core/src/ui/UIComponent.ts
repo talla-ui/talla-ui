@@ -27,7 +27,7 @@ function emitRendered(source: View, name: string) {
  * UI components can be constructed directly using `new`, but are often created as part of a 'preset' view hierarchy that's defined using JSX or {@link ui} factory functions, e.g. <button>`, `ui.button({ ... })` or `ui.column(...)`.
  *
  * @online_docs Refer to the Desk website for more documentation on using UI components.
- * @hideconstructor
+ * @docgen {hideconstructor}
  */
 export abstract class UIComponent extends View {
 	/**

@@ -1,0 +1,91 @@
+ul.menu {
+	margin: 0;
+}
+
+li.menu-item {
+	position: relative;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+li.menu-item > .icon {
+	position: absolute;
+	left: 1.5rem;
+	top: 0.125rem;
+	color: var(--navbar-icon-color);
+}
+
+li.menu-item > a {
+	padding: 0.25rem 0;
+	display: block;
+	font-size: 0.875rem;
+	color: inherit;
+	transition: background-color 0.2s ease;
+	white-space: nowrap;
+}
+
+ul.menu > li.menu-item > a {
+	padding-left: 4rem;
+}
+ul.menu > ul.menu > li.menu-item > a {
+	padding-left: 5rem;
+}
+ul.menu > ul.menu > li.menu-item > .icon {
+	left: 2.5rem;
+}
+ul.menu > ul.menu > ul.menu > li.menu-item > a {
+	padding-left: 6rem;
+}
+ul.menu > ul.menu > ul.menu > li.menu-item > .icon {
+	left: 3.5rem;
+}
+ul.menu > ul.menu > ul.menu > ul.menu > li.menu-item > a {
+	padding-left: 7rem;
+}
+ul.menu > ul.menu > ul.menu > ul.menu > li.menu-item > .icon {
+	left: 4.5rem;
+}
+ul.menu > ul.menu > ul.menu > ul.menu > ul.menu > li.menu-item > a {
+	padding-left: 8rem;
+}
+ul.menu > ul.menu > ul.menu > ul.menu > ul.menu > li.menu-item > .icon {
+	left: 5.5rem;
+}
+
+li.menu-item--heading > a {
+	font-weight: var(--bold-weight);
+	margin-top: 0.25rem;
+}
+
+ul.menu--root > li.menu-item--heading > a {
+	margin: 1rem 0 0.25rem;
+	padding: 0.25rem 0 0.25rem 1.5rem;
+	color: var(--nav-heading-text);
+}
+
+ul.menu--root > li.menu-item--heading .icon {
+	display: none;
+}
+
+li.menu-item--heading + li.menu-item--heading > a,
+li.menu-item--heading:first-child > a {
+	margin-top: 0;
+}
+
+li.menu-item > a:hover {
+	background: var(--nav-hover-background);
+	text-decoration: none;
+}
+
+li.menu-item--current > a,
+li.menu-item--current > a:hover {
+	font-weight: var(--bold-weight);
+	background: var(--nav-current-background);
+	color: var(--nav-current-text);
+}
+
+li.menu-item--current + ul {
+	overflow: hidden;
+	border-inline-end: 3px solid var(--nav-current-background);
+}

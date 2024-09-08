@@ -1,14 +1,11 @@
 ---
-title: Tests
 folder: topics
 abstract: Learn how to write and run tests using the Desk test library.
 ---
 
 # Tests
 
-> {@include abstract}
-
-## Overview {#overview}
+## Overview <!--{#overview}-->
 
 The Desk framework provides a complete test library, that facilitates running tests using your actual application code from the command line.
 
@@ -21,7 +18,7 @@ This library consists the following elements:
 
 Using the Desk test library, you can include tests alongside your source code, which can then be run using a separate entry point directly from the command line. Refer to the sections below to learn how to add tests to your application.
 
-## Importing the test package {#import}
+## Importing the test package <!--{#import}-->
 
 From all of your test-related files, you'll need to import functions for describing tests and performing assertions from the `@desk-framework/frame-test` package.
 
@@ -36,7 +33,7 @@ describe("My first test scope", () => {
 });
 ```
 
-## Describing test scopes {#describe}
+## Describing test scopes <!--{#describe}-->
 
 A test **scope** is simply a group of test cases that are either run one after another or in parallel (async). Before you can run any test cases, they need to be _described_ as part of a scope, using a callback that's passed to the {@link describe()} function.
 
@@ -136,7 +133,7 @@ describe("Example test scope", (scope) => {
 
 > **Note:** The `beforeAll` and `afterAll` callbacks are considered part of each test case. Any errors thrown from these callbacks are caught and reported as part of the test results. This makes these callbacks useful for validating the global state repeatedly before and after each test.
 
-## Adding test cases {#test}
+## Adding test cases <!--{#test}-->
 
 Within a test scope, you can add individual test cases using the {@link test()} function.
 
@@ -212,7 +209,7 @@ In addition, the test case object provides several methods for validating render
 
 - {@link test-context}
 
-## Running tests {#run}
+## Running tests <!--{#run}-->
 
 To run all tests in your application, you'll need to create a file that serves as an entry point. From this file, import all files that describe your tests, and then call the {@link runTestsAsync()} function.
 
@@ -242,7 +239,7 @@ At any point in time, you can also retrieve partial test results synchronously u
 - {@link TestResult +}
 - {@link TestState +}
 
-## Further reading {#further-reading}
+## Further reading <!--{#further-reading}-->
 
 Learn more about assertions in the following article:
 

@@ -1,14 +1,11 @@
 ---
-title: Test context
 folder: topics
 abstract: Understand how the Desk test library simulates an interactive runtime environment for testing, including UI interaction and navigation.
 ---
 
 # Test context
 
-> {@include abstract}
-
-## Overview {#overview}
+## Overview <!--{#overview}-->
 
 The Desk framework test library is designed to run both unit and integration tests from the command line, including tests for UI interaction and navigation. The component that facilitates this is the _test context_, which simulates an interactive runtime environment.
 
@@ -16,9 +13,11 @@ The test context works entirely in-memory, without running an actual browser, na
 
 The following example demonstrates how a test could activate a regular activity, interact with the simulated UI, and verify that the expected output is rendered.
 
-{@import introduction:sample-test}
+```ts
+// {@sample introduction:sample-test}
+```
 
-## Initializing the test context {#initialize}
+## Initializing the test context <!--{#initialize}-->
 
 To start testing your application using the test context, you'll need to register both the simulated renderer and navigation controller with the global application context. You can use the {@link useTestContext()} function from the test library package, which sets up the global context using the necessary classes.
 
@@ -39,7 +38,7 @@ let app = useTestContext((options) => {
 app.renderer; // => instance of TestRenderer
 ```
 
-## Testing user navigation {#navigation}
+## Testing user navigation <!--{#navigation}-->
 
 After registering the test context, all navigation actions are handled by the {@link TestNavigationController} class. The test navigation controller behaves similarly to a 'real' navigation controller, i.e. it manages its own navigation stack and allows you to route between activities using e.g. {@link GlobalContext.navigate app.navigate()}.
 
@@ -62,7 +61,7 @@ To simulate _user navigation_ instead (i.e. a user using the URL bar or clicking
 - {@link TestNavigationController.userBack}
 - {@link TestNavigationController.userNavigation}
 
-## Testing UI rendering {#rendering}
+## Testing UI rendering <!--{#rendering}-->
 
 The test context simulates the rendering of UI components using the {@link TestRenderer} class. The renderer manages its own in-memory UI element tree (similar to the DOM — but with a minimal API), while no graphical rendering is actually performed.
 
