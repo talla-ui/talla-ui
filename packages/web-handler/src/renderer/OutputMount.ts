@@ -9,6 +9,9 @@ import { registerHandlers } from "./events.js";
 /** Next unique ID */
 let _nextId = 1;
 
+/** @internal Property name that's set if an event handler is registered on an element */
+export const ELT_EVT_PROP = "Web__Handled";
+
 /** @internal A class that represents a mount point for root output, placed as a page, modal, within another element, or separately */
 export class OutputMount {
 	readonly id = _nextId++;
@@ -166,9 +169,9 @@ export class OutputMount {
 		if (elt) {
 			this._inner = elt;
 			this._lastElementId = id;
-			if (!(elt as any)["Web__Handled"]) {
+			if (!(elt as any)[ELT_EVT_PROP]) {
 				registerHandlers(elt);
-				(elt as any)["Web__Handled"] = true;
+				(elt as any)[ELT_EVT_PROP] = true;
 			}
 			this._remount = () => {
 				// find element with same mount ID, then move content
@@ -220,7 +223,7 @@ export class OutputMount {
 			this._lastElementId = undefined;
 			let elt = this._inner;
 			elt.innerHTML = "";
-			(elt as any)["Web__Handled"] = false;
+			(elt as any)[ELT_EVT_PROP] = false;
 			elt.parentNode?.replaceChild(elt.cloneNode(), elt);
 			return;
 		}

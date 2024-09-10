@@ -1,7 +1,7 @@
 import { app, RenderContext } from "talla";
 
-const DATA_UID = "web-handler__animating";
-const DATA_REDUCE_MOTION = "web-handler__anim0";
+const DATA_UID = "webhandler__animating";
+const DATA_REDUCE_MOTION = "webhandler__anim0";
 let _nextUid = 1;
 
 /** @internal Helper function to shortcut all animations on a specific element */

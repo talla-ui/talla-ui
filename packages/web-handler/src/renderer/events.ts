@@ -9,7 +9,7 @@ export const ELT_HND_PROP =
 	Math.floor(Math.random() * 1e6);
 
 /** @internal Dataset property name for boolean on page and modal mount elements */
-const DATA_MOUNT_PROP = "web-handler__focusmount";
+const DATA_MOUNT_PROP = "webhandler__focusmount";
 
 /** UI component event names that are used for DOM events */
 const _eventNames: { [domEventName: string]: string } = {
