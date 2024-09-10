@@ -1,12 +1,6 @@
 // Compile/run: npx tsc -p . && node dist/activities.js
 
-import {
-	Activity,
-	ManagedObject,
-	NavigationTarget,
-	app,
-	ui,
-} from "@desk-framework/frame-core";
+import { Activity, ManagedObject, NavigationTarget, app, ui } from "talla";
 
 {
 	const MyView = ui.cell({});

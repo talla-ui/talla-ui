@@ -11,8 +11,8 @@ Desk applications use a global navigation context, like a single-page web applic
 
 The **navigation controller** encapsulates a simplified version of the browser's history API, with methods that can be called to navigate between paths, and to go back within the navigation history. Synchronous (non-blocking) versions of these methods are also available on the global `app` object.
 
-- {@link GlobalContext.navigate()}
-- {@link GlobalContext.goBack()}
+- {@link AppContext.navigate()}
+- {@link AppContext.goBack()}
 
 The navigation controller itself is available as {@link ActivityContext.navigationController app.activities.navigationController}, and is overridden automatically depending on the runtime platform (e.g. the browser DOM) with a specific subclass of the {@link NavigationController} class.
 

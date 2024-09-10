@@ -145,7 +145,7 @@ For more information on bindings and JSX syntax, refer to the following articles
 
 Message dialogs are a common way to display _formatted_ text to the user. To make it easier to define all text in your application away from business logic, Desk provides a way to group this text together in a single object.
 
-Use the {@link MessageDialogOptions} class to store text and options for an alert or confirmation dialog, including placeholders for data that should be filled in _when displaying_ the dialog. Instances of this class can be passed to the {@link GlobalContext.showAlertDialogAsync app.showAlertDialogAsync()} and {@link GlobalContext.showConfirmDialogAsync app.showConfirmDialogAsync()} methods, and can be formatted with data using the {@link MessageDialogOptions.format format()} method.
+Use the {@link MessageDialogOptions} class to store text and options for an alert or confirmation dialog, including placeholders for data that should be filled in _when displaying_ the dialog. Instances of this class can be passed to the {@link AppContext.showAlertDialogAsync app.showAlertDialogAsync()} and {@link AppContext.showConfirmDialogAsync app.showConfirmDialogAsync()} methods, and can be formatted with data using the {@link MessageDialogOptions.format format()} method.
 
 - {@link MessageDialogOptions}
 

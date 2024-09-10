@@ -8,8 +8,7 @@
 		"start": "webpack serve --mode development"
 	},
 	"dependencies": {
-		"@desk-framework/frame-core": "../../packages/frame-core",
-		"@desk-framework/frame-web": "../../packages/frame-web"
+		"talla": "../../packages/talla"
 	},
 	"devDependencies": {
 		"html-webpack-plugin": "^5.6.0",

@@ -11,6 +11,7 @@
 		"isolatedModules": true,
 		"moduleDetection": "force",
 		"lib": ["dom", "esnext"],
+		"skipLibCheck": true,
 		"jsx": "react",
 		"jsxFactory": "ui.jsx",
 		"types": ["vite/client"]

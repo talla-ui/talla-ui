@@ -1,18 +1,11 @@
 const fs = require("fs");
-const baseName = "lib/desk-framework-web.es2015.esm.min";
 
-if (!fs.existsSync("lib")) fs.mkdirSync("lib");
-fs.writeFileSync(
-	baseName + ".js",
-	fs.readFileSync("node_modules/@desk-framework/frame-web/" + baseName + ".js"),
-);
-fs.writeFileSync(
-	baseName + ".js.map",
-	fs.readFileSync(
-		"node_modules/@desk-framework/frame-web/" + baseName + ".js.map",
-	),
-);
-fs.writeFileSync(
-	baseName + ".d.ts",
-	'export * from "@desk-framework/frame-web"',
-);
+const baseName = "talla-web.es2015.esm.min";
+const source = "node_modules/@talla-ui/web/lib/";
+const dest = "site/lib/";
+const ext = [".js", ".js.gz", ".js.map", ".d.ts"];
+
+if (!fs.existsSync(dest)) fs.mkdirSync(dest);
+for (let e of ext) {
+	fs.copyFileSync(source + baseName + e, dest + baseName + e);
+}

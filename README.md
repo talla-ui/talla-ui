@@ -1,27 +1,14 @@
-# Desk framework
+# Tälla UI framework
 
-[![npm](https://img.shields.io/npm/v/@desk-framework/frame-core.svg)](https://www.npmjs.com/package/@desk-framework/frame-core)
+[![npm](https://img.shields.io/npm/v/talla.svg)](https://www.npmjs.com/package/talla)
 
-> **Note:** Desk framework and this repository are still in development. Check back later for updates.
-
-## Status
-
-- DONE: Core API, test library, web app context
-- WORKING ON: Documentation, website
+> **Note:** Tälla UI framework and this repository are still in development. Check back later for updates.
 
 ## Getting started
 
-This package is part of the **Desk framework**, a robust JavaScript toolkit for highly maintainable client-side applications.
+This package is part of the **Tälla UI framework**, a robust JavaScript framework for highly maintainable client-side applications.
 
-Visit [desk-framework.com](https://desk-framework.com) to learn more and get started.
-
-## Questions & issues
-
-Have questions? Found an issue? Feel free to reach out! Just be respectful. 🙏
-
-- Questions: [Reddit](https://www.reddit.com/r/desk_framework/)
-- Issues: [GitHub issues](https://github.com/desk-framework/desk/issues)
-- Pleasantries: Twitter & Mastodon hashtags
+Visit [talla-ui.com](https://talla-ui.com) to learn more and get started.
 
 ## Development
 

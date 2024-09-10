@@ -1,4 +1,4 @@
-import { Activity, ui } from "@desk-framework/frame-core";
+import { Activity, ui } from "talla";
 
 const page = (
 	<mount page>

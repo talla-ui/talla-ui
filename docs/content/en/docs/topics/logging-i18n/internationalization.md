@@ -143,7 +143,7 @@ For more information on how to create and handle errors, refer to the following 
 
 ### Storing dialog messages
 
-Alert and confirmation dialogs are often shown from event handlers, in activities or composite view classes. You can pass the result of `strf()` directly to the {@link GlobalContext.showAlertDialogAsync showAlertDialogAsync()} and {@link GlobalContext.showConfirmDialogAsync showConfirmDialogAsync()} methods, but you can also prepare dialog messages — including several messages and button text — as a separate {@link MessageDialogOptions} object.
+Alert and confirmation dialogs are often shown from event handlers, in activities or composite view classes. You can pass the result of `strf()` directly to the {@link AppContext.showAlertDialogAsync showAlertDialogAsync()} and {@link AppContext.showConfirmDialogAsync showConfirmDialogAsync()} methods, but you can also prepare dialog messages — including several messages and button text — as a separate {@link MessageDialogOptions} object.
 
 - {@link MessageDialogOptions}
 
@@ -169,7 +169,7 @@ For more information on message dialogs, refer to the following article:
 
 The mechanism by which Desk translates and formats lazily-evaluated strings includes an **i18n provider**. This provider is responsible for providing translations, pluralizers, and formatters for the current locale.
 
-The provider is an object that conforms to the {@link I18nProvider} interface, that's assigned to the {@link GlobalContext.i18n} property.
+The provider is an object that conforms to the {@link I18nProvider} interface, that's assigned to the {@link AppContext.i18n} property.
 
 To create your own provider (which you'll need to do to support multiple locales), create your own provider class and implement all of the mandatory interface methods. Then, create an instance at runtime and assign it to `app.i18n`. Refer to the sections below for details.
 

@@ -12,7 +12,7 @@ import {
 	app,
 	bound,
 	ui,
-} from "@desk-framework/frame-core";
+} from "talla";
 
 class MyObject extends ManagedObject {}
 

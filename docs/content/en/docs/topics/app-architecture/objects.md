@@ -175,7 +175,7 @@ The {@link ManagedObject} class provides a common foundation for all parts of a 
 At the root level of this tree structure is the {@link app} object, which is created immediately when the application starts. This object manages all activities and services, and also references several objects that provide global functionality.
 
 - {@link app +}
-- {@link GlobalContext +}
+- {@link AppContext +}
 
 As the root object, the global application content provides ways to add {@link activities}, {@link services}, render {@link views} manually, change {@link themes} and {@link icons}, handle {@link internationalization}, {@link errors-logging errors and logging}, {@link navigation}, {@link message-dialogs message dialogs}, and {@link animation}. Read more about these features in the respective sections of this documentation.
 

@@ -19,7 +19,7 @@ Depending on the complexity of your application, you might use services to manag
 - Shared business logic
 - Worker processes and background tasks
 
-**Implementation** — Services are represented by classes that extend the {@link Service} class, with a read-only `id` property. After adding a service to the application context, you can retrieve it by name (i.e. the `id`), and observe its state using the {@link GlobalContext.services app.services} object from elsewhere in your application.
+**Implementation** — Services are represented by classes that extend the {@link Service} class, with a read-only `id` property. After adding a service to the application context, you can retrieve it by name (i.e. the `id`), and observe its state using the {@link AppContext.services app.services} object from elsewhere in your application.
 
 If you register a service with the same `id` value, the old service is unlinked (using {@link ManagedObject.unlink()}), and the new service is added to the application context in its place.
 
@@ -41,9 +41,9 @@ class MyService extends Service {
 
 ## Registering a service <!--{#adding}-->
 
-To register a service with the application context, use the {@link GlobalContext.addService app.addService()} method. This method takes an instance of the service class, and adds it to the service context immediately — i.e. the instance of {@link ServiceContext} available through `app.services`. Since the method returns the app context itself, you can chain the method call with other app context methods such as {@link GlobalContext.addActivity addActivity()}.
+To register a service with the application context, use the {@link AppContext.addService app.addService()} method. This method takes an instance of the service class, and adds it to the service context immediately — i.e. the instance of {@link ServiceContext} available through `app.services`. Since the method returns the app context itself, you can chain the method call with other app context methods such as {@link AppContext.addActivity addActivity()}.
 
-- {@link GlobalContext.addService}
+- {@link AppContext.addService}
 - {@link ServiceContext +}
 
 ```ts

@@ -8,12 +8,11 @@
 		"start": "parcel src/index.html --open"
 	},
 	"dependencies": {
-		"@desk-framework/frame-core": "../../packages/frame-core",
-		"@desk-framework/frame-web": "../../packages/frame-web"
+		"talla": "../../packages/talla"
 	},
 	"devDependencies": {
-		"parcel": "^2.8.3",
 		"@types/node": "^18.11.19",
+		"parcel": "^2.8.3",
 		"rimraf": "^5.0.7"
 	}
 }

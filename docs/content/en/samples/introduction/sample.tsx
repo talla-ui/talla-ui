@@ -1,10 +1,5 @@
-import {
-	Activity,
-	app,
-	bound,
-	ui,
-	useWebContext,
-} from "@desk-framework/frame-web";
+import { Activity, app, bound, ui } from "talla";
+import { useWebContext } from "@talla-ui/web-handler";
 /** @jsx ui.jsx */
 
 // @doc-start introduction:sample-style

@@ -1,5 +1,5 @@
 {
-	"name": "@desk-framework/docs",
+	"name": "@talla-ui/docs",
 	"private": true,
 	"version": "0.0.0",
 	"license": "MIT",
@@ -13,7 +13,8 @@
 		"build:site": "docgen",
 		"build-verbose": "npm run prebuild && docgen -v > docgen.log",
 		"check-docs": "docgen check-docs.config.json",
-		"check-format": "prettier --check \"**/*.md\" && cd app && npm run check-format"
+		"check-format": "prettier --check \"{content,templates}/**/*.{ts,md}\" && cd app && npm run check-format",
+		"serve": "http-server _site -g"
 	},
 	"prettier": {
 		"useTabs": true,
@@ -30,9 +31,10 @@
 		]
 	},
 	"devDependencies": {
-		"@desk-framework/docgen": "file:../packages/docgen",
-		"@desk-framework/frame-core": "file:../packages/frame-core",
-		"@desk-framework/frame-test": "file:../packages/frame-test",
-		"@desk-framework/frame-web": "file:../packages/frame-web"
+		"talla": "file:../packages/core",
+		"@talla-ui/docgen": "file:../packages/docgen",
+		"@talla-ui/test-handler": "file:../packages/test-handler",
+		"@talla-ui/web-handler": "file:../packages/web-handler",
+		"html-entities": "^2.5.2"
 	}
 }

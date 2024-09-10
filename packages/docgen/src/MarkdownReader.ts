@@ -5,7 +5,10 @@ import { Entry, EntryType } from "./Entry.js";
 /** A class that encapsulates a file reader for plain markdown files */
 export class MarkdownReader {
 	/** Creates a new reader for the specified file */
-	constructor(public fileName: string, public fileContent: string) {
+	constructor(
+		public fileName: string,
+		public fileContent: string,
+	) {
 		let id = path.basename(fileName).replace(/(\.md|\.txt)$/, "");
 		this.entry = {
 			location: fileName,

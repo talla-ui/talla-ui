@@ -1,9 +1,14 @@
 (function () {
-	const { ui, useWebContext } = desk;
+	const { ui, useWebContext } = talla;
+	const globeIcon = ui.icon(
+		`<svg width="24" height="24"><use href="/globe.svg#icon"></use></svg>`,
+	);
 
-	const page = ui.page(ui.cell(ui.label("Hello, World!")));
+	const page = ui.page(
+		ui.cell(ui.label({ icon: globeIcon, text: "Hello, World!" })),
+	);
 
-	class MainActivity extends desk.Activity {
+	class MainActivity extends talla.Activity {
 		createView() {
 			return new page();
 		}

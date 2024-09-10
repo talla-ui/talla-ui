@@ -5,13 +5,11 @@
 	"type": "module",
 	"scripts": {
 		"start": "vite",
-		"test": "test-runner-esbuild src/test.ts"
+		"test": "run-tests-esbuild src/test.ts"
 	},
 	"devDependencies": {
-		"@desk-framework/frame-core": "../../packages/frame-core",
-		"@desk-framework/frame-web": "../../packages/frame-web",
-		"@desk-framework/frame-test": "../../packages/frame-test",
-		"@desk-framework/test-runner-esbuild": "../../packages/test-runner-esbuild",
+		"talla": "../../packages/talla",
+		"@talla-ui/run-tests-esbuild": "../../packages/run-tests-esbuild",
 		"typescript": "^5.4.5",
 		"vite": "^5.3.1"
 	}

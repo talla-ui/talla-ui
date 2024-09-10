@@ -8,7 +8,7 @@ import {
 	Service,
 	bound,
 	ui,
-} from "@desk-framework/frame-core";
+} from "talla";
 /** @jsx ui.jsx */
 
 {

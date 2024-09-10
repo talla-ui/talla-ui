@@ -14,7 +14,7 @@ This library consists the following elements:
 - Functions for describing test scopes and cases
 - Functions for asserting values and objects during and after each test case
 - Functions for running all tests and collating results
-- The _test context_ — a runtime environment that includes simulations for framework functions such as UI rendering and user navigation, allowing for the application to run normally after which a test case can 'query' the resulting state (including UI)
+- The _test handler_ — a runtime environment that includes simulations for framework functions such as UI rendering and user navigation, allowing for the application to run normally after which a test case can 'query' the resulting state (including UI)
 
 Using the Desk test library, you can include tests alongside your source code, which can then be run using a separate entry point directly from the command line. Refer to the sections below to learn how to add tests to your application.
 
@@ -205,7 +205,7 @@ describe("Example test scope", (scope) => {
 - {@link TestCase.tryRunAsync}
 - {@link TestCase.breakOnFail}
 
-In addition, the test case object provides several methods for validating rendered content and navigation state, using the _test context_. For more information, refer to the following article:
+In addition, the test case object provides several methods for validating rendered content and navigation state, using the _test handler_. For more information, refer to the following article:
 
 - {@link test-context}
 

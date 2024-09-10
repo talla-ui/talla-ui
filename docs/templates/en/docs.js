@@ -73,7 +73,7 @@ export default async (html, data) => `
 		<link rel="stylesheet" href="/style.css?t=${TIME}" />
 		<link rel="stylesheet" href="/menu.css?t=${TIME}" />
 		<link rel="stylesheet" href="/diagram.css?t=${TIME}" />
-		<title>Desk framework - ${data.title || data.id || ""}</title>
+		<title>Tälla UI framework - ${data.title || data.id || ""}</title>
 		<meta name="description" content="${encode(data.metaDescription) || ""}" />
 	</head>
 	<body class="docpage">
@@ -83,7 +83,7 @@ export default async (html, data) => `
 				<a href="/docs/en/introduction.html" class="hide_narrow">About</a>
 				<a href="/docs/en/"><b>Docs</b></a>
 				<a href="/docs/en/blog/blog.html">Blog</a>
-				<a href="https://github.com/desk-framework/desk" target="_blank">
+				<a href="https://github.com/talla-ui/talla" target="_blank">
 					<icon class="icon icon--github"></icon>
 				</a>
 			</div>
@@ -127,7 +127,7 @@ export default async (html, data) => `
 		</div>
 		<script src="/script.js?t=${TIME}"></script>
 		<script src="/icons.js?t=${TIME}"></script>
-		<script src=\"/lib/desk-framework-web.es2015.iife.min.js\"></script>
+		<script src=\"/lib/talla-web.es2015.iife.min.js\"></script>
 		<script src="/bundle.js?t=${TIME}"></script>
 	</body>
 </html>

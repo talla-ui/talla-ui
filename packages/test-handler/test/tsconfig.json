@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noImplicitOverride": true,
+		"noUncheckedIndexedAccess": true,
+		"module": "esnext",
+		"moduleResolution": "node",
+		"target": "esnext",
+		"lib": ["dom", "esnext"],
+		"skipLibCheck": true,
+		"outDir": "../.test-run",
+		"sourceMap": true,
+		"pretty": true
+	}
+}

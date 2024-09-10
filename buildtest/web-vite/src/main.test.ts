@@ -1,4 +1,4 @@
-import { describe, test, useTestContext } from "@desk-framework/frame-test";
+import { describe, test, useTestContext } from "talla";
 import { MainActivity } from "./main";
 
 describe("Main", (scope) => {

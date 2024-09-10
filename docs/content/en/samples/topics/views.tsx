@@ -1,6 +1,6 @@
 // Compile/run: npx tsc -p . && node dist/views.js
 
-import { bound } from "@desk-framework/frame-core";
+import { bound } from "talla";
 
 {
 	// @doc-start views:preset
@@ -150,7 +150,7 @@ import { bound } from "@desk-framework/frame-core";
 }
 
 // @doc-start jsx:jsx-export
-import { ui } from "@desk-framework/frame-core";
+import { ui } from "talla";
 
 export default (
 	<cell background={ui.color.BACKGROUND} borderRadius={8}>

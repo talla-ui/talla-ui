@@ -1,7 +1,7 @@
 // Compile/run: npx tsc -p . && node dist/services.js
 
-import { Activity, ConfigOptions, Service } from "@desk-framework/frame-core";
-import { useWebContext } from "@desk-framework/frame-web";
+import { Activity, ConfigOptions, Service } from "talla";
+import { useWebContext } from "@talla-ui/web-handler";
 
 {
 	class AuthService extends Service {

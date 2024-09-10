@@ -1,9 +1,9 @@
 {
 	"check": true,
 	"input": [
-		"../packages/frame-core/dist/**/*.d.ts",
-		"../packages/frame-test/dist/**/*.d.ts",
-		"../packages/frame-web/dist/**/*.d.ts"
+		"../packages/core/dist/**/*.d.ts",
+		"../packages/test-handler/dist/**/*.d.ts",
+		"../packages/web-handler/dist/**/*.d.ts"
 	],
 	"output": {}
 }

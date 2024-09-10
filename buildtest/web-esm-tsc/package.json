@@ -10,7 +10,7 @@
 		"serve": "http-server -o index.html"
 	},
 	"dependencies": {
-		"@desk-framework/frame-core": "../../packages/frame-core",
-		"@desk-framework/frame-web": "../../packages/frame-web"
+		"talla": "../../packages/core",
+		"@talla-ui/web-handler": "../../packages/web-handler"
 	}
 }

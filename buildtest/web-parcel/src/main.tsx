@@ -1,9 +1,10 @@
-import { Activity, ui } from "@desk-framework/frame-core";
+import { Activity, ui } from "talla";
+import globeSvg from "bundle-text:./icons/globe.svg";
 
 const page = (
 	<mount page>
 		<cell>
-			<label>Hello, world!</label>
+			<label icon={ui.icon(globeSvg)}>Hello, world!</label>
 		</cell>
 	</mount>
 );

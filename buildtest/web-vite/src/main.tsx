@@ -1,4 +1,4 @@
-import { Activity, ui } from "@desk-framework/frame-core";
+import { Activity, ui } from "talla";
 import globeSvg from "./icons/globe.svg?raw";
 
 const page = (

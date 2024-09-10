@@ -8,6 +8,7 @@ let ctx = await esbuild.context({
 	format: "esm",
 	target: "esnext",
 	outfile: "public/dist/bundle.js",
+	loader: { ".svg": "text" },
 });
 
 let { port } = await ctx.serve({ servedir: "public" });

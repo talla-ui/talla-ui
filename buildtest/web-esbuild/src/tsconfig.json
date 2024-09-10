@@ -7,6 +7,7 @@
 		"jsx": "react",
 		"jsxFactory": "ui.jsx",
 		"strict": true,
+		"skipLibCheck": true,
 		"noImplicitAny": true,
 		"noUnusedLocals": true,
 		"noUncheckedIndexedAccess": true,

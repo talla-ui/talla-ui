@@ -26,12 +26,12 @@ In a Desk application, your code is often called by the framework itself. Where 
 - Errors that are thrown within tasks, run by a {@link task-scheduling task queue}
 - Miscellaneous errors, from the framework itself or e.g. an {@link I18nProvider} method
 
-By default, the global error handler logs the error using the global logging functions (see below), but you can override this behavior using the static {@link GlobalContext.setErrorHandler setErrorHandler()} method.
+By default, the global error handler logs the error using the global logging functions (see below), but you can override this behavior using the static {@link AppContext.setErrorHandler setErrorHandler()} method.
 
-- {@link GlobalContext.setErrorHandler}
+- {@link AppContext.setErrorHandler}
 
 ```ts
-GlobalContext.setErrorHandler((err) => {
+AppContext.setErrorHandler((err) => {
 	// keep track of all errors in a list, maybe?
 	myErrors.unshift(err);
 	myErrors.splice(MAX_ERRORS);

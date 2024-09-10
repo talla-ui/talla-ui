@@ -8,6 +8,7 @@
 		"moduleResolution": "Bundler",
 		"target": "ES2015",
 		"lib": ["dom", "esnext"],
+		"skipLibCheck": true,
 		"jsx": "react",
 		"jsxFactory": "ui.jsx",
 		"outDir": "dist"

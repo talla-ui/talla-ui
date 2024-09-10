@@ -8,8 +8,8 @@
 		"start": "http-server site -o"
 	},
 	"dependencies": {
-		"@desk-framework/frame-core": "../../packages/frame-core",
-		"@desk-framework/frame-web": "../../packages/frame-web"
+		"talla": "../../packages/talla",
+		"@talla-ui/web-handler": "../../packages/@talla-ui/web-handler"
 	},
 	"devDependencies": {
 		"http-server": "*"

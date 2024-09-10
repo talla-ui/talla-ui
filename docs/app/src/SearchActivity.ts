@@ -1,10 +1,4 @@
-import {
-	app,
-	UIListView,
-	UITextField,
-	Activity,
-	ViewEvent,
-} from "@desk-framework/frame-core";
+import { app, UIListView, UITextField, Activity, ViewEvent } from "talla";
 import { swapPageAsync } from "./swap";
 import { Search, SearchResult } from "./Search";
 import SearchView from "./SearchView";

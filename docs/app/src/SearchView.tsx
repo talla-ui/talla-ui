@@ -1,4 +1,4 @@
-import { $activity, $list, UIStyle, ui } from "@desk-framework/frame-core";
+import { $activity, $list, UIStyle, ui } from "talla";
 
 const TextFieldStyle = ui.style.TEXTFIELD.extend(
 	{

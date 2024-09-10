@@ -54,7 +54,7 @@ To add an activity instance to the application, use the `app.addActivity()` meth
 
 The application conmtext adds the activity to its _activity context_, available as `app.activities`, an instance of {@link ActivityContext}. The activity context ensures that activities are activated and deactivated based on the _navigation path_ (see below).
 
-- {@link GlobalContext.addActivity}
+- {@link AppContext.addActivity}
 - {@link ActivityContext +}
 
 Normally, you'll add activities to the application context immediately after the app context has been initialized.
@@ -70,26 +70,26 @@ Activities and views are both {@link objects managed objects}, and view objects 
 
 - Views should be created and assigned to `view` by the activity's `ready` method. This method is called when the activity is activated (see below), or when the renderer is updated (e.g. when the {@link themes theme} changes).
 - After the view object is attached to the activity, all {@link bindings} are updated automatically, and the activity is ready to handle {@link event-handling events} from the view.
-- To show the view, use the {@link GlobalContext.showPage showPage()} or {@link GlobalContext.showDialog showDialog()} methods of the app context.
+- To show the view, use the {@link AppContext.showPage showPage()} or {@link AppContext.showDialog showDialog()} methods of the app context.
 - Views are unlinked automatically when the activity is unlinked **or** deactivated.
 
 ```ts
 // {@sample :showing-views}
 ```
 
-- {@link GlobalContext.showPage}
-- {@link GlobalContext.showDialog}
+- {@link AppContext.showPage}
+- {@link AppContext.showDialog}
 
 > **Note:** The `ready` method may be called multiple times while the activity is active. You typically don't need to perform any additional checks to ensure that the view is shown only once, since creating the view object shouldn't have any side effects, and both of the above methods only ever render a single view once.
 
-Under the hood, these methods use the {@link GlobalContext.render()} method, which in turn uses the platform-specific renderer (an instance of {@link RenderContext}) to update the application's UI. In practice, both of these are rarely used directly from application code.
+Under the hood, these methods use the {@link AppContext.render()} method, which in turn uses the platform-specific renderer (an instance of {@link RenderContext}) to update the application's UI. In practice, both of these are rarely used directly from application code.
 
-- {@link GlobalContext.render}
+- {@link AppContext.render}
 - {@link RenderContext +}
 
 ## Activating and deactivating an activity <!--{#activating-deactivating}-->
 
-In an application with a single activity, the easiest way to activate an activity is using the {@link GlobalContext.addActivity addActivity()} method of the app context, with the second argument set to `true`.
+In an application with a single activity, the easiest way to activate an activity is using the {@link AppContext.addActivity addActivity()} method of the app context, with the second argument set to `true`.
 
 If there are multiple activities in your application, you can activate and deactivate them manually, **or** you can use navigation paths for automatic routing (see below). Activating an activity ensures that its view is shown (using the `ready` method), and deactivating an activity automatically removes its view.
 

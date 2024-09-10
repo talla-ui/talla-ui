@@ -2,7 +2,7 @@
 // Run (in folder):
 // npx tsc -p tsconfig.json && node dist/sample-test.js
 
-import { Activity, app, bound, ui } from "@desk-framework/frame-core";
+import { Activity, app, bound, ui } from "talla";
 import {
 	describe,
 	expect,
@@ -10,7 +10,7 @@ import {
 	runTestsAsync,
 	test,
 	useTestContext,
-} from "@desk-framework/frame-test";
+} from "@talla-ui/test-handler";
 
 // Define a label style for the large counter
 const CounterLabelStyle = ui.style.LABEL.extend({
@@ -50,7 +50,7 @@ class CounterActivity extends Activity {
 
 // @doc-start introduction:sample-test
 describe("Example", (scope) => {
-	// set up a new test context before each test
+	// set up a new test handler app context before each test
 	let activity: CounterActivity;
 	scope.beforeEach(() => {
 		useTestContext();

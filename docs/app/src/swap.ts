@@ -1,4 +1,4 @@
-import { app } from "@desk-framework/frame-core";
+import { app } from "talla";
 
 const SWAP_TIMEOUT = 500;
 const MAX_PREFETCH = 3;
@@ -49,7 +49,7 @@ function initPage() {
 	// 	let doc = iframe.contentDocument!;
 	// 	doc.write(`
 	// 		<!DOCTYPE html><body></body>
-	// 		<script src=\"/lib/desk-framework-web.es2015.iife.min.js\"></script>
+	// 		<script src=\"/lib/talla-web.es2015.iife.min.js\"></script>
 	// 		<script src="${jsUrl}"></script>
 	// 	`);
 	// 	doc.close();

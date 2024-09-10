@@ -1,4 +1,4 @@
-import { ManagedObject } from "@desk-framework/frame-core";
+import { ManagedObject } from "talla";
 
 export class SearchResult extends ManagedObject {
 	constructor(

@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"declaration": true,
+		"pretty": true,
+		"stripInternal": true,
+		"strict": true,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noImplicitOverride": true,
+		"noUncheckedIndexedAccess": true,
+		"importHelpers": true,
+		"module": "esnext",
+		"moduleResolution": "node",
+		"target": "esnext",
+		"lib": ["dom", "esnext"],
+		"skipLibCheck": true,
+		"outDir": "../dist"
+	}
+}

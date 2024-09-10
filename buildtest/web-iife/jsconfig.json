@@ -5,7 +5,7 @@
 		"noImplicitAny": true,
 		"noUnusedLocals": true,
 		"noUncheckedIndexedAccess": true,
-		"module": "None",
+		"module": "Preserve",
 		"moduleResolution": "Bundler",
 		"lib": ["dom", "esnext"],
 		"outDir": "../dist"

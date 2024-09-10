@@ -1,4 +1,4 @@
-import { useWebContext } from "@desk-framework/frame-web";
+import { useWebContext } from "@talla-ui/web-handler";
 import { SearchActivity } from "./SearchActivity";
 import { initializeSwap } from "./swap";
 
