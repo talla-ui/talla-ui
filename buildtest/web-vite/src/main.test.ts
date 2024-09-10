@@ -1,4 +1,4 @@
-import { describe, test, useTestContext } from "talla";
+import { describe, test, useTestContext } from "@talla-ui/test-handler";
 import { MainActivity } from "./main";
 
 describe("Main", (scope) => {

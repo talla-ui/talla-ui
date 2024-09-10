@@ -8,8 +8,8 @@
 		"start": "http-server site -o"
 	},
 	"dependencies": {
-		"talla": "../../packages/talla",
-		"@talla-ui/web-handler": "../../packages/@talla-ui/web-handler"
+		"talla": "../../packages/core",
+		"@talla-ui/web-handler": "../../packages/web-handler"
 	},
 	"devDependencies": {
 		"http-server": "*"
