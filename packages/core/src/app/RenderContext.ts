@@ -44,6 +44,34 @@ export namespace RenderContext {
 	) => RenderCallback<TElement>;
 
 	/**
+	 * Type definition for global rendering placement options
+	 *
+	 * @description
+	 * An object of this type can be provided when rendering a view object using {@link AppContext.render app.render()}, or {@link RenderContext.ViewController}. Typically, this object is provided by an activity, based on settings from {@link Activity.renderOptions}.
+	 *
+	 * The following properties determine how root view elements are placed on the screen:
+	 * - `mode` — One of the {@link RenderContext.PlacementMode} options.
+	 * - `mountId` — The mount element ID (e.g. HTML element ID), if `mode` is set to `mount`.
+	 * - `ref` — The existing output element that determines the position of modal or overlay view output, if any.
+	 * - `refOffset` — The offset (in pixels) from the reference output element, if any. May be a single number or two numbers for X and Y, and may also be negative.
+	 * - `shade` — True if the modal element should be surrounded by a backdrop shade.
+	 * - `background` — The screen (or page) background color.
+	 * - `transform` — A set of functions or names of theme animations that should run for the view output. By default, showing and hiding (or removing) output can be animated.
+	 */
+	export type PlacementOptions = Readonly<{
+		mode: PlacementMode;
+		mountId?: string;
+		ref?: Output;
+		refOffset?: number | [number, number];
+		shade?: boolean;
+		background?: UIColor;
+		transform?: Readonly<{
+			show?: OutputTransformer;
+			hide?: OutputTransformer;
+		}>;
+	}>;
+
+	/**
 	 * An identifier that specifies a global rendering mode, part of {@link RenderContext.PlacementOptions}
 	 *
 	 * @description
@@ -62,33 +90,6 @@ export namespace RenderContext {
 		| "modal"
 		| "overlay"
 		| "mount";
-
-	/**
-	 * Type definition for global rendering placement options
-	 *
-	 * @description
-	 * An object of this type can be provided when rendering a view object using {@link AppContext.render app.render()}, or {@link RenderContext.ViewController}.
-	 *
-	 * The following properties determine how root view elements are placed on the screen:
-	 * - `mode` — One of the {@link RenderContext.PlacementMode} options.
-	 * - `mountId` — The mount element ID (e.g. HTML element ID), if `mode` is set to `mount`.
-	 * - `ref` — The existing output element that determines the position of modal or overlay view output, if any.
-	 * - `refOffset` — The offset (in pixels) from the reference output element, if any. May be a single number or two numbers for X and Y, and may also be negative.
-	 * - `shade` — True if the modal element should be surrounded by a backdrop shade.
-	 * - `transform` — A set of functions or names of theme animations that should run for the view output. By default, showing and hiding (or removing) output can be animated.
-	 */
-	export type PlacementOptions = Readonly<{
-		mode: PlacementMode;
-		mountId?: string;
-		ref?: Output;
-		refOffset?: number | [number, number];
-		shade?: boolean;
-		background?: UIColor;
-		transform?: Readonly<{
-			show?: OutputTransformer;
-			hide?: OutputTransformer;
-		}>;
-	}>;
 
 	/**
 	 * An interface for an object that represents transformations to be applied to an output element
@@ -247,10 +248,7 @@ export namespace RenderContext {
 			// render content if possible, and clear when unlinked
 			if (view && callback) {
 				if (!this._ownCallback || isNewCallback) {
-					this._ownCallback = this._wrap(
-						callback,
-						place || view.renderPlacement,
-					);
+					this._ownCallback = this._wrap(callback, place);
 				}
 				this.lastView = view;
 				this._listener = new ViewListener(this, view);

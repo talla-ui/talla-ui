@@ -143,18 +143,16 @@ describe("UIFormContext", () => {
 			{ formContext: undefined as UIFormContext | undefined },
 			(_, ...content) => ui.column(...content),
 		);
-		const ViewBody = ui.page(
-			ui.row(
-				ui.use(
-					FormContainer,
-					{ formContext: $activity.bind("form1") },
-					ui.textField({ formField: "text" }),
-				),
-				ui.use(
-					FormContainer,
-					{ formContext: $activity.bind("form2") },
-					ui.textField({ formField: "text" }),
-				),
+		const ViewBody = ui.row(
+			ui.use(
+				FormContainer,
+				{ formContext: $activity.bind("form1") },
+				ui.textField({ formField: "text" }),
+			),
+			ui.use(
+				FormContainer,
+				{ formContext: $activity.bind("form2") },
+				ui.textField({ formField: "text" }),
 			),
 		);
 		class MyActivity extends Activity {

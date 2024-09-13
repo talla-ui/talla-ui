@@ -4,9 +4,7 @@
 		`<svg width="24" height="24"><use href="/globe.svg#icon"></use></svg>`,
 	);
 
-	const page = ui.page(
-		ui.cell(ui.label({ icon: globeIcon, text: "Hello, World!" })),
-	);
+	const page = ui.cell(ui.label({ icon: globeIcon, text: "Hello, World!" }));
 
 	class MainActivity extends talla.Activity {
 		createView() {

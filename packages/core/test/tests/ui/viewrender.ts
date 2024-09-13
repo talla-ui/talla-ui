@@ -70,7 +70,7 @@ describe("UIViewRenderer", (scope) => {
 		const Preset = ui.use(CompView, { text: "foo" });
 		class MyActivity extends Activity {
 			protected override createView() {
-				return new (ui.page(ui.renderView({ view: bind("vc") })))();
+				return new (ui.renderView({ view: bind("vc") }))();
 			}
 			vc = this.attach(new Preset());
 		}
@@ -91,7 +91,8 @@ describe("UIViewRenderer", (scope) => {
 		// activity that will be rendered as nested view
 		class MySecondActivity extends Activity {
 			protected override createView() {
-				return new (ui.page(ui.cell(ui.button("foo", "+ButtonPress"))))();
+				this.renderOptions = {}; // no direct rendering
+				return new (ui.cell(ui.button("foo", "+ButtonPress")))();
 			}
 			onButtonPress() {
 				t.count("foo-second");
@@ -101,14 +102,12 @@ describe("UIViewRenderer", (scope) => {
 		// containing activity
 		class MyActivity extends Activity {
 			protected override createView() {
-				const ViewBody = ui.page(
-					ui.cell(
-						{ accessibleLabel: "outer" },
-						ui.renderView({
-							view: bind("second.view"),
-							propagateEvents: true,
-						}),
-					),
+				const ViewBody = ui.cell(
+					{ accessibleLabel: "outer" },
+					ui.renderView({
+						view: bind("second.view"),
+						propagateEvents: true,
+					}),
 				);
 				return new ViewBody();
 			}

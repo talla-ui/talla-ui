@@ -1,11 +1,9 @@
 import { Activity, ui } from "../lib/talla-web.es2015.esm.min.js";
 
 const page = (
-	<mount page>
-		<cell>
-			<label>Hello, world!</label>
-		</cell>
-	</mount>
+	<cell>
+		<label>Hello, world!</label>
+	</cell>
 );
 
 export class MainActivity extends Activity {

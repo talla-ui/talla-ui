@@ -1,11 +1,9 @@
 import { Activity, ui } from "talla";
 
 const page = (
-	<mount page>
-		<cell>
-			<label>Hello, world!</label>
-		</cell>
-	</mount>
+	<cell>
+		<label>Hello, world!</label>
+	</cell>
 );
 
 export class MainActivity extends Activity {

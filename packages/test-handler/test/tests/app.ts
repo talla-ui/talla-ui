@@ -13,15 +13,16 @@ import { describe, expect, test, useTestContext } from "../../dist/index.js";
 // ... from "@talla-ui/test-handler"
 
 class CountActivity extends Activity {
+	constructor() {
+		super();
+		this.navigationPageId = "count";
+	}
 	protected override createView() {
-		return new (ui.page(
-			ui.cell(
-				ui.textField({ value: $activity.string("count"), onInput: "SetCount" }),
-				ui.button("+", "CountUp"),
-			),
+		return new (ui.cell(
+			ui.textField({ value: $activity.string("count"), onInput: "SetCount" }),
+			ui.button("+", "CountUp"),
 		))();
 	}
-	override navigationPageId = "count";
 	count = 0;
 	onCountUp() {
 		this.count++;

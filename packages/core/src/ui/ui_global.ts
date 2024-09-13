@@ -72,45 +72,6 @@ const createContainerComponentFactory = (V: ViewClass<UIContainer>) =>
 		for (let C of content) this.content.add(new C());
 	});
 
-// === Placement preset functions
-
-_ui.page = function (content: ViewClass) {
-	return _ui.mount({ page: true }, content);
-};
-
-_ui.screen = function (content: ViewClass) {
-	return _ui.mount({ screen: true }, content);
-};
-
-_ui.mount = function (options: ui.MountPlacement, content: ViewClass) {
-	let place: RenderContext.PlacementOptions | undefined =
-		"page" in options && options.page
-			? { mode: "page" }
-			: "screen" in options && options.screen
-				? { mode: "screen" }
-				: "id" in options
-					? { mode: "mount", mountId: options.id }
-					: options.place || { mode: "none" };
-	if (options.background) {
-		place = { ...place, background: options.background };
-	}
-	return class PresetMount extends View {
-		constructor() {
-			super();
-			let view = this.attach(new content(), (e) => {
-				if (!e.noPropagation) this.emit(e);
-			});
-			this.render = view.render.bind(view);
-			this.requestFocus = view.requestFocus.bind(view);
-			this.findViewContent = view.findViewContent.bind(view);
-			this.renderPlacement = place;
-		}
-		declare render;
-		declare requestFocus;
-		declare findViewContent;
-	};
-};
-
 // === UI component factory functions
 
 _ui.cell = createContainerComponentFactory(UICell);

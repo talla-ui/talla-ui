@@ -45,13 +45,6 @@ export abstract class View extends ManagedObject {
 	 */
 	abstract render(callback: RenderContext.RenderCallback): void;
 
-	/**
-	 * Render placement options used when this view is rendered directly
-	 * - This property is only relevant when the view is rendered directly, e.g. as the view of an activity.
-	 * - Use {@link ui.page()}, {@link ui.mount()}, or the JSX `<mount>` tag to control placement options in a preset view hierarchy.
-	 */
-	renderPlacement?: RenderContext.PlacementOptions;
-
 	/** A method that should be implemented to request input focus on the view output element */
 	abstract requestFocus(): void;
 

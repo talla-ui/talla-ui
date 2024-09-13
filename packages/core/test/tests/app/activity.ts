@@ -305,7 +305,8 @@ describe("Activity", () => {
 		});
 
 		test("Navigate app to activity path", async (t) => {
-			let activity = new Activity({ navigationPageId: "foo" });
+			let activity = new Activity();
+			activity.navigationPageId = "foo";
 			app.addActivity(activity);
 			app.navigate(activity);
 			await t.expectNavAsync(10, "foo");
@@ -313,7 +314,8 @@ describe("Activity", () => {
 		});
 
 		test("Navigate app to activity path with detail", async (t) => {
-			let activity = new Activity({ navigationPageId: "foo" });
+			let activity = new Activity();
+			activity.navigationPageId = "foo";
 			app.addActivity(activity);
 			app.navigate(activity.getNavigationTarget("bar"));
 			await t.expectNavAsync(10, "foo", "bar");
@@ -331,7 +333,7 @@ describe("Activity", () => {
 		test("Rendered page view", async (t) => {
 			class MyActivity extends Activity {
 				protected override createView() {
-					return new (ui.page(ui.cell(ui.label("Hello, world!"))))();
+					return new (ui.cell(ui.label("Hello, world!")))();
 				}
 			}
 			let activity = new MyActivity();
@@ -342,7 +344,7 @@ describe("Activity", () => {
 		test("Find views", async (t) => {
 			class MyActivity extends Activity {
 				protected override createView() {
-					return new (ui.page(ui.cell(ui.label("foo"), ui.label("bar"))))();
+					return new (ui.cell(ui.label("foo"), ui.label("bar")))();
 				}
 			}
 			let activity = new MyActivity();

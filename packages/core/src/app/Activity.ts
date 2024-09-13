@@ -94,7 +94,7 @@ export class Activity extends ManagedObject {
 	 * @note Activities must be added to the application using {@link AppContext.addActivity app.addActivity()} before they can be activated.
 	 * @see {@link AppContext.addActivity}
 	 */
-	constructor(options?: ConfigOptions.Arg<Activity.Options>) {
+	constructor() {
 		super();
 		_navCtxBinding.bindTo(this, (ctx) => {
 			this._boundNavCtx = ctx;
@@ -112,12 +112,6 @@ export class Activity extends ManagedObject {
 					.catch(errorHandler);
 			}
 		});
-
-		this._options = options = Activity.Options.init(options);
-		if (options.title !== undefined) this.title = options.title;
-		if (options.navigationPageId !== undefined)
-			this.navigationPageId = String(options.navigationPageId);
-		if (options.formContext) this.formContext = options.formContext;
 	}
 
 	/** @internal */
@@ -129,7 +123,7 @@ export class Activity extends ManagedObject {
 	 * - If the page ID is set to a string, the activity will be activated automatically when the first part of the current path matches this value, and deactivated when it doesn't.
 	 * - To match the root path (`/`), set this property to an empty string
 	 */
-	readonly navigationPageId?: string = undefined;
+	navigationPageId?: string = undefined;
 
 	/**
 	 * A user-facing name of this activity, if any
@@ -141,11 +135,18 @@ export class Activity extends ManagedObject {
 
 	/**
 	 * The current view, if any (attached automatically)
-	 * - This property is set automatically when active, using the result of the {@link Activity.createView()} method, and then displayed if the view corresponds to a full page, dialog, or mounted view.
+	 * - This property is set automatically when active, using the result of the {@link Activity.createView()} method, and then displayed using the settings from {@link renderOptions}.
 	 * - The view is automatically unlinked when the activity is deactivated or unlinked.
 	 * - Events emitted by the view are automatically delegated to the activity, see {@link delegate()}.
 	 */
 	view?: View = undefined;
+
+	/**
+	 * Render options, used for rendering the current view when the activity is activated
+	 * - By default, `page` render mode is used, to render all views as a scrollable page. This can be changed from the constructor or {@link createView()} method, including other rendering options such as the page background color.
+	 * - To disable rendering (e.g. if the view is rendered as part of another activity), set this property to an empty object.
+	 */
+	renderOptions: Activity.RenderOptions = { place: { mode: "page" } };
 
 	/**
 	 * Default form context used with input elements, if any
@@ -291,8 +292,8 @@ export class Activity extends ManagedObject {
 		if (!this._boundRenderer) throw err(ERROR.Render_Unavailable);
 
 		// render view using theme dialog controller if needed
-		let options = this._options;
-		if (options.showDialog) {
+		let options = this.renderOptions;
+		if (options?.dialog) {
 			let controller = this._boundTheme?.modalFactory?.buildDialog?.(view);
 			if (!controller) throw err(ERROR.Render_NoModal);
 			controller.show();
@@ -300,10 +301,10 @@ export class Activity extends ManagedObject {
 		}
 
 		// render view normally if placed
-		if (options.renderPlacement || view.renderPlacement) {
+		if (options.place && options.place.mode !== "none") {
 			let callback = this._boundRenderer.getRenderCallback();
 			let wrapper = new RenderContext.ViewController();
-			wrapper.render(view, callback, options.renderPlacement);
+			wrapper.render(view, callback, options.place);
 		}
 		return this;
 	}
@@ -446,9 +447,6 @@ export class Activity extends ManagedObject {
 		return target;
 	}
 
-	/** Activity options that were passed to constructor */
-	private _options: Activity.Options;
-
 	/** @internal Activation queue for this activity */
 	private readonly _activation = new ActivationQueue();
 
@@ -472,27 +470,18 @@ export class Activity extends ManagedObject {
 }
 
 export namespace Activity {
-	/** Options that can be provided to the {@link Activity} constructor */
-	export class Options extends ConfigOptions {
-		/** The user-facing name of this activity, if any */
-		title?: StringConvertible;
-
-		/** The page ID associated with this activity, to match the (first part of the) navigation path */
-		navigationPageId?: string;
-
-		/** Default form context used with input elements, if any */
-		formContext?: UIFormContext;
-
-		/**
-		 * True if the view should be rendered within a dialog (using the current theme)
-		 * - If this option is set, the view is rendered using the theme's modal dialog factory instead of being rendered directly.
-		 * - This option cannot be used together with `renderPlacement`
-		 * @see {@link UITheme.ModalControllerFactory}
-		 */
-		showDialog?: boolean;
-
+	/**
+	 * Options that are applied when rendering the view of an activity
+	 * - An object of this type is available as {@link Activity.renderOptions renderOptions}, which determines how a view is rendered by the activity when it is activated.
+	 * - The `dialog` property should be set to true if the view is to be displayed within a modal dialog (using the dialog controller that's part of {@link UITheme}).
+	 * - Otherwise, the `place` property can be used to determine render placement. By default, an activity sets this property is set to an {@link RenderContext.PlacementOptions} object with `mode` set to `page`, to render views as scrollable pages.
+	 * - To ensure that the view is not rendered directly at all (e.g. if it's displayed by another activity), set the `place` property to undefined, or its `mode` property to `"none"`.
+	 */
+	export class RenderOptions {
+		/** True if the view should be displayed within a modal dialog */
+		dialog?: boolean;
 		/** Render placement options, for custom rendering */
-		renderPlacement?: RenderContext.PlacementOptions;
+		place?: RenderContext.PlacementOptions = { mode: "page" };
 	}
 }
 

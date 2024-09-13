@@ -54,7 +54,8 @@ describe("NavigationContext and ActivityContext", () => {
 		});
 
 		test("Activity activated when added", async (t) => {
-			let activity = new Activity({ navigationPageId: "foo" });
+			let activity = new Activity();
+			activity.navigationPageId = "foo";
 			goTo("foo");
 			app.addActivity(activity);
 			await t.sleep(1);
@@ -63,7 +64,8 @@ describe("NavigationContext and ActivityContext", () => {
 		});
 
 		test("Activity activated when app path changed (async)", async (t) => {
-			let activity = new Activity({ navigationPageId: "foo" });
+			let activity = new Activity();
+			activity.navigationPageId = "foo";
 			goTo("bar");
 			app.addActivity(activity);
 			await t.sleep(1);

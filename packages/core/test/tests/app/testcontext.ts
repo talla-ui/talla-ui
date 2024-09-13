@@ -229,7 +229,7 @@ describe("TestContext", () => {
 					return new UICell();
 				}
 			}
-			let activity = new MyActivity({ renderPlacement: { mode: "page" } });
+			let activity = new MyActivity();
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
@@ -243,7 +243,7 @@ describe("TestContext", () => {
 					return new UICell();
 				}
 			}
-			let activity = new MyActivity({ renderPlacement: { mode: "page" } });
+			let activity = new MyActivity();
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});
@@ -262,7 +262,8 @@ describe("TestContext", () => {
 					return new UICell(new UILabel("foo"));
 				}
 			}
-			let activity = new MyActivity({ showDialog: true });
+			let activity = new MyActivity();
+			activity.renderOptions = { dialog: true };
 			let app = useTestContext((options) => {
 				options.renderFrequency = 5;
 			});

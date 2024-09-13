@@ -248,7 +248,7 @@ export class AppContext extends ManagedObject {
 	 * @summary This method can be used to render any view object to the screen (or in-memory test output, when called from a test function), such as a {@link UICell} or {@link ViewComposite} instance.
 	 *
 	 * @param view The view object to be rendered
-	 * @param place Mount element ID, or global view placement options, refer to {@link RenderContext.PlacementOptions}
+	 * @param place View placement options, as an object of type {@link RenderContext.PlacementOptions}
 	 * @returns A new {@link RenderContext.ViewController} instance, which can be used to control the rendered view
 	 * @error This method throws an error if the renderer hasn't been initialized yet.
 	 */

@@ -104,7 +104,7 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Click event propagation", async (t) => {
-		const ViewBody = ui.page(ui.cell(ui.button("Button", "ButtonClicked")));
+		const ViewBody = ui.cell(ui.button("Button", "ButtonClicked"));
 		class MyActivity extends Activity {
 			protected override createView() {
 				return new ViewBody();
@@ -125,9 +125,6 @@ describe("UIButton", (scope) => {
 			navigateTo: "/foo",
 		});
 		class MyActivity extends Activity {
-			constructor() {
-				super({ renderPlacement: { mode: "page" } });
-			}
 			protected override createView() {
 				return new MyButton();
 			}
@@ -145,9 +142,6 @@ describe("UIButton", (scope) => {
 			onClick: "NavigateBack",
 		});
 		class MyActivity extends Activity {
-			constructor() {
-				super({ renderPlacement: { mode: "page" } });
-			}
 			protected override createView() {
 				return new MyButton();
 			}
