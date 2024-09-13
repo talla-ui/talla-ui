@@ -137,8 +137,7 @@ export class WebContextOptions extends ConfigOptions {
  *       decoration: { borderColor: ui.color.PRIMARY },
  *     });
  * });
- * app.addActivity(new MyActivity())
- * app.addService("MyService", new MyService())
+ * app.addActivity(new MyActivity());
  */
 export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 	let options = WebContextOptions.init(config);

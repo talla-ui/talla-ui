@@ -16,8 +16,6 @@ import { NavigationContext } from "./NavigationContext.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { RenderContext } from "./RenderContext.js";
 import { Scheduler } from "./Scheduler.js";
-import { Service } from "./Service.js";
-import { ServiceContext } from "./ServiceContext.js";
 import type { View } from "./View.js";
 import type { ViewportContext } from "./ViewportContext.js";
 import { $_app_bind_label } from "./app_binding.js";
@@ -96,13 +94,6 @@ export class AppContext extends ManagedObject {
 	readonly activities = this.attach(new ActivityContext());
 
 	/**
-	 * The current service context, an instance of {@link ServiceContext}
-	 * - This object contains all current service instances, and provides methods to observe changes.
-	 * @note To add a service to the application, you can use the {@link AppContext.addService app.addService()} method directly.
-	 */
-	readonly services = this.attach(new ServiceContext());
-
-	/**
 	 * The current application output renderer, an instance of {@link RenderContext}
 	 * - This property will be set by the platform-specific renderer package
 	 */
@@ -177,17 +168,15 @@ export class AppContext extends ManagedObject {
 	 * @summary This method is used to reset the app to its initial state. It's called automatically by context initialization functions such as `useTestContext()` and `useWebContext()`, before setting up a new global application context with platform-specific details. The following actions take place:
 	 * 1. The current renderer's output is cleared;
 	 * 2. All activities are unlinked;
-	 * 3. All services are unlinked;
-	 * 4. All scheduler queues are stopped;
-	 * 5. The i18n provider is unlinked;
-	 * 6. The theme is removed
-	 * 7. Log sink(s) are removed;
+	 * 3. All scheduler queues are stopped;
+	 * 4. The i18n provider is unlinked;
+	 * 5. The theme is removed
+	 * 6. Log sink(s) are removed;
 	 */
 	clear() {
 		if (this.renderer) this.renderer.clear();
 		this.navigation.clear();
 		this.activities.clear();
-		this.services.clear();
 		this.scheduler.stopAll();
 		this.scheduler = new Scheduler();
 		this.i18n = undefined;
@@ -211,19 +200,6 @@ export class AppContext extends ManagedObject {
 		this.activities.add(activity);
 		this.navigation.addPage(activity);
 		if (activate) safeCall(activity.activateAsync, activity);
-		return this;
-	}
-
-	/**
-	 * Adds a service to the global application context
-	 *
-	 * @summary
-	 * This method adds a global service to the current {@link ServiceContext}, i.e. `app.services`. This allows other parts of the application to find and observe the service.
-	 *
-	 * @param service The service to be added, must have a valid `id` property
-	 */
-	addService(service: Service) {
-		this.services.add(service);
 		return this;
 	}
 

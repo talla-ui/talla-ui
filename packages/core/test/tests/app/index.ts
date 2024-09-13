@@ -1,5 +1,4 @@
 import "./i18n.js";
-import "./services.js";
 import "./scheduler.js";
 import "./appexception.js";
 import "./navigationtarget.js";

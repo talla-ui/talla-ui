@@ -44,8 +44,6 @@ export namespace BindingOrValue {
  *
  * **Binding to managed lists** — {@link ManagedList} instances include special properties that may be referenced by a binding path. Use `.count` to bind to the list count, `.#first` and `.#last` to bind to the first and last item in the list, respectively.
  *
- * **Binding to services** — Bindings can also be used to maintain references to services, using the {@link $services} object (or e.g. `bind("services.MyService")`). These bindings are updated whenever the service is added or removed from the service registry, as long as the object that the binding is applied to is also part of the app hierarchy.
- *
  * **Applying bindings** — Include the result of {@link bind()} in the preset object or parameters passed to {@link ui} factory functions (or JSX attributes), to add a bound property to a view, e.g. `ui.label($activity.string("labelText"))` or `<textfield placeholder={$view.string("placeholderText")} />`.
  *
  * To apply a binding to any other managed object, use to the {@link bindTo()} method. This method can be used to bind a target property, or to call a function whenever the source value changes.
@@ -596,7 +594,7 @@ export namespace Binding {
 	 * A class that helps to create bindings for a specific source
 	 * - Instances of this class are created using the {@link bind.$on()} function.
 	 * - All bindings created using this class are bound using a source 'label' (i.e. a unique property), to bind to a specific type of object, e.g. activities or view composites.
-	 * - Additionally, a property name may be used as a prefix for all bindings, e.g. for `services` and `viewport` on the {@link app} object.
+	 * - Additionally, a property name may be used as a prefix for all bindings
 	 *
 	 * @docgen {hideconstructor}
 	 */
@@ -680,10 +678,6 @@ export namespace Binding {
  *   // keep this property in sync with a parent activity (if any):
  *   @binding("selectedCustomer")
  *   customer?: Customer;
- *
- *   // set this property to a service using its ID:
- *   @binding($services.bind("MyService"))
- *   myService?: MyService;
  * }
  */
 export function binding(source: string | Binding) {
@@ -702,7 +696,7 @@ export function binding(source: string | Binding) {
 /**
  * Creates a new {@link Binding}
  * @summary This function is used to create a new binding for a specific source path, with an optional default value. Calling this function is equivalent to `new Binding(sourcePath, defaultValue)`, and is the recommended way to create bindings.
- * @note You can use objects such as {@link $activity}, {@link $view}, {@link $services}, and {@link $viewport} to create bindings for specific sources; or create your own binding method objects using {@link bind.$on()}.
+ * @note You can use objects such as {@link $activity}, {@link $view}, and {@link $viewport} to create bindings for specific sources; or create your own binding method objects using {@link bind.$on()}.
  * @param sourcePath The source (property) path that's used for obtaining the bound value
  * @param defaultValue An optional default value that's used when the bound value is undefined
  * @returns A new {@link Binding} object
@@ -723,7 +717,7 @@ export namespace bind {
 
 	/**
 	 * Creates an object with methods that can be used to create bindings for a specific source
-	 * - This function is used to create objects such as {@link $activity}, {@link $view}, {@link $services}, and {@link $viewport}.
+	 * - This function is used to create objects such as {@link $activity}, {@link $view}, and {@link $viewport}.
 	 * - You can use this function to create your own binding factory objects, by referencing a specific property of a class (i.e. the binding source label) and/or a property name that should be used as a prefix for all bindings.
 	 * @param sourceLabel The source label property that's used to filter candidate objects
 	 * @param propertyName An optional property name that's used as a prefix for all bindings, must be a property of the source object

@@ -17,6 +17,3 @@ export const $viewport: Binding.Source<
 export const $navigation: Binding.Source<
 	ManagedObject.PropertiesOf<NavigationContext>
 > = bind.$on($_app_bind_label, "navigation");
-
-/** An object that can be used to create bindings for (properties of) services */
-export const $services: Binding.Source = bind.$on($_app_bind_label, "services");
