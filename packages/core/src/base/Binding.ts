@@ -82,9 +82,8 @@ export class Binding<T = any> {
 			defaultValue = source.default;
 			this._label = source.label;
 			this._path = [...source.path];
-			if (source.prefix) {
-				this._prefix = true;
-				this._path.unshift(source.prefix);
+			if (source.prefix?.length) {
+				this._path.unshift(...(this._prefix = source.prefix));
 			}
 		} else {
 			this._path = source ? source.split(".") : [];
@@ -105,8 +104,8 @@ export class Binding<T = any> {
 	/** Property to filter source origin objects, i.e. only consider objects that include this property */
 	private _label?: string | symbol;
 
-	/** True if the first part of the path is a fixed property prefix, e.g. for {@link $viewport} */
-	private _prefix?: boolean;
+	/** A list of properties that were prepended before the binding path (used when creating associated bindings from another path) */
+	private _prefix?: string[];
 
 	/**
 	 * Applies this binding to the specified target object
@@ -394,7 +393,7 @@ export class Binding<T = any> {
 			other = new Binding({
 				path: other.split("."),
 				label: this._label,
-				prefix: this._prefix ? this._path[0] : undefined,
+				prefix: this._prefix,
 			});
 		}
 
@@ -572,8 +571,8 @@ export namespace Binding {
 		default?: any;
 		/** The source label property that's used to filter parent objects */
 		label?: string | symbol;
-		/** An optional property name that's used as a prefix for all bindings */
-		prefix?: string;
+		/** An optional list of property names that are prepended before all binding paths */
+		prefix?: string[];
 	};
 
 	/**
@@ -603,20 +602,20 @@ export namespace Binding {
 		 * Creates a new instance, do not use directly
 		 * @see {@link bind.$on}
 		 */
-		constructor(sourceLabel: string | symbol, propertyName?: string) {
+		constructor(sourceLabel: string | symbol, prefix: string[]) {
 			this._label = sourceLabel;
-			this._prefix = propertyName;
+			this._prefix = prefix;
 		}
 
 		/** Label used for this binding source */
 		private _label: string | symbol;
 
 		/** Prefix added in front of all binding paths */
-		private _prefix?: string;
+		private _prefix: string[];
 
 		/** Creates a new {@link Binding} object */
-		bind<T = unknown>(source: TKey, defaultValue?: any) {
-			return new Binding({
+		bind<T = any>(source: TKey, defaultValue?: any) {
+			return new Binding<T>({
 				path: source.split("."),
 				default: defaultValue,
 				label: this._label,
@@ -724,9 +723,9 @@ export namespace bind {
 	 */
 	export function $on<TKey extends string>(
 		sourceLabel: string | symbol,
-		propertyName?: string,
+		...properties: string[]
 	): Binding.Source<TKey> {
-		return new Binding.Source(sourceLabel, propertyName);
+		return new Binding.Source(sourceLabel, properties);
 	}
 
 	/**

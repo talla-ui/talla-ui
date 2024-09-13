@@ -10,12 +10,14 @@ import type { WebContextOptions } from "../WebContext.js";
 import { OutputMount } from "./OutputMount.js";
 import { WebOutputTransform } from "./WebOutputTransform.js";
 import { makeObserver } from "./observers/observers.js";
+import { WebViewportContext } from "./WebViewportContext.js";
 
 /** @internal A renderer class that uses the DOM to render UI components */
 export class WebRenderer extends RenderContext {
 	/** Creates a new render context instance, used by `useWebContext()` */
 	constructor(options: WebContextOptions) {
 		super();
+		this.viewport = new WebViewportContext(options).update();
 		this._mounts = new Map();
 		this._queue = app.scheduler.createQueue(
 			"WebRenderer",
@@ -29,6 +31,9 @@ export class WebRenderer extends RenderContext {
 		this._pageBackground = options.pageBackground;
 		this._modalBackground = options.modalShadeBackground;
 	}
+
+	/** Web browser viewport information */
+	viewport: RenderContext.Viewport;
 
 	/** Schedules the provided callback in the rendering queue */
 	schedule(f: () => void, lowPriority?: boolean) {

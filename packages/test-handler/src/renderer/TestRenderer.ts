@@ -1,4 +1,4 @@
-import { AsyncTaskQueue, RenderContext, View, app } from "talla";
+import { AsyncTaskQueue, ManagedObject, RenderContext, View, app } from "talla";
 import { OutputAssertion, OutputSelectFilter } from "../app/OutputAssertion.js";
 import type { TestContextOptions } from "../app/TestContext.js";
 import { TestOutputElement } from "../app/TestOutputElement.js";
@@ -73,6 +73,9 @@ export class TestRenderer extends RenderContext {
 			},
 		);
 	}
+
+	/** Test viewport information (not dynamic) */
+	viewport: RenderContext.Viewport = new TestViewport();
 
 	/** Schedules the provided callback in the rendering queue */
 	schedule(f: () => void, lowPriority?: boolean) {
@@ -280,4 +283,25 @@ export class TestRenderer extends RenderContext {
 
 	private _queue: AsyncTaskQueue;
 	private _root = new TestOutputElement("root");
+}
+
+/**
+ * @internal Test viewport information
+ * TODO: make this do something interesting, use options to set grid
+ */
+class TestViewport extends ManagedObject implements RenderContext.Viewport {
+	height?: number;
+	width?: number;
+	portrait = false;
+	col2 = false;
+	col3 = false;
+	col4 = false;
+	col5 = false;
+	row2 = false;
+	row3 = false;
+	row4 = false;
+	row5 = false;
+	setGridSize(colSize: number, rowSize: number): void {
+		// do nothing
+	}
 }

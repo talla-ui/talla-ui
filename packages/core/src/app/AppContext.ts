@@ -17,7 +17,6 @@ import { NavigationTarget } from "./NavigationTarget.js";
 import { RenderContext } from "./RenderContext.js";
 import { Scheduler } from "./Scheduler.js";
 import type { View } from "./View.js";
-import type { ViewportContext } from "./ViewportContext.js";
 import { $_app_bind_label } from "./app_binding.js";
 
 /** @internal Counter that blocks multiple invocations of AppContext constructor */
@@ -51,6 +50,9 @@ export class AppContext extends ManagedObject {
 		// set as root object (cannot be attached, no more bindings)
 		ManagedObject.makeRoot(this);
 		(this as any)[$_app_bind_label] = true;
+
+		// set renderer property to undefined, to enable bindings
+		(this as any).renderer = undefined;
 
 		// define i18n property and handle new objects when set
 		let i18n: I18nProvider | undefined;
@@ -97,35 +99,14 @@ export class AppContext extends ManagedObject {
 	 * The current application output renderer, an instance of {@link RenderContext}
 	 * - This property will be set by the platform-specific renderer package
 	 */
-	declare readonly renderer?: RenderContext;
-
-	/**
-	 * An object containing information about the user's viewport, e.g. browser window
-	 * - You can use `app.viewport` directly, or using a binding (see {@link $viewport}).
-	 * - Refer to {@link ViewportContext} for available properties of `app.viewport`.
-	 *
-	 * @see {@link ViewportContext}
-	 * @example
-	 * // Use the viewport size in code:
-	 * if (app.viewport.portrait) {
-	 *   // ... do something in portrait mode
-	 * }
-	 *
-	 * @example
-	 * // Use the viewport size in a view:
-	 * ui.cell(
-	 *   { hidden: $viewport.not("portrait") }
-	 *   // ... portrait cell content
-	 * )
-	 */
-	declare viewport?: ViewportContext;
+	declare readonly renderer?: RenderContext; // (defined in constructor)
 
 	/**
 	 * The current internationalization context, an object that implements {@link I18nProvider}
 	 * - You can set `app.i18n` to an object that implements {@link I18nProvider}, to change the current internationalization context.
 	 * - Note that labels and other UI controls that are already rendered won't be updated automatically. If needed, use `app.renderer.remount()` to force a full re-render.
 	 */
-	declare i18n?: I18nProvider;
+	declare i18n?: I18nProvider; // (defined in constructor)
 
 	/**
 	 * The current theme, an instance of {@link UITheme}
@@ -134,7 +115,7 @@ export class AppContext extends ManagedObject {
 	 * - Refer to {@link UITheme} for available properties and methods of `app.theme`.
 	 * @see {@link UITheme}
 	 */
-	declare theme?: UITheme;
+	declare theme?: UITheme; // (defined in constructor)
 
 	/**
 	 * The current navigation context, an instance of {@link NavigationContext}

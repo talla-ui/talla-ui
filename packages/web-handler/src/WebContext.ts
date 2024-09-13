@@ -10,7 +10,6 @@ import {
 import { WebHashNavigationContext } from "./WebHashNavigationContext.js";
 import { WebHistoryNavigationContext } from "./WebHistoryNavigationContext.js";
 import { WebRenderer } from "./renderer/WebRenderer.js";
-import { WebViewportContext } from "./renderer/WebViewportContext.js";
 import { Dialog, DialogStyles } from "./style/Dialog.js";
 import { MessageDialog, MessageDialogStyles } from "./style/MessageDialog.js";
 import { ModalMenu, ModalMenuStyles } from "./style/ModalMenu.js";
@@ -155,11 +154,6 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 	// update modal styles
 	ModalMenu.styles = options.modalMenuStyles;
 	MessageDialog.styles = options.messageDialogStyles;
-
-	// create viewport context and update
-	let viewport = new WebViewportContext(options);
-	app.viewport = viewport;
-	viewport.update();
 
 	// create DOM renderer, initialize CSS on remount
 	let renderer = new WebRenderer(options);

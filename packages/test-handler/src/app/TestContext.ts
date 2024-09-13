@@ -9,7 +9,6 @@ import { TestScope } from "../TestScope.js";
 import { TestTheme } from "../style/TestTheme.js";
 import { TestNavigationContext } from "./TestNavigationContext.js";
 import { TestRenderer } from "../renderer/TestRenderer.js";
-import { TestViewportContext } from "./TestViewportContext.js";
 
 /** Type definition for the global {@link app} context with test-specific render and activity contexts, set by the {@link useTestContext} function */
 export type TestContext = AppContext & {
@@ -80,9 +79,6 @@ export function useTestContext(config?: ConfigOptions.Arg<TestContextOptions>) {
 	// create test renderer
 	app.theme = new TestTheme();
 	(app as any).renderer = new TestRenderer(options);
-
-	// create no-op viewport context
-	app.viewport = new TestViewportContext();
 
 	// create test navigation path and set initial path
 	app.navigation = new TestNavigationContext(options);

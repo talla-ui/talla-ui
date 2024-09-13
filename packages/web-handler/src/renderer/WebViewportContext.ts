@@ -1,4 +1,4 @@
-import { ManagedObject, ViewportContext, app } from "talla";
+import { ManagedObject, RenderContext, app } from "talla";
 import type { WebContextOptions } from "../WebContext.js";
 import {
 	getWindowInnerHeight,
@@ -11,7 +11,7 @@ let _handlerAdded = false;
 /** @internal */
 export class WebViewportContext
 	extends ManagedObject
-	implements ViewportContext
+	implements RenderContext.Viewport
 {
 	constructor(options: WebContextOptions) {
 		super();
@@ -59,14 +59,15 @@ export class WebViewportContext
 			this.row5 = gh >= 5;
 			this.emitChange("Resize");
 		}
+		return this;
 	}
 
 	private _addHandler() {
 		if (_handlerAdded) return;
 		_handlerAdded = true;
 		function update() {
-			if (app.viewport instanceof WebViewportContext) {
-				app.viewport.update();
+			if (app.renderer?.viewport instanceof WebViewportContext) {
+				app.renderer.viewport.update();
 			}
 			return false;
 		}
