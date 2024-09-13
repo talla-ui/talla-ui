@@ -64,7 +64,7 @@ describe("Events", () => {
 	describe("Async iterator listeners", () => {
 		test("Unlink cancels iterator", async (t) => {
 			let c = new ManagedObject();
-			let iter = c.listen()[Symbol.asyncIterator]();
+			let iter = c.listen(true)[Symbol.asyncIterator]();
 			c.unlink();
 			expect(await iter.next())
 				.toHaveProperty("done")
@@ -74,7 +74,7 @@ describe("Events", () => {
 		test("Unlink stops waiting iterator", async (t) => {
 			let c = new ManagedObject();
 			t.sleep(10).then(() => c.unlink());
-			for await (let _event of c.listen()) {
+			for await (let _event of c.listen(true)) {
 				t.count("event");
 			}
 			t.expectCount("event").toBe(0);
@@ -88,7 +88,7 @@ describe("Events", () => {
 				c.emit("Baz");
 			});
 			let handled: string[] = [];
-			for await (let event of c.listen()) {
+			for await (let event of c.listen(true)) {
 				handled.push(event.name);
 				if (handled.length >= 3) break;
 			}
@@ -98,7 +98,7 @@ describe("Events", () => {
 		test("Iterator handles events directly", async (t) => {
 			let c = new ManagedObject();
 			t.sleep(10).then(() => c.emit("Foo"));
-			for await (let event of c.listen()) {
+			for await (let event of c.listen(true)) {
 				if (event.name === "Foo") c.emit("Bar");
 				if (event.name === "Bar") c.unlink();
 			}
@@ -108,7 +108,7 @@ describe("Events", () => {
 			let c = new ManagedObject();
 			t.sleep(10).then(() => c.emit("Foo"));
 			try {
-				for await (let _event of c.listen()) {
+				for await (let _event of c.listen(true)) {
 					throw Error("Testing");
 				}
 			} catch (err) {

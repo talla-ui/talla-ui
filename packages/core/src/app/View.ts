@@ -88,7 +88,7 @@ export abstract class View extends ManagedObject {
 					if (typeof v !== "string" || eventName === v) {
 						throw invalidArgErr("preset." + p);
 					}
-					(events || (events = Object.create(null)))[eventName] = v;
+					(events ||= Object.create(null))[eventName] = v;
 				}
 				continue;
 			}

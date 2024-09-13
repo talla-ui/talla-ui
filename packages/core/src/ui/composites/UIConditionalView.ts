@@ -4,7 +4,6 @@ import {
 	ViewClass,
 	ViewComposite,
 } from "../../app/index.js";
-import { ManagedEvent } from "../../base/index.js";
 
 /**
  * A view composite that automatically creates and unlinks the contained view
@@ -28,11 +27,7 @@ export class UIConditionalView extends View {
 				state = !!v;
 				if (!!this.body !== state) {
 					if (state && this._Body) {
-						this.body = this.attach(new this._Body(), (e) => {
-							if (!e.noPropagation) {
-								this.emit(ManagedEvent.withDelegate(e, this));
-							}
-						});
+						this.body = this.attach(new this._Body(), { delegate: this });
 					} else {
 						this.body?.unlink();
 						this.body = undefined;
@@ -42,6 +37,9 @@ export class UIConditionalView extends View {
 			},
 		});
 	}
+
+	/** @internal Empty event delegation method, causes all events from attached body to be delegated */
+	delegate() {}
 
 	/**
 	 * Applies the provided preset properties to this object

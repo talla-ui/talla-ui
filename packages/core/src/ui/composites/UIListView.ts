@@ -1,8 +1,7 @@
-import { View, ViewClass, ViewComposite } from "../../app/index.js";
+import { View, ViewClass, ViewComposite, ViewEvent } from "../../app/index.js";
 import {
 	Binding,
 	BindingOrValue,
-	ManagedEvent,
 	ManagedList,
 	ManagedObject,
 	bind,
@@ -62,6 +61,31 @@ export class UIListView<
 			private _sync?: boolean;
 			private _running?: { abort: boolean };
 		};
+	}
+
+	/**
+	 * Returns the list item for the view that contains the provided view object
+	 * - This method can be used to retrieve the item object that's related to the source of an event after it has propagated to a view composite or activity.
+	 * - If an object type (class) is specified, this method ensures that the return value is an instance of the specified type. If necessary, the item of a surrounding list (if nested) is checked instead.
+	 * @param view The view object that's located within a list view
+	 * @param type A constructor that's used to verify the resulting item object
+	 * @returns The item that was used to create the view, or undefined
+	 * @example
+	 * // ... in an activity:
+	 * onDeleteItem(e: ViewEvent) {
+	 *   let targetItem = UIListView.getSourceItem(e.source, MyItem);
+	 *   // ... do something with targetItem (of type MyItem
+	 *   // but may also be undefined, although not likely) ...
+	 * }
+	 */
+	static getSourceItem<T>(
+		view: ManagedObject,
+		type?: new (...args: any[]) => T,
+	): T | undefined {
+		let controller = UIListView.ItemControllerView.whence(view);
+		let item = controller?.item;
+		if (type ? item instanceof type : item) return item as any;
+		if (controller) return this.getSourceItem(controller, type);
 	}
 
 	/** Creates a new list view composite object */
@@ -206,43 +230,44 @@ export class UIListView<
 	}
 
 	/**
-	 * Override of {@link ViewComposite.delegateViewEvent}
-	 * - This method always emits the original event without updating the delegate property, since the delegate should refer to the list item view controller, not the list view itself.
-	 * - This method also handles focus events to focus the _first list item_ instead of the list container; and handles `FocusPrevious` and `FocusNext` events to move focus within the list (or the parent list). No other events are handled.
+	 * Event handler that focuses the next list item when a FocusNext event is emitted within the view
+	 * - If there is no next list item, the event is propagated, potentially moving focus on a parent list view.
 	 */
-	protected override delegateViewEvent(event: ManagedEvent): boolean {
-		switch (event.name) {
-			case "FocusNext":
-				// try to focus the next element in the list
-				if (this.focusNextItem()) return true;
-				break;
-			case "FocusPrevious":
-				// try to focus the previous element in the list
-				if (this.focusPreviousItem()) return true;
+	onFocusNext() {
+		if (this.focusNextItem()) return true;
+	}
 
-				// or try to focus the parent list, don't delegate if so
-				let parentList = UIListView.whence(this);
-				if (parentList) {
-					parentList.requestFocus();
-					return true;
-				}
-				break;
-			case "FocusIn":
-				if (event.source === this.body) {
-					// focus last focused item or first item instead of container
-					this.requestFocus();
-				} else {
-					// store new focus index (if directly focused content)
-					let controller = UIListView.ItemControllerView.whence(event.source);
-					let content = this.getContent();
-					let idx = controller && content?.indexOf(controller);
-					this.lastFocusedIndex = idx ? Math.max(0, idx) : 0;
-				}
+	/**
+	 * Event handler that focuses the previous list item when a FocusPrevious event is emitted within the view
+	 * - If there is no previous list item, and a parent list view exists, the parent list is focused instead; potentially focusing its previously focused item (the parent item, in a tree structure).
+	 */
+	onFocusPrevious() {
+		if (this.focusPreviousItem()) return true;
+
+		// or try to focus the parent list, don't delegate if so
+		let parentList = UIListView.whence(this);
+		if (parentList) {
+			parentList.requestFocus();
+			return true;
 		}
+	}
 
-		// re-emit regular events
-		this.emit(event);
-		return false;
+	/**
+	 * Event handler that handles list item focus
+	 * - If the focused element is the list body view itself, the last focused item view is focused instead.
+	 * - Otherwise, the index of the focused item is stored in {@link lastFocusedIndex}, which is used by {@link requestFocus()}.
+	 */
+	onFocusIn(event: ViewEvent) {
+		if (event.source === this.body) {
+			// focus last focused item or first item instead of container
+			this.requestFocus();
+		} else {
+			// store new focus index (if directly focused content)
+			let controller = UIListView.ItemControllerView.whence(event.source);
+			let content = this.getContent();
+			let idx = controller && content?.indexOf(controller);
+			this.lastFocusedIndex = idx ? Math.max(0, idx) : 0;
+		}
 	}
 
 	/** Update the container with (existing or new) components, one for each list item; only called from list observer */
@@ -390,35 +415,10 @@ export namespace UIListView {
 		/** The encapsulated list (or array) item */
 		readonly item: TItem;
 
-		/**
-		 * Implementation of {@link ViewComposite.delegateViewEvent}, emits events with the `delegate` property set to this object
-		 */
-		protected override delegateViewEvent(event: ManagedEvent) {
-			if (this.isUnlinked() || event.noPropagation) return false;
-
-			event = ManagedEvent.withDelegate(event, this);
-			this.emit(event);
-			return true;
-		}
-
 		protected override createView() {
 			return new this._ItemBody();
 		}
 
 		private _ItemBody: ViewClass;
 	}
-
-	/**
-	 * Type alias for events delegated by {@link UIListView.ItemControllerView}
-	 * - This type can be used for the argument of an event handler, for events that were originally emitted within a list item view, and have been delegated by {@link UIListView.ItemControllerView}. The list item itself is available as `event.delegate.item`.
-	 * @see {@link UIListView}
-	 * @see {@link UIListView.ItemControllerView}
-	 */
-	export type ItemEvent<
-		TItem,
-		TSource extends ManagedObject = ManagedObject,
-	> = ManagedEvent<TSource> & {
-		/** The item controller view that delegated the event; can be used to access the list item */
-		delegate: ItemControllerView<TItem>;
-	};
 }

@@ -5,7 +5,7 @@ import {
 	ManagedObject,
 	bind,
 } from "../base/index.js";
-import { ERROR, err, errorHandler } from "../errors.js";
+import { ERROR, err } from "../errors.js";
 import { RenderContext } from "./RenderContext.js";
 import { View, ViewClass } from "./View.js";
 
@@ -89,7 +89,7 @@ export class ViewComposite extends View {
 	/**
 	 * The encapsulated view object, an attached view
 	 * - Initially, this property is undefined. The view object is only created (using {@link ViewComposite.createView createView()}) when the ViewComposite instance is first rendered.
-	 * - Alternatively, you can set it yourself, e.g. in the constructor. In this case, ensure that the object is a {@link View} instance that's attached directly to this view composite, and events are delegated using {@link ViewComposite.delegateViewEvent}.
+	 * - Alternatively, you can set it yourself, e.g. in the constructor. In this case, ensure that the object is a {@link View} instance that's attached directly to this view composite, and events are delegated using {@link ViewComposite.delegate}.
 	 */
 	body?: View;
 
@@ -146,30 +146,16 @@ export class ViewComposite extends View {
 	}
 
 	/**
-	 * Delegates events from the current view
-	 * - This method is called automatically when an event is emitted by the current view object (except if {@link ManagedEvent.noPropagation} was set).
+	 * Delegates incoming events to methods of this object, notably from the attached view body
+	 * - This method is called automatically when an event is emitted by the current view object (except if {@link ManagedEvent.noPropagation} was set on the event; see {@link ManagedObject.attach()} which is used to set up view event delegation).
 	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true` (event handled), false/undefined, or a promise (which is awaited just to be able to handle any errors).
-	 * - If a handler is not found, or it returned false or undefined, a delegate event is re-emitted on the view composite itself (i.e. a new event with `delegate` set to the view composite), and this method returns false.
-	 * @param event The event to be delegated (from the view)
-	 * @returns True if an event handler was found, and it returned true; a promise if the handler returned a promise; false otherwise.
+	 * @param event The event to be delegated
+	 * @returns The result of the event handler method, or undefined.
+	 * @see {@link ManagedObject.attach}
+	 * @see {@link ManagedObject.EventDelegate}
 	 */
-	protected delegateViewEvent(event: ManagedEvent): boolean | Promise<unknown> {
-		if (this.isUnlinked() || event.noPropagation) return false;
-
-		// find own handler method
-		let method = (this as any)["on" + event.name];
-		if (typeof method === "function") {
-			let result = method.call(this, event);
-
-			// return true or promise result, otherwise false below
-			if (result === true) return true;
-			if (result && result.then && result.catch) {
-				return (result as Promise<unknown>).catch(errorHandler);
-			}
-		}
-		event = ManagedEvent.withDelegate(event, this);
-		this.emit(event);
-		return false;
+	delegate(event: ManagedEvent): Promise<boolean | void> | boolean | void {
+		return (this as any)["on" + event.name]?.(event);
 	}
 
 	/**
@@ -182,9 +168,7 @@ export class ViewComposite extends View {
 			if (body) {
 				if (!(body instanceof View)) throw err(ERROR.View_Invalid);
 				this.body = this.attach(body, {
-					handler: (_, event) => {
-						this.delegateViewEvent(event);
-					},
+					delegate: this,
 					detached: (body) => {
 						if (this.body === body) this.body = undefined;
 					},

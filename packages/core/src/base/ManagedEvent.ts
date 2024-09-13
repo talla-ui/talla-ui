@@ -65,25 +65,6 @@ export class ManagedEvent<
 	TData extends Record<string, unknown> = Record<string, unknown>,
 > {
 	/**
-	 * Creates a new event with the same properties as the original event, and the specified delegate
-	 * @param event The original event
-	 * @param delegate The managed object to set as the delegate
-	 * @returns A new event object with the specified delegate
-	 */
-	static withDelegate(
-		event: ManagedEvent,
-		delegate?: ManagedObject,
-	): ManagedEvent {
-		return new ManagedEvent(
-			event.name,
-			event.source,
-			event.data,
-			delegate,
-			event,
-		);
-	}
-
-	/**
 	 * Creates a new event with the specified name
 	 * @param name The name of the event
 	 * @param source Managed object that will emit the event
@@ -109,15 +90,29 @@ export class ManagedEvent<
 		Object.freeze(this);
 	}
 
+	/**
+	 * Returns the delegate object of the specified type
+	 * @summary This method returns either the {@link delegate} property of this event, or the delegate object of any of the referenced {@link inner} events, where it matches the specified type. If none of the delegates match the type, this method returns undefined.
+	 * @param type A {@link ManagedObject} class that determines the return type
+	 * @returns The matched delegate, or undefined
+	 */
+	findDelegate<T extends ManagedObject>(
+		type: ManagedObject.Constructor<T>,
+	): T | undefined {
+		for (let e: ManagedEvent | undefined = this; e; e = e.inner) {
+			if (e.delegate instanceof type) return e.delegate;
+		}
+	}
+
 	/** The name of the event, should start with a capital letter */
 	readonly name: string;
 	/** The object that's emitted (or will emit) the event */
 	readonly source: TSource;
-	/** Object that contains arbitrary event data (if any) */
+	/** Object that contains arbitrary event data */
 	readonly data: Readonly<TData>;
 	/** An object that delegated the event, if any */
 	readonly delegate?: ManagedObject;
-	/** The original event, if the event was intercepted or propagated */
+	/** The original event, if the event was propagated */
 	readonly inner?: ManagedEvent;
 	/** True if the event should not be propagated or delegated (by managed lists, activities, views, etc.) */
 	readonly noPropagation?: boolean;

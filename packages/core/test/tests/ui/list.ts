@@ -146,10 +146,19 @@ describe("UIListView", (scope) => {
 		view.listen((event) => {
 			if (event.name === "Foo") {
 				t.count("foo");
-				if (!(event.delegate instanceof UIListView.ItemControllerView))
-					t.fail("Wrong delegate type");
-				let delegate =
-					event.delegate as UIListView.ItemControllerView<NamedObject>;
+				let delegate = event.findDelegate(
+					UIListView.ItemControllerView<NamedObject>,
+				);
+				if (!delegate || !(delegate instanceof UIListView.ItemControllerView)) {
+					return t.fail("Invalid event delegate");
+				}
+				let item = UIListView.getSourceItem(event.source, NamedObject);
+				if (!item || !(item instanceof NamedObject)) {
+					return t.fail("Invalid item object");
+				}
+				if (item !== delegate.item) {
+					return t.fail("Note the same item object");
+				}
 				t.count(delegate.item.name);
 			}
 		});

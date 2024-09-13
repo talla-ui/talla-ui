@@ -138,7 +138,7 @@ export class MessageDialog
 		});
 		let confirmed = false;
 		let other = false;
-		for await (let e of this.listen()) {
+		for await (let e of this.listen(true)) {
 			if (e.name === "Cancel" || e.name === "EscapeKeyPress") confirmed = false;
 			else if (e.name === "Confirm") confirmed = true;
 			else if (e.name === "Other") other = true;

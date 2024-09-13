@@ -13,12 +13,82 @@ import {
 	unlinkObject,
 } from "./object_util.js";
 
-/** Cache Object.prototype.hasOwnProperty */
+/** @internal Cache Object.prototype.hasOwnProperty */
 const _hOP = Object.prototype.hasOwnProperty;
 
 /** @internal Helper function to duck type ManagedObjects (for performance) */
 export function isManagedObject(object: any): object is ManagedObject {
 	return !!object && _hOP.call(object, $_unlinked);
+}
+
+/** @internal Helper function to create a buffered async event iterator function */
+function makeAsyncIterator(
+	object: ManagedObject,
+): () => AsyncIterator<ManagedEvent> {
+	return function () {
+		let buf: ManagedEvent[] | undefined = [];
+		let waiter: undefined | ((event?: ManagedEvent) => void);
+		addTrap(
+			object,
+			$_traps_event,
+			(target, p, event) => {
+				// handle an event: add to buffer, or resolve a waiter
+				if (waiter) waiter(event as ManagedEvent);
+				else if (buf) buf.push(event as ManagedEvent);
+			},
+			() => {
+				// handle unlinking: resolve waiter if any
+				if (waiter) waiter();
+			},
+		);
+		const stop = (): any => {
+			buf = undefined;
+			return Promise.resolve({ done: true });
+		};
+
+		// return the iterator
+		let iterator: AsyncIterator<ManagedEvent> = {
+			async next() {
+				if (!buf) return { done: true } as any;
+				if (buf.length) return { value: buf.shift()! };
+				return new Promise<IteratorResult<ManagedEvent>>((resolve) => {
+					if (object[$_unlinked]) return resolve(stop());
+					waiter = (event) => {
+						waiter = undefined;
+						if (object[$_unlinked]) resolve({ done: true } as any);
+						else resolve({ value: event! });
+					};
+				});
+			},
+			return: stop,
+			throw: stop,
+		};
+		return iterator;
+	};
+}
+
+/** @internal Helper function to make an event handler function for attached objects */
+function makeAttachHandler(
+	source: ManagedObject,
+	arg: {
+		handler?(object: any, event: ManagedEvent): unknown;
+		delegate?: ManagedObject.EventDelegate;
+	},
+): ((object: any, event: ManagedEvent) => void) | undefined {
+	let { handler, delegate } = arg;
+	if (handler) {
+		return (object, event) => safeCall(handler, arg, object, event);
+	}
+	if (delegate) {
+		return function (_object, event) {
+			if (source[$_unlinked] || event.noPropagation) return;
+			if (!safeCall(delegate.delegate, delegate, event)) {
+				source.emit(
+					new ManagedEvent(event.name, event.source, event.data, source, event),
+				);
+			}
+		};
+	}
 }
 
 /**
@@ -155,8 +225,8 @@ export class ManagedObject {
 	/**
 	 * Adds a handler for all events emitted by this object
 	 *
-	 * @param listener A function (void return type, or asynchronous) that will be called for all events emitted by this object; or an object of type {@link ManagedObject.Listener}
-	 * @returns The object itself, or an async iterable if no parameter was provided
+	 * @param listener A function (void return type, or asynchronous) that will be called for all events emitted by this object; or an object of type {@link ManagedObject.Listener}; or `true` to return an async iterator
+	 * @returns The object itself, or an async iterable
 	 *
 	 * @description
 	 * This method adds a listener for all events emitted by this object. Either a callback function or an object with callback functions can be provided, or this method returns an async iterable that can be used to iterate over all events.
@@ -165,7 +235,7 @@ export class ManagedObject {
 	 *
 	 * **Callbacks object** — If an object is provided, its functions (or methods) will be used to handle events. The `handler` function is called for all events, and the `unlinked` function is called when the object is unlinked. The `init` function is called immediately, with the object and a callback to remove the listener.
 	 *
-	 * **Async iterable** — If no callback function is provided, this method returns an async iterable that can be used to iterate over all events using a `for await...of` loop. The loop body is run for each event, in the order they're emitted, either awaiting new events or continuing execution immediately. The loop stops when the object is unlinked.
+	 * **Async iterable** — If the first argument is `true` rather than a callback function or object, this method returns an async iterable that can be used to iterate over all events using a `for await...of` loop. The loop body is run for each event, in the order they're emitted, either awaiting new events or continuing execution immediately. The loop stops when the object is unlinked.
 	 *
 	 * @example
 	 * // Handle all events using a callback function
@@ -178,7 +248,7 @@ export class ManagedObject {
 	 *
 	 * @example
 	 * // Handle all events using an async iterable
-	 * for await (let event of someObject.listen()) {
+	 * for await (let event of someObject.listen(true)) {
 	 *   if (event.name === "Foo") {
 	 *     // ...handle Foo event
 	 *   }
@@ -186,26 +256,27 @@ export class ManagedObject {
 	 * // ... (code here runs after object is unlinked, or `break`)
 	 */
 	listen(listener: ManagedObject.Listener<this>): this;
-	listen(): AsyncIterable<ManagedEvent>;
-	listen(listener?: ManagedObject.Listener<this>) {
+	listen(isAsync: true): AsyncIterable<ManagedEvent>;
+	listen(listener: ManagedObject.Listener<this> | true) {
+		if (!listener) throw invalidArgErr("listener");
+
 		// add a single handler if provided
 		if (typeof listener === "function") {
 			addTrap(this, $_traps_event, function listen(target, p, event) {
-				safeCall(function () {
-					listener.call(target as any, event as ManagedEvent);
-				});
+				safeCall(listener, target as any, event as ManagedEvent);
 			});
 			return this;
-		} else if (listener) {
+		}
+
+		// add multiple handlers if an object is provided
+		if (typeof listener === "object") {
 			const { handler, unlinked, init } = listener;
 			let trap = addTrap(
 				this,
 				$_traps_event,
 				function trap(target, p, event) {
 					handler &&
-						safeCall(function () {
-							handler.call(listener, target as any, event as ManagedEvent);
-						});
+						safeCall(handler, listener, target as any, event as ManagedEvent);
 				},
 				unlinked?.bind(listener, this),
 			);
@@ -216,50 +287,7 @@ export class ManagedObject {
 		}
 
 		// return an async iterable for events
-		let self = this;
-		let iterable: AsyncIterable<ManagedEvent> = {
-			[Symbol.asyncIterator]() {
-				let buf: ManagedEvent[] | undefined = [];
-				let waiter: undefined | ((event?: ManagedEvent) => void);
-				addTrap(
-					self,
-					$_traps_event,
-					(target, p, event) => {
-						// handle an event: add to buffer, or resolve a waiter
-						if (waiter) waiter(event as ManagedEvent);
-						else if (buf) buf.push(event as ManagedEvent);
-					},
-					() => {
-						// handle unlinking: resolve waiter if any
-						if (waiter) waiter();
-					},
-				);
-				const stop = (): any => {
-					buf = undefined;
-					return Promise.resolve({ done: true });
-				};
-
-				// return the iterator
-				let iterator: AsyncIterator<ManagedEvent> = {
-					async next() {
-						if (!buf) return { done: true } as any;
-						if (buf.length) return { value: buf.shift()! };
-						return new Promise<IteratorResult<ManagedEvent>>((resolve) => {
-							if (self[$_unlinked]) return resolve(stop());
-							waiter = (event) => {
-								waiter = undefined;
-								if (self[$_unlinked]) resolve({ done: true } as any);
-								else resolve({ value: event! });
-							};
-						});
-					},
-					return: stop,
-					throw: stop,
-				};
-				return iterator;
-			},
-		};
-		return iterable;
+		return { [Symbol.asyncIterator]: makeAsyncIterator(this) };
 	}
 
 	/**
@@ -294,15 +322,13 @@ export class ManagedObject {
 			attachObject(this, target);
 		} else {
 			// use handler function(s)
-			let func = typeof listener === "function" && listener;
-			let handler = func
-				? (_: any, event: ManagedEvent) => func(event)
-				: (listener as any).handler;
 			attachObject(
 				this,
 				target,
-				handler,
-				func ? undefined : (listener as any).detached,
+				typeof listener === "function"
+					? (_, event) => listener(event)
+					: makeAttachHandler(this, listener),
+				(listener as any).detached,
 			);
 		}
 		return target;
@@ -360,14 +386,36 @@ export namespace ManagedObject {
 	/**
 	 * Type definition for a callback, or set of callbacks that can be passed to the {@link ManagedObject.attach} method
 	 * - If a single function is provided, it will be called for all events emitted by the object.
-	 * - If an object is provided, the `handler` function will be called for all events, and the `detached` function will be called when the object is detached **or** unlinked.
+	 * - If an object with `handler` property is provided, that function will be called for all events, and the `detached` function will be called when the object is detached **or** unlinked.
+	 * - If the object includes a `delegate` property instead of `handler`, the specified object (usually the attached parent itself) must contain a `delegate(event) { ... }` method, which will be called for all events that do **not** have their {@link ManagedEvent.noPropagation} property set. If the `delegate` method does not return `true` (or a promise that resolves to `true`) then the event will be emitted on the attached parent object, with the {@link ManagedEvent.delegate} property set to the attached parent — effectively 'bubbling up' or _propagating_ the event from an object (e.g. a view) to its parent(s).
 	 */
 	export type AttachListener<T extends ManagedObject> =
 		| ((event: ManagedEvent) => Promise<void> | void)
 		| {
-				/** A function that will be called for all events emitted by the object */
+				/** A function that will be called for all events emitted by the target object */
 				handler?: (object: T, event: ManagedEvent) => Promise<void> | void;
 				/** A function that will be called when the object is detached OR unlinked */
 				detached?: (object: T) => void;
+		  }
+		| {
+				/** An object with a `delegate` method that will be called for all events emitted by the target object */
+				delegate?: ManagedObject.EventDelegate;
+				/** A function that will be called when the object is detached OR unlinked */
+				detached?: (object: T) => void;
 		  };
+
+	/**
+	 * A type of object that can be used to handle events from other (attached) objects
+	 * - This interface must be matched by the `delegate` object that's passed to {@link ManagedObject.attach()}, as part of the {@link ManagedObject.AttachListener} object argument.
+	 * - In practice, the required `delegate` method is often defined on the attached parent itself, to handle events from attached objects such as (nested) views. In that case, the parent object itself can be passed to {@link ManagedObject.attach()} as `{ delegate: this }`.
+	 * - The `delegate` method is expected to return undefined or false if the event should be propagated on the parent object, i.e. re-emitted with the {@link ManagedEvent.delegate} property set to the attached parent object. Otherwise, the method should return true, or a promise for asynchronous error handling.
+	 * @see {@link ManagedObject.attach}
+	 */
+	export interface EventDelegate {
+		/**
+		 * A required method that handles the provided event
+		 * @see {@link ManagedObject.attach}
+		 */
+		delegate(event: ManagedEvent): Promise<unknown> | boolean | void;
+	}
 }

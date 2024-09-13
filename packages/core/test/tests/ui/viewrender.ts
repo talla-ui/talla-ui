@@ -104,7 +104,10 @@ describe("UIViewRenderer", (scope) => {
 				const ViewBody = ui.page(
 					ui.cell(
 						{ accessibleLabel: "outer" },
-						ui.renderView({ view: bind("second.view") }),
+						ui.renderView({
+							view: bind("second.view"),
+							propagateEvents: true,
+						}),
 					),
 				);
 				return new ViewBody();
@@ -112,7 +115,6 @@ describe("UIViewRenderer", (scope) => {
 			readonly second = this.attach(new MySecondActivity());
 			onButtonPress(e: ManagedEvent) {
 				t.count("foo-outer");
-				if (e.delegate instanceof UIViewRenderer) t.count("delegate");
 			}
 		}
 		t.log("Adding activity...");
@@ -139,7 +141,6 @@ describe("UIViewRenderer", (scope) => {
 		out.getSingle().click();
 		t.expectCount("foo-second").toBe(1);
 		t.expectCount("foo-outer").toBe(1);
-		t.expectCount("delegate").toBe(1);
 
 		// destroying the second activity should clear the view
 		t.log("Destroying `second`...");

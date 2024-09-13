@@ -57,7 +57,7 @@ function createComponentFactory<TView extends View>(
 ) {
 	return function (...args: any[]) {
 		let preset = isPreset(args[0]) ? args.shift() : undefined;
-		if (extendPreset) extendPreset(preset || (preset = {}), ...args);
+		if (extendPreset) extendPreset((preset ||= {}), ...args);
 		return class PresetView extends (type as any) {
 			constructor(...newArgs: any[]) {
 				super(...newArgs);
@@ -176,7 +176,7 @@ _ui.use = function <TPreset extends {}, TInstance extends ViewComposite>(
 			super(p ? { ...preset, ...p } : preset);
 		}
 		defineView() {
-			return C || (C = super.defineView(...content));
+			return (C ||= super.defineView(...content));
 		}
 	} as any;
 };

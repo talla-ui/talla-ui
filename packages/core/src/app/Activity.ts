@@ -143,7 +143,7 @@ export class Activity extends ManagedObject {
 	 * The current view, if any (attached automatically)
 	 * - This property is set automatically when active, using the result of the {@link Activity.createView()} method, and then displayed if the view corresponds to a full page, dialog, or mounted view.
 	 * - The view is automatically unlinked when the activity is deactivated or unlinked.
-	 * - Events emitted by the view are automatically delegated to the activity, see {@link delegateViewEvent()}.
+	 * - Events emitted by the view are automatically delegated to the activity, see {@link delegate()}.
 	 */
 	view?: View = undefined;
 
@@ -152,6 +152,19 @@ export class Activity extends ManagedObject {
 	 * - This property can be set using the {@link Options} object in the constructor.
 	 */
 	formContext?: UIFormContext = undefined;
+
+	/**
+	 * Delegates incoming events to methods of this object, notably from the attached view
+	 * - This method is called automatically when an event is emitted by the current view object (except if {@link ManagedEvent.noPropagation} was set on the event; see {@link ManagedObject.attach()} which is used to set up view event delegation).
+	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true` (event handled), false/undefined, or a promise (which is awaited just to be able to handle any errors).
+	 * @param event The event to be delegated
+	 * @returns The result of the event handler method, or undefined.
+	 * @see {@link ManagedObject.attach}
+	 * @see {@link ManagedObject.EventDelegate}
+	 */
+	delegate(event: ManagedEvent): Promise<boolean | void> | boolean | void {
+		return (this as any)["on" + event.name]?.(event);
+	}
 
 	/** Returns true if this activity is currently active */
 	isActive() {
@@ -166,14 +179,6 @@ export class Activity extends ManagedObject {
 	/** Returns true if this activity is active but currently inactivating */
 	isDeactivating() {
 		return this._activation.deactivating;
-	}
-
-	/**
-	 * A method that's called immediately before unlinking this activity.
-	 * - If overridden, the base implementation must be called as well to ensure that all resources are released, if any.
-	 */
-	protected override beforeUnlink() {
-		this._hotInstances?.delete(this);
 	}
 
 	/**
@@ -195,8 +200,16 @@ export class Activity extends ManagedObject {
 			},
 			async () => {
 				if (this.isUnlinked()) return;
+				if (this._hotInstances && !this._isHot) {
+					this._isHot = true;
+					this._hotInstances.add(this);
+					this.listen({
+						unlinked: () => {
+							this._hotInstances!.delete(this);
+						},
+					});
+				}
 				this.emitChange("Active");
-				this._hotInstances?.add(this);
 				await this.afterActiveAsync();
 				this._showView();
 			},
@@ -262,9 +275,7 @@ export class Activity extends ManagedObject {
 			if (!newView) return;
 			if (!(newView instanceof View)) throw err(ERROR.View_Invalid);
 			this.view = this.attach(newView, {
-				handler: (_, event) => {
-					this.delegateViewEvent(event);
-				},
+				delegate: this,
 				detached: (view) => {
 					if (this.view === view) this.view = undefined;
 				},
@@ -298,6 +309,20 @@ export class Activity extends ManagedObject {
 	}
 
 	/**
+	 * Searches the view hierarchy for view objects of the provided type
+	 * @summary This method looks for matching view objects in the current view structure — including the activity's view itself. If a component is an instance of the provided class, it's added to the list. Components _within_ matching components aren't searched for further matches.
+	 * @param type A view class
+	 * @returns An array with instances of the provided view class; may be empty but never undefined.
+	 */
+	findViewContent<T extends View>(type: ViewClass<T>): T[] {
+		return this.view
+			? this.view instanceof type
+				? [this.view]
+				: this.view.findViewContent(type)
+			: [];
+	}
+
+	/**
 	 * Returns a {@link NavigationTarget} instance that refers to this activity
 	 * - The {@link navigationPageId} for this activity is used to determine the target page ID, and the provided detail parameter(s) are combined into the detail string.
 	 * @param detail One or more values to be used as detail parts of the navigation path
@@ -323,33 +348,6 @@ export class Activity extends ManagedObject {
 		navigationContext: NavigationContext,
 	): Promise<void> {
 		// nothing here, to be overridden
-	}
-
-	/**
-	 * Delegates events that were emitted by the view
-	 * - This method is called automatically when an event is emitted by the current view object (except if {@link ManagedEvent.noPropagation} was set).
-	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true` (event handled), false/undefined, or a promise (which is awaited just to be able to handle any errors).
-	 * - If a handler is not found, or it returned false or undefined, a delegate event is re-emitted on the activity itself (i.e. a new event with `delegate` set to the activity), and this method returns false.
-	 * @param event The event to be delegated (from the view)
-	 * @returns True if an event handler was found, and it returned true; a promise if the handler returned a promise; false otherwise.
-	 */
-	protected delegateViewEvent(event: ManagedEvent): boolean | Promise<unknown> {
-		if (!this.isActive() || event.noPropagation) return false;
-
-		// find own handler method
-		let method = (this as any)["on" + event.name];
-		if (typeof method === "function") {
-			let result = method.call(this, event);
-
-			// return true or promise result, otherwise false below
-			if (result === true) return true;
-			if (result && result.then && result.catch) {
-				return (result as Promise<unknown>).catch(errorHandler);
-			}
-		}
-		event = ManagedEvent.withDelegate(event, this);
-		this.emit(event);
-		return false;
 	}
 
 	/**
@@ -388,21 +386,7 @@ export class Activity extends ManagedObject {
 	 * - This method is called when a view object emits the `NavigateBack` event. This event can be used to go back in the navigation history, e.g. when a back button is clicked.
 	 */
 	protected onNavigateBack() {
-		this._boundNavCtx?.navigateAsync(undefined, { back: true });
-	}
-
-	/**
-	 * Searches the view hierarchy for view objects of the provided type
-	 * @summary This method looks for matching view objects in the current view structure — including the activity's view itself. If a component is an instance of the provided class, it's added to the list. Components _within_ matching components aren't searched for further matches.
-	 * @param type A view class
-	 * @returns An array with instances of the provided view class; may be empty but never undefined.
-	 */
-	findViewContent<T extends View>(type: ViewClass<T>): T[] {
-		return this.view
-			? this.view instanceof type
-				? [this.view]
-				: this.view.findViewContent(type)
-			: [];
+		return this._boundNavCtx?.navigateAsync(undefined, { back: true });
 	}
 
 	/**
@@ -437,6 +421,31 @@ export class Activity extends ManagedObject {
 		return queue;
 	}
 
+	/**
+	 * Listens for change events from the provided target object, until either the object or the activity is unlinked
+	 * @param target The target object, to which a listener will be added
+	 * @param changeHandler A function that will be called for each change event that's emitted from the target object
+	 * @param unlinked A function that will be called when the target object (not the activity) is unlinked
+	 * @returns The target object
+	 * @see {@link ManagedObject.emitChange}
+	 */
+	watch<T extends ManagedObject>(
+		target: T,
+		changeHandler: (object: T, event: ManagedEvent) => Promise<void> | void,
+		unlinked?: (object: T) => void,
+	) {
+		target.listen({
+			handler: (t, e) => {
+				if (e.data.change === t) return changeHandler(t, e);
+			},
+			init: (_, stop) => {
+				this.listen({ unlinked: stop });
+			},
+			unlinked,
+		});
+		return target;
+	}
+
 	/** Activity options that were passed to constructor */
 	private _options: Activity.Options;
 
@@ -457,6 +466,9 @@ export class Activity extends ManagedObject {
 
 	/** @internal Set of instances, if hot reload has been enabled for this activity (set on prototype) */
 	private declare _hotInstances?: Set<Activity>;
+
+	/** @internal Set to true if a listener was added to remove this instance from the hot-reloaded list */
+	private _isHot?: boolean;
 }
 
 export namespace Activity {

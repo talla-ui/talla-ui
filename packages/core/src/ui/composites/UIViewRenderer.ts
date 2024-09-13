@@ -20,11 +20,20 @@ export class UIViewRenderer extends View {
 	override applyViewPreset(preset: {
 		/** A binding that references the view object to be rendered */
 		view?: Binding;
+		/** True if events from the referenced view should be propagated from this view renderer instance */
+		propagateEvents?: boolean;
 		/** Event that's emitted when the rendered view is unlinked */
 		onViewUnlinked?: string;
 	}) {
 		super.applyViewPreset(preset);
 	}
+
+	/**
+	 * True if events from the referenced view should be re-emitted from this view renderer instance
+	 * - This setting defaults to false, to avoid handling the same event in two different places (e.g. activities). Set this property to true if events are not handled by the attached parent of the view itself.
+	 * - Note that events that have their {@link ManagedEvent.noPropagation noPropagation} property set to true are never re-emitted.
+	 */
+	propagateEvents = false;
 
 	/**
 	 * The current view to be rendered
@@ -39,7 +48,7 @@ export class UIViewRenderer extends View {
 		// stop observing old view, if any
 		if (this._view) this._listener?.stop();
 
-		// observe new view to delegate events and watch for unlinking
+		// listen to new view to propagate events and watch for unlinking
 		this._view = view;
 		if (view) this._listener = new ViewListener(this, view);
 
@@ -99,8 +108,7 @@ class ViewListener {
 		this.stop = stop;
 	}
 	handler(_view: View, event: ManagedEvent) {
-		if (!event.noPropagation) {
-			event = ManagedEvent.withDelegate(event, this.host);
+		if (!event.noPropagation && this.host.propagateEvents) {
 			this.host.emit(event);
 		}
 	}

@@ -1,7 +1,3 @@
-import {
-	NullableArray,
-	removeFromNullableArray,
-} from "../base/NullableArray.js";
 import { errorHandler } from "../errors.js";
 import { ConfigOptions } from "../index.js";
 import { AppException } from "./AppException.js";
@@ -193,7 +189,7 @@ export class AsyncTaskQueue {
 		this._p = [];
 
 		// call all afterEach callbacks (from waitAsync)
-		for (let f of this._afterEach) f && f(true);
+		for (let f of this._afterEach) f(true);
 		return this;
 	}
 
@@ -212,7 +208,7 @@ export class AsyncTaskQueue {
 				}
 				if (this.count <= count) {
 					// if under limit, resolve now and remove from list
-					removeFromNullableArray(this._afterEach, check);
+					this._afterEach.delete(check);
 					return resolve();
 				}
 				// otherwise return false (checked below)
@@ -220,7 +216,7 @@ export class AsyncTaskQueue {
 			};
 			if (check() === false) {
 				// add to list, checked after each callback
-				this._afterEach.push(check);
+				this._afterEach.add(check);
 			}
 		});
 	}
@@ -265,7 +261,7 @@ export class AsyncTaskQueue {
 				this._handleAsync(task, result);
 			} else {
 				// not a promise, consider this task done
-				for (let f of this._afterEach) f && f();
+				for (let f of this._afterEach) f();
 			}
 			if (Date.now() > end) break;
 		}
@@ -305,7 +301,7 @@ export class AsyncTaskQueue {
 
 		// remove task from async running list, schedule run again
 		this._p = this._p.filter((t) => t !== task);
-		for (let f of this._afterEach) f && f();
+		for (let f of this._afterEach) f();
 		this._schedule();
 	}
 
@@ -322,7 +318,7 @@ export class AsyncTaskQueue {
 	private _tasks: AsyncQueueTask[][] = [];
 	private _p: AsyncQueueTask[] = [];
 	private _paused?: boolean;
-	private _afterEach: NullableArray<(stop?: boolean) => void> = [];
+	private _afterEach = new Set<(stop?: boolean) => void>();
 	private _lastRun?: number;
 	private _timer?: any;
 }

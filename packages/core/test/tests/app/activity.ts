@@ -237,6 +237,40 @@ describe("Activity", () => {
 		});
 	});
 
+	describe("Change event watches", () => {
+		test("Watch receives change events", (t) => {
+			let a = new Activity();
+			let o = new ManagedObject();
+			a.watch(o, (e) => {
+				t.count("event");
+			});
+			o.emitChange("Yes");
+			t.expectCount("event").toBe(1);
+		});
+
+		test("Watch doesn't receive other events", (t) => {
+			let a = new Activity();
+			let o = new ManagedObject();
+			a.watch(o, (e) => {
+				t.count("event");
+			});
+			o.emit("Nope");
+			t.expectCount("event").toBe(0);
+		});
+
+		test("Watch stops when activity unlinked", (t) => {
+			let a = new Activity();
+			let o = new ManagedObject();
+			a.watch(o, (e) => {
+				t.count("event");
+			});
+			o.emitChange("Yes");
+			a.unlink();
+			o.emitChange("Yes");
+			t.expectCount("event").toBe(1);
+		});
+	});
+
 	describe("Global context and parents", (scope) => {
 		scope.beforeEach(() => {
 			useTestContext((options) => {

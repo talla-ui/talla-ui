@@ -7,10 +7,14 @@ export function setErrorHandler(handler: (err: any) => void) {
 }
 
 /** @internal Call the provided function, catching errors and handling Promise rejections */
-export function safeCall<T>(fn: () => T, thisArg?: any) {
+export function safeCall<T, A extends any[], R>(
+	fn: (this: T, ...args: A) => R,
+	thisArg?: T,
+	...args: A
+): R | void {
 	try {
-		let result: any = fn.call(thisArg);
-		if (typeof result?.catch === "function") {
+		let result: any = fn.call(thisArg!, ...args);
+		if (result && typeof result.catch === "function") {
 			result.catch(errorHandler);
 		}
 		return result;

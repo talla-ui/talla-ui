@@ -210,7 +210,7 @@ export class AppContext extends ManagedObject {
 	addActivity(activity: Activity, activate?: boolean) {
 		this.activities.add(activity);
 		this.navigation.addPage(activity);
-		if (activate) safeCall(() => activity.activateAsync());
+		if (activate) safeCall(activity.activateAsync, activity);
 		return this;
 	}
 
@@ -246,8 +246,11 @@ export class AppContext extends ManagedObject {
 			| { getNavigationTarget(): NavigationTarget },
 		mode?: NavigationContext.NavigationMode,
 	) {
-		safeCall(() =>
-			this.navigation.navigateAsync(new NavigationTarget(target), mode),
+		safeCall(
+			this.navigation.navigateAsync,
+			this.navigation,
+			new NavigationTarget(target),
+			mode,
 		);
 		return this;
 	}
@@ -257,7 +260,9 @@ export class AppContext extends ManagedObject {
 	 * - The behavior of this method is platform dependent. It uses {@link NavigationContext.navigateAsync()} to navigate back within navigation history, if possible.
 	 */
 	goBack() {
-		safeCall(() => this.navigation.navigateAsync(undefined, { back: true }));
+		safeCall(this.navigation.navigateAsync, this.navigation, undefined, {
+			back: true,
+		});
 		return this;
 	}
 

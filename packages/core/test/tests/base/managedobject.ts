@@ -1,4 +1,4 @@
-import { ManagedObject } from "../../../dist/index.js";
+import { ManagedEvent, ManagedObject } from "../../../dist/index.js";
 import { describe, expect, test } from "@talla-ui/test-handler";
 
 describe("ManagedObject", () => {
@@ -156,6 +156,53 @@ describe("ManagedObject", () => {
 			parent.child.emit("Foo");
 			parent.child.unlink();
 			t.expectCount("Foo").toBe(2);
+		});
+
+		test("Event delegate on attach", (t) => {
+			class TestObject extends ManagedObject {
+				constructor() {
+					super();
+					this.child = this.attach(new ChildObject(), { delegate: this });
+				}
+				delegate(e: ManagedEvent) {
+					if (e.source !== this.child) t.fail("Not the same object");
+					t.count(e.name);
+				}
+				child: ChildObject;
+			}
+			let parent = new TestObject();
+			parent.child.emit("Foo");
+			parent.listen((e) => {
+				t.count("Foo");
+				if (e.delegate !== parent) t.fail("Invalid delegate");
+			});
+			parent.child.emit("Foo");
+			parent.child.unlink();
+			t.expectCount("Foo").toBe(3);
+		});
+
+		test("Async event delegate, expect to catch error", async (t) => {
+			let p = t.sleep(1);
+			class TestObject extends ManagedObject {
+				constructor() {
+					super();
+					this.child = this.attach(new ChildObject(), { delegate: this });
+				}
+				async delegate(e: ManagedEvent) {
+					await p;
+					throw Error("Expected error");
+				}
+				child: ChildObject;
+			}
+			let parent = new TestObject();
+			let error = await t.tryRunAsync(async () => {
+				parent.child.emit("Foo");
+				await p; // be sure to wait until after event is handled
+				await p;
+			});
+			expect(error)
+				.asString()
+				.toMatchRegExp(/Expected/);
 		});
 
 		test("Detach handler on attach, then unlink", (t) => {

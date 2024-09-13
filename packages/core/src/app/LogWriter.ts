@@ -135,7 +135,7 @@ export class LogWriter {
 	 */
 	addHandler(minLevel: number, f: (message: LogWriter.LogMessageData) => void) {
 		this._sink.push((m) => {
-			if (m.level >= minLevel) safeCall(() => f(m));
+			if (m.level >= minLevel) safeCall(f, undefined, m);
 		});
 	}
 
