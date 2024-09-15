@@ -81,6 +81,7 @@ export function useTestContext(config?: ConfigOptions.Arg<TestContextOptions>) {
 	(app as any).renderer = new TestRenderer(options);
 
 	// create test navigation path and set initial path
+	app.navigation.unlink();
 	app.navigation = new TestNavigationContext(options);
 
 	// reset app settings

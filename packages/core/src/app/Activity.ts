@@ -45,11 +45,11 @@ export const $activity: Binding.Source<
  * @description
  * The activity is one of the main architectural components of an application. It represents a potential 'place' in the application, which can be activated and deactivated when the user navigates around.
  *
- * This class provides infrastructure for path-based routing, based on the application's navigation path (such as the browser's current URL). However, activities can also be activated and deactivated manually, or activated immediately when added using {@link AppContext.addActivity app.addActivity()}.
+ * This class provides infrastructure for path-based routing, based on the application's navigation path (such as the browser's current URL). However, activities can also be activated and deactivated manually.
  *
- * Activities emit `Active` and `Inactive` change events when state transitions occur. Several methods can be used to add custom behavior when the activity is activated or deactivated – i.e. {@link beforeActiveAsync}, {@link afterActiveAsync}, {@link beforeInactiveAsync}, and {@link afterInactiveAsync}. In addition, the {@link createView()} method must be overridden to create the view and set the {@link view} property when the activity is active.
+ * Activities emit `Active` and `Inactive` change events when state transitions occur. Several methods can be overridden to add custom behavior when the activity is activated or deactivated – i.e. {@link beforeActiveAsync}, {@link afterActiveAsync}, {@link beforeInactiveAsync}, and {@link afterInactiveAsync}. In addition, the {@link createView()} method must be overridden to create a view object and set the {@link view} property when the activity becomes active.
  *
- * If the view corresponds to a full page or dialog (or one of the render options is set in {@link Activity.Options}), the activity automatically renders and displays it. The view is unlinked when the activity is deactivated, and the {@link view} property is set to undefined.
+ * As soon as the activity is activated and a view is created, the view is rendered if the {@link Activity.renderOptions} include the `dialog` flag or placement options. The view is unlinked when the activity is deactivated, and the {@link view} property is set to undefined.
  *
  * @example
  * // Create an activity and activate it:
@@ -119,7 +119,7 @@ export class Activity extends ManagedObject {
 
 	/**
 	 * The page ID associated with this activity, to match the (first part of the) navigation path
-	 * - This property must be set using the {@link Options} object in the constructor.
+	 * - This property is used by the {@link NavigationContext} class, but only if the activity has been added to the {@link ActivityContext} using {@link AppContext.addActivity app.addActivity()}.
 	 * - If the page ID is set to a string, the activity will be activated automatically when the first part of the current path matches this value, and deactivated when it doesn't.
 	 * - To match the root path (`/`), set this property to an empty string
 	 */
@@ -128,7 +128,6 @@ export class Activity extends ManagedObject {
 	/**
 	 * A user-facing name of this activity, if any
 	 * - The title string of an active activity may be displayed as the current window or document title.
-	 * - This property can be set using the {@link Options} object in the constructor.
 	 * - This property may be set to any object that includes a `toString()` method, notably {@link LazyString} — the result of a call to {@link strf()}. This way, the activity title is localized automatically using {@link AppContext.i18n}.
 	 */
 	title?: StringConvertible;
@@ -150,7 +149,7 @@ export class Activity extends ManagedObject {
 
 	/**
 	 * Default form context used with input elements, if any
-	 * - This property can be set using the {@link Options} object in the constructor.
+	 * - This property defaults to undefined, and needs to be initialized (e.g. in the constructor) to an instance of {@link UIFormContext} for input elements to be bound automatically.
 	 */
 	formContext?: UIFormContext = undefined;
 
@@ -302,9 +301,9 @@ export class Activity extends ManagedObject {
 
 		// render view normally if placed
 		if (options.place && options.place.mode !== "none") {
-			let callback = this._boundRenderer.getRenderCallback();
-			let wrapper = new RenderContext.ViewController();
-			wrapper.render(view, callback, options.place);
+			new RenderContext.ViewController(
+				this._boundRenderer.getRenderCallback(),
+			).render(view, undefined, options.place);
 		}
 		return this;
 	}

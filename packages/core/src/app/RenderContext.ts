@@ -284,6 +284,11 @@ export namespace RenderContext {
 	 * @docgen {hideconstructor}
 	 */
 	export class ViewController {
+		/** Creates a new view controller using the provided callback, if any */
+		constructor(callback?: RenderCallback) {
+			this.callback = callback;
+		}
+
 		/** The current render callback, if any */
 		callback?: RenderCallback;
 

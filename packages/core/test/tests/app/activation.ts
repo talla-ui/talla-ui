@@ -7,31 +7,40 @@ import {
 import { describe, expect, test, useTestContext } from "@talla-ui/test-handler";
 
 describe("NavigationContext and ActivityContext", () => {
-	describe("NavigationContext standalone", () => {
+	describe("NavigationContext standalone", (scope) => {
+		let p: NavigationContext;
+		scope.beforeEach((t) => {
+			t.breakOnFail();
+			p = new NavigationContext();
+		});
+		scope.afterEach(() => {
+			p.unlink();
+		});
+
 		test("Set, get page ID", () => {
-			let p = new NavigationContext();
 			p.set("foo");
 			expect(p.pageId).toBe("foo");
+			p.unlink();
 		});
 
 		test("Set, get page ID and detail", () => {
-			let p = new NavigationContext();
 			p.set("foo", "bar");
 			expect(p.pageId).toBe("foo");
 			expect(p.detail).toBe("bar");
+			p.unlink();
 		});
 
 		test("Set, get path undefined", () => {
-			let p = new NavigationContext();
 			p.set(undefined as any);
 			expect(p.pageId).toBe("");
 			expect(p.detail).toBe("");
+			p.unlink();
 		});
 
 		test("Set invalid path", () => {
-			let p = new NavigationContext();
 			expect(() => p.set("foo/bar")).toThrowError();
 			expect(() => p.set(".foo")).toThrowError();
+			p.unlink();
 		});
 	});
 

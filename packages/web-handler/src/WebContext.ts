@@ -163,6 +163,7 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 	});
 
 	// create navigation path
+	app.navigation.unlink();
 	if (options.useHistoryAPI) {
 		app.navigation = new WebHistoryNavigationContext(options);
 	} else {

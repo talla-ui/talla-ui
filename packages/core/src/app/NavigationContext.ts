@@ -1,6 +1,7 @@
-import { ManagedObject } from "../base/index.js";
+import { ManagedEvent, ManagedObject } from "../base/index.js";
 import { invalidArgErr, safeCall } from "../errors.js";
 import { Activity } from "./Activity.js";
+import { app } from "./app.js";
 import type { NavigationTarget } from "./NavigationTarget.js";
 
 /**
@@ -26,35 +27,6 @@ export class NavigationContext extends ManagedObject {
 		return this._matchedPageId;
 	}
 
-	/** Adds an activity that gets activated when its `navigationPageId` matches the current page */
-	addPage(activity: Activity) {
-		this._pages.add(activity);
-		this._checkPage(activity);
-		return this;
-	}
-
-	/**
-	 * Sets the current location, and activates any matching page activities
-	 * - This method doesn't affect the navigation history or platform-specific navigation. To navigate to a new location, use {@link navigateAsync()} instead.
-	 * @error This method throws an error if the page ID is invalid (i.e. contains slashes `/` or `\`, or starts with a dot `.`).
-	 */
-	set(pageId: string, detail = "") {
-		pageId = String(pageId || "");
-		if (/^\.|[\/\\]/.test(pageId)) throw invalidArgErr("pageId");
-		detail = String(detail || "");
-		this._pageId = pageId;
-		this._detail = detail;
-		this.emitChange("Set");
-		this._checkPages();
-		return this;
-	}
-
-	/** Resets the current location without navigating, and removes all page activity references */
-	clear() {
-		this._pages.clear();
-		return this.set("");
-	}
-
 	/**
 	 * Navigates to the specified location
 	 * @summary When implemented by a platform-specific (or test) implementation, this method sets the application location to the provided target. Different navigation _modes_ allow for the path to be added to the history stack, to replace the current path if possible, or to navigate back before adding or replacing the path.
@@ -69,18 +41,49 @@ export class NavigationContext extends ManagedObject {
 		// nothing here
 	}
 
-	/** Activate and deactivate activities based on the current page ID, asynchronously */
-	private _checkPages() {
+	/**
+	 * Sets the current location, and activates any matching page activities from {@link ActivityContext}
+	 * - This method doesn't affect the navigation history or platform-specific navigation. To navigate to a new location, use {@link navigateAsync()} instead.
+	 * @error This method throws an error if the page ID is invalid (i.e. contains slashes `/` or `\`, or starts with a dot `.`).
+	 */
+	set(pageId: string, detail = "") {
+		pageId = String(pageId || "");
+		detail = String(detail || "");
+		if (/^\.|[\/\\]/.test(pageId)) throw invalidArgErr("pageId");
+
+		// ensure that a change listener has already been set up
+		if (!this._changeListener) {
+			this._changeListener = new NavigationContext.ChangeListener(
+				this,
+				app.activities,
+			);
+		}
+
+		// set internal values and emit change first
+		this._pageId = pageId;
+		this._detail = detail;
+		this.emitChange("Set");
+
+		// find matching page from all root activities
 		let matched = false;
-		for (let activity of this._pages) {
+		for (let activity of app.activities.getAll()) {
 			if (typeof activity.navigationPageId !== "string") continue;
 			if (this._checkPage(activity)) matched = true;
 		}
 		this.emit(matched ? "PageMatch" : "PageNotFound");
+		return this;
+	}
+
+	/** Resets the current location silently without activating or deactivating any activities */
+	clear() {
+		this._pageId = "";
+		this._detail = "";
+		return this;
 	}
 
 	/** Activate/deactivate single activity based on navigation location */
 	private _checkPage(activity: Activity) {
+		if (activity.isUnlinked() || this.isUnlinked()) return false;
 		let pageId = this._pageId;
 		let match = pageId === activity.navigationPageId;
 		if (match) this._matchedPageId = pageId;
@@ -101,6 +104,7 @@ export class NavigationContext extends ManagedObject {
 			try {
 				if (
 					activity.isUnlinked() ||
+					this.isUnlinked() ||
 					pageId !== this._pageId ||
 					detail !== this._detail
 				)
@@ -119,9 +123,28 @@ export class NavigationContext extends ManagedObject {
 	private _pageId = "";
 	private _detail = "";
 	private _matchedPageId?: string;
+	private _changeListener?: unknown;
 
-	// keep track of activities in an attached list
-	private _pages = new Set<Activity>();
+	/** @internal Change listener to trigger checks when an activity is added */
+	static ChangeListener = class {
+		constructor(
+			public ctx: NavigationContext,
+			activities: ManagedObject,
+		) {
+			activities.listen(this);
+		}
+		init(_: unknown, stop: () => void) {
+			this.ctx.listen({ unlinked: stop });
+		}
+		handler(_: unknown, event: ManagedEvent) {
+			if (
+				event.data.activity instanceof Activity &&
+				typeof event.data.activity.navigationPageId === "string"
+			) {
+				this.ctx._checkPage(event.data.activity);
+			}
+		}
+	};
 }
 
 export namespace NavigationContext {
