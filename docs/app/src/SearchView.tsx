@@ -45,77 +45,75 @@ const ResultCellStyle = ui.style.CELL.extend(
 );
 
 export default (
-	<mount id="docpage-search">
-		<cell style={{ shrink: 1 }}>
-			<column layout={{ padding: { start: 16 } }}>
-				<cell
-					style={{
-						height: 72,
-						grow: 0,
-						shrink: 0,
-						padding: { start: 8, end: 12 },
-					}}
-				>
-					<row>
-						<textfield
-							style={TextFieldStyle}
-							requestFocus
-							disableSpellCheck
-							onInput="SearchInput"
-							onArrowDownKeyPress="ArrowDownOnInput"
-							onEnterKeyPress="GoToFirstResult"
+	<cell style={{ shrink: 1 }}>
+		<column layout={{ padding: { start: 16 } }}>
+			<cell
+				style={{
+					height: 72,
+					grow: 0,
+					shrink: 0,
+					padding: { start: 8, end: 12 },
+				}}
+			>
+				<row>
+					<textfield
+						style={TextFieldStyle}
+						requestFocus
+						disableSpellCheck
+						onInput="SearchInput"
+						onArrowDownKeyPress="ArrowDownOnInput"
+						onEnterKeyPress="GoToFirstResult"
+					>
+						Search...
+					</textfield>
+					<button
+						style={CloseButtonStyle}
+						icon={ui.icon.CLOSE}
+						iconColor={ui.color("inherit")}
+						onClick="Close"
+					/>
+				</row>
+			</cell>
+			<cell
+				hidden={$activity.bind("hasInput").and("loading").not()}
+				padding={{ y: 32 }}
+			>
+				<label>Loading...</label>
+			</cell>
+			<cell>
+				<scroll position={{ gravity: "cover" }}>
+					<list items={$activity.list("results")} maxItems={50}>
+						<cell
+							allowFocus
+							style={ResultCellStyle}
+							onClick="GoToResult"
+							onEnterKeyPress="GoToResult"
+							onArrowUpKeyPress="FocusPrevious"
+							onArrowDownKeyPress="FocusNext"
+							accessibleRole="listitem"
 						>
-							Search...
-						</textfield>
-						<button
-							style={CloseButtonStyle}
-							icon={ui.icon.CLOSE}
-							iconColor={ui.color("inherit")}
-							onClick="Close"
-						/>
-					</row>
-				</cell>
-				<cell
-					hidden={$activity.bind("hasInput").and("loading").not()}
-					padding={{ y: 32 }}
-				>
-					<label>Loading...</label>
-				</cell>
-				<cell>
-					<scroll position={{ gravity: "cover" }}>
-						<list items={$activity.list("results")} maxItems={50}>
-							<cell
-								allowFocus
-								style={ResultCellStyle}
-								onClick="GoToResult"
-								onEnterKeyPress="GoToResult"
-								onArrowUpKeyPress="FocusPrevious"
-								onArrowDownKeyPress="FocusNext"
-								accessibleRole="listitem"
-							>
-								<column align="start">
-									<row>
-										<label
-											style={{ fontWeight: "var(--bold-weight)", shrink: 0 }}
-										>
-											{$list.string("item.title")}
-										</label>
-										<label dim>{$list.string("item.showId")}</label>
-									</row>
-									<label style={{ padding: 0, fontSize: 14 }} htmlFormat>
-										{$list.string("item.abstract")}
+							<column align="start">
+								<row>
+									<label
+										style={{ fontWeight: "var(--bold-weight)", shrink: 0 }}
+									>
+										{$list.string("item.title")}
 									</label>
-								</column>
-							</cell>
-							<cell
-								style={{ grow: 0 }}
-								allowKeyboardFocus
-								accessibleRole="list"
-							/>
-						</list>
-					</scroll>
-				</cell>
-			</column>
-		</cell>
-	</mount>
+									<label dim>{$list.string("item.showId")}</label>
+								</row>
+								<label style={{ padding: 0, fontSize: 14 }} htmlFormat>
+									{$list.string("item.abstract")}
+								</label>
+							</column>
+						</cell>
+						<cell
+							style={{ grow: 0 }}
+							allowKeyboardFocus
+							accessibleRole="list"
+						/>
+					</list>
+				</scroll>
+			</cell>
+		</column>
+	</cell>
 );

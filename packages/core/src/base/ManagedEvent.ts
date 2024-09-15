@@ -51,12 +51,11 @@ const NO_DATA = Object.freeze({});
  * class MyActivity extends Activity {
  *   // ...
  *   items: SampleData[];
- *   onRemoveItem(e: UIList.ItemEvent<SampleData>) {
+ *   onRemoveItem(e: ViewEvent) {
+ *     let item = UIListView.getSourceItem(e.source, SampleData)
  *     // ...here:
+ *     // item refers to the SampleData object
  *     // e.source refers to a button
- *     // e.delegate refers to a list item view (wrapper)
- *     // e.delegate.item refers to the SampleData object
- *     // e.inner is the original event emited by the button
  *   }
  * }
  */

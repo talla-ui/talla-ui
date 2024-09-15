@@ -5,6 +5,9 @@ import SearchView from "./SearchView";
 
 export class SearchActivity extends Activity {
 	protected override createView() {
+		this.renderOptions = {
+			place: { mode: "mount", mountId: "docpage-search" },
+		};
 		return new SearchView();
 	}
 
@@ -71,9 +74,8 @@ export class SearchActivity extends Activity {
 		}
 	}
 
-	protected async onGoToResult(e: UIListView.ItemEvent<SearchResult>) {
-		if (e.delegate.item.url) {
-			await swapPageAsync(e.delegate.item.url);
-		}
+	protected async onGoToResult(e: ViewEvent) {
+		let item = UIListView.getSourceItem(e.source, SearchResult);
+		if (item?.url) await swapPageAsync(item.url);
 	}
 }

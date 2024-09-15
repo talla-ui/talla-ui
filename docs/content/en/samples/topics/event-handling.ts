@@ -254,11 +254,9 @@ class MyObject extends ManagedObject {}
 	class MyActivity extends Activity {
 		// ...
 
-		onDeleteItem(event: UIListView.ItemEvent<MyItem>) {
+		onDeleteItem(event: ViewEvent) {
+			let item = UIListView.getSourceItem(event.source, MyItem);
 			// ...
-			// => event.delegate is a UIList.ItemController
-			// => event.delegate.item is typed as MyItem
-			// => event.source is still UIButton
 		}
 	}
 	// @doc-end

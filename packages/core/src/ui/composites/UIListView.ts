@@ -73,8 +73,8 @@ export class UIListView<
 	 * @example
 	 * // ... in an activity:
 	 * onDeleteItem(e: ViewEvent) {
-	 *   let targetItem = UIListView.getSourceItem(e.source, MyItem);
-	 *   // ... do something with targetItem (of type MyItem
+	 *   let item = UIListView.getSourceItem(e.source, MyItem);
+	 *   // ... do something with item (of type MyItem
 	 *   // but may also be undefined, although not likely) ...
 	 * }
 	 */
