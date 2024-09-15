@@ -12,7 +12,7 @@ import {
 /**
  * A class that defines the styles for the default modal dialog view
  * - A default instance of this class is created, and can be modified in the {@link WebContextOptions} configuration callback passed to {@link useWebContext}.
- * - These styles are used for dialog views created by activities with the {@link Activity.Options.showDialog} option enabled. Note that message dialog styles are configured separately using {@link MessageDialogStyles}.
+ * - These styles are used for dialog views created by activities with the {@link Activity.RenderOptions.dialog} option enabled. Note that message dialog styles are configured separately using {@link MessageDialogStyles}.
  */
 export class DialogStyles {
 	/** The margin around the outer dialog container, to change its position on screen, defaults to `auto` */

@@ -476,12 +476,12 @@ export namespace Activity {
 	 * - Otherwise, the `place` property can be used to determine render placement. By default, an activity sets this property is set to an {@link RenderContext.PlacementOptions} object with `mode` set to `page`, to render views as scrollable pages.
 	 * - To ensure that the view is not rendered directly at all (e.g. if it's displayed by another activity), set the `place` property to undefined, or its `mode` property to `"none"`.
 	 */
-	export class RenderOptions {
+	export type RenderOptions = {
 		/** True if the view should be displayed within a modal dialog */
 		dialog?: boolean;
 		/** Render placement options, for custom rendering */
-		place?: RenderContext.PlacementOptions = { mode: "page" };
-	}
+		place?: RenderContext.PlacementOptions;
+	};
 }
 
 /** @internal Helper class that contains activation state, and runs callbacks on activation/deactivation asynchronously */

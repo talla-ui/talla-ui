@@ -392,15 +392,11 @@ export namespace ManagedObject {
 	export type AttachListener<T extends ManagedObject> =
 		| ((event: ManagedEvent) => Promise<void> | void)
 		| {
-				/** A function that will be called for all events emitted by the target object */
 				handler?: (object: T, event: ManagedEvent) => Promise<void> | void;
-				/** A function that will be called when the object is detached OR unlinked */
 				detached?: (object: T) => void;
 		  }
 		| {
-				/** An object with a `delegate` method that will be called for all events emitted by the target object */
 				delegate?: ManagedObject.EventDelegate;
-				/** A function that will be called when the object is detached OR unlinked */
 				detached?: (object: T) => void;
 		  };
 
