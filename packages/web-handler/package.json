@@ -1,9 +1,9 @@
 {
 	"name": "@talla-ui/web-handler",
 	"private": true,
-	"version": "0.0.0",
+	"version": "4.0.0-dev.37",
 	"publishConfig": {
-		"tag": "dev"
+		"tag": "next"
 	},
 	"description": "Tälla UI framework: web handler",
 	"author": "Jelmer Cormont",
@@ -33,9 +33,6 @@
 		"dist",
 		"lib"
 	],
-	"dependencies": {
-		"tslib": "^2.6.3"
-	},
 	"devDependencies": {
 		"talla": "file:../core"
 	}

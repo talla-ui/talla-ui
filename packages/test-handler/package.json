@@ -1,9 +1,9 @@
 {
 	"name": "@talla-ui/test-handler",
 	"private": true,
-	"version": "0.0.0",
+	"version": "4.0.0-dev.37",
 	"publishConfig": {
-		"tag": "dev"
+		"tag": "next"
 	},
 	"description": "Tälla UI framework: test handler and library",
 	"author": "Jelmer Cormont",

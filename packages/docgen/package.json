@@ -1,9 +1,9 @@
 {
 	"name": "@talla-ui/docgen",
 	"private": true,
-	"version": "0.0.0",
+	"version": "4.0.0-dev.37",
 	"publishConfig": {
-		"tag": "dev"
+		"tag": "next"
 	},
 	"description": "Documentation generator for Tälla UI framework source packages",
 	"author": "Jelmer Cormont",
