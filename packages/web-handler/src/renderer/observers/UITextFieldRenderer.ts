@@ -1,4 +1,4 @@
-import { RenderContext, UITextField, ui } from "talla";
+import { RenderContext, UITextField, ui } from "talla-ui";
 import { applyStyles } from "../../style/DOMStyle.js";
 import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 

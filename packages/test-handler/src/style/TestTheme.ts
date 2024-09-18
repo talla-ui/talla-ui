@@ -1,4 +1,4 @@
-import { MessageDialogOptions, UITheme, View } from "talla";
+import { MessageDialogOptions, UITheme, View } from "talla-ui";
 import { TestDialog } from "./TestDialog.js";
 import { TestMessageDialog } from "./TestMessageDialog.js";
 import { TestModalMenu } from "./TestModalMenu.js";

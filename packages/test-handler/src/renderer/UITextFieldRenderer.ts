@@ -1,4 +1,4 @@
-import { RenderContext, UITextField, ui } from "talla";
+import { RenderContext, UITextField, ui } from "talla-ui";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import {
 	TestBaseObserver,

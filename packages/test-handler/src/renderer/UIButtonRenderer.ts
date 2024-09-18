@@ -1,4 +1,4 @@
-import { RenderContext, UIButton, ui } from "talla";
+import { RenderContext, UIButton, ui } from "talla-ui";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import {
 	TestBaseObserver,

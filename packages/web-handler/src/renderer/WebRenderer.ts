@@ -5,7 +5,7 @@ import {
 	UIColor,
 	View,
 	app,
-} from "talla";
+} from "talla-ui";
 import type { WebContextOptions } from "../WebContext.js";
 import { OutputMount } from "./OutputMount.js";
 import { WebOutputTransform } from "./WebOutputTransform.js";

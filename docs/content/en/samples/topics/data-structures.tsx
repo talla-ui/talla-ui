@@ -8,7 +8,7 @@ import {
 	Service,
 	bound,
 	ui,
-} from "talla";
+} from "talla-ui";
 /** @jsx ui.jsx */
 
 {

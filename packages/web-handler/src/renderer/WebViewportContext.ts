@@ -1,4 +1,4 @@
-import { ManagedObject, RenderContext, app } from "talla";
+import { ManagedObject, RenderContext, app } from "talla-ui";
 import type { WebContextOptions } from "../WebContext.js";
 import {
 	getWindowInnerHeight,

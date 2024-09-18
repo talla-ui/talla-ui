@@ -1,4 +1,4 @@
-import { ManagedList, ManagedObject } from "talla";
+import { ManagedList, ManagedObject } from "talla-ui";
 import { TestCase } from "./TestCase.js";
 
 const MAX_LOGS = 100;

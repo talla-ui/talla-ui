@@ -1,6 +1,6 @@
 // Compile/run: npx tsc -p . && node dist/services.js
 
-import { Activity, ConfigOptions, Service } from "talla";
+import { Activity, ConfigOptions, Service } from "talla-ui";
 import { useWebContext } from "@talla-ui/web-handler";
 
 {

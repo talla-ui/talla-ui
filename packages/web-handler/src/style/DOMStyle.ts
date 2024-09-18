@@ -1,4 +1,4 @@
-import { UIComponent, UIContainer, UIStyle } from "talla";
+import { UIComponent, UIContainer, UIStyle } from "talla-ui";
 import {
 	CLASS_CONTAINER,
 	CLASS_TEXTCONTROL,

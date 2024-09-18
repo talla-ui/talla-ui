@@ -1,4 +1,4 @@
-import { RenderContext, UISpacer } from "talla";
+import { RenderContext, UISpacer } from "talla-ui";
 import { applyStyles } from "../../style/DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
 

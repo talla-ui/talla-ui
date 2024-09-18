@@ -1,4 +1,4 @@
-import { Activity, ui } from "talla";
+import { Activity, ui } from "talla-ui";
 
 const page = (
 	<cell>

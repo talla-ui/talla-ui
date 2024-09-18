@@ -7,7 +7,7 @@ import {
 	ViewEvent,
 	app,
 	ui,
-} from "talla";
+} from "talla-ui";
 
 /**
  * A class that defines the styles for the default modal dialog view

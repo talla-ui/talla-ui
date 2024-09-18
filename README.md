@@ -1,6 +1,6 @@
 # Tälla UI framework
 
-[![npm](https://img.shields.io/npm/v/talla.svg)](https://www.npmjs.com/package/talla)
+[![npm](https://img.shields.io/npm/v/talla-ui.svg)](https://www.npmjs.com/package/talla-ui)
 
 > **Note:** Tälla UI framework and this repository are still in development. Check back later for updates.
 

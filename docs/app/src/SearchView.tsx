@@ -1,4 +1,4 @@
-import { $activity, $list, UIStyle, ui } from "talla";
+import { $activity, $list, UIStyle, ui } from "talla-ui";
 
 const TextFieldStyle = ui.style.TEXTFIELD.extend(
 	{

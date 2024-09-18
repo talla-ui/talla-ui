@@ -1,4 +1,4 @@
-import { RenderContext, UISpacer } from "talla";
+import { RenderContext, UISpacer } from "talla-ui";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 

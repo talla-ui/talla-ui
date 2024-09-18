@@ -6,7 +6,7 @@ import {
 	UIColor,
 	UIIconResource,
 	UILabel,
-} from "talla";
+} from "talla-ui";
 import { applyStyles, getCSSLength } from "../../style/DOMStyle.js";
 import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 

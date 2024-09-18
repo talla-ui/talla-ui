@@ -1,6 +1,6 @@
 // Compile/run: npx tsc -p . && node dist/bindings.js
 
-import { bound, Activity, app, Binding, ui } from "talla";
+import { bound, Activity, app, Binding, ui } from "talla-ui";
 /** @jsx ui.jsx */
 
 {

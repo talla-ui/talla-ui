@@ -6,7 +6,7 @@ import {
 	UISeparator,
 	UITheme,
 	ViewComposite,
-} from "talla";
+} from "talla-ui";
 
 /** @internal Limited implementation of a menu controller, that can be used to test menu selection using label clicks */
 export class TestModalMenu

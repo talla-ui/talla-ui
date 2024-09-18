@@ -6,7 +6,7 @@ import {
 	ViewComposite,
 	app,
 	ui,
-} from "talla";
+} from "talla-ui";
 
 /** @internal Limited implementation of a dialog controller */
 export class TestDialog

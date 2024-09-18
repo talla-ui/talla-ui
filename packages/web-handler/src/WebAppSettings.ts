@@ -1,4 +1,4 @@
-import { AppSettings, ObjectReader } from "talla";
+import { AppSettings, ObjectReader } from "talla-ui";
 import { WebContextOptions } from "./WebContext";
 
 /** Web platform specific implementation of `AppSettings`, not exposed as-is */

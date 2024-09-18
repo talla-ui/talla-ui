@@ -12,7 +12,7 @@ import {
 	ViewEvent,
 	app,
 	ui,
-} from "talla";
+} from "talla-ui";
 import { reduceElementMotion } from "../renderer/WebOutputTransform.js";
 
 /** @internal Fixed container position, used for each menu container */

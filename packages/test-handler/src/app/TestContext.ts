@@ -4,7 +4,7 @@ import {
 	ConfigOptions,
 	AppContext,
 	app,
-} from "talla";
+} from "talla-ui";
 import { TestScope } from "../TestScope.js";
 import { TestTheme } from "../style/TestTheme.js";
 import { TestNavigationContext } from "./TestNavigationContext.js";

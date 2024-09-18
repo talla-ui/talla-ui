@@ -47,7 +47,7 @@ function buildTarget(target) {
 		}),
 		buildAndCompress({
 			format: "iife",
-			globalName: "talla",
+			globalName: "tallaUI",
 			outfile: `lib/talla-web.${target}.iife.min.js`,
 			...options,
 		}),
@@ -62,13 +62,13 @@ await Promise.all([buildTarget("es2022"), buildTarget("es2015")]);
 
 // Create appropriate .d.ts files to reference dist folder
 let exports = `
-export * from "talla";
+export * from "talla-ui";
 export * from "@talla-ui/web-handler";
 `.trim();
 let declareGlobal = `
 declare global {
-	const talla:
-		typeof import("talla") &
+	const tallaUI:
+		typeof import("talla-ui") &
 		typeof import("@talla-ui/web-handler");
 }
 `;

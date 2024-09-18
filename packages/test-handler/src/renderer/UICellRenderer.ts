@@ -1,4 +1,4 @@
-import { UICell, ui } from "talla";
+import { UICell, ui } from "talla-ui";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import { getBaseStyleClass } from "./TestBaseObserver.js";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";

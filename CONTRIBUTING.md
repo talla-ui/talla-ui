@@ -25,7 +25,7 @@ The project documentation is primarily located on [the website](https://talla-ui
 
 Development of most of the published packages happens in this repository, with all of the code located in the [`packages`](./packages/) folder. This includes:
 
-- [`core`](./packages/core/) — Source code for the `talla` package, which provides the core API.
+- [`core`](./packages/core/) — Source code for the `talla-ui` package, which provides the core API.
 - [`test-handler`](./packages/test-handler/) — The `@talla-ui/test-handler` package, for the test handler and library APIs.
 - [`run-tests-esbuild`](./packages/run-tests-esbuild/) — The `@talla-ui/run-tests-esbuild` command-line test runner.
 - [`web-handler`](./packages/web-handler/) — The `@talla-ui/web-handler` package, which provides the plumbing for using the framework as part of a Web application.

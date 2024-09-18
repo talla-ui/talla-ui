@@ -1,4 +1,4 @@
-import { ManagedObject } from "talla";
+import { ManagedObject } from "talla-ui";
 
 export class SearchResult extends ManagedObject {
 	constructor(

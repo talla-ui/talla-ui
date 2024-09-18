@@ -8,7 +8,7 @@
 		"test": "run-tests-esbuild src/test.ts"
 	},
 	"devDependencies": {
-		"talla": "../../packages/core",
+		"talla-ui": "../../packages/core",
 		"@talla-ui/web-handler": "../../packages/web-handler",
 		"@talla-ui/test-handler": "../../packages/test-handler",
 		"@talla-ui/run-tests-esbuild": "../../packages/run-tests-esbuild",

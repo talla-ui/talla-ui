@@ -1,7 +1,7 @@
 {
-	"name": "@talla-ui/repository",
+	"name": "@talla-ui/main",
 	"private": true,
-	"description": "Tälla UI framework: source monorepo",
+	"description": "Tälla UI framework: main source monorepo",
 	"version": "0.0.0",
 	"license": "MIT",
 	"scripts": {

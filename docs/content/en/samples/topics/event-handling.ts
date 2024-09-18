@@ -12,7 +12,7 @@ import {
 	app,
 	bound,
 	ui,
-} from "talla";
+} from "talla-ui";
 
 class MyObject extends ManagedObject {}
 

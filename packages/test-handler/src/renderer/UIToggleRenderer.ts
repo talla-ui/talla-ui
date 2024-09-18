@@ -1,4 +1,4 @@
-import { RenderContext, UIToggle, ui } from "talla";
+import { RenderContext, UIToggle, ui } from "talla-ui";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import {
 	TestBaseObserver,

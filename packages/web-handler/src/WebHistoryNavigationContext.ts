@@ -1,4 +1,4 @@
-import { NavigationContext, NavigationTarget, app } from "talla";
+import { NavigationContext, NavigationTarget, app } from "talla-ui";
 import { type WebContextOptions } from "./WebContext.js";
 
 /** Global flag for global (window) event listener, see constructor */

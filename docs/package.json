@@ -31,7 +31,7 @@
 		]
 	},
 	"devDependencies": {
-		"talla": "file:../packages/core",
+		"talla-ui": "file:../packages/core",
 		"@talla-ui/docgen": "file:../packages/docgen",
 		"@talla-ui/test-handler": "file:../packages/test-handler",
 		"@talla-ui/web-handler": "file:../packages/web-handler",

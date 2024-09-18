@@ -37,6 +37,6 @@
 		"dist"
 	],
 	"devDependencies": {
-		"talla": "file:../core"
+		"talla-ui": "file:../core"
 	}
 }

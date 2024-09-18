@@ -9,7 +9,7 @@
 	},
 	"dependencies": {
 		"@talla-ui/web-handler": "../../packages/web-handler",
-		"talla": "../../packages/core"
+		"talla-ui": "../../packages/core"
 	},
 	"devDependencies": {
 		"@parcel/transformer-inline-string": "^2.12.0",

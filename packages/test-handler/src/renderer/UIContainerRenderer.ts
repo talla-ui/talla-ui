@@ -8,7 +8,7 @@ import {
 	UIStyle,
 	View,
 	app,
-} from "talla";
+} from "talla-ui";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 

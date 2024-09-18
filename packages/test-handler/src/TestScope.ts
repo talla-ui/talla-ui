@@ -1,4 +1,4 @@
-import { AppContext } from "talla";
+import { AppContext } from "talla-ui";
 import { testLogsToString } from "./log.js";
 import { TestCase } from "./TestCase.js";
 import { TestResult, TestResultsData } from "./TestResult.js";

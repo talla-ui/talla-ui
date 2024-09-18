@@ -1,4 +1,4 @@
-import { Activity, ui } from "talla";
+import { Activity, ui } from "talla-ui";
 import globeSvg from "bundle-text:./icons/globe.svg";
 
 const page = (

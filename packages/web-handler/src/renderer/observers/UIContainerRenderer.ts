@@ -8,7 +8,7 @@ import {
 	UIScrollContainer,
 	UIStyle,
 	View,
-} from "talla";
+} from "talla-ui";
 import {
 	CLASS_CELL,
 	CLASS_COLUMN,

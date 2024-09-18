@@ -1,4 +1,4 @@
-import { app, UIListView, UITextField, Activity, ViewEvent } from "talla";
+import { app, UIListView, UITextField, Activity, ViewEvent } from "talla-ui";
 import { swapPageAsync } from "./swap";
 import { Search, SearchResult } from "./Search";
 import SearchView from "./SearchView";

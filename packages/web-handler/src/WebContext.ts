@@ -6,7 +6,7 @@ import {
 	ui,
 	UIColor,
 	UIComponent,
-} from "talla";
+} from "talla-ui";
 import { WebHashNavigationContext } from "./WebHashNavigationContext.js";
 import { WebHistoryNavigationContext } from "./WebHistoryNavigationContext.js";
 import { WebRenderer } from "./renderer/WebRenderer.js";

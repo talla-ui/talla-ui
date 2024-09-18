@@ -1,4 +1,4 @@
-import * as core from "talla";
+import * as core from "talla-ui";
 import { WebContextOptions, useWebContext } from "./WebContext.js";
 import { WebTheme } from "./style/WebTheme.js";
 import { WebHashNavigationContext } from "./WebHashNavigationContext.js";
@@ -13,7 +13,7 @@ export {
 
 if (!window.require) {
 	(window as any).require = function (s: string) {
-		if (s === "talla" || s === "talla" || s === "@talla-ui/web-handler") {
+		if (s === "talla-ui" || s === "talla-ui" || s === "@talla-ui/web-handler") {
 			return {
 				...core,
 				useWebContext,

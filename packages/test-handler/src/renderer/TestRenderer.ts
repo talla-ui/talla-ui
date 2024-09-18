@@ -1,4 +1,10 @@
-import { AsyncTaskQueue, ManagedObject, RenderContext, View, app } from "talla";
+import {
+	AsyncTaskQueue,
+	ManagedObject,
+	RenderContext,
+	View,
+	app,
+} from "talla-ui";
 import { OutputAssertion, OutputSelectFilter } from "../app/OutputAssertion.js";
 import type { TestContextOptions } from "../app/TestContext.js";
 import { TestOutputElement } from "../app/TestOutputElement.js";

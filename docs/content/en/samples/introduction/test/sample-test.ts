@@ -2,7 +2,7 @@
 // Run (in folder):
 // npx tsc -p tsconfig.json && node dist/sample-test.js
 
-import { Activity, app, bound, ui } from "talla";
+import { Activity, app, bound, ui } from "talla-ui";
 import {
 	describe,
 	expect,

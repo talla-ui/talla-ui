@@ -1,4 +1,4 @@
-import { MessageDialogOptions, UITheme, View } from "talla";
+import { MessageDialogOptions, UITheme, View } from "talla-ui";
 import { WebContextOptions } from "../WebContext.js";
 import {
 	importStylesheets,

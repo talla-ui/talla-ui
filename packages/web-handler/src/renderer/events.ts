@@ -1,4 +1,4 @@
-import { UIComponent } from "talla";
+import { UIComponent } from "talla-ui";
 import { BaseObserver } from "./observers/BaseObserver.js";
 
 /** @internal Unique ID that's used as a property name for output references on DOM elements */

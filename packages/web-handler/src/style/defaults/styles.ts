@@ -1,4 +1,4 @@
-import { UIColor, UIComponent, UIStyle, ui } from "talla";
+import { UIColor, UIComponent, UIStyle, ui } from "talla-ui";
 
 type CombinedStyleType = UIComponent.DimensionsStyleType &
 	UIComponent.DecorationStyleType &

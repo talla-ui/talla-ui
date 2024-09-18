@@ -1,4 +1,4 @@
-import { Activity, app, bound, ui } from "talla";
+import { Activity, app, bound, ui } from "talla-ui";
 import { useWebContext } from "@talla-ui/web-handler";
 /** @jsx ui.jsx */
 

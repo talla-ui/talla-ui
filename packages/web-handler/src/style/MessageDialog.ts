@@ -10,7 +10,7 @@ import {
 	app,
 	strf,
 	ui,
-} from "talla";
+} from "talla-ui";
 import { DialogStyles } from "./Dialog.js";
 
 /**

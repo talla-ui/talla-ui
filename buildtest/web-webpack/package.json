@@ -9,7 +9,7 @@
 	},
 	"dependencies": {
 		"@talla-ui/web-handler": "../../packages/web-handler",
-		"talla": "../../packages/core"
+		"talla-ui": "../../packages/core"
 	},
 	"devDependencies": {
 		"html-webpack-plugin": "^5.6.0",

@@ -1,4 +1,4 @@
-import { app } from "talla";
+import { app } from "talla-ui";
 
 const SWAP_TIMEOUT = 500;
 const MAX_PREFETCH = 3;
