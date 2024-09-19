@@ -210,8 +210,8 @@ export class Activity extends ManagedObject {
 					});
 				}
 				this.emitChange("Active");
-				await this.afterActiveAsync();
 				this._showView();
+				await this.afterActiveAsync();
 			},
 		);
 	}
