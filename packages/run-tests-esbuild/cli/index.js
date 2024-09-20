@@ -52,7 +52,7 @@ if (fs.existsSync("./test-runner.config.js")) {
 }
 
 // Mark framework modules as external to avoid re-bundling
-config.external.push("@talla-ui/*");
+config.external.push("talla-ui", "@talla-ui/*");
 
 // Add a plugin to run the tests after the build
 config.plugins.push({
