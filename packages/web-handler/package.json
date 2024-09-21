@@ -1,7 +1,6 @@
 {
 	"name": "@talla-ui/web-handler",
-	"private": true,
-	"version": "4.0.0-dev.38",
+	"version": "4.0.0-dev.39",
 	"publishConfig": {
 		"tag": "next"
 	},
@@ -33,6 +32,9 @@
 		"dist",
 		"lib"
 	],
+	"peerDependencies": {
+		"talla-ui": "4.0.0-dev.39"
+	},
 	"devDependencies": {
 		"talla-ui": "file:../core"
 	}
