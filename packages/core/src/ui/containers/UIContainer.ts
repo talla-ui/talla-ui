@@ -1,5 +1,5 @@
 import { ManagedList } from "../../base/index.js";
-import { View, ViewClass } from "../../app/index.js";
+import { View } from "../../app/index.js";
 import { UIComponent } from "../UIComponent.js";
 import type { UIColor } from "../UIColor.js";
 
@@ -35,7 +35,9 @@ export abstract class UIContainer extends UIComponent {
 	}
 
 	/** Implementation of {@link View.findViewContent()} that searches within this container */
-	override findViewContent<T extends View>(type: ViewClass<T>): T[] {
+	override findViewContent<T extends View>(
+		type: new (...args: any[]) => T,
+	): T[] {
 		let match: any[] = [];
 		for (let c of this.content) {
 			if (c instanceof type) match.push(c);

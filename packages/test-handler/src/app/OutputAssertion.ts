@@ -120,7 +120,9 @@ export class OutputAssertion {
 	 * Returns the view object that rendered the currently matched output element, if there's only one
 	 * @error This method throws an error if the current selection consists of more than one element, or none at all.
 	 */
-	getSingleView<TView extends View>(type: ViewClass<TView>): TView {
+	getSingleView<TView extends View>(
+		type: new (...args: any[]) => TView,
+	): TView {
 		let elements = this.elements.filter(
 			(elt) => elt.output?.source instanceof type,
 		);

@@ -1,4 +1,4 @@
-import { RenderContext, View, ViewClass } from "../../app/index.js";
+import { RenderContext, View } from "../../app/index.js";
 import { Binding, ManagedEvent } from "../../base/index.js";
 import { invalidArgErr } from "../../errors.js";
 
@@ -77,7 +77,7 @@ export class UIViewRenderer extends View {
 	 * @param type A view class
 	 * @returns An array with instances of the provided view class; may be empty but never undefined.
 	 */
-	findViewContent<T extends View>(type: ViewClass<T>): T[] {
+	findViewContent<T extends View>(type: new (...args: any[]) => T): T[] {
 		return this.view
 			? this.view instanceof type
 				? [this.view]

@@ -18,10 +18,12 @@ class CountActivity extends Activity {
 		this.navigationPageId = "count";
 	}
 	protected override createView() {
-		return new (ui.cell(
-			ui.textField({ value: $activity.string("count"), onInput: "SetCount" }),
-			ui.button("+", "CountUp"),
-		))();
+		return ui
+			.cell(
+				ui.textField({ value: $activity.string("count"), onInput: "SetCount" }),
+				ui.button("+", "CountUp"),
+			)
+			.create();
 	}
 	count = 0;
 	onCountUp() {

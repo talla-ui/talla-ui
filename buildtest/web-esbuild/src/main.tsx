@@ -9,6 +9,6 @@ const page = (
 
 export class MainActivity extends Activity {
 	createView() {
-		return new page();
+		return page.create();
 	}
 }

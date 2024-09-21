@@ -333,7 +333,7 @@ describe("Activity", () => {
 		test("Rendered page view", async (t) => {
 			class MyActivity extends Activity {
 				protected override createView() {
-					return new (ui.cell(ui.label("Hello, world!")))();
+					return ui.cell(ui.label("Hello, world!")).create();
 				}
 			}
 			let activity = new MyActivity();
@@ -344,7 +344,7 @@ describe("Activity", () => {
 		test("Find views", async (t) => {
 			class MyActivity extends Activity {
 				protected override createView() {
-					return new (ui.cell(ui.label("foo"), ui.label("bar")))();
+					return ui.cell(ui.label("foo"), ui.label("bar")).create();
 				}
 			}
 			let activity = new MyActivity();

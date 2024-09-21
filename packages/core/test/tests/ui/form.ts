@@ -143,7 +143,7 @@ describe("UIFormContext", () => {
 			{ formContext: undefined as UIFormContext | undefined },
 			(_, ...content) => ui.column(...content),
 		);
-		const ViewBody = ui.row(
+		const view = ui.row(
 			ui.use(
 				FormContainer,
 				{ formContext: $activity.bind("form1") },
@@ -157,7 +157,7 @@ describe("UIFormContext", () => {
 		);
 		class MyActivity extends Activity {
 			protected override createView() {
-				return new ViewBody();
+				return view.create();
 			}
 			form1 = new UIFormContext().set("text", "foo");
 			form2 = new UIFormContext().set("text", "bar");

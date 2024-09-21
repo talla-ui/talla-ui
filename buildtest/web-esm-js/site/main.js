@@ -4,6 +4,6 @@ const page = ui.cell(ui.label("Hello, world!"));
 
 export class MainActivity extends Activity {
 	createView() {
-		return new page();
+		return page.create();
 	}
 }

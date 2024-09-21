@@ -8,7 +8,7 @@
 
 	class MainActivity extends tallaUI.Activity {
 		createView() {
-			return new page();
+			return page.create();
 		}
 	}
 

@@ -14,7 +14,7 @@ import type { NavigationContext } from "./NavigationContext.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { RenderContext } from "./RenderContext.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
-import { View, ViewClass } from "./View.js";
+import { View } from "./View.js";
 
 /** Label property used to filter bindings using $activity */
 const $_bind_label = Symbol("activity");
@@ -55,7 +55,7 @@ export const $activity: Binding.Source<
  * // Create an activity and activate it:
  * class MyActivity extends Activity {
  *   protected createView() {
- *     return new body(); // imported from a view file
+ *     return view.create(); // imported from a view file
  *   }
  * }
  *
@@ -314,7 +314,7 @@ export class Activity extends ManagedObject {
 	 * @param type A view class
 	 * @returns An array with instances of the provided view class; may be empty but never undefined.
 	 */
-	findViewContent<T extends View>(type: ViewClass<T>): T[] {
+	findViewContent<T extends View>(type: new (...args: any[]) => T): T[] {
 		return this.view
 			? this.view instanceof type
 				? [this.view]

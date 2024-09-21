@@ -67,6 +67,7 @@ export class ViewComposite extends View {
 			| ((values: TDefaults, ...content: ViewClass[]) => ViewClass),
 	): {
 		new (preset?: TPreset): ViewComposite & TDefaults;
+		create(preset?: TPreset): ViewComposite & TDefaults;
 		whence: typeof ManagedObject.whence;
 	} {
 		return class DefaultsViewComposite extends ViewComposite {
@@ -128,7 +129,7 @@ export class ViewComposite extends View {
 	 * @param type A view class
 	 * @returns An array with instances of the provided view class; may be empty but never undefined.
 	 */
-	findViewContent<T extends View>(type: ViewClass<T>): T[] {
+	findViewContent<T extends View>(type: new (...args: any[]) => T): T[] {
 		return this.body
 			? this.body instanceof type
 				? [this.body]

@@ -123,7 +123,7 @@ _ui.list = createComponentFactory(
 );
 
 _ui.use = function <TPreset extends {}, TInstance extends ViewComposite>(
-	viewComposite: { new (preset?: TPreset): TInstance },
+	viewComposite: { new (preset?: TPreset): TInstance; create(): TInstance },
 	preset: NoInfer<TPreset>,
 	...content: ViewClass[]
 ): typeof viewComposite {

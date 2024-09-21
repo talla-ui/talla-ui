@@ -43,17 +43,19 @@ export class Dialog extends ViewComposite implements UITheme.DialogController {
 	}
 
 	protected override createView() {
-		return new (ui.cell(
-			{
-				margin: Dialog.styles.margin,
-				effect: Dialog.styles.effect,
-				style: Dialog.styles.containerStyle,
-			},
-			ui.renderView({
-				view: $view.bind("dialogView"),
-				onViewUnlinked: "DialogViewUnlinked",
-			}),
-		))();
+		return ui
+			.cell(
+				{
+					margin: Dialog.styles.margin,
+					effect: Dialog.styles.effect,
+					style: Dialog.styles.containerStyle,
+				},
+				ui.renderView({
+					view: $view.bind("dialogView"),
+					onViewUnlinked: "DialogViewUnlinked",
+				}),
+			)
+			.create();
 	}
 
 	onDialogViewUnlinked() {

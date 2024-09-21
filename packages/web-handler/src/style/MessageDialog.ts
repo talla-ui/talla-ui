@@ -178,24 +178,26 @@ export class MessageDialog
 			}),
 		];
 		if (MessageDialog.styles.reverseButtons) buttons.reverse();
-		return new (ui.cell(
-			{
-				accessibleRole: "alertdialog",
-				margin: MessageDialog.styles.margin,
-				effect: MessageDialog.styles.effect,
-				style: MessageDialog.styles.containerStyle,
-			},
-			ui.cell(
+		return ui
+			.cell(
 				{
-					effect: ui.effect("DragModal"),
-					style: MessageDialog.styles.messageCellStyle,
+					accessibleRole: "alertdialog",
+					margin: MessageDialog.styles.margin,
+					effect: MessageDialog.styles.effect,
+					style: MessageDialog.styles.containerStyle,
 				},
-				ui.column(...messageLabels),
-			),
-			ui.cell(
-				{ style: MessageDialog.styles.buttonCellStyle },
-				ui.row({ layout: MessageDialog.styles.buttonRowLayout }, ...buttons),
-			),
-		))();
+				ui.cell(
+					{
+						effect: ui.effect("DragModal"),
+						style: MessageDialog.styles.messageCellStyle,
+					},
+					ui.column(...messageLabels),
+				),
+				ui.cell(
+					{ style: MessageDialog.styles.buttonCellStyle },
+					ui.row({ layout: MessageDialog.styles.buttonRowLayout }, ...buttons),
+				),
+			)
+			.create();
 	}
 }

@@ -8,7 +8,7 @@ export class SearchActivity extends Activity {
 		this.renderOptions = {
 			place: { mode: "mount", mountId: "docpage-search" },
 		};
-		return new SearchView();
+		return SearchView.create();
 	}
 
 	search = new Search();

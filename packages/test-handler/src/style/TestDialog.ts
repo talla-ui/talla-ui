@@ -18,12 +18,14 @@ export class TestDialog
 	}
 
 	protected override createView() {
-		return new (ui.cell(
-			ui.renderView({
-				view: $view.bind("dialogView"),
-				onViewUnlinked: "DialogViewUnlinked",
-			}),
-		))();
+		return ui
+			.cell(
+				ui.renderView({
+					view: $view.bind("dialogView"),
+					onViewUnlinked: "DialogViewUnlinked",
+				}),
+			)
+			.create();
 	}
 
 	onDialogViewUnlinked() {

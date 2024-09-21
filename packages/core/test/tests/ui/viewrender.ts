@@ -70,7 +70,7 @@ describe("UIViewRenderer", (scope) => {
 		const Preset = ui.use(CompView, { text: "foo" });
 		class MyActivity extends Activity {
 			protected override createView() {
-				return new (ui.renderView({ view: bind("vc") }))();
+				return ui.renderView({ view: bind("vc") }).create();
 			}
 			vc = this.attach(new Preset());
 		}
@@ -92,7 +92,7 @@ describe("UIViewRenderer", (scope) => {
 		class MySecondActivity extends Activity {
 			protected override createView() {
 				this.renderOptions = {}; // no direct rendering
-				return new (ui.cell(ui.button("foo", "+ButtonPress")))();
+				return ui.cell(ui.button("foo", "+ButtonPress")).create();
 			}
 			onButtonPress() {
 				t.count("foo-second");
@@ -102,14 +102,15 @@ describe("UIViewRenderer", (scope) => {
 		// containing activity
 		class MyActivity extends Activity {
 			protected override createView() {
-				const ViewBody = ui.cell(
-					{ accessibleLabel: "outer" },
-					ui.renderView({
-						view: bind("second.view"),
-						propagateEvents: true,
-					}),
-				);
-				return new ViewBody();
+				return ui
+					.cell(
+						{ accessibleLabel: "outer" },
+						ui.renderView({
+							view: bind("second.view"),
+							propagateEvents: true,
+						}),
+					)
+					.create();
 			}
 			readonly second = this.attach(new MySecondActivity());
 			onButtonPress(e: ManagedEvent) {

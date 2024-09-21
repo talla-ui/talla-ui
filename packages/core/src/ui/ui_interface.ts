@@ -287,7 +287,7 @@ export interface ui {
 	list(
 		preset: ui.PresetType<UIListView>,
 		ItemBody: ViewClass,
-		ContainerBody?: ViewClass<UIContainer>,
+		ContainerBody?: new () => UIContainer,
 		BookEnd?: ViewClass,
 	): ViewClass<UIListView>;
 
@@ -299,12 +299,12 @@ export interface ui {
 	 * @param content View class(es) to be contained within the view composite (if supported by its `defineView` method)
 	 */
 	use<TPreset extends {}, TInstance extends ViewComposite>(
-		viewComposite: { new (preset?: TPreset): TInstance },
+		viewComposite: { new (preset?: TPreset): TInstance; create(): TInstance },
 		preset: NoInfer<TPreset>,
 		...content: ViewClass[]
 	): typeof viewComposite;
 	use<TInstance extends ViewComposite>(
-		viewComposite: { new (preset?: {}): TInstance },
+		viewComposite: { new (preset?: {}): TInstance; create(): TInstance },
 		...content: ViewClass[]
 	): typeof viewComposite;
 

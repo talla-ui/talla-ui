@@ -83,7 +83,7 @@ export class UIConditionalView extends View {
 	 * @param type A view class
 	 * @returns An array with instances of the provided view class; may be empty but never undefined.
 	 */
-	findViewContent<T extends View>(type: ViewClass<T>): T[] {
+	findViewContent<T extends View>(type: new (...args: any[]) => T): T[] {
 		return this.body
 			? this.body instanceof type
 				? [this.body]

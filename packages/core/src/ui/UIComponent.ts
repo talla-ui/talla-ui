@@ -1,4 +1,4 @@
-import { app, RenderContext, View, ViewClass } from "../app/index.js";
+import { app, RenderContext, View } from "../app/index.js";
 import {
 	BindingOrValue,
 	ManagedEvent,
@@ -181,7 +181,9 @@ export abstract class UIComponent extends View {
 	}
 
 	/** Implementation of {@link View.findViewContent()}, returns an empty array unless overridden */
-	override findViewContent<T extends View>(type: ViewClass<T>): T[] {
+	override findViewContent<T extends View>(
+		type: new (...args: any[]) => T,
+	): T[] {
 		return _viewContent;
 	}
 

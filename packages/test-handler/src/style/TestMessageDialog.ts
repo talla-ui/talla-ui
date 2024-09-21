@@ -49,24 +49,26 @@ export class TestMessageDialog
 	}
 
 	protected override createView() {
-		return new (ui.column(
-			{ accessibleRole: "alertdialog" },
-			...this.options.messages.map((text) => ui.label(String(text))),
-			ui.button({
-				label: this.confirmLabel,
-				onClick: "+Confirm",
-				requestFocus: true,
-			}),
-			ui.button({
-				hidden: !this.otherLabel,
-				label: this.otherLabel,
-				onClick: "+Other",
-			}),
-			ui.button({
-				hidden: !this.cancelLabel,
-				label: this.cancelLabel,
-				onClick: "+Cancel",
-			}),
-		))();
+		return ui
+			.column(
+				{ accessibleRole: "alertdialog" },
+				...this.options.messages.map((text) => ui.label(String(text))),
+				ui.button({
+					label: this.confirmLabel,
+					onClick: "+Confirm",
+					requestFocus: true,
+				}),
+				ui.button({
+					hidden: !this.otherLabel,
+					label: this.otherLabel,
+					onClick: "+Other",
+				}),
+				ui.button({
+					hidden: !this.cancelLabel,
+					label: this.cancelLabel,
+					onClick: "+Cancel",
+				}),
+			)
+			.create();
 	}
 }

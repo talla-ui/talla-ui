@@ -1,11 +1,5 @@
 import { describe, expect, test, useTestContext } from "@talla-ui/test-handler";
-import {
-	ManagedEvent,
-	Activity,
-	UIButton,
-	app,
-	ui,
-} from "../../../dist/index.js";
+import { Activity, UIButton, app, ui } from "../../../dist/index.js";
 
 describe("UIButton", (scope) => {
 	scope.beforeEach(() => {
@@ -38,23 +32,6 @@ describe("UIButton", (scope) => {
 		let button = new MyButton();
 		expect(button).toHaveProperty("accessibleLabel").toBe("test");
 		expect(button).toHaveProperty("label").asString().toBe("foo");
-	});
-
-	test("Preset with +Event:target", () => {
-		let MyButton = ui.button({ label: "foo", onClick: "+Test:foo" });
-		let button = new MyButton();
-		let events: ManagedEvent[] = [];
-		button.listen((e) => {
-			events.push(e);
-		});
-		button.emit("Click", { test: 123 });
-		expect(events).toBeArray(2);
-		expect(events[0]).toHaveProperty("name").toBe("Click");
-		expect(events[1]).toHaveProperty("name").toBe("Test");
-		expect(events[1])
-			.toHaveProperty("data")
-			.toHaveProperty("target")
-			.toBe("foo");
 	});
 
 	test("Rendered with label", async (t) => {
@@ -104,10 +81,10 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Click event propagation", async (t) => {
-		const ViewBody = ui.cell(ui.button("Button", "ButtonClicked"));
+		const view = ui.cell(ui.button("Button", "ButtonClicked"));
 		class MyActivity extends Activity {
 			protected override createView() {
-				return new ViewBody();
+				return view.create();
 			}
 			onButtonClicked() {
 				t.count("clicked");
@@ -120,13 +97,12 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Button navigation with navigateTo", async (t) => {
-		let MyButton = ui.button({
-			label: "foo",
-			navigateTo: "/foo",
-		});
 		class MyActivity extends Activity {
 			protected override createView() {
-				return new MyButton();
+				return UIButton.create({
+					label: "foo",
+					navigateTo: "/foo",
+				});
 			}
 		}
 		app.addActivity(new MyActivity(), true);
@@ -137,13 +113,12 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Back button navigation", async (t) => {
-		let MyButton = ui.button({
-			label: "back",
-			onClick: "NavigateBack",
-		});
 		class MyActivity extends Activity {
 			protected override createView() {
-				return new MyButton();
+				return UIButton.create({
+					label: "back",
+					onClick: "NavigateBack",
+				});
 			}
 		}
 		app.addActivity(new MyActivity(), true);

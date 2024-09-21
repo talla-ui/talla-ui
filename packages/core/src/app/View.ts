@@ -9,7 +9,10 @@ import { invalidArgErr } from "../errors.js";
 import { RenderContext } from "./RenderContext.js";
 
 /** Type definition for a constructor that instantiates a {@link View} object */
-export type ViewClass<T extends View = View> = new (...args: any[]) => T;
+export type ViewClass<T extends View = View> = {
+	new (...args: any[]): T;
+	create(): T;
+};
 
 /** Type definition for an event that's emitted on a view object */
 export type ViewEvent<
@@ -40,6 +43,22 @@ export type ViewEvent<
  */
 export abstract class View extends ManagedObject {
 	/**
+	 * Returns an instance of this view, applying the provided preset properties
+	 * - This method creates a new view instance, and applies the provided preset properties (if any) using {@link applyViewPreset()}. Presets may include property values, bindings, and event specifiers.
+	 * - Rather than using this method to create a view structure each time, use {@link ui} functions instead which create a _preset_ view structure, and call this method on the result.
+	 * @param preset The preset properties to be applied on the new view (optional)
+	 * @returns The initialized view object
+	 */
+	static create<T extends View, TPreset>(
+		this: new () => T & { applyViewPreset(p: TPreset): any },
+		preset?: TPreset,
+	): T {
+		let result = new this();
+		if (preset) result.applyViewPreset(preset);
+		return result;
+	}
+
+	/**
 	 * A method that should be implemented to render a View object
 	 * - The view may be rendered asynchronously, providing output as well as any updates to the provided renderer callback.
 	 */
@@ -49,7 +68,9 @@ export abstract class View extends ManagedObject {
 	abstract requestFocus(): void;
 
 	/** A method that should be implemented to find matching components in the view hierarchy */
-	abstract findViewContent<T extends View>(type: ViewClass<T>): T[];
+	abstract findViewContent<T extends View>(
+		type: new (...args: any[]) => T,
+	): T[];
 
 	/**
 	 * Applies the provided preset properties to this object
@@ -99,26 +120,18 @@ export abstract class View extends ManagedObject {
 			this.emit = function emit(event, data?: any) {
 				if (event === undefined) return this;
 				if (typeof event === "string") {
+					if (!(event in events)) return _emit(event, data);
 					event = new ManagedEvent(event, this, data);
 				} else {
+					if (!(event.name in events)) return _emit(event);
 					data = event.data;
 				}
 
-				// check for event intercept/forward
-				let v = events![event.name];
-				if (!v) return _emit(event);
-
 				// if forward, emit original event first
+				let v = events[event.name]!;
 				if (v[0] === "+") {
 					_emit(event);
 					v = v.slice(1);
-				}
-
-				// add 'target' data property if needed
-				let colonIndex = v.indexOf(":");
-				if (colonIndex > 0) {
-					data = { target: v.slice(colonIndex + 1) };
-					v = v.slice(0, colonIndex);
 				}
 
 				// emit intercept event with original event as `inner`
