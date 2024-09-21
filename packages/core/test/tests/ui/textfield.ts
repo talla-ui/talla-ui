@@ -38,18 +38,13 @@ describe("UITextField", (scope) => {
 
 	test("Rendered with placeholder", async (t) => {
 		t.render(new UITextField("foo", "bar"));
-		await t.expectOutputAsync(100, {
-			text: "foo",
-			value: "bar",
-		});
+		await t.expectOutputAsync({ text: "foo", value: "bar" });
 	});
 
 	test("User input, directly setting value", async (t) => {
 		let tf = new UITextField();
 		t.render(tf);
-		let tfElt = (
-			await t.expectOutputAsync(100, { type: "textfield" })
-		).getSingle();
+		let tfElt = (await t.expectOutputAsync({ type: "textfield" })).getSingle();
 		tfElt.value = "foo";
 		tfElt.sendPlatformEvent("input");
 		expect(tf.value).toBe("foo");
@@ -62,9 +57,7 @@ describe("UITextField", (scope) => {
 			eventValue = e.data.value;
 		});
 		t.render(tf);
-		let tfElt = (
-			await t.expectOutputAsync(100, { type: "textfield" })
-		).getSingle();
+		let tfElt = (await t.expectOutputAsync({ type: "textfield" })).getSingle();
 		tfElt.value = "foo";
 		tfElt.sendPlatformEvent("input");
 		expect(eventValue).toBe("foo");
@@ -86,9 +79,7 @@ describe("UITextField", (scope) => {
 		// render field, check that value is 'bar'
 		t.log("Rendering with value");
 		t.render(tf);
-		let tfElt = (
-			await t.expectOutputAsync(100, { type: "textfield" })
-		).getSingle();
+		let tfElt = (await t.expectOutputAsync({ type: "textfield" })).getSingle();
 		expect(tfElt.value).toBe("bar");
 
 		// simulate input, check value in form context

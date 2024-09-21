@@ -35,7 +35,7 @@ describe("UIImage", (scope) => {
 		});
 		let image = new MyImage();
 		t.render(image);
-		await t.expectOutputAsync(100, {
+		await t.expectOutputAsync({
 			type: "image",
 			imageUrl: "foo.png",
 			accessibleLabel: "My image",

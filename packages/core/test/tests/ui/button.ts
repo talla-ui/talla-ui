@@ -40,7 +40,7 @@ describe("UIButton", (scope) => {
 			accessibleLabel: "My button",
 		});
 		t.render(new MyButton());
-		await t.expectOutputAsync(100, {
+		await t.expectOutputAsync({
 			text: "foo",
 			accessibleLabel: "My button",
 		});
@@ -55,7 +55,7 @@ describe("UIButton", (scope) => {
 			},
 		});
 		t.render(new MyButton());
-		await t.expectOutputAsync(100, {
+		await t.expectOutputAsync({
 			text: "foo",
 			styles: {
 				borderColor: ui.color.ORANGE,
@@ -75,8 +75,7 @@ describe("UIButton", (scope) => {
 			if (e.name === "Click") clickValue = e.data.value;
 		});
 		t.render(btn);
-		let out = await t.expectOutputAsync(100, { type: "button" });
-		out.getSingle().click();
+		await t.clickOutputAsync({ type: "button" });
 		expect(clickValue).toBe("foo");
 	});
 
@@ -91,8 +90,7 @@ describe("UIButton", (scope) => {
 			}
 		}
 		app.addActivity(new MyActivity(), true);
-		let out = await t.expectOutputAsync(100, { text: "Button" });
-		out.getSingle().click();
+		await t.clickOutputAsync({ text: "Button" });
 		t.expectCount("clicked").toBe(1);
 	});
 
@@ -106,8 +104,7 @@ describe("UIButton", (scope) => {
 			}
 		}
 		app.addActivity(new MyActivity(), true);
-		let elt = (await t.expectOutputAsync(100, { text: "foo" })).getSingle();
-		elt.click();
+		await t.clickOutputAsync({ text: "foo" });
 		await t.sleep(2);
 		expect(app.navigation.pageId).toBe("foo");
 	});
@@ -123,11 +120,10 @@ describe("UIButton", (scope) => {
 		}
 		app.addActivity(new MyActivity(), true);
 		app.navigate("foo");
-		await t.expectNavAsync(50, "foo");
+		await t.expectNavAsync({ pageId: "foo" });
 		app.navigate("bar");
-		await t.expectNavAsync(50, "bar");
-		let elt = (await t.expectOutputAsync(100, { text: "back" })).getSingle();
-		elt.click();
-		await t.expectNavAsync(50, "foo");
+		await t.expectNavAsync({ pageId: "bar" });
+		await t.clickOutputAsync({ text: "back" });
+		await t.expectNavAsync({ pageId: "foo" });
 	});
 });

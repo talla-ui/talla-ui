@@ -167,7 +167,7 @@ describe("UIFormContext", () => {
 
 		// find first text field and change value
 		let elt1 = (
-			await t.expectOutputAsync(50, { type: "textfield", value: "foo" })
+			await t.expectOutputAsync({ type: "textfield", value: "foo" })
 		).getSingle();
 		elt1.value = "123";
 		elt1.sendPlatformEvent("change");
@@ -175,7 +175,7 @@ describe("UIFormContext", () => {
 
 		// find second text field and set value
 		let elt2 = (
-			await t.expectOutputAsync(50, { type: "textfield", value: "bar" })
+			await t.expectOutputAsync({ type: "textfield", value: "bar" })
 		).getSingle();
 		elt2.value = "456";
 		elt2.sendPlatformEvent("change");

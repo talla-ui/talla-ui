@@ -41,6 +41,6 @@ describe("UIScrollContainer", (scope) => {
 		let cont = new UIScrollContainer();
 		cont.content.add(new UILabel("foo"));
 		t.render(cont);
-		await t.expectOutputAsync(50, { type: "container" }, { text: "foo" });
+		await t.expectOutputAsync({ type: "container" }, { text: "foo" });
 	});
 });

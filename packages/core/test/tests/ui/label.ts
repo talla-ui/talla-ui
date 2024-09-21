@@ -56,7 +56,7 @@ describe("UILabel", (scope) => {
 		});
 		let label = new MyLabel();
 		t.render(label);
-		await t.expectOutputAsync(100, {
+		await t.expectOutputAsync({
 			text: "foo",
 			accessibleLabel: "My label",
 		});
@@ -66,7 +66,7 @@ describe("UILabel", (scope) => {
 		let MyLabel1 = ui.label("one", ui.style.LABEL.override({ bold: true }));
 		let MyLabel2 = ui.label("two", { bold: true });
 		t.render(new UIRow(new MyLabel1(), new MyLabel2()));
-		let match = await t.expectOutputAsync(100, {
+		let match = await t.expectOutputAsync({
 			type: "label",
 			styles: { bold: true },
 		});
@@ -83,7 +83,7 @@ describe("UILabel", (scope) => {
 			),
 		);
 		t.render(new UIRow(new MyLabel()));
-		let match = await t.expectOutputAsync(100, {
+		let match = await t.expectOutputAsync({
 			type: "label",
 			styles: { bold: true, italic: true },
 		});
@@ -98,7 +98,7 @@ describe("UILabel", (scope) => {
 		});
 		let label = new MyLabel();
 		t.render(label);
-		await t.expectOutputAsync(100, {
+		await t.expectOutputAsync({
 			text: "foo",
 			styles: { width: 100, bold: true },
 		});
@@ -108,16 +108,11 @@ describe("UILabel", (scope) => {
 		let label = new UILabel("foo");
 		let view = new UICell(label);
 		t.render(view);
-		await t.expectOutputAsync(100, { type: "label", text: "foo" });
+		await t.expectOutputAsync({ type: "label", text: "foo" });
 		label.hidden = true;
-		let out = await t.expectOutputAsync(100, {
-			type: "cell",
-		});
+		let out = await t.expectOutputAsync({ type: "cell" });
 		out.containing({ type: "label" }).toBeEmpty();
 		label.hidden = false;
-		await t.expectOutputAsync(100, {
-			type: "label",
-			text: "foo",
-		});
+		await t.expectOutputAsync({ type: "label", text: "foo" });
 	});
 });

@@ -54,7 +54,7 @@ describe("App test", (scope) => {
 		let Preset = ui.use(MyView, { title: "TEST" });
 		let myView = new Preset();
 		t.render(myView);
-		await t.expectOutputAsync(100, { text: "TEST" });
+		await t.expectOutputAsync({ text: "TEST" });
 	});
 
 	test("Path activates activity", async (t) => {
@@ -67,40 +67,33 @@ describe("App test", (scope) => {
 
 		// setting another path takes some time
 		app.navigate("/another/path/here");
-		await t.expectNavAsync(100, "another", "path/here");
+		await t.expectNavAsync({ pageId: "another", detail: "path/here" });
 
 		// by then, the activity should be made inactive
 		await t.pollAsync(() => !activity.isActive(), 5, 100);
 	});
 
 	test("Activity shows view when active", async (t) => {
-		let expectCell = await t.expectOutputAsync(100, { type: "cell" });
+		let expectCell = await t.expectOutputAsync({ type: "cell" });
 		expectCell.containing({ value: "0" }).toBeRendered();
 		expectCell.containing({ type: "button" }).toBeRendered();
 	});
 
 	test("Button increases count", async (t) => {
-		// wait for view, then click the button
-		(await t.expectOutputAsync(100, { type: "button" }))
-			.getSingle()
-			.click()
-			.click();
-		await t.expectOutputAsync(100, { value: "2" });
+		// wait for view, then click the button twice
+		(await t.clickOutputAsync({ type: "button" })).click();
+		await t.expectOutputAsync({ value: "2" });
 	});
 
 	test("Entering text sets count property", async (t) => {
-		(await t.expectOutputAsync(100, { type: "textfield" }))
-			.getSingle()
-			.setValue("5");
-		await t.expectOutputAsync(100, { value: "5" });
+		await t.enterTextOutputAsync("5", { type: "textfield" });
+		await t.expectOutputAsync({ value: "5" });
 		expect(activity.count).toBe(5);
 	});
 
 	test("Button click sets focus", async (t) => {
 		// wait for view, then click the button
-		let out = await t.expectOutputAsync(100, { type: "button" });
-		let btnElement = out.getSingle();
-		btnElement.click();
+		let btnElement = await t.clickOutputAsync({ type: "button" });
 		expect(btnElement.hasFocus()).toBeTruthy();
 	});
 

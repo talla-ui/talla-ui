@@ -28,7 +28,7 @@ describe("UIConditionalView", () => {
 			if (e.name === "ButtonClick") t.count("click");
 		});
 		t.render(cell);
-		let expectButton = await t.expectOutputAsync(500, { type: "button" });
+		let expectButton = await t.expectOutputAsync({ type: "button" });
 
 		t.log("Clicking button");
 		expectButton.getSingle().click();
@@ -59,20 +59,18 @@ describe("UIConditionalView", () => {
 
 		// after rendering, there should be a cell but no label
 		t.log("Checking for cell but no label");
-		let expectCell = await t.expectOutputAsync(500, {
-			type: "cell",
-		});
+		let expectCell = await t.expectOutputAsync({ type: "cell" });
 		expectCell.containing({ text: "foo" }).toBeEmpty();
 
 		// when condition becomes true, label should be rendered
 		t.log("Setting state to true");
 		myView.condition = true;
-		await t.expectOutputAsync(500, { text: "foo" });
+		await t.expectOutputAsync({ text: "foo" });
 
 		// when condition becomes false, label should be removed
 		t.log("Setting state to false");
 		myView.condition = false;
-		expectCell = await t.expectOutputAsync(500, { type: "cell" });
+		expectCell = await t.expectOutputAsync({ type: "cell" });
 		expectCell.containing({ text: "foo" }).toBeEmpty();
 	});
 });

@@ -309,7 +309,7 @@ describe("Activity", () => {
 			activity.navigationPageId = "foo";
 			app.addActivity(activity);
 			app.navigate(activity);
-			await t.expectNavAsync(10, "foo");
+			await t.expectNavAsync({ timeout: 10, pageId: "foo" });
 			expect(activity.isActive()).toBeTruthy();
 		});
 
@@ -318,7 +318,7 @@ describe("Activity", () => {
 			activity.navigationPageId = "foo";
 			app.addActivity(activity);
 			app.navigate(activity.getNavigationTarget("bar"));
-			await t.expectNavAsync(10, "foo", "bar");
+			await t.expectNavAsync({ timeout: 10, pageId: "foo", detail: "bar" });
 			expect(activity.isActive()).toBeTruthy();
 		});
 	});
@@ -338,7 +338,7 @@ describe("Activity", () => {
 			}
 			let activity = new MyActivity();
 			app.addActivity(activity, true);
-			await t.expectOutputAsync(50, { type: "label" });
+			await t.expectOutputAsync({ timeout: 50, type: "label" });
 		});
 
 		test("Find views", async (t) => {
@@ -349,7 +349,7 @@ describe("Activity", () => {
 			}
 			let activity = new MyActivity();
 			app.addActivity(activity, true);
-			await t.expectOutputAsync(50, { type: "cell" });
+			await t.expectOutputAsync({ timeout: 50, type: "cell" });
 			expect(activity.findViewContent(UILabel)).toBeArray(2);
 		});
 	});

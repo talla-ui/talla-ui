@@ -198,7 +198,7 @@ describe("JSX", () => {
 			options.renderFrequency = 5;
 		});
 		t.render(new (ui.use(MyView))());
-		await t.expectOutputAsync(50, { text: "Foo is 123" });
+		await t.expectOutputAsync({ text: "Foo is 123" });
 	});
 
 	test("Component with content", async (t) => {
@@ -209,7 +209,7 @@ describe("JSX", () => {
 			options.renderFrequency = 5;
 		});
 		t.render(new (ui.use(MyView, ui.label("Foo")))());
-		await t.expectOutputAsync(50, { text: "Foo" });
+		await t.expectOutputAsync({ text: "Foo" });
 	});
 
 	test("Component with bound content", async (t) => {
@@ -228,7 +228,7 @@ describe("JSX", () => {
 		});
 		let instance = new (ui.use(MyView, { foo: 123 }))();
 		t.render(instance);
-		await t.expectOutputAsync(50, { text: "123" });
+		await t.expectOutputAsync({ text: "123" });
 	});
 
 	test("Component with bound content using lazy string", async (t) => {
@@ -240,7 +240,7 @@ describe("JSX", () => {
 			options.renderFrequency = 5;
 		});
 		t.render(new (ui.use(MyView, { foo: strf("123") }))());
-		await t.expectOutputAsync(50, { text: "Foo is 123" });
+		await t.expectOutputAsync({ text: "Foo is 123" });
 	});
 
 	test("Component with event handler", async (t) => {
@@ -260,8 +260,7 @@ describe("JSX", () => {
 			options.renderFrequency = 5;
 		});
 		t.render(new MyView());
-		let buttonOut = await t.expectOutputAsync(50, { type: "button" });
-		buttonOut.getSingle().click();
+		await t.clickOutputAsync({ type: "button" });
 		t.expectCount("FooClicked").toBe(1);
 	});
 
@@ -280,7 +279,7 @@ describe("JSX", () => {
 		});
 		let V = ui.use(MyView, { foo: 123, bar: { foo: 456, baz: "abc" } });
 		t.render(new V());
-		let expectRow = await t.expectOutputAsync(50, { type: "row" });
+		let expectRow = await t.expectOutputAsync({ type: "row" });
 		t.log("straight binding");
 		expectRow.containing({ text: "foo='123'" }).toBeRendered();
 		t.log("bar.foo");
@@ -306,7 +305,7 @@ describe("JSX", () => {
 		});
 		t.render(new Preset1());
 		await t.sleep(20);
-		await t.expectOutputAsync(50, { text: "You have 1 email" });
+		await t.expectOutputAsync({ text: "You have 1 email" });
 
 		// Use I18n provider for text translation (note binding path)
 		class MyI18nProvider {
@@ -322,6 +321,6 @@ describe("JSX", () => {
 		}
 		app.i18n = new MyI18nProvider();
 		t.render(new Preset2());
-		await t.expectOutputAsync(50, { text: "Je hebt 2 e-mails" });
+		await t.expectOutputAsync({ text: "Je hebt 2 e-mails" });
 	});
 });

@@ -55,13 +55,13 @@ describe("UICell", (scope) => {
 	test("Rendered as cell", async (t) => {
 		let cell = new UICell();
 		t.render(cell);
-		await t.expectOutputAsync(100, { type: "cell" });
+		await t.expectOutputAsync({ type: "cell" });
 	});
 
 	test("Rendered with content", async (t) => {
 		let MyCell = ui.cell({ layout: { gravity: "end" } }, ui.label("foo"));
 		t.render(new MyCell());
-		let out = await t.expectOutputAsync(100, {
+		let out = await t.expectOutputAsync({
 			type: "cell",
 			styles: { gravity: "end" },
 		});
@@ -78,7 +78,7 @@ describe("UICell", (scope) => {
 			ui.label("foo"),
 		);
 		t.render(new MyCell());
-		await t.expectOutputAsync(100, {
+		await t.expectOutputAsync({
 			type: "cell",
 			styles: {
 				distribution: "start",
@@ -92,10 +92,10 @@ describe("UICell", (scope) => {
 	test("Rendered, then update style", async (t) => {
 		let cell = new UICell();
 		t.render(cell);
-		await t.expectOutputAsync(100, { type: "cell" });
+		await t.expectOutputAsync({ type: "cell" });
 		cell.borderRadius = 8;
 		cell.layout = { distribution: "start" };
-		await t.expectOutputAsync(100, {
+		await t.expectOutputAsync({
 			styles: {
 				borderRadius: 8,
 				distribution: "start",
@@ -106,14 +106,14 @@ describe("UICell", (scope) => {
 	test("Rendered, then update content", async (t) => {
 		let cell = new UICell(new UILabel("foo"), new UILabel("bar"));
 		t.render(cell);
-		await t.expectOutputAsync(100, { type: "cell" });
+		await t.expectOutputAsync({ type: "cell" });
 		cell.content.add(new UILabel("baz"));
-		let out = await t.expectOutputAsync(100, { type: "cell" });
+		let out = await t.expectOutputAsync({ type: "cell" });
 		out.containing({ type: "label", text: "foo" }).toBeRendered();
 		out.containing({ type: "label", text: "bar" }).toBeRendered();
 		out.containing({ type: "label", text: "baz" }).toBeRendered();
 		cell.content.clear();
-		out = await t.expectOutputAsync(100, { type: "cell" });
+		out = await t.expectOutputAsync({ type: "cell" });
 		out.containing({ type: "label" }).toBeEmpty();
 	});
 
@@ -125,20 +125,12 @@ describe("UICell", (scope) => {
 
 		// render cell 1 with labels first
 		t.render(new UICell(cell1, cell2));
-		let out1 = await t.expectOutputAsync(
-			100,
-			{ source: cell1 },
-			{ text: "foo" },
-		);
+		let out1 = await t.expectOutputAsync({ source: cell1 }, { text: "foo" });
 		let uid = out1.getSingle().uid;
 
 		// now move label 1 to cell 2 and watch the output
 		cell2.content.add(label1);
-		let out2 = await t.expectOutputAsync(
-			100,
-			{ source: cell2 },
-			{ text: "foo" },
-		);
+		let out2 = await t.expectOutputAsync({ source: cell2 }, { text: "foo" });
 
 		expect(out2.getSingle().uid).toBe(uid);
 	});

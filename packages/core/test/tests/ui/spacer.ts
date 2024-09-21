@@ -26,6 +26,6 @@ describe("UISpacer", (scope) => {
 
 	test("Rendered", async (t) => {
 		t.render(new UISpacer());
-		await t.expectOutputAsync(50, { type: "spacer" });
+		await t.expectOutputAsync({ type: "spacer" });
 	});
 });

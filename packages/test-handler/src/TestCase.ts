@@ -1,4 +1,4 @@
-import { RenderContext, View, app } from "talla-ui";
+import { ConfigOptions, RenderContext, View, app } from "talla-ui";
 import { Assertion } from "./Assertion.js";
 import { TestScope } from "./TestScope.js";
 import { OutputAssertion, OutputSelectFilter } from "./app/OutputAssertion.js";
@@ -342,23 +342,27 @@ export class TestCase {
 	 * @example
 	 * describe("My scope", () => {
 	 *   test("Wait for navigation", async (t) => {
-	 *     // ... navigate to a path somehow
-	 *     await t.expectNavAsync(100, "foo");
+	 *     // ... navigate to a path somehow, then:
+	 *     await t.expectNavAsync({ pageId: "foo" });
 	 *   });
 	 * });
 	 */
-	async expectNavAsync(timeout: number, pageId: string, detail = "") {
+	async expectNavAsync(expect: ConfigOptions.Arg<TestCase.ExpectNavOptions>) {
+		let options = TestCase.ExpectNavOptions.init(expect);
+
 		// create error first, to capture accurate stack trace
 		let error = Error(
-			"Expected navigation to " + val2str(pageId + "/" + detail),
+			"Expected navigation to " +
+				val2str(options.pageId + "/" + options.detail),
 		);
 
 		// start polling
 		await this.pollAsync(
 			() =>
-				app.navigation.pageId === pageId && app.navigation.detail === detail,
+				app.navigation.pageId === options.pageId &&
+				app.navigation.detail === options.detail,
 			5,
-			timeout,
+			options.timeout,
 			() => {
 				error.message +=
 					", but location is " +
@@ -372,23 +376,26 @@ export class TestCase {
 	 * Waits for output to be rendered (by the test renderer) that matches the provided filters
 	 * - This method uses {@link TestRenderer.expectOutputAsync()}, refer to its documentation for details.
 	 * - This method is asynchronous and **must** be `await`-ed.
-	 * @param timeout Timeout, in milliseconds
-	 * @param select A set of output filters to match
+	 * @param select A set of output filters to match, including optional timeout (defaults to 200ms)
+	 * @param nested Further output filters to match, if any
 	 * @returns A promise that's resolved to an {@link OutputAssertion} instance for matching output, or rejected when a timeout occurs.
 	 *
 	 * @example
 	 * describe("My scope", () => {
 	 *   test("Wait for output", async (t) => {
 	 *     // ... render output somehow
-	 *     await t.expectOutputAsync(100, { type: "button" });
+	 *     await t.expectOutputAsync({ type: "button" });
 	 *   });
 	 * });
 	 */
-	async expectOutputAsync(timeout: number, ...select: OutputSelectFilter[]) {
+	async expectOutputAsync(
+		select: OutputSelectFilter & { timeout?: number },
+		...nested: OutputSelectFilter[]
+	) {
 		let renderer = this._getRenderer();
 		this._awaiting++;
 		try {
-			return await renderer.expectOutputAsync(timeout, ...select);
+			return await renderer.expectOutputAsync(select, ...nested);
 		} catch (err) {
 			this.fail(err);
 			if (!this._done) throw err;
@@ -430,6 +437,36 @@ export class TestCase {
 		} finally {
 			this._awaiting--;
 		}
+	}
+
+	/**
+	 * Waits for matching output to be rendered, and simulates a user click event
+	 * - This method awaits the result of {@link expectOutputAsync()}, finds a single element, and sends a click event using {@link TestOutputElement.click()}.
+	 * @error This method throws an error if the output is not found after the provided timeout (or default value of 200ms) or if multiple elements match the selection criteria.
+	 * @returns The test output element itself
+	 */
+	async clickOutputAsync(
+		select: OutputSelectFilter & { timeout?: number },
+		...nested: OutputSelectFilter[]
+	) {
+		let out = await this.expectOutputAsync(select, ...nested);
+		return out.getSingle().click();
+	}
+
+	/**
+	 * Waits for matching output to be rendered, and simulates user text input
+	 * - This method awaits the result of {@link expectOutputAsync()}, finds a single element, and sends text input using {@link TestOutputElement.setValue()}.
+	 * - The selection criteria don't automatically include the text field type; to match a text field element, use the `textfield` type, or use an accessible label or name property.
+	 * @error This method throws an error if the output is not found after the provided timeout (or default value of 200ms) or if multiple elements match the selection criteria.
+	 * @returns The test output element itself
+	 */
+	async enterTextOutputAsync(
+		value: string,
+		select: OutputSelectFilter & { timeout?: number },
+		...nested: OutputSelectFilter[]
+	) {
+		let out = await this.expectOutputAsync(select, ...nested);
+		return out.getSingle().setValue(value);
 	}
 
 	/**
@@ -502,4 +539,16 @@ export class TestCase {
 	private _error?: unknown;
 	private _logs: Array<ReadonlyArray<any>> = [];
 	private _counts: Record<string, number | undefined> = {};
+}
+
+export namespace TestCase {
+	/** Options to be used with {@link TestCase.expectNavAsync()} */
+	export class ExpectNavOptions extends ConfigOptions {
+		/** Page ID to wait for, must be an exact match */
+		pageId = "";
+		/** Detail string to wait for, must be an exact match; defaults to en empty string (i.e. exact page match) */
+		detail = "";
+		/** Timeout, in milliseconds; defaults to 200ms */
+		timeout = 200;
+	}
 }

@@ -35,7 +35,7 @@ describe("UIToggle", (scope) => {
 
 	test("Rendered with label", async (t) => {
 		t.render(new UIToggle("foo", true));
-		await t.expectOutputAsync(100, {
+		await t.expectOutputAsync({
 			text: "foo",
 			checked: true,
 		});
@@ -44,9 +44,7 @@ describe("UIToggle", (scope) => {
 	test("User input, directly setting checked value", async (t) => {
 		let toggle = new UIToggle();
 		t.render(toggle);
-		let toggleElt = (
-			await t.expectOutputAsync(100, { type: "toggle" })
-		).getSingle();
+		let toggleElt = (await t.expectOutputAsync({ type: "toggle" })).getSingle();
 		toggleElt.checked = true;
 		toggleElt.sendPlatformEvent("change");
 		expect(toggle.state).toBe(true);
@@ -68,9 +66,7 @@ describe("UIToggle", (scope) => {
 		// render field, check that checkbox is checked
 		t.log("Rendering with state");
 		t.render(toggle);
-		let toggleElt = (
-			await t.expectOutputAsync(100, { type: "toggle" })
-		).getSingle();
+		let toggleElt = (await t.expectOutputAsync({ type: "toggle" })).getSingle();
 		expect(toggleElt.checked).toBe(true);
 
 		// simulate input, check value in form context

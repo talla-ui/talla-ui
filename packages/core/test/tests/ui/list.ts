@@ -59,7 +59,7 @@ describe("UIListView", (scope) => {
 	test("Empty list, rendered", async (t) => {
 		let MyList = ui.list({}, UILabel);
 		t.render(new MyList());
-		await t.expectOutputAsync(50, { type: "column" });
+		await t.expectOutputAsync({ type: "column" });
 	});
 
 	test("List of labels from ManagedList, rendered", async (t) => {
@@ -75,7 +75,7 @@ describe("UIListView", (scope) => {
 
 		t.log("Rendering");
 		t.render(instance);
-		let out = await t.expectOutputAsync(50, { type: "row" });
+		let out = await t.expectOutputAsync({ type: "row" });
 		expect(out.elements[0], "row element").toBeDefined();
 		out.containing({ text: "a" }).toBeRendered("list element a");
 		out.containing({ text: "b" }).toBeRendered("list element b");
@@ -103,7 +103,7 @@ describe("UIListView", (scope) => {
 
 		t.log("Rendering");
 		t.render(instance);
-		await t.expectOutputAsync(50, { type: "row" });
+		await t.expectOutputAsync({ type: "row" });
 		expect(getListText(instance)).toBeArray(["a", "b", "c"]);
 	});
 
@@ -121,14 +121,14 @@ describe("UIListView", (scope) => {
 
 		t.log("Rendering");
 		t.render(instance);
-		let out = await t.expectOutputAsync(50, { type: "row" }, { text: "c" });
+		let out = await t.expectOutputAsync({ type: "row" }, { text: "c" });
 		let cRendered = out.getSingle();
 
 		t.log("Updating list");
 		list.replaceAll([c, b, d]);
-		await t.expectOutputAsync(50, { text: "d" });
+		await t.expectOutputAsync({ text: "d" });
 		expect(getListText(instance)).toBeArray(["c", "b", "d"]);
-		let sameC = await t.expectOutputAsync(50, { type: "row" }, { text: "c" });
+		let sameC = await t.expectOutputAsync({ type: "row" }, { text: "c" });
 		expect(sameC.getSingle()).toBe(cRendered);
 	});
 
@@ -165,7 +165,7 @@ describe("UIListView", (scope) => {
 
 		t.log("Rendering");
 		t.render(view);
-		let out = await t.expectOutputAsync(50, { text: "d" });
+		let out = await t.expectOutputAsync({ text: "d" });
 
 		t.log("Clicking");
 		out.getSingle().click();
@@ -185,12 +185,12 @@ describe("UIListView", (scope) => {
 
 		t.log("Rendering");
 		t.render(instance);
-		await t.expectOutputAsync(50, { type: "row" }, { text: "d" });
+		await t.expectOutputAsync({ type: "row" }, { text: "d" });
 		expect(getListText(instance)).toBeArray(["a", "b", "c", "d", "end"]);
 
 		t.log("Update");
 		instance.items = new ManagedList(...[...getObjects()].reverse());
-		await t.expectOutputAsync(50, { type: "row" });
+		await t.expectOutputAsync({ type: "row" });
 		expect(getListText(instance)).toBeArray(["d", "c", "b", "a", "end"]);
 	});
 
@@ -205,28 +205,28 @@ describe("UIListView", (scope) => {
 
 		t.log("Rendering 0-1");
 		t.render(instance);
-		await t.expectOutputAsync(50, { type: "row" });
+		await t.expectOutputAsync({ type: "row" });
 		expect(getListText(instance)).toBeArray(["a", "b"]);
 
 		t.log("Moving window 1-2");
 		instance.firstIndex = 1;
-		await t.expectOutputAsync(50, { type: "row" }, { text: "c" });
+		await t.expectOutputAsync({ type: "row" }, { text: "c" });
 		expect(getListText(instance)).toBeArray(["b", "c"]);
 
 		t.log("Moving window 3-X");
 		instance.firstIndex = 3;
 		instance.maxItems = -1;
-		await t.expectOutputAsync(50, { type: "row" }, { text: "d" });
+		await t.expectOutputAsync({ type: "row" }, { text: "d" });
 		expect(getListText(instance)).toBeArray(["d"]);
 
 		t.log("Moving window past end");
 		instance.firstIndex = 4;
-		await t.expectOutputAsync(50, { type: "row" });
+		await t.expectOutputAsync({ type: "row" });
 		expect(getListText(instance)).toBeArray(0);
 
 		t.log("Moving before 0");
 		instance.firstIndex = -1;
-		await t.expectOutputAsync(50, { type: "row" }, { text: "d" });
+		await t.expectOutputAsync({ type: "row" }, { text: "d" });
 		expect(getListText(instance)).toBeArray(["a", "b", "c", "d"]);
 	});
 
@@ -237,9 +237,9 @@ describe("UIListView", (scope) => {
 		);
 		let list = new Preset();
 		t.render(list);
-		let out = await t.expectOutputAsync(50, { text: "a" });
+		let out = await t.expectOutputAsync({ text: "a" });
 		expect(list.getIndexOfView(out.getSingle().output!.source)).toBe(0);
-		out = await t.expectOutputAsync(50, { text: "d" });
+		out = await t.expectOutputAsync({ text: "d" });
 		expect(list.getIndexOfView(out.getSingle().output!.source)).toBe(3);
 		expect(list.getIndexOfView(list)).toBe(-1);
 	});
@@ -254,20 +254,18 @@ describe("UIListView", (scope) => {
 			),
 		);
 		t.render(new Preset());
-		let out = await t.expectOutputAsync(50, { text: "a" });
+		let out = await t.expectOutputAsync({ text: "a" });
 
 		t.log("Focus first item");
 		out.getSingle().click();
-		await t.expectOutputAsync(50, { text: "a", focused: true });
+		await t.expectOutputAsync({ text: "a", focused: true });
 
 		t.log("Focus other item");
-		(await t.expectOutputAsync(50, { type: "button" })).getSingle().click();
+		await t.clickOutputAsync({ type: "button" });
 
 		t.log("Focus list again");
-		(await t.expectOutputAsync(50, { accessibleRole: "list" }))
-			.getSingle()
-			.focus();
-		await t.expectOutputAsync(50, { text: "a", focused: true });
+		(await t.expectOutputAsync({ accessibleRole: "list" })).getSingle().focus();
+		await t.expectOutputAsync({ text: "a", focused: true });
 	});
 
 	test("Arrow key focus, single list", async (t) => {
@@ -282,7 +280,7 @@ describe("UIListView", (scope) => {
 		);
 		let list = new Preset();
 		t.render(list);
-		let firstOut = await t.expectOutputAsync(100, { text: "a" });
+		let firstOut = await t.expectOutputAsync({ text: "a" });
 
 		t.log("Focus first item");
 		let aElt = firstOut.getSingle();
@@ -292,13 +290,13 @@ describe("UIListView", (scope) => {
 
 		t.log("Move focus down by 2");
 		firstOut.getSingleView(UILabel).emit("ArrowDownKeyPress");
-		await t.expectOutputAsync(100, { text: "b", focused: true });
+		await t.expectOutputAsync({ text: "b", focused: true });
 		list.focusNextItem();
-		let thirdOut = await t.expectOutputAsync(100, { text: "c", focused: true });
+		let thirdOut = await t.expectOutputAsync({ text: "c", focused: true });
 
 		t.log("Move focus up again");
 		thirdOut.getSingleView(UILabel).emit("ArrowUpKeyPress");
-		await t.expectOutputAsync(100, { text: "b", focused: true });
+		await t.expectOutputAsync({ text: "b", focused: true });
 	});
 
 	// TODO(tests): arrow key focus on nested lists

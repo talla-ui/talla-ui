@@ -188,14 +188,13 @@ export class TestRenderer extends RenderContext {
 	 * @note This method is asynchronous, and **must** be `await`-ed in a test function.
 	 *
 	 * @summary
-	 * This method regularly polls all rendered output, and attempts to match the given filter(s). As soon as one or more elements match **and** no further rendering is scheduled to take place, the resulting promise is resolved.
+	 * This method regularly polls all rendered output, and attempts to match the specified filter(s). As soon as one or more elements match **and** no further rendering is scheduled to take place, the resulting promise is resolved.
 	 * 
 	 * This method can be used to validate new output, and find the subset of output elements that match the given filter(s). Any element in the current output may be matched, including container content; but not content _within_ a matching container (i.e. only the highest-level elements that match a selection filter).
 
-	 * If the specified timeout is reached, the promise is rejected.
+	 * The first argument may include a timeout property, in milliseconds. If the specified timeout is reached, the promise is rejected. If no timeout is specified, a timeout value of 200ms is used.
 	 *
-	 * @param timeout The number of milliseconds to wait for matching output to be rendered
-	 * @param select A list of filters to find matching output elements. The first filter is applied, then the second one on all _content_ of matching elements, and so on. Note that multiple elements may be found, which may not be part of the same container.
+	 * @param select A list of filters to find matching output elements. The first filter is applied, then the second one on all _content_ of matching elements, and so on. Note that multiple elements may be found, which may not be part of the same container. The first filter may contain a `timeout` property as explained above.
 	 * @returns A promise for an {@link OutputAssertion} instance for the matched element(s). The promise is rejected if a timeout occurs.
 	 *
 	 * @example
@@ -204,19 +203,23 @@ export class TestRenderer extends RenderContext {
 	 *     let app = useTestContext();
 	 *     // ... render a view
 	 *     // now wait for a Confirm button:
-	 *     await app.renderer.expectOutputAsync(
-	 *       100,
-	 *       { type: "button", text: "Confirm" }
-	 *     );
+	 *     await app.renderer.expectOutputAsync({
+	 *       type: "button",
+	 *       text: "Confirm"
+	 *     });
 	 * });
 	 */
-	async expectOutputAsync(timeout: number, ...select: OutputSelectFilter[]) {
+	async expectOutputAsync(
+		select: OutputSelectFilter & { timeout?: number },
+		...nested: OutputSelectFilter[]
+	) {
 		// prepare timeout error first, to capture accurate stack trace
 		let timeoutError = Error(
-			"expectOutputAsync timeout: " + select.map((s) => val2str(s)).join(" "),
+			"expectOutputAsync timeout: " + val2str([select, ...nested]),
 		);
 
 		// start polling
+		let timeout = select.timeout || 200;
 		let startT = Date.now();
 		return new Promise<OutputAssertion>((resolve, reject) => {
 			let poll = () => {
@@ -224,7 +227,7 @@ export class TestRenderer extends RenderContext {
 				this._queue.add(() => {
 					if (this._queue.count <= 1) {
 						// resolve with assertion if matches
-						let assertion = this.expectOutput(...select);
+						let assertion = this.expectOutput(select, ...nested);
 						if (assertion.elements.length) return resolve(assertion);
 					}
 					if (timeout && Date.now() > startT + timeout) {
@@ -251,7 +254,7 @@ export class TestRenderer extends RenderContext {
 	 *
 	 * @param timeout The number of milliseconds to wait for matching output to be rendered
 	 * @param match A list of strings or regular expressions to validate matching label(s) on the message dialog.
-	 * @returns A promise for an {@link RenderedTestMessageDialog} instance. The promise is rejected if a timeout occurs.
+	 * @returns A promise for a {@link RenderedTestMessageDialog} instance. The promise is rejected if a timeout occurs.
 	 *
 	 * @example
 	 * describe("My scope", () => {
@@ -271,7 +274,8 @@ export class TestRenderer extends RenderContext {
 		timeout: number,
 		...match: Array<string | RegExp>
 	) {
-		let dialogOut = await this.expectOutputAsync(timeout, {
+		let dialogOut = await this.expectOutputAsync({
+			timeout,
 			accessibleRole: "alertdialog",
 		});
 		dialogOut.getSingle();

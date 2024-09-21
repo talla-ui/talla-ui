@@ -108,12 +108,12 @@ describe("TestContext", () => {
 				options.navigationPageId = "foo";
 			});
 			app.navigate("foo/bar");
-			await t.expectNavAsync(100, "foo", "bar");
+			await t.expectNavAsync({ pageId: "foo", detail: "bar" });
 			app.navigate("/baz");
-			await t.expectNavAsync(100, "baz");
+			await t.expectNavAsync({ pageId: "baz" });
 			app.navigate(new NavigationTarget(), { back: true });
 			app.goBack();
-			await t.expectNavAsync(100, "foo");
+			await t.expectNavAsync({ pageId: "foo" });
 		});
 
 		test("Navigation history: back using goBack() sync", async (t) => {
@@ -124,7 +124,7 @@ describe("TestContext", () => {
 			let nav = app.navigation;
 			await nav.navigateAsync(new NavigationTarget("foo"));
 			app.goBack();
-			await t.expectNavAsync(100, "foo");
+			await t.expectNavAsync({ pageId: "foo" });
 			expect(nav.getHistory()).toBeArray(["foo"]);
 		});
 
@@ -161,7 +161,7 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			t.render(view);
-			await app.renderer.expectOutputAsync(100, { source: view });
+			await app.renderer.expectOutputAsync({ source: view });
 		});
 
 		test("Cell view from single composite", async (t) => {
@@ -171,7 +171,7 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			t.render(view);
-			await app.renderer.expectOutputAsync(100, { source: view.body! });
+			await app.renderer.expectOutputAsync({ source: view.body! });
 		});
 
 		test("Cell view from single controller, handle events", async (t) => {
@@ -186,7 +186,7 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			t.render(view);
-			let out = await app.renderer.expectOutputAsync(500, {
+			let out = await app.renderer.expectOutputAsync({
 				source: view.body!,
 			});
 			let error = await t.tryRunAsync(async () => {
@@ -205,7 +205,7 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			let rendered = t.render(view);
-			await app.renderer.expectOutputAsync(100, { source: view.body! });
+			await app.renderer.expectOutputAsync({ source: view.body! });
 			await rendered.removeAsync();
 			app.renderer.expectOutput({ type: "cell" }).toBeEmpty();
 		});
@@ -216,10 +216,10 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			t.render(view);
-			let out1 = await app.renderer.expectOutputAsync(100, { type: "label" });
+			let out1 = await app.renderer.expectOutputAsync({ type: "label" });
 			view.findViewContent(UILabel)[0]!.text = "Foo";
 			t.render(view);
-			let out2 = await app.renderer.expectOutputAsync(100, { type: "label" });
+			let out2 = await app.renderer.expectOutputAsync({ type: "label" });
 			expect(out2.elements).toBeArray(out1.elements);
 		});
 
@@ -234,7 +234,7 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			app.addActivity(activity, true);
-			await app.renderer.expectOutputAsync(100, { source: activity.view! });
+			await app.renderer.expectOutputAsync({ source: activity.view! });
 		});
 
 		test("Remove view by deactivating activity", async (t) => {
@@ -251,7 +251,7 @@ describe("TestContext", () => {
 			await t.pollAsync(() => !!activity.view, 5, 100);
 			expect(activity).toHaveProperty("view").toBeInstanceOf(UICell);
 			let view = activity.view!;
-			await app.renderer.expectOutputAsync(100, { source: view });
+			await app.renderer.expectOutputAsync({ source: view });
 			await activity.deactivateAsync();
 			await t.pollAsync(() => !app.renderer.hasOutput(), 10, 100);
 		});
@@ -268,7 +268,7 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			app.addActivity(activity, true);
-			await app.renderer.expectOutputAsync(100, { text: "foo" });
+			await app.renderer.expectOutputAsync({ text: "foo" });
 			await activity.deactivateAsync();
 			await t.pollAsync(() => !app.renderer.hasOutput(), 10, 100);
 		});
@@ -276,9 +276,7 @@ describe("TestContext", () => {
 		test("Show alert dialog", async (t) => {
 			let app = useTestContext();
 			let p = app.showAlertDialogAsync("This is a test", "OK");
-			(await t.expectOutputAsync(100, { type: "button", text: "OK" }))
-				.getSingle()
-				.click();
+			await t.clickOutputAsync({ type: "button", text: "OK" });
 			let result = await p;
 			expect(result).toBeUndefined();
 		});
@@ -288,9 +286,7 @@ describe("TestContext", () => {
 				options.renderFrequency = 5;
 			});
 			let p = app.showConfirmDialogAsync("This is a test", "Foo", "Bar");
-			(await t.expectOutputAsync(100, { type: "button", text: "Bar" }))
-				.getSingle()
-				.click();
+			await t.clickOutputAsync({ type: "button", text: "Bar" });
 			let result = await p;
 			expect(result).toBe(false);
 		});
@@ -316,32 +312,26 @@ describe("TestContext", () => {
 
 			t.log("Showing dialog and clicking confirm");
 			let p = app.showConfirmDialogAsync(myDialog);
-			let expectDialog = await t.expectOutputAsync(50, {
+			let expectDialog = await t.expectOutputAsync({
 				accessibleRole: "alertdialog",
 			});
 			expectDialog.containing({ text: "This is a test" }).toBeRendered();
 			expectDialog
 				.containing({ text: "Another line goes here" })
 				.toBeRendered();
-			(await t.expectOutputAsync(100, { type: "button", text: "Go ahead" }))
-				.getSingle()
-				.click();
+			await t.clickOutputAsync({ type: "button", text: "Go ahead" });
 			let result = await p;
 			expect(result).toBe(true);
 
 			t.log("Showing dialog and clicking cancel");
 			p = app.showConfirmDialogAsync(myDialog);
-			(await t.expectOutputAsync(100, { type: "button", text: "No, cancel" }))
-				.getSingle()
-				.click();
+			await t.clickOutputAsync({ type: "button", text: "No, cancel" });
 			result = await p;
 			expect(result).toBe(false);
 
 			t.log("Showing dialog and clicking other");
 			p = app.showConfirmDialogAsync(myDialog);
-			(await t.expectOutputAsync(100, { type: "button", text: "Maybe" }))
-				.getSingle()
-				.click();
+			await t.clickOutputAsync({ type: "button", text: "Maybe" });
 			result = await p;
 			expect(result).toBe(0);
 		});
@@ -357,10 +347,8 @@ describe("TestContext", () => {
 			);
 			let formatted = myDialog.format({ foo: 123 });
 			let p = app.showConfirmDialogAsync(formatted);
-			await t.expectOutputAsync(100, { text: /foo = 123/ });
-			(await t.expectOutputAsync(100, { type: "button", text: "Foo: 123" }))
-				.getSingle()
-				.click();
+			await t.expectOutputAsync({ text: /foo = 123/ });
+			await t.clickOutputAsync({ type: "button", text: "Foo: 123" });
 			let result = await p;
 			expect(result).toBe(false);
 		});
@@ -371,7 +359,7 @@ describe("TestContext", () => {
 			});
 			let button = new UIButton("Test");
 			t.render(button);
-			await t.expectOutputAsync(100, { type: "button" });
+			await t.expectOutputAsync({ type: "button" });
 			let p = app.showModalMenuAsync(
 				new UITheme.MenuOptions([
 					{ key: "one", text: "One" },
@@ -379,7 +367,7 @@ describe("TestContext", () => {
 				]),
 				button,
 			);
-			(await t.expectOutputAsync(100, { text: "Two" })).getSingle().click();
+			await t.clickOutputAsync({ text: "Two" });
 			let result = await p;
 			expect(result).toBe("two");
 		});
@@ -394,7 +382,7 @@ describe("TestContext", () => {
 				options.items.push({ key: "two", text: "Two", hint: "2" });
 				options.width = 200;
 			});
-			(await t.expectOutputAsync(100, { text: "Two" })).getSingle().click();
+			await t.clickOutputAsync({ text: "Two" });
 			let result = await p;
 			expect(result).toBe("two");
 		});

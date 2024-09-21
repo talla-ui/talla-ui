@@ -61,19 +61,17 @@ describe("Example", (scope) => {
 	// test that the counter is 0 both in the activity and view
 	test("Counter starts at zero", async (t) => {
 		expect(activity.count).toBe(0);
-		await t.expectOutputAsync(100, { text: "Count: 0" });
+		await t.expectOutputAsync({ text: "Count: 0" });
 	});
 
 	// test that the Up button works
 	test("Counter goes up", async (t) => {
 		// find the button and click it
-		await t
-			.expectOutputAsync(100, { type: "button", text: "Up" })
-			.then((b) => b.getSingle().click());
+		await t.clickOutputAsync({ type: "button", text: "Up" });
 
 		// check that the counter is 1 both in the activity and view
 		expect(activity.count).toBe(1);
-		await t.expectOutputAsync(100, { text: "Count: 1" });
+		await t.expectOutputAsync({ text: "Count: 1" });
 	});
 });
 // @doc-end

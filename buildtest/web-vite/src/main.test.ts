@@ -9,6 +9,6 @@ describe("Main", (scope) => {
 	});
 
 	test("Shows hello world", async (t) => {
-		await t.expectOutputAsync(100, { type: "label", text: "Hello, world!" });
+		await t.expectOutputAsync({ type: "label", text: "Hello, world!" });
 	});
 });

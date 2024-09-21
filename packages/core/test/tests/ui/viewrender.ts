@@ -36,7 +36,7 @@ describe("UIViewRenderer", (scope) => {
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new MyCell();
 		t.render(viewRenderer);
-		await t.expectOutputAsync(50, { text: "foo" });
+		await t.expectOutputAsync({ text: "foo" });
 		expect(viewRenderer.findViewContent(UILabel)).toBeArray(1);
 	});
 
@@ -46,9 +46,9 @@ describe("UIViewRenderer", (scope) => {
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new MyCell1();
 		t.render(viewRenderer);
-		await t.expectOutputAsync(50, { text: "foo" });
+		await t.expectOutputAsync({ text: "foo" });
 		viewRenderer.view = new MyCell2();
-		await t.expectOutputAsync(50, { text: "bar" });
+		await t.expectOutputAsync({ text: "bar" });
 	});
 
 	test("Unlink view after rendering", async (t) => {
@@ -56,7 +56,7 @@ describe("UIViewRenderer", (scope) => {
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new MyCell();
 		t.render(viewRenderer);
-		await t.expectOutputAsync(50, { text: "foo" });
+		await t.expectOutputAsync({ text: "foo" });
 		viewRenderer.view.unlink();
 		await t.sleep(20);
 		expect((app.renderer as TestRenderer).hasOutput()).toBeFalsy();
@@ -75,16 +75,16 @@ describe("UIViewRenderer", (scope) => {
 			vc = this.attach(new Preset());
 		}
 		app.addActivity(new MyActivity(), true);
-		await t.expectOutputAsync(50, { text: "foo" });
+		await t.expectOutputAsync({ text: "foo" });
 	});
 
 	test("Set view and focus", async (t) => {
 		let viewRenderer = new UIViewRenderer();
 		viewRenderer.view = new UITextField();
 		t.render(viewRenderer);
-		await t.expectOutputAsync(50, { type: "textfield", focused: false });
+		await t.expectOutputAsync({ type: "textfield", focused: false });
 		viewRenderer.requestFocus();
-		await t.expectOutputAsync(50, { type: "textfield", focused: true });
+		await t.expectOutputAsync({ type: "textfield", focused: true });
 	});
 
 	test("Use activity view and render", async (t) => {
@@ -123,7 +123,7 @@ describe("UIViewRenderer", (scope) => {
 
 		// view should only show up when `second` is activated
 		t.log("Testing without `second`...");
-		let out = await t.expectOutputAsync(50, {
+		let out = await t.expectOutputAsync({
 			type: "cell",
 			accessibleLabel: "outer",
 		});
@@ -131,7 +131,6 @@ describe("UIViewRenderer", (scope) => {
 		t.log("Activating `second`...");
 		await activity.second!.activateAsync();
 		out = await t.expectOutputAsync(
-			50,
 			{ accessibleLabel: "outer" },
 			{ text: "foo" },
 		);
@@ -146,7 +145,7 @@ describe("UIViewRenderer", (scope) => {
 		t.log("Destroying `second`...");
 		activity.second!.unlink();
 		expect(activity.second).toHaveProperty("view").toBeUndefined();
-		out = await t.expectOutputAsync(50, {
+		out = await t.expectOutputAsync({
 			type: "cell",
 			accessibleLabel: "outer",
 		});

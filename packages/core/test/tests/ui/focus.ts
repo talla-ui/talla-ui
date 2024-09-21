@@ -18,7 +18,7 @@ describe("Focus management", (scope) => {
 		let MyCell = ui.cell({ requestFocus: true, allowFocus: true });
 		let cell = new MyCell();
 		t.render(cell);
-		let elt = (await t.expectOutputAsync(100, { type: "cell" })).getSingle();
+		let elt = (await t.expectOutputAsync({ type: "cell" })).getSingle();
 		expect(elt.hasFocus()).toBeTruthy();
 	});
 
@@ -26,18 +26,18 @@ describe("Focus management", (scope) => {
 		let MyCell = ui.cell({ allowFocus: true });
 		let cell = new MyCell();
 		t.render(cell);
-		await t.expectOutputAsync(100, { type: "cell" });
+		await t.expectOutputAsync({ type: "cell" });
 		cell.requestFocus();
-		await t.expectOutputAsync(100, { type: "cell", focused: true });
+		await t.expectOutputAsync({ type: "cell", focused: true });
 	});
 
 	test("Single view composite, request focus", async (t) => {
 		const MyView = ViewComposite.define({}, ui.cell({ allowFocus: true }));
 		let view = new MyView();
 		t.render(view);
-		await t.expectOutputAsync(100, { type: "cell" });
+		await t.expectOutputAsync({ type: "cell" });
 		view.requestFocus();
-		await t.expectOutputAsync(100, { type: "cell", focused: true });
+		await t.expectOutputAsync({ type: "cell", focused: true });
 	});
 
 	test("Focus requests", async (t) => {
@@ -48,15 +48,15 @@ describe("Focus management", (scope) => {
 
 		t.log("Focusing first");
 		t.render(new MyCell());
-		let out = await t.expectOutputAsync(100, { text: "first", focused: true });
+		let out = await t.expectOutputAsync({ text: "first", focused: true });
 
 		t.log("Focusing next");
 		out.getSingleView(UIButton).requestFocusNext();
-		out = await t.expectOutputAsync(100, { text: "second", focused: true });
+		out = await t.expectOutputAsync({ text: "second", focused: true });
 
 		t.log("Focusing previous");
 		out.getSingleView(UIButton).requestFocusPrevious();
-		out = await t.expectOutputAsync(100, { text: "first", focused: true });
+		out = await t.expectOutputAsync({ text: "first", focused: true });
 	});
 
 	test("Focusing one element blurs another", async (t) => {
