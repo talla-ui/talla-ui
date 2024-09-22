@@ -4,7 +4,9 @@
 	"description": "Tälla UI framework: main source monorepo",
 	"version": "4.0.0-dev.39",
 	"license": "MIT",
+	"type": "module",
 	"scripts": {
+		"version": "node scripts/set-version.js && npm install && npm run build && git add .",
 		"postinstall": "concurrently npm:install:*",
 		"install:core": "cd packages/core && npm install",
 		"install:test": "cd packages/test-handler && npm install",
