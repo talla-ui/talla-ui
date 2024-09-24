@@ -81,7 +81,7 @@ export class MarkdownOutput extends Output {
 					.map((m) => {
 						// add list of links, with + to indicate child page
 						let isChild = m.parent === entry.id;
-						return `- {@link ${m.id}${isChild ? " +" : ""}}`;
+						return `- {@link ${m.id}}${isChild ? "+" : ""}`;
 					})
 					.join("\n"),
 			);
@@ -142,11 +142,7 @@ export class MarkdownOutput extends Output {
 			addMemberSection("## Instance members", members.nonstatic);
 		}
 		if (members.deprecated?.length) {
-			addMemberSection(
-				"## Deprecated members",
-
-				members.deprecated,
-			);
+			addMemberSection("## Deprecated members", members.deprecated);
 		}
 		if (members.inherited?.length) {
 			addMemberSection("## Inherited members", members.inherited);
@@ -156,7 +152,6 @@ export class MarkdownOutput extends Output {
 		if (entry.related?.length || entry.parent) {
 			addSection(
 				"## Related",
-
 				(entry.parent ? `- {@link ${entry.parent}}\n` : "") +
 					((entry.related?.map((s) => "- " + s) || []).join("\n") || ""),
 			);
@@ -181,7 +176,7 @@ export class CollatedMarkdownOutput {
 	/**
 	 * Adds menu items to the index for the provided markdown content
 	 *
-	 * > Note: The menu includes both internal links (to headings that end with an ID comment tag: `<!--{#id}-->`) as well as `@link` tags that end with a plus `+` symbol.
+	 * > Note: The menu includes both internal links (to headings that end with an ID comment tag: `<!--{#id}-->`) as well as `@link` tags that are immediately followed by a plus `+` symbol (usually in a list).
 	 */
 	addToMenu() {
 		for (let it of this._getMenuItems()) {
@@ -288,26 +283,33 @@ export class CollatedMarkdownOutput {
 		ref = this.entry,
 	): string {
 		return (text || "")
-			.replace(/^- \{@link\s+([^\s\(\)\}]+)([^}]*)\}$/gm, (s, id, rest) => {
-				// replace block ref links
-				let found = this.docsIndex.findEntry(id, ref.id);
-				if (found && found.abstract) {
-					let title = "<!--{ref:" + found.type + "}-->" + found.title;
-					let desc =
-						" " +
-						(found.isDeprecated ? "<!--{refchip:deprecated}-->" : "") +
-						(found.isAbstract ? "<!--{refchip:abstract}-->" : "") +
-						(found.isReadonly ? "<!--{refchip:readonly}-->" : "") +
-						(found.isStatic ? "<!--{refchip:static}-->" : "") +
-						(found.isProtected ? "<!--{refchip:protected}-->" : "") +
-						"\\\n    " +
-						this._rewriteLinks(found.abstract, extension, found);
-					return `- [${title}](${href(this.entry, found, extension)})${desc}`;
-				} else {
-					log.error("Reference not found", s, " (from " + this.entry.id + ")");
-					return `- [${id}${rest}](#)`;
-				}
-			})
+			.replace(
+				/^- \{@link\s+([^\s\(\)\}]+)([^}]*)\}[ +]*$/gm,
+				(s, id, rest) => {
+					// replace block ref links
+					let found = this.docsIndex.findEntry(id, ref.id);
+					if (found && found.abstract) {
+						let title = "<!--{ref:" + found.type + "}-->" + found.title;
+						let desc =
+							" " +
+							(found.isDeprecated ? "<!--{refchip:deprecated}-->" : "") +
+							(found.isAbstract ? "<!--{refchip:abstract}-->" : "") +
+							(found.isReadonly ? "<!--{refchip:readonly}-->" : "") +
+							(found.isStatic ? "<!--{refchip:static}-->" : "") +
+							(found.isProtected ? "<!--{refchip:protected}-->" : "") +
+							"\\\n    " +
+							this._rewriteLinks(found.abstract, extension, found);
+						return `- [${title}](${href(this.entry, found, extension)})${desc}`;
+					} else {
+						log.error(
+							"Reference not found",
+							s,
+							" (from " + this.entry.id + ")",
+						);
+						return `- [${id}${rest}](#)`;
+					}
+				},
+			)
 			.replace(/\{@link\s+([^\s\(\)\}]+)([^}]*)\}/g, (s, id, rest) => {
 				// replace inline links
 				let found = this.docsIndex.findEntry(id, ref.id);
@@ -326,7 +328,7 @@ export class CollatedMarkdownOutput {
 	private _getMenuItems() {
 		let result: MenuItem[] = [];
 		let re =
-			/(?:^##+\s+(.*)<!--\{#([\w-]+)\}-->$)|(?:\{@link\s+([^}+]+)\+\s*})/gm;
+			/(?:^##+\s+(.*)<!--\{#([\w-]+)\}-->$)|(?:\{@link\s+([^}]+)\s*} *\+)/gm;
 		let match: RegExpExecArray | undefined | null;
 		while ((match = re.exec(this._text))) {
 			if (match[1] && match[2]) {

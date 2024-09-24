@@ -10,4 +10,4 @@ template: blog
 
 ---
 
-- {@link blog.first +}
+- {@link blog.first} +

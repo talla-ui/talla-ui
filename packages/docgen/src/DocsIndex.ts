@@ -142,14 +142,25 @@ export class DocsIndex {
 	 * @param id The ID to look for
 	 * @param rel The ID for the entry where this text is referenced, for relative ID resolution
 	 */
-	findEntry(id: string, rel?: string) {
+	findEntry(id: string, rel?: string, noScope?: boolean): Entry | undefined {
 		if (this.entries.has(id)) return this.entries.get(id)!;
 
 		// search by going backwards from given related ID
 		while (rel) {
 			let rid = rel + "." + id;
 			if (this.entries.has(rid)) return this.entries.get(rid)!;
-			rel = rel.slice(0, rel.lastIndexOf("."));
+
+			// check for inherited members
+			let relEntry = this.entries.get(rel)!;
+			if (relEntry && relEntry.inherits?.[0]) {
+				let inherited = this.findEntry(id, relEntry.inherits[0], true);
+				if (inherited) return inherited;
+			}
+
+			// check enclosing scope
+			let enclosing = rel.replace(/\.\w+$|\[.*\]$/, "");
+			if (noScope || enclosing === rel) break;
+			rel = enclosing;
 		}
 	}
 

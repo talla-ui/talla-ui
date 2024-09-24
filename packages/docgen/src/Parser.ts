@@ -53,6 +53,11 @@ export class Parser {
 		let lines = this._lines;
 		for (let i = 0; i < lines.length; i++) {
 			let line = this._lines[i]!;
+			if (/^declare const \w+_base\: /.test(line.text)) {
+				// TypeScript curiosity: base class type as const
+				let match = line.text.match(/^declare const (\w+)_base/);
+				line.text = "/** Base type for `" + match![1] + "` */" + line.text;
+			}
 			if (line.text.startsWith("/**")) {
 				log.verbose("... considering " + this.fileName + ":" + (i + 1));
 
@@ -187,7 +192,12 @@ export class Parser {
 		result.inherits = inherits.length ? inherits : undefined;
 
 		// check if maybe missed a parent entry
-		if (!words.includes("export") && !parent && !tentative) {
+		if (
+			!words.includes("export") &&
+			!words.includes("declare") &&
+			!parent &&
+			!tentative
+		) {
 			log.error("Missing parent entry for " + id + " at: " + result.location);
 			return result;
 		}
@@ -245,6 +255,10 @@ export class Parser {
 				title = title + "()";
 				type = EntryType.MethodEntry;
 			}
+		} else if (id.endsWith("_base") && words.includes("declare")) {
+			// treat as class base type (hack)
+			title = id.slice(0, -5) + " (base)";
+			type = EntryType.TypeEntry;
 		}
 		result.title = title;
 		result.type = type;

@@ -7,7 +7,7 @@
 	"scripts": {
 		"postinstall": "cd app && npm install",
 		"clean": "rimraf _site && cd app && npm run clean",
-		"prebuild": "npm run clean && cd app && npm run build",
+		"prebuild": "npm run clean",
 		"build": "npm run build:app && npm run build:site",
 		"build:app": "cd app && npm run build",
 		"build:site": "docgen",

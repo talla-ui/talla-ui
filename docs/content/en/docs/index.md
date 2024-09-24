@@ -2,6 +2,6 @@
 
 ## Getting started <!--{#getting-started}-->
 
-- {@link introduction +}
+- {@link introduction} +
 
 TODO
