@@ -15,13 +15,9 @@ export class SearchActivity extends Activity {
 	hasInput = false;
 	loading?: Promise<void> = undefined;
 	results?: SearchResult[] = undefined;
-	searchThrottle = app.scheduler.createQueue(
-		"searchThrottle",
-		false,
-		(options) => {
-			options.throttleDelay = 30;
-		},
-	);
+	searchThrottle = app.scheduler.createQueue("searchThrottle", false, {
+		throttleDelay: 30,
+	});
 
 	clear() {
 		let input = this.findViewContent(UITextField)[0];

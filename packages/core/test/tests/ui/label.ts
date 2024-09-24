@@ -3,9 +3,7 @@ import { UICell, UILabel, UIRow, ui } from "../../../dist/index.js";
 
 describe("UILabel", (scope) => {
 	scope.beforeEach(() => {
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 	});
 
 	test("Constructor with text", () => {

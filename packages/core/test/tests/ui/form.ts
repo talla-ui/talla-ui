@@ -136,9 +136,7 @@ describe("UIFormContext", () => {
 	});
 
 	test("Custom form container, rendered", async (t) => {
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 		const FormContainer = ViewComposite.define(
 			{ formContext: undefined as UIFormContext | undefined },
 			(_, ...content) => ui.column(...content),

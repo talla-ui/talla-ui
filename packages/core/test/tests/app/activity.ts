@@ -199,9 +199,7 @@ describe("Activity", () => {
 
 	describe("Active task queue", () => {
 		class MyActivity extends Activity {
-			q = this.createActiveTaskQueue((options) => {
-				options.maxSyncTime = 10;
-			});
+			q = this.createActiveTaskQueue({ maxSyncTime: 10 });
 		}
 
 		test("Queue starts when activated", async (t) => {
@@ -273,9 +271,7 @@ describe("Activity", () => {
 
 	describe("Global context and parents", (scope) => {
 		scope.beforeEach(() => {
-			useTestContext((options) => {
-				options.navigationDelay = 1;
-			});
+			useTestContext({ navigationDelay: 1 });
 		});
 
 		test("Add activity", () => {
@@ -325,9 +321,7 @@ describe("Activity", () => {
 
 	describe("View rendering", (scope) => {
 		scope.beforeEach(() => {
-			useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			useTestContext({ renderFrequency: 5 });
 		});
 
 		test("Rendered page view", async (t) => {

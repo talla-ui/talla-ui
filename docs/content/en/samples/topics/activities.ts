@@ -99,9 +99,9 @@ import { Activity, ManagedObject, NavigationTarget, app, ui } from "talla-ui";
 	class MyActivity extends Activity {
 		// ...
 
-		refreshQueue = this.createActiveTaskQueue((options) => {
-			options.throttleDelay = 10_000;
-		}).add(() => this.refreshDataAsync());
+		refreshQueue = this.createActiveTaskQueue({ throttleDelay: 10_000 }).add(
+			() => this.refreshDataAsync(),
+		);
 
 		async refreshDataAsync() {
 			try {

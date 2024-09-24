@@ -3,9 +3,9 @@ import { Activity, UIButton, app, ui } from "../../../dist/index.js";
 
 describe("UIButton", (scope) => {
 	scope.beforeEach(() => {
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-			options.navigationDelay = 0;
+		useTestContext({
+			renderFrequency: 5,
+			navigationDelay: 0,
 		});
 	});
 

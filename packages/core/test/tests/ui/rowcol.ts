@@ -3,9 +3,7 @@ import { describe, test, expect, useTestContext } from "@talla-ui/test-handler";
 
 describe("UIRow and UIColumn", (scope) => {
 	scope.beforeEach(() => {
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 	});
 
 	test("Row constructor with content", () => {

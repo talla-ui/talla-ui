@@ -1,6 +1,7 @@
 import {
 	Binding,
 	BindingOrValue,
+	ConfigOptions,
 	ManagedEvent,
 	ManagedObject,
 	bind,
@@ -56,24 +57,29 @@ export class ViewComposite extends View {
 	static define<
 		TDefaults extends {},
 		TPreset extends {} = {
-			[p in keyof TDefaults]?: BindingOrValue<TDefaults[p]>;
-		} & {
-			[k in `on${Capitalize<string>}`]?: string;
+			[p in keyof TDefaults]?: TDefaults[p] extends ConfigOptions
+				? ConfigOptions.Arg<TDefaults[p]>
+				: BindingOrValue<TDefaults[p]>;
 		},
 	>(
 		defaults: TDefaults,
 		defineView?:
 			| ViewClass
 			| ((values: TDefaults, ...content: ViewClass[]) => ViewClass),
-	): {
-		new (preset?: TPreset): ViewComposite & TDefaults;
-		create(preset?: TPreset): ViewComposite & TDefaults;
-		whence: typeof ManagedObject.whence;
-	} {
+	): ViewComposite.DefinedViewComposite<TPreset, TDefaults> {
 		return class DefaultsViewComposite extends ViewComposite {
 			constructor(p?: TPreset) {
 				super();
-				this.applyViewPreset(p ? { ...defaults, ...p } : defaults);
+
+				// initialize ConfigOptions where needed, then apply preset
+				let preset = p ? { ...defaults, ...p } : defaults;
+				for (let k in p) {
+					let def = (defaults as any)[k];
+					if (def instanceof ConfigOptions) {
+						(preset as any)[k] = (def.constructor as any).init(p[k]);
+					}
+				}
+				this.applyViewPreset(preset);
 			}
 			protected override defineView(
 				...content: ViewClass[]
@@ -185,4 +191,20 @@ export class ViewComposite extends View {
 	}
 
 	private _rendered = false;
+}
+
+export namespace ViewComposite {
+	/** Type definition for the result of {@link ViewComposite.define()}, describes a generated view composite constructor */
+	export interface DefinedViewComposite<
+		TPreset extends {},
+		TDefaults extends {},
+	> {
+		new (
+			preset?: TPreset & {
+				[k in `on${Capitalize<string>}`]?: string;
+			},
+		): ViewComposite & TDefaults;
+		create(preset?: TPreset): ViewComposite & TDefaults;
+		whence: typeof ManagedObject.whence;
+	}
 }

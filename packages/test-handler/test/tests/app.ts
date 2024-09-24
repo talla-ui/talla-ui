@@ -39,9 +39,7 @@ describe("App test", (scope) => {
 
 	scope.beforeEach(() => {
 		// initialize test app before every test
-		useTestContext((options) => {
-			options.navigationPageId = "count";
-		});
+		useTestContext({ navigationPageId: "count" });
 		activity = new CountActivity();
 		app.addActivity(activity);
 	});

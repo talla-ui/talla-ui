@@ -3,9 +3,7 @@ import { describe, test, expect, useTestContext } from "@talla-ui/test-handler";
 
 describe("UIScrollContainer", (scope) => {
 	scope.beforeEach(() => {
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 	});
 
 	test("Constructor", () => {

@@ -49,9 +49,7 @@ describe("UIConditionalView", () => {
 		const MyView = ui.use(MyViewComposite, { condition: false });
 
 		t.log("Creating view");
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 		let myView = new MyView();
 
 		t.log("Rendering view");

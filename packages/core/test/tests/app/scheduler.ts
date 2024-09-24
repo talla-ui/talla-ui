@@ -55,9 +55,7 @@ describe("Scheduler", () => {
 		});
 
 		test("Single task with error, caught", (t) => {
-			let q = app.scheduler.createQueue(Symbol(), false, (options) => {
-				options.catchErrors = true;
-			});
+			let q = app.scheduler.createQueue(Symbol(), false, { catchErrors: true });
 			q.add(() => {
 				throw Error("foo");
 			});
@@ -180,9 +178,7 @@ describe("Scheduler", () => {
 		});
 
 		test("Max sync run time", () => {
-			let q = app.scheduler.createQueue(Symbol(), false, (options) => {
-				options.maxSyncTime = 2;
-			});
+			let q = app.scheduler.createQueue(Symbol(), false, { maxSyncTime: 2 });
 			const runFor5ms = () => {
 				let start = Date.now();
 				// do something silly for > 5ms
@@ -229,9 +225,7 @@ describe("Scheduler", () => {
 		});
 
 		test("Single async task with error, not caught", async (t) => {
-			let q = app.scheduler.createQueue(Symbol(), false, (options) => {
-				options.catchErrors = true;
-			});
+			let q = app.scheduler.createQueue(Symbol(), false, { catchErrors: true });
 			q.add(async () => {
 				await t.sleep(1);
 				throw Error("foo");
@@ -309,9 +303,9 @@ describe("Scheduler", () => {
 		});
 
 		test("Task timeout, single task", async () => {
-			let q = app.scheduler.createQueue(Symbol(), false, (options) => {
-				options.taskTimeout = 10;
-				options.catchErrors = true;
+			let q = app.scheduler.createQueue(Symbol(), false, {
+				taskTimeout: 10,
+				catchErrors: true,
 			});
 			q.add(async () => {
 				await new Promise((resolve) => {
@@ -324,9 +318,7 @@ describe("Scheduler", () => {
 		});
 
 		test("Parallel tasks", async (t) => {
-			let q = app.scheduler.createQueue(Symbol(), false, (options) => {
-				options.parallel = 5;
-			});
+			let q = app.scheduler.createQueue(Symbol(), false, { parallel: 5 });
 			let resolve!: () => void;
 			let p = new Promise<void>((r) => {
 				resolve = r;
@@ -350,9 +342,7 @@ describe("Scheduler", () => {
 		});
 
 		test("Wait for 1 task remaining", async (t) => {
-			let q = app.scheduler.createQueue(Symbol(), false, (options) => {
-				options.parallel = 2;
-			});
+			let q = app.scheduler.createQueue(Symbol(), false, { parallel: 2 });
 			q.add(async () => {
 				t.count("task");
 				await t.sleep(10);

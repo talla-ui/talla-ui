@@ -12,9 +12,7 @@ import {
 
 describe("UIListView", (scope) => {
 	scope.beforeEach(() => {
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 	});
 
 	// helper function to get the text content of a list

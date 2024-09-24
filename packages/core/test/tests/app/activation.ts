@@ -46,9 +46,7 @@ describe("NavigationContext and ActivityContext", () => {
 
 	describe("ActivityContext and activities", (scope) => {
 		scope.beforeEach(() => {
-			useTestContext((options) => {
-				options.navigationDelay = 0;
-			});
+			useTestContext({ navigationDelay: 0 });
 		});
 
 		function goTo(pageId: string, detail?: string) {

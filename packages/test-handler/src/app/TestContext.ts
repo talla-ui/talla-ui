@@ -50,9 +50,9 @@ export class TestContextOptions extends ConfigOptions {
  * @example
  * describe("My scope", (scope) => {
  *   scope.beforeEach(() => {
- *     useTestContext((options) => {
- *       options.path = "foo"
- *       options.renderFrequency = 5;
+ *     useTestContext({
+ *       path: "foo",
+ *       renderFrequency: 5,
  *     });
  *   });
  *

@@ -9,9 +9,7 @@ import { describe, expect, test, useTestContext } from "@talla-ui/test-handler";
 
 describe("UIToggle", (scope) => {
 	scope.beforeEach(() => {
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 	});
 
 	test("Constructor with label", () => {

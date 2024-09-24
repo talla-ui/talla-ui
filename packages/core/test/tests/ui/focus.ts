@@ -9,9 +9,7 @@ import {
 
 describe("Focus management", (scope) => {
 	scope.beforeEach(() => {
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 	});
 
 	test("Single element, initial focus", async (t) => {

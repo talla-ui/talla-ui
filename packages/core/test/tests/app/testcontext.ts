@@ -66,25 +66,19 @@ describe("TestContext", () => {
 		});
 
 		test("Initial path: set in options", () => {
-			let app = useTestContext((options) => {
-				options.navigationPageId = "foo";
-			});
+			let app = useTestContext({ navigationPageId: "foo" });
 			expect(app.navigation.pageId).toBe("foo");
 		});
 
 		test("Navigation history: set once", async () => {
-			let app = useTestContext((options) => {
-				options.navigationPageId = "foo";
-			});
+			let app = useTestContext({ navigationPageId: "foo" });
 			let nav = app.navigation;
 			await nav.navigateAsync(new NavigationTarget("foo/bar"));
 			expect(nav.getHistory()).toBeArray(["foo", "foo/bar"]);
 		});
 
 		test("Navigation history: set, replace", async () => {
-			let app = useTestContext((options) => {
-				options.navigationPageId = "foo";
-			});
+			let app = useTestContext({ navigationPageId: "foo" });
 			let nav = app.navigation;
 			await nav.navigateAsync(new NavigationTarget("foo/bar"));
 			await nav.navigateAsync(new NavigationTarget("foo/bar/baz"), {
@@ -94,9 +88,7 @@ describe("TestContext", () => {
 		});
 
 		test("Navigation history: back", async () => {
-			let app = useTestContext((options) => {
-				options.navigationPageId = "foo";
-			});
+			let app = useTestContext({ navigationPageId: "foo" });
 			let nav = app.navigation;
 			await nav.navigateAsync(new NavigationTarget("foo"));
 			await nav.navigateAsync(undefined, { back: true });
@@ -104,9 +96,7 @@ describe("TestContext", () => {
 		});
 
 		test("Navigation history: back twice", async (t) => {
-			let app = useTestContext((options) => {
-				options.navigationPageId = "foo";
-			});
+			let app = useTestContext({ navigationPageId: "foo" });
 			app.navigate("foo/bar");
 			await t.expectNavAsync({ pageId: "foo", detail: "bar" });
 			app.navigate("/baz");
@@ -117,10 +107,7 @@ describe("TestContext", () => {
 		});
 
 		test("Navigation history: back using goBack() sync", async (t) => {
-			let app = useTestContext((options) => {
-				options.navigationPageId = "foo";
-				options.navigationDelay = 0;
-			});
+			let app = useTestContext({ navigationPageId: "foo", navigationDelay: 0 });
 			let nav = app.navigation;
 			await nav.navigateAsync(new NavigationTarget("foo"));
 			app.goBack();
@@ -129,9 +116,7 @@ describe("TestContext", () => {
 		});
 
 		test("Navigation history: back, set", async () => {
-			let app = useTestContext((options) => {
-				options.navigationPageId = "foo";
-			});
+			let app = useTestContext({ navigationPageId: "foo" });
 			let nav = app.navigation;
 			await nav.navigateAsync(new NavigationTarget("bar"));
 			await nav.navigateAsync(new NavigationTarget("baz"), { back: true });
@@ -139,9 +124,7 @@ describe("TestContext", () => {
 		});
 
 		test("Navigation history: back, error if app would exit", async () => {
-			let app = useTestContext((options) => {
-				options.navigationPageId = "foo";
-			});
+			let app = useTestContext({ navigationPageId: "foo" });
 			let nav = app.navigation;
 			await expect(async () =>
 				nav.navigateAsync(undefined, { back: true }),
@@ -157,9 +140,7 @@ describe("TestContext", () => {
 
 		test("Cell view from single instance", async (t) => {
 			let view = new UICell();
-			let app = useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			let app = useTestContext({ renderFrequency: 5 });
 			t.render(view);
 			await app.renderer.expectOutputAsync({ source: view });
 		});
@@ -167,9 +148,7 @@ describe("TestContext", () => {
 		test("Cell view from single composite", async (t) => {
 			const MyView = ViewComposite.define({}, UICell);
 			let view = new MyView();
-			let app = useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			let app = useTestContext({ renderFrequency: 5 });
 			t.render(view);
 			await app.renderer.expectOutputAsync({ source: view.body! });
 		});
@@ -182,9 +161,7 @@ describe("TestContext", () => {
 				}
 			}
 			let view = new MyView();
-			let app = useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			let app = useTestContext({ renderFrequency: 5 });
 			t.render(view);
 			let out = await app.renderer.expectOutputAsync({
 				source: view.body!,
@@ -201,9 +178,7 @@ describe("TestContext", () => {
 		test("Remove view after rendering", async (t) => {
 			const MyView = ViewComposite.define({}, UICell);
 			let view = new MyView();
-			let app = useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			let app = useTestContext({ renderFrequency: 5 });
 			let rendered = t.render(view);
 			await app.renderer.expectOutputAsync({ source: view.body! });
 			await rendered.removeAsync();
@@ -212,9 +187,7 @@ describe("TestContext", () => {
 
 		test("View is not rendered twice", async (t) => {
 			const view = new UICell(new UILabel("Test"));
-			let app = useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			let app = useTestContext({ renderFrequency: 5 });
 			t.render(view);
 			let out1 = await app.renderer.expectOutputAsync({ type: "label" });
 			view.findViewContent(UILabel)[0]!.text = "Foo";
@@ -230,9 +203,7 @@ describe("TestContext", () => {
 				}
 			}
 			let activity = new MyActivity();
-			let app = useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			let app = useTestContext({ renderFrequency: 5 });
 			app.addActivity(activity, true);
 			await app.renderer.expectOutputAsync({ source: activity.view! });
 		});
@@ -244,9 +215,7 @@ describe("TestContext", () => {
 				}
 			}
 			let activity = new MyActivity();
-			let app = useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			let app = useTestContext({ renderFrequency: 5 });
 			app.addActivity(activity, true);
 			await t.pollAsync(() => !!activity.view, 5, 100);
 			expect(activity).toHaveProperty("view").toBeInstanceOf(UICell);
@@ -264,9 +233,7 @@ describe("TestContext", () => {
 			}
 			let activity = new MyActivity();
 			activity.renderOptions = { dialog: true };
-			let app = useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			let app = useTestContext({ renderFrequency: 5 });
 			app.addActivity(activity, true);
 			await app.renderer.expectOutputAsync({ text: "foo" });
 			await activity.deactivateAsync();
@@ -282,9 +249,7 @@ describe("TestContext", () => {
 		});
 
 		test("Show confirmation dialog", async (t) => {
-			let app = useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			let app = useTestContext({ renderFrequency: 5 });
 			let p = app.showConfirmDialogAsync("This is a test", "Foo", "Bar");
 			await t.clickOutputAsync({ type: "button", text: "Bar" });
 			let result = await p;
@@ -292,9 +257,7 @@ describe("TestContext", () => {
 		});
 
 		test("Show confirmation dialog using config class", async (t) => {
-			let app = useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			let app = useTestContext({ renderFrequency: 5 });
 			let myDialog = new MessageDialogOptions(
 				["This is a test", "Another line goes here"],
 				"Go ahead",
@@ -337,9 +300,7 @@ describe("TestContext", () => {
 		});
 
 		test("Show confirm dialog, formatted", async (t) => {
-			let app = useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			let app = useTestContext({ renderFrequency: 5 });
 			let myDialog = new MessageDialogOptions(
 				strf("This is a test, foo = %[foo]"),
 				strf("OK"),
@@ -354,9 +315,7 @@ describe("TestContext", () => {
 		});
 
 		test("Show modal menu", async (t) => {
-			let app = useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			let app = useTestContext({ renderFrequency: 5 });
 			let button = new UIButton("Test");
 			t.render(button);
 			await t.expectOutputAsync({ type: "button" });
@@ -373,9 +332,7 @@ describe("TestContext", () => {
 		});
 
 		test("Show modal menu, using configuration function", async (t) => {
-			let app = useTestContext((options) => {
-				options.renderFrequency = 5;
-			});
+			let app = useTestContext({ renderFrequency: 5 });
 			let p = app.showModalMenuAsync((options) => {
 				options.items.push({ key: "one", text: "One", hint: "1" });
 				options.items.push({ separate: true });

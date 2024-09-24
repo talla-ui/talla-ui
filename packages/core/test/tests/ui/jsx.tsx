@@ -2,6 +2,7 @@ import { describe, expect, test, useTestContext } from "@talla-ui/test-handler";
 import {
 	$view,
 	BindingOrValue,
+	ConfigOptions,
 	LazyString,
 	StringConvertible,
 	UIButton,
@@ -189,30 +190,41 @@ describe("JSX", () => {
 		expect(labels[1]).toHaveProperty("text").asString().toBe("bar");
 	});
 
-	test("Component with defaults", async (t) => {
+	test("Composite with defaults", async (t) => {
 		const MyView = ViewComposite.define(
 			{ foo: 123 },
 			<label>{strf("Foo is %[foo]")}</label>,
 		);
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 		t.render(new (ui.use(MyView))());
 		await t.expectOutputAsync({ text: "Foo is 123" });
 	});
 
-	test("Component with content", async (t) => {
+	test("Composite with ConfigOptions", async (t) => {
+		class MyConfig extends ConfigOptions {
+			static default = new MyConfig();
+			foo = 123;
+			bar = "bar";
+		}
+		const MyView = ViewComposite.define(
+			{ config: MyConfig.default },
+			<label>{strf("%[config.foo]:%[config.bar]")}</label>,
+		);
+		useTestContext({ renderFrequency: 5 });
+		t.render(new (ui.use(MyView, { config: { foo: 321 } }))());
+		await t.expectOutputAsync({ text: "321:bar" });
+	});
+
+	test("Composite with content", async (t) => {
 		const MyView = ViewComposite.define({}, (_values, ...content) => (
 			<row>{...content}</row>
 		));
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 		t.render(new (ui.use(MyView, ui.label("Foo")))());
 		await t.expectOutputAsync({ text: "Foo" });
 	});
 
-	test("Component with bound content", async (t) => {
+	test("Composite with bound content", async (t) => {
 		class MyView extends ViewComposite {
 			constructor(p?: { foo?: BindingOrValue<number> }) {
 				super();
@@ -223,27 +235,23 @@ describe("JSX", () => {
 				return <label>{$view.bind("foo")}</label>;
 			}
 		}
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 		let instance = new (ui.use(MyView, { foo: 123 }))();
 		t.render(instance);
 		await t.expectOutputAsync({ text: "123" });
 	});
 
-	test("Component with bound content using lazy string", async (t) => {
+	test("Composite with bound content using lazy string", async (t) => {
 		const MyView = ViewComposite.define(
 			{ foo: StringConvertible.EMPTY },
 			<label>{strf("Foo is %[foo]")}</label>,
 		);
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 		t.render(new (ui.use(MyView, { foo: strf("123") }))());
 		await t.expectOutputAsync({ text: "Foo is 123" });
 	});
 
-	test("Component with event handler", async (t) => {
+	test("Composite with event handler", async (t) => {
 		class MyView extends ViewComposite {
 			override defineView() {
 				return (
@@ -256,15 +264,13 @@ describe("JSX", () => {
 				t.count("FooClicked");
 			}
 		}
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 		t.render(new MyView());
 		await t.clickOutputAsync({ type: "button" });
 		t.expectCount("FooClicked").toBe(1);
 	});
 
-	test("Component with bound content and text", async (t) => {
+	test("Composite with bound content and text", async (t) => {
 		const MyView = ViewComposite.define(
 			{ foo: 0, bar: undefined as any },
 			<row>
@@ -274,9 +280,7 @@ describe("JSX", () => {
 				<label>nope_bound='{$view.bind("nope", "Nothing")}'</label>
 			</row>,
 		);
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 		let V = ui.use(MyView, { foo: 123, bar: { foo: 456, baz: "abc" } });
 		t.render(new V());
 		let expectRow = await t.expectOutputAsync({ type: "row" });
@@ -290,7 +294,7 @@ describe("JSX", () => {
 		expectRow.containing({ text: "nope_bound='Nothing'" }).toBeRendered();
 	});
 
-	test("Component with bound content and text, translated", async (t) => {
+	test("Composite with bound content and text, translated", async (t) => {
 		const Comp = ViewComposite.define(
 			{ emails: { count: 0 } },
 			<label>
@@ -300,9 +304,7 @@ describe("JSX", () => {
 		const Preset1 = ui.use(Comp, { emails: { count: 1 } });
 		const Preset2 = ui.use(Comp, { emails: { count: 2 } });
 
-		useTestContext((options) => {
-			options.renderFrequency = 5;
-		});
+		useTestContext({ renderFrequency: 5 });
 		t.render(new Preset1());
 		await t.sleep(20);
 		await t.expectOutputAsync({ text: "You have 1 email" });
