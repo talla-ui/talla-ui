@@ -362,7 +362,7 @@ export class Activity extends ManagedObject {
 	/**
 	 * Handles a `Navigate` event emitted by the current view
 	 * - This method is called when a view object emits the `Navigate` event. Such events are emitted from views that include a `getNavigationTarget` method, such as {@link UIButton}.
-	 * - If the navigation target only includes a `detail` property, the `pageId` is set to the current activity's {@link navigationPageId}.
+	 * - If the navigation target only includes a `detail` property, the `pageId` is set to the current activity's {@link navigationPageId}. If the activity doesn't have a page ID, this method returns false and the event is propagated instead.
 	 * - This method calls {@link navigateAsync()} in turn, which may be overridden.
 	 */
 	protected onNavigate(
@@ -372,6 +372,8 @@ export class Activity extends ManagedObject {
 	) {
 		if (typeof e.source.getNavigationTarget === "function") {
 			let target = e.source.getNavigationTarget();
+			let pageId = target.pageId ?? this.navigationPageId;
+			if (pageId == null) return false;
 			return this.navigateAsync(
 				new NavigationTarget({
 					...target,
@@ -379,6 +381,7 @@ export class Activity extends ManagedObject {
 				}),
 			);
 		}
+		return false;
 	}
 
 	/**
