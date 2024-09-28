@@ -270,6 +270,7 @@ export class Parser {
 		}
 		result.signature = signature
 			.replace(/^(export |declare )+/, "")
+			.replace(/import\("[^"]+"\)\./g, "")
 			.replace(/\n\s*\/\*\*([^\*]|\*[^\/])+\*\/\s*\n/g, "\n");
 
 		// return the result
@@ -376,6 +377,9 @@ export class Parser {
 				case "internal":
 					entry.isPrivate = true;
 					if (!abstract) entry.abstract = content;
+					break;
+				case "class":
+					entry.type = EntryType.ClassEntry;
 					break;
 				case "param":
 					if (content.match(/^\w+\s*$/)) {
