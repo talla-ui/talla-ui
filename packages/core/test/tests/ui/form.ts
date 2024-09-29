@@ -33,6 +33,11 @@ describe("UIFormContext", () => {
 		expect(ctx.valid).toBe(true);
 	});
 
+	test("Constructor with values", () => {
+		let ctx = new UIFormContext(undefined, { foo: "bar" });
+		expect(ctx.values).toHaveProperties({ foo: "bar" });
+	});
+
 	test("Set, no validation", () => {
 		let ctx = new UIFormContext();
 		let counter = new ChangeCounter(ctx);
@@ -44,8 +49,7 @@ describe("UIFormContext", () => {
 	});
 
 	test("Clear values", () => {
-		let ctx = new UIFormContext();
-		ctx.set("foo", "bar");
+		let ctx = new UIFormContext(undefined, { foo: "bar" });
 		expect(ctx.values).toHaveProperty("foo");
 		ctx.clear();
 		expect(ctx.values).toBeDefined();
@@ -102,9 +106,10 @@ describe("UIFormContext", () => {
 
 	test("Composite, binding to value and error", () => {
 		let ERR = "Foo must have at least 3 characters";
-		let ctx = new UIFormContext({
-			foo: { string: { min: { length: 3, err: strf(ERR) } } },
-		}).set("foo", "bar");
+		let ctx = new UIFormContext(
+			{ foo: { string: { min: { length: 3, err: strf(ERR) } } } },
+			{ foo: "bar" },
+		);
 
 		const MyComp = ViewComposite.define(
 			{ formContext: undefined as UIFormContext | undefined },

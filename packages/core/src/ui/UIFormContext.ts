@@ -58,10 +58,14 @@ export const $formContext: Binding.Source<
 export class UIFormContext<
 	TSchema extends ObjectReader.Schema = Record<string, ObjectReader.SchemaRule>,
 > extends ManagedObject {
-	/** Creates a new instance with the provided validation schema */
-	constructor(schema?: TSchema) {
+	/** Creates a new instance with the provided validation schema and/or values */
+	constructor(
+		schema?: TSchema,
+		values?: Partial<Record<keyof TSchema, unknown>>,
+	) {
 		super();
 		this.schema = schema || ({} as any);
+		if (values) Object.assign(this._values, values);
 	}
 
 	/**
