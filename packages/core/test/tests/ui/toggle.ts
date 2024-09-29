@@ -1,6 +1,6 @@
 import {
 	UIToggle,
-	UIFormContext,
+	FormContext,
 	strf,
 	ui,
 	ManagedObject,
@@ -51,7 +51,7 @@ describe("UIToggle", (scope) => {
 	test("User input with form context", async (t) => {
 		class Host extends ManagedObject {
 			// note that formContext must exist before it can be bound
-			readonly formContext = new UIFormContext().set("foo", true);
+			readonly formContext = new FormContext().set("foo", true);
 			readonly toggle = this.attach(new UIToggle());
 		}
 		let host = new Host();

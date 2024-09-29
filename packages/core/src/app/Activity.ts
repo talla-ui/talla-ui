@@ -7,9 +7,10 @@ import {
 	bind,
 } from "../base/index.js";
 import { ERROR, err, errorHandler, safeCall } from "../errors.js";
-import type { UIFormContext, UITheme } from "../ui/index.js";
+import type { UITheme } from "../ui/index.js";
 import { $_app_bind_label } from "./app_binding.js";
 import type { AppContext } from "./AppContext.js";
+import { FormContext } from "./FormContext.js";
 import type { NavigationContext } from "./NavigationContext.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { RenderContext } from "./RenderContext.js";
@@ -149,9 +150,9 @@ export class Activity extends ManagedObject {
 
 	/**
 	 * Default form context used with input elements, if any
-	 * - This property defaults to undefined, and needs to be initialized (e.g. in the constructor) to an instance of {@link UIFormContext} for input elements to be bound automatically.
+	 * - This property defaults to undefined, and needs to be initialized (e.g. in the constructor) to an instance of {@link FormContext} for input elements to be bound automatically.
 	 */
-	formContext?: UIFormContext = undefined;
+	formContext?: FormContext = undefined;
 
 	/**
 	 * Delegates incoming events to methods of this object, notably from the attached view

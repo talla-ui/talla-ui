@@ -8,8 +8,8 @@ function isObject(value: unknown): value is Record<string, unknown> {
 /** Max recursion level to stop runaway validations */
 const MAX_RECURSE = 100;
 
-/** Default error StrinConvertible that gets used if none else available */
-const DEFAULT_ERROR = "ObjectReader error";
+/** Default error that gets used if none else available */
+const DEFAULT_ERROR = "Invalid value";
 
 /**
  * A class that can be used for validating and parsing object structures
@@ -274,7 +274,7 @@ function _validate(
 			typeof value !== "string" ||
 			(stringRule.match && !stringRule.match.test(value))
 		) {
-			return _makeError(stringRule);
+			return _makeError(stringRule, stringRule.min);
 		}
 		if (stringRule.required && !value)
 			return _makeError(stringRule.required, stringRule);
@@ -301,7 +301,8 @@ function _validate(
 	if (dateRule) {
 		if (typeof value === "string" || typeof value === "number")
 			value = new Date(value);
-		if (!(value instanceof Date) || isNaN(+value)) return _makeError(dateRule);
+		if (!(value instanceof Date) || isNaN(+value))
+			return _makeError(dateRule, dateRule.min);
 		if (dateRule.min != null && value < dateRule.min.date)
 			return _makeError(dateRule.min, dateRule);
 		if (dateRule.max != null && value > dateRule.max.date)

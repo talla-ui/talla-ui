@@ -1,7 +1,6 @@
-import type { View } from "../../app/index.js";
+import { type View, FormContext } from "../../app/index.js";
 import { StringConvertible } from "../../base/index.js";
 import { UIComponent } from "../UIComponent.js";
-import { UIFormContext } from "../UIFormContext.js";
 import type { UIStyle } from "../UIStyle.js";
 
 /**
@@ -19,7 +18,7 @@ export class UIToggle extends UIComponent {
 		this.state = !!state;
 
 		// get and set form context value using `formContext` binding
-		UIFormContext.listen(
+		FormContext.listen(
 			this,
 			function (value) {
 				this.state = !!value;
@@ -68,7 +67,7 @@ export class UIToggle extends UIComponent {
 	/** The toggle visual presentation type, defaults to checkbox */
 	type: "none" | "checkbox" | "switch" = "checkbox";
 
-	/** Form context field name, used with {@link UIFormContext} */
+	/** Form context field name, used with {@link FormContext} */
 	formField?: string = undefined;
 
 	/** True if user input should be disabled on this control */

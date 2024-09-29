@@ -9,7 +9,6 @@ import "./spacer.js";
 import "./button.js";
 import "./textfield.js";
 import "./toggle.js";
-import "./form.js";
 import "./list.js";
 import "./conditional.js";
 import "./focus.js";

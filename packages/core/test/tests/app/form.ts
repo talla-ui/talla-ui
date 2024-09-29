@@ -4,7 +4,7 @@ import {
 	$view,
 	Activity,
 	ManagedEvent,
-	UIFormContext,
+	FormContext,
 	UILabel,
 	UIRow,
 	UITextField,
@@ -14,32 +14,32 @@ import {
 	ui,
 } from "../../../dist/index.js";
 
-describe("UIFormContext", () => {
+describe("FormContext", () => {
 	// helper class to observe a form context and count events
 	class ChangeCounter {
-		constructor(formContext: UIFormContext) {
+		constructor(formContext: FormContext) {
 			formContext.listen(this);
 		}
-		handler(formContext: UIFormContext, event: ManagedEvent) {
+		handler(formContext: FormContext, event: ManagedEvent) {
 			if (event.name === "FormChange") this.changes++;
 		}
 		changes = 0;
 	}
 
 	test("Constructor", () => {
-		let ctx = new UIFormContext();
+		let ctx = new FormContext();
 		expect(ctx.values).toBeDefined();
 		expect(ctx.errors).toBeDefined();
 		expect(ctx.valid).toBe(true);
 	});
 
 	test("Constructor with values", () => {
-		let ctx = new UIFormContext(undefined, { foo: "bar" });
+		let ctx = new FormContext(undefined, { foo: "bar" });
 		expect(ctx.values).toHaveProperties({ foo: "bar" });
 	});
 
 	test("Set, no validation", () => {
-		let ctx = new UIFormContext();
+		let ctx = new FormContext();
 		let counter = new ChangeCounter(ctx);
 		ctx.set("foo", "bar");
 		expect(ctx.values).toHaveProperty("foo").toBe("bar");
@@ -49,7 +49,7 @@ describe("UIFormContext", () => {
 	});
 
 	test("Clear values", () => {
-		let ctx = new UIFormContext(undefined, { foo: "bar" });
+		let ctx = new FormContext(undefined, { foo: "bar" });
 		expect(ctx.values).toHaveProperty("foo");
 		ctx.clear();
 		expect(ctx.values).toBeDefined();
@@ -59,7 +59,7 @@ describe("UIFormContext", () => {
 	});
 
 	test("Validation", (t) => {
-		let ctx = new UIFormContext({
+		let ctx = new FormContext({
 			foo: {
 				string: {
 					required: { err: "Foo is required" },
@@ -106,13 +106,13 @@ describe("UIFormContext", () => {
 
 	test("Composite, binding to value and error", () => {
 		let ERR = "Foo must have at least 3 characters";
-		let ctx = new UIFormContext(
+		let ctx = new FormContext(
 			{ foo: { string: { min: { length: 3, err: strf(ERR) } } } },
 			{ foo: "bar" },
 		);
 
 		const MyComp = ViewComposite.define(
-			{ formContext: undefined as UIFormContext | undefined },
+			{ formContext: undefined as FormContext | undefined },
 			ui.row(
 				ui.label($view.bind("formContext.errors.foo.message")),
 				ui.textField({ formField: "foo" }),
@@ -143,7 +143,7 @@ describe("UIFormContext", () => {
 	test("Custom form container, rendered", async (t) => {
 		useTestContext({ renderFrequency: 5 });
 		const FormContainer = ViewComposite.define(
-			{ formContext: undefined as UIFormContext | undefined },
+			{ formContext: undefined as FormContext | undefined },
 			(_, ...content) => ui.column(...content),
 		);
 		const view = ui.row(
@@ -162,8 +162,8 @@ describe("UIFormContext", () => {
 			protected override createView() {
 				return view.create();
 			}
-			form1 = new UIFormContext().set("text", "foo");
-			form2 = new UIFormContext().set("text", "bar");
+			form1 = new FormContext().set("text", "foo");
+			form2 = new FormContext().set("text", "bar");
 		}
 		let activity = new MyActivity();
 		app.addActivity(activity, true);

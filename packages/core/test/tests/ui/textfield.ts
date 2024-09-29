@@ -1,6 +1,6 @@
 import {
 	UITextField,
-	UIFormContext,
+	FormContext,
 	strf,
 	ui,
 	ManagedObject,
@@ -64,7 +64,7 @@ describe("UITextField", (scope) => {
 	test("User input with form context", async (t) => {
 		class Host extends ManagedObject {
 			// note that formContext must exist before it can be bound
-			readonly formContext = new UIFormContext().set("foo", "bar");
+			readonly formContext = new FormContext().set("foo", "bar");
 			readonly tf = this.attach(new UITextField());
 		}
 		let host = new Host();

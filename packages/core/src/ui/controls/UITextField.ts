@@ -1,7 +1,6 @@
-import type { View } from "../../app/index.js";
+import { type View, FormContext } from "../../app/index.js";
 import { StringConvertible } from "../../base/index.js";
 import { UIComponent } from "../UIComponent.js";
-import { UIFormContext } from "../UIFormContext.js";
 import type { UIStyle } from "../UIStyle.js";
 
 /**
@@ -19,7 +18,7 @@ export class UITextField extends UIComponent {
 		this.value = value || "";
 
 		// get and set form context value using `formContext` binding
-		UIFormContext.listen(
+		FormContext.listen(
 			this,
 			function (value) {
 				this.value = value === undefined ? "" : String(value);
@@ -88,7 +87,7 @@ export class UITextField extends UIComponent {
 	 */
 	multiline?: boolean;
 
-	/** Form context field name, used with {@link UIFormContext} */
+	/** Form context field name, used with {@link FormContext} */
 	formField?: string = undefined;
 
 	/**
