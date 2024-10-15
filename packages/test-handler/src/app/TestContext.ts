@@ -1,6 +1,6 @@
 import {
 	ActivityContext,
-	AppSettings,
+	LocalData,
 	ConfigOptions,
 	AppContext,
 	app,
@@ -37,8 +37,8 @@ export class TestContextOptions extends ConfigOptions {
 	/** True if all logs (using `app.log`) should be captured and added to currently running test(s) */
 	captureLogs = false;
 
-	/** App settings, i.e. data made available through `app.settings`; must be serializable as JSON */
-	appSettings: Record<string, unknown> = {};
+	/** Mock persisted data, i.e. data made available through `app.localData`; must be serializable as JSON */
+	localData: Record<string, Record<string, unknown>> = {};
 }
 
 /**
@@ -84,9 +84,10 @@ export function useTestContext(config?: ConfigOptions.Arg<TestContextOptions>) {
 	app.navigation.unlink();
 	app.navigation = new TestNavigationContext(options);
 
-	// reset app settings
-	app.settings = new AppSettings();
-	app.settings.write(options.appSettings);
+	// reset local data
+	app.localData = new LocalData();
+	let data = options.localData;
+	if (data) for (let k in data) app.localData.write(k, data[k]);
 
 	return app as TestContext;
 }

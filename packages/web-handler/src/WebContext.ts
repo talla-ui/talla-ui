@@ -14,7 +14,7 @@ import { Dialog, DialogStyles } from "./style/Dialog.js";
 import { MessageDialog, MessageDialogStyles } from "./style/MessageDialog.js";
 import { ModalMenu, ModalMenuStyles } from "./style/ModalMenu.js";
 import { WebTheme } from "./style/WebTheme.js";
-import { WebAppSettings } from "./WebAppSettings.js";
+import { WebLocalData } from "./WebLocalData.js";
 
 /**
  * Type definition for the global {@link app} context with web-specific render and activity contexts, set by the {@link useWebContext} function
@@ -44,18 +44,17 @@ export class WebContextOptions extends ConfigOptions {
 	insertHistory: boolean | "root" | "page" = false;
 
 	/**
-	 * Default global settings fields
-	 * - Each of the keys of this object gets persisted to `localStorage`, if either no data is persisted at all, or if the specific field is missing (or undefined) on the persisted object.
-	 * - Data must be serializable to JSON, and readable by {@link ObjectReader}.
+	 * Initial data saved to `app.localData`
+	 * - Each of the properties of this object gets persisted to `localStorage`, **only** if no data has been written for the corresponding key yet (or it has been cleared).
+	 * - Data must be serializable as JSON, and readable by {@link ObjectReader}.
 	 */
-	defaultAppSettings: Record<string, unknown> = {};
+	defaultLocalData: Record<string, Record<string, unknown>> = {};
 
 	/**
-	 * Key name to be used when storing and retrieving global settings data from `localStorage`
-	 * - Settings data is stored as JSON, but its particular format is not guaranteed. Don't attempt to modify the local storage key outside of `app.settings`.
-	 * - This property defaults to `AppSettings`, and may be modified if multiple applications run on the same page that may be using conflicting app settings fields.
+	 * Key prefix to be used when storing and retrieving `app.localData` objects from `localStorage`
+	 * - This property defaults to `LocalData_`, and may be modified if multiple applications run on the same page that may be using conflicting data keys.
 	 */
-	appSettingsKey = "AppSettings";
+	localDataPrefix = "LocalData_";
 
 	/** A {@link WebTheme} instance that will be set as the active theme */
 	theme = new WebTheme();
@@ -144,8 +143,8 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 	// clear the current app properties first
 	app.clear();
 
-	// initialize app settings
-	app.settings = new WebAppSettings(options);
+	// initialize local data
+	app.localData = new WebLocalData(options);
 
 	// apply theme
 	WebTheme.initializeCSS(options);

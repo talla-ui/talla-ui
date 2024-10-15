@@ -8,7 +8,7 @@ import {
 } from "@talla-ui/test-handler";
 import {
 	Activity,
-	AppSettings,
+	LocalData,
 	MessageDialogOptions,
 	NavigationTarget,
 	UIButton,
@@ -30,28 +30,28 @@ describe("TestContext", () => {
 		expect(app.navigation).toBeInstanceOf(TestNavigationContext);
 	});
 
-	describe("App settings", () => {
-		test("Empty app settings", () => {
+	describe("Local data", () => {
+		test("Empty data", () => {
 			let app = useTestContext();
-			expect(app.settings).toBeInstanceOf(AppSettings);
-			expect(app.settings.read({ foo: { optional: true } }))
+			expect(app.localData).toBeInstanceOf(LocalData);
+			expect(app.localData.read("test", { foo: { optional: true } }))
 				.toHaveProperty("0")
 				.toHaveProperty("foo")
 				.toBeUndefined();
 		});
 
-		test("Specified app settings", () => {
-			let app = useTestContext({ appSettings: { foo: 123 } });
-			expect(app.settings.read({ foo: { number: {} } }))
+		test("Specified local data", () => {
+			let app = useTestContext({ localData: { test: { foo: 123 } } });
+			expect(app.localData.read("test", { foo: { number: {} } }))
 				.toHaveProperty("0")
 				.toHaveProperty("foo")
 				.toBe(123);
 		});
 
-		test("Write and read app settings", () => {
-			let app = useTestContext({ appSettings: { foo: 123 } });
-			app.settings.write({ foo: 321 });
-			expect(app.settings.read({ foo: { number: {} } }))
+		test("Write and read local data", () => {
+			let app = useTestContext({ localData: { test: { foo: 123 } } });
+			app.localData.write("test", { foo: 321 });
+			expect(app.localData.read("test", { foo: { number: {} } }))
 				.toHaveProperty("0")
 				.toHaveProperty("foo")
 				.toBe(321);

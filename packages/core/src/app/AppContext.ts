@@ -8,7 +8,7 @@ import { ERROR, err, safeCall, setErrorHandler } from "../errors.js";
 import { UITheme } from "../ui/UITheme.js";
 import { Activity } from "./Activity.js";
 import { ActivityContext } from "./ActivityContext.js";
-import { AppSettings } from "./AppSettings.js";
+import { LocalData } from "./LocalData.js";
 import type { I18nProvider } from "./I18nProvider.js";
 import { LogWriter } from "./LogWriter.js";
 import { MessageDialogOptions } from "./MessageDialogOptions.js";
@@ -95,26 +95,6 @@ export class AppContext extends ManagedObject {
 	readonly activities = this.attach(new ActivityContext());
 
 	/**
-	 * The current application output renderer, an instance of {@link RenderContext}
-	 * - This property will be set by the platform-specific renderer package
-	 */
-	declare readonly renderer?: RenderContext; // (defined in constructor)
-
-	/**
-	 * The current internationalization context, an object that implements {@link I18nProvider}
-	 * - You can set `app.i18n` to an object that implements {@link I18nProvider}, to change the current internationalization context.
-	 * - Note that labels and other UI controls that are already rendered won't be updated automatically. If needed, use `app.renderer.remount()` to force a full re-render.
-	 */
-	declare i18n?: I18nProvider; // (defined in constructor)
-
-	/**
-	 * The current theme, an instance of {@link UITheme}
-	 * - Instead of modifying the existing theme instance, use the {@link UITheme.clone()} method and set this property to the new instance. This will trigger an update of all rendered output automatically.
-	 * @see {@link UITheme}
-	 */
-	declare theme?: UITheme; // (defined in constructor)
-
-	/**
 	 * The current navigation context, an instance of {@link NavigationContext}
 	 * - This object encapsulates the current location path, and coordinates automatic activation of activities based on their page ID.
 	 * @note To navigate around the application, use the {@link AppContext.navigate app.navigate()} and {@link AppContext.goBack app.goBack()} methods, rather than calling the methods of the navigation context directly.
@@ -136,10 +116,30 @@ export class AppContext extends ManagedObject {
 	log = new LogWriter();
 
 	/**
-	 * Persisted settings data, made available as an instance of {@link AppSettings}
-	 * - Settings data is persisted in a platform-dependent way. While testing, settings data is only persisted during the lifetime of the test handler.
+	 * Persisted key-value object data, made available as an instance of {@link LocalData}
+	 * - Data is persisted in a platform-dependent way. While testing, all data is _only_ persisted during the lifetime of the test handler.
 	 */
-	settings = new AppSettings();
+	localData = new LocalData();
+
+	/**
+	 * The current application output renderer, an instance of {@link RenderContext}
+	 * - This property will be set by the platform-specific renderer package
+	 */
+	declare readonly renderer?: RenderContext; // (defined in constructor)
+
+	/**
+	 * The current internationalization context, an object that implements {@link I18nProvider}
+	 * - You can set `app.i18n` to an object that implements {@link I18nProvider}, to change the current internationalization context.
+	 * - Note that labels and other UI controls that are already rendered won't be updated automatically. If needed, use `app.renderer.remount()` to force a full re-render.
+	 */
+	declare i18n?: I18nProvider; // (defined in constructor)
+
+	/**
+	 * The current theme, an instance of {@link UITheme}
+	 * - Instead of modifying the existing theme instance, use the {@link UITheme.clone()} method and set this property to the new instance. This will trigger an update of all rendered output automatically.
+	 * @see {@link UITheme}
+	 */
+	declare theme?: UITheme; // (defined in constructor)
 
 	/**
 	 * Clears the state of the global application context
