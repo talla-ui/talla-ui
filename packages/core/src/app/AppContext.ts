@@ -7,7 +7,7 @@ import {
 import { ERROR, err, safeCall, setErrorHandler } from "../errors.js";
 import { UITheme } from "../ui/UITheme.js";
 import { Activity } from "./Activity.js";
-import { ActivityContext } from "./ActivityContext.js";
+import { ActivityList } from "./ActivityList.js";
 import { LocalData } from "./LocalData.js";
 import type { I18nProvider } from "./I18nProvider.js";
 import { LogWriter } from "./LogWriter.js";
@@ -89,10 +89,12 @@ export class AppContext extends ManagedObject {
 	}
 
 	/**
-	 * The current activity context, an instance of {@link ActivityContext}
-	 * - This object contains all activity instances. Activities must be either added to this context object (using the {@link AppContext.addActivity app.addActivity()} method), or attached to a parent activity.
+	 * The current root activity list, an instance of {@link ActivityList}
+	 * - This object contains activity instances that have been added using {@link addActivity()}.
+	 * - The root activity list is used by the {@link NavigationContext} (i.e. {@link navigation app.navigation}) to activate and deactivate activities automatically based on their navigation page ID.
+	 * - Activities don't need to be added here if they're activated programmatically, e.g. as attached objects of a parent activity.
 	 */
-	readonly activities = this.attach(new ActivityContext());
+	readonly activities = this.attach(new ActivityList());
 
 	/**
 	 * The current navigation context, an instance of {@link NavigationContext}
@@ -167,12 +169,12 @@ export class AppContext extends ManagedObject {
 	 * Adds an activity to the list of root activities
 	 *
 	 * @summary
-	 * This method adds an {@link Activity} instance to the {@link ActivityContext} (i.e. `app.activities`), activating it automatically if the current location matches {@link Activity.navigationPageId} or if the `activate` argument was set to true.
+	 * This method adds an {@link Activity} instance to the {@link ActivityList} (i.e. `app.activities`), activating it automatically if the current location matches {@link Activity.navigationPageId} or if the `activate` argument was set to true.
 	 *
 	 * @param activity The activity to be added
 	 * @param activate True if the activity should be activated immediately regardless of page ID
 	 *
-	 * @note You only need to add activities to the application context if they should be activated based on their page ID, or if they're not attached to a parent activity. If an activity is attached to a parent activity you will need to activate it manually (e.g. for detail pages or dialog activities).
+	 * @note Activities don't need to be added using this method if they're activated programmatically, e.g. as attached objects of a parent activity.
 	 */
 	addActivity(activity: Activity, activate?: boolean) {
 		this.activities.add(activity);

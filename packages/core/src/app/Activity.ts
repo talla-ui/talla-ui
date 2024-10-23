@@ -50,7 +50,7 @@ export const $activity: Binding.Source<
  *
  * Activities emit `Active` and `Inactive` change events when state transitions occur. Several methods can be overridden to add custom behavior when the activity is activated or deactivated – i.e. {@link beforeActiveAsync}, {@link afterActiveAsync}, {@link beforeInactiveAsync}, and {@link afterInactiveAsync}. In addition, the {@link createView()} method must be overridden to create a view object and set the {@link view} property when the activity becomes active.
  *
- * As soon as the activity is activated and a view is created, the view is rendered if the {@link Activity.renderOptions} include the `dialog` flag or placement options. The view is unlinked when the activity is deactivated, and the {@link view} property is set to undefined.
+ * As soon as the activity is activated and a view is created, the view is rendered. The view is unlinked when the activity is deactivated, and the {@link view} property is set to undefined. To change rendering options or disable automatic rendering, use the {@link setRenderMode()} method.
  *
  * @example
  * // Create an activity and activate it:
@@ -120,7 +120,7 @@ export class Activity extends ManagedObject {
 
 	/**
 	 * The page ID associated with this activity, to match the (first part of the) navigation path
-	 * - This property is used by the {@link NavigationContext} class, but only if the activity has been added to the {@link ActivityContext} using {@link AppContext.addActivity app.addActivity()}.
+	 * - This property is used by the {@link NavigationContext} class, but only if the activity has been added to the list of root activities using {@link AppContext.addActivity app.addActivity()}.
 	 * - If the page ID is set to a string, the activity will be activated automatically when the first part of the current path matches this value, and deactivated when it doesn't.
 	 * - To match the root path (`/`), set this property to an empty string
 	 */
@@ -135,18 +135,11 @@ export class Activity extends ManagedObject {
 
 	/**
 	 * The current view, if any (attached automatically)
-	 * - This property is set automatically when active, using the result of the {@link Activity.createView()} method, and then displayed using the settings from {@link renderOptions}.
+	 * - This property is set automatically when active, using the result of the {@link Activity.createView()} method, and then rendered. By default, the view is rendered as a scrollable page. This can be changed using the {@link setRenderMode()} method.
 	 * - The view is automatically unlinked when the activity is deactivated or unlinked.
 	 * - Events emitted by the view are automatically delegated to the activity, see {@link delegate()}.
 	 */
 	view?: View = undefined;
-
-	/**
-	 * Render options, used for rendering the current view when the activity is activated
-	 * - By default, `page` render mode is used, to render all views as a scrollable page. This can be changed from the constructor or {@link createView()} method, including other rendering options such as the page background color.
-	 * - To disable rendering (e.g. if the view is rendered as part of another activity), set this property to an empty object.
-	 */
-	renderOptions: Activity.RenderOptions = { place: { mode: "page" } };
 
 	/**
 	 * Default form context used with input elements, if any
@@ -265,6 +258,29 @@ export class Activity extends ManagedObject {
 		// nothing here
 	}
 
+	/**
+	 * Set rendering mode and additional options
+	 * - By default, the activity view is rendered using the `page` rendering mode, as soon as the activity is activated. The mode can be changed using this method, or rendering can be disabled by specifying the `none` mode.
+	 * - Use the special `dialog` mode to render the view within a dialog as defined by the current theme.
+	 * - Additional options may be specified, including page/screen background color and transform animations.
+	 * @param mode The selected rendering mode
+	 * @param options Additional placement options, if any
+	 * @see {@link RenderContext.PlacementOptions}
+	 * @see {@link UITheme.modalFactory}
+	 * @see {@link UITheme.ModalControllerFactory}
+	 */
+	protected setRenderMode(
+		mode: RenderContext.PlacementMode | "dialog",
+		options?: Partial<RenderContext.PlacementOptions>,
+	) {
+		if (mode === "dialog") {
+			mode = "modal";
+			this._renderDialog = true;
+		}
+		this._renderOptions = { ...options, mode };
+		return this;
+	}
+
 	/** Creates and/or renders the activity's view, called automatically after activation */
 	private _showView(forceCreate?: boolean) {
 		if (!this.isActive()) return;
@@ -292,19 +308,19 @@ export class Activity extends ManagedObject {
 		if (!this._boundRenderer) throw err(ERROR.Render_Unavailable);
 
 		// render view using theme dialog controller if needed
-		let options = this.renderOptions;
-		if (options?.dialog) {
+		let renderOptions = this._renderOptions;
+		if (this._renderDialog) {
 			let controller = this._boundTheme?.modalFactory?.buildDialog?.(view);
 			if (!controller) throw err(ERROR.Render_NoModal);
-			controller.show();
+			controller.show(renderOptions);
 			return this;
 		}
 
 		// render view normally if placed
-		if (options.place && options.place.mode !== "none") {
+		if (renderOptions.mode !== "none") {
 			new RenderContext.ViewController(
 				this._boundRenderer.getRenderCallback(),
-			).render(view, undefined, options.place);
+			).render(view, undefined, renderOptions);
 		}
 		return this;
 	}
@@ -450,6 +466,12 @@ export class Activity extends ManagedObject {
 		return target;
 	}
 
+	/** @internal Render placement options, modified using setRenderMode */
+	private _renderOptions: RenderContext.PlacementOptions = { mode: "page" };
+
+	/** @internal True if the view should be rendered within a dialog */
+	private _renderDialog?: boolean;
+
 	/** @internal Activation queue for this activity */
 	private readonly _activation = new ActivationQueue();
 
@@ -470,22 +492,6 @@ export class Activity extends ManagedObject {
 
 	/** @internal Set to true if a listener was added to remove this instance from the hot-reloaded list */
 	private _isHot?: boolean;
-}
-
-export namespace Activity {
-	/**
-	 * Options that are applied when rendering the view of an activity
-	 * - An object of this type is available as {@link Activity.renderOptions renderOptions}, which determines how a view is rendered by the activity when it is activated.
-	 * - The `dialog` property should be set to true if the view is to be displayed within a modal dialog (using the dialog controller that's part of {@link UITheme}).
-	 * - Otherwise, the `place` property can be used to determine render placement. By default, an activity sets this property is set to an {@link RenderContext.PlacementOptions} object with `mode` set to `page`, to render views as scrollable pages.
-	 * - To ensure that the view is not rendered directly at all (e.g. if it's displayed by another activity), set the `place` property to undefined, or its `mode` property to `"none"`.
-	 */
-	export type RenderOptions = {
-		/** True if the view should be displayed within a modal dialog */
-		dialog?: boolean;
-		/** Render placement options, for custom rendering */
-		place?: RenderContext.PlacementOptions;
-	};
 }
 
 /** @internal Helper class that contains activation state, and runs callbacks on activation/deactivation asynchronously */

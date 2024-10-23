@@ -5,9 +5,7 @@ import SearchView from "./SearchView";
 
 export class SearchActivity extends Activity {
 	protected override createView() {
-		this.renderOptions = {
-			place: { mode: "mount", mountId: "docpage-search" },
-		};
+		this.setRenderMode("mount", { mountId: "docpage-search" });
 		return SearchView.create();
 	}
 

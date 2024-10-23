@@ -42,7 +42,7 @@ export class NavigationContext extends ManagedObject {
 	}
 
 	/**
-	 * Sets the current location, and activates any matching page activities from {@link ActivityContext}
+	 * Sets the current location, and activates any matching page activities from {@link AppContext.activities app.activities}
 	 * - This method doesn't affect the navigation history or platform-specific navigation. To navigate to a new location, use {@link navigateAsync()} instead.
 	 * @error This method throws an error if the page ID is invalid (i.e. contains slashes `/` or `\`, or starts with a dot `.`).
 	 */
@@ -66,7 +66,7 @@ export class NavigationContext extends ManagedObject {
 
 		// find matching page from all root activities
 		let matched = false;
-		for (let activity of app.activities.getAll()) {
+		for (let activity of app.activities) {
 			if (typeof activity.navigationPageId !== "string") continue;
 			if (this._checkPage(activity)) matched = true;
 		}
@@ -138,10 +138,10 @@ export class NavigationContext extends ManagedObject {
 		}
 		handler(_: unknown, event: ManagedEvent) {
 			if (
-				event.data.activity instanceof Activity &&
-				typeof event.data.activity.navigationPageId === "string"
+				event.data.added instanceof Activity &&
+				typeof event.data.added.navigationPageId === "string"
 			) {
-				this.ctx._checkPage(event.data.activity);
+				this.ctx._checkPage(event.data.added);
 			}
 		}
 	};

@@ -277,7 +277,7 @@ describe("Activity", () => {
 		test("Add activity", () => {
 			let activity = new Activity();
 			app.addActivity(activity);
-			expect(app.activities.getAll().includes(activity)).toBeTruthy();
+			expect(app.activities.getActivities().includes(activity)).toBeTruthy();
 		});
 
 		test("Global context is parent", () => {

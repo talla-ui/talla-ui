@@ -1,5 +1,4 @@
 import {
-	ActivityContext,
 	app,
 	ConfigOptions,
 	AppContext,
@@ -21,7 +20,6 @@ import { WebLocalData } from "./WebLocalData.js";
  */
 export type WebContext = AppContext & {
 	theme: WebTheme;
-	activities: ActivityContext;
 	navigation: WebHashNavigationContext | WebHistoryNavigationContext;
 };
 

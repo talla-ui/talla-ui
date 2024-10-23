@@ -719,11 +719,15 @@ describe("ManagedList", () => {
 				this.lastEvent = event;
 				this.lastSource = event.source;
 				this.countsSeen.push(list.count || 0);
-				if (event.name === "ManagedObjectAdded") this.added++;
-				if (event.name === "ManagedObjectRemoved") this.removed++;
 				if (event.name === "Change") this.changed++;
-				if (event.data && "object" in event.data)
-					this.lastObject = event.data.object;
+				if (event.name === "Add") {
+					this.added++;
+					this.lastObject = event.data.added;
+				}
+				if (event.name === "Remove") {
+					this.removed++;
+					this.lastObject = event.data.removed;
+				}
 			}
 		}
 
@@ -737,9 +741,7 @@ describe("ManagedList", () => {
 			expect(observer.added).toBe(2);
 			expect(observer.removed).toBe(0);
 			expect(observer.changed).toBe(0);
-			expect(observer.lastEvent)
-				.toHaveProperty("name")
-				.toBe("ManagedObjectAdded");
+			expect(observer.lastEvent).toHaveProperty("name").toBe("Add");
 			expect(observer.lastObject).toBe(b);
 			expect(observer.lastSource).toBe(list);
 			expect(observer.countsSeen).toBeArray([1, 2]);
@@ -751,9 +753,7 @@ describe("ManagedList", () => {
 			let observer = new ListEventObserver(list);
 			list.remove(a);
 			expect(observer.removed).toBe(1);
-			expect(observer.lastEvent)
-				.toHaveProperty("name")
-				.toBe("ManagedObjectRemoved");
+			expect(observer.lastEvent).toHaveProperty("name").toBe("Remove");
 			expect(observer.lastObject).toBe(a);
 			expect(observer.lastSource).toBe(list);
 			expect(observer.countsSeen).toBeArray([0]);
@@ -765,9 +765,7 @@ describe("ManagedList", () => {
 			let observer = new ListEventObserver(list);
 			a.unlink();
 			expect(observer.removed).toBe(1);
-			expect(observer.lastEvent)
-				.toHaveProperty("name")
-				.toBe("ManagedObjectRemoved");
+			expect(observer.lastEvent).toHaveProperty("name").toBe("Remove");
 			expect(observer.lastObject).toBe(a);
 			expect(observer.lastSource).toBe(list);
 			expect(observer.countsSeen).toBeArray([0]);
@@ -785,9 +783,7 @@ describe("ManagedList", () => {
 			t.log(list.toArray());
 			t.log(observer);
 			expect(observer.removed).toBe(1);
-			expect(observer.lastEvent)
-				.toHaveProperty("name")
-				.toBe("ManagedObjectRemoved");
+			expect(observer.lastEvent).toHaveProperty("name").toBe("Remove");
 			expect(observer.lastObject).toBe(a);
 			expect(observer.lastSource).toBe(list);
 			expect(observer.countsSeen).toBeArray([0]);

@@ -3,7 +3,7 @@ export * from "./I18nProvider.js";
 export * from "./AppException.js";
 export * from "./RenderContext.js";
 export * from "./NavigationTarget.js";
-export * from "./ActivityContext.js";
+export * from "./ActivityList.js";
 export * from "./NavigationContext.js";
 export * from "./Activity.js";
 export * from "./View.js";
