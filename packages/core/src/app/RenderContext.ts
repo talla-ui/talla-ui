@@ -50,7 +50,7 @@ export namespace RenderContext {
 	 * Type definition for global rendering placement options
 	 *
 	 * @description
-	 * An object of this type can be provided when rendering a view object using {@link AppContext.render app.render()}, or {@link RenderContext.ViewController}. Typically, this object is provided by an activity, based on settings from {@link Activity.renderOptions}.
+	 * An object of this type can be provided when rendering a view object using {@link AppContext.render app.render()}, or {@link RenderContext.ViewController}. Typically, this object is provided by an activity, based on options passed to {@link Activity.setRenderMode()}.
 	 *
 	 * The following properties determine how root view elements are placed on the screen:
 	 * - `mode` — One of the {@link RenderContext.PlacementMode} options.

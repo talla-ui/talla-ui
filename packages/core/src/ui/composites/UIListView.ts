@@ -12,6 +12,9 @@ import { UIContainer } from "../containers/index.js";
 const ASYNC_BATCH_SIZE = 100;
 const DEFAULT_MAX_DELAY_COUNT = 100;
 
+// use this property for duck typing ManagedList instances
+const ManagedList_take = ManagedList.prototype.take;
+
 /** Label property used to filter bindings using $list */
 const $_list_bind_label = Symbol("list");
 
@@ -99,11 +102,7 @@ export class UIListView<
 				return list;
 			},
 			set(this: UIListView, v: any) {
-				if (Array.isArray(v)) v = this._makeList(v);
-				if (!(v instanceof ManagedList) && v != null) {
-					throw err(ERROR.UIList_Invalid);
-				}
-				list = v;
+				list = this._makeList(v);
 			},
 		});
 	}
@@ -343,10 +342,14 @@ export class UIListView<
 		this.emit("ListItemsChange");
 	}
 
-	/** Helper function to turn an array into a managed list */
-	private _makeList(v: any[]) {
+	/** Helper function to turn any iterable into a managed list if needed */
+	private _makeList(v?: Iterable<any>) {
+		if (v == null) return undefined;
+		if ("take" in v && v.take === ManagedList_take) return v as ManagedList;
+		if (!(Symbol.iterator in v)) throw err(ERROR.UIList_Invalid);
+		let items = [...v];
 		return new ManagedList(
-			...v.map((it) =>
+			...items.map((it) =>
 				it instanceof ManagedObject ? it : new UIListView.ItemValueWrapper(it),
 			),
 		);

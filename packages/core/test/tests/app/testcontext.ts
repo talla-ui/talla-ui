@@ -228,11 +228,11 @@ describe("TestContext", () => {
 		test("Show dialog", async (t) => {
 			class MyActivity extends Activity {
 				protected override createView() {
+					this.setRenderMode("dialog");
 					return new UICell(new UILabel("foo"));
 				}
 			}
 			let activity = new MyActivity();
-			activity.renderOptions = { dialog: true };
 			let app = useTestContext({ renderFrequency: 5 });
 			app.addActivity(activity, true);
 			await app.renderer.expectOutputAsync({ text: "foo" });

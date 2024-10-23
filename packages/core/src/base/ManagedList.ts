@@ -46,7 +46,7 @@ const $_list = Symbol("list");
  *
  * **Attaching list items** — By default, objects aren't attached to the list, so they could be attached to other objects themselves and still be part of a managed list. However, you can enable auto-attaching of objects in a list using the {@link ManagedList.attachAll()} method — **or** by attaching the list itself to another object. This ensures that objects in a list are only attached to the list itself, and are unlinked when they're removed from the list (and removed from the list when they're no longer attached to it, e.g. when moved to another auto-attaching list).
  *
- * **Events** — Since ManagedList itself inherits from ManagedObject, a list can emit events, too. When any objects are added, moved, or removed, a change event is emitted. In addition, for auto-attaching lists (see {@link ManagedList.attachAll()}) any events that are emitted by an object are re-emitted on the list itself. The {@link ManagedEvent.source} property can be used to find the object that originally emitted the event.
+ * **Events** — Since ManagedList itself inherits from ManagedObject, a list can emit events, too. When any objects are added, moved, or removed, a change event is emitted. The event names are either `Change`, `Add`, or `Remove`, with objects referenced by `added` or `removed` event data properties if possible. In addition, for auto-attaching lists (see {@link ManagedList.attachAll()}) any events that are emitted by an object are re-emitted on the list itself. The {@link ManagedEvent.source} property can be used to find the object that originally emitted the event.
  *
  * **Nested lists** — Managed lists can contain (and even attach to) other managed lists, which allows for building nested or recursive data structures that fully support bindings and events.
  *
@@ -197,7 +197,7 @@ export class ManagedList<
 		if (this._attach) this._attachObject(target);
 
 		// emit event for adding this object
-		this.emit("ManagedObjectAdded", { change: this, object: target });
+		this.emit("Add", { change: this, added: target });
 
 		return this;
 	}
@@ -229,7 +229,7 @@ export class ManagedList<
 			}
 
 			// emit event for removing this object
-			this.emit("ManagedObjectRemoved", { change: this, object: target });
+			this.emit("Remove", { change: this, removed: target });
 		}
 		return this;
 	}

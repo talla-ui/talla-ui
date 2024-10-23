@@ -6,7 +6,7 @@ import {
 } from "../../../dist/index.js";
 import { describe, expect, test, useTestContext } from "@talla-ui/test-handler";
 
-describe("NavigationContext and ActivityContext", () => {
+describe("NavigationContext and ActivityList", () => {
 	describe("NavigationContext standalone", (scope) => {
 		let p: NavigationContext;
 		scope.beforeEach((t) => {
@@ -44,7 +44,7 @@ describe("NavigationContext and ActivityContext", () => {
 		});
 	});
 
-	describe("ActivityContext and activities", (scope) => {
+	describe("ActivityList and activities", (scope) => {
 		scope.beforeEach(() => {
 			useTestContext({ navigationDelay: 0 });
 		});
@@ -53,10 +53,10 @@ describe("NavigationContext and ActivityContext", () => {
 			app.navigation.set(pageId, detail);
 		}
 
-		test("Activity context Object and properties", (t) => {
+		test("Activity context Object and properties", () => {
 			expect(ManagedObject.whence(app.activities)).toBe(app);
-			expect(app.activities.getAll()).toBeArray(0);
-			expect(app.activities.getActive()).toBeArray(0);
+			expect(app.activities.getActivities()).toBeArray(0);
+			expect(app.activities.count).toBe(0);
 			expect(app.navigation).toBeInstanceOf(NavigationContext);
 		});
 
@@ -65,9 +65,29 @@ describe("NavigationContext and ActivityContext", () => {
 			activity.navigationPageId = "foo";
 			goTo("foo");
 			app.addActivity(activity);
+			expect(app.activities.count).toBe(1);
 			await t.sleep(1);
 			expect(activity.isActive()).toBeTruthy();
 			expect(app.navigation.matchedPageId).toBe("foo");
+			expect(app.activities.activated).toBe(activity);
+		});
+
+		test("Activity not activated when added", async (t) => {
+			let activityFoo = new Activity();
+			activityFoo.navigationPageId = "foo";
+			let activityBar = new Activity();
+			activityBar.navigationPageId = "bar";
+			goTo("bar");
+			app.addActivity(activityFoo);
+			app.addActivity(activityBar);
+			await t.sleep(1);
+			expect(activityFoo.isActive()).toBeFalsy();
+			expect(activityBar.isActive()).toBeTruthy();
+			for (let a of app.activities) {
+				if ((a.navigationPageId === app.navigation.pageId) !== a.isActive()) {
+					t.fail("Activation state != page ID match");
+				}
+			}
 		});
 
 		test("Activity activated when app path changed (async)", async (t) => {

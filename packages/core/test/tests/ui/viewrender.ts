@@ -89,7 +89,7 @@ describe("UIViewRenderer", (scope) => {
 		// activity that will be rendered as nested view
 		class MySecondActivity extends Activity {
 			protected override createView() {
-				this.renderOptions = {}; // no direct rendering
+				this.setRenderMode("none");
 				return ui.cell(ui.button("foo", "+ButtonPress")).create();
 			}
 			onButtonPress() {
