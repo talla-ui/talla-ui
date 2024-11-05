@@ -91,7 +91,7 @@ export function makeBaseCSS() {
 		},
 
 		// add special nesting rules for container elements
-		[`.${CLASS_UI}.${CLASS_CELL}>.${CLASS_CONTAINER}`]: {
+		[`.${CLASS_UI}.${CLASS_CELL}>.${CLASS_CONTAINER}:only-child`]: {
 			flexGrow: "1",
 		},
 		[`.${CLASS_UI}.${CLASS_COLUMN}>.${CLASS_CONTAINER}`]: {
