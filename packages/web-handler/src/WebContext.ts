@@ -16,14 +16,6 @@ import { WebTheme } from "./style/WebTheme.js";
 import { WebLocalData } from "./WebLocalData.js";
 
 /**
- * Type definition for the global {@link app} context with web-specific render and activity contexts, set by the {@link useWebContext} function
- */
-export type WebContext = AppContext & {
-	theme: WebTheme;
-	navigation: WebHashNavigationContext | WebHistoryNavigationContext;
-};
-
-/**
  * A class that contains options for the web handler instance
  * - These options should be set in a configuration callback passed to {@link useWebContext}.
  */
@@ -122,7 +114,7 @@ export class WebContextOptions extends ConfigOptions {
  * - Before initializing a new context, the {@link AppContext.clear()} method is used to reset the current context, if any.
  *
  * @param config A {@link WebContextOptions} object, or a callback function to set options
- * @returns The global {@link app} context, typed as {@link WebContext}.
+ * @returns The global {@link app} context
  *
  * @example
  * // Start the application
@@ -185,5 +177,5 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 	};
 
 	// return a typed reference
-	return app as WebContext;
+	return app;
 }
