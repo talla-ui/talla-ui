@@ -21,19 +21,19 @@ const DEFAULT_ERROR = "Invalid value";
  * // Define a schema for a user object
  * let userReader = new ObjectReader({
  *   name: {
- *     string: {
+ *     isString: {
  *       min: { length: 2, err: "Name must be at least 2 letters" }
  *     }
  *   },
  *   age: {
- *     number: {
+ *     isNumber: {
  *       integer: true,
  *       min: { value: 18, err: "You must be at least 18 years old" }
  *     }
  *   },
  *   hobbies: {
- *     optional: true,
- *     array: { items: { string: {} } }
+ *     isOptional: true,
+ *     isArray: { items: { isString: {} } }
  *   }
  *   // ...
  * });
@@ -73,7 +73,7 @@ export class ObjectReader<TSchema extends ObjectReader.Schema> {
 	 */
 	read(
 		object: Partial<Record<keyof TSchema, unknown>>,
-	): ObjectReader.Result<TSchema> {
+	): ObjectReader.ReadResult<TSchema> {
 		if (!isObject(object)) return [undefined, { _: TypeError() }];
 		let v = _validateObject(object, this.schema, MAX_RECURSE);
 		return [v.value, v.errors];
@@ -88,7 +88,7 @@ export class ObjectReader<TSchema extends ObjectReader.Schema> {
 	readField<K extends keyof TSchema & string>(
 		object: Record<string, unknown>,
 		field: K,
-	): [ObjectReader.FieldType<TSchema[K]> | undefined, Error | undefined] {
+	): [ObjectReader.ReadFieldType<TSchema[K]> | undefined, Error | undefined] {
 		if (!isObject(object)) return [undefined, TypeError()];
 		let v = _validate(object[field], field, this.schema[field], MAX_RECURSE);
 		if (v.error) return [undefined, Error(String(v.error))];
@@ -101,7 +101,7 @@ export class ObjectReader<TSchema extends ObjectReader.Schema> {
 	 * @param json The JSON string to validate
 	 * @returns A tuple that consists of the parsed (and validated) object, if it was indeed correctly parsed, and an object that contains an error for each field that was incorrectly parsed.
 	 */
-	readJSONString(json: string): ObjectReader.Result<TSchema> {
+	readJSONString(json: string): ObjectReader.ReadResult<TSchema> {
 		try {
 			return this.read(JSON.parse(json));
 		} catch (err) {
@@ -111,29 +111,42 @@ export class ObjectReader<TSchema extends ObjectReader.Schema> {
 }
 
 export namespace ObjectReader {
+	/** A collection of schema rules to validate the expected fields of an object with matching rules */
+	export type Schema = { [k: string]: SchemaRule };
+
+	/** The type of object that is read by a particular {@link ObjectReader} */
+	export type Object<R extends ObjectReader<any>> =
+		R extends ObjectReader<infer S extends Schema>
+			? { [k in keyof S]: ReadObjectType<S>[k] }
+			: never;
+
 	/** A rule definition for a particular field, to validate its type and value */
-	export type SchemaRule = { optional?: boolean } & (
-		| { validate: FieldValidator<any> }
+	export type SchemaRule = { isOptional?: boolean } & (
+		| { isParsed: FieldValidator<any> }
 		| {
-				array: {
+				isArray: {
 					items?: SchemaRule;
 					err?: StringConvertible;
 					min?: { length: number; err?: StringConvertible };
 					max?: { length: number; err?: StringConvertible };
 				};
 		  }
-		| { object: { schema: Schema; err?: StringConvertible } }
-		| { record: { values?: SchemaRule; err?: StringConvertible } }
 		| {
-				boolean?: { true?: boolean; err?: StringConvertible };
-				string?: {
+				isObject:
+					| { schema: Schema; err?: StringConvertible }
+					| { reader: ObjectReader<any>; err?: StringConvertible };
+		  }
+		| { isRecord: { values?: SchemaRule; err?: StringConvertible } }
+		| {
+				isBoolean?: { true?: boolean; err?: StringConvertible };
+				isString?: {
 					err?: StringConvertible;
 					match?: RegExp;
 					required?: true | { err?: StringConvertible };
 					min?: { length: number; err?: StringConvertible };
 					max?: { length: number; err?: StringConvertible };
 				};
-				number?: {
+				isNumber?: {
 					err?: StringConvertible;
 					integer?: true | { err?: StringConvertible };
 					positive?: true | { err?: StringConvertible };
@@ -141,46 +154,50 @@ export namespace ObjectReader {
 					min?: { value: number; err?: StringConvertible };
 					max?: { value: number; err?: StringConvertible };
 				};
-				date?: {
+				isDate?: {
 					err?: StringConvertible;
 					min?: { date: Date; err?: StringConvertible };
 					max?: { date: Date; err?: StringConvertible };
 				};
-				value?: { match: any[]; err?: StringConvertible };
+				isValue?: { match: any[]; err?: StringConvertible };
 		  }
 	);
 
-	/** A collection of schema rules to validate the expected fields of an object with matching rules */
-	export type Schema = { [k: string]: SchemaRule };
-
 	/** The type of field value that should be returned when validated using the specified rule */
-	export type FieldType<SchemaRule> = SchemaRule extends { optional: true }
-		? NonUndefFieldType<SchemaRule> | undefined
-		: NonUndefFieldType<SchemaRule>;
+	export type ReadFieldType<SchemaRule> = SchemaRule extends {
+		isOptional: true;
+	}
+		? ReadNonUndefFieldType<SchemaRule> | undefined
+		: ReadNonUndefFieldType<SchemaRule>;
 
 	/** The type of field value that should be returned when validated using the specified rule, if not undefined */
-	export type NonUndefFieldType<SchemaRule> = unknown &
-		(SchemaRule extends { array: { items: infer S } }
-			? FieldType<S>[]
+	export type ReadNonUndefFieldType<SchemaRule> = unknown &
+		(SchemaRule extends { isArray: { items: infer S } }
+			? ReadFieldType<S>[]
 			: unknown) &
-		(SchemaRule extends { array: {} } ? unknown[] : unknown) &
-		(SchemaRule extends { object: { schema: infer S extends Schema } }
-			? { [k in keyof S]: ObjectType<S>[k] }
+		(SchemaRule extends { isArray: {} } ? unknown[] : unknown) &
+		(SchemaRule extends { isObject: { schema: infer S extends Schema } }
+			? { [k in keyof S]: ReadObjectType<S>[k] }
 			: unknown) &
-		(SchemaRule extends { record: { values: infer S } }
-			? { [key: string]: FieldType<S> | undefined }
+		(SchemaRule extends { isObject: { reader: ObjectReader<infer T> } }
+			? ReadObjectType<T>
 			: unknown) &
-		(SchemaRule extends { record: {} } ? { [key: string]: unknown } : unknown) &
-		(SchemaRule extends { validate: FieldValidator<infer V> } ? V : unknown) &
-		(SchemaRule extends { value: { match: (infer V)[] } } ? V : unknown) &
-		(SchemaRule extends { boolean: {} } ? boolean : unknown) &
-		(SchemaRule extends { string: {} } ? string : unknown) &
-		(SchemaRule extends { number: {} } ? number : unknown) &
-		(SchemaRule extends { date: {} } ? Date : unknown);
+		(SchemaRule extends { isRecord: { values: infer S } }
+			? { [key: string]: ReadFieldType<S> | undefined }
+			: unknown) &
+		(SchemaRule extends { isRecord: {} }
+			? { [key: string]: unknown }
+			: unknown) &
+		(SchemaRule extends { isParsed: FieldValidator<infer V> } ? V : unknown) &
+		(SchemaRule extends { isValue: { match: (infer V)[] } } ? V : unknown) &
+		(SchemaRule extends { isBoolean: {} } ? boolean : unknown) &
+		(SchemaRule extends { isString: {} } ? string : unknown) &
+		(SchemaRule extends { isNumber: {} } ? number : unknown) &
+		(SchemaRule extends { isDate: {} } ? Date : unknown);
 
 	/** The type of object that should be returned when validated using the specified schema */
-	export type ObjectType<TSchema extends Schema> = {
-		[k in keyof TSchema]: FieldType<TSchema[k]>;
+	export type ReadObjectType<TSchema extends Schema> = {
+		[k in keyof TSchema]: ReadFieldType<TSchema[k]>;
 	};
 
 	/** The result of a validation function, specifying either a field value or an error */
@@ -199,8 +216,8 @@ export namespace ObjectReader {
 	) => ValidationResult<V>;
 
 	/** The result of {@link ObjectReader.read()}, encapsulates a tuple with either the parsed object or a set of errors */
-	export type Result<TSchema extends Schema> = [
-		{ [k in keyof TSchema]: ObjectType<TSchema>[k] } | undefined,
+	export type ReadResult<TSchema extends Schema> = [
+		{ [k in keyof TSchema]: ReadObjectType<TSchema>[k] } | undefined,
 		{ [k in keyof TSchema]?: Error },
 	];
 }
@@ -224,20 +241,24 @@ function _validate(
 	if (maxRecurse-- < 0) return { error: DEFAULT_ERROR };
 
 	// get optional and function validation out of the way
-	if (rule.optional && value === undefined) return { value: undefined };
-	if ("validate" in rule) {
-		let f = rule.validate;
+	if (rule.isOptional && value === undefined) return { value: undefined };
+	if ("isParsed" in rule) {
+		let f = rule.isParsed;
 		if (typeof f !== "function") throw TypeError();
 		return f(value, field || "_");
 	}
 
 	// check objects and arrays using functions below
-	if ("object" in rule) {
-		if (!isObject(value)) return _makeError(rule.object);
-		return _validateObject(value, rule.object.schema || {}, maxRecurse);
+	if ("isObject" in rule) {
+		let objectRule = rule.isObject;
+		if (!isObject(value)) return _makeError(objectRule);
+		let schema =
+			("reader" in objectRule ? objectRule.reader.schema : objectRule.schema) ||
+			{};
+		return _validateObject(value, schema || {}, maxRecurse);
 	}
-	if ("array" in rule) {
-		let arrayRule = rule.array;
+	if ("isArray" in rule) {
+		let arrayRule = rule.isArray;
 		if (!Array.isArray(value)) return _makeError(arrayRule);
 		if (arrayRule.min != null && value.length < arrayRule.min.length)
 			return _makeError(arrayRule.min, arrayRule);
@@ -245,11 +266,11 @@ function _validate(
 			return _makeError(arrayRule.max, arrayRule);
 		return _validateArray(value, arrayRule.items || {}, maxRecurse);
 	}
-	if ("record" in rule) {
-		if (!isObject(value)) return _makeError(rule.record);
+	if ("isRecord" in rule) {
+		if (!isObject(value)) return _makeError(rule.isRecord);
 		let result: any = Object.create(null);
 		for (let k in value) {
-			let r = _validate(value[k], k, rule.record.values || {}, maxRecurse);
+			let r = _validate(value[k], k, rule.isRecord.values || {}, maxRecurse);
 			if (r.error) return r;
 			result[k] = r.value;
 		}
@@ -258,11 +279,11 @@ function _validate(
 
 	// if regular value type, use rule as variable below
 	let {
-		value: valueRule,
-		boolean: booleanRule,
-		string: stringRule,
-		number: numberRule,
-		date: dateRule,
+		isValue: valueRule,
+		isBoolean: booleanRule,
+		isString: stringRule,
+		isNumber: numberRule,
+		isDate: dateRule,
 	} = rule;
 
 	if (booleanRule) {

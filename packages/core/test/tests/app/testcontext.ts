@@ -34,7 +34,7 @@ describe("TestContext", () => {
 		test("Empty data", () => {
 			let app = useTestContext();
 			expect(app.localData).toBeInstanceOf(LocalData);
-			expect(app.localData.read("test", { foo: { optional: true } }))
+			expect(app.localData.read("test", { foo: { isOptional: true } }))
 				.toHaveProperty("0")
 				.toHaveProperty("foo")
 				.toBeUndefined();
@@ -42,7 +42,7 @@ describe("TestContext", () => {
 
 		test("Specified local data", () => {
 			let app = useTestContext({ localData: { test: { foo: 123 } } });
-			expect(app.localData.read("test", { foo: { number: {} } }))
+			expect(app.localData.read("test", { foo: { isNumber: {} } }))
 				.toHaveProperty("0")
 				.toHaveProperty("foo")
 				.toBe(123);
@@ -51,7 +51,7 @@ describe("TestContext", () => {
 		test("Write and read local data", () => {
 			let app = useTestContext({ localData: { test: { foo: 123 } } });
 			app.localData.write("test", { foo: 321 });
-			expect(app.localData.read("test", { foo: { number: {} } }))
+			expect(app.localData.read("test", { foo: { isNumber: {} } }))
 				.toHaveProperty("0")
 				.toHaveProperty("foo")
 				.toBe(321);

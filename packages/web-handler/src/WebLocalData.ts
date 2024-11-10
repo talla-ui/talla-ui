@@ -18,7 +18,7 @@ export class WebLocalData extends LocalData {
 	override read<T extends ObjectReader.Schema>(
 		key: string,
 		schema: T,
-	): ObjectReader.Result<T> {
+	): ObjectReader.ReadResult<T> {
 		let str = localStorage.getItem(this._prefix + key) || "{}";
 		return new ObjectReader(schema).readJSONString(str);
 	}

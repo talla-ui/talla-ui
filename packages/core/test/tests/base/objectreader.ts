@@ -4,7 +4,7 @@ import { describe, expect, test } from "@talla-ui/test-handler";
 describe("ObjectReader", () => {
 	test("Constructor", () => {
 		let reader = new ObjectReader({
-			name: { string: {} },
+			name: { isString: {} },
 		});
 		expect(reader).toHaveProperty("schema").toHaveProperty("name");
 		expect(reader.read({ name: "Foo" })[0])
@@ -15,15 +15,17 @@ describe("ObjectReader", () => {
 	test("Any type validation", () => {
 		let reader = new ObjectReader({ foo: {}, bar: {} });
 		let result = reader.read({ foo: 1, bar: "2", baz: true } as any);
-		expect(result[0]).toHaveProperty("foo").toBe(1);
-		expect(result[0]).toHaveProperty("bar").toBe("2");
-		expect(result[0]).not.toHaveProperty("baz");
+		if (!result[0]) throw Error();
+		let obj: ObjectReader.Object<typeof reader> = result[0];
+		expect(obj).toHaveProperty("foo").toBe(1);
+		expect(obj).toHaveProperty("bar").toBe("2");
+		expect(obj).not.toHaveProperty("baz");
 	});
 
 	test("Custom function validation", () => {
 		let reader = new ObjectReader({
 			name: {
-				validate: (v, f) =>
+				isParsed: (v, f) =>
 					v === "Foo" && f === "name" ? { value: "yes" } : { error: "no" },
 			},
 		});
@@ -38,7 +40,7 @@ describe("ObjectReader", () => {
 
 	test("Custom value validation", () => {
 		let reader = new ObjectReader({
-			type: { value: { match: ["A", "B", "C"] } },
+			type: { isValue: { match: ["A", "B", "C"] } },
 		});
 		expect(reader.read({ type: "A" })[0])
 			.toHaveProperty("type")
@@ -51,7 +53,7 @@ describe("ObjectReader", () => {
 	test("String validation", () => {
 		let reader = new ObjectReader({
 			name: {
-				string: {
+				isString: {
 					min: { length: 2 },
 					max: { length: 10 },
 				},
@@ -70,12 +72,12 @@ describe("ObjectReader", () => {
 
 	test("String validation: required", () => {
 		let reader = new ObjectReader({
-			name: { string: {} as { required?: true } },
+			name: { isString: {} as { required?: true } },
 		});
 		expect(reader.read({ name: "" })[0])
 			.toHaveProperty("name")
 			.toBe("");
-		reader.schema.name.string.required = true;
+		reader.schema.name.isString.required = true;
 		expect(reader.read({ name: "Foo" })[0])
 			.toHaveProperty("name")
 			.toBe("Foo");
@@ -86,7 +88,7 @@ describe("ObjectReader", () => {
 
 	test("String and value validation", () => {
 		let reader = new ObjectReader({
-			type: { string: {}, value: { match: ["A", "B", "C", 123] } },
+			type: { isString: {}, value: { match: ["A", "B", "C", 123] } },
 		});
 		expect(reader.read({ type: "A" })[0])
 			.toHaveProperty("type")
@@ -99,7 +101,7 @@ describe("ObjectReader", () => {
 	test("Regexp validation", () => {
 		let reader = new ObjectReader({
 			email: {
-				string: { match: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+$/ },
+				isString: { match: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+$/ },
 			},
 		});
 		expect(reader.read({ email: "foo@bar" })[0])
@@ -116,7 +118,7 @@ describe("ObjectReader", () => {
 	test("Number validation", () => {
 		let reader = new ObjectReader({
 			num: {
-				number: {
+				isNumber: {
 					min: { value: 0 },
 					max: { value: 120 },
 				},
@@ -142,7 +144,7 @@ describe("ObjectReader", () => {
 	test("Integer validation", () => {
 		let reader = new ObjectReader({
 			num: {
-				number: {
+				isNumber: {
 					integer: true,
 					min: { value: 0 },
 					max: { value: 120 },
@@ -171,7 +173,7 @@ describe("ObjectReader", () => {
 
 	test("Positive number validation", () => {
 		let reader = new ObjectReader({
-			num: { number: { positive: true } },
+			num: { isNumber: { positive: true } },
 		});
 		expect(reader.read({ num: 1 })[0])
 			.toHaveProperty("num")
@@ -186,7 +188,7 @@ describe("ObjectReader", () => {
 
 	test("Nonzero number validation", () => {
 		let reader = new ObjectReader({
-			num: { number: { nonzero: true } },
+			num: { isNumber: { nonzero: true } },
 		});
 		expect(reader.read({ num: 1 })[0])
 			.toHaveProperty("num")
@@ -198,7 +200,7 @@ describe("ObjectReader", () => {
 
 	test("Boolean validation", () => {
 		let reader = new ObjectReader({
-			agree: { boolean: { true: true } },
+			agree: { isBoolean: { true: true } },
 		});
 		expect(reader.read({ agree: true })[0])
 			.toHaveProperty("agree")
@@ -214,7 +216,7 @@ describe("ObjectReader", () => {
 	test("Date validation", () => {
 		let reader = new ObjectReader({
 			birthDate: {
-				date: {
+				isDate: {
 					min: { date: new Date("1900-01-01") },
 					max: { date: new Date("2099-12-31") },
 				},
@@ -246,8 +248,8 @@ describe("ObjectReader", () => {
 	test("Array validation", () => {
 		let reader = new ObjectReader({
 			numbers: {
-				array: {
-					items: { number: { max: { value: 100 } } },
+				isArray: {
+					items: { isNumber: { max: { value: 100 } } },
 					min: { length: 2 },
 					max: { length: 5 },
 				},
@@ -270,10 +272,10 @@ describe("ObjectReader", () => {
 	test("Object validation", () => {
 		let reader = new ObjectReader({
 			user: {
-				object: {
+				isObject: {
 					schema: {
-						id: { number: {} },
-						name: { string: {} },
+						id: { isNumber: {} },
+						name: { isString: {} },
 					},
 				},
 			},
@@ -294,14 +296,15 @@ describe("ObjectReader", () => {
 	});
 
 	test("Key-value record validation", (t) => {
-		let userSchema = {
-			id: { number: {} },
-			name: { string: {} },
-		};
-		let usersRecord = {
-			values: { object: { schema: userSchema } },
-		};
-		let reader = new ObjectReader({ users: { record: usersRecord } });
+		let userReader = new ObjectReader({
+			id: { isNumber: {} },
+			name: { isString: {} },
+		});
+		let reader = new ObjectReader({
+			users: {
+				isRecord: { values: { isObject: { reader: userReader } } },
+			},
+		});
 		let users: Record<string, unknown> = {
 			"1": { id: 1, name: "alice" },
 			"2": { id: 2, name: "beatrice" },
@@ -325,8 +328,8 @@ describe("ObjectReader", () => {
 
 	test("Optional fields", () => {
 		let reader = new ObjectReader({
-			name: { string: {} },
-			age: { optional: true, number: { integer: true, positive: true } },
+			name: { isString: {} },
+			age: { isOptional: true, isNumber: { integer: true, positive: true } },
 		});
 		expect(reader.read({ name: "John" })[0])
 			.toHaveProperty("name")
@@ -342,22 +345,22 @@ describe("ObjectReader", () => {
 	test("Custom errors", () => {
 		let reader = new ObjectReader({
 			str: {
-				string: {
+				isString: {
 					err: "ERR",
 					min: { length: 1, err: "ERR_TOO_SHORT" },
 					max: { length: 2, err: "ERR_TOO_LONG" },
 				},
 			},
 			num: {
-				number: {
+				isNumber: {
 					err: "ERR",
 					min: { value: 0, err: "ERR_BELOW" },
 					max: { value: 120, err: "ERR_ABOVE" },
 				},
 			},
 			arr: {
-				array: {
-					items: { string: {} },
+				isArray: {
+					items: { isString: {} },
 					err: "ERR",
 					min: { length: 1, err: "ERR_TOO_SHORT" },
 					max: { length: 2, err: "ERR_TOO_LONG" },
@@ -380,8 +383,8 @@ describe("ObjectReader", () => {
 
 	test("readField method", () => {
 		let reader = new ObjectReader({
-			name: { string: {} },
-			age: { number: {} },
+			name: { isString: {} },
+			age: { isNumber: {} },
 		});
 		expect(reader.readField({ name: "John", age: 25 }, "name")[0]).toBe("John");
 		expect(reader.readField({ name: "John", age: 25 }, "age")[0]).toBe(25);
@@ -395,9 +398,11 @@ describe("ObjectReader", () => {
 	});
 
 	test("Recursion prevention", () => {
-		let schema = { foo: { object: { schema: undefined as any } } };
-		schema.foo.object.schema = schema;
-		let reader = new ObjectReader(schema);
+		let schema: ObjectReader.Schema = {
+			foo: { isObject: { schema: {} } },
+		};
+		(schema as any).foo.isObject.schema = schema;
+		let reader = new ObjectReader(schema as any);
 		let object: any = {};
 		object.foo = object; // does match, but is recursive.
 		let result = reader.read(object);
@@ -406,8 +411,8 @@ describe("ObjectReader", () => {
 
 	test("readJSONString method", () => {
 		let reader = new ObjectReader({
-			name: { string: {} },
-			age: { number: {} },
+			name: { isString: {} },
+			age: { isNumber: {} },
 		});
 		expect(reader.readJSONString('{"name":"John","age":25}')[0])
 			.toHaveProperty("name")

@@ -61,12 +61,12 @@ describe("FormContext", () => {
 	test("Validation", (t) => {
 		let ctx = new FormContext({
 			foo: {
-				string: {
+				isString: {
 					required: { err: "Foo is required" },
 					min: { length: 3, err: "Too short" },
 				},
 			},
-			baz: { number: {}, optional: true },
+			baz: { isNumber: {}, isOptional: true },
 		});
 
 		t.log("No validation yet");
@@ -107,7 +107,7 @@ describe("FormContext", () => {
 	test("Composite, binding to value and error", () => {
 		let ERR = "Foo must have at least 3 characters";
 		let ctx = new FormContext(
-			{ foo: { string: { min: { length: 3, err: strf(ERR) } } } },
+			{ foo: { isString: { min: { length: 3, err: strf(ERR) } } } },
 			{ foo: "bar" },
 		);
 
