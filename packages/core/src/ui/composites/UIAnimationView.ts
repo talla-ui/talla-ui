@@ -1,6 +1,8 @@
 import { app, RenderContext, View, ViewComposite } from "../../app/index.js";
 import { errorHandler } from "../../errors.js";
 
+const MIN_REPEAT_MS = 8;
+
 let _nextUpdateId = 1;
 
 /**
@@ -44,8 +46,13 @@ export class UIAnimationView extends ViewComposite {
 		let update = this._lastUpdate;
 		await Promise.resolve();
 		while (this.body && this._lastUpdate === update) {
+			// use a promise to avoid a blocking infinite loop
+			let minRepeatPromise = repeat
+				? new Promise((r) => setTimeout(r, MIN_REPEAT_MS))
+				: undefined;
 			await renderer.animateAsync(output, animation);
 			if (!repeat) return;
+			await minRepeatPromise;
 		}
 	}
 
