@@ -170,40 +170,27 @@ export interface ui {
 
 	/**
 	 * Creates a preset {@link UILabel} constructor using the provided options
+	 * @param text Preset label text (optional)
 	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @param text Preset label text
-	 * @param style Preset label style (optional)
 	 * @returns A new class that extends {@link UILabel}
 	 */
 	label(
-		preset: ui.PresetType<UILabel>,
-		text?: BindingOrValue<string | LazyString>,
-		style?: UIStyle.TypeOrOverrides<UILabel.StyleType>,
+		text: BindingOrValue<string | LazyString>,
+		preset?: ui.PresetType<UILabel>,
 	): ViewClass<UILabel>;
-	label(
-		text?: BindingOrValue<string | LazyString>,
-		style?: UIStyle.TypeOrOverrides<UILabel.StyleType>,
-	): ViewClass<UILabel>;
+	label(preset: ui.PresetType<UILabel>): ViewClass<UILabel>;
 
 	/**
 	 * Creates a preset {@link UIButton} constructor using the provided options
+	 * @param label Preset button label (optional)
 	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @param label Preset button label
-	 * @param onClick Preset Click event specifier (optional)
-	 * @param style Preset button style (optional)
 	 * @returns A new class that extends {@link UILabel}
 	 */
 	button(
-		preset: ui.PresetType<UIButton>,
-		label?: BindingOrValue<string | LazyString>,
-		onClick?: string,
-		style?: UIStyle.TypeOrOverrides<UIButton.StyleType>,
+		label: BindingOrValue<string | LazyString>,
+		preset?: ui.PresetType<UIButton>,
 	): ViewClass<UIButton>;
-	button(
-		label?: BindingOrValue<string | LazyString>,
-		onClick?: string,
-		style?: UIStyle.TypeOrOverrides<UIButton.StyleType>,
-	): ViewClass<UIButton>;
+	button(preset: ui.PresetType<UIButton>): ViewClass<UIButton>;
 
 	/**
 	 * Creates a preset {@link UITextField} constructor using the provided options

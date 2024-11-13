@@ -134,7 +134,7 @@ describe("UIListView", (scope) => {
 		let Preset = ui.row(
 			ui.list(
 				{ items: new ManagedList(...getObjects()) },
-				ui.label({ text: $list.string("item.name"), onClick: "Foo" }),
+				ui.label($list.string("item.name"), { onClick: "Foo" }),
 				UIRow,
 			),
 		);
@@ -231,7 +231,7 @@ describe("UIListView", (scope) => {
 	test("Get indices for components", async (t) => {
 		let Preset = ui.list(
 			{ items: new ManagedList(...getObjects()) },
-			ui.label({ text: $list.string("item.name"), allowFocus: true }),
+			ui.label($list.string("item.name"), { allowFocus: true }),
 		);
 		let list = new Preset();
 		t.render(list);
@@ -247,7 +247,7 @@ describe("UIListView", (scope) => {
 			ui.button("button"),
 			ui.list(
 				{ items: new ManagedList(...getObjects()) },
-				ui.label({ text: $list.string("item.name"), allowFocus: true }),
+				ui.label($list.string("item.name"), { allowFocus: true }),
 				ui.cell({ allowKeyboardFocus: true, accessibleRole: "list" }),
 			),
 		);

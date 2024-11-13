@@ -150,12 +150,11 @@ export class MessageDialog
 
 	protected override createView() {
 		let messageLabels = this.options.messages.map((text, i) =>
-			ui.label(
-				String(text),
-				i
+			ui.label(String(text), {
+				style: i
 					? MessageDialog.styles.labelStyle
 					: MessageDialog.styles.firstLabelStyle,
-			),
+			}),
 		);
 		let buttons = [
 			ui.button({

@@ -31,7 +31,7 @@ export const $formContext: Binding.Source<
  *     hidden: $activity.not("formContext.errors.foo"),
  *     text: $activity.string("formContext.errors.foo.message")
  *   }),
- *   ui.button("Go", "Submit")
+ *   ui.button("Go", { onClick: "Submit" })
  * );
  *
  * class MyActivity extends Activity {

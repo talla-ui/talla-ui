@@ -21,7 +21,7 @@ class CountActivity extends Activity {
 		return ui
 			.cell(
 				ui.textField({ value: $activity.string("count"), onInput: "SetCount" }),
-				ui.button("+", "CountUp"),
+				ui.button("+", { onClick: "CountUp" }),
 			)
 			.create();
 	}

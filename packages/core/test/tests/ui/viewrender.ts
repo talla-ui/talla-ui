@@ -90,7 +90,7 @@ describe("UIViewRenderer", (scope) => {
 		class MySecondActivity extends Activity {
 			protected override createView() {
 				this.setRenderMode("none");
-				return ui.cell(ui.button("foo", "+ButtonPress")).create();
+				return ui.cell(ui.button("foo", { onClick: "+ButtonPress" })).create();
 			}
 			onButtonPress() {
 				t.count("foo-second");

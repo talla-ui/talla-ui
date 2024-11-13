@@ -63,8 +63,8 @@ export class UITextField extends UIComponent {
 		},
 	) {
 		// quietly change 'text' to placeholder to support JSX tag content
-		if ("text" in (preset as any)) {
-			preset.placeholder = (preset as any).text;
+		if ("text" in preset) {
+			if (!("placeholder" in preset)) preset.placeholder = preset.text as any;
 			delete (preset as any).text;
 		}
 		super.applyViewPreset(preset);

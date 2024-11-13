@@ -19,7 +19,10 @@ describe("UIConditionalView", () => {
 
 	test("Events are propagated", async (t) => {
 		let MyCell = ui.cell(
-			ui.conditional({ state: true }, ui.button("Click me", "ButtonClick")),
+			ui.conditional(
+				{ state: true },
+				ui.button("Click me", { onClick: "ButtonClick" }),
+			),
 		);
 
 		// create instance and listen for events on cell

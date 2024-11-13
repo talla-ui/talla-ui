@@ -44,7 +44,7 @@ const NO_DATA = Object.freeze({});
  *     { items: bind("items") }
  *     ui.row(
  *       // ...
- *       ui.button("Remove", "RemoveItem")
+ *       ui.button("Remove", { onClick: "RemoveItem" })
  *     )
  *   )
  * )

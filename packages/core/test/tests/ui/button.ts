@@ -28,7 +28,7 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Preset using object and label", () => {
-		let MyButton = ui.button({ accessibleLabel: "test" }, "foo");
+		let MyButton = ui.button("foo", { accessibleLabel: "test" });
 		let button = new MyButton();
 		expect(button).toHaveProperty("accessibleLabel").toBe("test");
 		expect(button).toHaveProperty("label").asString().toBe("foo");
@@ -47,8 +47,7 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Rendered with styles", async (t) => {
-		let MyButton = ui.button({
-			label: "foo",
+		let MyButton = ui.button("foo", {
 			style: {
 				borderColor: ui.color.ORANGE,
 				bold: true,
@@ -65,10 +64,7 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Rendered and clicked, event has value", async (t) => {
-		let MyButton = ui.button({
-			label: "Foo button",
-			value: "foo",
-		});
+		let MyButton = ui.button("Foo button", { value: "foo" });
 		let btn = new MyButton();
 		let clickValue: any;
 		btn.listen((e) => {
@@ -80,7 +76,7 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Click event propagation", async (t) => {
-		const view = ui.cell(ui.button("Button", "ButtonClicked"));
+		const view = ui.cell(ui.button("Button", { onClick: "ButtonClicked" }));
 		class MyActivity extends Activity {
 			protected override createView() {
 				return view.create();

@@ -5,6 +5,8 @@ import {
 	ViewComposite,
 	app,
 } from "../app/index.js";
+import { LazyString } from "../base/LazyString.js";
+import { invalidArgErr } from "../errors.js";
 import {
 	UIAnimatedCell,
 	UIAnimationView,
@@ -54,7 +56,7 @@ function createComponentFactory<TView extends View>(
 	type: new () => TView,
 	extendPreset?: (preset: any, ...args: any) => any,
 	init?: (this: TView, ...args: any) => void,
-) {
+): any {
 	return function (...args: any[]) {
 		let preset = isPreset(args[0]) ? args.shift() : undefined;
 		if (extendPreset) extendPreset((preset ||= {}), ...args);
@@ -64,13 +66,47 @@ function createComponentFactory<TView extends View>(
 				if (preset) this.applyViewPreset({ ...preset });
 				if (init) init.call(this as any, ...(args as any));
 			}
-		} as any;
+		};
 	};
 }
+
+/** UI component factory helper function, for containers */
 const createContainerComponentFactory = (V: ViewClass<UIContainer>) =>
 	createComponentFactory(V, undefined, function (...content: ViewClass[]) {
 		for (let C of content) this.content.add(new C());
 	});
+
+/** UI component factory helper function, for labels and buttons */
+function createTextComponentFactory<TView extends View>(
+	type: new () => TView,
+): any {
+	return function (a0: unknown, a1: unknown) {
+		if (!a1 && (typeof a0 === "string" || a0 instanceof LazyString)) {
+			// optimized result: use constructor with single string
+			return class PresetLabel extends (type as any) {
+				constructor() {
+					super(a0);
+				}
+			};
+		}
+
+		// otherwise use applyViewPreset with text
+		let hasText = !isPreset(a0);
+		let preset: any = hasText ? a1 : a0;
+		if (preset !== undefined && !isPreset(preset)) {
+			throw invalidArgErr("preset");
+		}
+		return class PresetLabel extends (type as any) {
+			constructor() {
+				super();
+				this.applyViewPreset({
+					text: hasText ? a0 : undefined,
+					...preset,
+				});
+			}
+		};
+	};
+}
 
 // === UI component factory functions
 
@@ -80,24 +116,13 @@ _ui.row = createContainerComponentFactory(UIRow);
 _ui.scroll = createContainerComponentFactory(UIScrollContainer);
 _ui.animatedCell = createComponentFactory(UIAnimatedCell);
 
-_ui.label = createComponentFactory(UILabel, (preset, text, style) => {
-	if (text) preset.text = text;
-	if (style) preset.style = style;
-});
-
-_ui.button = createComponentFactory(
-	UIButton,
-	(preset, label, onClick, style) => {
-		if (label) preset.label = label;
-		if (onClick) preset.onClick = onClick;
-		if (style) preset.style = style;
-	},
-);
-
+_ui.label = createTextComponentFactory(UILabel);
+_ui.button = createTextComponentFactory(UIButton);
 _ui.textField = createComponentFactory(UITextField);
 _ui.toggle = createComponentFactory(UIToggle);
 _ui.separator = createComponentFactory(UISeparator);
 _ui.image = createComponentFactory(UIImage);
+
 _ui.spacer = createComponentFactory(UISpacer, (preset, width, height) => {
 	if (width) preset.width = width;
 	if (height) preset.height = height;

@@ -51,8 +51,8 @@ export class UIToggle extends UIComponent {
 		},
 	) {
 		// quietly change 'text' to label to support JSX tag content
-		if ("text" in (preset as any)) {
-			preset.label = (preset as any).text;
+		if ("text" in preset) {
+			preset.label = preset.text as any;
 			delete (preset as any).text;
 		}
 		super.applyViewPreset(preset);
