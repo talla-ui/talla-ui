@@ -39,7 +39,7 @@ export class RenderedTestMessageDialog {
 		for (let b of this.buttons) {
 			if (b.text === button) return this._click(b);
 		}
-		this._click();
+		return this._click();
 	}
 
 	/** Clicks the first button of the dialog (confirm or dismiss button) */
