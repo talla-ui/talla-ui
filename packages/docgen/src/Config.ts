@@ -7,6 +7,7 @@ export class Config {
 	input: string[] = ["docs/**/*.md"];
 	samples: string[] = [];
 	check = false;
+	checkOrphans = false;
 	refFolder = "";
 	docFolder = "";
 	output = {

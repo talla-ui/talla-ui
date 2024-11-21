@@ -7,6 +7,7 @@
 	],
 	"samples": ["./content/en/samples/**/*.{ts,tsx}"],
 	"refFolder": "ref",
+	"checkOrphans": true,
 	"output": {
 		"index": {
 			"file": "_site/docs/en/search.json",

@@ -105,6 +105,17 @@ if (config.check) {
 	}
 }
 
+// check for orphaned non-root pages
+if (config.checkOrphans) {
+	let orphans = docsIndex.getOrphans();
+	orphans.sort((a, b) => a.id.localeCompare(b.id));
+	if (orphans.length) {
+		console.error("Orphaned pages:");
+		for (let o of orphans) console.error("- " + o.id);
+		process.exit(1);
+	}
+}
+
 // TODO: at this stage, the pre-processed markdown can be swapped (partially)
 // for a translated version (from markdown output with preserveLinks option).
 
