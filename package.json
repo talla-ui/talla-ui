@@ -50,6 +50,7 @@
 		"www-build:docs": "cd docs && npm run build",
 		"www-build:check-docs": "cd docs && npm run check-docs",
 		"www-serve": "cd docs && npm run serve",
+		"www-build-site-only": "cd docs && npm run build:site",
 		"version": "node scripts/set-version.js && npm install && npm run build && git add .",
 		"publish-all": "concurrently npm:publish:core && concurrently npm:publish:packages:*",
 		"publish:core": "cd packages/core && npm publish --silent",

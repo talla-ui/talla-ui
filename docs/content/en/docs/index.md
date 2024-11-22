@@ -1,3 +1,7 @@
+---
+root: true
+---
+
 # Documentation
 
 ## Getting started <!--{#getting-started}-->

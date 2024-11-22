@@ -16,6 +16,7 @@ export const enum EntryType {
 export type Entry = {
 	location: string;
 	type: EntryType;
+	root?: boolean;
 	id: string;
 	name: string;
 	title: string;

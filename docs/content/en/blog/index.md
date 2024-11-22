@@ -1,5 +1,6 @@
 ---
 id: blog
+root: true
 folder: blog
 title: Blog
 abstract: Recent blog posts

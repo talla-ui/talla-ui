@@ -267,7 +267,9 @@ export class DocsIndex {
 
 	/** Returns a list of orphaned entries */
 	getOrphans() {
-		return [...this.entries.values()].filter((a) => !this._parents.has(a));
+		return [...this.entries.values()].filter(
+			(a) => !this._parents.has(a) && !a.root,
+		);
 	}
 
 	private _menu = new Map<Entry, MenuItem[]>();
