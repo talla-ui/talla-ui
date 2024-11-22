@@ -1,4 +1,5 @@
 import {
+	ConfigOptions,
 	RenderContext,
 	UICell,
 	UIColumn,
@@ -31,7 +32,7 @@ const _containerPosition = {
  * @see {@link WebContextOptions}
  * @see {@link UITheme.ModalControllerFactory}
  */
-export class ModalMenuStyles {
+export class WebModalMenuStyles extends ConfigOptions {
 	/** The effect that's applied to the container, defaults to `Elevate` */
 	effect = ui.effect.ELEVATE;
 
@@ -91,7 +92,7 @@ export class ModalMenuStyles {
 
 /** @internal Default modal menu view; shown asynchronously and resolves a promise */
 export class ModalMenu extends ViewComposite implements UITheme.MenuController {
-	static styles = new ModalMenuStyles();
+	static styles = new WebModalMenuStyles();
 
 	constructor(public options: UITheme.MenuOptions) {
 		super();

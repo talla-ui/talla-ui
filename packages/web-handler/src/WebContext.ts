@@ -9,9 +9,12 @@ import {
 import { WebHashNavigationContext } from "./WebHashNavigationContext.js";
 import { WebHistoryNavigationContext } from "./WebHistoryNavigationContext.js";
 import { WebRenderer } from "./renderer/WebRenderer.js";
-import { Dialog, DialogStyles } from "./style/Dialog.js";
-import { MessageDialog, MessageDialogStyles } from "./style/MessageDialog.js";
-import { ModalMenu, ModalMenuStyles } from "./style/ModalMenu.js";
+import { Dialog, WebDialogStyles } from "./style/Dialog.js";
+import {
+	MessageDialog,
+	WebMessageDialogStyles,
+} from "./style/MessageDialog.js";
+import { ModalMenu, WebModalMenuStyles } from "./style/ModalMenu.js";
 import { WebTheme } from "./style/WebTheme.js";
 import { WebLocalData } from "./WebLocalData.js";
 
@@ -73,24 +76,24 @@ export class WebContextOptions extends ConfigOptions {
 
 	/**
 	 * Options for the appearance of the default modal dialog view (container)
-	 * - These styles can be changed directly on this object. Refer to {@link DialogStyles} for details.
-	 * @see {@link DialogStyles}
+	 * - These styles can be changed directly on this object. Refer to {@link WebDialogStyles} for details.
+	 * @see {@link WebDialogStyles}
 	 */
-	dialogStyles: DialogStyles = Dialog.styles;
+	dialogStyles: WebDialogStyles = Dialog.styles;
 
 	/**
 	 * Options for the appearance of the default modal message dialog view
-	 * - These styles can be changed directly on this object. Refer to {@link MessageDialogStyles} for details.
-	 * @see {@link MessageDialogStyles}
+	 * - These styles can be changed directly on this object. Refer to {@link WebMessageDialogStyles} for details.
+	 * @see {@link WebMessageDialogStyles}
 	 */
-	messageDialogStyles: MessageDialogStyles = MessageDialog.styles;
+	messageDialogStyles: WebMessageDialogStyles = MessageDialog.styles;
 
 	/**
 	 * Options for the appearance of the default modal menu view
-	 * - These styles can be changed directly on this object. Refer to {@link ModalMenuStyles} for details.
-	 * @see {@link ModalMenuStyles}
+	 * - These styles can be changed directly on this object. Refer to {@link WebModalMenuStyles} for details.
+	 * @see {@link WebModalMenuStyles}
 	 */
-	modalMenuStyles: ModalMenuStyles = ModalMenu.styles;
+	modalMenuStyles: WebModalMenuStyles = ModalMenu.styles;
 
 	/** Viewport column width in pixels, defaults to 300 */
 	viewportColumnWidth = 300;

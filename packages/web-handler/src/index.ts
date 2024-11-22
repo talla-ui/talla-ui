@@ -3,12 +3,18 @@ import { WebContextOptions, useWebContext } from "./WebContext.js";
 import { WebTheme } from "./style/WebTheme.js";
 import { WebHashNavigationContext } from "./WebHashNavigationContext.js";
 import { WebHistoryNavigationContext } from "./WebHistoryNavigationContext.js";
+import { WebDialogStyles } from "./style/Dialog.js";
+import { WebMessageDialogStyles } from "./style/MessageDialog.js";
+import { WebModalMenuStyles } from "./style/ModalMenu.js";
 export {
 	useWebContext,
 	WebContextOptions,
 	WebTheme,
 	WebHashNavigationContext,
 	WebHistoryNavigationContext,
+	WebDialogStyles,
+	WebMessageDialogStyles,
+	WebModalMenuStyles,
 };
 
 if (!window.require) {
@@ -21,6 +27,9 @@ if (!window.require) {
 				WebTheme,
 				WebHashNavigationContext,
 				WebHistoryNavigationContext,
+				WebDialogStyles,
+				WebMessageDialogStyles,
+				WebModalMenuStyles,
 			};
 		}
 		throw Error("Invalid require() call");

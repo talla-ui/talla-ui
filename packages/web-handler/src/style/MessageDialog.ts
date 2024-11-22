@@ -11,7 +11,7 @@ import {
 	strf,
 	ui,
 } from "talla-ui";
-import { DialogStyles } from "./Dialog.js";
+import { WebDialogStyles } from "./Dialog.js";
 
 /**
  * A class that defines the styles for the default modal message dialog view
@@ -22,7 +22,7 @@ import { DialogStyles } from "./Dialog.js";
  * @see {@link WebContextOptions}
  * @see {@link UITheme.ModalControllerFactory}
  */
-export class MessageDialogStyles extends DialogStyles {
+export class WebMessageDialogStyles extends WebDialogStyles {
 	constructor() {
 		super();
 
@@ -104,7 +104,7 @@ export class MessageDialog
 	extends ViewComposite
 	implements UITheme.AlertDialogController, UITheme.ConfirmDialogController
 {
-	static styles = new MessageDialogStyles();
+	static styles = new WebMessageDialogStyles();
 
 	constructor(public options: MessageDialogOptions) {
 		super();

@@ -1,5 +1,6 @@
 import {
 	$view,
+	ConfigOptions,
 	RenderContext,
 	UITheme,
 	View,
@@ -12,9 +13,9 @@ import {
 /**
  * A class that defines the styles for the default modal dialog view
  * - A default instance of this class is created, and can be modified in the {@link WebContextOptions} configuration callback passed to {@link useWebContext}.
- * - These styles are used automatically for dialog views created by activities (see {@link Activity.setRenderMode()}). Note that message dialog styles are configured separately using {@link MessageDialogStyles}.
+ * - These styles are used automatically for dialog views created by activities (see {@link Activity.setRenderMode()}). Note that message dialog styles are configured separately using {@link WebMessageDialogStyles}.
  */
-export class DialogStyles {
+export class WebDialogStyles extends ConfigOptions {
 	/** The margin around the outer dialog container, to change its position on screen, defaults to `auto` */
 	margin: string | number = "auto";
 
@@ -36,7 +37,7 @@ export class DialogStyles {
 
 /** @internal Default modal dialog view; shown synchronously, removed when view is unlinked */
 export class Dialog extends ViewComposite implements UITheme.DialogController {
-	static styles = new DialogStyles();
+	static styles = new WebDialogStyles();
 
 	constructor(public dialogView: View) {
 		super();
