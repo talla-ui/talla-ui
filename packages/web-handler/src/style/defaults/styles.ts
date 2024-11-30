@@ -9,8 +9,8 @@ type CombinedStyleType = UIComponent.DimensionsStyleType &
 export const defaultControlTextStyle: CombinedStyleType = {
 	fontFamily:
 		'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, "Helvetica Neue", Arial, sans-serif',
-	fontSize: "0.875rem",
-	lineHeight: "1.25",
+	fontSize: 14,
+	lineHeight: 1.4,
 };
 
 const _color_bg = ui.color.BACKGROUND;
@@ -36,14 +36,6 @@ const baseButtonStyle: CombinedStyleType = {
 		cursor: "pointer",
 		transition: "background 0.1s ease, border-color 0.1s ease",
 	},
-};
-
-const baseLabelStyle: CombinedStyleType = {
-	padding: { y: 6 },
-	maxWidth: "100%",
-	lineHeight: 1,
-	lineBreakMode: "ellipsis",
-	css: { cursor: "inherit" },
 };
 
 const disabledStyle: CombinedStyleType = {
@@ -170,19 +162,9 @@ export const styles: [
 		"Label",
 		[
 			{
-				...baseLabelStyle,
-				lineHeight: 1.5,
-			},
-		],
-	],
-	["SmallLabel", [{ ...baseLabelStyle, fontSize: "0.75em", lineHeight: 1.25 }]],
-	["TitleLabel", [{ ...baseLabelStyle, fontSize: "1.5em", fontWeight: 600 }]],
-	[
-		"CloseLabel",
-		[
-			{
-				...baseLabelStyle,
-				padding: 0,
+				maxWidth: "100%",
+				lineBreakMode: "ellipsis",
+				css: { cursor: "inherit" },
 			},
 		],
 	],
@@ -238,7 +220,7 @@ export const styles: [
 			{
 				textColor: _color_text, // (don't inherit :checked fill)
 				lineBreakMode: "pre-wrap",
-				lineHeight: 1.5,
+				lineHeight: 1.4,
 				padding: { y: 6 },
 				css: { display: "inline" },
 			},

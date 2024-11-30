@@ -52,13 +52,7 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 
 	override updateStyle(element: TestOutputElement) {
 		let label = this.observed;
-		element.styleClass =
-			getBaseStyleClass(label.style) ||
-			(label.title
-				? ui.style.LABEL_TITLE
-				: label.small
-					? ui.style.LABEL_SMALL
-					: ui.style.LABEL);
+		element.styleClass = getBaseStyleClass(label.style) || ui.style.LABEL;
 		applyElementStyle(
 			element,
 			[
@@ -68,8 +62,9 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 					bold: label.bold,
 					italic: label.italic,
 					textColor: label.color,
+					fontSize: label.fontSize,
 					opacity:
-						label.dim === true ? 0.5 : label.dim === false ? 1 : label.dim,
+						label.dim === true ? 0.6 : label.dim === false ? 1 : label.dim,
 					lineBreakMode: label.wrap ? "pre-wrap" : undefined,
 					userSelect: label.selectable || undefined,
 				},

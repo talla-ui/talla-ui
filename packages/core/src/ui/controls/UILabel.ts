@@ -36,8 +36,7 @@ export class UILabel extends UIComponent {
 			| "bold"
 			| "italic"
 			| "color"
-			| "title"
-			| "small"
+			| "fontSize"
 			| "dim"
 			| "style"
 			| "allowFocus"
@@ -82,21 +81,6 @@ export class UILabel extends UIComponent {
 	 */
 	headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
 
-	/**
-	 * True if the title label style should be applied to this label
-	 * - The title label style is defined by the theme, identified as TitleLabel, and also available as `ui.style.LABEL_TITLE`.
-	 * - This property doesn't affect the `headingLevel` property.
-	 * - If the {@link style} property is set, this property is ignored.
-	 */
-	title?: boolean;
-
-	/**
-	 * True if the small label style should be applied to this label
-	 * - The small label style is defined by the theme, identified as SmallLabel, and also available as `ui.style.LABEL_SMALL`.
-	 * - If the {@link style} property is set, this property is ignored.
-	 */
-	small?: boolean;
-
 	/** True if text should be rendered as HTML instead of plain text */
 	htmlFormat?: boolean;
 
@@ -117,6 +101,12 @@ export class UILabel extends UIComponent {
 	width?: string | number = undefined;
 
 	/**
+	 * The font size to be applied to this label (pixels or string with unit)
+	 * - If set, this property overrides the `fontSize` property of the current label style.
+	 */
+	fontSize?: string | number;
+
+	/**
 	 * True if this label should be displayed using bold text
 	 * - If set, this property overrides the `bold` property of the current label style.
 	 */
@@ -135,7 +125,7 @@ export class UILabel extends UIComponent {
 	color?: UIColor = undefined;
 
 	/**
-	 * The opacity to be applied to this label, or `true` to use 50% opacity
+	 * The opacity to be applied to this label, or `true` to use lower opacity
 	 * - If set, this property overrides the `opacity` property of the current label style.
 	 */
 	dim?: number | boolean = undefined;
