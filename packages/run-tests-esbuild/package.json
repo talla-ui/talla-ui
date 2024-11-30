@@ -1,6 +1,6 @@
 {
 	"name": "@talla-ui/run-tests-esbuild",
-	"version": "4.0.0-dev.50",
+	"version": "4.0.0-dev.51",
 	"publishConfig": {
 		"tag": "next"
 	},
