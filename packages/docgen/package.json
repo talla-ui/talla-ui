@@ -1,6 +1,6 @@
 {
 	"name": "@talla-ui/docgen",
-	"version": "4.0.0-dev.49",
+	"version": "4.0.0-dev.50",
 	"publishConfig": {
 		"tag": "next"
 	},
