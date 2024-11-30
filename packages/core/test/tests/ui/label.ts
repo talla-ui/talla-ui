@@ -76,7 +76,7 @@ describe("UILabel", (scope) => {
 	test("Rendered with combined styles", async (t) => {
 		let MyLabel = ui.label("foo", {
 			style: ui.style(
-				ui.style.LABEL_SMALL, // ignored
+				ui.style.LABEL.extend({ fontSize: 12 }), // ignored
 				ui.style.LABEL.override({ bold: true }), // base
 				{ italic: true }, // override
 			),

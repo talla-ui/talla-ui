@@ -407,9 +407,6 @@ export interface ui {
 		readonly CELL: UIStyle.Type<UICell.StyleType>;
 		readonly CELL_BG: UIStyle.Type<UICell.StyleType>;
 		readonly LABEL: UIStyle.Type<UILabel.StyleType>;
-		readonly LABEL_TITLE: UIStyle.Type<UILabel.StyleType>;
-		readonly LABEL_SMALL: UIStyle.Type<UILabel.StyleType>;
-		readonly LABEL_CLOSE: UIStyle.Type<UILabel.StyleType>;
 		readonly BUTTON: UIStyle.Type<UIButton.StyleType>;
 		readonly BUTTON_PRIMARY: UIStyle.Type<UIButton.StyleType>;
 		readonly BUTTON_PLAIN: UIStyle.Type<UIButton.StyleType>;
