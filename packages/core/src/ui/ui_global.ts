@@ -342,10 +342,6 @@ Object.freeze(ui.effect);
 Object.assign(_ui.style, {
 	CELL: ui.style("Cell"),
 	CELL_BG: ui.style("BackgroundCell"),
-	LABEL: ui.style("Label"),
-	LABEL_TITLE: ui.style("TitleLabel"),
-	LABEL_SMALL: ui.style("SmallLabel"),
-	LABEL_CLOSE: ui.style("CloseLabel"),
 	BUTTON: ui.style("Button"),
 	BUTTON_PRIMARY: ui.style("PrimaryButton"),
 	BUTTON_PLAIN: ui.style("PlainButton"),
@@ -353,6 +349,7 @@ Object.assign(_ui.style, {
 	BUTTON_ICON: ui.style("IconButton"),
 	BUTTON_DANGER: ui.style("DangerButton"),
 	BUTTON_SUCCESS: ui.style("SuccessButton"),
+	LABEL: ui.style("Label"),
 	TEXTFIELD: ui.style("TextField"),
 	TOGGLE: ui.style("Toggle"),
 	TOGGLE_LABEL: ui.style("ToggleLabel"),
