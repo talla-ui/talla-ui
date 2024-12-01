@@ -27,6 +27,7 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 			"bold",
 			"italic",
 			"color",
+			"padding",
 			"width",
 			"dim",
 			"style",
@@ -43,8 +44,9 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 			case "bold":
 			case "italic":
 			case "color":
-			case "width":
 			case "dim":
+			case "width":
+			case "padding":
 			case "style":
 				this.scheduleUpdate(undefined, this.element);
 				return;
@@ -77,6 +79,7 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 				label.style,
 				{
 					width: label.width,
+					padding: label.padding,
 					bold: label.bold,
 					italic: label.italic,
 					textColor: label.color,

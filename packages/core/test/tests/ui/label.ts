@@ -75,6 +75,7 @@ describe("UILabel", (scope) => {
 
 	test("Rendered with combined styles", async (t) => {
 		let MyLabel = ui.label("foo", {
+			padding: 8,
 			style: ui.style(
 				ui.style.LABEL.extend({ fontSize: 12 }), // ignored
 				ui.style.LABEL.override({ bold: true }), // base
@@ -84,7 +85,11 @@ describe("UILabel", (scope) => {
 		t.render(new UIRow(new MyLabel()));
 		let match = await t.expectOutputAsync({
 			type: "label",
-			styles: { bold: true, italic: true },
+			styles: {
+				padding: 8,
+				bold: true,
+				italic: true,
+			},
 		});
 		expect(match.elements).toBeArray(1);
 	});

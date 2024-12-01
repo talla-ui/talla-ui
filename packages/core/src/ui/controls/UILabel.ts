@@ -32,6 +32,7 @@ export class UILabel extends UIComponent {
 			| "iconColor"
 			| "wrap"
 			| "selectable"
+			| "padding"
 			| "width"
 			| "bold"
 			| "italic"
@@ -99,6 +100,12 @@ export class UILabel extends UIComponent {
 
 	/** Target width of the label, in pixels or CSS length with unit */
 	width?: string | number = undefined;
+
+	/**
+	 * Padding around the label, in pixels or CSS length with unit, **or** an object with separate offset values
+	 * - If this property is set, its value overrides `padding` from the current label style.
+	 */
+	padding?: UIComponent.Offsets = undefined;
 
 	/**
 	 * The font size to be applied to this label (pixels or string with unit)
