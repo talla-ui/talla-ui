@@ -58,7 +58,7 @@ export class WebModalMenuStyles extends ConfigOptions {
 	 */
 	itemCellStyle: ui.CellStyle = ui.style.CELL.extend(
 		{
-			padding: { x: 16 },
+			padding: { x: 16, y: 6 },
 			css: { cursor: "pointer", outlineOffset: "-2px" },
 		},
 		{
