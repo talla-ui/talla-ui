@@ -2,9 +2,7 @@ import {
 	MessageDialogOptions,
 	RenderContext,
 	StringConvertible,
-	UICell,
 	UIContainer,
-	UIStyle,
 	UITheme,
 	ViewComposite,
 	app,
@@ -23,14 +21,11 @@ import { WebDialogStyles } from "./Dialog.js";
  * @see {@link UITheme.ModalControllerFactory}
  */
 export class WebMessageDialogStyles extends WebDialogStyles {
-	constructor() {
-		super();
-
-		// restrict message dialogs to 95vw width
-		this.containerStyle = (
-			this.containerStyle as UIStyle.Type<UICell.StyleType>
-		).extend({ maxWidth: "95vw" });
-	}
+	/**
+	 * The maximum width of a message dialog
+	 * - The default style limits the message dialog width using the CSS `min()` function based on screen width and a fixed value.
+	 */
+	maxWidth: string | number = "min(95vw,28rem)";
 
 	/**
 	 * The cell style used for the block of messages
@@ -85,6 +80,9 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 		lineBreakMode: "pre-wrap",
 		userSelect: true,
 	});
+
+	/** The amount of (vertical) space between labels */
+	labelSpacing = 8;
 
 	/**
 	 * The button style used for all buttons except the confirm button
@@ -183,14 +181,19 @@ export class MessageDialog
 					accessibleRole: "alertdialog",
 					margin: MessageDialog.styles.margin,
 					effect: MessageDialog.styles.effect,
-					style: MessageDialog.styles.containerStyle,
+					style: ui.style(MessageDialog.styles.containerStyle, {
+						maxWidth: MessageDialog.styles.maxWidth,
+					}),
 				},
 				ui.cell(
 					{
 						effect: ui.effect("DragModal"),
 						style: MessageDialog.styles.messageCellStyle,
 					},
-					ui.column(...messageLabels),
+					ui.column(
+						{ spacing: MessageDialog.styles.labelSpacing },
+						...messageLabels,
+					),
 				),
 				ui.cell(
 					{ style: MessageDialog.styles.buttonCellStyle },
