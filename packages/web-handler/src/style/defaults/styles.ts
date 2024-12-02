@@ -10,7 +10,7 @@ export const defaultControlTextStyle: CombinedStyleType = {
 	fontFamily:
 		'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, "Helvetica Neue", Arial, sans-serif',
 	fontSize: 14,
-	lineHeight: 1.4,
+	lineHeight: 1.5,
 };
 
 const _color_bg = ui.color.BACKGROUND;
@@ -220,7 +220,7 @@ export const styles: [
 			{
 				textColor: _color_text, // (don't inherit :checked fill)
 				lineBreakMode: "pre-wrap",
-				lineHeight: 1.4,
+				lineHeight: 1.5,
 				padding: { y: 6 },
 				css: { display: "inline" },
 			},
