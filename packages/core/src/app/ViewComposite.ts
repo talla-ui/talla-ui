@@ -90,8 +90,9 @@ export class ViewComposite extends View {
 		let bodyBuilder: ViewBuilder | undefined | void;
 		let b = super.getViewBuilder(preset) as ViewBuilder<ViewComposite>;
 		return b.addInitializer((view) => {
-			bodyBuilder ||= view.defineView(...content);
-			view.defineView = () => bodyBuilder;
+			let _defineView = view.defineView;
+			view.defineView = () =>
+				(bodyBuilder ||= _defineView.apply(view, content));
 		});
 	}
 
