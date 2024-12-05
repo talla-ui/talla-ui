@@ -14,12 +14,12 @@ describe("UIScrollContainer", (scope) => {
 		expect(cont.content).toHaveProperty("count").toBe(1);
 	});
 
-	test("Preset with properties", () => {
-		let MyContainer = ui.scroll({
+	test("View builder with properties", () => {
+		let myContainer = ui.scroll({
 			horizontalScrollEnabled: false,
 			verticalScrollEnabled: true,
 		});
-		let cont = new MyContainer();
+		let cont = myContainer.create();
 		expect(cont).toHaveProperty("horizontalScrollEnabled").toBeFalsy();
 		expect(cont).toHaveProperty("verticalScrollEnabled").toBeTruthy();
 	});

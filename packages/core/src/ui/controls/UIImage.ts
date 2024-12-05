@@ -1,4 +1,4 @@
-import type { View } from "../../app/index.js";
+import type { ViewBuilder } from "../../app/index.js";
 import type { StringConvertible } from "../../base/index.js";
 import { UIComponent } from "../UIComponent.js";
 import type { UIStyle } from "../UIStyle.js";
@@ -11,16 +11,15 @@ import type { UIStyle } from "../UIStyle.js";
  * @online_docs Refer to the online documentation for more documentation on using this UI component class.
  */
 export class UIImage extends UIComponent {
-	/** Creates a new image view object with the specified URL */
-	constructor(url?: StringConvertible) {
-		super();
-		this.url = url;
-	}
-
-	override applyViewPreset(
-		preset: View.ExtendPreset<
-			UIComponent,
-			this,
+	/**
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
+	 */
+	static override getViewBuilder(
+		preset: ViewBuilder.ExtendPreset<
+			typeof UIComponent,
+			UIImage,
 			"url" | "width" | "height" | "style" | "allowFocus" | "allowKeyboardFocus"
 		> & {
 			/** Event that's emitted when the image couldn't be loaded */
@@ -28,7 +27,13 @@ export class UIImage extends UIComponent {
 		},
 	) {
 		if (preset.allowKeyboardFocus) preset.allowFocus = true;
-		super.applyViewPreset(preset);
+		return super.getViewBuilder(preset);
+	}
+
+	/** Creates a new image view object with the specified URL */
+	constructor(url?: StringConvertible) {
+		super();
+		this.url = url;
 	}
 
 	/** The image resource URL */

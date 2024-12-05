@@ -1,7 +1,7 @@
 import type {
 	RenderContext,
 	View,
-	ViewClass,
+	ViewBuilder,
 	ViewComposite,
 } from "../app/index.js";
 import type { Binding, BindingOrValue, LazyString } from "../base/index.js";
@@ -32,17 +32,15 @@ import type { UIToggle } from "./controls/UIToggle.js";
 export const ui: Readonly<ui> = Object.create(null) as any;
 export namespace ui {
 	/**
-	 * Type definition for a UI component preset object
-	 * - This type is used to define the properties, bindings, and event handlers that can be preset on UI components using functions such as `ui.button(...)`.
+	 * Type definition for a view builder preset object
+	 * - This type is used to define the properties, bindings, and event handlers that can be passed to functions such as `ui.button(...)`.
 	 */
-	export type PresetType<
-		T extends View,
-		TPreset = T extends ViewComposite & {
-			new (p?: infer TPreset): ViewComposite;
+	export type PresetType<TViewClass extends new () => View> =
+		TViewClass extends {
+			getViewBuilder(preset: infer P): ViewBuilder;
 		}
-			? TPreset
-			: View.ExtendPreset<T>,
-	> = TPreset;
+			? P
+			: never;
 
 	/** Type alias for values that are accepted as style presets for a {@link UICell} */
 	export type CellStyle = UIStyle.TypeOrOverrides<UICell.StyleType>;
@@ -71,24 +69,24 @@ export namespace ui {
 	 * @docgen {hide}
 	 */
 	export namespace JSX {
-		export type Element = ViewClass;
+		export type Element = ViewBuilder;
 		export interface IntrinsicElements {
-			cell: ui.PresetType<UICell>;
-			column: ui.PresetType<UIColumn>;
-			row: ui.PresetType<UIRow>;
-			scroll: ui.PresetType<UIScrollContainer>;
-			animatedcell: ui.PresetType<UIAnimatedCell>;
-			label: ui.PresetType<UILabel>;
-			button: ui.PresetType<UIButton>;
-			textfield: ui.PresetType<UITextField>;
-			toggle: ui.PresetType<UIToggle>;
-			separator: ui.PresetType<UISeparator>;
-			spacer: ui.PresetType<UISpacer>;
-			image: ui.PresetType<UIImage>;
-			render: ui.PresetType<UIViewRenderer>;
-			animate: ui.PresetType<UIAnimationView>;
-			conditional: ui.PresetType<UIConditionalView>;
-			list: ui.PresetType<UIListView>;
+			cell: ui.PresetType<typeof UICell>;
+			column: ui.PresetType<typeof UIColumn>;
+			row: ui.PresetType<typeof UIRow>;
+			scroll: ui.PresetType<typeof UIScrollContainer>;
+			animatedcell: ui.PresetType<typeof UIAnimatedCell>;
+			label: ui.PresetType<typeof UILabel>;
+			button: ui.PresetType<typeof UIButton>;
+			textfield: ui.PresetType<typeof UITextField>;
+			toggle: ui.PresetType<typeof UIToggle>;
+			separator: ui.PresetType<typeof UISeparator>;
+			spacer: ui.PresetType<typeof UISpacer>;
+			image: ui.PresetType<typeof UIImage>;
+			render: ui.PresetType<typeof UIViewRenderer>;
+			animate: ui.PresetType<typeof UIAnimationView>;
+			conditional: ui.PresetType<typeof UIConditionalView>;
+			list: ui.PresetType<typeof UIListView>;
 		}
 	}
 }
@@ -110,190 +108,209 @@ export interface ui {
 	 * - `Foo: %[foo=another.propertyName:.2f]` — inserts a bindings for `another.propertyName`, but allows for localization of `Foo: %[foo:.2f]` instead.
 	 * - `Foo: %[foo=some.numProp:?||None]` — inserts a binding for `some.numProp`, but allows for localization of `Foo: %[foo:?||None]` instead (and inserts `None` if the value for `some.numProp` is undefined or an empty string).
 	 */
-	jsx(f: string, presets: any, ...rest: any[]): ViewClass;
+	jsx(f: string, presets: any, ...rest: any[]): ViewBuilder;
 
 	/**
-	 * Creates a preset {@link UICell} constructor using the provided options and content
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class (optional)
-	 * @param content The content that will be added to each instance of the resulting class
-	 * @returns A new class that extends {@link UICell}
+	 * Creates a {@link ViewBuilder} for a {@link UICell} with the provided options and content
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance (optional)
+	 * @param content The content that will be added to the view instance
+	 * @returns A ViewBuilder that creates {@link UICell} instances
 	 */
 	cell(
-		preset: ui.PresetType<UICell>,
-		...content: ViewClass[]
-	): ViewClass<UICell>;
-	cell(...content: ViewClass[]): ViewClass<UICell>;
+		preset: ui.PresetType<typeof UICell>,
+		...content: ViewBuilder[]
+	): ViewBuilder<UICell>;
+	cell(...content: ViewBuilder[]): ViewBuilder<UICell>;
 
 	/**
-	 * Creates a preset {@link UIColumn} constructor using the provided options and content
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class (optional)
-	 * @param content The content that will be added to each instance of the resulting class
-	 * @returns A new class that extends {@link UIColumn}
+	 * Creates a {@link ViewBuilder} for a {@link UIColumn} with the provided options and content
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance (optional)
+	 * @param content The content that will be added to the view instance
+	 * @returns A ViewBuilder that creates {@link UIColumn} instances
 	 */
 	column(
-		preset: ui.PresetType<UIColumn>,
-		...content: ViewClass[]
-	): ViewClass<UIColumn>;
-	column(...content: ViewClass[]): ViewClass<UIColumn>;
+		preset: ui.PresetType<typeof UIColumn>,
+		...content: ViewBuilder[]
+	): ViewBuilder<UIColumn>;
+	column(...content: ViewBuilder[]): ViewBuilder<UIColumn>;
 
 	/**
-	 * Creates a preset {@link UIRow} constructor using the provided options and content
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class (optional)
-	 * @param content The content that will be added to each instance of the resulting class
-	 * @returns A new class that extends {@link UIRow}
+	 * Creates a {@link ViewBuilder} for a {@link UIRow} with the provided options and content
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance (optional)
+	 * @param content The content that will be added to the view instance
+	 * @returns A ViewBuilder that creates {@link UIRow} instances
 	 */
-	row(preset: ui.PresetType<UIRow>, ...content: ViewClass[]): ViewClass<UIRow>;
-	row(...content: ViewClass[]): ViewClass<UIRow>;
+	row(
+		preset: ui.PresetType<typeof UIRow>,
+		...content: ViewBuilder[]
+	): ViewBuilder<UIRow>;
+	row(...content: ViewBuilder[]): ViewBuilder<UIRow>;
 
 	/**
-	 * Creates a preset {@link UIScrollContainer} constructor using the provided options and content
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class (optional)
-	 * @param content The content that will be added to each instance of the resulting class
-	 * @returns A new class that extends {@link UIScrollContainer}
+	 * Creates a {@link ViewBuilder} for a {@link UIScrollContainer} with the provided options and content
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance (optional)
+	 * @param content The content that will be added to the view instance
+	 * @returns A ViewBuilder that creates {@link UIScrollContainer} instances
 	 */
 	scroll(
-		preset: ui.PresetType<UIScrollContainer>,
-		...content: ViewClass[]
-	): ViewClass<UIScrollContainer>;
-	scroll(...content: ViewClass[]): ViewClass<UIScrollContainer>;
+		preset: ui.PresetType<typeof UIScrollContainer>,
+		...content: ViewBuilder[]
+	): ViewBuilder<UIScrollContainer>;
+	scroll(...content: ViewBuilder[]): ViewBuilder<UIScrollContainer>;
 
 	/**
-	 * Creates a preset {@link UIAnimatedCell} constructor using the provided options and content
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class (optional)
-	 * @param content The content that will be added to each instance of the resulting class
-	 * @returns A new class that extends {@link UIAnimatedCell}
+	 * Creates a {@link ViewBuilder} for a {@link UIAnimatedCell} with the provided options and content
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
+	 * @param content The content that will be added to the view instance
+	 * @returns A ViewBuilder that creates {@link UIAnimatedCell} instances
 	 */
 	animatedCell(
-		preset: ui.PresetType<UIAnimatedCell>,
-		content?: ViewClass,
-	): ViewClass<UIAnimatedCell>;
+		preset: ui.PresetType<typeof UIAnimatedCell>,
+		content?: ViewBuilder,
+	): ViewBuilder<UIAnimatedCell>;
 
 	/**
-	 * Creates a preset {@link UILabel} constructor using the provided options
-	 * @param text Preset label text (optional)
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @returns A new class that extends {@link UILabel}
+	 * Creates a {@link ViewBuilder} for a {@link UILabel} with the provided options
+	 * @param text The label text to be set on the view instance
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
+	 * @returns A ViewBuilder that creates {@link UILabel} instances
 	 */
 	label(
 		text: BindingOrValue<string | LazyString>,
-		preset?: ui.PresetType<UILabel>,
-	): ViewClass<UILabel>;
-	label(preset: ui.PresetType<UILabel>): ViewClass<UILabel>;
+		preset?: ui.PresetType<typeof UILabel>,
+	): ViewBuilder<UILabel>;
+	label(preset: ui.PresetType<typeof UILabel>): ViewBuilder<UILabel>;
 
 	/**
-	 * Creates a preset {@link UIButton} constructor using the provided options
-	 * @param label Preset button label (optional)
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @returns A new class that extends {@link UILabel}
+	 * Creates a {@link ViewBuilder} for a {@link UIButton} with the provided options
+	 * @param label The button label text to be set on the view instance
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
+	 * @returns A ViewBuilder that creates {@link UIButton} instances
 	 */
 	button(
 		label: BindingOrValue<string | LazyString>,
-		preset?: ui.PresetType<UIButton>,
-	): ViewClass<UIButton>;
-	button(preset: ui.PresetType<UIButton>): ViewClass<UIButton>;
+		preset?: ui.PresetType<typeof UIButton>,
+	): ViewBuilder<UIButton>;
+	button(preset: ui.PresetType<typeof UIButton>): ViewBuilder<UIButton>;
 
 	/**
-	 * Creates a preset {@link UITextField} constructor using the provided options
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @returns A new class that extends {@link UITextField}
+	 * Creates a {@link ViewBuilder} for a {@link UITextField} with the provided options
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
+	 * @returns A ViewBuilder that creates {@link UITextField} instances
 	 */
-	textField(preset: ui.PresetType<UITextField>): ViewClass<UITextField>;
+	textField(
+		preset: ui.PresetType<typeof UITextField>,
+	): ViewBuilder<UITextField>;
 
 	/**
-	 * Creates a preset {@link UIToggle} constructor using the provided options
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @returns A new class that extends {@link UIToggle}
+	 * Creates a {@link ViewBuilder} for a {@link UIToggle} with the provided options
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
+	 * @returns A ViewBuilder that creates {@link UIToggle} instances
 	 */
-	toggle(preset: ui.PresetType<UIToggle>): ViewClass<UIToggle>;
+	toggle(preset: ui.PresetType<typeof UIToggle>): ViewBuilder<UIToggle>;
 
 	/**
-	 * Creates a preset {@link UISeparator} constructor using the provided options
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @returns A new class that extends {@link UISeparator}
+	 * Creates a {@link ViewBuilder} for a {@link UISeparator} with the provided options
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
+	 * @returns A ViewBuilder that creates {@link UISeparator} instances
 	 */
-	separator(preset?: ui.PresetType<UISeparator>): ViewClass<UISeparator>;
+	separator(
+		preset?: ui.PresetType<typeof UISeparator>,
+	): ViewBuilder<UISeparator>;
 
 	/**
-	 * Creates a preset {@link UISpacer} constructor using the provided options
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @param width Preset spacer width
-	 * @param height Preset spacer height
-	 * @param minWidth Preset spacer minimum width
-	 * @param minHeight Preset spacer minimum height
-	 * @returns A new class that extends {@link UISpacer}
+	 * Creates a {@link ViewBuilder} for a {@link UISpacer} with the provided options
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
+	 * @param width The width to be set on the view instance
+	 * @param height The height to be set on the view instance
+	 * @returns A ViewBuilder that creates {@link UISpacer} instances
 	 */
-	spacer(preset: ui.PresetType<UISpacer>): ViewClass<UISpacer>;
+	spacer(preset: ui.PresetType<typeof UISpacer>): ViewBuilder<UISpacer>;
 	spacer(
 		width?: number | string,
 		height?: number | string,
-	): ViewClass<UISpacer>;
+	): ViewBuilder<UISpacer>;
 
 	/**
-	 * Creates a preset {@link UIImage} constructor using the provided options
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @returns A new class that extends {@link UIImage}
+	 * Creates a {@link ViewBuilder} for a {@link UIImage} with the provided options
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
+	 * @returns A ViewBuilder that creates {@link UIImage} instances
 	 */
-	image(preset: ui.PresetType<UIImage>): ViewClass<UIImage>;
+	image(preset: ui.PresetType<typeof UIImage>): ViewBuilder<UIImage>;
 
 	/**
-	 * Creates a preset {@link UIViewRenderer} constructor using the provided options
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @returns A new class that extends {@link UIViewRenderer}
+	 * Creates a {@link ViewBuilder} for a {@link UIViewRenderer} with the provided options
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
+	 * @returns A ViewBuilder that creates {@link UIViewRenderer} instances
 	 */
-	renderView(preset: ui.PresetType<UIViewRenderer>): ViewClass<UIViewRenderer>;
+	renderView(
+		preset: ui.PresetType<typeof UIViewRenderer>,
+	): ViewBuilder<UIViewRenderer>;
 
 	/**
-	 * Creates a preset {@link UIAnimationView} constructor using the provided options
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @param content The content that will be added to each instance of the resulting class
-	 * @returns A new class that extends {@link UIAnimationView}
+	 * Creates a {@link ViewBuilder} for a {@link UIAnimationView} with the provided options
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
+	 * @param content The content that will be added to the view instance
+	 * @returns A ViewBuilder that creates {@link UIAnimationView} instances
 	 */
 	animate(
-		preset: ui.PresetType<UIAnimationView>,
-		content: ViewClass,
-	): ViewClass<UIAnimationView>;
+		preset: ui.PresetType<typeof UIAnimationView>,
+		content: ViewBuilder,
+	): ViewBuilder<UIAnimationView>;
 
 	/**
-	 * Creates a preset {@link UIConditionalView} constructor using the provided options
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @param content The content that will be added to each instance of the resulting class
-	 * @returns A new class that extends {@link UIConditionalView}
+	 * Creates a {@link ViewBuilder} for a {@link UIConditionalView} with the provided options
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
+	 * @param content The content that will be added to the view instance
+	 * @returns A ViewBuilder that creates {@link UIConditionalView} instances
 	 */
 	conditional(
-		preset: View.ExtendPreset<UIConditionalView>,
-		content: ViewClass,
-	): ViewClass<UIConditionalView>;
+		preset: ui.PresetType<typeof UIConditionalView>,
+		content: ViewBuilder,
+	): ViewBuilder<UIConditionalView>;
 
 	/**
-	 * Creates a preset {@link UIListView} constructor using the provided options
-	 * @param preset The properties, bindings, and event handlers that will be preset on each instance of the resulting class
-	 * @param ItemBody The view that is instantiated for each item in the list
-	 * @param ContainerBody The outer container view, defaults to a plain column
-	 * @param BookEnd A view that is added to the end of the list (optional)
+	 * Creates a {@link ViewBuilder} for a {@link UIListView} with the provided options
+	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
+	 * @param itemBody A view builder that creates views for each item in the list
+	 * @param containerBody A view builder that creates the outer container view
+	 * @param bookEnd A view builder that creates a view added to the end of the list
+	 * @returns A ViewBuilder that creates {@link UIListView} instances
 	 */
 	list(
-		preset: ui.PresetType<UIListView>,
-		ItemBody: ViewClass,
-		ContainerBody?: new () => UIContainer,
-		BookEnd?: ViewClass,
-	): ViewClass<UIListView>;
+		preset: ui.PresetType<typeof UIListView>,
+		itemBody: ViewBuilder,
+		containerBody?: ViewBuilder<UIContainer>,
+		bookEnd?: ViewBuilder,
+	): ViewBuilder<UIListView>;
 
 	/**
-	 * Creates a preset {@link ViewComposite} constructor using the provided object and content
-	 * @summary This method creates a constructor that extends the provided view composite class, providing its original constructor with the preset object containing properties, bindings, and event aliases; also overrides the {@link ViewComposite.defineView} method to pass in the specified content view(s), i.e. further preset view classes.
-	 * @param viewComposite The view composite class to use
-	 * @param preset Properties, bindings, and event aliases to preset on the view composite constructor
-	 * @param content View class(es) to be contained within the view composite (if supported by its `defineView` method)
+	 * Creates a new view builder for the specified view class
+	 * - This function is used to create a new view builder for a specific view class, in particular for a {@link ViewComposite} class. The view builder can be used to create new view instances with preset properties, bindings, and event handlers, as well as any content based on the provided view builders.
+	 * - The type of preset object is inferred from the view class, and the type of the view builder is inferred from the view class's instance type.
+	 * @param viewClass The view class for which to create a new view builder
+	 * @param preset The preset properties, bindings, and event handlers for the view instance
+	 * @param content View builders for any content that should be added to the view
 	 */
-	use<TPreset extends {}, TInstance extends ViewComposite>(
-		viewComposite: { new (preset?: TPreset): TInstance; create(): TInstance },
+	use<TPreset extends {}, TInstance extends View>(
+		viewClass: {
+			getViewBuilder(
+				preset?: TPreset,
+				...content: ViewBuilder[]
+			): ViewBuilder<TInstance>;
+		},
 		preset: NoInfer<TPreset>,
-		...content: ViewClass[]
-	): typeof viewComposite;
-	use<TInstance extends ViewComposite>(
-		viewComposite: { new (preset?: {}): TInstance; create(): TInstance },
-		...content: ViewClass[]
-	): typeof viewComposite;
+		...content: ViewBuilder[]
+	): ViewBuilder<TInstance>;
+	use<TInstance extends View>(
+		viewClass: {
+			getViewBuilder(
+				preset?: {},
+				...content: ViewBuilder[]
+			): ViewBuilder<TInstance>;
+		},
+		...content: ViewBuilder[]
+	): ViewBuilder<TInstance>;
 
 	/**
 	 * A function that returns a new UIColor instance for the specified theme color

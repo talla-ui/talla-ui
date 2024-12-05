@@ -1,4 +1,4 @@
-import type { View } from "../../app/index.js";
+import type { View, ViewBuilder } from "../../app/index.js";
 import { ManagedEvent } from "../../base/index.js";
 import { UIContainer } from "./UIContainer.js";
 
@@ -15,19 +15,15 @@ function emitScroll(source: View, name: string, data: any) {
  * @online_docs Refer to the online documentation for more documentation on using this UI component class.
  */
 export class UIScrollContainer extends UIContainer {
-	/** Creates a new scroll container view object with the provided view content */
-	constructor(...content: View[]) {
-		super(...content);
-	}
-
 	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
 	 */
-	override applyViewPreset(
-		preset: View.ExtendPreset<
-			UIContainer,
-			this,
+	declare static getViewBuilder: (
+		preset: ViewBuilder.ExtendPreset<
+			typeof UIContainer,
+			UIScrollContainer,
 			| "topThreshold"
 			| "bottomThreshold"
 			| "horizontalThreshold"
@@ -39,8 +35,12 @@ export class UIScrollContainer extends UIContainer {
 			/** Event that's emitted after the visible area has been scrolled, a {@link UIScrollContainer.ScrollEvent} */
 			onScrollEnd?: string;
 		},
-	) {
-		super.applyViewPreset(preset);
+		...content: ViewBuilder[]
+	) => ViewBuilder<UIContainer>;
+
+	/** Creates a new scroll container view object with the provided view content */
+	constructor(...content: View[]) {
+		super(...content);
 	}
 
 	/** Vertical threshold (in pixels) until which `UIScrollEvent.atTop` is set, defaults to 0 */

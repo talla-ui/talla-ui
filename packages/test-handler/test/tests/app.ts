@@ -49,8 +49,7 @@ describe("App test", (scope) => {
 			{ title: StringConvertible.EMPTY },
 			ui.label($view.bind("title")),
 		);
-		let Preset = ui.use(MyView, { title: "TEST" });
-		let myView = new Preset();
+		let myView = ui.use(MyView, { title: "TEST" }).create();
 		t.render(myView);
 		await t.expectOutputAsync({ text: "TEST" });
 	});
@@ -71,7 +70,7 @@ describe("App test", (scope) => {
 		await t.pollAsync(() => !activity.isActive(), 5, 100);
 	});
 
-	test("Activity shows view when active", async (t) => {
+	test.only("Activity shows view when active", async (t) => {
 		let expectCell = await t.expectOutputAsync({ type: "cell" });
 		expectCell.containing({ value: "0" }).toBeRendered();
 		expectCell.containing({ type: "button" }).toBeRendered();

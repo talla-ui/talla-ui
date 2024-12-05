@@ -19,9 +19,9 @@ describe("UILabel", (scope) => {
 		}).toThrowError();
 	});
 
-	test("Preset with properties", () => {
-		let MyLabel = ui.label({ text: "foo" });
-		let label = new MyLabel();
+	test("View builder with properties", () => {
+		let myLabel = ui.label({ text: "foo" });
+		let label = myLabel.create();
 		expect(label).toHaveProperty("text").asString().toBe("foo");
 	});
 
@@ -29,30 +29,30 @@ describe("UILabel", (scope) => {
 		let plainLabel = new UILabel();
 		expect(plainLabel.allowFocus).toBeFalsy();
 		expect(plainLabel.allowKeyboardFocus).toBeFalsy();
-		let focusableLabel = new (ui.label({ allowKeyboardFocus: true }))();
+		let focusableLabel = ui.label({ allowKeyboardFocus: true }).create();
 		expect(focusableLabel.allowFocus).toBeTruthy();
 		expect(focusableLabel.allowKeyboardFocus).toBeTruthy();
 	});
 
-	test("Preset using text", () => {
-		let MyLabel = ui.label("foo");
-		let label = new MyLabel();
+	test("View builder using text", () => {
+		let myLabel = ui.label("foo");
+		let label = myLabel.create();
 		expect(label).toHaveProperty("text").asString().toBe("foo");
 	});
 
-	test("Preset using object and text", () => {
-		let MyLabel = ui.label("foo", { bold: true });
-		let label = new MyLabel();
+	test("View builder using object and text", () => {
+		let myLabel = ui.label("foo", { bold: true });
+		let label = myLabel.create();
 		expect(label).toHaveProperty("bold").toBeTruthy();
 		expect(label).toHaveProperty("text").asString().toBe("foo");
 	});
 
 	test("Rendered with text", async (t) => {
-		let MyLabel = ui.label({
+		let myLabel = ui.label({
 			text: "foo",
 			accessibleLabel: "My label",
 		});
-		let label = new MyLabel();
+		let label = myLabel.create();
 		t.render(label);
 		await t.expectOutputAsync({
 			text: "foo",
@@ -60,12 +60,12 @@ describe("UILabel", (scope) => {
 		});
 	});
 
-	test("Rendered with styles (using preset)", async (t) => {
-		let MyLabel1 = ui.label("one", {
+	test("Rendered with styles (using view builder)", async (t) => {
+		let myLabel1 = ui.label("one", {
 			style: ui.style.LABEL.override({ bold: true }),
 		});
-		let MyLabel2 = ui.label("two", { bold: true });
-		t.render(new UIRow(new MyLabel1(), new MyLabel2()));
+		let myLabel2 = ui.label("two", { bold: true });
+		t.render(new UIRow(myLabel1.create(), myLabel2.create()));
 		let match = await t.expectOutputAsync({
 			type: "label",
 			styles: { bold: true },
@@ -74,7 +74,7 @@ describe("UILabel", (scope) => {
 	});
 
 	test("Rendered with combined styles", async (t) => {
-		let MyLabel = ui.label("foo", {
+		let myLabel = ui.label("foo", {
 			padding: 8,
 			style: ui.style(
 				ui.style.LABEL.extend({ fontSize: 12 }), // ignored
@@ -82,7 +82,7 @@ describe("UILabel", (scope) => {
 				{ italic: true }, // override
 			),
 		});
-		t.render(new UIRow(new MyLabel()));
+		t.render(new UIRow(myLabel.create()));
 		let match = await t.expectOutputAsync({
 			type: "label",
 			styles: {
@@ -95,12 +95,12 @@ describe("UILabel", (scope) => {
 	});
 
 	test("Rendered with styles", async (t) => {
-		let MyLabel = ui.label({
+		let myLabel = ui.label({
 			text: "foo",
 			width: 100,
 			style: { bold: true },
 		});
-		let label = new MyLabel();
+		let label = myLabel.create();
 		t.render(label);
 		await t.expectOutputAsync({
 			text: "foo",

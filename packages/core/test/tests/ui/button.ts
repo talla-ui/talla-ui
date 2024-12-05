@@ -14,32 +14,32 @@ describe("UIButton", (scope) => {
 		expect(button).toHaveProperty("label").asString().toBe("foo");
 	});
 
-	test("Preset with properties", () => {
-		let MyButton = ui.button({ label: "foo" });
-		let button = new MyButton();
+	test("View builder with properties", () => {
+		let myButton = ui.button({ label: "foo" });
+		let button = myButton.create();
 		expect(button).toHaveProperty("label").asString().toBe("foo");
 		expect(button.disableKeyboardFocus).toBeFalsy();
 	});
 
-	test("Preset using label", () => {
-		let MyButton = ui.button("foo");
-		let button = new MyButton();
+	test("View builder using label", () => {
+		let myButton = ui.button("foo");
+		let button = myButton.create();
 		expect(button).toHaveProperty("label").asString().toBe("foo");
 	});
 
-	test("Preset using object and label", () => {
-		let MyButton = ui.button("foo", { accessibleLabel: "test" });
-		let button = new MyButton();
+	test("View builder using object and label", () => {
+		let myButton = ui.button("foo", { accessibleLabel: "test" });
+		let button = myButton.create();
 		expect(button).toHaveProperty("accessibleLabel").toBe("test");
 		expect(button).toHaveProperty("label").asString().toBe("foo");
 	});
 
 	test("Rendered with label", async (t) => {
-		let MyButton = ui.button({
+		let myButton = ui.button({
 			label: "foo",
 			accessibleLabel: "My button",
 		});
-		t.render(new MyButton());
+		t.render(myButton.create());
 		await t.expectOutputAsync({
 			text: "foo",
 			accessibleLabel: "My button",
@@ -47,13 +47,13 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Rendered with styles", async (t) => {
-		let MyButton = ui.button("foo", {
+		let myButton = ui.button("foo", {
 			style: {
 				borderColor: ui.color.ORANGE,
 				bold: true,
 			},
 		});
-		t.render(new MyButton());
+		t.render(myButton.create());
 		await t.expectOutputAsync({
 			text: "foo",
 			styles: {
@@ -64,8 +64,8 @@ describe("UIButton", (scope) => {
 	});
 
 	test("Rendered and clicked, event has value", async (t) => {
-		let MyButton = ui.button("Foo button", { value: "foo" });
-		let btn = new MyButton();
+		let myButton = ui.button("Foo button", { value: "foo" });
+		let btn = myButton.create();
 		let clickValue: any;
 		btn.listen((e) => {
 			if (e.name === "Click") clickValue = e.data.value;
@@ -93,10 +93,7 @@ describe("UIButton", (scope) => {
 	test("Button navigation with navigateTo", async (t) => {
 		class MyActivity extends Activity {
 			protected override createView() {
-				return UIButton.create({
-					label: "foo",
-					navigateTo: "/foo",
-				});
+				return ui.button("foo", { navigateTo: "/foo" }).create();
 			}
 		}
 		app.addActivity(new MyActivity(), true);
@@ -108,10 +105,7 @@ describe("UIButton", (scope) => {
 	test("Back button navigation", async (t) => {
 		class MyActivity extends Activity {
 			protected override createView() {
-				return UIButton.create({
-					label: "back",
-					onClick: "NavigateBack",
-				});
+				return ui.button("back", { onClick: "NavigateBack" }).create();
 			}
 		}
 		app.addActivity(new MyActivity(), true);

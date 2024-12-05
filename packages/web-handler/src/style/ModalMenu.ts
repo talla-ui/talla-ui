@@ -126,13 +126,11 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 	override createView() {
 		// create modal container and items column
 		let column = new UIColumn();
-		let Outer = ui.cell({
-			accessibleRole: "menu",
-			effect: ModalMenu.styles.effect,
-			style: ModalMenu.styles.containerStyle,
-			position: _containerPosition,
-		});
-		let container = new Outer(column);
+		let container = new UICell(column);
+		container.accessibleRole = "menu";
+		container.effect = ModalMenu.styles.effect;
+		container.style = ModalMenu.styles.containerStyle;
+		container.position = _containerPosition;
 		column.width = this.options.width || ModalMenu.styles.defaultWidth;
 
 		// reposition the menu after rendering
@@ -145,7 +143,7 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 		});
 
 		// add menu items with label and/or hint
-		const MenuItemCell = ui.cell({
+		const defMenuItemCell = ui.cell({
 			accessibleRole: "menuitem",
 			style: ModalMenu.styles.itemCellStyle,
 			allowFocus: true,
@@ -160,33 +158,41 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 
 			// add a menu item as a (row) cell
 			let itemRow = new UIRow();
-			let itemCell = new MenuItemCell(itemRow);
+			let itemCell = defMenuItemCell.create();
+			itemCell.content.add(itemRow);
 			column.content.add(itemCell);
-			let ItemLabel = ui.label({
-				text: item.text,
-				icon: item.icon,
-				iconSize: item.iconSize,
-				style: ui.style(
-					ui.style.LABEL,
-					ModalMenu.styles.labelStyle,
-					item.labelStyle,
-				),
-			});
-			itemRow.content.add(new ItemLabel());
+			itemRow.content.add(
+				ui
+					.label({
+						text: item.text,
+						icon: item.icon,
+						iconSize: item.iconSize,
+						style: ui.style(
+							ui.style.LABEL,
+							ModalMenu.styles.labelStyle,
+							item.labelStyle,
+						),
+					})
+					.create(),
+			);
 			if (item.hint || item.hintIcon) {
-				let HintLabel = ui.label({
-					text: item.hint,
-					icon: item.hintIcon,
-					iconSize: item.hintIconSize,
-					style: ui.style(
-						ui.style.LABEL,
-						ModalMenu.styles.hintStyle,
-						item.hintStyle,
-					),
-				});
 				let spacer = new UISpacer();
 				spacer.minWidth = 8;
-				itemRow.content.add(spacer, new HintLabel());
+				itemRow.content.add(
+					spacer,
+					ui
+						.label({
+							text: item.hint,
+							icon: item.hintIcon,
+							iconSize: item.hintIconSize,
+							style: ui.style(
+								ui.style.LABEL,
+								ModalMenu.styles.hintStyle,
+								item.hintStyle,
+							),
+						})
+						.create(),
+				);
 			}
 
 			// add a listener to register clicks and keyboard input

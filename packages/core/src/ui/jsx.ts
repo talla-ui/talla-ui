@@ -6,7 +6,7 @@ import {
 	StringFormatBinding,
 	ui,
 	View,
-	ViewClass,
+	ViewBuilder,
 	ViewComposite,
 } from "../index.js";
 
@@ -27,7 +27,7 @@ function flatten(a: any[]): any {
 }
 
 /** @internal JSX implementation */
-export function jsx(tag: any, presets: any, ...rest: any[]): ViewClass {
+export function jsx(tag: any, presets: any, ...rest: any[]): ViewBuilder {
 	rest = flatten(rest);
 
 	// use string content as 'text' property, if any
@@ -35,7 +35,7 @@ export function jsx(tag: any, presets: any, ...rest: any[]): ViewClass {
 	let nBindings = 0;
 	let hasText: boolean | undefined;
 	let bindings: { [id: string]: Binding } = {};
-	let components: any[] = [];
+	let components: ViewBuilder[] = [];
 	for (let r of rest) {
 		if (r instanceof LazyString) {
 			r = String(r.getOriginal());
@@ -44,7 +44,7 @@ export function jsx(tag: any, presets: any, ...rest: any[]): ViewClass {
 			bindings[nBindings] = r;
 			fmt += "%[" + nBindings + "]";
 			nBindings++;
-		} else if (typeof r === "function") {
+		} else if (r instanceof ViewBuilder) {
 			components.push(r);
 		} else {
 			fmt += String(r).replace(
@@ -82,7 +82,7 @@ export function jsx(tag: any, presets: any, ...rest: any[]): ViewClass {
 	let f = typeof tag === "string" ? (ui as any)[tagNames[tag] || tag] : tag;
 	if (typeof f !== "function") throw err(ERROR.JSX_InvalidTag, String(tag));
 	if (f.prototype instanceof ViewComposite) {
-		return ui.use(f, merged, ...components) as any;
+		return f.getViewBuilder(merged, ...components);
 	}
 	if (f.prototype instanceof View) {
 		throw err(ERROR.JSX_InvalidTag, f.name);

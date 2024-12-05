@@ -21,52 +21,55 @@ describe("JSX", () => {
 	}
 
 	test("Single component", () => {
-		let MyCell = <cell />;
-		let cell = new MyCell();
+		let myCell = <cell />;
+		let cell = myCell.create();
 		expect(cell).toBeInstanceOf(UICell);
 	});
 
 	test("Single component with preset", () => {
-		let MyCell = <cell padding={8} textColor={ui.color.RED} />;
-		let cell = new MyCell();
+		let myCell = <cell padding={8} textColor={ui.color.RED} />;
+		let cell = myCell.create();
 		expect(cell).toBeInstanceOf(UICell);
 		expect(cell).toHaveProperty("padding").toBe(8);
 		expect(cell).toHaveProperty("textColor").toBe(ui.color.RED);
 	});
 
 	test("Single component with text", () => {
-		let MyLabel = <label>Foo</label>;
-		let label = new MyLabel();
+		let myLabel = <label>Foo</label>;
+		let label = myLabel.create();
 		expect(label).toBeInstanceOf(UILabel);
 		expect(label).toHaveProperty("text").toBeInstanceOf(LazyString);
 		expect(label).toHaveProperty("text").asString().toBe("Foo");
 	});
 
 	test("Single component with interpolated text", () => {
-		let MyLabel = <label>Foo {"foo"}</label>;
-		expect(new MyLabel()).toHaveProperty("text").asString().toBe("Foo foo");
+		let myLabel = <label>Foo {"foo"}</label>;
+		let label = myLabel.create();
+		expect(label).toHaveProperty("text").asString().toBe("Foo foo");
 	});
 
 	test("Single component with interpolated text, number", () => {
-		let MyLabel = <label>Foo {123}</label>;
-		expect(new MyLabel()).toHaveProperty("text").asString().toBe("Foo 123");
+		let myLabel = <label>Foo {123}</label>;
+		let label = myLabel.create();
+		expect(label).toHaveProperty("text").asString().toBe("Foo 123");
 	});
 
 	test("Single component with interpolated text, number upfront", () => {
-		let MyLabel = <label>{123}. Foo</label>;
-		expect(new MyLabel()).toHaveProperty("text").asString().toBe("123. Foo");
+		let myLabel = <label>{123}. Foo</label>;
+		let label = myLabel.create();
+		expect(label).toHaveProperty("text").asString().toBe("123. Foo");
 	});
 
 	test("Single component with lazy string", () => {
-		let MyLabel = <label>{strf("Foo")}</label>;
-		let label = new MyLabel();
+		let myLabel = <label>{strf("Foo")}</label>;
+		let label = myLabel.create();
 		expect(label).toBeInstanceOf(UILabel);
 		expect(label).toHaveProperty("text").toBeInstanceOf(LazyString);
 		expect(label).toHaveProperty("text").asString().toBe("Foo");
 	});
 
 	test("Component with content", () => {
-		let MyCell = (
+		let myCell = (
 			<cell>
 				<label text={"foo"} />
 				<label>bar</label>
@@ -75,7 +78,7 @@ describe("JSX", () => {
 				<textfield>placeholder</textfield>
 			</cell>
 		);
-		let cell = new MyCell() as UICell;
+		let cell = myCell.create() as UICell;
 		expect(cell.content).asArray().toBeArray(5);
 		let [label1, label2, button, toggle, textfield] = cell.content;
 		expect(label1).toHaveProperty("text").asString().toBe("foo");
@@ -90,29 +93,30 @@ describe("JSX", () => {
 
 	test("Custom view composite", () => {
 		class MyView extends ViewComposite {
-			constructor(p: { foo?: BindingOrValue<number> }) {
+			constructor(_p: { foo?: BindingOrValue<number> }) {
 				super();
-				this.applyViewPreset(p);
+				// note that JSX applies the preset using `ui.use`
+				expect(_p).toBeUndefined();
 			}
 			foo?: number = undefined;
 			override defineView() {
 				return <label>test</label>;
 			}
 		}
-		let MyCell = (
+		let myCell = (
 			<cell>
 				<MyView foo={123} />
 			</cell>
 		);
-		let cell = new MyCell() as UICell;
+		let cell = myCell.create() as UICell;
 		expect(cell.content).asArray().toBeArray(1);
 		expect(cell.content.first()).toHaveProperty("foo").toBe(123);
 	});
 
 	test("Custom view composite, with defaults", () => {
 		const MyView = ViewComposite.define({ foo: "" }, <label>Foo</label>);
-		let ViewPreset = <MyView foo="bar" />;
-		let c = new ViewPreset() as ViewComposite;
+		let viewPreset = <MyView foo="bar" />;
+		let c = viewPreset.create() as ViewComposite;
 		renderComposite(c);
 		expect(c).toHaveProperty("foo").toBe("bar");
 		expect(c.findViewContent(UILabel)[0])
@@ -127,8 +131,8 @@ describe("JSX", () => {
 				return <label>Foo</label>;
 			}
 		}
-		let ViewPreset = <MyView foo="bar" />;
-		let c = new ViewPreset() as ViewComposite;
+		let viewPreset = <MyView foo="bar" />;
+		let c = viewPreset.create() as ViewComposite;
 		renderComposite(c);
 		expect(c).toHaveProperty("foo").toBe("bar");
 		expect(c.findViewContent(UILabel)[0])
@@ -142,12 +146,12 @@ describe("JSX", () => {
 			{ chevron: "up" as "up" | "down" },
 			(v) => <button chevron={v.chevron}>test</button>,
 		);
-		let MyCell = (
+		let myCell = (
 			<cell>
 				<MyView chevron="down" />
 			</cell>
 		);
-		let cell = new MyCell() as UICell;
+		let cell = myCell.create() as UICell;
 		expect(cell.content).asArray().toBeArray(1);
 		expect(cell.content.first()).toHaveProperty("chevron").toBe("down");
 		renderComposite(cell.content.first() as ViewComposite);
@@ -163,7 +167,7 @@ describe("JSX", () => {
 				<column spacing={v.styles.spacing}>{...content}</column>
 			),
 		);
-		let MyCell = (
+		let myCell = (
 			<cell>
 				<MyColumn foo="bar">
 					<label>foo</label>
@@ -171,7 +175,7 @@ describe("JSX", () => {
 				</MyColumn>
 			</cell>
 		);
-		let cell = new MyCell() as UICell;
+		let cell = myCell.create() as UICell;
 
 		t.log("Property on view composite itself");
 		let viewComposite = cell.content.first() as ViewComposite;
@@ -196,7 +200,7 @@ describe("JSX", () => {
 			<label>{strf("Foo is %[foo]")}</label>,
 		);
 		useTestContext({ renderFrequency: 5 });
-		t.render(new (ui.use(MyView))());
+		t.render(ui.use(MyView).create());
 		await t.expectOutputAsync({ text: "Foo is 123" });
 	});
 
@@ -211,7 +215,7 @@ describe("JSX", () => {
 			<label>{strf("%[config.foo]:%[config.bar]")}</label>,
 		);
 		useTestContext({ renderFrequency: 5 });
-		t.render(new (ui.use(MyView, { config: { foo: 321 } }))());
+		t.render(ui.use(MyView, { config: { foo: 321 } }).create());
 		await t.expectOutputAsync({ text: "321:bar" });
 	});
 
@@ -220,15 +224,16 @@ describe("JSX", () => {
 			<row>{...content}</row>
 		));
 		useTestContext({ renderFrequency: 5 });
-		t.render(new (ui.use(MyView, ui.label("Foo")))());
+		t.render(ui.use(MyView, ui.label("Foo")).create());
 		await t.expectOutputAsync({ text: "Foo" });
 	});
 
 	test("Composite with bound content", async (t) => {
 		class MyView extends ViewComposite {
-			constructor(p?: { foo?: BindingOrValue<number> }) {
+			constructor(_p?: { foo?: BindingOrValue<number> }) {
 				super();
-				this.applyViewPreset(p);
+				// note that JSX applies the preset using `ui.use`
+				expect(_p).toBeUndefined();
 			}
 			foo: number = 0;
 			override defineView() {
@@ -236,7 +241,7 @@ describe("JSX", () => {
 			}
 		}
 		useTestContext({ renderFrequency: 5 });
-		let instance = new (ui.use(MyView, { foo: 123 }))();
+		let instance = ui.use(MyView, { foo: 123 }).create();
 		t.render(instance);
 		await t.expectOutputAsync({ text: "123" });
 	});
@@ -247,7 +252,7 @@ describe("JSX", () => {
 			<label>{strf("Foo is %[foo]")}</label>,
 		);
 		useTestContext({ renderFrequency: 5 });
-		t.render(new (ui.use(MyView, { foo: strf("123") }))());
+		t.render(ui.use(MyView, { foo: strf("123") }).create());
 		await t.expectOutputAsync({ text: "Foo is 123" });
 	});
 
@@ -281,8 +286,8 @@ describe("JSX", () => {
 			</row>,
 		);
 		useTestContext({ renderFrequency: 5 });
-		let V = ui.use(MyView, { foo: 123, bar: { foo: 456, baz: "abc" } });
-		t.render(new V());
+		let builder = ui.use(MyView, { foo: 123, bar: { foo: 456, baz: "abc" } });
+		t.render(builder.create());
 		let expectRow = await t.expectOutputAsync({ type: "row" });
 		t.log("straight binding");
 		expectRow.containing({ text: "foo='123'" }).toBeRendered();
@@ -301,11 +306,11 @@ describe("JSX", () => {
 				You have %[numEmails=emails.count:n] %[numEmails:plural|email|emails]
 			</label>,
 		);
-		const Preset1 = ui.use(Comp, { emails: { count: 1 } });
-		const Preset2 = ui.use(Comp, { emails: { count: 2 } });
+		const preset1 = ui.use(Comp, { emails: { count: 1 } });
+		const preset2 = ui.use(Comp, { emails: { count: 2 } });
 
 		useTestContext({ renderFrequency: 5 });
-		t.render(new Preset1());
+		t.render(preset1.create());
 		await t.sleep(20);
 		await t.expectOutputAsync({ text: "You have 1 email" });
 
@@ -322,7 +327,7 @@ describe("JSX", () => {
 			}
 		}
 		app.i18n = new MyI18nProvider();
-		t.render(new Preset2());
+		t.render(preset2.create());
 		await t.expectOutputAsync({ text: "Je hebt 2 e-mails" });
 	});
 });

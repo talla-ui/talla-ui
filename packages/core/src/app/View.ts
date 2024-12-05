@@ -1,18 +1,12 @@
 import {
-	Binding,
 	BindingOrValue,
+	ConfigOptions,
 	isBinding,
 	ManagedEvent,
 	ManagedObject,
 } from "../base/index.js";
 import { invalidArgErr } from "../errors.js";
 import { RenderContext } from "./RenderContext.js";
-
-/** Type definition for a constructor that instantiates a {@link View} object */
-export type ViewClass<T extends View = View> = {
-	new (...args: any[]): T;
-	create(): T;
-};
 
 /** Type definition for an event that's emitted on a view object */
 export type ViewEvent<
@@ -29,12 +23,9 @@ export type ViewEvent<
  * Views can be rendered on their own (using {@link AppContext.render app.render()}) or included as content within another view. In most cases, a top-level view is created from the {@link Activity.createView()} method.
  *
  * The View class can't be used on its own. Instead, define views using the following classes and methods:
- * - {@link UIComponent} classes, and the various {@link ui} factory functions (e.g. `ui.button(...)`) that create **preset** constructors for built-in UI components.
- * - Specifically, {@link UIContainer} classes such as {@link UICell}, {@link UIRow}, and {@link UIColumn}, which represent containers that contain further UI components (and containers). These can be used to lay out your UI.
- * - Built-in {@link ViewComposite} classes, which control an encapsulated view — such as {@link UIConditionalView} and {@link UIListView}.
- * - The {@link ViewComposite.define()} function, which creates a custom {@link ViewComposite} subclass.
- *
- * Use the View class itself as a _type_, along with {@link ViewClass}, when referencing variables or parameters that should refer to any other view.
+ * - {@link UIComponent} classes, and the various {@link ui} factory functions (e.g. `ui.button(...)`) that create a {@link ViewBuilder} for built-in UI components and composites.
+ * - For a complete UI hierarchy, use {@link UIContainer} classes such as {@link UICell}, {@link UIRow}, and {@link UIColumn}, which represent containers that contain other views (including containers).
+ * - The {@link ViewComposite.define()} function, which creates a {@link ViewComposite} subclass.
  *
  * @see {@link UIComponent}
  * @see {@link ViewComposite}
@@ -43,19 +34,12 @@ export type ViewEvent<
  */
 export abstract class View extends ManagedObject {
 	/**
-	 * Returns an instance of this view, applying the provided preset properties
-	 * - This method creates a new view instance, and applies the provided preset properties (if any) using {@link applyViewPreset()}. Presets may include property values, bindings, and event specifiers.
-	 * - Rather than using this method to create a view structure each time, use {@link ui} functions instead which create a _preset_ view structure, and call this method on the result.
-	 * @param preset The preset properties to be applied on the new view (optional)
-	 * @returns The initialized view object
+	 * Creates a view builder for the current view class, with the provided properties, bindings, and event handlers
+	 * @param preset The properties, bindings, and event handlers to apply to each view.
+	 * @returns A {@link ViewBuilder} instance that can be used to create views with the provided preset.
 	 */
-	static create<T extends View, TPreset>(
-		this: new () => T & { applyViewPreset(p: TPreset): any },
-		preset?: TPreset,
-	): T {
-		let result = new this();
-		if (preset) result.applyViewPreset(preset);
-		return result;
+	static getViewBuilder(this: new () => View, preset: {}): ViewBuilder {
+		return new ViewBuilder(this, preset);
 	}
 
 	/**
@@ -71,39 +55,41 @@ export abstract class View extends ManagedObject {
 	abstract findViewContent<T extends View>(
 		type: new (...args: any[]) => T,
 	): T[];
+}
 
+/**
+ * A class that provides a way to create view objects with preset properties, bindings, and event handlers
+ *
+ * A view builder object can be used to create instances of a view class with a specific set of properties, bindings, and event handlers applied to them. Each view builder object can be used to create multiple instances of the view class with the same preset.
+ *
+ * View builders are normally created using {@link ui} functions (e.g. `ui.button()`), or directly using the {@link View.getViewBuilder()} method on a view class.
+ */
+export class ViewBuilder<TView extends View = View> {
 	/**
-	 * Applies the provided preset properties to this object
-	 *
-	 * @summary This method is called from the constructor of **preset** view classes, e.g. the result of `ui.label(...)` and {@link ViewComposite.define()}. The provided object may contain property values, bindings, and event specifiers.
-	 *
-	 * **Property values** — These are set directly on the view object. Each property is set to the corresponding value. However, property names starting with an underscore are ignored. Undefined preset property values are also ignored, except if the property was never set before on the target view (i.e. initializing a new undefined property).
-	 *
-	 * **Bindings** — These are applied on properties the view object. Each property may be bound using an instance of the {@link Binding} class (i.e. the result of {@link bind()}), creating the target property and taking effect immediately.
-	 *
-	 * **Events** — Events can be handled in two ways, depending on the value of the `on...` property:
-	 * - `onClick: "RemoveItem"` — this intercepts `Click` events and emits `RemoveItem` events instead. The {@link ManagedEvent.inner} property is set to the original `Click` event.
-	 * - `onClick: "+RemoveItem"` — this intercepts `Click` events and emits _both_ the original `Click` event as well as a new `RemoveItem` event. The {@link ManagedEvent.inner} property of the second event refers to the original `Click` event.
-	 *
-	 * @note This method is called automatically. Do not call this method after constructing a view object.
+	 * Applies the provided preset properties, bindings, and event handlers to a view instance
+	 * - This method is called by the {@link ViewBuilder.create()} method to apply a preset to the view instance, but can also be called directly to apply a preset to an existing view instance.
+	 * @param view The view instance to apply the preset to
+	 * @param preset The preset properties, bindings, and event handlers to apply to the view
+	 * @returns The view instance (`view` parameter) itself
 	 */
-	applyViewPreset(preset?: {}) {
-		if (!preset) return;
-		let events: { [eventName: string]: string } | undefined;
+	static applyPreset<TView extends View>(view: TView, preset: any) {
 		for (let p in preset) {
 			if (p[0] === "_") continue;
 			let v = (preset as any)[p];
 
-			// intercept and/or forward events: remember all first
+			// intercept and/or forward events
 			if (p[0] === "o" && p[1] === "n" && (p[2]! < "a" || p[2]! > "z")) {
-				if (v) {
-					// add event handler: forward or substitute event
-					let eventName = p.slice(2);
-					if (typeof v !== "string" || eventName === v) {
-						throw invalidArgErr("preset." + p);
-					}
-					(events ||= Object.create(null))[eventName] = v;
+				let eventName = p.slice(2);
+				if (!v) continue;
+				if (typeof v !== "string" || eventName === v) {
+					throw invalidArgErr("preset." + p);
 				}
+				let forward = v[0] === "+";
+				if (forward) v = v.slice(1);
+				ManagedObject.intercept(view, eventName, (e, emit) => {
+					if (forward) emit(e);
+					view.emit(new ManagedEvent(v, view, e.data, undefined, e));
+				});
 				continue;
 			}
 
@@ -111,52 +97,71 @@ export abstract class View extends ManagedObject {
 			if (v === undefined && p in this) continue;
 
 			// apply binding or set property
-			isBinding(v) ? v.bindTo(this, p as any) : ((this as any)[p] = v);
+			if (isBinding(v)) {
+				v.bindTo(view, p as any);
+			} else {
+				(view as any)[p] =
+					(view as any)[p] instanceof ConfigOptions
+						? (view as any)[p].constructor.init(v)
+						: v;
+			}
 		}
+		return view;
+	}
 
-		// override emit method if forwarding or intercepting events
-		if (events) {
-			let _emit = this.emit.bind(this);
-			this.emit = function emit(event, data?: any) {
-				if (event === undefined) return this;
-				if (typeof event === "string") {
-					if (!(event in events)) return _emit(event, data);
-					event = new ManagedEvent(event, this, data);
-				} else {
-					if (!(event.name in events)) return _emit(event);
-					data = event.data;
-				}
+	/** Creates a new instance for the provided view class and preset options */
+	constructor(View: new () => TView, preset: any) {
+		this.View = View;
+		this.preset = preset;
+	}
 
-				// if forward, emit original event first
-				let v = events[event.name]!;
-				if (v[0] === "+") {
-					_emit(event);
-					v = v.slice(1);
-				}
+	/** The view class that this view builder is associated with */
+	readonly View: new () => TView;
 
-				// emit intercept event with original event as `inner`
-				event = new ManagedEvent(v, this, data, undefined, event);
-				return this.emit(event);
-			};
-		}
+	/** The preset properties, bindings, and event handlers that will be applied to each view instance created by this view builder */
+	readonly preset: Readonly<{}>;
+
+	/**
+	 * Creates a new view instance with this view builder's preset properties, bindings, and event handlers
+	 */
+	create() {
+		return ViewBuilder.applyPreset(new this.View(), this.preset);
+	}
+
+	/**
+	 * Registers a callback function that initializes all new view instances after they have been created
+	 * @param init A function that initializes the view instance after it has been created
+	 */
+	addInitializer(init: (view: TView) => void): this {
+		let create = this.create;
+		this.create = function () {
+			let result = create.call(this);
+			init(result);
+			return result;
+		};
+		return this;
 	}
 }
 
-export namespace View {
+export namespace ViewBuilder {
 	/**
-	 * Type definition for the object that can be used to initialize a preset view
+	 * Type definition for the preset object that can be passed to a view builder
 	 * @summary This type is used to put together the object type for e.g. `ui.cell(...)`, based on the provided type parameters.
-	 * - TBase is used to infer the type of the parameter accepted by {@link View.applyViewPreset()} on a subclass.
-	 * - TView is used to infer the type of a property.
-	 * - K is a string type containing all properties to take from TView.
+	 * - `TBaseClass` is used to infer the type of the parameter accepted by {@link View.getViewBuilder()} on a subclass.
+	 * - `TView` is used to infer property types.
+	 * - `K` is a string type containing all properties to take from TView.
 	 */
 	export type ExtendPreset<
-		TBase extends View,
+		TBaseClass,
 		TView = any,
 		K extends keyof TView = never,
-	> = TBase extends {
-		applyViewPreset(preset: infer P): void;
+	> = TBaseClass extends {
+		getViewBuilder(preset: infer P): ViewBuilder;
 	}
-		? P & { [P in K]?: BindingOrValue<TView[P]> }
+		? P & {
+				[P in K]?: TView[P] extends ConfigOptions
+					? ConfigOptions.Arg<TView[P]>
+					: BindingOrValue<TView[P]>;
+			}
 		: never;
 }

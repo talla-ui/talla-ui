@@ -1,5 +1,5 @@
 import { ManagedList } from "../../base/index.js";
-import { View } from "../../app/index.js";
+import { View, type ViewBuilder } from "../../app/index.js";
 import { UIComponent } from "../UIComponent.js";
 import type { UIColor } from "../UIColor.js";
 
@@ -9,6 +9,25 @@ import type { UIColor } from "../UIColor.js";
  * @online_docs Refer to the online documentation for more documentation on using this UI component class.
  */
 export abstract class UIContainer extends UIComponent {
+	/**
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
+	 */
+	static override getViewBuilder(
+		preset: ViewBuilder.ExtendPreset<
+			typeof UIComponent,
+			UIContainer,
+			"padding" | "layout"
+		>,
+		...content: ViewBuilder[]
+	) {
+		let b = super.getViewBuilder(preset) as ViewBuilder<UIContainer>;
+		return b.addInitializer((container) => {
+			container.content.add(...content.map((b) => b.create()));
+		});
+	}
+
 	/** Creates a new container view object with the provided view content */
 	constructor(...content: View[]) {
 		super();
@@ -22,16 +41,6 @@ export abstract class UIContainer extends UIComponent {
 
 		// add the provided content
 		if (content.length) this.content.add(...content);
-	}
-
-	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing a UI component.
-	 */
-	override applyViewPreset(
-		preset: View.ExtendPreset<UIComponent, this, "padding" | "layout">,
-	) {
-		super.applyViewPreset(preset);
 	}
 
 	/** Implementation of {@link View.findViewContent()} that searches within this container */

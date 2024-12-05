@@ -1,4 +1,9 @@
-import { app, RenderContext, View, ViewComposite } from "../../app/index.js";
+import {
+	app,
+	RenderContext,
+	ViewBuilder,
+	ViewComposite,
+} from "../../app/index.js";
 import { errorHandler } from "../../errors.js";
 
 const MIN_REPEAT_MS = 8;
@@ -14,22 +19,22 @@ let _nextUpdateId = 1;
  */
 export class UIAnimationView extends ViewComposite {
 	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing an instance
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
 	 */
-	override applyViewPreset(
-		preset: View.ExtendPreset<
-			ViewComposite,
+	static override getViewBuilder(
+		preset: ViewBuilder.ExtendPreset<
+			typeof ViewComposite,
 			UIAnimationView,
 			"showAnimation" | "hideAnimation" | "repeatAnimation" | "ignoreFirstShow"
 		>,
+		builder?: ViewBuilder,
 	) {
-		if ((preset as any).Body) {
-			let Body = (preset as any).Body;
-			this.createView = () => new Body();
-			delete (preset as any).Body;
-		}
-		super.applyViewPreset(preset);
+		let b = super.getViewBuilder(preset) as ViewBuilder<UIAnimationView>;
+		return b.addInitializer((view) => {
+			view.createView = () => builder?.create();
+		});
 	}
 
 	/** Plays the specified animation on the last output element rendered by the content view */

@@ -1,4 +1,4 @@
-import { type View, FormContext } from "../../app/index.js";
+import { type ViewBuilder, FormContext } from "../../app/index.js";
 import { StringConvertible } from "../../base/index.js";
 import { UIComponent } from "../UIComponent.js";
 import type { UIStyle } from "../UIStyle.js";
@@ -11,32 +11,15 @@ import type { UIStyle } from "../UIStyle.js";
  * @online_docs Refer to the online documentation for more documentation on using this UI component class.
  */
 export class UITextField extends UIComponent {
-	/** Creates a new text field view instance */
-	constructor(placeholder?: StringConvertible, value?: string) {
-		super();
-		this.placeholder = placeholder;
-		this.value = value || "";
-
-		// get and set form context value using `formContext` binding
-		FormContext.listen(
-			this,
-			function (value) {
-				this.value = value === undefined ? "" : String(value);
-			},
-			function () {
-				return this.value;
-			},
-		);
-	}
-
 	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
 	 */
-	override applyViewPreset(
-		preset: View.ExtendPreset<
-			UIComponent,
-			this,
+	static override getViewBuilder(
+		preset: ViewBuilder.ExtendPreset<
+			typeof UIComponent,
+			UITextField,
 			| "placeholder"
 			| "value"
 			| "type"
@@ -67,7 +50,25 @@ export class UITextField extends UIComponent {
 			if (!("placeholder" in preset)) preset.placeholder = preset.text as any;
 			delete (preset as any).text;
 		}
-		super.applyViewPreset(preset);
+		return super.getViewBuilder(preset);
+	}
+
+	/** Creates a new text field view instance */
+	constructor(placeholder?: StringConvertible, value?: string) {
+		super();
+		this.placeholder = placeholder;
+		this.value = value || "";
+
+		// get and set form context value using `formContext` binding
+		FormContext.listen(
+			this,
+			function (value) {
+				this.value = value === undefined ? "" : String(value);
+			},
+			function () {
+				return this.value;
+			},
+		);
 	}
 
 	/**

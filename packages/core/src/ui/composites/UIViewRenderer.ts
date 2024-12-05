@@ -1,4 +1,4 @@
-import { RenderContext, View } from "../../app/index.js";
+import { RenderContext, View, ViewBuilder } from "../../app/index.js";
 import { Binding, ManagedEvent } from "../../base/index.js";
 import { invalidArgErr } from "../../errors.js";
 
@@ -14,19 +14,18 @@ import { invalidArgErr } from "../../errors.js";
  */
 export class UIViewRenderer extends View {
 	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing an instance
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
 	 */
-	override applyViewPreset(preset: {
+	declare static getViewBuilder: (preset: {
 		/** A binding that references the view object to be rendered */
 		view?: Binding;
 		/** True if events from the referenced view should be propagated from this view renderer instance */
 		propagateEvents?: boolean;
 		/** Event that's emitted when the rendered view is unlinked */
 		onViewUnlinked?: string;
-	}) {
-		super.applyViewPreset(preset);
-	}
+	}) => ViewBuilder<UIViewRenderer>;
 
 	/**
 	 * True if events from the referenced view should be re-emitted from this view renderer instance

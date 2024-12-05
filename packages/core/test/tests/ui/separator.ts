@@ -12,14 +12,14 @@ describe("UISeparator", (scope) => {
 		expect(sep.margin).toBe(app.theme?.separatorMargin);
 	});
 
-	test("Preset with properties", () => {
-		let MySeparator = ui.separator({
+	test("View builder with properties", () => {
+		let mySeparator = ui.separator({
 			thickness: 2,
 			margin: 8,
 			color: ui.color.GREEN,
 			vertical: true,
 		});
-		let sep = new MySeparator();
+		let sep = mySeparator.create();
 		expect(sep).toHaveProperty("thickness").toBe(2);
 		expect(sep).toHaveProperty("margin").toBe(8);
 		expect(sep).toHaveProperty("color").toBe(ui.color.GREEN);

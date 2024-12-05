@@ -1,4 +1,4 @@
-import type { RenderContext, View } from "../../app/index.js";
+import type { RenderContext, ViewBuilder } from "../../app/index.js";
 import type { UIColor } from "../UIColor.js";
 import type { UIComponent } from "../UIComponent.js";
 import type { UIStyle } from "../UIStyle.js";
@@ -13,13 +13,14 @@ import { UIContainer } from "./UIContainer.js";
  */
 export class UICell extends UIContainer {
 	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
 	 */
-	override applyViewPreset(
-		preset: View.ExtendPreset<
-			UIContainer,
-			this,
+	static override getViewBuilder(
+		preset: ViewBuilder.ExtendPreset<
+			typeof UIContainer,
+			UICell,
 			| "textDirection"
 			| "margin"
 			| "background"
@@ -36,9 +37,10 @@ export class UICell extends UIContainer {
 			/** Event that's emitted when the mouse cursor leaves the cell area */
 			onMouseLeave?: string;
 		},
+		...content: ViewBuilder[]
 	) {
 		if (preset.allowKeyboardFocus) preset.allowFocus = true;
-		super.applyViewPreset(preset);
+		return super.getViewBuilder(preset, ...content);
 	}
 
 	/** Text direction (rtl or ltr) for all components within this cell */
@@ -94,18 +96,18 @@ export namespace UICell {
  */
 export class UIAnimatedCell extends UICell {
 	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
 	 */
-	override applyViewPreset(
-		preset: View.ExtendPreset<
-			UICell,
-			this,
+	declare static getViewBuilder: (
+		preset: ViewBuilder.ExtendPreset<
+			typeof UICell,
+			UIAnimatedCell,
 			"animationDuration" | "animationTiming"
 		>,
-	) {
-		super.applyViewPreset(preset);
-	}
+		...content: ViewBuilder[]
+	) => ViewBuilder<UIAnimatedCell>;
 
 	/** Duration of _all_ style update animations */
 	animationDuration?: number;

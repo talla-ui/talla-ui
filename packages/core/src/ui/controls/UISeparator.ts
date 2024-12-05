@@ -1,4 +1,4 @@
-import type { View } from "../../app/index.js";
+import type { ViewBuilder } from "../../app/index.js";
 import { UIColor } from "../UIColor.js";
 import { UIComponent } from "../UIComponent.js";
 import { UITheme } from "../UITheme.js";
@@ -14,18 +14,17 @@ const SEPARATOR_COLOR = new UIColor("Separator");
  */
 export class UISeparator extends UIComponent {
 	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
 	 */
-	override applyViewPreset(
-		preset: View.ExtendPreset<
-			UIComponent,
-			this,
+	declare static getViewBuilder: (
+		preset: ViewBuilder.ExtendPreset<
+			typeof UIComponent,
+			UISeparator,
 			"thickness" | "margin" | "color" | "vertical"
 		>,
-	) {
-		super.applyViewPreset(preset);
-	}
+	) => ViewBuilder<UIComponent>;
 
 	/** Separator line thickness, in pixels or CSS length with unit */
 	thickness: string | number = 1;

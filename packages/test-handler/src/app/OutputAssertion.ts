@@ -1,4 +1,4 @@
-import { View, ViewClass } from "talla-ui";
+import { View } from "talla-ui";
 import type { TestOutputElement } from "./TestOutputElement.js";
 
 /** An object that provides filters to match a set of output elements, to be asserted using {@link OutputAssertion} */
@@ -8,7 +8,7 @@ export interface OutputSelectFilter {
 	/** The source component that rendered the output */
 	source?: View;
 	/** A type of element (string or class) */
-	type?: ViewClass | TestOutputElement.TypeString;
+	type?: (new (...args: any[]) => View) | TestOutputElement.TypeString;
 	/** True if the element must be disabled, false if it must not */
 	disabled?: boolean;
 	/** True if the element must be readonly, false if it must not */

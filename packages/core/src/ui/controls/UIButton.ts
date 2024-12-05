@@ -1,4 +1,4 @@
-import { NavigationTarget, View } from "../../app/index.js";
+import { NavigationTarget, ViewBuilder } from "../../app/index.js";
 import {
 	Binding,
 	BindingOrValue,
@@ -18,20 +18,15 @@ import type { UIStyle } from "../UIStyle.js";
  * @online_docs Refer to the online documentation for more documentation on using this UI component class.
  */
 export class UIButton extends UIComponent {
-	/** Creates a new button view object with the specified label */
-	constructor(label?: StringConvertible) {
-		super();
-		this.label = label;
-	}
-
 	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
 	 */
-	override applyViewPreset(
-		preset: View.ExtendPreset<
-			UIComponent,
-			this,
+	static override getViewBuilder(
+		preset: ViewBuilder.ExtendPreset<
+			typeof UIComponent,
+			UIButton,
 			| "label"
 			| "icon"
 			| "iconSize"
@@ -63,7 +58,13 @@ export class UIButton extends UIComponent {
 			preset.accessibleRole = "link";
 		}
 
-		super.applyViewPreset(preset);
+		return super.getViewBuilder(preset);
+	}
+
+	/** Creates a new button view object with the specified label */
+	constructor(label?: StringConvertible) {
+		super();
+		this.label = label;
 	}
 
 	/** The button label to be displayed */

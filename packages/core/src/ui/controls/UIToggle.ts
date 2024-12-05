@@ -1,4 +1,4 @@
-import { type View, FormContext } from "../../app/index.js";
+import { type ViewBuilder, FormContext } from "../../app/index.js";
 import { StringConvertible } from "../../base/index.js";
 import { UIComponent } from "../UIComponent.js";
 import type { UIStyle } from "../UIStyle.js";
@@ -11,32 +11,15 @@ import type { UIStyle } from "../UIStyle.js";
  * @online_docs Refer to the online documentation for more documentation on using this UI component class.
  */
 export class UIToggle extends UIComponent {
-	/** Creates a new toggle view object with the specified label */
-	constructor(label?: StringConvertible, state?: boolean) {
-		super();
-		this.label = label;
-		this.state = !!state;
-
-		// get and set form context value using `formContext` binding
-		FormContext.listen(
-			this,
-			function (value) {
-				this.state = !!value;
-			},
-			function () {
-				return this.state;
-			},
-		);
-	}
-
 	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
 	 */
-	override applyViewPreset(
-		preset: View.ExtendPreset<
-			UIComponent,
-			this,
+	static override getViewBuilder(
+		preset: ViewBuilder.ExtendPreset<
+			typeof UIComponent,
+			UIToggle,
 			| "label"
 			| "state"
 			| "formField"
@@ -55,7 +38,25 @@ export class UIToggle extends UIComponent {
 			preset.label = preset.text as any;
 			delete (preset as any).text;
 		}
-		super.applyViewPreset(preset);
+		return super.getViewBuilder(preset);
+	}
+
+	/** Creates a new toggle view object with the specified label */
+	constructor(label?: StringConvertible, state?: boolean) {
+		super();
+		this.label = label;
+		this.state = !!state;
+
+		// get and set form context value using `formContext` binding
+		FormContext.listen(
+			this,
+			function (value) {
+				this.state = !!value;
+			},
+			function () {
+				return this.state;
+			},
+		);
 	}
 
 	/** The current toggle state, true for toggle 'on' state */

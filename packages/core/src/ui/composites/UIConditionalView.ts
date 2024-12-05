@@ -1,7 +1,7 @@
 import {
 	RenderContext,
 	View,
-	ViewClass,
+	ViewBuilder,
 	ViewComposite,
 } from "../../app/index.js";
 
@@ -13,6 +13,33 @@ import {
  * @online_docs Refer to the online documentation for more documentation on using this UI component class.
  */
 export class UIConditionalView extends View {
+	/**
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
+	 */
+	static override getViewBuilder(
+		preset: ViewBuilder.ExtendPreset<
+			typeof ViewComposite,
+			UIConditionalView,
+			"state"
+		>,
+		builder?: ViewBuilder,
+	) {
+		// set all properties
+		let b = super.getViewBuilder(preset) as ViewBuilder<UIConditionalView>;
+		return b.addInitializer((view) => {
+			// add a method to create and attach the body view
+			view.setBody = function () {
+				let body = builder?.create();
+				this.body = body && this.attach(body, { delegate: this });
+			};
+
+			// create and attach the body view if state is already true
+			if (view.state) view.setBody();
+		});
+	}
+
 	constructor() {
 		super();
 
@@ -26,34 +53,15 @@ export class UIConditionalView extends View {
 			set(this: UIConditionalView, v) {
 				state = !!v;
 				if (!!this.body !== state) {
-					if (state && this._Body) {
-						this.body = this.attach(new this._Body(), { delegate: this });
-					} else {
-						this.body?.unlink();
-						this.body = undefined;
-					}
-					this.render();
+					state ? this.setBody() : this.removeBody();
 				}
+				this.render();
 			},
 		});
 	}
 
 	/** @internal Empty event delegation method, causes all events from attached body to be delegated */
 	delegate() {}
-
-	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing an instance
-	 */
-	override applyViewPreset(
-		preset: View.ExtendPreset<ViewComposite, UIConditionalView, "state">,
-	) {
-		if ((preset as any).Body) {
-			this._Body = (preset as any).Body;
-			delete (preset as any).Body;
-		}
-		super.applyViewPreset(preset);
-	}
 
 	/**
 	 * The current state of this conditional view
@@ -64,9 +72,6 @@ export class UIConditionalView extends View {
 
 	/** The current view content to be rendered */
 	body?: View;
-
-	/** The conditional view body, constructed each time state becomes true */
-	private _Body?: ViewClass;
 
 	render(callback?: RenderContext.RenderCallback) {
 		// skip extra rendering if view didn't actually change
@@ -95,6 +100,15 @@ export class UIConditionalView extends View {
 	requestFocus() {
 		this.body?.requestFocus();
 		return this;
+	}
+
+	/** @internal Creates the body view content when state becomes true */
+	setBody() {}
+
+	/** @internal Removes the view content when state becomes false */
+	removeBody() {
+		this.body?.unlink();
+		this.body = undefined;
 	}
 
 	/** Stateful renderer wrapper, handles content component */

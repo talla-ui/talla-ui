@@ -9,8 +9,8 @@ import {
 
 describe("UIConditionalView", () => {
 	test("Set state directly", () => {
-		let MyConditional = ui.conditional({}, UICell);
-		let cond = new MyConditional();
+		let myConditional = ui.conditional({}, ui.cell());
+		let cond = myConditional.create();
 		expect(cond.body).toBeUndefined();
 		cond.state = true;
 		expect(cond.body).toBeInstanceOf(UICell);
@@ -18,7 +18,7 @@ describe("UIConditionalView", () => {
 	});
 
 	test("Events are propagated", async (t) => {
-		let MyCell = ui.cell(
+		let myCell = ui.cell(
 			ui.conditional(
 				{ state: true },
 				ui.button("Click me", { onClick: "ButtonClick" }),
@@ -26,7 +26,7 @@ describe("UIConditionalView", () => {
 		);
 
 		// create instance and listen for events on cell
-		let cell = new MyCell();
+		let cell = myCell.create();
 		cell.listen((e) => {
 			if (e.name === "ButtonClick") t.count("click");
 		});
@@ -49,11 +49,11 @@ describe("UIConditionalView", () => {
 				),
 			),
 		);
-		const MyView = ui.use(MyViewComposite, { condition: false });
+		const myViewComposite = ui.use(MyViewComposite, { condition: false });
 
 		t.log("Creating view");
 		useTestContext({ renderFrequency: 5 });
-		let myView = new MyView();
+		let myView = myViewComposite.create();
 
 		t.log("Rendering view");
 		t.render(myView);

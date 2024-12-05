@@ -17,16 +17,16 @@ describe("UIToggle", (scope) => {
 		expect(tf).toHaveProperty("label").toBe("foo");
 	});
 
-	test("Preset with properties", () => {
-		let MyToggle = ui.toggle({ label: "foo", state: true });
-		let toggle = new MyToggle();
+	test("View builder with properties", () => {
+		let myToggle = ui.toggle({ label: "foo", state: true });
+		let toggle = myToggle.create();
 		expect(toggle).toHaveProperty("label").toBe("foo");
 		expect(toggle).toHaveProperty("state").toBe(true);
 	});
 
-	test("Preset using form field", () => {
-		let MyToggle = ui.toggle({ formField: "foo", label: strf("Foo") });
-		let toggle = new MyToggle();
+	test("View builder using form field", () => {
+		let myToggle = ui.toggle({ formField: "foo", label: strf("Foo") });
+		let toggle = myToggle.create();
 		expect(toggle).toHaveProperty("formField").toBe("foo");
 		expect(toggle).toHaveProperty("label").asString().toBe("Foo");
 	});

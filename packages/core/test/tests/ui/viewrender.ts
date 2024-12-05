@@ -30,32 +30,32 @@ describe("UIViewRenderer", (scope) => {
 	});
 
 	test("Set simple view and render", async (t) => {
-		let MyCell = ui.cell(ui.label("foo"));
+		let myCell = ui.cell(ui.label("foo"));
 		let viewRenderer = new UIViewRenderer();
-		viewRenderer.view = new MyCell();
+		viewRenderer.view = myCell.create();
 		t.render(viewRenderer);
 		await t.expectOutputAsync({ text: "foo" });
 		expect(viewRenderer.findViewContent(UILabel)).toBeArray(1);
 	});
 
 	test("Change view after rendering", async (t) => {
-		let MyCell1 = ui.cell(ui.label("foo"));
-		let MyCell2 = ui.cell(ui.label("bar"));
+		let myCell1 = ui.cell(ui.label("foo"));
+		let myCell2 = ui.cell(ui.label("bar"));
 		let viewRenderer = new UIViewRenderer();
-		viewRenderer.view = new MyCell1();
+		viewRenderer.view = myCell1.create();
 		t.render(viewRenderer);
 		await t.expectOutputAsync({ text: "foo" });
-		viewRenderer.view = new MyCell2();
+		viewRenderer.view = myCell2.create();
 		await t.expectOutputAsync({ text: "bar" });
 	});
 
 	test("Unlink view after rendering", async (t) => {
-		let MyCell = ui.cell(ui.label("foo"));
+		let myCell = ui.cell(ui.label("foo"));
 		let viewRenderer = new UIViewRenderer();
-		viewRenderer.view = new MyCell();
+		viewRenderer.view = myCell.create();
 		t.render(viewRenderer);
 		await t.expectOutputAsync({ text: "foo" });
-		viewRenderer.view.unlink();
+		viewRenderer.view!.unlink();
 		await t.sleep(20);
 		expect((app.renderer as TestRenderer).hasOutput()).toBeFalsy();
 	});
@@ -65,12 +65,12 @@ describe("UIViewRenderer", (scope) => {
 			{ text: StringConvertible.EMPTY },
 			ui.label($view.string("text")),
 		);
-		const Preset = ui.use(CompView, { text: "foo" });
+		const vb = ui.use(CompView, { text: "foo" });
 		class MyActivity extends Activity {
 			protected override createView() {
 				return ui.renderView({ view: bind("vc") }).create();
 			}
-			vc = this.attach(new Preset());
+			vc = this.attach(vb.create());
 		}
 		app.addActivity(new MyActivity(), true);
 		await t.expectOutputAsync({ text: "foo" });

@@ -17,33 +17,33 @@ describe("UICell", (scope) => {
 		expect(cell.findViewContent(UILabel)).toBeArray(2);
 	});
 
-	test("Preset with properties", () => {
-		let MyCell = ui.cell({ hidden: true });
-		let cell = new MyCell();
+	test("View builder with properties", () => {
+		let myCell = ui.cell({ hidden: true });
+		let cell = myCell.create();
 		expect(cell).toHaveProperty("hidden").toBeTruthy();
 	});
 
-	test("Preset animation cell with properties", () => {
-		let MyCell = ui.animatedCell({
+	test("View builder animation cell with properties", () => {
+		let myCell = ui.animatedCell({
 			hidden: true,
 			animationDuration: 200,
 			animationTiming: "ease",
 		});
-		let cell = new MyCell();
+		let cell = myCell.create();
 		expect(cell).toHaveProperty("animationDuration").toBe(200);
 		expect(cell).toHaveProperty("animationTiming").toBe("ease");
 	});
 
-	test("Preset with focusable", () => {
-		let MyCell = ui.cell({ allowKeyboardFocus: true });
-		let cell = new MyCell();
+	test("View builder with allowKeyboardFocus", () => {
+		let myCell = ui.cell({ allowKeyboardFocus: true });
+		let cell = myCell.create();
 		expect(cell.allowFocus).toBe(true);
 		expect(cell.allowKeyboardFocus).toBe(true);
 	});
 
-	test("Preset with content", () => {
-		let MyCell = ui.cell({ hidden: true }, ui.label("foo"));
-		let cell = new MyCell();
+	test("View builder with content", () => {
+		let myCell = ui.cell({ hidden: true }, ui.label("foo"));
+		let cell = myCell.create();
 		expect(cell).toHaveProperty("hidden").toBeTruthy();
 		expect(cell).toHaveProperty("content").asArray().toBeArray(1);
 		let label = cell.content.first() as UILabel;
@@ -57,8 +57,8 @@ describe("UICell", (scope) => {
 	});
 
 	test("Rendered with content", async (t) => {
-		let MyCell = ui.cell({ layout: { gravity: "end" } }, ui.label("foo"));
-		t.render(new MyCell());
+		let myCell = ui.cell({ layout: { gravity: "end" } }, ui.label("foo"));
+		t.render(myCell.create());
 		let out = await t.expectOutputAsync({
 			type: "cell",
 			styles: { gravity: "end" },
@@ -67,7 +67,7 @@ describe("UICell", (scope) => {
 	});
 
 	test("Rendered with style", async (t) => {
-		let MyCell = ui.cell(
+		let myCell = ui.cell(
 			{
 				padding: 16,
 				style: { borderColor: ui.color.GREEN, borderThickness: 1 },
@@ -75,7 +75,7 @@ describe("UICell", (scope) => {
 			},
 			ui.label("foo"),
 		);
-		t.render(new MyCell());
+		t.render(myCell.create());
 		await t.expectOutputAsync({
 			type: "cell",
 			styles: {

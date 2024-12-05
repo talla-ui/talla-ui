@@ -11,9 +11,9 @@ describe("UIImage", (scope) => {
 		expect(image).toHaveProperty("url").asString().toBe("foo.png");
 	});
 
-	test("Preset with properties", () => {
-		let MyImage = ui.image({ url: "foo.png" });
-		let image = new MyImage();
+	test("View builder with properties", () => {
+		let myImage = ui.image({ url: "foo.png" });
+		let image = myImage.create();
 		expect(image).toHaveProperty("url").asString().toBe("foo.png");
 	});
 
@@ -21,17 +21,17 @@ describe("UIImage", (scope) => {
 		let plainImage = new UIImage();
 		expect(plainImage.allowFocus).toBeFalsy();
 		expect(plainImage.allowKeyboardFocus).toBeFalsy();
-		let focusableImage = new (ui.image({ allowKeyboardFocus: true }))();
+		let focusableImage = ui.image({ allowKeyboardFocus: true }).create();
 		expect(focusableImage.allowFocus).toBeTruthy();
 		expect(focusableImage.allowKeyboardFocus).toBeTruthy();
 	});
 
 	test("Rendered with image url", async (t) => {
-		let MyImage = ui.image({
+		let myImage = ui.image({
 			url: "foo.png",
 			accessibleLabel: "My image",
 		});
-		let image = new MyImage();
+		let image = myImage.create();
 		t.render(image);
 		await t.expectOutputAsync({
 			type: "image",

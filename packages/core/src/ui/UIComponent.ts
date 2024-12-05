@@ -21,85 +21,87 @@ function emitRendered(source: View, name: string) {
 /**
  * Base class for built-in UI components
  *
- * @description
  * This class provides common infrastructure for UI components such as {@link UIButton} and {@link UIColumn}. The UIComponent class is an abstract class and can't be instantiated or rendered on its own.
- *
- * UI components can be constructed directly using `new`, but are often created as part of a 'preset' view hierarchy that's defined using JSX or {@link ui} factory functions, e.g. <button>`, `ui.button({ ... })` or `ui.column(...)`.
  *
  * @online_docs Refer to the online documentation for more documentation on using UI components.
  * @docgen {hideconstructor}
  */
 export abstract class UIComponent extends View {
 	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Don't call this method after constructing a UI component.
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
 	 */
-	override applyViewPreset(preset: {
-		/** An identifier for this component */
-		name?: string;
-		/** True if this component should be hidden from view (doesn't stop the component from being rendered) */
-		hidden?: BindingOrValue<boolean>;
-		/** Options for the positioning of this component within parent component(s) (overrides) */
-		position?: BindingOrValue<UIComponent.Position>;
-		/** WAI-ARIA role for this component, if applicable */
-		accessibleRole?: BindingOrValue<StringConvertible>;
-		/** WAI-ARIA label text for this component (not tooltip), if applicable */
-		accessibleLabel?: BindingOrValue<StringConvertible>;
-		/** True if this component should be focused immediately after rendering for the first time */
-		requestFocus?: boolean;
-		/** Event that's emitted before rendering the component the first time */
-		onBeforeRender?: string;
-		/** Event that's emitted by the renderer after rendering the component */
-		onRendered?: string;
-		/** Event that's emitted when the component gained input focus */
-		onFocusIn?: string;
-		/** Event that's emitted when the component lost input focus */
-		onFocusOut?: string;
-		/** Event that's emitted when the component has been clicked or otherwise activated */
-		onClick?: string;
-		/** Event that's emitted when the component has been double-clicked */
-		onDoubleClick?: string;
-		/** Event that's emitted when a context menu has been requested on the output element */
-		onContextMenu?: string;
-		/** Event that's emitted when a mouse button or touch input has been pressed */
-		onPress?: string;
-		/** Event that's emitted when a mouse button or touch input has been released */
-		onRelease?: string;
-		/** Event that's emitted when a key button has been released */
-		onKeyUp?: string;
-		/** Event that's emitted when a key button has been pressed down */
-		onKeyDown?: string;
-		/** Event that's emitted when a key button has been pressed */
-		onKeyPress?: string;
-		/** Event that's emitted when the space bar has been pressed */
-		onSpacebarPress?: string;
-		/** Event that's emitted when the Enter key has been pressed */
-		onEnterKeyPress?: string;
-		/** Event that's emitted when the Tab key has been pressed */
-		onTabKeyPress?: string;
-		/** Event that's emitted when the Backspace key has been pressed */
-		onBackspaceKeyPress?: string;
-		/** Event that's emitted when the Delete key has been pressed */
-		onDeleteKeyPress?: string;
-		/** Event that's emitted when the Escape key has been pressed */
-		onEscapeKeyPress?: string;
-		/** Event that's emitted when the left arrow key has been pressed */
-		onArrowLeftKeyPress?: string;
-		/** Event that's emitted when the right arrow key has been pressed */
-		onArrowRightKeyPress?: string;
-		/** Event that's emitted when the up arrow key has been pressed */
-		onArrowUpKeyPress?: string;
-		/** Event that's emitted when the down arrow key has been pressed */
-		onArrowDownKeyPress?: string;
-	}) {
-		// request focus (renderer will remember)
-		if (preset.requestFocus) {
-			setTimeout(() => this.requestFocus(), 1);
-		}
+	static override getViewBuilder(
+		this: new () => UIComponent,
+		preset: {
+			/** An identifier for this component */
+			name?: string;
+			/** True if this component should be hidden from view (doesn't stop the component from being rendered) */
+			hidden?: BindingOrValue<boolean>;
+			/** Options for the positioning of this component within parent component(s) (overrides) */
+			position?: BindingOrValue<UIComponent.Position>;
+			/** WAI-ARIA role for this component, if applicable */
+			accessibleRole?: BindingOrValue<StringConvertible>;
+			/** WAI-ARIA label text for this component (not tooltip), if applicable */
+			accessibleLabel?: BindingOrValue<StringConvertible>;
+			/** True if this component should be focused immediately after rendering for the first time */
+			requestFocus?: boolean;
+			/** Event that's emitted before rendering the component the first time */
+			onBeforeRender?: string;
+			/** Event that's emitted by the renderer after rendering the component */
+			onRendered?: string;
+			/** Event that's emitted when the component gained input focus */
+			onFocusIn?: string;
+			/** Event that's emitted when the component lost input focus */
+			onFocusOut?: string;
+			/** Event that's emitted when the component has been clicked or otherwise activated */
+			onClick?: string;
+			/** Event that's emitted when the component has been double-clicked */
+			onDoubleClick?: string;
+			/** Event that's emitted when a context menu has been requested on the output element */
+			onContextMenu?: string;
+			/** Event that's emitted when a mouse button or touch input has been pressed */
+			onPress?: string;
+			/** Event that's emitted when a mouse button or touch input has been released */
+			onRelease?: string;
+			/** Event that's emitted when a key button has been released */
+			onKeyUp?: string;
+			/** Event that's emitted when a key button has been pressed down */
+			onKeyDown?: string;
+			/** Event that's emitted when a key button has been pressed */
+			onKeyPress?: string;
+			/** Event that's emitted when the space bar has been pressed */
+			onSpacebarPress?: string;
+			/** Event that's emitted when the Enter key has been pressed */
+			onEnterKeyPress?: string;
+			/** Event that's emitted when the Tab key has been pressed */
+			onTabKeyPress?: string;
+			/** Event that's emitted when the Backspace key has been pressed */
+			onBackspaceKeyPress?: string;
+			/** Event that's emitted when the Delete key has been pressed */
+			onDeleteKeyPress?: string;
+			/** Event that's emitted when the Escape key has been pressed */
+			onEscapeKeyPress?: string;
+			/** Event that's emitted when the left arrow key has been pressed */
+			onArrowLeftKeyPress?: string;
+			/** Event that's emitted when the right arrow key has been pressed */
+			onArrowRightKeyPress?: string;
+			/** Event that's emitted when the up arrow key has been pressed */
+			onArrowUpKeyPress?: string;
+			/** Event that's emitted when the down arrow key has been pressed */
+			onArrowDownKeyPress?: string;
+		},
+	) {
+		let requestFocus = preset.requestFocus;
 		delete preset.requestFocus;
-
-		// apply all other property values, bindings, and event handlers
-		super.applyViewPreset(preset);
+		let b = super.getViewBuilder(preset);
+		if (requestFocus) {
+			b.addInitializer((component) => {
+				setTimeout(() => component.requestFocus(), 1);
+			});
+		}
+		return b;
 	}
 
 	/**

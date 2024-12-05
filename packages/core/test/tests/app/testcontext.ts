@@ -146,7 +146,7 @@ describe("TestContext", () => {
 		});
 
 		test("Cell view from single composite", async (t) => {
-			const MyView = ViewComposite.define({}, UICell);
+			const MyView = ViewComposite.define({}, ui.cell());
 			let view = new MyView();
 			let app = useTestContext({ renderFrequency: 5 });
 			t.render(view);
@@ -154,7 +154,7 @@ describe("TestContext", () => {
 		});
 
 		test("Cell view from single controller, handle events", async (t) => {
-			class MyView extends ViewComposite.define({}, UICell) {
+			class MyView extends ViewComposite.define({}, ui.cell()) {
 				async onClick() {
 					await Promise.resolve();
 					throw Error("Catch me");
@@ -176,7 +176,7 @@ describe("TestContext", () => {
 		});
 
 		test("Remove view after rendering", async (t) => {
-			const MyView = ViewComposite.define({}, UICell);
+			const MyView = ViewComposite.define({}, ui.cell());
 			let view = new MyView();
 			let app = useTestContext({ renderFrequency: 5 });
 			let rendered = t.render(view);

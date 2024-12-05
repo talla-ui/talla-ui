@@ -2,6 +2,7 @@ import { invalidArgErr, safeCall } from "../errors.js";
 import { ManagedEvent } from "./ManagedEvent.js";
 import {
 	$_get,
+	$_intercept,
 	$_origin,
 	$_root,
 	$_traps_event,
@@ -150,6 +151,21 @@ export class ManagedObject {
 	}
 
 	/**
+	 * Intercepts events on a managed object
+	 * @summary This method intercepts events on a managed object, calling a function when the specified event would be emitted. The function is called with the event, and a callback argument that can be used to emit an event without further interception (e.g. to emit the original event; otherwise the event is not emitted).
+	 * @param object The object to intercept events on
+	 * @param eventName The name of the event to intercept
+	 * @param f A function that will be called when the event would be emitted
+	 */
+	static intercept<T extends ManagedObject>(
+		object: T,
+		eventName: string,
+		f: (event: ManagedEvent, emit: (event: ManagedEvent) => void) => void,
+	) {
+		(object[$_intercept] ||= Object.create(null))[eventName] = f;
+	}
+
+	/**
 	 * Turns this object into a root object that cannot be attached
 	 * - This method is used to mark an object as a 'root' object, which cannot be attached to another object. This also implies that any bindings cannot go beyond this object in the tree structure, and any bindings that are still unbound after an object is attached to the root object will result in an error.
 	 * - This method is called automatically on the {@link app} object.
@@ -185,6 +201,12 @@ export class ManagedObject {
 	/** @internal Property that is set only on root objects (cannot be attached) */
 	declare [$_root]?: boolean;
 
+	/** @internal Intercepted events, with event names as keys and handler functions as values */
+	declare [$_intercept]?: Record<
+		string,
+		(event: ManagedEvent, emit: (event: ManagedEvent) => void) => void
+	>;
+
 	/** @internal Property getter for non-observable property bindings, overridden on managed lists */
 	[$_get](propertyName: string) {
 		if (propertyName === "*") return this;
@@ -204,6 +226,13 @@ export class ManagedObject {
 		if (event === undefined) return this;
 		if (typeof event === "string") event = new ManagedEvent(event, this, data);
 
+		// check for intercepted events
+		let handler = this[$_intercept]?.[event.name];
+		if (handler) {
+			handler(event, (e) => invokeTrap(this, $_traps_event, e));
+			return this;
+		}
+
 		// trigger traps as if event is written to a property
 		invokeTrap(this, $_traps_event, event);
 		return this;
@@ -217,9 +246,7 @@ export class ManagedObject {
 	 * @param data Additional data to be set on {@link ManagedEvent.data}; will be combined with the `change` property
 	 */
 	emitChange(name = "Change", data?: Record<string, any>) {
-		let event = new ManagedEvent(name, this, { change: this, ...data });
-		invokeTrap(this, $_traps_event, event);
-		return this;
+		return this.emit(name, { change: this, ...data });
 	}
 
 	/**
@@ -295,7 +322,7 @@ export class ManagedObject {
 	 * - This method makes the _current_ object the 'parent', or containing object for the target object. If the target object is already attached to another object, it's detached from that object first.
 	 *
 	 * @param target The object to attach
-	 * @param listener A function that will be called when the target object emits an event; or an object of type {@link ManagedObject.AttachListener}
+	 * @param listener A function that will be called when the target object emits an event; or an object of type {@link ManagedObject.AttachListener} (which includes an option to delegate events)
 	 * @returns The newly attached object
 	 * @error This method throws an error if the provided object was unlinked, or already attached to this object, either directly or using a circular reference.
 	 *

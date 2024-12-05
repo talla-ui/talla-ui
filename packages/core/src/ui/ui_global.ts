@@ -1,12 +1,4 @@
-import {
-	RenderContext,
-	View,
-	ViewClass,
-	ViewComposite,
-	app,
-} from "../app/index.js";
-import { LazyString } from "../base/LazyString.js";
-import { invalidArgErr } from "../errors.js";
+import { RenderContext, View, ViewBuilder, app } from "../app/index.js";
 import {
 	UIAnimatedCell,
 	UIAnimationView,
@@ -15,7 +7,6 @@ import {
 	UIColor,
 	UIColumn,
 	UIConditionalView,
-	UIContainer,
 	UIIconResource,
 	UIImage,
 	UILabel,
@@ -45,126 +36,66 @@ const _styleTypeCache = new Map<string, UIStyle.Type<any>>();
 
 /** Helper function to determine if a value is a plain object, i.e. { ... } */
 function isPreset(value: any) {
-	if (value) {
+	if (value && typeof value.create !== "function") {
 		let proto = Object.getPrototypeOf(value);
 		return proto === Object.prototype || proto === null;
 	}
 }
 
-/** UI component factory helper function */
-function createComponentFactory<TView extends View>(
-	type: new () => TView,
-	extendPreset?: (preset: any, ...args: any) => any,
-	init?: (this: TView, ...args: any) => void,
-): any {
-	return function (...args: any[]) {
-		let preset = isPreset(args[0]) ? args.shift() : undefined;
-		if (extendPreset) extendPreset((preset ||= {}), ...args);
-		return class PresetView extends (type as any) {
-			constructor(...newArgs: any[]) {
-				super(...newArgs);
-				if (preset) this.applyViewPreset({ ...preset });
-				if (init) init.call(this as any, ...(args as any));
-			}
-		};
+/** Helper function for ui.* functions */
+function makeAnyViewBuilderFunction(type: typeof View) {
+	return function (...args: any[]): ViewBuilder<any> {
+		if (!isPreset(args[0])) args.unshift(Object.create(null));
+		return (type.getViewBuilder as any).call(type, ...args);
 	};
 }
 
-/** UI component factory helper function, for containers */
-const createContainerComponentFactory = (V: ViewClass<UIContainer>) =>
-	createComponentFactory(V, undefined, function (...content: ViewClass[]) {
-		for (let C of content) this.content.add(new C());
-	});
-
-/** UI component factory helper function, for labels and buttons */
-function createTextComponentFactory<TView extends View>(
-	type: new () => TView,
-): any {
-	return function (a0: unknown, a1: unknown) {
-		if (!a1 && (typeof a0 === "string" || a0 instanceof LazyString)) {
-			// optimized result: use constructor with single string
-			return class PresetLabel extends (type as any) {
-				constructor() {
-					super(a0);
-				}
-			};
-		}
-
-		// otherwise use applyViewPreset with text
-		let hasText = !isPreset(a0);
-		let preset: any = hasText ? a1 : a0;
-		if (preset !== undefined && !isPreset(preset)) {
-			throw invalidArgErr("preset");
-		}
-		return class PresetLabel extends (type as any) {
-			constructor() {
-				super();
-				this.applyViewPreset({
-					text: hasText ? a0 : undefined,
-					...preset,
-				});
-			}
-		};
+/** Helper function for ui.* functions */
+function makeNonPresetViewBuilderFunction(
+	type: typeof View,
+	makePreset: (...args: any[]) => any,
+) {
+	return function (...args: any[]): ViewBuilder<any> {
+		return (type.getViewBuilder as any).call(
+			type,
+			!isPreset(args[0]) ? makePreset(...args) : args[0],
+		);
 	};
 }
 
-// === UI component factory functions
+// === view builder functions
 
-_ui.cell = createContainerComponentFactory(UICell);
-_ui.column = createContainerComponentFactory(UIColumn);
-_ui.row = createContainerComponentFactory(UIRow);
-_ui.scroll = createContainerComponentFactory(UIScrollContainer);
-_ui.animatedCell = createComponentFactory(UIAnimatedCell);
+_ui.cell = makeAnyViewBuilderFunction(UICell);
+_ui.column = makeAnyViewBuilderFunction(UIColumn);
+_ui.row = makeAnyViewBuilderFunction(UIRow);
+_ui.scroll = makeAnyViewBuilderFunction(UIScrollContainer);
+_ui.animatedCell = makeAnyViewBuilderFunction(UIAnimatedCell);
 
-_ui.label = createTextComponentFactory(UILabel);
-_ui.button = createTextComponentFactory(UIButton);
-_ui.textField = createComponentFactory(UITextField);
-_ui.toggle = createComponentFactory(UIToggle);
-_ui.separator = createComponentFactory(UISeparator);
-_ui.image = createComponentFactory(UIImage);
-
-_ui.spacer = createComponentFactory(UISpacer, (preset, width, height) => {
-	if (width) preset.width = width;
-	if (height) preset.height = height;
-});
-
-_ui.renderView = createComponentFactory(UIViewRenderer, (view) => ({
-	view,
+_ui.label = makeNonPresetViewBuilderFunction(UILabel, (text, p) => ({
+	...p,
+	text,
 }));
-_ui.animate = createComponentFactory(UIAnimationView, (preset, C) => {
-	preset.Body = C;
-});
-_ui.conditional = createComponentFactory(UIConditionalView, (preset, C) => {
-	preset.Body = C;
-});
+_ui.button = makeNonPresetViewBuilderFunction(UIButton, (label, p) => ({
+	...p,
+	label,
+}));
+_ui.textField = makeAnyViewBuilderFunction(UITextField);
+_ui.toggle = makeAnyViewBuilderFunction(UIToggle);
+_ui.separator = makeAnyViewBuilderFunction(UISeparator);
+_ui.image = makeAnyViewBuilderFunction(UIImage);
+_ui.spacer = makeNonPresetViewBuilderFunction(UISpacer, (width, height) => ({
+	width,
+	height,
+}));
 
-const defaultListBody = ui.column({ accessibleRole: "list" });
-_ui.list = createComponentFactory(
-	UIListView,
-	(preset, ItemBody, ContainerBody, BookEnd) => {
-		preset.Body = ContainerBody || defaultListBody;
-		preset.Observer = UIListView.createObserver(ItemBody, BookEnd);
-	},
-);
+_ui.renderView = makeAnyViewBuilderFunction(UIViewRenderer);
+_ui.animate = makeAnyViewBuilderFunction(UIAnimationView);
+_ui.conditional = makeAnyViewBuilderFunction(UIConditionalView);
+_ui.list = makeAnyViewBuilderFunction(UIListView);
 
-_ui.use = function <TPreset extends {}, TInstance extends ViewComposite>(
-	viewComposite: { new (preset?: TPreset): TInstance; create(): TInstance },
-	preset: NoInfer<TPreset>,
-	...content: ViewClass[]
-): typeof viewComposite {
-	if (typeof preset === "function") {
-		content.unshift(preset as any);
-		preset = {} as any;
-	}
-	let C: ViewClass | undefined | void;
-	return class PresetViewComposite extends (viewComposite as any) {
-		constructor(p?: TPreset) {
-			super(p ? { ...preset, ...p } : preset);
-		}
-		defineView() {
-			return (C ||= super.defineView(...content));
-		}
-	} as any;
+_ui.use = function (type: any, ...args: any[]) {
+	if (!isPreset(args[0])) args.unshift(Object.create(null));
+	return type.getViewBuilder.apply(type, args);
 };
 
 // === Other factory functions

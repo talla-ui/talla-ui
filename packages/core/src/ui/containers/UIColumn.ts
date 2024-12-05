@@ -1,4 +1,4 @@
-import type { View } from "../../app/index.js";
+import type { ViewBuilder } from "../../app/index.js";
 import { UIContainer } from "./UIContainer.js";
 
 /**
@@ -10,18 +10,18 @@ import { UIContainer } from "./UIContainer.js";
  */
 export class UIColumn extends UIContainer {
 	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
 	 */
-	override applyViewPreset(
-		preset: View.ExtendPreset<
-			UIContainer,
-			this,
+	declare static getViewBuilder: (
+		preset: ViewBuilder.ExtendPreset<
+			typeof UIContainer,
+			UIColumn,
 			"width" | "spacing" | "align" | "distribute" | "reverse"
 		>,
-	) {
-		super.applyViewPreset(preset);
-	}
+		...content: ViewBuilder[]
+	) => ViewBuilder<UIContainer>;
 
 	/** True if content should be displayed in reverse order */
 	reverse = false;

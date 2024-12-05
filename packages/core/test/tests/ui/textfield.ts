@@ -17,19 +17,19 @@ describe("UITextField", (scope) => {
 		expect(tf).toHaveProperty("type").toBe("text");
 	});
 
-	test("Preset with properties", () => {
-		let MyTF = ui.textField({ placeholder: "foo", name: "bar" });
-		let tf = new MyTF();
+	test("View builder with properties", () => {
+		let myTF = ui.textField({ placeholder: "foo", name: "bar" });
+		let tf = myTF.create();
 		expect(tf).toHaveProperty("placeholder").asString().toBe("foo");
 		expect(tf).toHaveProperty("name").toBe("bar");
 	});
 
-	test("Preset using form field", () => {
-		let MyTF = ui.textField({
+	test("View builder using form field", () => {
+		let myTF = ui.textField({
 			formField: "foo",
 			placeholder: strf("Placeholder"),
 		});
-		let tf = new MyTF();
+		let tf = myTF.create();
 		expect(tf).toHaveProperty("formField").toBe("foo");
 		expect(tf).toHaveProperty("placeholder").asString().toBe("Placeholder");
 	});

@@ -13,6 +13,9 @@ export const $_origin = Symbol("origin");
 /** @internal Property that is set only on root objects (cannot be attached) */
 export const $_root = Symbol("root");
 
+/** @internal Property that refers to a list of event interceptors */
+export const $_intercept = Symbol("intercept");
+
 /** @internal Getter for non-observable properties (used for e.g. list count) */
 export const $_get = Symbol("get");
 

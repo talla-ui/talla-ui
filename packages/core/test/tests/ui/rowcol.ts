@@ -20,16 +20,16 @@ describe("UIRow and UIColumn", (scope) => {
 		expect(col).toHaveProperty("content").asArray().toBeArray([label1, label2]);
 	});
 
-	test("Row preset with height and content", () => {
-		let MyRow = ui.row({ height: 123 }, UILabel);
-		let row = new MyRow();
+	test("Row view builder with height and content", () => {
+		let myRow = ui.row({ height: 123 }, ui.label("foo"));
+		let row = myRow.create();
 		expect(row).toHaveProperty("height").toBe(123);
 		expect(row).toHaveProperty("content").asArray().toBeArray(1);
 	});
 
-	test("Column preset with width", () => {
-		let MyCol = ui.column({ width: 123 }, UILabel);
-		let col = new MyCol();
+	test("Column view builder with width", () => {
+		let myCol = ui.column({ width: 123 }, ui.label("foo"));
+		let col = myCol.create();
 		expect(col).toHaveProperty("width").toBe(123);
 		expect(col).toHaveProperty("content").asArray().toBeArray(1);
 	});
@@ -87,11 +87,11 @@ describe("UIRow and UIColumn", (scope) => {
 	});
 
 	test("Rendered with height and width", async (t) => {
-		let Preset = ui.row(
+		let myRow = ui.row(
 			{ height: 123 },
 			ui.column({ width: 123 }, ui.label("foo")),
 		);
-		t.render(new Preset());
+		t.render(myRow.create());
 
 		// wait for row > col > label to be rendered
 		// and check row height

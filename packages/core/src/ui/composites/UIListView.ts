@@ -1,4 +1,9 @@
-import { View, ViewClass, ViewComposite, ViewEvent } from "../../app/index.js";
+import {
+	View,
+	ViewBuilder,
+	ViewComposite,
+	ViewEvent,
+} from "../../app/index.js";
 import {
 	Binding,
 	BindingOrValue,
@@ -7,10 +12,15 @@ import {
 	bind,
 } from "../../base/index.js";
 import { ERROR, err } from "../../errors.js";
-import { UIContainer } from "../containers/index.js";
+import { UIContainer, UIColumn, UIRow } from "../containers/index.js";
 
 const ASYNC_BATCH_SIZE = 100;
 const DEFAULT_MAX_DELAY_COUNT = 100;
+
+const defaultItemBuilder = UIRow.getViewBuilder({});
+const defaultContainerBuilder = UIColumn.getViewBuilder({
+	accessibleRole: "list",
+});
 
 // use this property for duck typing ManagedList instances
 const ManagedList_take = ManagedList.prototype.take;
@@ -37,7 +47,10 @@ export class UIListView<
 	TItem extends ManagedObject = ManagedObject,
 > extends ViewComposite {
 	/** @internal Creates an observer that populates the list with the provided item body and book end */
-	static createObserver(ItemBody: ViewClass, BookEnd?: ViewClass) {
+	static createObserver(
+		itemBuilder: ViewBuilder,
+		bookEndBuilder?: ViewBuilder,
+	) {
 		// return a unique class for the provided views, to be attached
 		return class PresetListObserver extends ManagedObject {
 			constructor(public list: UIListView) {
@@ -59,11 +72,39 @@ export class UIListView<
 				this._sync = false;
 				if (this._running) this._running.abort = true;
 				this._running = { abort: false };
-				this.list?._updateItems(ItemBody, BookEnd, this._running);
+				this.list?._updateItems(itemBuilder, bookEndBuilder, this._running);
 			}
 			private _sync?: boolean;
 			private _running?: { abort: boolean };
 		};
+	}
+
+	/**
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
+	 */
+	static override getViewBuilder(
+		preset: ViewBuilder.ExtendPreset<
+			typeof ViewComposite,
+			UIListView,
+			"firstIndex" | "maxItems" | "renderOptions"
+		> & {
+			/** List of objects, either an array, {@link ManagedList} object, or binding for either */
+			items?: BindingOrValue<Iterable<any>>;
+			/** Event that's emitted when list item views are rendered */
+			onListItemsChange?: string;
+		},
+		itemBuilder: ViewBuilder = defaultItemBuilder,
+		containerBuilder: ViewBuilder = defaultContainerBuilder,
+		bookEndBuilder?: ViewBuilder,
+	) {
+		let Observer = this.createObserver(itemBuilder, bookEndBuilder);
+		let b = super.getViewBuilder(preset) as ViewBuilder<UIListView>;
+		return b.addInitializer((list) => {
+			list.attach(new Observer(list));
+			list.createView = () => containerBuilder?.create();
+		});
 	}
 
 	/**
@@ -105,34 +146,6 @@ export class UIListView<
 				list = this._makeList(v);
 			},
 		});
-	}
-
-	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing an instance
-	 */
-	override applyViewPreset(
-		preset: View.ExtendPreset<
-			ViewComposite,
-			UIListView,
-			"firstIndex" | "maxItems" | "renderOptions"
-		> & {
-			/** List of objects, either an array, {@link ManagedList} object, or binding for either */
-			items?: BindingOrValue<Iterable<any>>;
-			/** Event that's emitted when list item views are rendered */
-			onListItemsChange?: string;
-		},
-	) {
-		super.applyViewPreset(preset);
-		if ((preset as any).Body) {
-			let Body = (preset as any).Body as ViewClass<UIContainer>;
-			this.createView = () => new Body();
-			delete (preset as any).Body;
-		}
-		if ((preset as any).Observer) {
-			this.attach(new (preset as any).Observer(this));
-			delete (preset as any).Observer;
-		}
 	}
 
 	/**
@@ -271,8 +284,8 @@ export class UIListView<
 
 	/** Update the container with (existing or new) components, one for each list item; only called from list observer */
 	private async _updateItems(
-		ItemBody: ViewClass,
-		BookEnd?: ViewClass,
+		itemBuilder: ViewBuilder,
+		bookEndBuilder?: ViewBuilder,
 		cancel?: { abort?: boolean },
 	) {
 		if (this.isUnlinked()) return;
@@ -313,7 +326,7 @@ export class UIListView<
 		for (let item of items) {
 			let component = existing && existing.get(item);
 			if (!component) {
-				component = new UIListView.ItemControllerView(item, ItemBody);
+				component = new UIListView.ItemControllerView(item, itemBuilder);
 			}
 			components.push(component);
 			map.set(item, component);
@@ -330,9 +343,11 @@ export class UIListView<
 			}
 			n++;
 		}
-		if (BookEnd) {
-			let last = content.last();
-			components.push(last instanceof BookEnd ? last : new BookEnd());
+		if (bookEndBuilder) {
+			if (!this._lastBookEnd || content.last() !== this._lastBookEnd) {
+				this._lastBookEnd = bookEndBuilder.create();
+			}
+			components.push(this._lastBookEnd);
 		}
 		this._contentMap = map;
 		if (cancel?.abort) return;
@@ -360,6 +375,9 @@ export class UIListView<
 		ManagedObject,
 		UIListView.ItemControllerView<TItem>
 	>;
+
+	/** Book end view that's already created, if any */
+	private _lastBookEnd?: View;
 }
 
 export namespace UIListView {
@@ -406,10 +424,10 @@ export namespace UIListView {
 		 * Creates a new item controller view object
 		 * - This constructor is used by {@link UIListView} and should not be used directly by an application.
 		 */
-		constructor(item: TItem | ItemValueWrapper<TItem>, ItemBody: ViewClass) {
+		constructor(item: TItem | ItemValueWrapper<TItem>, body: ViewBuilder) {
 			super();
 			this.item = item instanceof ItemValueWrapper ? item.value : item;
-			this._ItemBody = ItemBody;
+			this.createView = () => body.create();
 		}
 
 		/** @internal */
@@ -417,11 +435,5 @@ export namespace UIListView {
 
 		/** The encapsulated list (or array) item */
 		readonly item: TItem;
-
-		protected override createView() {
-			return new this._ItemBody();
-		}
-
-		private _ItemBody: ViewClass;
 	}
 }

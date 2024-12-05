@@ -1,4 +1,4 @@
-import type { View } from "../../app/index.js";
+import type { ViewBuilder } from "../../app/index.js";
 import type { StringConvertible } from "../../base/index.js";
 import type { UIColor } from "../UIColor.js";
 import { UIComponent } from "../UIComponent.js";
@@ -13,16 +13,15 @@ import type { UIStyle } from "../UIStyle.js";
  * @online_docs Refer to the online documentation for more documentation on using this UI component class.
  */
 export class UILabel extends UIComponent {
-	/** Creates a new label view object with the specified text */
-	constructor(text?: StringConvertible) {
-		super();
-		this.text = text;
-	}
-
-	override applyViewPreset(
-		preset: View.ExtendPreset<
-			UIComponent,
-			this,
+	/**
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
+	 */
+	static override getViewBuilder(
+		preset: ViewBuilder.ExtendPreset<
+			typeof UIComponent,
+			UILabel,
 			| "headingLevel"
 			| "htmlFormat"
 			| "text"
@@ -45,7 +44,13 @@ export class UILabel extends UIComponent {
 		>,
 	) {
 		if (preset.allowKeyboardFocus) preset.allowFocus = true;
-		super.applyViewPreset(preset);
+		return super.getViewBuilder(preset);
+	}
+
+	/** Creates a new label view object with the specified text */
+	constructor(text?: StringConvertible) {
+		super();
+		this.text = text;
 	}
 
 	/** The label text to be displayed */

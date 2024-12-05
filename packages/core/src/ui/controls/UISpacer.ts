@@ -1,4 +1,4 @@
-import type { View } from "../../app/index.js";
+import type { ViewBuilder } from "../../app/index.js";
 import { UIComponent } from "../UIComponent.js";
 
 /**
@@ -10,18 +10,17 @@ import { UIComponent } from "../UIComponent.js";
  */
 export class UISpacer extends UIComponent {
 	/**
-	 * Applies the provided preset properties to this object
-	 * - This method is called automatically. Do not call this method after constructing a UI component.
+	 * Creates a new {@link ViewBuilder} instance for the current view class
+	 * @see {@link View.getViewBuilder}
+	 * @docgen {hide}
 	 */
-	override applyViewPreset(
-		preset: View.ExtendPreset<
-			UIComponent,
-			this,
+	declare static getViewBuilder: (
+		preset: ViewBuilder.ExtendPreset<
+			typeof UIComponent,
+			UISpacer,
 			"width" | "height" | "minWidth" | "minHeight"
 		>,
-	) {
-		super.applyViewPreset(preset);
-	}
+	) => ViewBuilder<UIComponent>;
 
 	/**
 	 * Creates a new spacer component, with optional width and height

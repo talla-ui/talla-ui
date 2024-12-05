@@ -16,14 +16,14 @@ describe("UISpacer", (scope) => {
 		});
 	});
 
-	test("Preset using dimensions", () => {
-		let spacer = new (ui.spacer(10, 10))();
+	test("View builder using dimensions", () => {
+		let spacer = ui.spacer(10, 10).create();
 		expect(spacer).toHaveProperty("width").toBe(10);
 		expect(spacer).toHaveProperty("height").toBe(10);
 	});
 
 	test("Rendered", async (t) => {
-		t.render(new UISpacer());
+		t.render(ui.spacer(10, 10).create());
 		await t.expectOutputAsync({ type: "spacer" });
 	});
 });

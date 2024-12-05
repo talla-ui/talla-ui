@@ -13,16 +13,16 @@ describe("Focus management", (scope) => {
 	});
 
 	test("Single element, initial focus", async (t) => {
-		let MyCell = ui.cell({ requestFocus: true, allowFocus: true });
-		let cell = new MyCell();
+		let myCell = ui.cell({ requestFocus: true, allowFocus: true });
+		let cell = myCell.create();
 		t.render(cell);
 		let elt = (await t.expectOutputAsync({ type: "cell" })).getSingle();
 		expect(elt.hasFocus()).toBeTruthy();
 	});
 
 	test("Single element, request focus", async (t) => {
-		let MyCell = ui.cell({ allowFocus: true });
-		let cell = new MyCell();
+		let myCell = ui.cell({ allowFocus: true });
+		let cell = myCell.create();
 		t.render(cell);
 		await t.expectOutputAsync({ type: "cell" });
 		cell.requestFocus();
@@ -39,13 +39,13 @@ describe("Focus management", (scope) => {
 	});
 
 	test("Focus requests", async (t) => {
-		let MyCell = ui.cell(
+		let myCell = ui.cell(
 			ui.button("first", { requestFocus: true }),
 			ui.button("second"),
 		);
 
 		t.log("Focusing first");
-		t.render(new MyCell());
+		t.render(myCell.create());
 		let out = await t.expectOutputAsync({ text: "first", focused: true });
 
 		t.log("Focusing next");
@@ -60,22 +60,21 @@ describe("Focus management", (scope) => {
 	test("Focusing one element blurs another", async (t) => {
 		let events: string[] = [];
 		let done = false;
-		const Preset = ui.cell(
-			ui.cell({
-				onBeforeRender: "Cell1Ref",
-				onFocusIn: "+Cell1Focus",
-				onFocusOut: "+Cell1Focus",
-				allowFocus: true,
-			}),
-			ui.cell({
-				onBeforeRender: "Cell2Ref",
-				onFocusIn: "+Done",
-				allowFocus: true,
-			}),
-		);
 		class MyView extends ViewComposite {
 			protected override defineView() {
-				return Preset;
+				return ui.cell(
+					ui.cell({
+						onBeforeRender: "Cell1Ref",
+						onFocusIn: "+Cell1Focus",
+						onFocusOut: "+Cell1Focus",
+						allowFocus: true,
+					}),
+					ui.cell({
+						onBeforeRender: "Cell2Ref",
+						onFocusIn: "+Done",
+						allowFocus: true,
+					}),
+				);
 			}
 			onCell1Ref(e: ViewEvent<UICell>) {
 				e.source.requestFocus();

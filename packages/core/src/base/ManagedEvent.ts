@@ -13,11 +13,11 @@ const NO_DATA = Object.freeze({});
  *
  * **Types** — Events are identified by their name at runtime. In the application source code, a specific event can be identified using the type arguments of ManagedEvent. These refer to the source object type and data object, respectively — e.g. `ManagedEvent<MyView, { foo: number }>`, which is a type definition for an event emitted by instances of MyView, with name Foo and a data object that includes a `foo` number property.
  *
- * TODO: describe change events
+ * **Change events** — The {@link ManagedObject.emitChange()} method can be used to emit events with a `change` property in the data object. This is a common pattern for notifying listeners about changes in the object's state, and will also trigger bindings to update the value of any bound properties.
  *
- * **Delegation** — If an object handles an event by re-emitting the same event on its own, but both the original source object _and_ the delegating object should be available, a new event should be created that includes the `delegate` property. The original source can be traced back using the `source` property, while the second object is available as `delegate`.
+ * **Delegation** — An object may handle an event by emitting a new event with the same name, referencing itself as the delegate object. This is useful for forwarding events from one object to another, or for handling events in a different context, and is implemented automatically using the `delegate` option in the {@link ManagedObject.attach()} method. The delegate object can be accessed on any event using the {@link findDelegate()} method.
  *
- * **Forwarding and intercepting events** — When an event is forwarded or intercepted by a preset view (using `on...` properties of the object passed to e.g. `ui.cell({ ... })`), the original event is stored in the `inner` property.
+ * **Event aliases** — Using preset objects passed to a view builder (i.e. using {@link ui} functions such as `ui.button()` or JSX tags), event names can be aliased to other event names. In the corresponding activity or view composite, the event can be handled using the aliased name. Refer to the example below.
  *
  * @example
  * // Emitting an event from a managed object
