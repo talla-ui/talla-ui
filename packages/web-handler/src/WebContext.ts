@@ -58,6 +58,9 @@ export class WebContextOptions extends ConfigOptions {
 	/** Control text styles, defaults to system font at 14 logical pixels if not set */
 	controlTextStyle?: UIComponent.TextStyleType;
 
+	/** Opacity value to be used for labels with `dim` set to true */
+	dimLabelOpacity = 0.5;
+
 	/** Custom focus (outline) decoration styles, if any */
 	focusDecoration?: UIComponent.DecorationStyleType;
 

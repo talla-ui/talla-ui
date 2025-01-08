@@ -6,6 +6,7 @@ import {
 	setControlTextStyle,
 	setFocusDecoration,
 	setGlobalCSS,
+	setLabelDimOpacity,
 	setLogicalPxScale,
 } from "./DOMStyle.js";
 import { MessageDialog } from "./MessageDialog.js";
@@ -49,6 +50,7 @@ export class WebTheme extends UITheme {
 			...defaultControlTextStyle,
 			...options.controlTextStyle,
 		});
+		setLabelDimOpacity(options.dimLabelOpacity);
 		if (options.focusDecoration) {
 			setFocusDecoration(options.focusDecoration);
 		}

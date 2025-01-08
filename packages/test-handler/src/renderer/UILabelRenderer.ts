@@ -67,7 +67,7 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 					textColor: label.color,
 					fontSize: label.fontSize,
 					opacity:
-						label.dim === true ? 0.6 : label.dim === false ? 1 : label.dim,
+						label.dim === true ? 0.5 : label.dim === false ? 1 : label.dim,
 					lineBreakMode: label.wrap ? "pre-wrap" : undefined,
 					userSelect: label.selectable || undefined,
 				},

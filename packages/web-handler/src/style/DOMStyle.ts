@@ -50,6 +50,19 @@ let _pendingCSS: { [spec: string]: any } | undefined;
 /** All CSS imports */
 let _cssImports: string[] = [];
 
+/** Label dim opacity */
+let _labelDimOpacity = 0.5;
+
+/** @internal Set the opacity to be used for labels with `dim` set to true */
+export function setLabelDimOpacity(opacity: number) {
+	_labelDimOpacity = opacity;
+}
+
+/** @internal Get the opacity to be used for labels with `dim` set to true */
+export function getLabelDimOpacity() {
+	return _labelDimOpacity;
+}
+
 /** @internal Helper method to convert a CSS length unit *or* pixels number to a CSS string or given default string (e.g. `auto`) */
 export function getCSSLength(
 	length?: UIComponent.Offsets,

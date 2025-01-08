@@ -7,7 +7,11 @@ import {
 	UIIconResource,
 	UILabel,
 } from "talla-ui";
-import { applyStyles, getCSSLength } from "../../style/DOMStyle.js";
+import {
+	applyStyles,
+	getCSSLength,
+	getLabelDimOpacity,
+} from "../../style/DOMStyle.js";
 import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
 
 const CHEVRON_ICONS = {
@@ -68,6 +72,9 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 
 	override updateStyle(element: HTMLElement) {
 		let label = this.observed;
+		let opacity = label.dim;
+		if (opacity === true) opacity = getLabelDimOpacity();
+		else if (opacity === false) opacity = 1;
 		applyStyles(
 			label,
 			element,
@@ -84,8 +91,7 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 					italic: label.italic,
 					textColor: label.color,
 					fontSize: label.fontSize,
-					opacity:
-						label.dim === true ? 0.6 : label.dim === false ? 1 : label.dim,
+					opacity,
 					lineBreakMode: label.wrap ? "pre-wrap" : undefined,
 					userSelect: label.selectable || undefined,
 				},
