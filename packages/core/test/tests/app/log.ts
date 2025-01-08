@@ -48,6 +48,23 @@ describe("LogWriter", (ctx) => {
 		app.log.information(strf("Hello, %s!", "world"));
 	});
 
+	test("Write message using multiple args", () => {
+		app.log.addHandler(0, (data) => {
+			expect(data.message).toBe("Hello");
+			expect(data.data).toBeArray(["world"]);
+		});
+		app.log.information("Hello", "world");
+	});
+
+	test("Dump data using multiple args", () => {
+		let a = { a: 1 };
+		let b = { b: 2 };
+		app.log.addHandler(0, (data) => {
+			expect(data.data).toBeArray([a, b]);
+		});
+		app.log.dump(a, b);
+	});
+
 	test("Write message using strf, named property", () => {
 		app.log.addHandler(0, (data) => {
 			expect(data.message).toBe("Hello, world!");

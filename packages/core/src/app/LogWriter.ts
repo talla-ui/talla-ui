@@ -5,24 +5,24 @@ import { AppException } from "./AppException.js";
 /** Helper function that puts together event data for a log message */
 function makeEventData(
 	level: number,
-	source: unknown,
+	...data: unknown[]
 ): LogWriter.LogMessageData {
-	let data: any[];
 	let message: string;
 	let error: Error | undefined;
-	if (source instanceof Error) {
-		error = source;
+	let first = data.shift() as any; // Use shift instead of unshift
+	if (first instanceof Error) {
+		error = first;
 		message = String(error.message || error.name || "Error");
-		data = (error instanceof AppException && error.data) || [];
-		data.push({
+		data.unshift({
 			error: true,
 			name: error.name,
 			stack: error.stack,
 			cause: (error as any).cause ? (error as any).cause.stack : undefined,
 		});
+		if (error instanceof AppException) data.unshift(...error.data);
 	} else {
-		message = String(source);
-		data = source instanceof LazyString ? source.getFormatArgs() : [];
+		message = String(first);
+		if (first instanceof LazyString) data.unshift(...first.getFormatArgs());
 	}
 	return { message, level, error, data };
 }
@@ -48,8 +48,8 @@ export class LogWriter {
 	 * // Write a formatted log message
 	 * app.log.verbose(strf("Logged in as %[name]", userData));
 	 */
-	verbose(message: unknown) {
-		this._write(0, message);
+	verbose(message: unknown, ...data: unknown[]) {
+		this._write(0, message, ...data);
 	}
 
 	/**
@@ -60,8 +60,18 @@ export class LogWriter {
 	 * // Write a formatted log message
 	 * app.log.debug(strf("Logged in as %[name]", userData));
 	 */
-	debug(message: unknown) {
-		this._write(1, message);
+	debug(message: unknown, ...data: unknown[]) {
+		this._write(1, message, ...data);
+	}
+
+	/**
+	 * Writes a log message with severity 'debug' (1) and the specified data
+	 * @example
+	 * // Write an object as a debug message
+	 * app.log.dump(userData);
+	 */
+	dump(...data: unknown[]) {
+		this._write(1, "=", ...data);
 	}
 
 	/**
@@ -72,8 +82,8 @@ export class LogWriter {
 	 * // Write a formatted log message
 	 * app.log.information(strf("Logged in as %[name]", userData));
 	 */
-	information(message: unknown) {
-		this._write(2, message);
+	information(message: unknown, ...data: unknown[]) {
+		this._write(2, message, ...data);
 	}
 
 	/**
@@ -84,8 +94,8 @@ export class LogWriter {
 	 * // Write a formatted log message
 	 * app.log.warning(strf("User not found: %[name]", userData));
 	 */
-	warning(message: unknown) {
-		this._write(3, message);
+	warning(message: unknown, ...data: unknown[]) {
+		this._write(3, message, ...data);
 	}
 
 	/**
@@ -104,8 +114,8 @@ export class LogWriter {
 	 *   app.log.error(err);
 	 * }
 	 */
-	error(message: unknown) {
-		this._write(4, message);
+	error(message: unknown, ...data: unknown[]) {
+		this._write(4, message, ...data);
 	}
 
 	/**
@@ -124,8 +134,8 @@ export class LogWriter {
 	 *   app.log.fatal(err);
 	 * }
 	 */
-	fatal(message: unknown) {
-		this._write(5, message);
+	fatal(message: unknown, ...data: unknown[]) {
+		this._write(5, message, ...data);
 	}
 
 	/**
@@ -146,19 +156,13 @@ export class LogWriter {
 	}
 
 	/** Private implementation to emit a log message event, or write to the console */
-	private _write(level: number, message: unknown) {
-		let data = makeEventData(level, message);
+	private _write(level: number, ...data: unknown[]) {
+		let obj = makeEventData(level, ...data);
 		if (this._default) {
-			if (level >= 4) {
-				console.error(message);
-				if (data.data.length) console.log(...data.data);
-			} else {
-				data.data.length
-					? console.log(data.message, data.data)
-					: console.log(data.message);
-			}
+			if (level >= 4) console.error(...data);
+			else console.log(...data);
 		}
-		for (let s of this._sink) s(data);
+		for (let s of this._sink) s(obj);
 	}
 
 	/** A list of log sink handlers, if any */
