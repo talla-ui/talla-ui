@@ -883,6 +883,15 @@ describe("Bindings", () => {
 			expect(parent.child.updates).asJSONString().toBe("[1,2,3,0]");
 		});
 
+		test("Either-binding, 3 terms", () => {
+			let { parent } = setup();
+			parent.child.bindValue(bind.either("value1", "value2", bind("value3")));
+			parent.value1 = 0;
+			parent.value2 = 0;
+			parent.value3 = 0;
+			expect(parent.child.updates).asJSONString().toBe("[1,2,3,0]");
+		});
+
 		test("And-Or-binding", () => {
 			let { parent } = setup();
 			parent.child.bindValue(bind("value1").and("value2").or("value3"));

@@ -715,6 +715,19 @@ export namespace bind {
 	}
 
 	/**
+	 * Creates a new {@link Binding} object, for a binding that takes the value of the first binding of the specified bindings that has a non-false value
+	 * - This function repeatedly calls {@link Binding.or} for each source and returns the resulting binding.
+	 * @param sources One or more instances of {@link Binding} or source paths that will be passed to {@link bind()}
+	 */
+	export function either(...sources: Array<string | Binding>) {
+		let result = new Binding(sources.shift());
+		while (sources.length) {
+			result = result.or(sources.shift()!);
+		}
+		return result;
+	}
+
+	/**
 	 * Creates an object with methods that can be used to create bindings for a specific source
 	 * - This function is used to create objects such as {@link $activity}, {@link $view}, and {@link $viewport}.
 	 * - You can use this function to create your own binding factory objects, by referencing a specific property of a class (i.e. the binding source label) and/or a property name that should be used as a prefix for all bindings.
