@@ -132,8 +132,14 @@ export class LogWriter {
 	 * Adds a log sink handler for this log writer
 	 * @param minLevel The minimum log level for which messages are passed to the handler function
 	 * @param f A handler function, which should accept a single {@link LogWriter.LogMessageData} argument
+	 * @param keepDefault True if messages should still be written to the console by default (will be disabled if any handler is added without `keepDefault`)
 	 */
-	addHandler(minLevel: number, f: (message: LogWriter.LogMessageData) => void) {
+	addHandler(
+		minLevel: number,
+		f: (message: LogWriter.LogMessageData) => void,
+		keepDefault?: boolean,
+	) {
+		if (!keepDefault) this._default = false;
 		this._sink.push((m) => {
 			if (m.level >= minLevel) safeCall(f, undefined, m);
 		});
@@ -142,20 +148,22 @@ export class LogWriter {
 	/** Private implementation to emit a log message event, or write to the console */
 	private _write(level: number, message: unknown) {
 		let data = makeEventData(level, message);
-		if (this._sink.length) {
-			for (let s of this._sink) s(data);
-		} else if (level >= 4) {
-			console.error(message);
-			if (data.data.length) console.log(...data.data);
-		} else {
-			data.data.length
-				? console.log(data.message, data.data)
-				: console.log(data.message);
+		if (this._default) {
+			if (level >= 4) {
+				console.error(message);
+				if (data.data.length) console.log(...data.data);
+			} else {
+				data.data.length
+					? console.log(data.message, data.data)
+					: console.log(data.message);
+			}
 		}
+		for (let s of this._sink) s(data);
 	}
 
 	/** A list of log sink handlers, if any */
 	private _sink: Array<(data: LogWriter.LogMessageData) => void> = [];
+	private _default = true;
 }
 
 export namespace LogWriter {
