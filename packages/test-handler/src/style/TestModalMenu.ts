@@ -52,6 +52,7 @@ export class TestModalMenu
 			itemRow.allowKeyboardFocus = true;
 			container.content.add(itemRow);
 			let itemLabel = new UILabel(item.text);
+			if (item.disabled) itemLabel.dim = true;
 			itemRow.content.add(itemLabel);
 			if (item.icon) itemLabel.icon = item.icon;
 			if (item.hint || item.hintIcon) {
@@ -61,6 +62,7 @@ export class TestModalMenu
 			}
 
 			// add an observer to register clicks and keyboard input
+			if (item.disabled) continue;
 			itemRow.listen((e) => {
 				if (e.name === "Click") {
 					this._resolve?.(item.key);

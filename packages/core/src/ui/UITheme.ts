@@ -202,6 +202,7 @@ export namespace UITheme {
 				hintIconSize?: string | number;
 				labelStyle?: UIComponent.TextStyleType;
 				hintStyle?: UIComponent.TextStyleType;
+				disabled?: boolean;
 				separate?: never;
 		  }
 		| {

@@ -143,11 +143,16 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 		});
 
 		// add menu items with label and/or hint
-		const defMenuItemCell = ui.cell({
+		const menuItemCellBuilder = ui.cell({
 			accessibleRole: "menuitem",
 			style: ModalMenu.styles.itemCellStyle,
 			allowFocus: true,
 			allowKeyboardFocus: true,
+		});
+		const disabledMenuItemCellBuilder = ui.cell({
+			style: ModalMenu.styles.itemCellStyle,
+			background: ui.color.CLEAR,
+			textColor: ui.color.TEXT,
 		});
 		for (let item of this.options.items) {
 			if (item.separate) {
@@ -158,7 +163,9 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 
 			// add a menu item as a (row) cell
 			let itemRow = new UIRow();
-			let itemCell = defMenuItemCell.create();
+			let itemCell = item.disabled
+				? disabledMenuItemCellBuilder.create()
+				: menuItemCellBuilder.create();
 			itemCell.content.add(itemRow);
 			column.content.add(itemCell);
 			itemRow.content.add(
@@ -167,6 +174,7 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 						text: item.text,
 						icon: item.icon,
 						iconSize: item.iconSize,
+						dim: item.disabled,
 						style: ui.style(
 							ui.style.LABEL,
 							ModalMenu.styles.labelStyle,
@@ -196,6 +204,7 @@ export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 			}
 
 			// add a listener to register clicks and keyboard input
+			if (item.disabled) continue;
 			itemCell.listen((e) => {
 				switch (e.name) {
 					case "Release":
