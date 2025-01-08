@@ -56,6 +56,12 @@ describe("UICell", (scope) => {
 		await t.expectOutputAsync({ type: "cell" });
 	});
 
+	test("Rendered as animated cell", async (t) => {
+		let myCell = ui.animatedCell(ui.label("foo"), ui.label("bar"));
+		t.render(myCell.create());
+		await t.expectOutputAsync({ text: "bar" });
+	});
+
 	test("Rendered with content", async (t) => {
 		let myCell = ui.cell({ layout: { gravity: "end" } }, ui.label("foo"));
 		t.render(myCell.create());

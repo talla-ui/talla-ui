@@ -1,9 +1,4 @@
-import {
-	RenderContext,
-	View,
-	ViewBuilder,
-	ViewComposite,
-} from "../../app/index.js";
+import { RenderContext, View, ViewBuilder } from "../../app/index.js";
 
 /**
  * A view composite that automatically creates and unlinks the contained view
@@ -19,11 +14,7 @@ export class UIConditionalView extends View {
 	 * @docgen {hide}
 	 */
 	static override getViewBuilder(
-		preset: ViewBuilder.ExtendPreset<
-			typeof ViewComposite,
-			UIConditionalView,
-			"state"
-		>,
+		preset: ViewBuilder.ExtendPreset<typeof View, UIConditionalView, "state">,
 		builder?: ViewBuilder,
 	) {
 		// set all properties

@@ -1,6 +1,7 @@
 import {
 	app,
 	RenderContext,
+	View,
 	ViewBuilder,
 	ViewComposite,
 } from "../../app/index.js";
@@ -25,7 +26,7 @@ export class UIAnimationView extends ViewComposite {
 	 */
 	static override getViewBuilder(
 		preset: ViewBuilder.ExtendPreset<
-			typeof ViewComposite,
+			typeof View,
 			UIAnimationView,
 			"showAnimation" | "hideAnimation" | "repeatAnimation" | "ignoreFirstShow"
 		>,

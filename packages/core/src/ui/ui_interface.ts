@@ -166,8 +166,9 @@ export interface ui {
 	 */
 	animatedCell(
 		preset: ui.PresetType<typeof UIAnimatedCell>,
-		content?: ViewBuilder,
+		...content: ViewBuilder[]
 	): ViewBuilder<UIAnimatedCell>;
+	animatedCell(...content: ViewBuilder[]): ViewBuilder<UICell>;
 
 	/**
 	 * Creates a {@link ViewBuilder} for a {@link UILabel} with the provided options

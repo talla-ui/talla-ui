@@ -86,7 +86,7 @@ export class UIListView<
 	 */
 	static override getViewBuilder(
 		preset: ViewBuilder.ExtendPreset<
-			typeof ViewComposite,
+			typeof View,
 			UIListView,
 			"firstIndex" | "maxItems" | "renderOptions"
 		> & {
