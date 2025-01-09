@@ -273,9 +273,9 @@ export class Activity extends ManagedObject {
 		mode: RenderContext.PlacementMode | "dialog",
 		options?: Partial<RenderContext.PlacementOptions>,
 	) {
-		if (mode === "dialog") {
+		if ((this._renderDialog = mode === "dialog")) {
+			// for dialog mode, set mode to modal instead and keep boolean flag
 			mode = "modal";
-			this._renderDialog = true;
 		}
 		this._renderOptions = { ...options, mode };
 		return this;
