@@ -5,6 +5,7 @@ import {
 	CLASS_PAGE_ROOT,
 } from "../style/defaults/css.js";
 import { registerHandlers } from "./events.js";
+import { ViewportLocation } from "./WebRenderer.js";
 
 /** Next unique ID */
 let _nextId = 1;
@@ -247,6 +248,17 @@ export class OutputMount {
 			},
 			this._shader ? 200 : 20,
 		);
+	}
+
+	/** Overrides the outer element location (if mounted as full page or overlay) */
+	setLocationOverride(override?: ViewportLocation) {
+		if (this._lastElementId || !this._outer) return;
+		this._outer.style.top = override?.top ? override.top + "px" : "";
+		this._outer.style.bottom = override?.bottom ? override.bottom + "px" : "";
+		this._outer.style.left = override?.left ? override.left + "px" : "";
+		this._outer.style.right = override?.right ? override.right + "px" : "";
+		this._outer.style.height = override?.height ? override.height + "px" : "";
+		this._outer.style.width = override?.width ? override.width + "px" : "";
 	}
 
 	/** Updates the document title according to the title of the last mount in the DOM */

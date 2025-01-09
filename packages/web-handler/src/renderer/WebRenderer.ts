@@ -12,6 +12,16 @@ import { WebOutputTransform } from "./WebOutputTransform.js";
 import { makeObserver } from "./observers/observers.js";
 import { WebViewportContext } from "./WebViewportContext.js";
 
+/** @internal Overrides for viewport location on the screen */
+export type ViewportLocation = {
+	left?: number;
+	right?: number;
+	top?: number;
+	bottom?: number;
+	width?: number;
+	height?: number;
+};
+
 /** @internal A renderer class that uses the DOM to render UI components */
 export class WebRenderer extends RenderContext {
 	/** Creates a new render context instance, used by `useWebContext()` */
@@ -33,7 +43,7 @@ export class WebRenderer extends RenderContext {
 	}
 
 	/** Web browser viewport information */
-	viewport: RenderContext.Viewport;
+	viewport: WebViewportContext;
 
 	/** Schedules the provided callback in the rendering queue */
 	schedule(f: () => void, lowPriority?: boolean) {
@@ -77,42 +87,10 @@ export class WebRenderer extends RenderContext {
 					}
 				} else {
 					// mount output for given placement mode
-					let place = output.place;
-					if (!mount && place && output.element) {
-						mount = new OutputMount();
-						this._mounts.set(mount.id, mount);
-						let scroll: true | undefined;
-						let isModal: true | undefined;
-						switch (place.mode) {
-							case "mount":
-								if (place.mountId) {
-									mount.findMountElement(place.mountId);
-								}
-								break;
-							case "page":
-								scroll = true;
-							case "screen":
-								mount.createPageElement(
-									place.background || this._pageBackground,
-									scroll,
-									this._getTitle(output.source),
-								);
-								break;
-							case "modal":
-								isModal = true;
-								prevFocus = document.activeElement as any;
-							case "overlay":
-								mount.createOverlayElement(
-									place.ref && (place.ref.element as any),
-									place.refOffset,
-									this._reducedMotion,
-									place.background ||
-										(place.shade ? this._modalBackground : "transparent"),
-									isModal,
-								);
-								break;
-							default: // "none"
-								break;
+					if (!mount && output.element) {
+						mount = this._createMount(output);
+						if (output.place?.mode === "modal") {
+							prevFocus = document.activeElement as any;
 						}
 					}
 
@@ -190,6 +168,59 @@ export class WebRenderer extends RenderContext {
 		this._reducedMotion = !!enable;
 	}
 
+	/** Overrides page and overlay element sizing, and updates viewport measurements */
+	setViewportLocation(override?: ViewportLocation) {
+		this._viewportLocation = override;
+		this.viewport.setLocationOverride(override);
+		for (let mount of this._mounts.values()) {
+			mount.setLocationOverride(override);
+		}
+		return this;
+	}
+
+	private _createMount(output: RenderContext.Output) {
+		let place = output.place;
+		if (!place) return;
+		let mount = new OutputMount();
+		this._mounts.set(mount.id, mount);
+		let scroll: true | undefined;
+		let isModal: true | undefined;
+		switch (place.mode) {
+			case "mount":
+				if (place.mountId) {
+					mount.findMountElement(place.mountId);
+				}
+				break;
+			case "page":
+				scroll = true;
+			case "screen":
+				mount.createPageElement(
+					place.background || this._pageBackground,
+					scroll,
+					this._getTitle(output.source),
+				);
+				break;
+			case "modal":
+				isModal = true;
+			case "overlay":
+				mount.createOverlayElement(
+					place.ref && (place.ref.element as any),
+					place.refOffset,
+					this._reducedMotion,
+					place.background ||
+						(place.shade ? this._modalBackground : "transparent"),
+					isModal,
+				);
+				break;
+			default: // "none"
+				break;
+		}
+		if (this._viewportLocation) {
+			mount.setLocationOverride(this._viewportLocation);
+		}
+		return mount;
+	}
+
 	/** Returns the title for the activity that contains the provided view */
 	private _getTitle(view: View) {
 		let activity = Activity.whence(view);
@@ -207,4 +238,5 @@ export class WebRenderer extends RenderContext {
 	private _pageBackground: UIColor | string;
 	private _modalBackground: UIColor | string;
 	private _raf?: any;
+	private _viewportLocation?: ViewportLocation;
 }

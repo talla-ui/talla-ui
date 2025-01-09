@@ -4,6 +4,7 @@ import {
 	getWindowInnerHeight,
 	getWindowInnerWidth,
 } from "../style/DOMStyle.js";
+import { ViewportLocation } from "./WebRenderer.js";
 
 // True if the (gloabl) WebViewportContext event handler has been added
 let _handlerAdded = false;
@@ -38,10 +39,23 @@ export class WebViewportContext
 		this.update();
 	}
 
+	/** Take the specified overrides into account */
+	setLocationOverride(override?: ViewportLocation) {
+		this._override = override;
+		this.update();
+	}
+
 	/** Measure the current viewport and update context properties */
 	update() {
 		let w = getWindowInnerWidth();
 		let h = getWindowInnerHeight();
+		if (this._override) {
+			let offset = { top: 0, bottom: 0, left: 0, right: 0, ...this._override };
+			w -= offset.left + offset.right;
+			h -= offset.top + offset.bottom;
+			if (offset.width) w = offset.width;
+			if (offset.height) h = offset.height;
+		}
 		let changed = this.width !== w || this.height !== h;
 		if (changed) {
 			this.width = w;
@@ -77,4 +91,5 @@ export class WebViewportContext
 
 	private _colSize = 300;
 	private _rowSize = 300;
+	private _override?: ViewportLocation;
 }
