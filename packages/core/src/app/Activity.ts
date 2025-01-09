@@ -485,10 +485,10 @@ export class Activity extends ManagedObject {
 	private _boundTheme?: UITheme;
 
 	/** @internal Original class that's been updated using hot reload (set on prototype) */
-	private declare _OrigClass?: typeof Activity;
+	declare private _OrigClass?: typeof Activity;
 
 	/** @internal Set of instances, if hot reload has been enabled for this activity (set on prototype) */
-	private declare _hotInstances?: Set<Activity>;
+	declare private _hotInstances?: Set<Activity>;
 
 	/** @internal Set to true if a listener was added to remove this instance from the hot-reloaded list */
 	private _isHot?: boolean;

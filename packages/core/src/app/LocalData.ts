@@ -52,5 +52,5 @@ export class LocalData extends ManagedObject {
 	}
 
 	/** A map of JSON strings that gets used by the default implementation (i.e. not persisted at all) */
-	private declare _obj?: Record<string, string | undefined>;
+	declare private _obj?: Record<string, string | undefined>;
 }
