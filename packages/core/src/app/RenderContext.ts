@@ -243,10 +243,13 @@ export namespace RenderContext {
 	/**
 	 * A platform-dependent effect that can be applied to a rendered output element
 	 * - This type is used to apply visual effects to rendered (cell) output elements, when referenced from @{link UICell.effect}.
+	 * - Note that effects may be applied multiple times to the same element, and should be idempotent.
 	 */
 	export interface OutputEffect<TElement = unknown> {
 		/** Apply the effect to the provided output element */
 		applyEffect(element: TElement, source: View): void;
+		/** Remove the effect from the provided output element, if necessary */
+		removeEffect?(element: TElement, source: View): void;
 	}
 
 	/**

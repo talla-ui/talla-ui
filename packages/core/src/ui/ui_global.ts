@@ -135,8 +135,11 @@ _ui.effect = function (name: string) {
 	let result = _effectCache.get(name);
 	if (!result) {
 		result = {
-			async applyEffect(element, source) {
+			applyEffect(element, source) {
 				app.theme?.effects.get(name)?.applyEffect(element, source);
+			},
+			removeEffect(element, source) {
+				app.theme?.effects.get(name)?.removeEffect?.(element, source);
 			},
 		};
 		_effectCache.set(name, result);

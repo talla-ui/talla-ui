@@ -21,8 +21,14 @@ export const effects: [
 			"20",
 		),
 	],
-	["DragModal", { applyEffect: applyDragModal }],
-	["DragRelative", { applyEffect: applyDragRelative }],
+	[
+		"DragModal",
+		{ applyEffect: applyDragModal, removeEffect: removeDragEffect },
+	],
+	[
+		"DragRelative",
+		{ applyEffect: applyDragRelative, removeEffect: removeDragEffect },
+	],
 ];
 
 function makeBoxShadowEffect(
@@ -37,6 +43,13 @@ function makeBoxShadowEffect(
 	};
 }
 
+// Keep track of elements that have drag effects applied to be able to remove them
+const _removeDragEffects = new WeakMap<HTMLElement, () => void>();
+function removeDragEffect(element: HTMLElement) {
+	_removeDragEffects.get(element)?.();
+	_removeDragEffects.delete(element);
+}
+
 // Debounce drag start by keeping track of the last start time
 let _dragStart = 0;
 
@@ -48,6 +61,11 @@ function applyDragModal(element: HTMLElement) {
 	element.dataset.appliedDragModalEffect = "true";
 	element.addEventListener("mousedown", handlePress);
 	element.addEventListener("touchstart", handlePress, { passive: false });
+	_removeDragEffects.set(element, () => {
+		element.removeAttribute("data-applied-drag-modal-effect");
+		element.removeEventListener("mousedown", handlePress);
+		element.removeEventListener("touchstart", handlePress);
+	});
 
 	let dragElt: HTMLElement | undefined;
 	function handlePress(domEvent: MouseEvent | TouchEvent) {
@@ -135,6 +153,28 @@ function applyDragModal(element: HTMLElement) {
 }
 
 function applyDragRelative(element: HTMLElement, source: View) {
+	if (element.dataset.appliedDragRelativeEffect) return;
+	element.dataset.appliedDragRelativeEffect = "true";
+	element.addEventListener("mousedown", handleMouseDown);
+	element.addEventListener("touchstart", handleTouchStart);
+	_removeDragEffects.set(element, () => {
+		element.removeAttribute("data-applied-drag-relative-effect");
+		element.removeEventListener("mousedown", handleMouseDown);
+		element.removeEventListener("touchstart", handleTouchStart);
+	});
+
+	function handleMouseDown() {
+		findParentElts();
+		window.addEventListener("mouseup", handleUpEvent, { capture: true });
+		window.addEventListener("mousemove", handleMoveEvent, { capture: true });
+	}
+
+	function handleTouchStart() {
+		findParentElts();
+		window.addEventListener("touchend", handleUpEvent, { capture: true });
+		window.addEventListener("touchmove", handleMoveEvent, { capture: true });
+	}
+
 	let lastEvent: MouseEvent | TouchEvent | undefined;
 	let lastRect: DOMRect | undefined;
 	let lastParentRect: DOMRect | undefined;
@@ -209,20 +249,4 @@ function applyDragRelative(element: HTMLElement, source: View) {
 			capture: true,
 		});
 	}
-
-	element.addEventListener("mousedown", () => {
-		findParentElts();
-		window.addEventListener("mouseup", handleUpEvent, { capture: true });
-		window.addEventListener("mousemove", handleMoveEvent, {
-			capture: true,
-		});
-	});
-
-	element.addEventListener("touchstart", () => {
-		findParentElts();
-		window.addEventListener("touchend", handleUpEvent, { capture: true });
-		window.addEventListener("touchmove", handleMoveEvent, {
-			capture: true,
-		});
-	});
 }

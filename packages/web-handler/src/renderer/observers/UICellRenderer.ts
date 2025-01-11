@@ -1,5 +1,6 @@
 import {
 	ManagedEvent,
+	RenderContext,
 	UIAnimatedCell,
 	UICell,
 	UIComponent,
@@ -122,7 +123,16 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 		}
 
 		// apply output effect, if any
-		if (cell.effect) cell.effect.applyEffect(element, cell);
+		if (cell.effect) {
+			if (cell.effect !== this.lastEffect) {
+				if (this.lastEffect) this.lastEffect.removeEffect?.(element, cell);
+				cell.effect.applyEffect(element, cell);
+				this.lastEffect = cell.effect;
+			}
+		} else if (this.lastEffect) {
+			this.lastEffect.removeEffect?.(element, cell);
+			this.lastEffect = undefined;
+		}
 	}
 
 	override updateContent(element: HTMLElement) {
@@ -163,4 +173,7 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 
 	/** Last focused component, if this cell is keyboard-focusable */
 	lastFocused?: UIComponent;
+
+	/** Last applied effect, if any */
+	lastEffect?: RenderContext.OutputEffect;
 }

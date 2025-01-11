@@ -84,11 +84,14 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 		if (!this._asyncUp && app.renderer) {
 			app.renderer.schedule(() => {
 				if (this.observed.isUnlinked()) return;
-				this._asyncUp = false;
-				if (this._asyncContentUp) this.updateContent(this._asyncContentUp);
-				this._asyncContentUp = undefined;
-				if (this._asyncStyleUp) this.updateStyle(this._asyncStyleUp);
-				this._asyncStyleUp = undefined;
+				try {
+					if (this._asyncContentUp) this.updateContent(this._asyncContentUp);
+					if (this._asyncStyleUp) this.updateStyle(this._asyncStyleUp);
+				} finally {
+					this._asyncUp = false;
+					this._asyncContentUp = undefined;
+					this._asyncStyleUp = undefined;
+				}
 			});
 			this._asyncUp = true;
 		}
