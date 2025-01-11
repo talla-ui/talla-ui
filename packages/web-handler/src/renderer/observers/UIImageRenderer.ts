@@ -1,5 +1,5 @@
 import { RenderContext, UIImage, ui } from "talla-ui";
-import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
+import { BaseObserver } from "./BaseObserver.js";
 import { applyStyles } from "../../style/DOMStyle.js";
 
 /** @internal */
@@ -40,13 +40,15 @@ export class UIImageRenderer extends BaseObserver<UIImage> {
 	override updateStyle(element: HTMLImageElement) {
 		let image = this.observed;
 		applyStyles(
-			image,
 			element,
-			getBaseStyleClass(image.style) || ui.style.IMAGE,
+			[
+				ui.style.IMAGE,
+				image.style,
+				{ width: image.width, height: image.height },
+			],
 			undefined,
 			false,
 			false,
-			[image.style, { width: image.width, height: image.height }],
 			image.position,
 		);
 	}

@@ -42,28 +42,6 @@ export namespace ui {
 			? P
 			: never;
 
-	/** Type alias for values that are accepted as style presets for a {@link UICell} */
-	export type CellStyle = UIStyle.TypeOrOverrides<UICell.StyleType>;
-
-	/** Type alias for values that are accepted as style presets for a {@link UILabel} */
-	export type LabelStyle = UIStyle.TypeOrOverrides<UILabel.StyleType>;
-
-	/** Type alias for values that are accepted as style presets for a {@link UIButton} */
-	export type ButtonStyle = UIStyle.TypeOrOverrides<UIButton.StyleType>;
-
-	/** Type alias for values that are accepted as style presets for a {@link UIImage} */
-	export type ImageStyle = UIStyle.TypeOrOverrides<UIImage.StyleType>;
-
-	/** Type alias for values that are accepted as style presets for a {@link UITextField} */
-	export type TextFieldStyle = UIStyle.TypeOrOverrides<UITextField.StyleType>;
-
-	/** Type alias for values that are accepted as style presets for a {@link UIToggle} */
-	export type ToggleStyle = UIStyle.TypeOrOverrides<UIToggle.StyleType>;
-
-	/** Type alias for values that are accepted as label style presets for a {@link UIToggle} */
-	export type ToggleLabelStyle =
-		UIStyle.TypeOrOverrides<UIToggle.LabelStyleType>;
-
 	/**
 	 * Type definition for using {@link ui.jsx}
 	 * @docgen {hide}
@@ -412,29 +390,29 @@ export interface ui {
 	};
 
 	/**
-	 * A function that returns a new or existing style for the specified arguments
+	 * A function that finds styles defined by the current theme and/or merges the provided styles
 	 * - If called with a string, the base style is taken from the current theme. Styles for each class can be defined using {@link UITheme.styles}.
-	 * - If called with a set of style types or overrides, all styles and overrides are applied in order. Note that a style type object will replace previous styles, while overrides will be merged with the previous styles.
+	 * - If called with a set of {@link UIStyle} objects or plain objects (overrides), all styles and overrides are applied in order. Note that a style type object will replace previous styles, while overrides will be merged with the previous styles. If no {@link UIStyle} objects are provided, the function returns a plain object with the combined override styles.
 	 * @see {@link UIStyle}
 	 */
 	style: {
-		(name: string): UIStyle.Type<unknown>;
+		(name: string): UIStyle<unknown>;
 		<TDefinition>(
-			...styles: Array<UIStyle.TypeOrOverrides<TDefinition> | undefined>
-		): UIStyle.TypeOrOverrides<TDefinition>;
-		readonly CELL: UIStyle.Type<UICell.StyleType>;
-		readonly CELL_BG: UIStyle.Type<UICell.StyleType>;
-		readonly LABEL: UIStyle.Type<UILabel.StyleType>;
-		readonly BUTTON: UIStyle.Type<UIButton.StyleType>;
-		readonly BUTTON_PRIMARY: UIStyle.Type<UIButton.StyleType>;
-		readonly BUTTON_PLAIN: UIStyle.Type<UIButton.StyleType>;
-		readonly BUTTON_SMALL: UIStyle.Type<UIButton.StyleType>;
-		readonly BUTTON_ICON: UIStyle.Type<UIButton.StyleType>;
-		readonly BUTTON_DANGER: UIStyle.Type<UIButton.StyleType>;
-		readonly BUTTON_SUCCESS: UIStyle.Type<UIButton.StyleType>;
-		readonly TEXTFIELD: UIStyle.Type<UITextField.StyleType>;
-		readonly TOGGLE: UIStyle.Type<UIToggle.StyleType>;
-		readonly TOGGLE_LABEL: UIStyle.Type<UILabel.StyleType>;
-		readonly IMAGE: UIStyle.Type<UIImage.StyleType>;
+			...styles: Array<UIStyle<TDefinition> | TDefinition | undefined>
+		): UIStyle<TDefinition> | TDefinition;
+		readonly CELL: UIStyle<UICell.StyleDefinition>;
+		readonly CELL_BG: UIStyle<UICell.StyleDefinition>;
+		readonly LABEL: UIStyle<UILabel.StyleDefinition>;
+		readonly BUTTON: UIStyle<UIButton.StyleDefinition>;
+		readonly BUTTON_PRIMARY: UIStyle<UIButton.StyleDefinition>;
+		readonly BUTTON_PLAIN: UIStyle<UIButton.StyleDefinition>;
+		readonly BUTTON_SMALL: UIStyle<UIButton.StyleDefinition>;
+		readonly BUTTON_ICON: UIStyle<UIButton.StyleDefinition>;
+		readonly BUTTON_DANGER: UIStyle<UIButton.StyleDefinition>;
+		readonly BUTTON_SUCCESS: UIStyle<UIButton.StyleDefinition>;
+		readonly TEXTFIELD: UIStyle<UITextField.StyleDefinition>;
+		readonly TOGGLE: UIStyle<UIToggle.StyleDefinition>;
+		readonly TOGGLE_LABEL: UIStyle<UILabel.StyleDefinition>;
+		readonly IMAGE: UIStyle<UIImage.StyleDefinition>;
 	};
 }

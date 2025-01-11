@@ -65,7 +65,7 @@ export class UICell extends UIContainer {
 	effect?: RenderContext.OutputEffect = undefined;
 
 	/** The style to be applied to this cell */
-	style?: UIStyle.TypeOrOverrides<UICell.StyleType> = undefined;
+	style?: UICell.StyleValue = undefined;
 
 	/**
 	 * True if this cell *itself* may receive direct input focus
@@ -82,9 +82,14 @@ export class UICell extends UIContainer {
 }
 
 export namespace UICell {
+	/** A style object or overrides that can be applied to {@link UICell} */
+	export type StyleValue =
+		| UIStyle<UICell.StyleDefinition>
+		| UICell.StyleDefinition
+		| undefined;
+
 	/** The type definition for styles applicable to {@link UICell.style} */
-	export type StyleType = UIComponent.DimensionsStyleType &
-		UIComponent.DecorationStyleType;
+	export type StyleDefinition = UIComponent.Dimensions & UIComponent.Decoration;
 }
 
 /**

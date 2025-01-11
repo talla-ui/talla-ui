@@ -36,19 +36,16 @@ export class UISpacerRenderer extends TestBaseObserver<UISpacer> {
 		let { width, height, minWidth, minHeight } = spacer;
 		let hasMinimum = minWidth !== undefined || minHeight !== undefined;
 		let hasFixed = width !== undefined || height !== undefined;
-		applyElementStyle(
-			element,
-			[
-				{
-					width,
-					height,
-					minWidth,
-					minHeight,
-					grow: hasFixed ? 0 : 1,
-					shrink: hasMinimum ? 0 : 1,
-				},
-			],
+		applyElementStyle(element, [
+			{
+				width,
+				height,
+				minWidth,
+				minHeight,
+				grow: hasFixed ? 0 : 1,
+				shrink: hasMinimum ? 0 : 1,
+			},
 			spacer.position,
-		);
+		]);
 	}
 }

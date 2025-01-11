@@ -374,52 +374,47 @@ describe("TestContext", () => {
 			expect(app.theme!.icons.get("ChevronDown")!.isMirrorRTL()).toBe(false);
 		});
 
-		describe("Base styles", () => {
-			test("Extend base style using static method", () => {
-				let MyStyle = ui.style.BUTTON.extend({
+		describe("Styles", () => {
+			test("Extend base style", () => {
+				let myStyle = ui.style.BUTTON.extend({
 					textColor: ui.color.GREEN,
 				});
-				let expectStyles = expect(new MyStyle())
+				let expectStyles = expect(myStyle)
 					.toHaveMethod("getStyles")
 					.not.toThrowError();
 				expectStyles.toBeArray();
-				let styles = new MyStyle().getStyles();
+				let styles = myStyle.getStyles();
 				expect(styles[styles.length - 1])
 					.toHaveProperty("textColor")
 					.toBe(ui.color.GREEN);
 			});
 
-			test("Extend base style using class", () => {
-				class MyStyle extends ui.style.BUTTON {
-					override getStyles() {
-						return [...super.getStyles(), { textColor: ui.color.GREEN }];
-					}
-				}
-				expect(() => new MyStyle()).not.toThrowError();
-			});
-
 			test("Override base style", () => {
-				let override = ui.style.BUTTON.override({
-					textColor: ui.color.GREEN,
-				});
-				expect(override.overrides).toBeArray(1);
-				expect(override.overrides[0])
-					.toHaveProperty("textColor")
-					.toBe(ui.color.GREEN);
+				let override = ui.style.BUTTON.override(
+					{
+						width: 1,
+						textColor: ui.color.BLUE,
+					},
+					{
+						textColor: ui.color.GREEN,
+					},
+				);
+				let object = override.getOverrides();
+				expect(object).toHaveProperty("textColor").toBe(ui.color.GREEN);
 			});
 
-			test("Styles cache is cleared on context clear", (t) => {
+			test("Styles cached until theme changed", (t) => {
 				let app = useTestContext();
 				app.theme!.styles.set("Button", [{ textColor: ui.color.GREEN }]);
-				let MyButtonStyle = ui.style.BUTTON.extend({ padding: 8 });
-				let styles = new MyButtonStyle().getStyles().slice(-2);
+				let myButtonStyle = ui.style.BUTTON.extend({ padding: 8 });
+				let styles = myButtonStyle.getStyles().slice(-2);
 				expect(styles[0]).toHaveProperty("textColor").toBe(ui.color.GREEN);
 				expect(styles[1]).toHaveProperty("padding").toBe(8);
 
 				t.log("Clearing test context");
 				app = useTestContext();
 				app.theme!.styles.set("Button", [{ padding: 0 }]);
-				styles = new MyButtonStyle().getStyles().slice(-2);
+				styles = myButtonStyle.getStyles().slice(-2);
 				expect(styles[0]).not.toHaveProperty("textColor");
 				expect(styles[1]).toHaveProperty("padding").toBe(8);
 			});

@@ -248,18 +248,18 @@ export class UIColor {
 
 	/** Returns a CSS-compatible string representation of the current color */
 	toString() {
-		// return cached value if colors object is still the same
-		if (this._s && app.theme && this._colors === app.theme.colors) {
+		// return cached value if theme is still the same
+		if (this._s && app.theme && this._theme === app.theme) {
 			return this._s;
 		}
 
 		// otherwise, compute value and cache it now
 		let s = (this._s = this._f ? this._f() : STR_CLEAR);
-		this._colors = app.theme && app.theme.colors;
+		this._theme = app.theme;
 		return s;
 	}
 
 	private _f?: () => string;
 	private _s?: string;
-	private _colors?: unknown;
+	private _theme?: unknown;
 }

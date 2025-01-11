@@ -1,6 +1,5 @@
-import { UICell, ui } from "talla-ui";
+import { UICell } from "talla-ui";
 import { TestOutputElement } from "../app/TestOutputElement.js";
-import { getBaseStyleClass } from "./TestBaseObserver.js";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
 /** @internal */
@@ -48,21 +47,5 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 		let cell = this.observed;
 		super.updateContent(element);
 		if (cell.allowFocus || cell.allowKeyboardFocus) element.focusable = true;
-	}
-
-	override updateStyle(element: TestOutputElement) {
-		let cell = this.observed;
-
-		// NOTE: margin, textDirection aren't applied in test renderer
-		super.updateStyle(element, getBaseStyleClass(cell.style) || ui.style.CELL, [
-			cell.style,
-			{
-				padding: cell.padding,
-				borderRadius: cell.borderRadius,
-				background: cell.background,
-				textColor: cell.textColor,
-				opacity: cell.opacity,
-			},
-		]);
 	}
 }

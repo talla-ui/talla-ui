@@ -7,7 +7,7 @@ import {
 	NavigationTarget,
 } from "talla-ui";
 import { applyStyles } from "../../style/DOMStyle.js";
-import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
+import { BaseObserver } from "./BaseObserver.js";
 import { setTextOrHtmlContent } from "./UILabelRenderer.js";
 
 interface HrefNavigationContext extends NavigationContext {
@@ -109,21 +109,18 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 
 		// set CSS styles
 		applyStyles(
-			button,
 			element,
-			getBaseStyleClass(button.style) ||
-				(button.primary ? ui.style.BUTTON_PRIMARY : ui.style.BUTTON),
-			undefined,
-			true,
-			false,
 			[
+				button.primary ? ui.style.BUTTON_PRIMARY : ui.style.BUTTON,
 				button.style,
 				button.width !== undefined
 					? { width: button.width, minWidth: 0 }
 					: undefined,
 			],
-			button.position,
 			undefined,
+			true,
+			false,
+			button.position,
 		);
 	}
 

@@ -41,8 +41,8 @@ let _cssUpdater:
 	| ((css: { [spec: string]: any }, allImports: string[]) => void)
 	| undefined;
 
-/** CSS classes currently defined, one instance per class; or undefined if class doesn't have any styles (e.g. 'Cell') */
-let _cssDefined = new Map<any, UIStyle<any> | undefined>();
+/** CSS classes currently defined, by ID */
+let _cssDefined = new Set<string>();
 
 /** Pending CSS update, if any */
 let _pendingCSS: { [spec: string]: any } | undefined;
@@ -92,7 +92,7 @@ export function getCSSLength(
 export function resetCSS() {
 	_pendingCSS = undefined;
 	_cssImports = [];
-	_cssDefined = new Map();
+	_cssDefined = new Set();
 }
 
 /** @internal Imports an external stylesheet */
@@ -120,9 +120,7 @@ export function getWindowInnerHeight() {
 }
 
 /** @internal Sets the global focus 'glow' outline width and blur (pixels or string with unit), and color */
-export function setFocusDecoration(
-	decoration: UIComponent.DecorationStyleType,
-) {
+export function setFocusDecoration(decoration: UIComponent.Decoration) {
 	let styles = {};
 	addDecorationStyleCSS(styles, decoration);
 	setGlobalCSS({
@@ -134,7 +132,7 @@ export function setFocusDecoration(
 }
 
 /** @internal Sets the global control style based on given text styles */
-export function setControlTextStyle(textStyle: UIComponent.TextStyleType) {
+export function setControlTextStyle(textStyle: UIComponent.TextStyle) {
 	let styles = {};
 	addTextStyleCSS(styles, textStyle);
 	setGlobalCSS({ [`.${CLASS_UI}.${CLASS_TEXTCONTROL}`]: styles });
@@ -156,48 +154,41 @@ export function setGlobalCSS(css: {
 	});
 }
 
-/** @internal Defines a CSS class for given style class */
-export function defineStyleClass(
-	styleClass: UIStyle.Type<any>,
-	isTextStyle?: boolean,
-): UIStyle<any> | undefined {
-	if (_cssDefined.has(styleClass)) {
-		return _cssDefined.get(styleClass)!;
-	}
-	let instance = new styleClass();
-	let styles = instance.getStyles();
-	if (!styles.length) {
-		_cssDefined.set(styleClass, undefined);
-		return;
-	}
-	_cssDefined.set(styleClass, instance);
-	if (!instance.id) throw RangeError();
-	let selector = "*." + CLASS_UI + "." + instance.id;
+/** @internal Defines a CSS class for given style instance */
+export function defineStyleClass(style: UIStyle<any>, isTextStyle?: boolean) {
+	let id = style.id;
+	if (!id) throw RangeError();
+	if (_cssDefined.has(id)) return;
+	_cssDefined.add(id);
+
+	let styles = style.getStyles();
+	if (!styles.length) return;
 
 	// combine all CSS styles
 	let combined: { [spec: string]: Partial<CSSStyleDeclaration> } = {};
-	function addStateStyle(style: any) {
+	let selector = "*." + CLASS_UI + "." + id;
+	function addStateStyle(object: any) {
 		let stateSelector = selector;
 
 		// add suffixes for disabled, readonly, hovered, focused
-		if (style[UIStyle.STATE_DISABLED]) stateSelector += "[disabled]";
-		else if (style[UIStyle.STATE_DISABLED] === false)
+		if (object[UIStyle.STATE_DISABLED]) stateSelector += "[disabled]";
+		else if (object[UIStyle.STATE_DISABLED] === false)
 			stateSelector += ":not([disabled])";
-		if (style[UIStyle.STATE_READONLY]) stateSelector += "[readonly]";
-		else if (style[UIStyle.STATE_READONLY] === false)
+		if (object[UIStyle.STATE_READONLY]) stateSelector += "[readonly]";
+		else if (object[UIStyle.STATE_READONLY] === false)
 			stateSelector += ":not([readonly])";
-		if (style[UIStyle.STATE_HOVERED]) stateSelector += ":hover";
-		else if (style[UIStyle.STATE_HOVERED] === false)
+		if (object[UIStyle.STATE_HOVERED]) stateSelector += ":hover";
+		else if (object[UIStyle.STATE_HOVERED] === false)
 			stateSelector += ":not(:hover)";
-		if (style[UIStyle.STATE_FOCUSED]) stateSelector += ":focus";
-		else if (style[UIStyle.STATE_FOCUSED] === false)
+		if (object[UIStyle.STATE_FOCUSED]) stateSelector += ":focus";
+		else if (object[UIStyle.STATE_FOCUSED] === false)
 			stateSelector += ":not(:focus)";
 
 		// pressed state is controlled by two selectors
-		if (style[UIStyle.STATE_PRESSED]) {
+		if (object[UIStyle.STATE_PRESSED]) {
 			stateSelector =
 				stateSelector + ":active," + stateSelector + "[aria-pressed=true]";
-		} else if (style[UIStyle.STATE_PRESSED] === false) {
+		} else if (object[UIStyle.STATE_PRESSED] === false) {
 			stateSelector =
 				stateSelector +
 				":not(:active):not([aria-pressed])," +
@@ -205,9 +196,9 @@ export function defineStyleClass(
 				"[aria-pressed=false]";
 		}
 		let css = combined[stateSelector] || {};
-		addDimensionsCSS(css, style);
-		addDecorationStyleCSS(css, style);
-		if (isTextStyle) addTextStyleCSS(css, style);
+		addDimensionsCSS(css, object);
+		addDecorationStyleCSS(css, object);
+		if (isTextStyle) addTextStyleCSS(css, object);
 		combined[stateSelector] = css;
 	}
 	for (let style of styles) {
@@ -216,73 +207,44 @@ export function defineStyleClass(
 
 	// add CSS to global element for base and conditional styles
 	setGlobalCSS(combined);
-	return instance;
 }
 
-/** @internal Helper function to apply styles to an element using CSS */
+/** @internal Helper function to apply CSS classes and styles to an element */
 export function applyStyles(
-	component: UIComponent,
 	element: HTMLElement,
-	BaseStyle?: UIStyle.Type<any>,
+	styles: any[],
 	systemName?: string,
 	isTextControl?: boolean,
 	isContainer?: boolean,
-	styleOverrides?: any[],
 	position?: UIComponent.Position,
 	layout?: UIContainer.Layout,
 ) {
-	applyElementBaseStyle(
-		element,
-		BaseStyle,
-		systemName,
-		isTextControl,
-		isContainer,
-	);
-	applyElementStyle(element, styleOverrides, position, layout, isTextControl);
-}
-
-/** @internal Helper function to apply a base style to an element (i.e. CSS class name) */
-function applyElementBaseStyle(
-	element: HTMLElement,
-	BaseStyle?: UIStyle.Type<any>,
-	systemName?: string,
-	isTextControl?: boolean,
-	isContainer?: boolean,
-): UIStyle<any> | undefined {
 	// if element is hidden, stop early
 	if (element.hidden) {
 		element.className = "";
-		return;
-	}
-	let className = CLASS_UI;
-	if (isTextControl) className += " " + CLASS_TEXTCONTROL;
-	if (isContainer) className += " " + CLASS_CONTAINER;
-	if (systemName) className += " " + systemName;
-	if (BaseStyle) {
-		let style = defineStyleClass(BaseStyle, isTextControl);
-		if (style) className += " " + style.id;
-	}
-	element.className = className;
-}
-
-/** @internal Helper function to apply styles to an element using inline CSS properties */
-function applyElementStyle(
-	element: HTMLElement,
-	styleOverrides?: any[],
-	position?: UIComponent.Position,
-	layout?: UIContainer.Layout,
-	isTextControl?: boolean,
-) {
-	// if element is hidden, stop early
-	if (element.hidden) {
 		element.style.cssText = "";
 		(element as any)["HAS_STYLES"] = false;
 		return;
 	}
 
-	// combine all CSS and override styles
+	// set class name based on (last provided) style instance
+	let className = CLASS_UI;
+	if (isTextControl) className += " " + CLASS_TEXTCONTROL;
+	if (isContainer) className += " " + CLASS_CONTAINER;
+	if (systemName) className += " " + systemName;
+	for (let i = styles.length; i > 0; ) {
+		let style = styles[--i];
+		if (style instanceof UIStyle) {
+			defineStyleClass(style, isTextControl);
+			className += " " + style.id;
+			break;
+		}
+	}
+	element.className = className;
+
+	// apply overrides inline
 	let inline: any = {};
-	if (styleOverrides) addInlineCSS(inline, styleOverrides, isTextControl);
+	addInlineCSS(inline, styles, isTextControl);
 	if (position) addPositionCSS(inline, position);
 	if (layout) addContainerLayoutCSS(inline, layout);
 
@@ -294,32 +256,30 @@ function applyElementStyle(
 	}
 }
 
-/**
- * Helper function to append inline CSS styles to given object
- * - The 'objects' argument is an array that contains style override objects,
- * further arrays, or objects with an 'overrides' property that contains
- * another array. This function will recursively add all styles to the result.
- * - Styles include dimensions, decoration, and (optionally) text styles.
- */
+/** @internal Helper function to copy inline CSS styles to given object */
 function addInlineCSS(
 	inline: Partial<CSSStyleDeclaration>,
-	objects: any[],
+	values: any[],
 	isTextControl?: boolean,
 ) {
-	for (let style of objects) {
+	for (let i = 0, len = values.length; i < len; i++) {
+		let style = values[i];
 		if (!style) continue;
+
+		// check if next item is a(nother) full UIStyle, if so ignore this one
+		if (values[i + 1] instanceof UIStyle) continue;
+
+		// recurse for (nested) arrays
 		if (Array.isArray(style)) {
-			// item is an array, recurse
-			addInlineCSS(inline, style, isTextControl);
-		} else if (Array.isArray(style.overrides)) {
-			// item is an object with more overrides, recurse
-			addInlineCSS(inline, style.overrides, isTextControl);
-		} else if (typeof style !== "function") {
-			// set styles from plain object
-			addDimensionsCSS(inline, style);
-			addDecorationStyleCSS(inline, style);
-			if (isTextControl) addTextStyleCSS(inline, style);
+			return addInlineCSS(inline, style, isTextControl);
 		}
+
+		// set styles from overrides or plain object
+		let overrides = style instanceof UIStyle ? style.getOverrides() : style;
+		if (!overrides) continue;
+		addDimensionsCSS(inline, overrides);
+		addDecorationStyleCSS(inline, overrides);
+		if (isTextControl) addTextStyleCSS(inline, overrides);
 	}
 }
 
@@ -367,7 +327,7 @@ function addPositionCSS(
 /** Helper function to append CSS styles to given object for a given `Dimensions` object */
 function addDimensionsCSS(
 	result: Partial<CSSStyleDeclaration>,
-	dimensions: UIComponent.DimensionsStyleType,
+	dimensions: UIComponent.Dimensions,
 ) {
 	let width = dimensions.width;
 	if (width !== undefined) result.width = getCSSLength(width);
@@ -390,7 +350,7 @@ function addDimensionsCSS(
 /** Helper function to append CSS styles to given object for a given `TextStyle` object */
 function addTextStyleCSS(
 	result: Partial<CSSStyleDeclaration>,
-	textStyle: UIComponent.TextStyleType,
+	textStyle: UIComponent.TextStyle,
 ) {
 	let direction = textStyle.direction;
 	if (direction !== undefined) result.direction = direction;
@@ -443,8 +403,8 @@ function addTextStyleCSS(
 
 /** Helper function to append CSS styles to given object for a given `Decoration` object */
 function addDecorationStyleCSS(
-	result: Partial<CSSStyleDeclaration> & { className?: string },
-	decoration: UIComponent.DecorationStyleType,
+	result: Partial<CSSStyleDeclaration> & { className?: string }, // TODO: why className?
+	decoration: UIComponent.Decoration,
 ) {
 	let background = decoration.background;
 	if (background !== undefined) result.background = String(background);

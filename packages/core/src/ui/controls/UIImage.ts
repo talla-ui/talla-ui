@@ -59,11 +59,16 @@ export class UIImage extends UIComponent {
 	allowKeyboardFocus?: boolean;
 
 	/** The style to be applied to this image */
-	style?: UIStyle.TypeOrOverrides<UIImage.StyleType> = undefined;
+	style?: UIImage.StyleValue = undefined;
 }
 
 export namespace UIImage {
+	/** A style object or overrides that can be applied to {@link UIImage} */
+	export type StyleValue =
+		| UIStyle<UIImage.StyleDefinition>
+		| UIImage.StyleDefinition
+		| undefined;
+
 	/** The type definition for styles applicable to {@link UIImage.style} */
-	export type StyleType = UIComponent.DimensionsStyleType &
-		UIComponent.DecorationStyleType;
+	export type StyleDefinition = UIComponent.Dimensions & UIComponent.Decoration;
 }

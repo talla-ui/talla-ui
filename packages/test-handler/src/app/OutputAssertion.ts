@@ -35,8 +35,6 @@ export interface OutputSelectFilter {
 	accessibleLabel?: string;
 	/** A set of style overrides that must be applied to a matching element (values for e.g. `bold`, `textColor`, and `background`) */
 	styles?: Record<string, any>;
-	/** A base style class that must be applied to a matching element (i.e. a subclass of {@link UIStyle}) */
-	styleClass?: any;
 }
 
 /** Returns true if given element matches given selection criteria */
@@ -66,8 +64,7 @@ function _matchElement(select: OutputSelectFilter, elt: TestOutputElement) {
 			elt.accessibleRole !== select.accessibleRole) ||
 		(select.accessibleLabel !== undefined &&
 			elt.accessibleLabel !== select.accessibleLabel) ||
-		(select.styles && !elt.matchStyleValues(select.styles)) ||
-		(select.styleClass !== undefined && elt.styleClass !== select.styleClass)
+		(select.styles && !elt.matchStyleValues(select.styles))
 	);
 }
 

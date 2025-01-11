@@ -32,7 +32,7 @@ const _colorCache = new Map<string, UIColor>();
 const _iconCache = new Map<string, UIIconResource>();
 const _animationCache = new Map<string, RenderContext.OutputTransformer>();
 const _effectCache = new Map<string, RenderContext.OutputEffect>();
-const _styleTypeCache = new Map<string, UIStyle.Type<any>>();
+const _themeStyles = new Map<string, UIStyle<unknown>>();
 
 /** Helper function to determine if a value is a plain object, i.e. { ... } */
 function isPreset(value: any) {
@@ -145,46 +145,29 @@ _ui.effect = function (name: string) {
 } as any; // constants added below
 
 _ui.style = function (...args: any[]) {
-	let result:
-		| UIStyle.Type<unknown>
-		| UIStyle.StyleOverrides<unknown>
-		| undefined;
+	let result: UIStyle<unknown> | undefined;
 	let overrides: any[] | undefined;
 	for (let style of args) {
 		if (!style) continue;
 		if (typeof style === "string") {
-			let name = style;
-			style = _styleTypeCache.get(name);
-			if (!result) {
-				style = class BaseStyle extends UIStyle<any> {
-					constructor() {
-						super(name, BaseStyle);
-					}
-				};
-				_styleTypeCache.set(name, style);
+			if (_themeStyles.has(style)) {
+				style = _themeStyles.get(style);
+			} else {
+				style = new UIStyle(style);
+				_themeStyles.set(style.id, style);
 			}
 		}
-		if (
-			(style as typeof UIStyle).isUIStyleType ||
-			UIStyle.OVERRIDES_BASE in style
-		) {
+		if (style instanceof UIStyle) {
 			result = style;
 			overrides = undefined;
 		} else {
-			if (!overrides) overrides = [];
-			overrides.push(style);
+			(overrides ||= []).push(style);
 		}
 	}
-	if (!overrides) return result || {};
-	if (!result) {
-		return overrides.reduce((o, a) => Object.assign(o, a), {} as any);
+	if (result) {
+		return overrides ? result.override(...overrides) : result;
 	}
-	return UIStyle.OVERRIDES_BASE in result
-		? {
-				[UIStyle.OVERRIDES_BASE]: result[UIStyle.OVERRIDES_BASE],
-				overrides: [...result.overrides, ...overrides],
-			}
-		: result.extend(...overrides);
+	return overrides ? Object.assign({}, ...overrides) : {};
 } as any; // base styles added below
 
 // add color constants to ui.color function

@@ -2,7 +2,10 @@ import {
 	MessageDialogOptions,
 	RenderContext,
 	StringConvertible,
+	UIButton,
+	UICell,
 	UIContainer,
+	UILabel,
 	UITheme,
 	ViewComposite,
 	app,
@@ -31,7 +34,7 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 	 * The cell style used for the block of messages
 	 * - The default style only includes padding. A `DragModal` effect is applied to the container to use the cell as a grab handle for the entire dialog.
 	 */
-	messageCellStyle: ui.CellStyle = ui.style.CELL.extend({
+	messageCellStyle: UICell.StyleValue = ui.style.CELL.extend({
 		padding: 16,
 	});
 
@@ -39,7 +42,7 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 	 * The cell style used for the block of buttons
 	 * - The default style only includes padding.
 	 */
-	buttonCellStyle: ui.CellStyle = ui.style.CELL.extend({
+	buttonCellStyle: UICell.StyleValue = ui.style.CELL.extend({
 		padding: 16,
 	});
 
@@ -62,7 +65,7 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 	 * The label style used for the first message label
 	 * - The default style includes centered, bold text, with a maximum width of 480 pixels.
 	 */
-	firstLabelStyle: ui.LabelStyle = ui.style.LABEL.extend({
+	firstLabelStyle: UILabel.StyleValue = ui.style.LABEL.extend({
 		bold: true,
 		textAlign: "center",
 		maxWidth: 480,
@@ -74,7 +77,7 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 	 * The label style used for all labels except the first
 	 * - The default style includes centered text, with a maximum width of 480 pixels.
 	 */
-	labelStyle: ui.LabelStyle = ui.style.LABEL.extend({
+	labelStyle: UILabel.StyleValue = ui.style.LABEL.extend({
 		textAlign: "center",
 		maxWidth: 480,
 		lineBreakMode: "pre-wrap",
@@ -88,13 +91,13 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 	 * The button style used for all buttons except the confirm button
 	 * - This property defaults to the default button style.
 	 */
-	buttonStyle: ui.ButtonStyle = ui.style.BUTTON;
+	buttonStyle: UIButton.StyleValue = ui.style.BUTTON;
 
 	/**
 	 * The button style used for the confirm button
 	 * - This property defaults to the default primary button style.
 	 */
-	confirmButtonStyle: ui.ButtonStyle = ui.style.BUTTON_PRIMARY;
+	confirmButtonStyle: UIButton.StyleValue = ui.style.BUTTON_PRIMARY;
 }
 
 /** @internal Default modal message dialog view; shown asynchronously and resolves a promise */

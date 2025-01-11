@@ -3,17 +3,10 @@ import {
 	ManagedObject,
 	RenderContext,
 	UIComponent,
-	UIStyle,
 	app,
 } from "talla-ui";
 import { WebRenderer } from "../WebRenderer.js";
 import { ELT_HND_PROP } from "../events.js";
-
-/** @internal Helper function to find the base style (class) from a style/overrides object (e.g. `UILabel.labelStyle`), if any */
-export function getBaseStyleClass(object: any): undefined | UIStyle.Type<any> {
-	let base = (object as any)?.[UIStyle.OVERRIDES_BASE] || object;
-	if (typeof base === "function") return base;
-}
 
 /** @internal Abstract observer class for all `UIComponent` instances, to create output and call render callback; implemented for all types of UI components */
 export abstract class BaseObserver<TUIComponent extends UIComponent> {

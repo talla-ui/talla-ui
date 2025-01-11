@@ -4,10 +4,10 @@ import {
 	UIColumn,
 	UIContainer,
 	UIRow,
-	UIScrollContainer,
 	UIStyle,
 	View,
 	app,
+	ui,
 } from "talla-ui";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
@@ -99,33 +99,43 @@ export class UIContainerRenderer<
 
 	contentUpdater?: ContentUpdater;
 
-	override updateStyle(
-		element: TestOutputElement,
-		BaseStyle?: UIStyle.Type<any>,
-		styles?: any[],
-	) {
+	override updateStyle(element: TestOutputElement) {
 		let container = this.observed;
 		let layout = container.layout;
-		if (container instanceof UIRow) {
-			styles = [{ height: container.height }];
+		let baseStyle: UIStyle<any> | undefined;
+		let overrides: any[] = [];
+		if (container instanceof UICell) {
+			baseStyle = ui.style.CELL;
+			overrides = [
+				{
+					borderRadius: container.borderRadius,
+					background: container.background,
+					textColor: container.textColor,
+					opacity: container.opacity,
+				},
+			];
+		} else if (container instanceof UIRow) {
+			overrides = [{ height: container.height }];
 			if (container.align) {
 				layout = { ...layout, distribution: container.align };
 			}
 		} else if (container instanceof UIColumn) {
-			styles = [{ width: container.width }];
+			overrides = [{ width: container.width }];
 			if (container.align) {
 				layout = { ...layout, gravity: container.align };
 			}
-		} else if (container instanceof UIScrollContainer) {
-			styles = [];
 		}
 		if (container.padding !== null) {
 			layout = { ...layout, padding: container.padding };
 		}
 
-		// apply styles
-		element.styleClass = BaseStyle;
-		applyElementStyle(element, styles, container.position, layout);
+		applyElementStyle(element, [
+			baseStyle,
+			(container as UICell).style,
+			...overrides,
+			container.position,
+			layout,
+		]);
 	}
 }
 

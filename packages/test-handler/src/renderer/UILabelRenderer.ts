@@ -1,10 +1,6 @@
 import { RenderContext, UILabel, ui } from "talla-ui";
 import { TestOutputElement } from "../app/TestOutputElement.js";
-import {
-	TestBaseObserver,
-	applyElementStyle,
-	getBaseStyleClass,
-} from "./TestBaseObserver.js";
+import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 
 /** @internal */
 export class UILabelRenderer extends TestBaseObserver<UILabel> {
@@ -54,26 +50,22 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 
 	override updateStyle(element: TestOutputElement) {
 		let label = this.observed;
-		element.styleClass = getBaseStyleClass(label.style) || ui.style.LABEL;
-		applyElementStyle(
-			element,
-			[
-				label.style,
-				{
-					width: label.width,
-					padding: label.padding,
-					bold: label.bold,
-					italic: label.italic,
-					textColor: label.color,
-					fontSize: label.fontSize,
-					opacity:
-						label.dim === true ? 0.5 : label.dim === false ? 1 : label.dim,
-					lineBreakMode: label.wrap ? "pre-wrap" : undefined,
-					userSelect: label.selectable || undefined,
-				},
-			],
+		applyElementStyle(element, [
+			ui.style.LABEL,
+			label.style,
+			{
+				width: label.width,
+				padding: label.padding,
+				bold: label.bold,
+				italic: label.italic,
+				textColor: label.color,
+				fontSize: label.fontSize,
+				opacity: label.dim === true ? 0.5 : label.dim === false ? 1 : label.dim,
+				lineBreakMode: label.wrap ? "pre-wrap" : undefined,
+				userSelect: label.selectable || undefined,
+			},
 			label.position,
-		);
+		]);
 	}
 
 	updateContent(element: TestOutputElement) {

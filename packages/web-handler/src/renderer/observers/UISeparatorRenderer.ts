@@ -38,18 +38,16 @@ export class UISeparatorRenderer extends BaseObserver<UISeparator> {
 		let systemName = CLASS_SEPARATOR_LINE;
 		if (sep.vertical) systemName += " " + CLASS_SEPARATOR_LINE_VERT;
 		applyStyles(
-			sep,
 			element,
-			undefined,
-			systemName,
-			false,
-			false,
 			[
 				{
 					borderColor: sep.color,
 					borderThickness: sep.thickness,
 				},
 			],
+			systemName,
+			false,
+			false,
 			sep.position,
 		);
 

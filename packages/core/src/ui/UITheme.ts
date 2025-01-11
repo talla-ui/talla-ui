@@ -58,7 +58,7 @@ export class UITheme {
 	 * @description
 	 * The colors defined by this map are used by {@link UIColor} objects that are instantiated with the color name, e.g. `ui.color("Primary")` (which returns `new UIColor("Primary")`). Default colors are also available as static properties of `ui.color()`, e.g. `ui.color.PRIMARY`.
 	 *
-	 * Color changes may not be applied to views that are already rendered. If needed, re-render content using `app.renderer.remount()`, or change the theme altogether (use {@link UITheme.clone()} to create a new theme).
+	 * Styles and colors are cached during rendering. To apply changes to existing views, set a new theme rather than modifying this object.
 	 *
 	 * @example
 	 * useWebContext((options) => {
@@ -97,8 +97,13 @@ export class UITheme {
 
 	/**
 	 * A map that defines a set of predefined styles
-	 * - This map includes base style definitions that are applied to instances of {@link UIStyle}. Each key is a base style name, and each value is a list of style definitions (as an array). To change the base appearance of UI components, preferably _add_ objects with style definitions to each array. The format of style definitions is the same as the arguments of {@link UIStyle.extend}.
-	 * - These style definitions are used by default styles (and any extensions or overrides) available as static properties of `ui.style()`, e.g. `ui.style.BUTTON`.
+	 *
+	 * @description
+	 * This map includes base style definitions that are applied to instances of {@link UIStyle}. Each key is a base style name, and each value is a list of style definitions (as an array).
+	 *
+	 * These style definitions are used by default styles (and any extensions or overrides) available as static properties of `ui.style()`, e.g. `ui.style.BUTTON`. To modify styles, _add_ objects with style definitions to each array. The format of style definitions is the same as the arguments of {@link UIStyle.extend}.
+	 *
+	 * Styles and colors are cached during rendering. To apply changes to existing views, set a new theme rather than modifying this object.
 	 *
 	 * @example
 	 * useWebContext((options) => {
@@ -200,8 +205,8 @@ export namespace UITheme {
 				hint?: StringConvertible;
 				hintIcon?: UIIconResource;
 				hintIconSize?: string | number;
-				labelStyle?: UIComponent.TextStyleType;
-				hintStyle?: UIComponent.TextStyleType;
+				labelStyle?: UIComponent.TextStyle;
+				hintStyle?: UIComponent.TextStyle;
 				disabled?: boolean;
 				separate?: never;
 		  }

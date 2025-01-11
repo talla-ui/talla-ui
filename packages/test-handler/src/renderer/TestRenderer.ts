@@ -9,7 +9,6 @@ import { OutputAssertion, OutputSelectFilter } from "../app/OutputAssertion.js";
 import type { TestContextOptions } from "../app/TestContext.js";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import { val2str } from "../log.js";
-import { clearStyles } from "./TestBaseObserver.js";
 import { makeObserver } from "./observers.js";
 
 /** Max run time for scheduled render functions */
@@ -154,7 +153,6 @@ export class TestRenderer extends RenderContext {
 	 */
 	clear() {
 		this._root.content.splice(0);
-		clearStyles();
 		return this;
 	}
 

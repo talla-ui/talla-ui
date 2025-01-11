@@ -12,7 +12,7 @@ import {
 	getCSSLength,
 	getLabelDimOpacity,
 } from "../../style/DOMStyle.js";
-import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
+import { BaseObserver } from "./BaseObserver.js";
 
 const CHEVRON_ICONS = {
 	up: ui.icon.CHEVRON_UP,
@@ -76,13 +76,9 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 		if (opacity === true) opacity = getLabelDimOpacity();
 		else if (opacity === false) opacity = 1;
 		applyStyles(
-			label,
 			element,
-			getBaseStyleClass(label.style) || ui.style.LABEL,
-			undefined,
-			true,
-			false,
 			[
+				ui.style.LABEL,
 				label.style,
 				{
 					width: label.width,
@@ -96,8 +92,10 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 					userSelect: label.selectable || undefined,
 				},
 			],
-			label.position,
 			undefined,
+			true,
+			false,
+			label.position,
 		);
 	}
 

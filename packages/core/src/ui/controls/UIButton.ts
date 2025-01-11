@@ -133,7 +133,7 @@ export class UIButton extends UIComponent {
 	primary?: boolean;
 
 	/** The style to be applied to this button */
-	style?: UIStyle.TypeOrOverrides<UIButton.StyleType> = undefined;
+	style?: UIButton.StyleValue = undefined;
 
 	/**
 	 * Returns the navigation target for this button
@@ -146,8 +146,14 @@ export class UIButton extends UIComponent {
 }
 
 export namespace UIButton {
+	/** A style object or overrides that can be applied to {@link UIButton} */
+	export type StyleValue =
+		| UIStyle<UIButton.StyleDefinition>
+		| UIButton.StyleDefinition
+		| undefined;
+
 	/** The type definition for styles applicable to {@link UIButton.style} */
-	export type StyleType = UIComponent.DimensionsStyleType &
-		UIComponent.DecorationStyleType &
-		UIComponent.TextStyleType;
+	export type StyleDefinition = UIComponent.Dimensions &
+		UIComponent.Decoration &
+		UIComponent.TextStyle;
 }

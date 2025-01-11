@@ -6,7 +6,6 @@ import {
 	UIContainer,
 	UIRow,
 	UIScrollContainer,
-	UIStyle,
 	View,
 } from "talla-ui";
 import {
@@ -124,11 +123,7 @@ export class UIContainerRenderer<
 
 	contentUpdater?: ContentUpdater;
 
-	override updateStyle(
-		element: HTMLElement,
-		BaseStyle?: UIStyle.Type<any>,
-		styles?: any[],
-	) {
+	override updateStyle(element: HTMLElement, styles?: any[]) {
 		// set styles based on type of container
 		let container = this.observed;
 		let systemName: string;
@@ -168,13 +163,11 @@ export class UIContainerRenderer<
 		}
 
 		applyStyles(
-			container,
 			element,
-			BaseStyle,
+			styles || [],
 			systemName,
 			false,
 			true,
-			styles,
 			container.position,
 			layout,
 		);

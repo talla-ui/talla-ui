@@ -3,7 +3,6 @@ import {
 	ManagedObject,
 	RenderContext,
 	UIComponent,
-	UIContainer,
 	UIStyle,
 	app,
 } from "talla-ui";
@@ -28,60 +27,45 @@ const _eventNames: { [p in TestOutputElement.PlatformEvent]?: string } = {
 	submit: "Submit",
 };
 
-/** A cache of constructed style classes, indexed by class reference */
-let _baseStyles = new Map<any, Readonly<any[]>>();
-
-/** @internal Helper function to find the base style (class) from a style/overrides object (e.g. `UILabel.style`), if any */
-export function getBaseStyleClass(object: any): undefined | UIStyle.Type<any> {
-	let base = (object as any)?.[UIStyle.OVERRIDES_BASE] || object;
-	if (typeof base === "function") return base;
-}
-
-/** @internal Helper function to clear the cache of constructed style classes */
-export function clearStyles() {
-	_baseStyles = new Map();
-}
-
-/** @internal Helper function to get styles from a (base) style class */
-export function getClassStyles(styleClass: UIStyle.Type<any>) {
-	if (!_baseStyles.has(styleClass)) {
-		_baseStyles.set(styleClass, (new styleClass() as UIStyle<any>).getStyles());
-	}
-	return _baseStyles.get(styleClass)!;
-}
-
-/** @internal Helper function to merge all style overrides on a single test output element */
-export function applyElementStyle(
-	element: TestOutputElement,
-	styleOverrides?: any[],
-	position?: UIComponent.Position,
-	layout?: UIContainer.Layout,
-) {
-	let styles: any = (element.styles = {
-		...(element.styleClass ? getClassStyles(element.styleClass) : undefined),
-		...position,
-		...layout,
-	});
-	function addOverrides(objects: any[]) {
-		for (let style of objects) {
+/** @internal Helper function to merge all style overrides, position, and layout on a single test output element */
+export function applyElementStyle(element: TestOutputElement, styles: any[]) {
+	let result: any;
+	function recurse(values: readonly any[]) {
+		for (let i = 0, len = values.length; i < len; i++) {
+			let style = values[i];
 			if (!style) continue;
+
+			// check if next item is a(nother) full UIStyle, if so ignore this one
+			if (values[i + 1] instanceof UIStyle) continue;
+
+			// recurse for (nested) arrays
 			if (Array.isArray(style)) {
-				// item is an array, recurse
-				addOverrides(style);
-			} else if (Array.isArray(style.overrides)) {
-				// item is an object with more overrides, recurse
-				addOverrides(style.overrides);
-			} else if (typeof style !== "function") {
-				// set styles from plain object
+				return recurse(style);
+			}
+
+			// apply styles and overrides to result
+			if (style instanceof UIStyle) {
+				result = {};
+				recurse(style.getStyles());
+				let overrides = style.getOverrides();
+				for (let p in overrides) {
+					if (overrides[p] !== undefined) result[p] = overrides[p];
+				}
+			} else {
+				if (UIStyle.STATE_DISABLED in style && !element.disabled) continue;
+				if (UIStyle.STATE_FOCUSED in style && !element.hasFocus()) continue;
+				if (UIStyle.STATE_PRESSED in style && !element.pressed) continue;
+				if (UIStyle.STATE_READONLY in style && !element.readOnly) continue;
+				if (UIStyle.STATE_HOVERED in style) continue;
+				result ||= {};
 				for (let p in style) {
-					if (style[p] !== undefined) {
-						styles[p] = style[p];
-					}
+					if (style[p] !== undefined) result[p] = style[p];
 				}
 			}
 		}
 	}
-	if (styleOverrides) addOverrides(styleOverrides);
+	recurse(styles);
+	element.styles = result || {};
 }
 
 /** @internal Abstract observer class for all `UIComponent` instances, to create output and call render callback; implemented for all types of UI components, created upon rendering, and attached to enable property bindings */

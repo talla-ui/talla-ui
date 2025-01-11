@@ -1,10 +1,6 @@
 import { RenderContext, UIToggle, ui } from "talla-ui";
 import { TestOutputElement } from "../app/TestOutputElement.js";
-import {
-	TestBaseObserver,
-	applyElementStyle,
-	getBaseStyleClass,
-} from "./TestBaseObserver.js";
+import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 
 /** @internal */
 export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
@@ -58,15 +54,12 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 		element.disabled = toggle.disabled;
 
 		// set styles
-		element.styleClass = getBaseStyleClass(toggle.style) || ui.style.TOGGLE;
-		applyElementStyle(
-			element,
-			[
-				toggle.style,
-				toggle.width !== undefined ? { width: toggle.width } : undefined,
-			],
+		applyElementStyle(element, [
+			ui.style.TOGGLE,
+			toggle.style,
+			toggle.width !== undefined ? { width: toggle.width } : undefined,
 			toggle.position,
-		);
+		]);
 	}
 
 	updateContent(element: TestOutputElement) {

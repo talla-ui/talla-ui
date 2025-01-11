@@ -33,15 +33,12 @@ export class UISeparatorRenderer extends TestBaseObserver<UISeparator> {
 	updateStyle(element: TestOutputElement) {
 		let sep = this.observed;
 		// NOTE: margin is ignored in test renderer
-		applyElementStyle(
-			element,
-			[
-				{
-					borderColor: sep.color,
-					borderThickness: sep.thickness,
-				},
-			],
+		applyElementStyle(element, [
+			{
+				borderColor: sep.color,
+				borderThickness: sep.thickness,
+			},
 			sep.position,
-		);
+		]);
 	}
 }

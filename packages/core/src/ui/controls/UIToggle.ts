@@ -78,15 +78,27 @@ export class UIToggle extends UIComponent {
 	width?: string | number = undefined;
 
 	/** The style to be applied to the toggle control as a whole */
-	style?: UIStyle.TypeOrOverrides<UIToggle.StyleType> = undefined;
+	style?: UIToggle.StyleValue = undefined;
 
 	/** The style to be applied to the toggle label */
-	labelStyle?: UIStyle.TypeOrOverrides<UIToggle.LabelStyleType> = undefined;
+	labelStyle?: UIToggle.LabelStyleValue = undefined;
 }
 
 export namespace UIToggle {
+	/** A style object or overrides that can be applied to {@link UIToggle} */
+	export type StyleValue =
+		| UIStyle<UIToggle.StyleDefinition>
+		| UIToggle.StyleDefinition
+		| undefined;
+
+	/** A style object or overrides that can be applied as label styles on {@link UIToggle} */
+	export type LabelStyleValue =
+		| UIStyle<UIToggle.LabelStyleDefinition>
+		| UIToggle.LabelStyleDefinition
+		| undefined;
+
 	/** The type definition for styles applicable to {@link UIToggle.style} */
-	export type StyleType = UIComponent.DimensionsStyleType & {
+	export type StyleDefinition = UIComponent.Dimensions & {
 		/** Padding within control element (in pixels or CSS string, or separate offset values) */
 		padding?: UIComponent.Offsets;
 		/** Opacity (0-1) */
@@ -98,6 +110,6 @@ export namespace UIToggle {
 	};
 
 	/** The type definition for styles applicable to {@link UIToggle.labelStyle} */
-	export type LabelStyleType = UIComponent.DecorationStyleType &
-		UIComponent.TextStyleType;
+	export type LabelStyleDefinition = UIComponent.Decoration &
+		UIComponent.TextStyle;
 }

@@ -73,17 +73,11 @@ export class TestOutputElement {
 	}
 
 	/**
-	 * A combination of all style overrides applied to this element
-	 * - Styles are copied as specified in objects such as {@link UIButton.style}, {@link UICell.style}, etc.
+	 * A combination of all styles applied to this element, including position and layout
+	 * - Styles are copied as specified from {@link UIStyle} objects and overrides such as {@link UIButton.style}, {@link UICell.style}, etc.
 	 * - While styles are usually applied to the rendered element in a platform-dependent way, the test renderer simply stores all properties in this object, which therefore has no specific type.
 	 */
 	styles: Record<string, any> = {};
-
-	/**
-	 * A base style class that is applied to this element
-	 * - While style classes are usually applied to the rendered element in a platform-dependent way, the test renderer simply stores the applied class in this property unchecked, typed as `any` (or undefined).
-	 */
-	styleClass?: any;
 
 	/** A list of all nested content elements, for containers */
 	content: TestOutputElement[] = [];

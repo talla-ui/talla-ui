@@ -2,6 +2,7 @@ import {
 	$view,
 	ConfigOptions,
 	RenderContext,
+	UICell,
 	UITheme,
 	View,
 	ViewComposite,
@@ -26,7 +27,7 @@ export class WebDialogStyles extends ConfigOptions {
 	 * The cell style that's applied to the outer dialog container
 	 * - The default style is based on `ui.style.CELL_BG` and includes properties for dimensions and border radius.
 	 */
-	containerStyle: ui.CellStyle = ui.style.CELL_BG.extend({
+	containerStyle: UICell.StyleValue = ui.style.CELL_BG.extend({
 		width: "auto",
 		minWidth: 320,
 		maxWidth: "100vw",

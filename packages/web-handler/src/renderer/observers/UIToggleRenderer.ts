@@ -1,7 +1,7 @@
 import { RenderContext, UIToggle, ui } from "talla-ui";
 import { applyStyles } from "../../style/DOMStyle.js";
 import { CLASS_TOGGLE, CLASS_TOGGLE_TYPE } from "../../style/defaults/css.js";
-import { BaseObserver, getBaseStyleClass } from "./BaseObserver.js";
+import { BaseObserver } from "./BaseObserver.js";
 
 let _nextId = 0;
 
@@ -59,31 +59,26 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 
 		// set element (wrapper) style
 		applyStyles(
-			toggle,
 			element,
-			getBaseStyleClass(toggle.style) || ui.style.TOGGLE,
-			CLASS_TOGGLE + " " + CLASS_TOGGLE_TYPE[toggle.type],
-			false,
-			false,
 			[
+				ui.style.TOGGLE,
 				toggle.style,
 				toggle.width !== undefined ? { width: toggle.width } : undefined,
 			],
+			CLASS_TOGGLE + " " + CLASS_TOGGLE_TYPE[toggle.type],
+			false,
+			false,
 			toggle.position,
 		);
 
 		// set label style
 		let label = element.lastChild as HTMLLabelElement;
 		applyStyles(
-			toggle,
 			label,
-			getBaseStyleClass(toggle.labelStyle) || ui.style.TOGGLE_LABEL,
+			[ui.style.TOGGLE_LABEL, toggle.labelStyle],
 			undefined,
 			true,
 			false,
-			[toggle.labelStyle],
-			undefined,
-			undefined,
 		);
 
 		// set disabled state

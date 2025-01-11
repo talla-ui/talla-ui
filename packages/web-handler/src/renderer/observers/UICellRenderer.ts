@@ -7,7 +7,6 @@ import {
 	ui,
 } from "talla-ui";
 import { getCSSLength } from "../../style/DOMStyle.js";
-import { getBaseStyleClass } from "./BaseObserver.js";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
 /** @internal */
@@ -83,7 +82,8 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 
 	override updateStyle(element: HTMLElement) {
 		let cell = this.observed;
-		super.updateStyle(element, getBaseStyleClass(cell.style) || ui.style.CELL, [
+		super.updateStyle(element, [
+			ui.style.CELL,
 			cell.style,
 			{
 				padding: cell.padding,

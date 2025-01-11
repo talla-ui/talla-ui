@@ -1,10 +1,6 @@
 import { RenderContext, UIImage, ui } from "talla-ui";
 import { TestOutputElement } from "../app/TestOutputElement.js";
-import {
-	TestBaseObserver,
-	applyElementStyle,
-	getBaseStyleClass,
-} from "./TestBaseObserver.js";
+import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 
 /** @internal */
 export class UIImageRenderer extends TestBaseObserver<UIImage> {
@@ -37,12 +33,12 @@ export class UIImageRenderer extends TestBaseObserver<UIImage> {
 
 	override updateStyle(element: TestOutputElement) {
 		let image = this.observed;
-		element.styleClass = getBaseStyleClass(image.style) || ui.style.IMAGE;
-		applyElementStyle(
-			element,
-			[image.style, { width: image.width, height: image.height }],
+		applyElementStyle(element, [
+			ui.style.IMAGE,
+			image.style,
+			{ width: image.width, height: image.height },
 			image.position,
-		);
+		]);
 	}
 
 	updateContent(element: TestOutputElement) {

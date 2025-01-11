@@ -117,14 +117,20 @@ export class UITextField extends UIComponent {
 	width?: string | number = undefined;
 
 	/** The style to be applied to the text field */
-	style?: UIStyle.TypeOrOverrides<UITextField.StyleType> = undefined;
+	style?: UITextField.StyleValue = undefined;
 }
 
 export namespace UITextField {
+	/** A style object or overrides that can be applied to {@link UITextField} */
+	export type StyleValue =
+		| UIStyle<UITextField.StyleDefinition>
+		| UITextField.StyleDefinition
+		| undefined;
+
 	/** The type definition for styles applicable to {@link UITextField.style} */
-	export type StyleType = UIComponent.DimensionsStyleType &
-		UIComponent.DecorationStyleType &
-		UIComponent.TextStyleType;
+	export type StyleDefinition = UIComponent.Dimensions &
+		UIComponent.Decoration &
+		UIComponent.TextStyle;
 
 	/** An identifier for a text field input type */
 	export type InputType = "text" | "password" | "number" | "date" | "color";

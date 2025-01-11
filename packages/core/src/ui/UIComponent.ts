@@ -245,7 +245,7 @@ export namespace UIComponent {
 	 * Options for component dimensions
 	 * @see {@link UIStyle}
 	 */
-	export type DimensionsStyleType = {
+	export type Dimensions = {
 		/** Outer width of the element, as specified (in pixels or string with unit) */
 		width?: string | number;
 		/** Outer height of the element, as specified (in pixels or string with unit) */
@@ -269,7 +269,7 @@ export namespace UIComponent {
 	 * - The `css` property can be used to include miscellaneous CSS attributes, at your own risk.
 	 * @see {@link UIStyle}
 	 */
-	export type DecorationStyleType = {
+	export type Decoration = {
 		/** Background style or color */
 		background?: UIColor;
 		/** Text color */
@@ -294,7 +294,7 @@ export namespace UIComponent {
 	 * Options for typography used on UI components
 	 * @see {@link UIStyle}
 	 */
-	export type TextStyleType = {
+	export type TextStyle = {
 		/** Text direction (rtl or ltr) */
 		direction?: "rtl" | "ltr";
 		/** Text alignment (CSS) */

@@ -37,12 +37,7 @@ export class UISpacerRenderer extends BaseObserver<UISpacer> {
 		let hasMinimum = minWidth !== undefined || minHeight !== undefined;
 		let hasFixed = width !== undefined || height !== undefined;
 		applyStyles(
-			spacer,
 			element,
-			undefined,
-			undefined,
-			false,
-			false,
 			[
 				{
 					width,
@@ -53,6 +48,9 @@ export class UISpacerRenderer extends BaseObserver<UISpacer> {
 					shrink: hasMinimum ? 0 : 1,
 				},
 			],
+			undefined,
+			false,
+			false,
 			spacer.position,
 		);
 	}

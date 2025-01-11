@@ -4,6 +4,7 @@ import {
 	UICell,
 	UIColumn,
 	UIContainer,
+	UILabel,
 	UIRow,
 	UISeparator,
 	UISpacer,
@@ -46,7 +47,7 @@ export class WebModalMenuStyles extends ConfigOptions {
 	 * The cell style used for the outer menu container
 	 * - The default style includes properties for padding, background, and border radius.
 	 */
-	containerStyle: ui.CellStyle = ui.style.CELL_BG.extend({
+	containerStyle: UICell.StyleValue = ui.style.CELL_BG.extend({
 		padding: { y: 8 },
 		borderRadius: 8,
 		grow: 0,
@@ -56,7 +57,7 @@ export class WebModalMenuStyles extends ConfigOptions {
 	 * The cell style used for each menu item
 	 * - The default style includes properties for padding, cursor, and (hover/focus) background color
 	 */
-	itemCellStyle: ui.CellStyle = ui.style.CELL.extend(
+	itemCellStyle: UICell.StyleValue = ui.style.CELL.extend(
 		{
 			padding: { x: 16, y: 6 },
 			css: { cursor: "pointer", outlineOffset: "-2px" },
@@ -77,13 +78,13 @@ export class WebModalMenuStyles extends ConfigOptions {
 	 * The label style used for each menu item label
 	 * - This property defaults to the default label style.
 	 */
-	labelStyle: ui.LabelStyle = ui.style.LABEL;
+	labelStyle: UILabel.StyleValue = ui.style.LABEL;
 
 	/**
 	 * The label style used for each menu item hint
 	 * - The default style includes a smaller font size and reduced opacity
 	 */
-	hintStyle: ui.LabelStyle = ui.style.LABEL.extend({
+	hintStyle: UILabel.StyleValue = ui.style.LABEL.extend({
 		opacity: 0.5,
 		fontSize: 12,
 		shrink: 0,

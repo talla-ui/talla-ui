@@ -70,13 +70,13 @@ export class UILabel extends UIComponent {
 
 	/**
 	 * True if text should wrap if the text is too long to fit on one line
-	 * - If set, this property overrides `lineBreakMode` (see {@link UIComponent.TextStyleType}) to `pre-wrap`.
+	 * - If set, this property overrides `lineBreakMode` (see {@link UIComponent.TextStyle}) to `pre-wrap`.
 	 */
 	wrap?: boolean = undefined;
 
 	/**
 	 * True if text should be user-selectable using input gestures, mouse, or keyboard
-	 * - If set, this property overrides `userSelect` (see {@link UIComponent.TextStyleType}).
+	 * - If set, this property overrides `userSelect` (see {@link UIComponent.TextStyle}).
 	 */
 	selectable?: boolean = undefined;
 
@@ -143,12 +143,18 @@ export class UILabel extends UIComponent {
 	dim?: number | boolean = undefined;
 
 	/** The style to be applied to this label */
-	style?: UIStyle.TypeOrOverrides<UILabel.StyleType> = undefined;
+	style?: UILabel.StyleValue = undefined;
 }
 
 export namespace UILabel {
+	/** A style object or overrides that can be applied to {@link UILabel} */
+	export type StyleValue =
+		| UIStyle<UILabel.StyleDefinition>
+		| UILabel.StyleDefinition
+		| undefined;
+
 	/** The type definition for styles applicable to {@link UILabel.style} */
-	export type StyleType = UIComponent.DimensionsStyleType &
-		UIComponent.DecorationStyleType &
-		UIComponent.TextStyleType;
+	export type StyleDefinition = UIComponent.Dimensions &
+		UIComponent.Decoration &
+		UIComponent.TextStyle;
 }
