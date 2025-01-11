@@ -110,6 +110,9 @@ export class WebContextOptions extends ConfigOptions {
 	/** Relative scale of logical pixels, defaults to 1 */
 	logicalPxScale = 1;
 
+	/** Relative scale of logical pixels for narrow screens (< 600px), defaults to (16/14) to upscale 14px text to 16px */
+	logicalPxScaleNarrow = 16 / 14;
+
 	/** Time (in ms) between frame renders if animation frame doesn't trigger */
 	missedFrameTime = 30;
 }

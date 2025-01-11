@@ -102,10 +102,15 @@ export function importStylesheets(urls: string[]) {
 }
 
 /** @internal Overrides REM size globally, as a factor of the default size */
-export function setLogicalPxScale(scale: number) {
+export function setLogicalPxScale(scale: number, narrow?: number) {
 	_currentPxPerRem = scale * LOGICAL_PX_PER_REM;
 	setGlobalCSS({
 		html: { fontSize: _currentPxPerRem + "px" },
+	});
+	setGlobalCSS({
+		"@media (max-width: 600px)": {
+			html: { fontSize: (narrow ?? scale) * LOGICAL_PX_PER_REM + "px" },
+		},
 	});
 }
 

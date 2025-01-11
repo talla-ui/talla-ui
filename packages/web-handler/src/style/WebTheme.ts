@@ -44,7 +44,10 @@ export class WebTheme extends UITheme {
 	static initializeCSS(options: WebContextOptions) {
 		resetCSS();
 		setGlobalCSS(makeBaseCSS());
-		setLogicalPxScale(_pxScaleOverride ?? options.logicalPxScale);
+		setLogicalPxScale(
+			_pxScaleOverride ?? options.logicalPxScale,
+			_pxScaleOverride ?? options.logicalPxScaleNarrow,
+		);
 		importStylesheets([...options.importCSS, ..._importedCSS]);
 		setControlTextStyle({
 			...defaultControlTextStyle,
