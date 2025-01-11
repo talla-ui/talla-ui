@@ -9,9 +9,6 @@ import {
 /** @internal Default number of logical pixels in a REM unit */
 export const LOGICAL_PX_PER_REM = 16;
 
-/** Current number of pixels in a REM unit */
-let _currentPxPerRem = 16;
-
 /** Flexbox justify options */
 const _flexJustifyOptions = {
 	start: "flex-start",
@@ -49,6 +46,12 @@ let _pendingCSS: { [spec: string]: any } | undefined;
 
 /** All CSS imports */
 let _cssImports: string[] = [];
+
+/** Current logical pixel scaling */
+let _currentLogicalPxScale = 1;
+
+/** Current logical pixel scaling in narrow viewport */
+let _currentLogicalPxScaleNarrow = 1;
 
 /** Label dim opacity */
 let _labelDimOpacity = 0.5;
@@ -103,9 +106,10 @@ export function importStylesheets(urls: string[]) {
 
 /** @internal Overrides REM size globally, as a factor of the default size */
 export function setLogicalPxScale(scale: number, narrow?: number) {
-	_currentPxPerRem = scale * LOGICAL_PX_PER_REM;
+	_currentLogicalPxScale = scale;
+	_currentLogicalPxScaleNarrow = narrow ?? scale;
 	setGlobalCSS({
-		html: { fontSize: _currentPxPerRem + "px" },
+		html: { fontSize: scale * LOGICAL_PX_PER_REM + "px" },
 	});
 	setGlobalCSS({
 		"@media (max-width: 600px)": {
@@ -116,12 +120,16 @@ export function setLogicalPxScale(scale: number, narrow?: number) {
 
 /** @internal Measures window width in logical pixel units */
 export function getWindowInnerWidth() {
-	return (window.innerWidth / _currentPxPerRem) * LOGICAL_PX_PER_REM;
+	let w = window.innerWidth;
+	let scale = w < 600 ? _currentLogicalPxScaleNarrow : _currentLogicalPxScale;
+	return w / scale;
 }
 
 /** @internal Measures window height in logical pixel units */
 export function getWindowInnerHeight() {
-	return (window.innerHeight / _currentPxPerRem) * LOGICAL_PX_PER_REM;
+	let h = window.innerHeight;
+	let scale = h < 600 ? _currentLogicalPxScaleNarrow : _currentLogicalPxScale;
+	return h / scale;
 }
 
 /** @internal Sets the global focus 'glow' outline width and blur (pixels or string with unit), and color */
