@@ -5,7 +5,7 @@ let mainPackageJson = JSON.parse(fs.readFileSync("package.json").toString());
 let version = mainPackageJson.version;
 console.log("Setting package versions: " + version);
 
-mainPackageJson.dependencies["talla-ui"] = version;
+mainPackageJson.dependencies["@talla-ui/core"] = version;
 fs.writeFileSync(
 	"package.json",
 	JSON.stringify(mainPackageJson, undefined, "\t") + "\n",
