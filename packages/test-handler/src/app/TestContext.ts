@@ -1,4 +1,4 @@
-import { LocalData, ConfigOptions, AppContext, app } from "talla-ui";
+import { LocalData, ConfigOptions, AppContext, app } from "@talla-ui/core";
 import { TestScope } from "../TestScope.js";
 import { TestTheme } from "../style/TestTheme.js";
 import { TestNavigationContext } from "./TestNavigationContext.js";

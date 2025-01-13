@@ -1,4 +1,4 @@
-import { UIIconResource } from "talla-ui";
+import { UIIconResource } from "@talla-ui/core";
 
 /** @internal SVG icon set */
 export const icons: [name: string, icon: UIIconResource][] = [

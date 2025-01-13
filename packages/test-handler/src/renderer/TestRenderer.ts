@@ -4,7 +4,7 @@ import {
 	RenderContext,
 	View,
 	app,
-} from "talla-ui";
+} from "@talla-ui/core";
 import { OutputAssertion, OutputSelectFilter } from "../app/OutputAssertion.js";
 import type { TestContextOptions } from "../app/TestContext.js";
 import { TestOutputElement } from "../app/TestOutputElement.js";

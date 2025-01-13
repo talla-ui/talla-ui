@@ -14,7 +14,7 @@ import {
 	ViewEvent,
 	app,
 	ui,
-} from "talla-ui";
+} from "@talla-ui/core";
 import { reduceElementMotion } from "../renderer/WebOutputTransform.js";
 
 /** @internal Fixed container position, used for each menu container */

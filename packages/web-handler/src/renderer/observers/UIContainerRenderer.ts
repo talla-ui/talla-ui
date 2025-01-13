@@ -7,7 +7,7 @@ import {
 	UIRow,
 	UIScrollContainer,
 	View,
-} from "talla-ui";
+} from "@talla-ui/core";
 import {
 	CLASS_CELL,
 	CLASS_COLUMN,

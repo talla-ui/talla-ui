@@ -1,4 +1,4 @@
-import { View } from "talla-ui";
+import { View } from "@talla-ui/core";
 import type { TestOutputElement } from "./TestOutputElement.js";
 
 /** An object that provides filters to match a set of output elements, to be asserted using {@link OutputAssertion} */

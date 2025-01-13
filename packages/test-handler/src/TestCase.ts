@@ -1,4 +1,4 @@
-import { ConfigOptions, RenderContext, View, app } from "talla-ui";
+import { ConfigOptions, RenderContext, View, app } from "@talla-ui/core";
 import { Assertion } from "./Assertion.js";
 import { TestScope } from "./TestScope.js";
 import { OutputAssertion, OutputSelectFilter } from "./app/OutputAssertion.js";

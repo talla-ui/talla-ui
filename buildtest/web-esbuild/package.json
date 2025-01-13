@@ -11,6 +11,6 @@
 	"license": "MIT",
 	"dependencies": {
 		"@talla-ui/web-handler": "../../packages/web-handler",
-		"talla-ui": "../../packages/core"
+		"talla-ui": "../../"
 	}
 }

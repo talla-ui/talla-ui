@@ -2,7 +2,8 @@
 	"name": "@talla-ui/run-tests-esbuild",
 	"version": "4.0.0-dev.59",
 	"publishConfig": {
-		"tag": "next"
+		"tag": "next",
+		"access": "public"
 	},
 	"description": "Tälla UI framework: test runner using esbuild",
 	"author": "Jelmer Cormont",

@@ -6,7 +6,7 @@ import {
 	UIComponent,
 	ViewEvent,
 	ui,
-} from "talla-ui";
+} from "@talla-ui/core";
 import { getCSSLength } from "../../style/DOMStyle.js";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
 

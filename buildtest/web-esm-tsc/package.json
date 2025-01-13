@@ -10,7 +10,7 @@
 		"serve": "http-server -o index.html"
 	},
 	"dependencies": {
-		"talla-ui": "../../packages/core",
+		"talla-ui": "../../",
 		"@talla-ui/web-handler": "../../packages/web-handler"
 	}
 }

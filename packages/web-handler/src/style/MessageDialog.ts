@@ -11,7 +11,7 @@ import {
 	app,
 	strf,
 	ui,
-} from "talla-ui";
+} from "@talla-ui/core";
 import { WebDialogStyles } from "./Dialog.js";
 
 /**

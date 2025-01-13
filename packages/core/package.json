@@ -1,8 +1,9 @@
 {
-	"name": "talla-ui",
+	"name": "@talla-ui/core",
 	"version": "4.0.0-dev.59",
 	"publishConfig": {
-		"tag": "next"
+		"tag": "next",
+		"access": "public"
 	},
 	"description": "Tälla UI framework: core package",
 	"author": "Jelmer Cormont",

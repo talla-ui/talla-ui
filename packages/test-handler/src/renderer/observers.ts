@@ -9,7 +9,7 @@ import {
 	UITextField,
 	UIToggle,
 	View,
-} from "talla-ui";
+} from "@talla-ui/core";
 import { UIButtonRenderer } from "./UIButtonRenderer.js";
 import { UICellRenderer } from "./UICellRenderer.js";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";

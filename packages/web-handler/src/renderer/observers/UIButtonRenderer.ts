@@ -5,7 +5,7 @@ import {
 	UIButton,
 	ui,
 	NavigationTarget,
-} from "talla-ui";
+} from "@talla-ui/core";
 import { applyStyles } from "../../style/DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
 import { setTextOrHtmlContent } from "./UILabelRenderer.js";

@@ -1,4 +1,4 @@
-import { RenderContext, UIColor, View, app } from "talla-ui";
+import { RenderContext, UIColor, View, app } from "@talla-ui/core";
 import {
 	CLASS_OVERLAY_SHADER,
 	CLASS_OVERLAY_WRAPPER,

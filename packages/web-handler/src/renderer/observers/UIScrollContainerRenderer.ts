@@ -1,4 +1,4 @@
-import { ManagedEvent, UIScrollContainer } from "talla-ui";
+import { ManagedEvent, UIScrollContainer } from "@talla-ui/core";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
 const EMIT_INTERVAL = 100;

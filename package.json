@@ -1,10 +1,26 @@
 {
-	"name": "@talla-ui/main",
-	"private": true,
-	"description": "Tälla UI framework: main source monorepo",
+	"name": "talla-ui",
 	"version": "4.0.0-dev.59",
+	"publishConfig": {
+		"tag": "next",
+		"access": "public"
+	},
+	"description": "Tälla UI framework",
+	"author": "Jelmer Cormont",
 	"license": "MIT",
+	"homepage": "https://talla-ui.com",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/talla-ui/talla"
+	},
 	"type": "module",
+	"main": "index.js",
+	"module": "index.js",
+	"types": "index.d.ts",
+	"files": [
+		"index.js",
+		"index.d.ts"
+	],
 	"scripts": {
 		"postinstall": "concurrently npm:install:*",
 		"install:core": "cd packages/core && npm install",
@@ -62,7 +78,11 @@
 	"prettier": {
 		"useTabs": true
 	},
+	"dependencies": {
+		"@talla-ui/core": "4.0.0-dev.59"
+	},
 	"devDependencies": {
+		"@talla-ui/core": "file:packages/core",
 		"@types/node": "20",
 		"c8": "latest",
 		"concurrently": "latest",

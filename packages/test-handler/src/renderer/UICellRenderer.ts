@@ -1,4 +1,4 @@
-import { UICell } from "talla-ui";
+import { UICell } from "@talla-ui/core";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
 

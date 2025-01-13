@@ -1,4 +1,4 @@
-import { app, RenderContext } from "talla-ui";
+import { app, RenderContext } from "@talla-ui/core";
 
 const DATA_UID = "webhandler__animating";
 const DATA_REDUCE_MOTION = "webhandler__anim0";

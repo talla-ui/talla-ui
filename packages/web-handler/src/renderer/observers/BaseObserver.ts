@@ -4,7 +4,7 @@ import {
 	RenderContext,
 	UIComponent,
 	app,
-} from "talla-ui";
+} from "@talla-ui/core";
 import { WebRenderer } from "../WebRenderer.js";
 import { ELT_HND_PROP } from "../events.js";
 

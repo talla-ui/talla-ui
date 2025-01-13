@@ -8,7 +8,7 @@
 		"start": "http-server site -o"
 	},
 	"dependencies": {
-		"talla-ui": "../../packages/core",
+		"talla-ui": "../../",
 		"@talla-ui/web-handler": "../../packages/web-handler"
 	},
 	"devDependencies": {

@@ -1,4 +1,4 @@
-import * as core from "talla-ui";
+import * as core from "@talla-ui/core";
 import { WebContextOptions, useWebContext } from "./WebContext.js";
 import { WebTheme } from "./style/WebTheme.js";
 import { WebHashNavigationContext } from "./WebHashNavigationContext.js";

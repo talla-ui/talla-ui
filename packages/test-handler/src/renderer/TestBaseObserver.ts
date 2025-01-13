@@ -5,7 +5,7 @@ import {
 	UIComponent,
 	UIStyle,
 	app,
-} from "talla-ui";
+} from "@talla-ui/core";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import type { TestRenderer } from "./TestRenderer.js";
 

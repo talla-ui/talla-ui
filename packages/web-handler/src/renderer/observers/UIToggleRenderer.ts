@@ -1,4 +1,4 @@
-import { RenderContext, UIToggle, ui } from "talla-ui";
+import { RenderContext, UIToggle, ui } from "@talla-ui/core";
 import { applyStyles } from "../../style/DOMStyle.js";
 import { CLASS_TOGGLE, CLASS_TOGGLE_TYPE } from "../../style/defaults/css.js";
 import { BaseObserver } from "./BaseObserver.js";

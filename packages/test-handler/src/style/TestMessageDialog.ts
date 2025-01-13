@@ -7,7 +7,7 @@ import {
 	ui,
 	UITheme,
 	ViewComposite,
-} from "talla-ui";
+} from "@talla-ui/core";
 
 /** @internal Limited implementation of a message dialog controller, that can be used to test for message display and button presses */
 export class TestMessageDialog

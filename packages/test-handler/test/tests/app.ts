@@ -8,7 +8,7 @@ import {
 	ViewEvent,
 	app,
 	ui,
-} from "talla-ui";
+} from "@talla-ui/core";
 import { describe, expect, test, useTestContext } from "../../dist/index.js";
 // ... from "@talla-ui/test-handler"
 

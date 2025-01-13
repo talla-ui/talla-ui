@@ -1,4 +1,4 @@
-import { RenderContext, UISeparator } from "talla-ui";
+import { RenderContext, UISeparator } from "@talla-ui/core";
 import { applyStyles, getCSSLength } from "../../style/DOMStyle.js";
 import {
 	CLASS_SEPARATOR_LINE,

@@ -1,4 +1,4 @@
-import { RenderContext, UILabel, ui } from "talla-ui";
+import { RenderContext, UILabel, ui } from "@talla-ui/core";
 import { TestOutputElement } from "../app/TestOutputElement.js";
 import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 

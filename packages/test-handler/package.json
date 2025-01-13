@@ -2,7 +2,8 @@
 	"name": "@talla-ui/test-handler",
 	"version": "4.0.0-dev.59",
 	"publishConfig": {
-		"tag": "next"
+		"tag": "next",
+		"access": "public"
 	},
 	"description": "Tälla UI framework: test handler and library",
 	"author": "Jelmer Cormont",
@@ -36,9 +37,9 @@
 		"dist"
 	],
 	"peerDependencies": {
-		"talla-ui": "4.0.0-dev.59"
+		"@talla-ui/core": "4.0.0-dev.59"
 	},
 	"devDependencies": {
-		"talla-ui": "file:../core"
+		"@talla-ui/core": "file:../core"
 	}
 }

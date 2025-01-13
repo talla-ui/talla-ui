@@ -10,7 +10,7 @@ import {
 	UITextField,
 	UIToggle,
 	View,
-} from "talla-ui";
+} from "@talla-ui/core";
 import { BaseObserver } from "./BaseObserver.js";
 import { UIButtonRenderer } from "./UIButtonRenderer.js";
 import { UICellRenderer } from "./UICellRenderer.js";

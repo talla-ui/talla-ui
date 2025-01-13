@@ -1,4 +1,4 @@
-import { RenderContext, app, View } from "talla-ui";
+import { RenderContext, app, View } from "@talla-ui/core";
 import { CLASS_OVERLAY_WRAPPER } from "./css.js";
 
 // Note: it's tempting to come up with some dazzling effects here,

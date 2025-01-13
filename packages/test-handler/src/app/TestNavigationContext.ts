@@ -1,4 +1,4 @@
-import { NavigationContext, NavigationTarget } from "talla-ui";
+import { NavigationContext, NavigationTarget } from "@talla-ui/core";
 import { TestContextOptions } from "./TestContext.js";
 
 /**

@@ -6,7 +6,7 @@ import {
 	UIColor,
 	UIIconResource,
 	UILabel,
-} from "talla-ui";
+} from "@talla-ui/core";
 import {
 	applyStyles,
 	getCSSLength,

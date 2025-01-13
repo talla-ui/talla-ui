@@ -1,4 +1,4 @@
-import { UIIconResource } from "talla-ui";
+import { UIIconResource } from "@talla-ui/core";
 
 function _mk(name: string, content: string, mirror = false, size = 48) {
 	return [

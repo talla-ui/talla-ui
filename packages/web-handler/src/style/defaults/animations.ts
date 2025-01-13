@@ -1,4 +1,4 @@
-import { RenderContext } from "talla-ui";
+import { RenderContext } from "@talla-ui/core";
 
 /** @internal Default set of animations */
 export const animations: [

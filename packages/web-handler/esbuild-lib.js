@@ -62,7 +62,7 @@ await Promise.all([buildTarget("es2022"), buildTarget("es2015")]);
 
 // Create appropriate .d.ts files to reference dist folder
 let exports = `
-export * from "talla-ui";
+export * from "@talla-ui/core"
 export * from "@talla-ui/web-handler";
 `.trim();
 let declareGlobal = `

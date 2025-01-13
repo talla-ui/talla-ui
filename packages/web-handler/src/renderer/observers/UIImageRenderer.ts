@@ -1,4 +1,4 @@
-import { RenderContext, UIImage, ui } from "talla-ui";
+import { RenderContext, UIImage, ui } from "@talla-ui/core";
 import { BaseObserver } from "./BaseObserver.js";
 import { applyStyles } from "../../style/DOMStyle.js";
 

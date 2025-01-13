@@ -1,4 +1,4 @@
-import { RenderContext } from "talla-ui";
+import { RenderContext } from "@talla-ui/core";
 
 /** Running ID for generated elements */
 let _uid = 1;

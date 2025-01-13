@@ -1,4 +1,4 @@
-import { UIColor } from "talla-ui";
+import { UIColor } from "@talla-ui/core";
 
 /** @internal Default set of colors */
 export const colors: [name: string, color: UIColor][] = [
