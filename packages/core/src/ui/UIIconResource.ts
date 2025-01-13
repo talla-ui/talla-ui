@@ -9,33 +9,42 @@ import { app } from "../app/index.js";
 export class UIIconResource {
 	/**
 	 * Creates a new icon object
-	 * @param content The icon content as SVG, HTML, or plain text; or a reference to a dynamic theme icon, defined in {@link UITheme.icons}.
+	 * @param id The icon name, for referencing a theme icon (see {@link UITheme.icons})
+	 * @param content The icon content as SVG, HTML, or plain text
 	 */
-	constructor(content: string) {
-		this._content = String(content);
+	constructor(id: string, content?: string) {
+		this._id = id;
+		if (content) this._content = String(content);
 	}
 
-	/** Indicate that this icon should be mirrored in RTL mode */
-	setMirrorRTL() {
-		this._mRTL = true;
+	/**
+	 * Indicate that this icon should be mirrored in RTL mode
+	 * @param mirror True if this icon should be mirrored in RTL mode, may be omitted (default is true)
+	 */
+	setMirrorRTL(mirror = true) {
+		this._mRTL = mirror;
 		return this;
 	}
 
 	/** True if this icon should be mirrored in RTL mode */
 	isMirrorRTL(): boolean {
-		if (this._mRTL) return true;
-		let themeIcon = app.theme?.icons.get(this._content);
-		if (themeIcon) return themeIcon.isMirrorRTL();
-		return false;
+		return (this._mRTL ?? this._getThemeIcon()?.isMirrorRTL()) || false;
 	}
 
 	/** Returns the icon content string, i.e. SVG, HTML, or plain text */
-	toString(): string {
-		let result = this._content;
-		return String(app.theme?.icons.get(result) || result);
+	toString() {
+		return String(this._content || this._getThemeIcon() || "");
 	}
 
-	private _content: string;
+	_getThemeIcon() {
+		if (this._id) {
+			let icon = app.theme?.icons.get(this._id);
+			if (icon !== this) return icon;
+		}
+	}
+
+	private _id: string;
+	private _content?: string;
 	private _mRTL?: boolean;
 }
 

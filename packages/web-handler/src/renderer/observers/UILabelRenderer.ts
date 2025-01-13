@@ -227,6 +227,8 @@ function getIconElt(content: TextContentProperties) {
 	if (!iconElement) iconElement = document.createTextNode("");
 	if (String(iconElement.nodeName).toLowerCase() === "svg") {
 		let elt = iconElement as HTMLElement;
+		elt.removeAttribute("width");
+		elt.removeAttribute("height");
 		if (elt.hasAttribute("stroke")) {
 			elt.style.stroke = "currentColor";
 		} else {

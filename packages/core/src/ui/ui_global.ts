@@ -109,7 +109,8 @@ _ui.color = function (name: string) {
 	return result;
 } as any; // constants added below
 
-_ui.icon = function (name: string) {
+_ui.icon = function (name: string, content?: string) {
+	if (content) return new UIIconResource(name, content);
 	let result = _iconCache.get(name);
 	if (!result) {
 		result = new UIIconResource(name);

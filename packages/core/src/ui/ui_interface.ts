@@ -339,7 +339,7 @@ export interface ui {
 	 * @see {@link UIIconResource}
 	 */
 	icon: {
-		(name: string): UIIconResource;
+		(name: string, content?: string): UIIconResource;
 		readonly BLANK: UIIconResource;
 		readonly CLOSE: UIIconResource;
 		readonly CHECK: UIIconResource;

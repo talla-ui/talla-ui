@@ -1,6 +1,7 @@
 (function () {
 	const { ui, useWebContext } = tallaUI;
 	const globeIcon = ui.icon(
+		"globe",
 		`<svg width="24" height="24"><use href="/globe.svg#icon"></use></svg>`,
 	);
 
