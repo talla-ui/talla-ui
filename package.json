@@ -68,7 +68,7 @@
 		"www-serve": "cd docs && npm run serve",
 		"www-build-site-only": "cd docs && npm run build:site",
 		"version": "node scripts/set-version.js && npm install && npm run build && git add .",
-		"publish-all": "concurrently npm:publish:core && concurrently npm:publish:packages:*",
+		"publish-all": "concurrently npm:publish:core && concurrently npm:publish:packages:* && npm publish --silent",
 		"publish:core": "cd packages/core && npm publish --silent",
 		"publish:packages:test-handler": "cd packages/test-handler && npm publish --silent",
 		"publish:packages:web-handler": "cd packages/web-handler && npm publish --silent",
