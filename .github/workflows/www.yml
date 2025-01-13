@@ -16,7 +16,6 @@ jobs:
         with:
           node-version: 20
       - uses: actions/configure-pages@v4
-      - run: npm install
       - run: npm run build
       - run: npm run www-build
       - uses: actions/upload-pages-artifact@v3

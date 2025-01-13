@@ -35,8 +35,8 @@ Development of most of the published packages happens in this repository, with a
 
 Run the following commands from the _root_ repository folder to build and test the source code.
 
-- `npm install` — this will also install and link up dependencies in package folders.
-- `npm run build` — this will build all packages in one go (but not documentation).
+- `npm run setup` — this will install NPM packages and link up internal dependencies in package folders.
+- `npm run build` — this will install and build all packages in one go (but not documentation).
 - `npm run www-build` — this will build the documentation (in the `docs` folder), can only be run after the above commands.
 - `npm run www-serve` — after running the `www-build` script, this serves the website locally.
 - `npm run check-format` — this is automatically run for new PRs, and checks source code formatting using Prettier.
