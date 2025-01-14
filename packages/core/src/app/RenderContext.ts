@@ -1,4 +1,4 @@
-import { ManagedObject } from "../base/index.js";
+import { ManagedObject, StringConvertible } from "../base/index.js";
 import { UIColor } from "../ui/index.js";
 import { invalidArgErr, safeCall } from "../errors.js";
 import { app } from "./app.js";
@@ -25,6 +25,8 @@ export abstract class RenderContext extends ManagedObject {
 	abstract clear(): this;
 	/** Re-renders output, and relocates existing mounted view output if needed */
 	abstract remount(): this;
+	/** Overrides the current window title, if supported */
+	abstract setTitle(title: StringConvertible): void;
 
 	/** Information about the current viewport (screen or window) */
 	abstract viewport: RenderContext.Viewport;

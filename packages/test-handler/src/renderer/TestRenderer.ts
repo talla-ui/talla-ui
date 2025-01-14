@@ -161,6 +161,9 @@ export class TestRenderer extends RenderContext {
 		return this.emitChange("Remount");
 	}
 
+	/** Does nothing (required by renderer class) */
+	setTitle() {}
+
 	/** Returns true if any output is currently rendered at all */
 	hasOutput() {
 		return !!this._root.content.length;

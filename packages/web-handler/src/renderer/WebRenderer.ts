@@ -2,6 +2,7 @@ import {
 	Activity,
 	AsyncTaskQueue,
 	RenderContext,
+	StringConvertible,
 	UIColor,
 	View,
 	app,
@@ -161,6 +162,11 @@ export class WebRenderer extends RenderContext {
 			mount.remount();
 		}
 		return this;
+	}
+
+	/** Sets the document title directly */
+	setTitle(title?: StringConvertible) {
+		document.title = String(title || "");
 	}
 
 	/** Enables or disables reduced motion mode (forces all transition timings to 0 if set) */
