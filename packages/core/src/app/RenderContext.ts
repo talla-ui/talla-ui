@@ -37,6 +37,21 @@ export abstract class RenderContext extends ManagedObject {
 		let t = this.transform(out);
 		if (t) await transformer.applyTransform(t);
 	}
+
+	/**
+	 * Renders a view as root, until the view object is unlinked
+	 * - This method is available as {@link AppContext.render app.render()}, which should typically be used instead.
+	 * @param view The view object to render
+	 * @param place Global rendering placement options
+	 * @returns A {@link RenderContext.ViewController} object that can be used to manage the rendered view
+	 */
+	render(view: View, place?: RenderContext.PlacementOptions) {
+		return new RenderContext.ViewController().render(
+			view,
+			this.getRenderCallback(),
+			place,
+		);
+	}
 }
 
 export namespace RenderContext {
@@ -287,11 +302,6 @@ export namespace RenderContext {
 	 * @docgen {hideconstructor}
 	 */
 	export class ViewController {
-		/** Creates a new view controller using the provided callback, if any */
-		constructor(callback?: RenderCallback) {
-			this.callback = callback;
-		}
-
 		/** The current render callback, if any */
 		callback?: RenderCallback;
 

@@ -101,7 +101,7 @@ export class AppContext extends ManagedObject {
 	 * - This object encapsulates the current location path, and coordinates automatic activation of activities based on their page ID.
 	 * @note To navigate around the application, use the {@link AppContext.navigate app.navigate()} and {@link AppContext.goBack app.goBack()} methods, rather than calling the methods of the navigation context directly.
 	 */
-	navigation = new NavigationContext();
+	navigation = this.attach(new NavigationContext());
 
 	/**
 	 * The global asynchronous task scheduler, an instance of {@link Scheduler}
@@ -233,9 +233,7 @@ export class AppContext extends ManagedObject {
 	 */
 	render(view: View, place?: RenderContext.PlacementOptions) {
 		if (!this.renderer) throw err(ERROR.Render_Unavailable);
-		return new RenderContext.ViewController(
-			this.renderer.getRenderCallback(),
-		).render(view, undefined, place || { mode: "page" });
+		return this.renderer.render(view, place || { mode: "page" });
 	}
 
 	/**

@@ -13,7 +13,7 @@ import type { AppContext } from "./AppContext.js";
 import { FormContext } from "./FormContext.js";
 import type { NavigationContext } from "./NavigationContext.js";
 import { NavigationTarget } from "./NavigationTarget.js";
-import { RenderContext } from "./RenderContext.js";
+import type { RenderContext } from "./RenderContext.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
 import { View } from "./View.js";
 
@@ -318,9 +318,7 @@ export class Activity extends ManagedObject {
 
 		// render view normally if placed
 		if (renderOptions.mode !== "none") {
-			new RenderContext.ViewController(
-				this._boundRenderer.getRenderCallback(),
-			).render(view, undefined, renderOptions);
+			this._boundRenderer.render(view, renderOptions);
 		}
 		return this;
 	}
