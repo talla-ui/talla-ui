@@ -7,6 +7,7 @@ import {
 import {
 	Binding,
 	BindingOrValue,
+	ManagedEvent,
 	ManagedList,
 	ManagedObject,
 	bind,
@@ -35,6 +36,30 @@ const $_list_bind_label = Symbol("list");
  */
 export const $list: Binding.Source<`item.${string}` | "item"> =
 	bind.$on($_list_bind_label);
+
+/**
+ * Type definition for an event that's emitted by a view within a {@link UIListView}
+ * - This event type includes the list item value that's associated with the event source view, in the event data object.
+ *
+ * @example
+ * // ... in an activity:
+ * onDeleteItem(e: UIListViewEvent<MyItem>) {
+ *   let item = e.data.listViewItem;
+ *   if (!(item instanceof MyItem)) return;
+ *   // ... do something with item (of type MyItem)
+ * }
+ *
+ * onDeleteNestedItem(e: UIListViewEvent<MyItem>) {
+ *   while (e && !(e.data.listViewItem instanceof MyItem)) e = e.inner;
+ *   // ... same as above
+ */
+export type UIListViewEvent<T = unknown> = ManagedEvent<
+	View,
+	Record<string, unknown> & {
+		/** The list item value that's associated with the event source view */
+		listViewItem: T;
+	}
+>;
 
 /**
  * A view composite that manages views for each item in a list of objects or values
@@ -105,31 +130,6 @@ export class UIListView<
 			list.attach(new Observer(list));
 			list.createView = () => containerBuilder?.create();
 		});
-	}
-
-	/**
-	 * Returns the list item for the view that contains the provided view object
-	 * - This method can be used to retrieve the item object that's related to the source of an event after it has propagated to a view composite or activity.
-	 * - If an object type (class) is specified, this method ensures that the return value is an instance of the specified type. If necessary, the item of a surrounding list (if nested) is checked instead.
-	 * @param view The view object that's located within a list view
-	 * @param type A constructor that's used to verify the resulting item object
-	 * @returns The item that was used to create the view, or undefined
-	 * @example
-	 * // ... in an activity:
-	 * onDeleteItem(e: ViewEvent) {
-	 *   let item = UIListView.getSourceItem(e.source, MyItem);
-	 *   // ... do something with item (of type MyItem
-	 *   // but may also be undefined, although not likely) ...
-	 * }
-	 */
-	static getSourceItem<T>(
-		view: ManagedObject,
-		type?: new (...args: any[]) => T,
-	): T | undefined {
-		let controller = UIListView.ItemControllerView.whence(view);
-		let item = controller?.item;
-		if (type ? item instanceof type : item) return item as any;
-		if (controller) return this.getSourceItem(controller, type);
 	}
 
 	/** Creates a new list view composite object */
@@ -397,7 +397,7 @@ export namespace UIListView {
 	};
 
 	/**
-	 * A managed object class containing a single list item value
+	 * @internal A managed object class containing a single list item value
 	 * @see {@link UIListView}
 	 * @see {@link UIListView.ItemControllerView}
 	 */
@@ -423,11 +423,25 @@ export namespace UIListView {
 		/**
 		 * Creates a new item controller view object
 		 * - This constructor is used by {@link UIListView} and should not be used directly by an application.
+		 * @hideconstructor
 		 */
-		constructor(item: TItem | ItemValueWrapper<TItem>, body: ViewBuilder) {
+		constructor(item: any, body: ViewBuilder) {
 			super();
 			this.item = item instanceof ItemValueWrapper ? item.value : item;
 			this.createView = () => body.create();
+		}
+
+		override delegate(event: ManagedEvent): true {
+			this.emit(
+				new ManagedEvent(
+					event.name,
+					event.source,
+					{ ...event.data, listViewItem: this.item },
+					this,
+					event,
+				),
+			);
+			return true;
 		}
 
 		/** @internal */

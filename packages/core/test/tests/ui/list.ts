@@ -5,6 +5,7 @@ import {
 	ManagedObject,
 	UILabel,
 	UIListView,
+	UIListViewEvent,
 	bind,
 	ui,
 } from "../../../dist/index.js";
@@ -149,12 +150,13 @@ describe("UIListView", (scope) => {
 				if (!delegate || !(delegate instanceof UIListView.ItemControllerView)) {
 					return t.fail("Invalid event delegate");
 				}
-				let item = UIListView.getSourceItem(event.source, NamedObject);
+				let data = (event as UIListViewEvent).data;
+				let item = data.listViewItem;
 				if (!item || !(item instanceof NamedObject)) {
 					return t.fail("Invalid item object");
 				}
 				if (item !== delegate.item) {
-					return t.fail("Note the same item object");
+					return t.fail("Not the same item object");
 				}
 				t.count(delegate.item.name);
 			}
