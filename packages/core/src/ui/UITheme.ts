@@ -1,12 +1,11 @@
 import {
 	MessageDialogOptions,
+	ModalMenuOptions,
 	View,
 	app,
 	type RenderContext,
 } from "../app/index.js";
-import { ConfigOptions, type StringConvertible } from "../base/index.js";
 import type { UIColor } from "./UIColor.js";
-import type { UIComponent } from "./UIComponent.js";
 import type { UIIconResource } from "./UIIconResource.js";
 import { UIStyle } from "./UIStyle.js";
 
@@ -147,7 +146,7 @@ export namespace UITheme {
 			options: MessageDialogOptions,
 		) => ConfirmDialogController;
 		/** A factory method that returns an instance that implements the {@link MenuController} interface, using the provided menu options */
-		buildMenu?: (options: MenuOptions) => MenuController;
+		buildMenu?: (options: ModalMenuOptions) => MenuController;
 	}
 
 	/**
@@ -190,51 +189,5 @@ export namespace UITheme {
 		showAsync(
 			place?: Partial<RenderContext.PlacementOptions>,
 		): Promise<{ key: string } | undefined>;
-	}
-
-	/**
-	 * An object that represents a menu item, used by {@link UITheme.MenuController}
-	 * - Each item represents either a selectable menu item (with key), or a separator.
-	 */
-	export type MenuItem =
-		| {
-				key: string;
-				text?: StringConvertible;
-				icon?: UIIconResource;
-				iconSize?: string | number;
-				hint?: StringConvertible;
-				hintIcon?: UIIconResource;
-				hintIconSize?: string | number;
-				labelStyle?: UIComponent.TextStyle;
-				hintStyle?: UIComponent.TextStyle;
-				disabled?: boolean;
-				separate?: never;
-		  }
-		| {
-				key?: never;
-				separate: true;
-		  };
-
-	/**
-	 * A class that contains options for the display of a modal menu
-	 * @see {@link UITheme.MenuController}
-	 */
-	export class MenuOptions extends ConfigOptions {
-		/**
-		 * Creates a new object with the specified options
-		 * @param items List of items to be included in the menu
-		 * @param width Target width of the menu, in pixels or CSS length with unit (optional)
-		 */
-		constructor(items: MenuItem[] = [], width?: string | number) {
-			super();
-			this.items = items;
-			this.width = width;
-		}
-
-		/** List of items to be included in the menu */
-		items: MenuItem[];
-
-		/** Target width of the menu, in pixels or CSS length with unit */
-		width?: string | number;
 	}
 }

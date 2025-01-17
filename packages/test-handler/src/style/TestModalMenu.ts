@@ -1,5 +1,6 @@
 import {
 	app,
+	ModalMenuOptions,
 	RenderContext,
 	UICell,
 	UILabel,
@@ -13,7 +14,7 @@ export class TestModalMenu
 	extends ViewComposite
 	implements UITheme.MenuController
 {
-	constructor(public options: UITheme.MenuOptions) {
+	constructor(public options: ModalMenuOptions) {
 		super();
 	}
 

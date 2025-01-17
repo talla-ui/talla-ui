@@ -8,16 +8,17 @@ import { ERROR, err, safeCall, setErrorHandler } from "../errors.js";
 import { UITheme } from "../ui/UITheme.js";
 import { Activity } from "./Activity.js";
 import { ActivityList } from "./ActivityList.js";
-import { LocalData } from "./LocalData.js";
+import { $_app_bind_label } from "./app_binding.js";
 import type { I18nProvider } from "./I18nProvider.js";
+import { LocalData } from "./LocalData.js";
 import { LogWriter } from "./LogWriter.js";
 import { MessageDialogOptions } from "./MessageDialogOptions.js";
+import { ModalMenuOptions } from "./ModalMenuOptions.js";
 import { NavigationContext } from "./NavigationContext.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { RenderContext } from "./RenderContext.js";
 import { Scheduler } from "./Scheduler.js";
 import type { View } from "./View.js";
-import { $_app_bind_label } from "./app_binding.js";
 
 /** @internal Counter that blocks multiple invocations of AppContext constructor */
 let once = 0;
@@ -298,17 +299,17 @@ export class AppContext extends ManagedObject {
 	 *
 	 * @note Use {@link strf} to translate item labels if necessary; this method doesn't localize strings by default.
 	 *
-	 * @param config An instance of {@link UITheme.MenuOptions}, including a list of menu items; or a callback function to set options for the menu to be displayed
+	 * @param config An instance of {@link ModalMenuOptions}, including a list of menu items; or a callback function to set options for the menu to be displayed
 	 * @param ref The related UI component
 	 * @returns A promise that resolves to the selected item key, if any
 	 * @error This method throws an error if the theme modal menu controller can't be initialized (i.e. there's no current theme, or the theme doesn't support modal menu views).
 	 */
 	async showModalMenuAsync(
-		config: ConfigOptions.Arg<UITheme.MenuOptions>,
+		config: ConfigOptions.Arg<ModalMenuOptions>,
 		ref?: { lastRenderOutput?: RenderContext.Output },
 	) {
 		let controller = this.theme?.modalFactory?.buildMenu?.(
-			UITheme.MenuOptions.init(config),
+			ModalMenuOptions.init(config),
 		);
 		if (!controller) throw err(ERROR.Render_NoModal);
 		let result = await controller.showAsync({

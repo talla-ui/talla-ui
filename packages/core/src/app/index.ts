@@ -12,6 +12,7 @@ export * from "./FormContext.js";
 export * from "./LogWriter.js";
 export * from "./LocalData.js";
 export * from "./MessageDialogOptions.js";
+export * from "./ModalMenuOptions.js";
 export * from "./AppContext.js";
 export * from "./app_binding.js";
 export * from "./app.js";

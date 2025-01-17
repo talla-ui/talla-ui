@@ -10,6 +10,7 @@ import {
 	Activity,
 	LocalData,
 	MessageDialogOptions,
+	ModalMenuOptions,
 	NavigationTarget,
 	UIButton,
 	UICell,
@@ -320,7 +321,7 @@ describe("TestContext", () => {
 			t.render(button);
 			await t.expectOutputAsync({ type: "button" });
 			let p = app.showModalMenuAsync(
-				new UITheme.MenuOptions([
+				new ModalMenuOptions([
 					{ key: "one", text: "One" },
 					{ key: "two", text: "Two" },
 				]),

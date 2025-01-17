@@ -1,5 +1,6 @@
 import {
 	ConfigOptions,
+	ModalMenuOptions,
 	RenderContext,
 	UICell,
 	UIColumn,
@@ -95,7 +96,7 @@ export class WebModalMenuStyles extends ConfigOptions {
 export class ModalMenu extends ViewComposite implements UITheme.MenuController {
 	static styles = new WebModalMenuStyles();
 
-	constructor(public options: UITheme.MenuOptions) {
+	constructor(public options: ModalMenuOptions) {
 		super();
 	}
 

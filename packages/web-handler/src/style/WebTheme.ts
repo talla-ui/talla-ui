@@ -1,4 +1,9 @@
-import { MessageDialogOptions, UITheme, View } from "@talla-ui/core";
+import {
+	MessageDialogOptions,
+	ModalMenuOptions,
+	UITheme,
+	View,
+} from "@talla-ui/core";
 import { WebContextOptions } from "../WebContext.js";
 import {
 	importStylesheets,
@@ -33,7 +38,7 @@ export class ModalFactory implements UITheme.ModalControllerFactory {
 	buildConfirmDialog(options: MessageDialogOptions) {
 		return new MessageDialog(options).setConfirmButtons();
 	}
-	buildMenu(options: UITheme.MenuOptions) {
+	buildMenu(options: ModalMenuOptions) {
 		return new ModalMenu(options);
 	}
 }
