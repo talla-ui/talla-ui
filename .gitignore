@@ -5,5 +5,6 @@ node_modules/
 build/
 .test-run/
 .coverage/
+coverage/
 *.log
 npm-debug.log*

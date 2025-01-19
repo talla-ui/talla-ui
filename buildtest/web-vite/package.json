@@ -5,14 +5,14 @@
 	"type": "module",
 	"scripts": {
 		"start": "vite",
-		"test": "run-tests-esbuild src/test.ts"
+		"test": "vitest run --silent"
 	},
 	"devDependencies": {
 		"talla-ui": "../../",
 		"@talla-ui/web-handler": "../../packages/web-handler",
 		"@talla-ui/test-handler": "../../packages/test-handler",
-		"@talla-ui/run-tests-esbuild": "../../packages/run-tests-esbuild",
 		"typescript": "^5.4.5",
-		"vite": "^5.3.1"
+		"vite": "^6.0.7",
+		"vitest": "^3.0.2"
 	}
 }

@@ -26,7 +26,6 @@
 		"setup:core": "cd packages/core && npm install",
 		"setup:test": "cd packages/test-handler && npm install",
 		"setup:web": "cd packages/web-handler && npm install",
-		"setup:run-tests-esbuild": "cd packages/run-tests-esbuild && npm install",
 		"setup:docgen": "cd packages/docgen && npm install",
 		"setup:docs": "cd docs && npm install",
 		"build": "npm run setup && npm run build:core && npm run build:test && npm run build:web",
@@ -44,7 +43,6 @@
 		"test": "npm run test:test && npm run test:core",
 		"test:core": "cd packages/core && npm test",
 		"test:test": "cd packages/test-handler && npm test",
-		"test-c8": "c8 --report-dir=.coverage -r html npm run test",
 		"buildtest:web-esbuild": "cd buildtest/web-esbuild && npm install && npm start",
 		"buildtest:web-esm-tsc": "cd buildtest/web-esm-tsc && npm install && npm start",
 		"buildtest:web-esm-js": "cd buildtest/web-esm-js && npm install && npm start",
@@ -58,7 +56,6 @@
 		"check-format:core": "cd packages/core && npm run check-format",
 		"check-format:test": "cd packages/test-handler && npm run check-format",
 		"check-format:web": "cd packages/web-handler && npm run check-format",
-		"check-format:run-tests-esbuild": "cd packages/run-tests-esbuild && npm run check-format",
 		"check-format:docgen": "cd packages/docgen && npm run check-format",
 		"check-format:docs": "cd docs && npm run check-format",
 		"check-docs": "npm run build:docgen && npm run www-build:check-docs",
@@ -72,7 +69,6 @@
 		"publish:core": "cd packages/core && npm publish --silent",
 		"publish:packages:test-handler": "cd packages/test-handler && npm publish --silent",
 		"publish:packages:web-handler": "cd packages/web-handler && npm publish --silent",
-		"publish:packages:run-tests-esbuild": "cd packages/run-tests-esbuild && npm publish --silent",
 		"publish:packages:docgen": "cd packages/docgen && npm publish --silent"
 	},
 	"prettier": {
@@ -84,13 +80,13 @@
 	"devDependencies": {
 		"@talla-ui/core": "file:packages/core",
 		"@types/node": "20",
-		"c8": "latest",
 		"concurrently": "latest",
 		"esbuild": "^0.23.1",
 		"http-server": "latest",
 		"prettier": "^3.3.3",
 		"rimraf": "latest",
 		"tslib": "^2.7.0",
-		"typescript": "5.6"
+		"typescript": "5.6",
+		"vitest": "^3.0.2"
 	}
 }

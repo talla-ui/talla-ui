@@ -6,7 +6,7 @@ import {
 	UIStyle,
 	app,
 } from "@talla-ui/core";
-import { TestOutputElement } from "../app/TestOutputElement.js";
+import { TestOutputElement } from "../TestOutputElement.js";
 import type { TestRenderer } from "./TestRenderer.js";
 
 /** UI component event names that are used for basic platform events */

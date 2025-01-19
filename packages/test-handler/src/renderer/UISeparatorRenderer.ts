@@ -1,5 +1,5 @@
 import { RenderContext, UISeparator } from "@talla-ui/core";
-import { TestOutputElement } from "../app/TestOutputElement.js";
+import { TestOutputElement } from "../TestOutputElement.js";
 import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 
 /** @internal */

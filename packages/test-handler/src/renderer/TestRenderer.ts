@@ -5,10 +5,9 @@ import {
 	View,
 	app,
 } from "@talla-ui/core";
-import { OutputAssertion, OutputSelectFilter } from "../app/OutputAssertion.js";
-import type { TestContextOptions } from "../app/TestContext.js";
-import { TestOutputElement } from "../app/TestOutputElement.js";
-import { val2str } from "../log.js";
+import { OutputAssertion, OutputSelectFilter } from "../OutputAssertion.js";
+import type { TestContextOptions } from "../TestAppContext.js";
+import { TestOutputElement } from "../TestOutputElement.js";
 import { makeObserver } from "./observers.js";
 
 /** Max run time for scheduled render functions */
@@ -17,7 +16,7 @@ const MAX_SCHED_RUNTIME = 30;
 /**
  * A class that represents a rendered message dialog (for testing)
  * - This class can be used to validate the contents of a message dialog, and to click its buttons (asynchronously).
- * - To wait for a message dialog to be rendered, use the {@link TestCase.expectMessageDialogAsync()} method and use the returned object.
+ * - To wait for a message dialog to be rendered, use the {@link expectMessageDialogAsync()} method and use the returned object.
  * @docgen {hideconstructor}
  */
 export class RenderedTestMessageDialog {
@@ -62,7 +61,7 @@ export class RenderedTestMessageDialog {
 
 /**
  * A class that represents an in-memory application render context
- * - This class behaves mostly like a 'real' renderer, but only keeps rendered elements in memory. The elements can be queried and validated using e.g. {@link TestCase.expectOutputAsync()}.
+ * - This class behaves mostly like a 'real' renderer, but only keeps rendered elements in memory. The elements can be queried and validated using e.g. {@link expectOutputAsync()}.
  * @docgen {hideconstructor}
  */
 export class TestRenderer extends RenderContext {
@@ -78,6 +77,9 @@ export class TestRenderer extends RenderContext {
 			},
 		);
 	}
+
+	/** Flag for duck typing */
+	readonly isTestRenderer = true as const;
 
 	/** Test viewport information (not dynamic) */
 	viewport: RenderContext.Viewport = new TestViewport();
@@ -120,7 +122,7 @@ export class TestRenderer extends RenderContext {
 	/**
 	 * Attempts to set input focus to the specified element in the background
 	 * - This method is used by the UI component renderer. To acquire input focus, use the {@link UIComponent.requestFocus()} method instead of calling this method directly.
-	 * - Use a poll function or {@link TestCase.expectOutputAsync()} to wait until the element has received input focus.
+	 * - Use a poll function or {@link expectOutputAsync()} to wait until the element has received input focus.
 	 * @param element The output element to focus
 	 */
 	tryFocusElement(element?: TestOutputElement) {
@@ -185,7 +187,7 @@ export class TestRenderer extends RenderContext {
 
 	/**
 	 * Waits for output to be rendered, that matches the provided selection filter(s)
-	 * - To avoid casting {@link app} to get to the {@link TestRenderer} instance, use the {@link TestCase.expectOutputAsync()} method instead.
+	 * - To avoid casting {@link app} to get to the {@link TestRenderer} instance, use the {@link expectOutputAsync()} method instead.
 	 * @note This method is asynchronous, and **must** be `await`-ed in a test function.
 	 *
 	 * @summary
@@ -215,8 +217,28 @@ export class TestRenderer extends RenderContext {
 		...nested: OutputSelectFilter[]
 	) {
 		// prepare timeout error first, to capture accurate stack trace
+		function filterToString(f: OutputSelectFilter) {
+			let obj: Record<string, unknown> = { ...f };
+			function valueToString(key: string, v: unknown) {
+				switch (true) {
+					case v === undefined:
+						return "undefined";
+					case v === null:
+					case typeof v === "string":
+					case typeof v === "number":
+					case typeof v === "boolean":
+						return JSON.stringify(v);
+					default:
+						return "<" + key + ">";
+				}
+			}
+			for (let k of ["element", "icon", "source", "value"]) {
+				if (obj[k]) obj[k] = valueToString(k, obj[k]);
+			}
+			return JSON.stringify(obj);
+		}
 		let timeoutError = Error(
-			"expectOutputAsync timeout: " + val2str([select, ...nested]),
+			"expectOutputAsync timeout: " + [select, ...nested].map(filterToString),
 		);
 
 		// start polling
@@ -243,7 +265,7 @@ export class TestRenderer extends RenderContext {
 
 	/**
 	 * Waits for an alert or confirmation dialog to be rendered, that contains the provided label(s)
-	 * - To avoid casting {@link app} to get to the {@link TestRenderer} instance, use the {@link TestCase.expectMessageDialogAsync()} method instead.
+	 * - To avoid casting {@link app} to get to the {@link TestRenderer} instance, use the {@link expectMessageDialogAsync()} method instead.
 	 * @note This method is asynchronous, and **must** be `await`-ed in a test function.
 	 *
 	 * @summary

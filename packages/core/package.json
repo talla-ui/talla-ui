@@ -18,13 +18,11 @@
 	"module": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"clean": "rimraf .coverage dist .test-run",
+		"clean": "rimraf dist",
 		"prebuild": "npm run clean",
 		"build": "tsc -p src",
 		"postbuild": "prettier --log-level error --write \"dist/**/*.d.ts\"",
-		"pretest": "tsc -p test",
-		"test": "node .test-run",
-		"posttest": "rimraf .test-run",
+		"test": "vitest run --silent",
 		"check-format": "prettier --check \"{src,test}/**/*.{ts,tsx}\""
 	},
 	"prettier": {
