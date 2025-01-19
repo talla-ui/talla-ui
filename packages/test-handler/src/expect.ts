@@ -3,7 +3,7 @@ import { OutputAssertion, OutputSelectFilter } from "./OutputAssertion.js";
 import {
 	TestRenderer,
 	RenderedTestMessageDialog,
-} from "./renderer/TestRenderer";
+} from "./renderer/TestRenderer.js";
 import { TestOutputElement } from "./TestOutputElement.js";
 
 /** @internal Retrieves app.renderer typed as TestRenderer */
