@@ -1,4 +1,4 @@
-import { RenderContext, View, ViewBuilder } from "../../app/index.js";
+import { app, RenderContext, View, ViewBuilder } from "../../app/index.js";
 
 /**
  * A view composite that automatically creates and unlinks the contained view
@@ -69,6 +69,7 @@ export class UIConditionalView extends View {
 		if (!callback && this.body === this._renderer?.lastView) return this;
 
 		// use given callback to (re-) render view
+		this._renderer ||= new RenderContext.ViewController(app.renderer);
 		this._renderer.render(this.body, callback);
 		return this;
 	}
@@ -103,5 +104,5 @@ export class UIConditionalView extends View {
 	}
 
 	/** Stateful renderer wrapper, handles content component */
-	private _renderer = new RenderContext.ViewController();
+	private _renderer?: RenderContext.ViewController;
 }

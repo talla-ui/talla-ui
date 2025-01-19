@@ -1,7 +1,7 @@
 import { ManagedEvent, ManagedObject } from "../base/index.js";
 import { invalidArgErr, safeCall } from "../errors.js";
 import { Activity } from "./Activity.js";
-import { app } from "./app.js";
+import { ActivityList } from "./ActivityList.js";
 import type { NavigationTarget } from "./NavigationTarget.js";
 
 /**
@@ -12,6 +12,27 @@ import type { NavigationTarget } from "./NavigationTarget.js";
  * @docgen {hideconstructor}
  */
 export class NavigationContext extends ManagedObject {
+	/** Creates a new instance; do not use directly */
+	constructor(activities: ActivityList) {
+		super();
+		this._activities = activities;
+
+		// listen for new activities on the activity list until unlinked
+		activities.listen({
+			init: (_: unknown, stop: () => void) => {
+				this.listen({ unlinked: stop });
+			},
+			handler: (_: unknown, event: ManagedEvent) => {
+				if (
+					event.data.added instanceof Activity &&
+					typeof event.data.added.navigationPageId === "string"
+				) {
+					this._checkPage(event.data.added);
+				}
+			},
+		});
+	}
+
 	/** The current page location, read-only */
 	get pageId() {
 		return this._pageId;
@@ -51,14 +72,6 @@ export class NavigationContext extends ManagedObject {
 		detail = String(detail || "");
 		if (/^\.|[\/\\]/.test(pageId)) throw invalidArgErr("pageId");
 
-		// ensure that a change listener has already been set up
-		if (!this._changeListener) {
-			this._changeListener = new NavigationContext.ChangeListener(
-				this,
-				app.activities,
-			);
-		}
-
 		// set internal values and emit change first
 		this._pageId = pageId;
 		this._detail = detail;
@@ -66,7 +79,7 @@ export class NavigationContext extends ManagedObject {
 
 		// find matching page from all root activities
 		let matched = false;
-		for (let activity of app.activities) {
+		for (let activity of this._activities) {
 			if (typeof activity.navigationPageId !== "string") continue;
 			if (this._checkPage(activity)) matched = true;
 		}
@@ -123,28 +136,7 @@ export class NavigationContext extends ManagedObject {
 	private _pageId = "";
 	private _detail = "";
 	private _matchedPageId?: string;
-	private _changeListener?: unknown;
-
-	/** @internal Change listener to trigger checks when an activity is added */
-	static ChangeListener = class {
-		constructor(
-			public ctx: NavigationContext,
-			activities: ManagedObject,
-		) {
-			activities.listen(this);
-		}
-		init(_: unknown, stop: () => void) {
-			this.ctx.listen({ unlinked: stop });
-		}
-		handler(_: unknown, event: ManagedEvent) {
-			if (
-				event.data.added instanceof Activity &&
-				typeof event.data.added.navigationPageId === "string"
-			) {
-				this.ctx._checkPage(event.data.added);
-			}
-		}
-	};
+	private _activities: ActivityList;
 }
 
 export namespace NavigationContext {

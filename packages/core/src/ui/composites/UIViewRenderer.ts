@@ -1,4 +1,4 @@
-import { RenderContext, View, ViewBuilder } from "../../app/index.js";
+import { app, RenderContext, View, ViewBuilder } from "../../app/index.js";
 import { Binding, ManagedEvent } from "../../base/index.js";
 import { invalidArgErr } from "../../errors.js";
 
@@ -63,9 +63,7 @@ export class UIViewRenderer extends View {
 		if (!callback && this.view === this._renderer?.lastView) return this;
 
 		// use given callback to (re-) render view
-		if (!this._renderer) {
-			this._renderer = new RenderContext.ViewController();
-		}
+		this._renderer ||= new RenderContext.ViewController(app.renderer);
 		this._renderer.render(this.view, callback);
 		return this;
 	}

@@ -1,4 +1,8 @@
-import { NavigationContext, NavigationTarget } from "@talla-ui/core";
+import {
+	ActivityList,
+	NavigationContext,
+	NavigationTarget,
+} from "@talla-ui/core";
 import { TestContextOptions } from "./TestAppContext.js";
 
 /**
@@ -7,8 +11,8 @@ import { TestContextOptions } from "./TestAppContext.js";
  */
 export class TestNavigationContext extends NavigationContext {
 	/** Creates a new navigation controller instance, used by `useTestContext()` */
-	constructor(options: TestContextOptions) {
-		super();
+	constructor(activities: ActivityList, options: TestContextOptions) {
+		super(activities);
 		this._delay = options.navigationDelay;
 		this.userNavigation(options.navigationPageId, options.navigationDetail);
 	}

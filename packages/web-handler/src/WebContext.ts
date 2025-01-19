@@ -162,11 +162,9 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 
 	// create navigation path
 	app.navigation.unlink();
-	if (options.useHistoryAPI) {
-		app.navigation = new WebHistoryNavigationContext(options);
-	} else {
-		app.navigation = new WebHashNavigationContext(options);
-	}
+	app.navigation = options.useHistoryAPI
+		? new WebHistoryNavigationContext(app.activities, options)
+		: new WebHashNavigationContext(app.activities, options);
 
 	// enable hot module reload for activities
 	// handle is either module, module.hot, or import.meta.hot

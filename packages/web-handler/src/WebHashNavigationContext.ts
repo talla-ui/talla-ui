@@ -1,4 +1,8 @@
-import { NavigationContext, NavigationTarget, app } from "@talla-ui/core";
+import {
+	ActivityList,
+	NavigationContext,
+	NavigationTarget,
+} from "@talla-ui/core";
 import { type WebContextOptions } from "./WebContext.js";
 
 /** Global flag for global (window) event listener, see constructor */
@@ -12,8 +16,8 @@ let _eventListenerAdded = false;
  */
 export class WebHashNavigationContext extends NavigationContext {
 	/** Creates a new instance; do not use directly */
-	constructor(options: WebContextOptions) {
-		super();
+	constructor(activities: ActivityList, options: WebContextOptions) {
+		super(activities);
 		this._basePath = options.basePath.replace(/^[#\/]+/, "");
 
 		// insert initial history entries if needed
@@ -36,10 +40,7 @@ export class WebHashNavigationContext extends NavigationContext {
 		// set event listener for direct navigation
 		if (!_eventListenerAdded) {
 			window.addEventListener("hashchange", () => {
-				let self = app.navigation;
-				if (self instanceof WebHashNavigationContext) {
-					self.update();
-				}
+				if (!this.isUnlinked()) this.update();
 			});
 			_eventListenerAdded = true;
 		}

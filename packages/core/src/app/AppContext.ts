@@ -5,7 +5,7 @@ import {
 	StringConvertible,
 } from "../base/index.js";
 import { ERROR, err, safeCall, setErrorHandler } from "../errors.js";
-import { UITheme } from "../ui/UITheme.js";
+import type { UITheme } from "../ui/UITheme.js";
 import { Activity } from "./Activity.js";
 import { ActivityList } from "./ActivityList.js";
 import { $_app_bind_label } from "./app_binding.js";
@@ -53,7 +53,7 @@ export class AppContext extends ManagedObject {
 		(this as any)[$_app_bind_label] = true;
 
 		// set renderer property to undefined, to enable bindings
-		(this as any).renderer = undefined;
+		this.renderer = undefined;
 
 		// define i18n property and handle new objects when set
 		let i18n: I18nProvider | undefined;
@@ -102,7 +102,7 @@ export class AppContext extends ManagedObject {
 	 * - This object encapsulates the current location path, and coordinates automatic activation of activities based on their page ID.
 	 * @note To navigate around the application, use the {@link AppContext.navigate app.navigate()} and {@link AppContext.goBack app.goBack()} methods, rather than calling the methods of the navigation context directly.
 	 */
-	navigation = this.attach(new NavigationContext());
+	navigation = new NavigationContext(this.activities);
 
 	/**
 	 * The global asynchronous task scheduler, an instance of {@link Scheduler}

@@ -1,7 +1,6 @@
 import { ManagedObject, StringConvertible } from "../base/index.js";
-import { UIColor } from "../ui/index.js";
-import { invalidArgErr, safeCall } from "../errors.js";
-import { app } from "./app.js";
+import type { UIColor } from "../ui/index.js";
+import { errorHandler, invalidArgErr, safeCall } from "../errors.js";
 import { View } from "./View.js";
 
 /**
@@ -48,7 +47,7 @@ export abstract class RenderContext extends ManagedObject {
 	 * @returns A {@link RenderContext.ViewController} object that can be used to manage the rendered view
 	 */
 	render(view: View, place?: RenderContext.PlacementOptions) {
-		return new RenderContext.ViewController().render(
+		return new RenderContext.ViewController(this).render(
 			view,
 			this.getRenderCallback(),
 			place,
@@ -304,6 +303,14 @@ export namespace RenderContext {
 	 * @docgen {hideconstructor}
 	 */
 	export class ViewController {
+		/** Creates a new view controller */
+		constructor(renderer?: RenderContext) {
+			this.renderer = renderer;
+		}
+
+		/** The relevant render context for this controller */
+		renderer?: RenderContext;
+
 		/** The current render callback, if any */
 		callback?: RenderCallback;
 
@@ -353,7 +360,9 @@ export namespace RenderContext {
 			return safeCall(async () => {
 				if (!this.callback) return;
 				let animation = out?.place?.transform?.hide;
-				if (animation) await app.animateAsync(this, animation);
+				if (animation) {
+					await this.renderer?.animateAsync(out!, animation);
+				}
 				if (seq === this._seq) await this._clear();
 			});
 		}
@@ -366,7 +375,11 @@ export namespace RenderContext {
 					this.callback = callback(output, afterRender);
 					this.lastRenderOutput = output;
 					let animation = output?.place?.transform?.show;
-					if (animation) app.animateAsync(this, animation);
+					if (animation) {
+						this.renderer?.animateAsync(output!, animation).catch((e) => {
+							errorHandler(e);
+						});
+					}
 					seq = ++this._seq;
 				}
 				return cb;

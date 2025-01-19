@@ -2,6 +2,7 @@ import { useTestContext } from "@talla-ui/test-handler";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import {
 	Activity,
+	ActivityList,
 	app,
 	AppContext,
 	ManagedObject,
@@ -11,7 +12,7 @@ import {
 describe("NavigationContext standalone", () => {
 	let p: NavigationContext;
 	beforeEach(() => {
-		p = new NavigationContext();
+		p = new NavigationContext(new ActivityList());
 	});
 	afterEach(() => {
 		p.unlink();

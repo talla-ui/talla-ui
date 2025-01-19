@@ -1,4 +1,8 @@
-import { NavigationContext, NavigationTarget, app } from "@talla-ui/core";
+import {
+	ActivityList,
+	NavigationContext,
+	NavigationTarget,
+} from "@talla-ui/core";
 import { type WebContextOptions } from "./WebContext.js";
 
 /** Global flag for global (window) event listener, see constructor */
@@ -11,8 +15,8 @@ let _eventListenerAdded = false;
  * @docgen {hideconstructor}
  */
 export class WebHistoryNavigationContext extends NavigationContext {
-	constructor(options: WebContextOptions) {
-		super();
+	constructor(activities: ActivityList, options: WebContextOptions) {
+		super(activities);
 		this._basePath = options.basePath.replace(/^\//, "");
 
 		// insert initial history entries if needed
@@ -35,10 +39,7 @@ export class WebHistoryNavigationContext extends NavigationContext {
 		// set event listener for back/forward navigation
 		if (!_eventListenerAdded) {
 			window.addEventListener("popstate", () => {
-				let self = app.navigation;
-				if (self instanceof WebHistoryNavigationContext) {
-					self.update();
-				}
+				if (!this.isUnlinked()) this.update();
 			});
 			_eventListenerAdded = true;
 		}

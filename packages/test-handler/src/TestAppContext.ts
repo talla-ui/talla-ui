@@ -69,7 +69,7 @@ export function useTestContext(config?: ConfigOptions.Arg<TestContextOptions>) {
 
 	// create test navigation path and set initial path
 	app.navigation.unlink();
-	app.navigation = new TestNavigationContext(options);
+	app.navigation = new TestNavigationContext(app.activities, options);
 
 	// reset local data
 	app.localData = new LocalData();
