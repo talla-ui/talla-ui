@@ -1,4 +1,4 @@
-import { StringConvertible } from "./LazyString";
+import { StringConvertible } from "./LazyString.js";
 
 /** Checks if the provided value is an object (not an array or null) */
 function isObject(value: unknown): value is Record<string, unknown> {
