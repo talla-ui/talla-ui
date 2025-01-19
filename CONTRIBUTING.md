@@ -13,7 +13,7 @@ Welcome, and thanks for considering to help! There are a number of ways you can 
 
 ## Issues
 
-👉 If you believe you've found an issue, create a [GitHub issue](https://github.com/talla-ui/talla/issues) — make sure you include all necessary details including a minimal test case.
+👉 If you believe you've found an issue, create a [GitHub issue](https://github.com/talla-ui/talla-ui/issues) — make sure you include all necessary details including a minimal test case.
 
 ## Writing documentation
 

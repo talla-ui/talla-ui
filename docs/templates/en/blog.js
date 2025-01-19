@@ -46,7 +46,7 @@ export default async (html, data) => `
 				<a href="/docs/en/introduction.html" class="hide_narrow">About</a>
 				<a href="/docs/en/">Docs</a>
 				<a href="/docs/en/blog/blog.html"><b>Blog</b></a>
-				<a href="https://github.com/talla-ui/talla" target="_blank">
+				<a href="https://github.com/talla-ui/talla-ui" target="_blank">
 					<icon class="icon icon--github"></icon>
 				</a>
 			</div>
