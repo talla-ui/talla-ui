@@ -29,3 +29,8 @@ export const app = new AppContext();
 AppContext.setErrorHandler((err) => {
 	app.log.error(err);
 });
+
+import { Binding } from "../base/index.js";
+Binding.log_debug = (message, data) => {
+	app.log.debug(message, data);
+};

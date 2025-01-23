@@ -54,12 +54,8 @@ export namespace BindingOrValue {
  * @see {@link $bind}
  */
 export class Binding<T = any> {
-	/**
-	 * Static (global) debug handler for binding changes
-	 * - This handler is called whenever a binding is updated for which the {@link Binding.debug()} method was called.
-	 * - The handler is not set by default, and can be set to a function if needed (i.e. to analyze issues with bindings in development; do NOT use {@link Binding.debug()} or set this handler in a production application).
-	 */
-	declare static debugHandler?: (data: Binding.DebugUpdate) => void;
+	/** @internal Logs a binding debug message; set when app context is created */
+	static log_debug?: (message: string, data?: unknown) => void;
 
 	/**
 	 * Creates a new binding for given property and default value; use {@link $bind()} functions instead
@@ -331,8 +327,7 @@ export class Binding<T = any> {
 	}
 
 	/**
-	 * Adds a filter, to emit an event whenever the bound value changes.
-	 * - For every change, the {@link Binding.debugHandler} handler function is called with the new value and a boolean flag indicating whether the value is bound.
+	 * Adds a filter, to log a debug message whenever the bound value changes.
 	 * @returns The binding itself, with debug events enabled
 	 */
 	debug() {
@@ -341,13 +336,14 @@ export class Binding<T = any> {
 			let hasValue: boolean | undefined;
 			_apply(target, (value, bound) => {
 				hasValue = true;
-				Binding.debugHandler?.({ binding: this, value, bound });
+				Binding.log_debug?.(
+					this.toString() + (bound ? " =>" : " [not bound]"),
+					value,
+				);
 				update(value, bound);
 			});
 			setTimeout(() => {
-				if (!hasValue) {
-					Binding.debugHandler?.({ binding: this, bound: false });
-				}
+				if (!hasValue) Binding.log_debug?.(this.toString() + " [not bound]");
 			}, 1);
 		};
 		return this;
@@ -572,20 +568,6 @@ export namespace Binding {
 		readonly label?: string | symbol;
 		/** An optional list of property names that are prepended before all binding paths */
 		readonly prefix?: ReadonlyArray<string>;
-	};
-
-	/**
-	 * An object that's provided to the static debug handler, if any
-	 * @see {@link Binding.debug}
-	 * @see {@link Binding.debugHandler}
-	 */
-	export type DebugUpdate = {
-		/** The binding that has been updated */
-		binding: Binding;
-		/** The current value, if any */
-		value?: any;
-		/** True if the binding is currently bound to a source property */
-		bound: boolean;
 	};
 
 	/** A binding factory that creates {@link Binding} objects for a particular source */
