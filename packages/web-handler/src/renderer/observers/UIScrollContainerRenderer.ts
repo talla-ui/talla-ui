@@ -10,6 +10,10 @@ export class UIScrollContainerRenderer extends UIContainerRenderer<UIScrollConta
 
 		// add DOM onscroll handler
 		out.element.addEventListener("scroll", this._makeDOMScrollHandler());
+
+		// always make scroll container non-focusable
+		// (app should provide other ways to enable keyboard navigation)
+		out.element.tabIndex = -1;
 		return out;
 	}
 
