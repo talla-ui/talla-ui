@@ -22,8 +22,10 @@ beforeEach(() => {
 	});
 });
 
+// use private property from Binding to create mock app object
+const appLabel = ($navigation("pageId") as any)._label;
 const mockApp = Object.assign(new ManagedObject(), {
-	[($navigation as any)._label]: true,
+	[appLabel]: true,
 	add<T extends Activity>(a: T) {
 		return (this as any).attach(a) as T;
 	},

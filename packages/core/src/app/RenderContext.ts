@@ -129,7 +129,7 @@ export namespace RenderContext {
 	 *
 	 * @example
 	 * // Bind to viewport properties from a JSX view:
-	 * <conditional state={$viewport.bind("col3")}>
+	 * <conditional state={$viewport("col3")}>
 	 *   // ...view for wide viewports with at least 3 grid 'columns'
 	 * </conditional>
 	 */

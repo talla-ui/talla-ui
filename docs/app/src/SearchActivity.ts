@@ -1,4 +1,11 @@
-import { app, UIListView, UITextField, Activity, ViewEvent } from "talla-ui";
+import {
+	app,
+	UIListView,
+	UITextField,
+	Activity,
+	ViewEvent,
+	UIListViewEvent,
+} from "talla-ui";
 import { swapPageAsync } from "./swap";
 import { Search, SearchResult } from "./Search";
 import SearchView from "./SearchView";
@@ -68,8 +75,8 @@ export class SearchActivity extends Activity {
 		}
 	}
 
-	protected async onGoToResult(e: ViewEvent) {
-		let item = UIListView.getSourceItem(e.source, SearchResult);
-		if (item?.url) await swapPageAsync(item.url);
+	protected async onGoToResult(e: UIListViewEvent<SearchResult>) {
+		let item = e.data.listViewItem;
+		if (item.url) await swapPageAsync(item.url);
 	}
 }

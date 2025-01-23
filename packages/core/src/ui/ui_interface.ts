@@ -76,12 +76,12 @@ export interface ui {
 	 *
 	 * @note To enable JSX support for TypeScript projects, set the `jsxFactory` configuration to `ui.jsx`, and import `ui` in each `.tsx` file to allow the compiler to access it.
 	 *
-	 * **Bindings in label text** — Several JSX elements accept text content, namely `<label>`, `<button>`, `<toggle>`, and `<textfield>` (for placeholder text). This text is assigned to the `text`, `label`, or `placeholder` properties, and may consist of plain text and bindings (i.e. the result of {@link bind()}, refer to {@link Binding} for more information).
+	 * **Bindings in label text** — Several JSX elements accept text content, namely `<label>`, `<button>`, `<toggle>`, and `<textfield>` (for placeholder text). This text is assigned to the `text`, `label`, or `placeholder` properties, and may consist of plain text and bindings (i.e. the result of {@link $bind()}, refer to {@link Binding} for more information).
 	 *
-	 * As a shortcut within JSX text content, bindings may also be specified directly using `%[...]` syntax, which are used with {@link bind.strf()}. In addition, this syntax may be used with aliases and default string values:
+	 * As a shortcut within JSX text content, bindings may also be specified directly using `%[...]` syntax, which are used with {@link $strf()}. In addition, this syntax may be used with aliases and default string values:
 	 *
 	 * - `Foo: %[foo]` — inserts a binding for `foo`
-	 * - `Foo: %[foo:.2f]` — inserts a binding for `foo`, and uses {@link bind.strf()} to format the bound value as a number with 2 decimals
+	 * - `Foo: %[foo:.2f]` — inserts a binding for `foo`, and uses {@link $strf()} to format the bound value as a number with 2 decimals
 	 * - `Foo: %[foo=somePropertyName]` — inserts a binding for `somePropertyName`, but allows for localization of `Foo: %[foo]` instead
 	 * - `Foo: %[foo=another.propertyName:.2f]` — inserts a bindings for `another.propertyName`, but allows for localization of `Foo: %[foo:.2f]` instead.
 	 * - `Foo: %[foo=some.numProp:?||None]` — inserts a binding for `some.numProp`, but allows for localization of `Foo: %[foo:?||None]` instead (and inserts `None` if the value for `some.numProp` is undefined or an empty string).

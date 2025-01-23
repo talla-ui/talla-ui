@@ -10,7 +10,6 @@ import {
 	ManagedEvent,
 	ManagedList,
 	ManagedObject,
-	bind,
 } from "../../base/index.js";
 import { ERROR, err } from "../../errors.js";
 import { UIContainer, UIColumn, UIRow } from "../containers/index.js";
@@ -34,8 +33,9 @@ const $_list_bind_label = Symbol("list");
  * - The source object includes the `item` property that refers to the list item object, i.e. an element of the list passed to {@link UIListView}.
  * - Within a list item view, you can bind to properties of the list item object using e.g. `$list.string("item.name")`.
  */
-export const $list: Binding.Source<`item.${string}` | "item"> =
-	bind.$on($_list_bind_label);
+export const $list = Binding.createFactory<`item.${string}` | "item">(
+	$_list_bind_label,
+);
 
 /**
  * Type definition for an event that's emitted by a view within a {@link UIListView}
@@ -81,9 +81,9 @@ export class UIListView<
 			constructor(public list: UIListView) {
 				super();
 				let doUpdate = this.doUpdateAsync.bind(this);
-				bind("items.*").bindTo(this, doUpdate);
-				bind("firstIndex").bindTo(this, doUpdate);
-				bind("maxItems").bindTo(this, doUpdate);
+				new Binding("items.*").bindTo(this, doUpdate);
+				new Binding("firstIndex").bindTo(this, doUpdate);
+				new Binding("maxItems").bindTo(this, doUpdate);
 				this.doUpdateAsync();
 			}
 			override beforeUnlink() {

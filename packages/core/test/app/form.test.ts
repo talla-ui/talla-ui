@@ -121,7 +121,7 @@ test("Composite, binding to value and error", () => {
 	const MyComp = ViewComposite.define(
 		{ formContext: undefined as FormContext | undefined },
 		ui.row(
-			ui.label($view.bind("formContext.errors.foo.message")),
+			ui.label($view("formContext.errors.foo.message")),
 			ui.textField({ formField: "foo" }),
 		),
 	);
@@ -156,12 +156,12 @@ test("Custom form container, rendered", async () => {
 	const view = ui.row(
 		ui.use(
 			FormContainer,
-			{ formContext: $activity.bind("form1") },
+			{ formContext: $activity("form1") },
 			ui.textField({ formField: "text" }),
 		),
 		ui.use(
 			FormContainer,
-			{ formContext: $activity.bind("form2") },
+			{ formContext: $activity("form2") },
 			ui.textField({ formField: "text" }),
 		),
 	);

@@ -238,7 +238,7 @@ test("Composite with bound content", async () => {
 		}
 		foo: number = 0;
 		override defineView() {
-			return <label>{$view.bind("foo")}</label>;
+			return <label>{$view("foo")}</label>;
 		}
 	}
 	let instance = ui.use(MyView, { foo: 123 }).create();
@@ -278,10 +278,10 @@ test("Composite with bound content and text", async () => {
 	const MyView = ViewComposite.define(
 		{ foo: 0, bar: undefined as any },
 		<row>
-			<label>foo='{$view.bind("foo")}'</label>
+			<label>foo='{$view("foo")}'</label>
 			<label>bar='%[bar.foo]'</label>
 			<label>baz='%[baz=bar.baz:uc]'</label>
-			<label>nope_bound='{$view.bind("nope", "Nothing")}'</label>
+			<label>nope_bound='{$view("nope", "Nothing")}'</label>
 		</row>,
 	);
 	let builder = ui.use(MyView, { foo: 123, bar: { foo: 456, baz: "abc" } });

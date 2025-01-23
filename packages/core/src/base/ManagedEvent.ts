@@ -41,7 +41,7 @@ const NO_DATA = Object.freeze({});
  * // Handling delegated UI events
  * const BodyView = (
  *   ui.list(
- *     { items: bind("items") }
+ *     { items: $activity("items") }
  *     ui.row(
  *       // ...
  *       ui.button("Remove", { onClick: "RemoveItem" })

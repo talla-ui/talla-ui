@@ -75,7 +75,7 @@ export default (
 				</row>
 			</cell>
 			<cell
-				hidden={$activity.bind("hasInput").and("loading").not()}
+				hidden={$activity("hasInput").and("loading").not()}
 				padding={{ y: 32 }}
 			>
 				<label>Loading...</label>

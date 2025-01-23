@@ -21,7 +21,7 @@ export class TestDialog
 		return ui
 			.cell(
 				ui.renderView({
-					view: $view.bind("dialogView"),
+					view: $view("dialogView"),
 					onViewUnlinked: "DialogViewUnlinked",
 				}),
 			)

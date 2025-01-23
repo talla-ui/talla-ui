@@ -4,7 +4,6 @@ import {
 	ManagedEvent,
 	ManagedObject,
 	StringConvertible,
-	bind,
 } from "../base/index.js";
 import { ERROR, err, errorHandler, safeCall } from "../errors.js";
 import type { UITheme } from "../ui/index.js";
@@ -21,24 +20,24 @@ import { View } from "./View.js";
 const $_bind_label = Symbol("activity");
 
 /** Binding source for the app object itself */
-const $app = bind.$on($_app_bind_label);
+export const $app = Binding.createFactory($_app_bind_label);
 
 /** Global list of activity instances for (old) activity class, for HMR */
 const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
 
 /** Reused binding for the navigation context */
-const _navCtxBinding = $app.bind<NavigationContext>("navigation");
+const _navCtxBinding = $app("navigation");
 
 /** Reused binding for the global renderer instance, also listens for change events */
-const _rendererBinding = $app.bind<RenderContext>("renderer.*");
+const _rendererBinding = $app("renderer.*");
 
 /** Reused binding for the global theme instance */
-const _themeBinding = $app.bind<UITheme>("theme");
+const _themeBinding = $app("theme");
 
 /** An object that can be used to create bindings for properties of the nearest activity */
-export const $activity: Binding.Source<
+export const $activity = Binding.createFactory<
 	(string & {}) | "formContext" | `formContext.${string}` | "title"
-> = bind.$on($_bind_label);
+>($_bind_label);
 
 /**
  * A class that represents a part of the application that can be activated when the user navigates to it

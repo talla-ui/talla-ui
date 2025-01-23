@@ -40,18 +40,18 @@ export namespace BindingOrValue {
  *
  * As a concrete example, a binding can be used to update the `text` property of a {@link UILabel} view, with the value of a string property `labelText` of the activity. Or perhaps the property `name` of a `user` object referenced by the activity (see example below). Whenever the data in the activity changes, so does the label text.
  *
- * **Creating bindings** — To create a binding, use the {@link bind()} function, or one of the methods of objects such as {@link $activity} and {@link $view} to bind a number, string, (negated) boolean, list, or a string composed using a format string and one or more embedded bindings, e.g. `bind("anyValue")`, `bind.not("showList")`, `$activity.string("labelText")`, or `bind.strf("Value: %i", $activity.number("lines.count"))`.
+ * **Creating bindings** — To create a binding, use the {@link $bind()} function, or one of the functions of e.g. {@link $activity} and {@link $view} to bind a number, string, (negated) boolean, list, or a string composed using a format string and one or more embedded bindings, e.g. `$bind("anyValue")`, `$bind.not("showList")`, `$activity.string("labelText")`, or `$strf("Value: %i", $activity.number("lines.count"))`.
  *
  * **Binding to managed lists** — {@link ManagedList} instances include special properties that may be referenced by a binding path. Use `.count` to bind to the list count, `.#first` and `.#last` to bind to the first and last item in the list, respectively.
  *
- * **Applying bindings** — Include the result of {@link bind()} in the preset object or parameters passed to {@link ui} factory functions (or JSX attributes), to add a bound property to a view, e.g. `ui.label($activity.string("labelText"))` or `<textfield placeholder={$view.string("placeholderText")} />`.
+ * **Applying bindings** — Include the result of {@link $bind()} in the preset object or parameters passed to {@link ui} factory functions (or JSX attributes), to add a bound property to a view, e.g. `ui.label($activity.string("labelText"))` or `<textfield placeholder={$view.string("placeholderText")} />`.
  *
  * To apply a binding to any other managed object, use to the {@link bindTo()} method. This method can be used to bind a target property, or to call a function whenever the source value changes.
  *
  * **Adding filters** — To convert the value of the original property, or to combine multiple bindings using boolean operations (and/or), use one of the Binding methods such as {@link Binding.and and()}, {@link Binding.select select()}, or {@link Binding.matches matches()}.
  *
  * @see {@link StringFormatBinding}
- * @see {@link bind}
+ * @see {@link $bind}
  */
 export class Binding<T = any> {
 	/**
@@ -62,8 +62,8 @@ export class Binding<T = any> {
 	declare static debugHandler?: (data: Binding.DebugUpdate) => void;
 
 	/**
-	 * Creates a new binding for given property and default value; use {@link bind()} functions instead
-	 * @note Use the {@link bind} function to create {@link Binding} objects rather than calling this constructor.
+	 * Creates a new binding for given property and default value; use {@link $bind()} functions instead
+	 * @note Use the {@link $bind} function to create {@link Binding} objects rather than calling this constructor.
 	 * @param source The source path that's used for obtaining the bound value, another {@link Binding} to clone from, or an object with advanced options
 	 * @param defaultValue An optional default value that's used when the bound value is undefined
 	 */
@@ -99,13 +99,13 @@ export class Binding<T = any> {
 	}
 
 	/** Binding source path */
-	private _path: string[];
+	private readonly _path: string[];
 
 	/** Property to filter source origin objects, i.e. only consider objects that include this property */
-	private _label?: string | symbol;
+	private readonly _label?: string | symbol;
 
 	/** A list of properties that were prepended before the binding path (used when creating associated bindings from another path) */
-	private _prefix?: string[];
+	private readonly _prefix?: ReadonlyArray<string>;
 
 	/**
 	 * Applies this binding to the specified target object
@@ -191,7 +191,7 @@ export class Binding<T = any> {
 	 * @example
 	 * // A label that shows a short last-modified date
 	 * ui.label(
-	 *   bind("lastModified").local("date", "short")
+	 *   $bind("lastModified").local("date", "short")
 	 * )
 	 */
 	local(...type: string[]): Binding<string> {
@@ -211,7 +211,7 @@ export class Binding<T = any> {
 	 * // A label that displays (localized) Yes or No
 	 * // depending on a property value
 	 * ui.label(
-	 *   bind("isEnabled").select(strf("Yes"), strf("No"))
+	 *   $bind("isEnabled").select(strf("Yes"), strf("No"))
 	 * )
 	 */
 	select<U, V>(trueValue: U, falseValue?: V): Binding<U | V> {
@@ -222,7 +222,7 @@ export class Binding<T = any> {
 	 * Adds a filter, to use the provided value instead of a bound value that's equal to false
 	 *
 	 * @summary This method can be used to substitute the bound value with a fixed value, if the bound value is equal to false (according to the `==` operator), e.g. for bound undefined, null, false, zero, and empty string values.
-	 * @note Alternatively, use the `defaultValue` argument to the {@link bind()} function to specify a default value that's used if the bound value is undefined.
+	 * @note Alternatively, use the `defaultValue` argument to the {@link $bind()} function to specify a default value that's used if the bound value is undefined.
 	 *
 	 * @param falseValue The value to be used if the bound value is equal to false
 	 * @returns A new binding, typed like the given value
@@ -230,7 +230,7 @@ export class Binding<T = any> {
 	 * @example
 	 * // A label that displays a value OR (localized) "None"
 	 * ui.label(
-	 *   bind("customer.name").else(strf("None"))
+	 *   $bind("customer.name").else(strf("None"))
 	 * )
 	 */
 	else<U>(falseValue: U): Binding<T | U> {
@@ -250,7 +250,7 @@ export class Binding<T = any> {
 	 * @example
 	 * // A cell that's rendered only if a string matches
 	 * ui.conditional(
-	 *   { state: $activity.bind("tab").matches("contacts") },
+	 *   { state: $activity("tab").matches("contacts") },
 	 *   ui.cell(
 	 *     // ...
 	 *   )
@@ -259,7 +259,7 @@ export class Binding<T = any> {
 	 * @example
 	 * // A cell that's hidden if a string doesn't match
 	 * ui.cell(
-	 *   { hidden: $activity.bind("tab").matches("contacts").not() },
+	 *   { hidden: $activity("tab").matches("contacts").not() },
 	 *   // ...
 	 * )
 	 */
@@ -274,13 +274,13 @@ export class Binding<T = any> {
 	 *
 	 * To do the opposite, and substitute with false if the bindings match, use the {@link Binding.not not()} method afterwards.
 	 *
-	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bind()}
+	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link $bind()}
 	 * @returns A new binding, typed as a boolean
 	 *
 	 * @example
 	 * // A cell that's rendered only if two bindings match
 	 * ui.conditional(
-	 *   { state: $list.bind("item").equals("selectedItem") },
+	 *   { state: $list("item").equals("selectedItem") },
 	 *   ui.cell(
 	 *     // ...
 	 *   )
@@ -295,16 +295,16 @@ export class Binding<T = any> {
 	 *
 	 * @summary This method can be used to combine two bindings logically, using the `&&` operator. The resulting bound value is the value of the _other_ binding, if the current bound value is equal to true (according to the `==` operator). The result is the value of the current binding, if its value is equal to false.
 	 *
-	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bind()}
+	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link $bind()}
 	 * @returns A new binding, typed as a union of both original types
 	 *
 	 * @example
 	 * // A simple boolean AND
-	 * bind.boolean("itemFound").and("hasPrice")
+	 * $bind.boolean("itemFound").and("hasPrice")
 	 *
 	 * // A conditional string binding
-	 * bind.boolean("showCustomer")
-	 *   .and(bind.strf("Customer: %s", "customer.name"))
+	 * $bind.boolean("showCustomer")
+	 *   .and($strf("Customer: %s", "customer.name"))
 	 */
 	and<U = any>(source: Binding<U> | string): Binding<T | U> {
 		return this._addBool(source, true) as any;
@@ -315,16 +315,16 @@ export class Binding<T = any> {
 	 *
 	 * @summary This method can be used to combine two bindings logically, using the `||` operator. The resulting bound value is the value of the _other_ binding, if the current bound value is equal to false (according to the `==` operator). The result is the value of the current binding, if its value is equal to true.
 	 *
-	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bind()}
+	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link $bind()}
 	 * @returns A new binding, typed as a union of both original types
 	 *
 	 * @example
 	 * // A simple boolean OR
-	 * bind.boolean("itemFound").or("hasDefault")
+	 * $bind.boolean("itemFound").or("hasDefault")
 	 *
 	 * // A conditional string binding
-	 * bind.string("customer.name")
-	 *   .or(bind.strf("Default: %s", "defaultCustomer.name"))
+	 * $bind.string("customer.name")
+	 *   .or($bind("Default: %s", "defaultCustomer.name"))
 	 */
 	or<U = any>(source: Binding<U> | string): Binding<T | U> {
 		return this._addBool(source) as any;
@@ -358,7 +358,7 @@ export class Binding<T = any> {
 	 * @returns The string description.
 	 */
 	toString() {
-		return "bind(" + this._path.join(".") + ")";
+		return "$bind(" + this._path.join(".") + ")";
 	}
 
 	/**
@@ -446,20 +446,20 @@ Binding.prototype.isBinding = _isBinding;
  *
  * After binding to an object, the underlying string value is updated whenever any of the nested bindings change — inserting the bound values into the string.
  *
- * Instances of this class can be created using the {@link bind.strf} function.
+ * Instances of this class can be created using the {@link $strf} function.
  *
  * @example
  * // String-formatted bindings with positional arguments
- * bind.strf("Today is %s", bind("dayOfTheWeek"))
- * bind.strf("%i table row#{/s}, total %.2f", bind("rows.length"), bind("calcTotal"))
+ * $strf("Today is %s", $bind("dayOfTheWeek"))
+ * $strf("%i table row#{/s}, total %.2f", $bind("rows.length"), $bind("calcTotal"))
  *
  * @example
  * // String-formatted binding with object argument
- * bind.strf(
+ * $strf(
  *   "%[user] is %[age] years old",
  *   {
- *     user: bind("user.name", strf("Unknown user")),
- *     age: bind.number("user.age").else(99)
+ *     user: $bind("user.name", strf("Unknown user")),
+ *     age: $bind.number("user.age").else(99)
  *   }
  * )
  *
@@ -467,13 +467,13 @@ Binding.prototype.isBinding = _isBinding;
  * // A label with bound text
  * // (Note: JSX element text is bound automatically)
  * ui.label(
- *   bind.strf("Welcome, %s", bind("user.fullName"))
+ *   $strf("Welcome, %s", $bind("user.fullName"))
  * )
  */
 export class StringFormatBinding extends Binding<LazyString> {
 	/**
-	 * Creates a new string-formatted binding using; use {@link bind.strf()} instead
-	 * @note Use the {@link bind.strf()} function to create {@link StringFormatBinding} objects rather than calling this constructor.
+	 * Creates a new string-formatted binding using; use {@link $strf()} instead
+	 * @note Use the {@link $strf()} function to create {@link StringFormatBinding} objects rather than calling this constructor.
 	 * @param format The format string, containing placeholders similar to {@link strf()}
 	 * @param args A list of associated bindings
 	 */
@@ -486,7 +486,7 @@ export class StringFormatBinding extends Binding<LazyString> {
 
 	/** Returns a description of this binding, including its original format string. */
 	override toString() {
-		return "bind.strf(" + JSON.stringify(this._format) + ")";
+		return "$strf(" + JSON.stringify(this._format) + ")";
 	}
 
 	protected override clone(): StringFormatBinding {
@@ -561,18 +561,17 @@ export class StringFormatBinding extends Binding<LazyString> {
 
 export namespace Binding {
 	/**
-	 * Options that can be passed to the {@link Binding} constructor, used by {@link Binding.Source}
-	 * @see {@link bind.$on}
+	 * Options that can be passed to the {@link Binding} constructor, used by {@link $bind} and other binding factories
 	 */
 	export type Options = {
 		/** The source property path, as an array */
-		path: string[];
+		readonly path: string[];
 		/** Default value, used when the bound value itself is undefined */
-		default?: any;
+		readonly default?: any;
 		/** The source label property that's used to filter parent objects */
-		label?: string | symbol;
+		readonly label?: string | symbol;
 		/** An optional list of property names that are prepended before all binding paths */
-		prefix?: string[];
+		readonly prefix?: ReadonlyArray<string>;
 	};
 
 	/**
@@ -589,79 +588,53 @@ export namespace Binding {
 		bound: boolean;
 	};
 
+	/** A binding factory that creates {@link Binding} objects for a particular source */
+	export type Factory<TKey extends string> = {
+		(source: TKey, defaultValue?: any): Binding;
+
+		/** Creates a new {@link Binding} object with type `string` */
+		string(source: TKey, defaultValue?: string): Binding<string>;
+
+		/** Creates a new {@link Binding} object with type `number` */
+		number(source: TKey, defaultValue?: number): Binding<number>;
+
+		/** Creates a new {@link Binding} object with type `boolean` */
+		boolean(source: TKey): Binding<boolean>;
+
+		/** Creates a new {@link Binding} object, negating the bound value */
+		not(source: TKey): Binding<boolean>;
+
+		/** Creates a new {@link Binding} object, ensuring that the bound value is an iterable list */
+		list<T = any>(source: TKey): Binding<Iterable<T>>;
+	};
+
 	/**
-	 * A class that helps to create bindings for a specific source
-	 * - Instances of this class are created using the {@link bind.$on()} function.
-	 * - All bindings created using this class are bound using a source 'label' (i.e. a unique property), to bind to a specific type of object, e.g. activities or view composites.
-	 * - Additionally, a property name may be used as a prefix for all bindings
-	 *
-	 * @docgen {hideconstructor}
+	 * Creates an object with methods that can be used to create bindings for a specific source
+	 * - This function is used to create e.g. {@link $activity}, {@link $view}, and {@link $viewport}.
+	 * - You can use this function to create your own binding factory objects, by referencing a specific property of a class (i.e. the binding source label) and/or a property name that should be used as a prefix for all bindings.
+	 * @param sourceLabel The source label property that's used to filter candidate objects
+	 * @param propertyName An optional property name that's used as a prefix for all bindings, must be a property of the source object
 	 */
-	export class Source<TKey extends string = string> {
-		/**
-		 * Creates a new instance, do not use directly
-		 * @see {@link bind.$on}
-		 */
-		constructor(sourceLabel: string | symbol, prefix: string[]) {
-			this._label = sourceLabel;
-			this._prefix = prefix;
-		}
-
-		/** Label used for this binding source */
-		private _label: string | symbol;
-
-		/** Prefix added in front of all binding paths */
-		private _prefix: string[];
-
-		/** Creates a new {@link Binding} object */
-		bind<T = any>(source: TKey, defaultValue?: any) {
-			return new Binding<T>({
+	export function createFactory<TKey extends string>(
+		sourceLabel?: string | symbol,
+		...properties: string[]
+	): Binding.Factory<TKey> {
+		let factory: Factory<TKey> = function (source: string, defaultValue?: any) {
+			return new Binding({
 				path: source.split("."),
 				default: defaultValue,
-				label: this._label,
-				prefix: this._prefix,
+				label: sourceLabel,
+				prefix: properties,
 			});
-		}
-
-		/**
-		 * Creates a new {@link Binding} object with type `string`
-		 * @see {@link Binding.asString}
-		 */
-		string(source: TKey, defaultValue?: string) {
-			return this.bind(source, defaultValue).asString();
-		}
-
-		/**
-		 * Creates a new {@link Binding} object with type `number`
-		 * @see {@link Binding.asNumber}
-		 */
-		number(source: TKey, defaultValue?: number) {
-			return this.bind(source, defaultValue).asNumber();
-		}
-
-		/**
-		 * Creates a new {@link Binding} object with type `boolean`
-		 * @see {@link Binding.asBoolean}
-		 */
-		boolean(source: TKey) {
-			return this.bind(source).asBoolean();
-		}
-
-		/**
-		 * Creates a new {@link Binding} object, negating the bound value
-		 * @see {@link Binding.not}
-		 */
-		not(source: TKey) {
-			return this.bind(source).not();
-		}
-
-		/**
-		 * Creates a new {@link Binding} object, ensuring that the bound value is an iterable list
-		 * @see {@link Binding.asList}
-		 */
-		list<T = any>(source: TKey) {
-			return this.bind(source).asList<T>();
-		}
+		} as any;
+		factory.string = (source: TKey, defaultValue?: string) =>
+			factory(source, defaultValue).asString();
+		factory.number = (source: TKey, defaultValue?: number) =>
+			factory(source, defaultValue).asNumber();
+		factory.boolean = (source: TKey) => factory(source).asBoolean();
+		factory.not = (source: TKey) => factory(source).not();
+		factory.list = (source: TKey) => factory(source).asList();
+		return factory;
 	}
 }
 
@@ -693,66 +666,40 @@ export function binding(source: string | Binding) {
 }
 
 /**
- * Creates a new {@link Binding}
+ * Creates a new generic {@link Binding}
  * @summary This function is used to create a new binding for a specific source path, with an optional default value. Calling this function is equivalent to `new Binding(sourcePath, defaultValue)`, and is the recommended way to create bindings.
- * @note You can use objects such as {@link $activity}, {@link $view}, and {@link $viewport} to create bindings for specific sources; or create your own binding method objects using {@link bind.$on()}.
+ * @note You can use e.g. {@link $activity}, {@link $view}, and {@link $viewport} to create bindings for specific sources.
  * @param sourcePath The source (property) path that's used for obtaining the bound value
  * @param defaultValue An optional default value that's used when the bound value is undefined
  * @returns A new {@link Binding} object
  * @see {@link Binding}
  */
-export function bind(sourcePath: string, defaultValue?: any) {
-	return new Binding(sourcePath, defaultValue);
+export const $bind = Binding.createFactory();
+
+/**
+ * Creates a new {@link Binding} object, for a binding that takes the value of the first binding of the specified bindings that has a non-false value
+ * - This function repeatedly calls {@link Binding.or} for each source and returns the resulting binding.
+ * @param sources One or more instances of {@link Binding} or source paths that will be passed to {@link $bind()}
+ */
+export function $either(...sources: Array<string | Binding>) {
+	let result = new Binding(sources.shift());
+	while (sources.length) {
+		result = result.or(sources.shift()!);
+	}
+	return result;
 }
 
-export namespace bind {
-	/**
-	 * Creates a new {@link Binding} object, negating the bound value
-	 * @see {@link Binding.not}
-	 */
-	export function not(source: string) {
-		return new Binding(source).not();
-	}
-
-	/**
-	 * Creates a new {@link Binding} object, for a binding that takes the value of the first binding of the specified bindings that has a non-false value
-	 * - This function repeatedly calls {@link Binding.or} for each source and returns the resulting binding.
-	 * @param sources One or more instances of {@link Binding} or source paths that will be passed to {@link bind()}
-	 */
-	export function either(...sources: Array<string | Binding>) {
-		let result = new Binding(sources.shift());
-		while (sources.length) {
-			result = result.or(sources.shift()!);
-		}
-		return result;
-	}
-
-	/**
-	 * Creates an object with methods that can be used to create bindings for a specific source
-	 * - This function is used to create objects such as {@link $activity}, {@link $view}, and {@link $viewport}.
-	 * - You can use this function to create your own binding factory objects, by referencing a specific property of a class (i.e. the binding source label) and/or a property name that should be used as a prefix for all bindings.
-	 * @param sourceLabel The source label property that's used to filter candidate objects
-	 * @param propertyName An optional property name that's used as a prefix for all bindings, must be a property of the source object
-	 */
-	export function $on<TKey extends string>(
-		sourceLabel: string | symbol,
-		...properties: string[]
-	): Binding.Source<TKey> {
-		return new Binding.Source(sourceLabel, properties);
-	}
-
-	/**
-	 * Creates a new {@link StringFormatBinding}
-	 * @summary This function is used to create a new binding for a string-formatted value with further embedded bindings. Calling this function is equivalent to `new StringFormatBinding(...)`, and is the recommended way to create such bindings.
-	 * @param format The format string, containing placeholders similar to {@link strf()}
-	 * @param args A list of associated bindings
-	 * @returns A new {@link StringFormatBinding} object
-	 * @see {@link StringFormatBinding}
-	 */
-	export function strf(
-		format: string,
-		...args: Binding[] | [{ [K: string]: Binding }]
-	) {
-		return new StringFormatBinding(format, ...args);
-	}
+/**
+ * Creates a new {@link StringFormatBinding}
+ * @summary This function is used to create a new binding for a string-formatted value with further embedded bindings. Calling this function is equivalent to `new StringFormatBinding(...)`, and is the recommended way to create such bindings.
+ * @param format The format string, containing placeholders similar to {@link strf()}
+ * @param args A list of associated bindings
+ * @returns A new {@link StringFormatBinding} object
+ * @see {@link StringFormatBinding}
+ */
+export function $strf(
+	format: string,
+	...args: Binding[] | [{ [K: string]: Binding }]
+) {
+	return new StringFormatBinding(format, ...args);
 }

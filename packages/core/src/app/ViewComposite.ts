@@ -4,7 +4,6 @@ import {
 	ConfigOptions,
 	ManagedEvent,
 	ManagedObject,
-	bind,
 } from "../base/index.js";
 import { ERROR, err } from "../errors.js";
 import { RenderContext } from "./RenderContext.js";
@@ -14,7 +13,7 @@ import { View, ViewBuilder } from "./View.js";
 const $_bind_label = Symbol("view");
 
 /** An object that can be used to create bindings for properties of the containing {@link ViewComposite} object */
-export const $view: Binding.Source = bind.$on($_bind_label);
+export const $view = Binding.createFactory($_bind_label);
 
 /**
  * A class that encapsulates a dynamic view

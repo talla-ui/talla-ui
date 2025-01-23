@@ -6,10 +6,10 @@ import {
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
 import {
+	$bind,
 	$view,
 	Activity,
 	app,
-	bind,
 	StringConvertible,
 	ui,
 	UILabel,
@@ -66,7 +66,7 @@ test("Set view using view composite, and render", async () => {
 	const vb = ui.use(CompView, { text: "foo" });
 	class MyActivity extends Activity {
 		protected override createView() {
-			return ui.renderView({ view: bind("vc") }).create();
+			return ui.renderView({ view: $bind("vc") }).create();
 		}
 		vc = this.attach(vb.create());
 	}
@@ -105,7 +105,7 @@ test("Use activity view and render", async () => {
 				.cell(
 					{ accessibleLabel: "outer" },
 					ui.renderView({
-						view: bind("second.view"),
+						view: $bind("second.view"),
 						propagateEvents: true,
 					}),
 				)

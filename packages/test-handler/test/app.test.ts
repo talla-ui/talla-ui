@@ -55,7 +55,7 @@ beforeEach((c) => {
 test("Single view is rendered", async (t) => {
 	const MyView = ViewComposite.define(
 		{ title: StringConvertible.EMPTY },
-		ui.label($view.bind("title")),
+		ui.label($view("title")),
 	);
 	let myView = ui.use(MyView, { title: "TEST" }).create();
 	renderTestView(myView);

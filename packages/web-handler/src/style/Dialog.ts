@@ -53,7 +53,7 @@ export class Dialog extends ViewComposite implements UITheme.DialogController {
 					style: Dialog.styles.containerStyle,
 				},
 				ui.renderView({
-					view: $view.bind("dialogView"),
+					view: $view("dialogView"),
 					onViewUnlinked: "DialogViewUnlinked",
 				}),
 			)

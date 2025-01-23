@@ -1,10 +1,10 @@
 import { beforeAll, describe, expect, test } from "vitest";
 import {
+	$bind,
 	AppContext,
 	ManagedEvent,
 	ManagedList,
 	ManagedObject,
-	bind,
 } from "../../dist/index.js";
 
 beforeAll(() => {
@@ -833,7 +833,7 @@ describe("Events and observation", () => {
 		class MyObject extends ManagedObject {
 			constructor() {
 				super();
-				bind("list.count").bindTo(this, "boundCount");
+				$bind("list.count").bindTo(this, "boundCount");
 			}
 			boundCount?: number;
 		}

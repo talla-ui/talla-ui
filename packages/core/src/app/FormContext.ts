@@ -1,15 +1,15 @@
 import { View } from "./index.js";
-import { bind, Binding, ManagedObject, ObjectReader } from "../base/index.js";
+import { Binding, ManagedObject, ObjectReader } from "../base/index.js";
 
 /** An object that can be used to create bindings for properties of the nearest `formContext` property */
-export const $formContext: Binding.Source<
+export const $formContext = Binding.createFactory<
 	| "values"
 	| `values.${string}`
 	| "errors"
 	| `errors.${string}`
 	| "errorCount"
 	| "valid"
-> = bind.$on("formContext", "formContext");
+>("formContext", "formContext");
 
 /**
  * An object that contains form field data and validation rules
@@ -214,5 +214,5 @@ export namespace FormContext {
 		});
 	}
 
-	const _boundFormContext = bind("formContext.*");
+	const _boundFormContext = new Binding("formContext.*");
 }

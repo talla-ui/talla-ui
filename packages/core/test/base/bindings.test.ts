@@ -1,10 +1,12 @@
 import { beforeAll, describe, expect, test } from "vitest";
 import {
+	$bind,
+	$either,
+	$strf,
 	AppContext,
 	Binding,
 	ManagedList,
 	ManagedObject,
-	bind,
 	binding,
 } from "../../dist/index.js";
 
@@ -17,7 +19,7 @@ beforeAll(() => {
 test("Constructor without params", () => {
 	expect(() => new Binding()).not.toThrowError();
 	expect(new Binding()).toHaveProperty("isBinding");
-	expect(String(new Binding())).toBe("bind()");
+	expect(String(new Binding())).toBe("$bind()");
 });
 
 test("Constructor with empty string", () => {
@@ -26,10 +28,10 @@ test("Constructor with empty string", () => {
 });
 
 test("Global functions with empty string", () => {
-	expect(() => bind("")).not.toThrowError();
-	expect(bind("")).toHaveProperty("isBinding");
-	expect(() => bind.not("")).not.toThrowError();
-	expect(bind.not("")).toHaveProperty("isBinding");
+	expect(() => $bind("")).not.toThrowError();
+	expect($bind("")).toHaveProperty("isBinding");
+	expect(() => $bind.not("")).not.toThrowError();
+	expect($bind.not("")).toHaveProperty("isBinding");
 });
 
 test("Constructor with invalid argument", () => {
@@ -53,7 +55,7 @@ describe("Basic bindings", () => {
 		class ObjectWithBind extends ManagedObject {
 			bind(property: keyof this, source: Binding | string) {
 				if (typeof source === "string") {
-					source = bind(source);
+					source = $bind(source);
 				}
 				source.bindTo(this, property);
 			}
@@ -173,7 +175,7 @@ describe("Basic bindings", () => {
 	test("Single binding, unlink target", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
-		let binding = bind("a").asNumber();
+		let binding = $bind("a").asNumber();
 		let update = 0;
 		binding.bindTo(c.child, (a) => {
 			console.log("Binding updated", a);
@@ -191,7 +193,7 @@ describe("Basic bindings", () => {
 	test("Single binding, unlink origin", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
-		let binding = bind("a").asNumber();
+		let binding = $bind("a").asNumber();
 		let update = 0;
 		binding.bindTo(c.child, (a) => {
 			console.log("Binding updated", a);
@@ -292,7 +294,7 @@ describe("Basic bindings", () => {
 		let otherNested = c.other.attachNested();
 		c.child.bind("aa", "other.nested.aa");
 		let updateCount = 0;
-		bind("other.nested.aa").bindTo(c.child, (value, bound) => {
+		$bind("other.nested.aa").bindTo(c.child, (value, bound) => {
 			console.log("3-step path updated", value, bound);
 			updateCount++;
 		});
@@ -336,7 +338,7 @@ describe("Basic bindings", () => {
 		class BoundObject extends ManagedObject {
 			a?: number;
 			bindnonObserved() {
-				bind("changeable.nonObserved").bindTo(this, "a");
+				$bind("changeable.nonObserved").bindTo(this, "a");
 			}
 		}
 		class Parent extends ManagedObject {
@@ -367,7 +369,7 @@ describe("Basic bindings", () => {
 		class BoundObject extends ManagedObject {
 			a?: number;
 			bindNumber(b: string) {
-				bind(b).bindTo(this, "a");
+				$bind(b).bindTo(this, "a");
 				return this;
 			}
 		}
@@ -419,7 +421,7 @@ describe("Basic bindings", () => {
 			class Child extends ManagedObject {
 				constructor() {
 					super();
-					bind("nonObserved").bindTo(this, "nonObserved");
+					$bind("nonObserved").bindTo(this, "nonObserved");
 					// issue is async error, not caught by jest
 				}
 				nonObserved?: number;
@@ -443,7 +445,7 @@ describe("Basic bindings", () => {
 				if (b.value !== 1) throw new Error("Value mismatch");
 			};
 			let c = new TestObject();
-			c.child.bind("aa", bind("a").debug());
+			c.child.bind("aa", $bind("a").debug());
 			expect(Binding.debugHandler).toBeDefined();
 			Binding.debugHandler = undefined;
 			c.a = 2;
@@ -512,50 +514,50 @@ describe("Bindings with source labels", () => {
 		expect(c.a).toBe(3);
 	});
 
-	test("Symbol label, using $on", () => {
+	test("Custom factory", () => {
 		let [c] = setup(sym);
-		const $test = bind.$on(sym);
-		$test.bind("a").bindTo(c, "a");
+		const $test = Binding.createFactory(sym);
+		$test("a").bindTo(c, "a");
 		expect(c.a).toBe(2);
 	});
 
-	test("$on, .string", () => {
+	test("Custom factory, .string", () => {
 		let [c] = setup(sym);
-		const $test = bind.$on(sym);
+		const $test = Binding.createFactory(sym);
 		$test.string("a").bindTo(c, "a");
 		expect(c.a).toBe("2");
 	});
 
-	test("$on, .number", () => {
+	test("Custom factory, .number", () => {
 		let [c, _, p2] = setup(sym);
-		const $test = bind.$on(sym);
+		const $test = Binding.createFactory(sym);
 		$test.number("a").bindTo(c, "a");
 		expect(c.a).toBe(2);
 		p2.a = "3";
 		expect(c.a).toBe(3);
 	});
 
-	test("$on, .boolean", () => {
+	test("Custom factory, .boolean", () => {
 		let [c, _, p2] = setup(sym);
-		const $test = bind.$on(sym);
+		const $test = Binding.createFactory(sym);
 		$test.boolean("a").bindTo(c, "a");
 		expect(c.a).toBe(true);
 		p2.a = 0;
 		expect(c.a).toBe(false);
 	});
 
-	test("$on, .not", () => {
+	test("Custom factory, .not", () => {
 		let [c, _, p2] = setup(sym);
-		const $test = bind.$on(sym);
+		const $test = Binding.createFactory(sym);
 		$test.not("a").bindTo(c, "a");
 		expect(c.a).toBe(false);
 		p2.a = 0;
 		expect(c.a).toBe(true);
 	});
 
-	test("$on, .list", () => {
+	test("Custom factory, .list", () => {
 		let [c, _, p2] = setup(sym);
-		const $test = bind.$on(sym);
+		const $test = Binding.createFactory(sym);
 		$test.list("a").bindTo(c, "a");
 		expect(c.a).toBeUndefined();
 		p2.a = [1, 2, 3];
@@ -583,7 +585,7 @@ describe("Binding decorator", () => {
 			child = this.attach(new ChildObject());
 		}
 		class ChildObject extends ManagedObject {
-			@binding(bind("a"))
+			@binding($bind("a"))
 			a?: number;
 		}
 		let p = new ParentObject();
@@ -600,7 +602,7 @@ describe("Managed list / array bindings", () => {
 		class Child extends ManagedObject {
 			list = new ManagedList();
 			bindList(b: string) {
-				bind(b).bindTo(this, "list");
+				$bind(b).bindTo(this, "list");
 			}
 		}
 		return { Parent };
@@ -630,7 +632,7 @@ describe("Managed list / array bindings", () => {
 		class Child extends ManagedObject {
 			constructor() {
 				super();
-				bind("count").bindTo(this, "count");
+				$bind("count").bindTo(this, "count");
 			}
 			count?: number;
 		}
@@ -679,13 +681,13 @@ describe("Filtered/boolean bindings", () => {
 	test("Default value", () => {
 		let { parent } = setup();
 		const defaultValue = {};
-		parent.child.bindValue(bind("noStateProperty", defaultValue));
+		parent.child.bindValue($bind("noStateProperty", defaultValue));
 		parent.child.expectValue().toBe(defaultValue);
 	});
 
 	test("Convert: not", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").not());
+		parent.child.bindValue($bind("value1").not());
 		parent.child.expectValue().toBe(false);
 		parent.value1 = 0;
 		parent.child.expectValue().toBe(true);
@@ -693,7 +695,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Convert: bind.not", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind.not("value1"));
+		parent.child.bindValue($bind.not("value1"));
 		parent.child.expectValue().toBe(false);
 		parent.value1 = 0;
 		parent.child.expectValue().toBe(true);
@@ -701,7 +703,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Convert: asBoolean", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").asBoolean());
+		parent.child.bindValue($bind("value1").asBoolean());
 		parent.child.expectValue().toBe(true);
 		parent.value1 = 0;
 		parent.child.expectValue().toBe(false);
@@ -709,7 +711,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Convert: asBoolean", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").asBoolean());
+		parent.child.bindValue($bind("value1").asBoolean());
 		parent.child.expectValue().toBe(true);
 		parent.value1 = 0;
 		parent.child.expectValue().toBe(false);
@@ -717,7 +719,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Convert: asString", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").asString());
+		parent.child.bindValue($bind("value1").asString());
 		parent.child.expectValue().toBe("1");
 		parent.value1 = 0;
 		parent.child.expectValue().toBe("0");
@@ -727,7 +729,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Convert and format: asString(format) with number", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").asString(".2f"));
+		parent.child.bindValue($bind("value1").asString(".2f"));
 		parent.child.expectValue().toBe("1.00");
 		parent.value1 = 0;
 		parent.child.expectValue().toBe("0.00");
@@ -737,7 +739,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Convert and format: asString(format) with string", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("str").asString("lc"));
+		parent.child.bindValue($bind("str").asString("lc"));
 		parent.child.expectValue().toBe("");
 		parent.str = "ABC";
 		parent.child.expectValue().toBe("abc");
@@ -745,7 +747,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Convert: asString", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").asString());
+		parent.child.bindValue($bind("value1").asString());
 		parent.child.expectValue().toBe("1");
 		parent.value1 = 0;
 		parent.child.expectValue().toBe("0");
@@ -755,7 +757,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Convert: asNumber", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("str").asNumber());
+		parent.child.bindValue($bind("str").asNumber());
 		parent.child.expectValue().toBeNaN();
 		parent.str = "1.5";
 		parent.child.expectValue().toBe(1.5);
@@ -763,7 +765,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Convert: asList", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("list").asList());
+		parent.child.bindValue($bind("list").asList());
 		parent.child.expectValue().toBeUndefined();
 		parent.list = ["a", "b"];
 		parent.child.expectValue().toEqual(["a", "b"]);
@@ -773,7 +775,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Matches: single parameter", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").matches(1));
+		parent.child.bindValue($bind("value1").matches(1));
 		parent.child.expectValue().toBe(true);
 		parent.value1 = 0;
 		parent.child.expectValue().toBe(false);
@@ -781,7 +783,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Matches: multiple parameters", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").matches(3, 2, 1));
+		parent.child.bindValue($bind("value1").matches(3, 2, 1));
 		parent.child.expectValue().toBe(true);
 		parent.value1 = 0;
 		parent.child.expectValue().toBe(false);
@@ -789,7 +791,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Equals", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").equals("value2"));
+		parent.child.bindValue($bind("value1").equals("value2"));
 		parent.child.expectValue().toBe(false);
 		parent.value2 = parent.value1;
 		parent.child.expectValue().toBe(true);
@@ -799,7 +801,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Select value", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").select(123));
+		parent.child.bindValue($bind("value1").select(123));
 		parent.child.expectValue().toBe(123);
 		parent.value1 = 0;
 		parent.child.expectValue().toBeUndefined();
@@ -807,7 +809,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Else value", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").else(123));
+		parent.child.bindValue($bind("value1").else(123));
 		parent.child.expectValue().toBe(1);
 		parent.value1 = 0;
 		parent.child.expectValue().toBe(123);
@@ -815,7 +817,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Select-else single call", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").select(123, 321));
+		parent.child.bindValue($bind("value1").select(123, 321));
 		parent.child.expectValue().toBe(123);
 		parent.value1 = 0;
 		parent.child.expectValue().toBe(321);
@@ -823,7 +825,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Select-else combination", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").select(123).else(321));
+		parent.child.bindValue($bind("value1").select(123).else(321));
 		parent.child.expectValue().toBe(123);
 		parent.value1 = 0;
 		parent.child.expectValue().toBe(321);
@@ -831,7 +833,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("And-binding", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").and(bind("value2")));
+		parent.child.bindValue($bind("value1").and($bind("value2")));
 		parent.child.expectValue().toBe(2);
 		parent.value2 = 0;
 		parent.child.expectValue().toBe(0);
@@ -846,7 +848,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Or-binding", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").or(bind("value2")));
+		parent.child.bindValue($bind("value1").or($bind("value2")));
 		parent.child.expectValue().toBe(1);
 		parent.value2 = 0;
 		parent.child.expectValue().toBe(1);
@@ -861,7 +863,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("And-binding, 3 terms", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").and("value2").and("value3"));
+		parent.child.bindValue($bind("value1").and("value2").and("value3"));
 		parent.child.expectValue().toBe(3);
 		parent.value2 = 0;
 		parent.child.expectValue().toBe(0);
@@ -873,7 +875,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Or-binding, 3 terms", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").or("value2").or("value3"));
+		parent.child.bindValue($bind("value1").or("value2").or("value3"));
 		parent.value1 = 0;
 		parent.value2 = 0;
 		parent.value3 = 0;
@@ -882,7 +884,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Either-binding, 3 terms", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind.either("value1", "value2", bind("value3")));
+		parent.child.bindValue($either("value1", "value2", $bind("value3")));
 		parent.value1 = 0;
 		parent.value2 = 0;
 		parent.value3 = 0;
@@ -891,7 +893,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("And-Or-binding", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").and("value2").or("value3"));
+		parent.child.bindValue($bind("value1").and("value2").or("value3"));
 		parent.value1 = 0;
 		parent.value2 = 0;
 		parent.value3 = 0;
@@ -927,52 +929,55 @@ describe("String format bindings", () => {
 
 	test("String binding without arguments", () => {
 		let { parent } = setup();
-		let binding = bind.strf("Abc");
-		expect(String(binding)).toBe('bind.strf("Abc")');
+		let binding = $strf("Abc");
+		expect(String(binding)).toBe('$strf("Abc")');
 		parent.child.bindValue(binding);
 		parent.child.expectStringValue().toBe("Abc");
 	});
 
 	test("Basic string binding", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind.strf("Abc %s", bind("str")));
+		parent.child.bindValue($strf("Abc %s", $bind("str")));
 		parent.child.expectStringValue().toBe("Abc ABC");
 	});
 
 	test("Basic string binding with Binding instance", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind.strf("Abc %s", bind("str")));
+		parent.child.bindValue($strf("Abc %s", $bind("str")));
 		parent.child.expectStringValue().toBe("Abc ABC");
 	});
 
 	test("Multiple value string binding", () => {
 		let { parent } = setup();
 		parent.child.bindValue(
-			bind
-				.strf("Value: %.2f %s: %i", bind("value1"), bind("str"), bind("value1"))
-				.asString(),
+			$strf(
+				"Value: %.2f %s: %i",
+				$bind("value1"),
+				$bind("str"),
+				$bind("value1"),
+			).asString(),
 		);
 		parent.child.expectValue().toBe("Value: 1.00 ABC: 1");
 	});
 
 	test("Named string binding using %[...]", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind.strf("Abc %[foo]", { foo: bind("str") }));
+		parent.child.bindValue($strf("Abc %[foo]", { foo: $bind("str") }));
 		parent.child.expectStringValue().toBe("Abc ABC");
 	});
 
 	test("Named string binding using %[...], nonexistent property", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind.strf("Abc %[bar]", { foo: bind("str") }));
+		parent.child.bindValue($strf("Abc %[bar]", { foo: $bind("str") }));
 		parent.child.expectStringValue().toBe("Abc ");
 	});
 
 	test("Multiple value named string binding using %[...]", () => {
 		let { parent } = setup();
 		parent.child.bindValue(
-			bind.strf("Value: %[value:.2f] %[str]: %[value:n] %[value:plural|a|b]", {
-				value: bind("value1"),
-				str: bind("str"),
+			$strf("Value: %[value:.2f] %[str]: %[value:n] %[value:plural|a|b]", {
+				value: $bind("value1"),
+				str: $bind("str"),
 			}),
 		);
 		parent.child.expectStringValue().toBe("Value: 1.00 ABC: 1 a");

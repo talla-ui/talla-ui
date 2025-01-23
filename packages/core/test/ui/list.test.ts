@@ -6,13 +6,13 @@ import {
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
 import {
+	$bind,
 	$list,
 	ManagedList,
 	ManagedObject,
 	UILabel,
 	UIListView,
 	UIListViewEvent,
-	bind,
 	ui,
 } from "../../dist/index.js";
 
@@ -93,8 +93,8 @@ test("List of labels from ManagedList, rendered", async () => {
 test("List of labels from bound array, rendered", async () => {
 	console.log("Creating instance");
 	let myList = ui.list(
-		{ items: bind("array") },
-		ui.label($list.bind("item")),
+		{ items: $bind("array") },
+		ui.label($list("item")),
 		ui.row(),
 	);
 	class ArrayProvider extends ManagedObject {

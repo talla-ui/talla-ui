@@ -122,7 +122,7 @@ export function strf(
  * This class is primarily used for string formatting and localization, usually as the result of a call to {@link strf} or to process string-formatted bindings.
  *
  * @see {@link strf}
- * @see {@link bind.strf}
+ * @see {@link $strf}
  */
 export class LazyString extends String {
 	/**
@@ -157,7 +157,7 @@ export class LazyString extends String {
 
 	/**
 	 * Creates a new lazily evaluated string instance
-	 * - This method is used by {@link strf()}, {@link bind.strf()}, and other methods. Typically, you don't need to call this constructor yourself.
+	 * - This method is used by {@link strf()}, {@link $strf()}, and other methods. Typically, you don't need to call this constructor yourself.
 	 * @param get A function that returns the embedded string value
 	 */
 	constructor(get?: () => string) {
@@ -218,7 +218,7 @@ export class LazyString extends String {
 	/**
 	 * Replaces placeholders in the string with string-formatted values
 	 *
-	 * @summary This method provides the core functionality for {@link strf()} and {@link bind.strf()}. It inserts the provided list of values (or properties of a single object) into the format string, formatted in a specific way, as determined by the placeholder.
+	 * @summary This method provides the core functionality for {@link strf()} and {@link $strf()}. It inserts the provided list of values (or properties of a single object) into the format string, formatted in a specific way, as determined by the placeholder.
 	 *
 	 * Placeholders are compatible with C-style _sprintf_, e.g. %s, %+8i, %.5f, etc., as well as the following custom placeholders:
 	 *

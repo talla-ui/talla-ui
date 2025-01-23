@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import {
+	$bind,
 	app,
 	AppContext,
-	bind,
 	I18nProvider,
 	LazyString,
 	ManagedObject,
@@ -177,6 +177,6 @@ test("Local format binding", () => {
 	let parent: any = new ManagedObject();
 	parent.value = 123;
 	parent.child = parent.attach(new ManagedObject());
-	bind("value").local("test", "format").bindTo(parent.child, "value");
+	$bind("value").local("test", "format").bindTo(parent.child, "value");
 	expect(parent.child).toHaveProperty("value", "{123:test,format}");
 });
