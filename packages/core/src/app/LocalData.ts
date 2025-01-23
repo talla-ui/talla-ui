@@ -15,24 +15,34 @@ import { ManagedObject, ObjectReader } from "../base/index.js";
  * @see {@link ObjectReader}
  * @see {@link useWebContext}
  * @see {@link useTestContext}
+ * @hideconstructor
  *
  * @example
  * // write user profile data
- * app.localData.write("profile", { fullName: "John Doe" });
+ * await app.localData.writeAsync("profile", { fullName: "John Doe" });
  *
  * // ... later, read it back, if possible
- * let [profile, errors] = app.localData.read("profile", { fullName: { string: {} }});
+ * let [profile, errors] = await app.localData.readAsync("profile", { fullName: { string: {} }});
  * if (profile) console.log(profile.fullName);
  */
 export class LocalData extends ManagedObject {
+	constructor(defaults?: Record<string, Record<string, unknown>>) {
+		super();
+		this._defaults = { ...defaults };
+	}
+
 	/**
 	 * Read persisted data from the specified key using an object schema
 	 * @param key The persisted key
 	 * @param schema The validation schema to use while reading data using {@link ObjectReader}
 	 * @returns A tuple containing either the data (object) that was read, or a set of errors for fields in the schema definition
 	 */
-	read<T extends ObjectReader.Schema>(key: string, schema: T) {
-		return new ObjectReader(schema).readJSONString(this._obj?.[key] || "{}");
+	async readAsync<T extends ObjectReader.Schema>(key: string, schema: T) {
+		let json = this._obj?.[key];
+		let reader = new ObjectReader(schema);
+		return json
+			? reader.readJSONString(json)
+			: reader.read(this._defaults[key] || ({} as any));
 	}
 
 	/**
@@ -40,17 +50,19 @@ export class LocalData extends ManagedObject {
 	 * @param key The key to persist the data to
 	 * @param data The data to be persisted, must be serializable as JSON (or undefined)
 	 */
-	write(key: string, data?: Record<string, unknown>) {
+	async writeAsync(key: string, data?: Record<string, unknown>) {
 		(this._obj ||= {})[key] = data && JSON.stringify(data);
 		return this.emitChange(undefined, { key });
 	}
 
 	/** Clears all keys and objects from the persisted storage */
-	clear() {
+	async clearAsync() {
 		this._obj = undefined;
 		return this.emitChange();
 	}
 
 	/** A map of JSON strings that gets used by the default implementation (i.e. not persisted at all) */
 	declare private _obj?: Record<string, string | undefined>;
+
+	private _defaults: Record<string, Record<string, unknown>>;
 }

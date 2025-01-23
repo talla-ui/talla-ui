@@ -37,17 +37,17 @@ export class WebContextOptions extends ConfigOptions {
 	insertHistory: boolean | "root" | "page" = false;
 
 	/**
-	 * Initial data saved to `app.localData`
-	 * - Each of the properties of this object gets persisted to `localStorage`, **only** if no data has been written for the corresponding key yet (or it has been cleared).
+	 * Default data for specific keys of `app.localData`
+	 * - Each of the properties of this object gets used by `app.localData` **only** if no data has been written for the corresponding key yet (or it has been cleared).
 	 * - Data must be serializable as JSON, and readable by {@link ObjectReader}.
 	 */
 	defaultLocalData: Record<string, Record<string, unknown>> = {};
 
 	/**
-	 * Key prefix to be used when storing and retrieving `app.localData` objects from `localStorage`
-	 * - This property defaults to `LocalData_`, and may be modified if multiple applications run on the same page that may be using conflicting data keys.
+	 * Database name to be used when storing and retrieving `app.localData` objects from IndexedDB
+	 * - This property defaults to `LocalData`, and may be modified if multiple applications run on the same page that may be using conflicting databases.
 	 */
-	localDataPrefix = "LocalData_";
+	localDataName = "LocalData";
 
 	/** A {@link WebTheme} instance that will be set as the active theme */
 	theme = new WebTheme();

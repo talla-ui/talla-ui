@@ -29,7 +29,7 @@ export class TestContextOptions extends ConfigOptions {
 	/** True (default) if uncaught errors should be thrown anyway, including async; sets global error handler */
 	throwUncaughtErrors = true;
 
-	/** Mock persisted data, i.e. data made available through `app.localData`; must be serializable as JSON */
+	/** Default persisted data, i.e. data made available through `app.localData`; must be serializable as JSON */
 	localData: Record<string, Record<string, unknown>> = {};
 }
 
@@ -72,9 +72,7 @@ export function useTestContext(config?: ConfigOptions.Arg<TestContextOptions>) {
 	app.navigation = new TestNavigationContext(app.activities, options);
 
 	// reset local data
-	app.localData = new LocalData();
-	let data = options.localData;
-	if (data) for (let k in data) app.localData.write(k, data[k]);
+	app.localData = new LocalData(options.localData);
 
 	return app as TestAppContext;
 }
