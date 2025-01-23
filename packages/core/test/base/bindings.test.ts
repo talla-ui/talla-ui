@@ -7,6 +7,7 @@ import {
 	Binding,
 	ManagedList,
 	ManagedObject,
+	app,
 	binding,
 } from "../../dist/index.js";
 
@@ -438,21 +439,17 @@ describe("Basic bindings", () => {
 
 	test("Debug handler", () => {
 		let { TestObject } = setup();
-		try {
-			Binding.debugHandler = (b) => {
-				if (b.binding.toString() !== "bind(a)")
-					throw new Error("Binding mismatch");
-				if (b.value !== 1) throw new Error("Value mismatch");
-			};
-			let c = new TestObject();
-			c.child.bind("aa", $bind("a").debug());
-			expect(Binding.debugHandler).toBeDefined();
-			Binding.debugHandler = undefined;
-			c.a = 2;
-			expect(Binding.debugHandler).toBeUndefined();
-		} finally {
-			Binding.debugHandler = undefined;
-		}
+		let logged: any;
+		app.log.addHandler(0, (msg) => {
+			logged = msg;
+		});
+		let c = new TestObject();
+		c.child.bind("aa", $bind("a").debug());
+		c.a = 2;
+		expect(logged).toBeDefined();
+		expect(logged.message).toMatch(/\$bind/);
+		expect(logged.data).toEqual([2]);
+		app.clear();
 	});
 
 	test("Volume test", () => {

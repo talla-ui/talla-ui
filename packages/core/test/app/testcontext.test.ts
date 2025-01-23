@@ -33,27 +33,30 @@ test("useTestContext result", () => {
 });
 
 describe("Local data", () => {
-	test("Empty data", () => {
+	test("Empty data", async () => {
 		let app = useTestContext();
 		expect(app.localData).toBeInstanceOf(LocalData);
-		expect(
-			app.localData.read("test", { foo: { isOptional: true } })?.[0],
-		).toHaveProperty("foo", undefined);
+		let read = await app.localData.readAsync("test", {
+			foo: { isOptional: true },
+		});
+		expect(read?.[0]).toHaveProperty("foo", undefined);
 	});
 
-	test("Specified local data", () => {
+	test("Specified local data", async () => {
 		let app = useTestContext({ localData: { test: { foo: 123 } } });
-		expect(
-			app.localData.read("test", { foo: { isNumber: {} } })?.[0],
-		).toHaveProperty("foo", 123);
+		let read = await app.localData.readAsync("test", { foo: { isNumber: {} } });
+		expect(read?.[0]).toHaveProperty("foo", 123);
 	});
 
-	test("Write and read local data", () => {
-		let app = useTestContext({ localData: { test: { foo: 123 } } });
-		app.localData.write("test", { foo: 321 });
-		expect(
-			app.localData.read("test", { foo: { isNumber: {} } })?.[0],
-		).toHaveProperty("foo", 321);
+	test("Write and read local data", async () => {
+		let app = useTestContext({
+			localData: { test: { foo: 123 }, other: { foo: 456 } },
+		});
+		await app.localData.writeAsync("test", { foo: 321 });
+		let read = await app.localData.readAsync("test", { foo: { isNumber: {} } });
+		expect(read?.[0]).toHaveProperty("foo", 321);
+		let def = await app.localData.readAsync("other", { foo: { isNumber: {} } });
+		expect(def?.[0]).toHaveProperty("foo", 456);
 	});
 });
 
