@@ -105,6 +105,15 @@ test("Component with content", () => {
 	expect(textfield.placeholder?.toString()).toBe("placeholder");
 });
 
+test("Too many arguments", () => {
+	expect(() => (
+		<conditional>
+			<label>foo</label>
+			<label>bar</label>
+		</conditional>
+	)).toThrow(/content/);
+});
+
 test("Custom view composite", () => {
 	class MyView extends ViewComposite {
 		constructor(_p: { foo?: BindingOrValue<number> }) {

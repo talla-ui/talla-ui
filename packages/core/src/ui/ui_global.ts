@@ -1,4 +1,5 @@
 import { RenderContext, View, ViewBuilder, app } from "../app/index.js";
+import { invalidArgErr } from "../errors.js";
 import {
 	UIAnimatedCell,
 	UIAnimationView,
@@ -43,9 +44,11 @@ function isPreset(value: any) {
 }
 
 /** Helper function for ui.* functions */
-function makeAnyViewBuilderFunction(type: typeof View) {
+function makeAnyViewBuilderFunction(type: typeof View, maxArgs?: number) {
 	return function (...args: any[]): ViewBuilder<any> {
 		if (!isPreset(args[0])) args.unshift(Object.create(null));
+		if (maxArgs != null && args.length > maxArgs + 1)
+			throw invalidArgErr("content.length");
 		return (type.getViewBuilder as any).call(type, ...args);
 	};
 }
@@ -79,19 +82,19 @@ _ui.button = makeNonPresetViewBuilderFunction(UIButton, (label, p) => ({
 	...p,
 	label,
 }));
-_ui.textField = makeAnyViewBuilderFunction(UITextField);
-_ui.toggle = makeAnyViewBuilderFunction(UIToggle);
-_ui.separator = makeAnyViewBuilderFunction(UISeparator);
-_ui.image = makeAnyViewBuilderFunction(UIImage);
+_ui.textField = makeAnyViewBuilderFunction(UITextField, 0);
+_ui.toggle = makeAnyViewBuilderFunction(UIToggle, 0);
+_ui.separator = makeAnyViewBuilderFunction(UISeparator, 0);
+_ui.image = makeAnyViewBuilderFunction(UIImage, 0);
 _ui.spacer = makeNonPresetViewBuilderFunction(UISpacer, (width, height) => ({
 	width,
 	height,
 }));
 
-_ui.renderView = makeAnyViewBuilderFunction(UIViewRenderer);
-_ui.animate = makeAnyViewBuilderFunction(UIAnimationView);
-_ui.conditional = makeAnyViewBuilderFunction(UIConditionalView);
-_ui.list = makeAnyViewBuilderFunction(UIListView);
+_ui.renderView = makeAnyViewBuilderFunction(UIViewRenderer, 0);
+_ui.animate = makeAnyViewBuilderFunction(UIAnimationView, 1);
+_ui.conditional = makeAnyViewBuilderFunction(UIConditionalView, 1);
+_ui.list = makeAnyViewBuilderFunction(UIListView, 3);
 
 _ui.use = function (type: any, ...args: any[]) {
 	if (!isPreset(args[0])) args.unshift(Object.create(null));
