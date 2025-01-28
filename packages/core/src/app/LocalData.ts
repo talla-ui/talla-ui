@@ -32,14 +32,19 @@ export class LocalData extends ManagedObject {
 	}
 
 	/**
-	 * Read persisted data from the specified key using an object schema
+	 * Read persisted data from the specified key using a schema or object reader
 	 * @param key The persisted key
-	 * @param schema The validation schema to use while reading data using {@link ObjectReader}
+	 * @param reader Either an ObjectReader instance or a schema to validate and read data
 	 * @returns A tuple containing either the data (object) that was read, or a set of errors for fields in the schema definition
 	 */
-	async readAsync<T extends ObjectReader.Schema>(key: string, schema: T) {
+	async readAsync<T extends ObjectReader.Schema>(
+		key: string,
+		reader: T | ObjectReader<T>,
+	): Promise<ObjectReader.ReadResult<T>> {
+		if (!(reader instanceof ObjectReader)) {
+			reader = new ObjectReader(reader);
+		}
 		let json = this._obj?.[key];
-		let reader = new ObjectReader(schema);
 		return json
 			? reader.readJSONString(json)
 			: reader.read(this._defaults[key] || ({} as any));

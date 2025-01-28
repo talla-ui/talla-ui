@@ -15,6 +15,7 @@ import {
 	MessageDialogOptions,
 	ModalMenuOptions,
 	NavigationTarget,
+	ObjectReader,
 	UIButton,
 	UICell,
 	UIIconResource,
@@ -45,6 +46,13 @@ describe("Local data", () => {
 	test("Specified local data", async () => {
 		let app = useTestContext({ localData: { test: { foo: 123 } } });
 		let read = await app.localData.readAsync("test", { foo: { isNumber: {} } });
+		expect(read?.[0]).toHaveProperty("foo", 123);
+	});
+
+	test("Use ObjectReader", async () => {
+		let app = useTestContext({ localData: { test: { foo: 123 } } });
+		let reader = new ObjectReader({ foo: { isNumber: {} } });
+		let read = await app.localData.readAsync("test", reader);
 		expect(read?.[0]).toHaveProperty("foo", 123);
 	});
 
