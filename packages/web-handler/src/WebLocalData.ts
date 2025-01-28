@@ -10,12 +10,13 @@ export class WebLocalData extends LocalData {
 
 	override async readAsync<T extends ObjectReader.Schema>(
 		key: string,
-		schema: T,
+		reader: T | ObjectReader<T>,
 	) {
 		let data = await this._transact((s) => s.get(String(key)));
+		if (!(reader instanceof ObjectReader)) reader = new ObjectReader(reader);
 		return data && data.value !== undefined
-			? new ObjectReader(schema).read(data.value as any)
-			: super.readAsync(key, schema);
+			? reader.read(data.value as any)
+			: super.readAsync(key, reader);
 	}
 
 	override async writeAsync(key: string, value?: Record<string, unknown>) {
