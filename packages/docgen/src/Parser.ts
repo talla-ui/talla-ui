@@ -335,7 +335,7 @@ export class Parser {
 			abstract = abstract!.trim();
 			if (abstract && !abstract.endsWith(".")) abstract += ".";
 		}
-		entry.abstract = abstract;
+		entry.abstract = abstract.replace(/\</, "&lt;").replace(/\>/, "&gt;");
 
 		let description: string[] = [];
 		let summary: string[] = [];

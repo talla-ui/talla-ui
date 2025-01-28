@@ -19,7 +19,11 @@ export {
 
 if (!window.require) {
 	(window as any).require = function (s: string) {
-		if (s === "talla-ui" || s === "talla-ui" || s === "@talla-ui/web-handler") {
+		if (
+			s === "talla-ui" ||
+			s === "@talla-ui/core" ||
+			s === "@talla-ui/web-handler"
+		) {
 			return {
 				...core,
 				useWebContext,

@@ -7,7 +7,7 @@
 	"scripts": {
 		"clean": "rimraf dist",
 		"prebuild": "npm run clean && tsc -p src",
-		"build": "esbuild src/app.ts --outfile=dist/bundle.js --bundle --external:talla-ui --external:@talla-ui/web --format=iife --target=es2020 --minify",
+		"build": "esbuild src/app.ts --outfile=dist/bundle.js --bundle --external:talla-ui --external:@talla-ui/core --external:@talla-ui/web --format=iife --target=es2020 --minify",
 		"check-format": "prettier --check \"src/**/*.{ts,tsx}\""
 	},
 	"prettier": {
