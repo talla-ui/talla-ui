@@ -19,13 +19,19 @@ export class UIRow extends UIContainer {
 		preset: ViewBuilder.ExtendPreset<
 			typeof UIContainer,
 			UIRow,
-			"height" | "spacing" | "align" | "gravity" | "reverse"
+			"height" | "spacing" | "align" | "gravity" | "reverse" | "wrap"
 		>,
 		...content: ViewBuilder[]
 	) => ViewBuilder<UIContainer>;
 
 	/** True if content should be displayed in reverse order */
 	reverse = false;
+
+	/**
+	 * True if row content should wrap automatically
+	 * - If this property is set, its value overrides {@link UIContainer.Layout layout.wrapContent}.
+	 */
+	wrap?: boolean = undefined;
 
 	/** Row height, in pixels or CSS length with unit */
 	height?: string | number = undefined;

@@ -33,6 +33,7 @@ export class UIContainerRenderer<
 				"align" as any,
 				"spacing" as any,
 				"reverse" as any,
+				"wrap" as any,
 			);
 		}
 		if (observed instanceof UIColumn) {
@@ -73,6 +74,7 @@ export class UIContainerRenderer<
 			case "padding":
 			case "layout":
 			case "align":
+			case "wrap":
 			case "height":
 			case "width":
 			case "distribute":
@@ -134,10 +136,11 @@ export class UIContainerRenderer<
 		if (container instanceof UIRow) {
 			systemName = CLASS_ROW;
 			styles = [{ height: container.height }];
-			if (container.align || container.gravity) {
+			if (container.wrap || container.align || container.gravity) {
 				layout = Object.assign(
 					{},
 					layout,
+					container.wrap != null ? { wrapContent: container.wrap } : undefined,
 					container.align ? { distribution: container.align } : undefined,
 					container.gravity ? { gravity: container.gravity } : undefined,
 				);
