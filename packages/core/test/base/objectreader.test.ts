@@ -285,6 +285,33 @@ describe("ObjectReader", () => {
 		expect(reader.read({ name: "John", age: 25 })[0]).toHaveProperty("age", 25);
 	});
 
+	test("Optional number with empty string", () => {
+		let reader = new ObjectReader({
+			name: { isString: {} },
+			age: { isOptional: true, isNumber: { integer: true, positive: true } },
+		});
+		// Empty string should be treated as undefined for optional numbers
+		expect(reader.read({ name: "John", age: "" })[0]).toHaveProperty(
+			"age",
+			undefined,
+		);
+	});
+
+	test("Optional date with empty string", () => {
+		let reader = new ObjectReader({
+			name: { isString: {} },
+			birthDate: {
+				isOptional: true,
+				isDate: {},
+			},
+		});
+		// Empty string should be treated as undefined for optional dates
+		expect(reader.read({ name: "John", birthDate: "" })[0]).toHaveProperty(
+			"birthDate",
+			undefined,
+		);
+	});
+
 	test("Custom errors", () => {
 		let reader = new ObjectReader({
 			str: {

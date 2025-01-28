@@ -305,6 +305,7 @@ function _validate(
 			return _makeError(stringRule.max, stringRule);
 	}
 	if (numberRule) {
+		if (value === "" && rule.isOptional) return { value: undefined };
 		if (typeof value === "string") value = parseFloat(value);
 		if (typeof value !== "number" || isNaN(value))
 			return _makeError(numberRule);
@@ -320,6 +321,7 @@ function _validate(
 			return _makeError(numberRule.max, numberRule);
 	}
 	if (dateRule) {
+		if (value === "" && rule.isOptional) return { value: undefined };
 		if (typeof value === "string" || typeof value === "number")
 			value = new Date(value);
 		if (!(value instanceof Date) || isNaN(+value))
