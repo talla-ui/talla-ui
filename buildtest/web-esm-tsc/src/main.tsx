@@ -2,7 +2,7 @@ import { Activity, ui } from "../lib/talla-web.es2015.esm.min.js";
 
 const page = (
 	<cell>
-		<label>Hello, world!</label>
+		<label align="center">Hello, world!</label>
 	</cell>
 );
 

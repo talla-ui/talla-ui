@@ -2,7 +2,7 @@ import { Activity, ui } from "talla-ui";
 
 const page = (
 	<cell>
-		<label>Hello, world!</label>
+		<label align="center">Hello, world!</label>
 	</cell>
 );
 

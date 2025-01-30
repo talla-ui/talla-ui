@@ -35,14 +35,7 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 			case "label":
 			case "icon":
 			case "chevron":
-				this.scheduleUpdate(this.element);
-				return;
-			case "disabled":
-			case "pressed":
-			case "width":
-			case "style":
-				this.scheduleUpdate(undefined, this.element);
-				return;
+				return this.scheduleUpdate(this.element);
 		}
 		super.propertyChange(property, value);
 	}
@@ -114,8 +107,9 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 				button.primary ? ui.style.BUTTON_PRIMARY : ui.style.BUTTON,
 				button.style,
 				button.width !== undefined
-					? { width: button.width, minWidth: 0 }
+					? { width: button.width, minWidth: button.width }
 					: undefined,
+				button.grow !== undefined ? { grow: button.grow ? 1 : 0 } : undefined,
 			],
 			undefined,
 			true,

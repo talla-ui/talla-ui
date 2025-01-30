@@ -37,6 +37,7 @@ export class UILabel extends UIComponent {
 			| "italic"
 			| "color"
 			| "fontSize"
+			| "align"
 			| "dim"
 			| "style"
 			| "allowFocus"
@@ -111,6 +112,12 @@ export class UILabel extends UIComponent {
 	 * - If this property is set, its value overrides `padding` from the current label style.
 	 */
 	padding?: UIComponent.Offsets = undefined;
+
+	/**
+	 * The text alignment to be applied to this label
+	 * - If set, this property overrides the `textAlign` property of the current label style.
+	 */
+	align?: UIComponent.TextStyle["textAlign"] = undefined;
 
 	/**
 	 * The font size to be applied to this label (pixels or string with unit)

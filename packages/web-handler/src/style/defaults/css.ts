@@ -44,6 +44,8 @@ export function makeBaseCSS() {
 			border: "0 solid transparent",
 			cursor: "inherit",
 			boxSizing: "border-box",
+			flexGrow: "0",
+			flexShrink: "0",
 			whiteSpace: "pre",
 			textOverflow: "ellipsis",
 			textDecoration: "none",
@@ -58,47 +60,35 @@ export function makeBaseCSS() {
 			position: "relative",
 			display: "flex",
 			textAlign: "start||left",
-			alignItems: "stretch",
 			flexDirection: "column",
 			justifyContent: "flex-start",
-			alignSelf: "stretch",
-			flexGrow: "1",
-			flexShrink: "1",
+			alignItems: "stretch",
 		},
 		[`.${CLASS_UI}.${CLASS_ROW}`]: {
-			flexDirection: "row",
 			alignItems: "center",
-			flexGrow: "0",
+			flexDirection: "row",
 			// make sure row is full width for gravity=overlay:
-			left: 0,
-			right: 0,
+			left: "0",
+			right: "0",
 		},
 		[`.${CLASS_UI}.${CLASS_COLUMN}`]: {
-			alignItems: "center",
-			flexGrow: "0",
 			// make sure column is full height for gravity=overlay:
 			top: "0",
-			bottom: 0,
+			bottom: "0",
+		},
+		[`.${CLASS_UI}.${CLASS_SCROLL}`]: {
+			alignSelf: "stretch",
+			flexShrink: "1",
+			flexGrow: "1",
 		},
 		[`.${CLASS_UI}.${CLASS_CELL}`]: {
+			alignSelf: "stretch",
 			justifyContent: "center",
-			alignItems: "center",
 			overflow: "hidden",
 			top: "0",
 			minHeight: "0",
-			flexShrink: "0",
-			zIndex: "0", // every cell has its own stacking context
-		},
-
-		// add special nesting rules for container elements
-		[`.${CLASS_UI}.${CLASS_CELL}>.${CLASS_CONTAINER}:only-child`]: {
 			flexGrow: "1",
-		},
-		[`.${CLASS_UI}.${CLASS_COLUMN}>.${CLASS_CONTAINER}`]: {
-			flexShrink: "0",
-		},
-		[`.${CLASS_UI}.${CLASS_ROW}>.${CLASS_CONTAINER}`]: {
-			flexShrink: "0",
+			zIndex: "0", // every cell has its own stacking context
 		},
 
 		// set sensible placeholder style
@@ -122,7 +112,7 @@ export function makeBaseCSS() {
 			alignItems: "center",
 			position: "absolute",
 			insetInlineEnd: "1ex",
-			top: 0,
+			top: "0",
 			height: "100%",
 		},
 

@@ -355,7 +355,9 @@ function addDimensionsCSS(
 	let maxHeight = dimensions.maxHeight;
 	if (maxHeight !== undefined) result.maxHeight = getCSSLength(maxHeight, "");
 	let grow = dimensions.grow;
-	if (grow !== undefined) result.flexGrow = grow as any;
+	if (grow !== undefined) {
+		result.flexGrow = grow === true ? 1 : grow === false ? 0 : (grow as any);
+	}
 	let shrink = dimensions.shrink;
 	if (shrink !== undefined) result.flexShrink = shrink as any;
 }

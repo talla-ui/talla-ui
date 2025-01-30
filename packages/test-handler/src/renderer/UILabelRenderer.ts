@@ -15,6 +15,8 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 			"padding",
 			"width",
 			"dim",
+			"fontSize",
+			"align",
 			"style",
 		);
 	}
@@ -24,17 +26,7 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 		switch (property) {
 			case "text":
 			case "icon":
-				this.scheduleUpdate(this.element);
-				return;
-			case "bold":
-			case "italic":
-			case "color":
-			case "dim":
-			case "width":
-			case "padding":
-			case "style":
-				this.scheduleUpdate(undefined, this.element);
-				return;
+				return this.scheduleUpdate(this.element);
 		}
 		super.propertyChange(property, value);
 	}
@@ -55,11 +47,13 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 			label.style,
 			{
 				width: label.width,
+				grow: label.grow,
 				padding: label.padding,
 				bold: label.bold,
 				italic: label.italic,
 				textColor: label.color,
 				fontSize: label.fontSize,
+				textAlign: label.align,
 				opacity: label.dim === true ? 0.5 : label.dim === false ? 1 : label.dim,
 				lineBreakMode: label.wrap ? "pre-wrap" : undefined,
 				userSelect: label.selectable || undefined,

@@ -2,6 +2,7 @@ import {
 	app,
 	RenderContext,
 	ui,
+	UICell,
 	UIColumn,
 	UIContainer,
 	UIRow,
@@ -28,21 +29,36 @@ export class UIContainerRenderer<
 		super(observed);
 		this.observeProperties("padding", "layout");
 		if (observed instanceof UIRow) {
-			this.observeProperties(
-				"height" as any,
-				"align" as any,
-				"spacing" as any,
-				"reverse" as any,
-				"wrap" as any,
+			(this as UIContainerRenderer<any>).observeProperties(
+				"height",
+				"align",
+				"spacing",
+				"reverse",
+				"wrap",
 			);
 		}
 		if (observed instanceof UIColumn) {
-			this.observeProperties(
-				"width" as any,
-				"align" as any,
-				"distribute" as any,
-				"spacing" as any,
-				"reverse" as any,
+			(this as UIContainerRenderer<any>).observeProperties(
+				"width",
+				"align",
+				"distribute",
+				"spacing",
+				"reverse",
+			);
+		}
+		if (observed instanceof UICell) {
+			(this as UIContainerRenderer<any>).observeProperties(
+				"width",
+				"height",
+				"textDirection",
+				"margin",
+				"padding",
+				"borderRadius",
+				"background",
+				"textColor",
+				"opacity",
+				"effect",
+				"style",
 			);
 		}
 
@@ -66,20 +82,9 @@ export class UIContainerRenderer<
 		if (!this.element) return;
 		switch (property) {
 			case "spacing":
-				this.updateSeparator();
-				return;
+				return this.updateSeparator();
 			case "reverse":
-				this.scheduleUpdate(this.element);
-				return;
-			case "padding":
-			case "layout":
-			case "align":
-			case "wrap":
-			case "height":
-			case "width":
-			case "distribute":
-				this.scheduleUpdate(undefined, this.element);
-				return;
+				return this.scheduleUpdate(this.element);
 		}
 		super.propertyChange(property, value);
 	}
@@ -130,12 +135,16 @@ export class UIContainerRenderer<
 		let container = this.observed;
 		let systemName: string;
 		let layout = container.layout;
+		let grow: number | undefined;
+		if (container.grow !== undefined) {
+			grow = container.grow ? 1 : 0;
+		}
 		if (container.padding !== undefined) {
 			layout = { ...layout, padding: container.padding };
 		}
 		if (container instanceof UIRow) {
 			systemName = CLASS_ROW;
-			styles = [{ height: container.height }];
+			styles = [{ height: container.height, grow }];
 			if (container.wrap || container.align || container.gravity) {
 				layout = Object.assign(
 					{},
@@ -147,7 +156,7 @@ export class UIContainerRenderer<
 			}
 		} else if (container instanceof UIColumn) {
 			systemName = CLASS_COLUMN;
-			styles = [{ width: container.width }];
+			styles = [{ width: container.width, grow }];
 			if (container.align || container.distribute) {
 				layout = Object.assign(
 					{},
@@ -159,6 +168,7 @@ export class UIContainerRenderer<
 				);
 			}
 		} else if (container instanceof UIScrollContainer) {
+			if (grow !== undefined) styles = [{ grow }];
 			systemName = CLASS_SCROLL;
 		} else {
 			// (use styles passed in by cell renderer)

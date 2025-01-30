@@ -20,7 +20,7 @@ const _color_controlBase = ui.color.CONTROL_BASE;
 const _color_inherit = ui.color("inherit");
 
 const baseButtonStyle: CombinedStyleType = {
-	padding: { y: 6, x: 12 },
+	padding: { y: 4, x: 12 },
 	borderRadius: 12,
 	borderThickness: 1,
 	borderColor: _color_clear,
@@ -29,7 +29,7 @@ const baseButtonStyle: CombinedStyleType = {
 	lineBreakMode: "ellipsis",
 	lineHeight: 2,
 	minWidth: 112,
-	shrink: 0,
+	shrink: 1,
 	css: {
 		position: "relative",
 		overflow: "hidden",
@@ -142,7 +142,6 @@ export const styles: [
 				minWidth: 32,
 				minHeight: 32,
 				padding: 4,
-				shrink: 0,
 				borderRadius: 8,
 				borderThickness: 0,
 				lineHeight: 1,
@@ -162,13 +161,22 @@ export const styles: [
 		"Label",
 		[
 			{
+				shrink: 1,
 				maxWidth: "100%",
 				lineBreakMode: "ellipsis",
 				css: { cursor: "inherit" },
 			},
 		],
 	],
-	["Image", [{ maxWidth: "100%" }]],
+	[
+		"Image",
+		[
+			{
+				shrink: 1,
+				maxWidth: "100%",
+			},
+		],
+	],
 	[
 		"TextField",
 		[
@@ -179,7 +187,9 @@ export const styles: [
 				borderColor: _color_text.alpha(0.25),
 				borderRadius: 5,
 				minWidth: 96,
-				padding: 8,
+				shrink: 1,
+				height: 38,
+				padding: { x: 8, y: 4 },
 				lineBreakMode: "pre-wrap",
 				lineHeight: 1.5,
 				userSelect: true,
@@ -205,6 +215,7 @@ export const styles: [
 				borderColor: _color_text.alpha(0.25),
 				textColor: ui.color.PRIMARY_BG, // :checked fill
 				padding: { y: 4 },
+				shrink: 1,
 				css: { cursor: "pointer" },
 			},
 			{

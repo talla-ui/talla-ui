@@ -44,7 +44,7 @@ export class UIRow extends UIContainer {
 	spacing?: string | number = UITheme.getSpacing();
 
 	/**
-	 * Alignment of content along the horizontal axis
+	 * Alignment of content along the horizontal axis, defaults to `start` if not set
 	 * - If this property is set, its value overrides {@link UIContainer.Layout layout.distribution}.
 	 */
 	align?: UIContainer.Layout["distribution"] = undefined;

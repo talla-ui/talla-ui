@@ -28,6 +28,8 @@ export class UICell extends UIContainer {
 			| "borderRadius"
 			| "opacity"
 			| "effect"
+			| "width"
+			| "height"
 			| "style"
 			| "allowFocus"
 			| "allowKeyboardFocus"
@@ -63,6 +65,12 @@ export class UICell extends UIContainer {
 
 	/** An output effect that will be applied when the cell is rendered */
 	effect?: RenderContext.OutputEffect = undefined;
+
+	/** Cell width, in pixels or CSS length with unit */
+	width?: string | number = undefined;
+
+	/** Cell height, in pixels or CSS length with unit */
+	height?: string | number = undefined;
 
 	/** The style to be applied to this cell */
 	style?: UICell.StyleValue = undefined;

@@ -36,13 +36,10 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 	/** Handler for base property changes; must be overridden to handle other UI component properties */
 	protected propertyChange(property: string, value: any) {
 		if (!this.element) return;
-		switch (property) {
-			case "hidden":
-				this.scheduleHide(value);
-				return;
-			case "position":
-				this.scheduleUpdate(undefined, this.element);
-				return;
+		if (property === "hidden") {
+			this.scheduleHide(value);
+		} else {
+			this.scheduleUpdate(undefined, this.element);
 		}
 	}
 

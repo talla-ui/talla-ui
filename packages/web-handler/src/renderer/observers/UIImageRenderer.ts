@@ -44,7 +44,13 @@ export class UIImageRenderer extends BaseObserver<UIImage> {
 			[
 				ui.style.IMAGE,
 				image.style,
-				{ width: image.width, height: image.height },
+				{
+					width: image.width,
+					minWidth: image.width,
+					height: image.height,
+					minHeight: image.height,
+					grow: image.grow,
+				},
 			],
 			undefined,
 			false,

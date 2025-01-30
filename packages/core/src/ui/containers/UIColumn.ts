@@ -37,7 +37,7 @@ export class UIColumn extends UIContainer {
 	spacing?: string | number = undefined;
 
 	/**
-	 * Alignment of content along the horizontal axis
+	 * Alignment of content along the horizontal axis, defaults to `stretch` if not set
 	 * - If this property is set, its value overrides {@link UIContainer.Layout layout.gravity}.
 	 */
 	align?: UIContainer.Layout["gravity"] = undefined;

@@ -3,7 +3,9 @@ import globeSvg from "bundle-text:./icons/globe.svg";
 
 const page = (
 	<cell>
-		<label icon={ui.icon("globe", globeSvg)}>Hello, world!</label>
+		<label icon={ui.icon("globe", globeSvg)} align="center">
+			Hello, world!
+		</label>
 	</cell>
 );
 

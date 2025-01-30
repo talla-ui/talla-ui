@@ -9,19 +9,6 @@ export class UISpacerRenderer extends TestBaseObserver<UISpacer> {
 		this.observeProperties("width", "height", "minWidth", "minHeight");
 	}
 
-	protected override propertyChange(property: string, value: any) {
-		if (!this.element) return;
-		switch (property) {
-			case "width":
-			case "height":
-			case "minWidth":
-			case "minHeight":
-				this.scheduleUpdate(undefined, this.element);
-				return;
-		}
-		super.propertyChange(property, value);
-	}
-
 	getOutput() {
 		let elt = new TestOutputElement("spacer");
 		let output = new RenderContext.Output(this.observed, elt);
@@ -42,7 +29,7 @@ export class UISpacerRenderer extends TestBaseObserver<UISpacer> {
 				height,
 				minWidth,
 				minHeight,
-				grow: hasFixed ? 0 : 1,
+				grow: spacer.grow ?? (hasFixed ? 0 : 1),
 				shrink: hasMinimum ? 0 : 1,
 			},
 			spacer.position,

@@ -13,11 +13,7 @@ export class UIImageRenderer extends TestBaseObserver<UIImage> {
 		if (!this.element) return;
 		switch (property) {
 			case "url":
-				this.scheduleUpdate(this.element);
-				return;
-			case "style":
-				this.scheduleUpdate(undefined, this.element);
-				return;
+				return this.scheduleUpdate(this.element);
 		}
 		super.propertyChange(property, value);
 	}
@@ -36,7 +32,11 @@ export class UIImageRenderer extends TestBaseObserver<UIImage> {
 		applyElementStyle(element, [
 			ui.style.IMAGE,
 			image.style,
-			{ width: image.width, height: image.height },
+			{
+				width: image.width,
+				height: image.height,
+				grow: image.grow,
+			},
 			image.position,
 		]);
 	}

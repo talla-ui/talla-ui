@@ -41,6 +41,8 @@ export abstract class UIComponent extends View {
 			hidden?: BindingOrValue<boolean>;
 			/** Options for the positioning of this component within parent component(s) (overrides) */
 			position?: BindingOrValue<UIComponent.Position>;
+			/** True if this component should grow to fill available space */
+			grow?: boolean;
 			/** WAI-ARIA role for this component, if applicable */
 			accessibleRole?: BindingOrValue<StringConvertible>;
 			/** WAI-ARIA label text for this component (not tooltip), if applicable */
@@ -124,6 +126,13 @@ export abstract class UIComponent extends View {
 	 * - If set, these options replace the defaults for the type of component.
 	 */
 	position?: Readonly<UIComponent.Position> = undefined;
+
+	/**
+	 * True if this component should grow to fill available space
+	 * - If set, this property overrides {@link UIComponent.Dimensions grow} of the component's `style` object, if any.
+	 * - As an exception, cells grow by default, even if this property is set to undefined. Set this property to `false` to contain cells to their content size instead.
+	 */
+	grow?: boolean = undefined;
 
 	/** WAI-ARIA role for this component, if applicable */
 	accessibleRole?: StringConvertible;
@@ -258,10 +267,10 @@ export namespace UIComponent {
 		minHeight?: string | number;
 		/** Maximum height of the element, as specified (in pixels or string with unit) */
 		maxHeight?: string | number;
-		/** Growth quotient (0 for no growth, higher values for faster growth when needed) */
-		grow?: number;
-		/** Shrink quotient (0 to never shrink, higher values for faster shrinking when needed) */
-		shrink?: number;
+		/** Growth quotient (0 or false for no growth, higher values for faster growth when needed; true = 1) */
+		grow?: number | boolean;
+		/** Shrink quotient (0 or false to never shrink, higher values for faster shrinking when needed; true = 1) */
+		shrink?: number | boolean;
 	};
 
 	/**

@@ -12,40 +12,6 @@ import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
 /** @internal */
 export class UICellRenderer extends UIContainerRenderer<UICell> {
-	constructor(observed: UICell) {
-		super(observed);
-		this.observeProperties(
-			// note some properties are handled by container (e.g. padding)
-			"textDirection",
-			"margin",
-			"padding",
-			"borderRadius",
-			"background",
-			"textColor",
-			"opacity",
-			"effect",
-			"style",
-		);
-	}
-
-	protected override propertyChange(property: string, value: any) {
-		if (!this.element) return;
-		switch (property) {
-			case "textDirection":
-			case "margin":
-			case "padding":
-			case "borderRadius":
-			case "background":
-			case "textColor":
-			case "opacity":
-			case "effect":
-			case "style":
-				this.scheduleUpdate(undefined, this.element);
-				return;
-		}
-		super.propertyChange(property, value);
-	}
-
 	override getOutput() {
 		let output = super.getOutput();
 		let elt = output.element;
@@ -92,6 +58,9 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 				background: cell.background,
 				textColor: cell.textColor,
 				opacity: cell.opacity,
+				width: cell.width,
+				height: cell.height,
+				grow: cell.grow,
 			},
 		]);
 

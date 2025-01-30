@@ -13,18 +13,6 @@ export class UISeparatorRenderer extends BaseObserver<UISeparator> {
 		this.observeProperties("color", "margin", "thickness");
 	}
 
-	protected override propertyChange(property: string, value: any) {
-		if (!this.element) return;
-		switch (property) {
-			case "color":
-			case "margin":
-			case "thickness":
-				this.scheduleUpdate(undefined, this.element);
-				return;
-		}
-		super.propertyChange(property, value);
-	}
-
 	getOutput() {
 		let elt = document.createElement("hr");
 		let output = new RenderContext.Output(this.observed, elt);
@@ -43,6 +31,7 @@ export class UISeparatorRenderer extends BaseObserver<UISeparator> {
 				{
 					borderColor: sep.color,
 					borderThickness: sep.thickness,
+					grow: sep.grow,
 				},
 			],
 			systemName,

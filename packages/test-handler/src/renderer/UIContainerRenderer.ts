@@ -20,10 +20,37 @@ export class UIContainerRenderer<
 		super(observed);
 		this.observeProperties("padding", "layout");
 		if (observed instanceof UIRow) {
-			this.observeProperties("height" as any, "align" as any, "reverse" as any);
+			(this as UIContainerRenderer<any>).observeProperties(
+				"height",
+				"align",
+				"spacing",
+				"reverse",
+				"wrap",
+			);
 		}
 		if (observed instanceof UIColumn) {
-			this.observeProperties("width" as any, "align" as any, "reverse" as any);
+			(this as UIContainerRenderer<any>).observeProperties(
+				"width",
+				"align",
+				"distribute",
+				"spacing",
+				"reverse",
+			);
+		}
+		if (observed instanceof UICell) {
+			(this as UIContainerRenderer<any>).observeProperties(
+				"width",
+				"height",
+				"textDirection",
+				"margin",
+				"padding",
+				"borderRadius",
+				"background",
+				"textColor",
+				"opacity",
+				"effect",
+				"style",
+			);
 		}
 
 		// observe content changes
@@ -45,16 +72,8 @@ export class UIContainerRenderer<
 	protected override propertyChange(property: string, value: any) {
 		if (!this.element) return;
 		switch (property) {
-			case "padding":
-			case "layout":
-			case "align": // for rows and columns
-			case "height": // for rows
-			case "width": // for columns
-				this.scheduleUpdate(undefined, this.element);
-				return;
 			case "reverse":
-				this.scheduleUpdate(this.element);
-				return;
+				return this.scheduleUpdate(this.element);
 		}
 		super.propertyChange(property, value);
 	}
@@ -112,6 +131,8 @@ export class UIContainerRenderer<
 					background: container.background,
 					textColor: container.textColor,
 					opacity: container.opacity,
+					width: container.width,
+					height: container.height,
 				},
 			];
 		} else if (container instanceof UIRow) {
@@ -132,6 +153,9 @@ export class UIContainerRenderer<
 		applyElementStyle(element, [
 			baseStyle,
 			(container as UICell).style,
+			container.grow !== undefined
+				? { grow: container.grow ? 1 : 0 }
+				: undefined,
 			...overrides,
 			container.position,
 			layout,

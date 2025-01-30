@@ -21,14 +21,7 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 		switch (property) {
 			case "placeholder":
 			case "value":
-				this.scheduleUpdate(this.element);
-				return;
-			case "disabled":
-			case "readOnly":
-			case "width":
-			case "style":
-				this.scheduleUpdate(undefined, this.element);
-				return;
+				return this.scheduleUpdate(this.element);
 		}
 		super.propertyChange(property, value);
 	}
@@ -69,7 +62,10 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 				ui.style.TEXTFIELD,
 				textField.style,
 				textField.width !== undefined
-					? { width: textField.width, minWidth: 0 }
+					? { width: textField.width, minWidth: textField.width }
+					: undefined,
+				textField.grow !== undefined
+					? { grow: textField.grow ? 1 : 0 }
 					: undefined,
 			],
 			undefined,

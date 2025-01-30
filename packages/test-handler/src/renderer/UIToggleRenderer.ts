@@ -14,13 +14,7 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 		switch (property) {
 			case "label":
 			case "state":
-				this.scheduleUpdate(this.element);
-				return;
-			case "disabled":
-			case "style":
-			case "labelStyle":
-				this.scheduleUpdate(undefined, this.element);
-				return;
+				return this.scheduleUpdate(this.element);
 		}
 		super.propertyChange(property, value);
 	}
@@ -58,6 +52,7 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 			ui.style.TOGGLE,
 			toggle.style,
 			toggle.width !== undefined ? { width: toggle.width } : undefined,
+			toggle.grow !== undefined ? { grow: toggle.grow ? 1 : 0 } : undefined,
 			toggle.position,
 		]);
 	}

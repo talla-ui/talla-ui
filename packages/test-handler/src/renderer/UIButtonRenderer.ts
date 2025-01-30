@@ -23,14 +23,7 @@ export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 			case "label":
 			case "icon":
 			case "chevron":
-				this.scheduleUpdate(this.element);
-				return;
-			case "disabled":
-			case "pressed":
-			case "width":
-			case "style":
-				this.scheduleUpdate(undefined, this.element);
-				return;
+				return this.scheduleUpdate(this.element);
 		}
 		super.propertyChange(property, value);
 	}
@@ -74,6 +67,7 @@ export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 			button.width !== undefined
 				? { width: button.width, minWidth: 0 }
 				: undefined,
+			button.grow !== undefined ? { grow: button.grow ? 1 : 0 } : undefined,
 		]);
 	}
 
