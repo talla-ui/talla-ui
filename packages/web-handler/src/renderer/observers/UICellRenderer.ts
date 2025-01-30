@@ -125,10 +125,10 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 		// apply output effect, if any
 		if (cell.effect) {
 			if (cell.effect !== this.lastEffect) {
-				if (this.lastEffect) this.lastEffect.removeEffect?.(element, cell);
-				cell.effect.applyEffect(element, cell);
+				this.lastEffect?.removeEffect?.(element, cell);
 				this.lastEffect = cell.effect;
 			}
+			cell.effect.applyEffect(element, cell);
 		} else if (this.lastEffect) {
 			this.lastEffect.removeEffect?.(element, cell);
 			this.lastEffect = undefined;
