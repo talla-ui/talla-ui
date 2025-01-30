@@ -2,7 +2,7 @@ import { View } from "./index.js";
 import { Binding, ManagedObject, ObjectReader } from "../base/index.js";
 
 /** An object that can be used to create bindings for properties of the nearest `formContext` property */
-export const $formContext = Binding.createFactory<
+export const $form = Binding.createFactory<
 	| "values"
 	| `values.${string}`
 	| "errors"
