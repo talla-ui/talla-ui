@@ -17,7 +17,7 @@ import {
 } from "../../dist/index.js";
 
 beforeEach(() => {
-	useTestContext({ renderFrequency: 5 });
+	useTestContext();
 });
 
 // helper function to get the text content of a list

@@ -10,7 +10,6 @@ import { Activity, UIButton, app, ui } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext({
-		renderFrequency: 5,
 		navigationDelay: 0,
 	});
 });

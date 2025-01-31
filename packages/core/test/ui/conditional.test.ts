@@ -13,7 +13,7 @@ import {
 } from "../../dist/index.js";
 
 beforeEach(() => {
-	useTestContext({ renderFrequency: 5 });
+	useTestContext();
 });
 
 test("Set state directly", () => {
@@ -61,7 +61,7 @@ test("Rendering content using bound state", async () => {
 	const myViewComposite = ui.use(MyViewComposite, { condition: false });
 
 	console.log("Creating view");
-	useTestContext({ renderFrequency: 5 });
+	useTestContext();
 	let myView = myViewComposite.create();
 
 	console.log("Rendering view");

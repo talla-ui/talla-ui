@@ -344,7 +344,7 @@ describe("Global context and parents", () => {
 
 describe("View rendering", () => {
 	beforeEach(() => {
-		useTestContext({ renderFrequency: 5 });
+		useTestContext();
 	});
 
 	test("Rendered page view", async () => {

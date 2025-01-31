@@ -111,7 +111,7 @@ test("Validation", () => {
 });
 
 test("Composite, binding to value and error", () => {
-	useTestContext({ renderFrequency: 5 });
+	useTestContext();
 	let ERR = "Foo must have at least 3 characters";
 	let ctx = new FormContext(
 		{ foo: { isString: { min: { length: 3, err: strf(ERR) } } } },
@@ -148,7 +148,7 @@ test("Composite, binding to value and error", () => {
 });
 
 test("Custom form container, rendered", async () => {
-	useTestContext({ renderFrequency: 5 });
+	useTestContext();
 	const FormContainer = ViewComposite.define(
 		{ formContext: undefined as FormContext | undefined },
 		(_, ...content) => ui.column(...content),

@@ -7,7 +7,7 @@ import { beforeEach, expect, test } from "vitest";
 import { UICell, UILabel, ui } from "../../dist/index.js";
 
 beforeEach(() => {
-	useTestContext({ renderFrequency: 5 });
+	useTestContext();
 });
 
 test("Constructor with content", () => {

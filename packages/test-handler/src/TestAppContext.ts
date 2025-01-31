@@ -23,8 +23,8 @@ export class TestContextOptions extends ConfigOptions {
 	/** The delay (in milliseconds) after which path changes are applied, defaults to 5 */
 	navigationDelay = 5;
 
-	/** The frequency (in milliseconds) with which output is added, defaults to 15 */
-	renderFrequency = 15;
+	/** The frequency (in milliseconds) with which output is added, defaults to 3 to speed up tests */
+	renderFrequency = 3;
 
 	/** True (default) if uncaught errors should be thrown anyway, including async; sets global error handler */
 	throwUncaughtErrors = true;
@@ -42,10 +42,7 @@ export class TestContextOptions extends ConfigOptions {
  * @example
  * describe("My scope", (scope) => {
  *   scope.beforeEach(() => {
- *     useTestContext({
- *       path: "foo",
- *       renderFrequency: 5,
- *     });
+ *     useTestContext({ path: "foo" });
  *   });
  *
  *   // ... add some tests here, to use `app`

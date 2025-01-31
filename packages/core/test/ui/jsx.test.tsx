@@ -24,11 +24,11 @@ import {
 } from "../../dist/index.js";
 
 function renderComposite(c: ViewComposite) {
-	c.render((() => {}) as any);
+	c.render((() => { }) as any);
 }
 
 beforeEach(() => {
-	useTestContext({ renderFrequency: 5 });
+	useTestContext();
 });
 
 test("Single component", () => {

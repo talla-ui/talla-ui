@@ -7,7 +7,7 @@ import { beforeEach, expect, test } from "vitest";
 import { ui, UISpacer } from "../../dist/index.js";
 
 beforeEach(() => {
-	useTestContext({ renderFrequency: 5 });
+	useTestContext();
 });
 
 test("Constructor", () => {

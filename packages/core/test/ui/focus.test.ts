@@ -13,7 +13,7 @@ import {
 } from "../../dist/index.js";
 
 beforeEach(() => {
-	useTestContext({ renderFrequency: 5 });
+	useTestContext();
 });
 
 test("Single element, initial focus", async () => {

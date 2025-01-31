@@ -150,7 +150,7 @@ describe("Rendering views", () => {
 
 	test("Cell view from single instance", async () => {
 		let view = new UICell();
-		let app = useTestContext({ renderFrequency: 5 });
+		let app = useTestContext();
 		renderTestView(view);
 		await app.renderer.expectOutputAsync({ source: view });
 	});
@@ -158,7 +158,7 @@ describe("Rendering views", () => {
 	test("Cell view from single composite", async () => {
 		const MyView = ViewComposite.define({}, ui.cell());
 		let view = new MyView();
-		let app = useTestContext({ renderFrequency: 5 });
+		let app = useTestContext();
 		renderTestView(view);
 		await app.renderer.expectOutputAsync({ source: view.body! });
 	});
@@ -171,7 +171,7 @@ describe("Rendering views", () => {
 			}
 		}
 		let view = new MyView();
-		useTestContext({ renderFrequency: 5, throwUncaughtErrors: false });
+		useTestContext({ throwUncaughtErrors: false });
 		let mockErrorHandler = vi.fn();
 		AppContext.setErrorHandler(mockErrorHandler);
 		renderTestView(view);
@@ -183,7 +183,7 @@ describe("Rendering views", () => {
 	test("Remove view after rendering", async () => {
 		const MyView = ViewComposite.define({}, ui.cell());
 		let view = new MyView();
-		let app = useTestContext({ renderFrequency: 5 });
+		let app = useTestContext();
 		let rendered = app.render(view);
 		await app.renderer.expectOutputAsync({ source: view.body! });
 		await rendered.removeAsync();
@@ -192,7 +192,7 @@ describe("Rendering views", () => {
 
 	test("View is not rendered twice", async () => {
 		const view = new UICell(new UILabel("Test"));
-		let app = useTestContext({ renderFrequency: 5 });
+		let app = useTestContext();
 		app.render(view);
 		let out1 = await app.renderer.expectOutputAsync({ type: "label" });
 		view.findViewContent(UILabel)[0]!.text = "Foo";
@@ -208,7 +208,7 @@ describe("Rendering views", () => {
 			}
 		}
 		let activity = new MyActivity();
-		let app = useTestContext({ renderFrequency: 5 });
+		let app = useTestContext();
 		app.addActivity(activity, true);
 		await app.renderer.expectOutputAsync({ source: activity.view! });
 	});
@@ -220,7 +220,7 @@ describe("Rendering views", () => {
 			}
 		}
 		let activity = new MyActivity();
-		let app = useTestContext({ renderFrequency: 5 });
+		let app = useTestContext();
 		app.addActivity(activity, true);
 		await expect
 			.poll(() => !!activity.view, { interval: 5, timeout: 100 })
@@ -245,7 +245,7 @@ describe("Rendering views", () => {
 			}
 		}
 		let activity = new MyActivity();
-		let app = useTestContext({ renderFrequency: 5 });
+		let app = useTestContext();
 		app.addActivity(activity, true);
 		await app.renderer.expectOutputAsync({ text: "foo" });
 		await activity.deactivateAsync();
@@ -255,7 +255,7 @@ describe("Rendering views", () => {
 	});
 
 	test("Show alert dialog", async () => {
-		let app = useTestContext({ renderFrequency: 5 });
+		let app = useTestContext();
 		let p = app.showAlertDialogAsync("This is a test", "OK");
 		await clickOutputAsync({ type: "button", text: "OK" });
 		let result = await p;
@@ -263,7 +263,7 @@ describe("Rendering views", () => {
 	});
 
 	test("Show confirmation dialog", async () => {
-		let app = useTestContext({ renderFrequency: 5 });
+		let app = useTestContext();
 		let p = app.showConfirmDialogAsync("This is a test", "Foo", "Bar");
 		await clickOutputAsync({ type: "button", text: "Bar" });
 		let result = await p;
@@ -271,7 +271,7 @@ describe("Rendering views", () => {
 	});
 
 	test("Show confirmation dialog using config class", async () => {
-		let app = useTestContext({ renderFrequency: 5 });
+		let app = useTestContext();
 		let myDialog = new MessageDialogOptions(
 			["This is a test", "Another line goes here"],
 			"Go ahead",
@@ -310,7 +310,7 @@ describe("Rendering views", () => {
 	});
 
 	test("Show confirm dialog, formatted", async () => {
-		let app = useTestContext({ renderFrequency: 5 });
+		let app = useTestContext();
 		let myDialog = new MessageDialogOptions(
 			strf("This is a test, foo = %[foo]"),
 			strf("OK"),
@@ -325,7 +325,7 @@ describe("Rendering views", () => {
 	});
 
 	test("Show modal menu", async () => {
-		let app = useTestContext({ renderFrequency: 5 });
+		let app = useTestContext();
 		let button = new UIButton("Test");
 		renderTestView(button);
 		await expectOutputAsync({ type: "button" });
@@ -342,7 +342,7 @@ describe("Rendering views", () => {
 	});
 
 	test("Show modal menu, using configuration function", async () => {
-		let app = useTestContext({ renderFrequency: 5 });
+		let app = useTestContext();
 		let p = app.showModalMenuAsync((options) => {
 			options.items.push({ key: "one", text: "One", hint: "1" });
 			options.items.push({ separate: true });

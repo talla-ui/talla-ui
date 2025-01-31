@@ -7,7 +7,7 @@ import { beforeEach, expect, test } from "vitest";
 import { UILabel, UIScrollContainer, ui } from "../../dist/index.js";
 
 beforeEach(() => {
-	useTestContext({ renderFrequency: 5 });
+	useTestContext();
 });
 
 test("Constructor", () => {
