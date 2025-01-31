@@ -94,7 +94,9 @@ export class TestOutputElement {
 		}
 
 		this.sendPlatformEvent("mousedown");
+		let emitChange = false;
 		if (this.type === "toggle" && !this.disabled) {
+			emitChange = true;
 			this.checked = !this.checked;
 		}
 
@@ -112,6 +114,7 @@ export class TestOutputElement {
 
 		this.sendPlatformEvent("mouseup");
 		this.sendPlatformEvent("click");
+		if (emitChange) this.sendPlatformEvent("change");
 		return this;
 	}
 
