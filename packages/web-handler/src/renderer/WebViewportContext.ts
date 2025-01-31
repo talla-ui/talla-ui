@@ -19,6 +19,8 @@ export class WebViewportContext
 		this._colSize = options.viewportColumnWidth;
 		this._rowSize = options.viewportRowHeight;
 		this._addHandler();
+		this._updateColorScheme();
+		this._updateSize();
 	}
 
 	width = 0;
@@ -32,21 +34,22 @@ export class WebViewportContext
 	row3 = false;
 	row4 = false;
 	row5 = false;
+	prefersDark?: boolean = undefined;
 
 	setGridSize(colSize: number, rowSize: number) {
 		this._colSize = colSize;
 		this._rowSize = rowSize;
-		this.update();
+		this._updateSize();
 	}
 
 	/** Take the specified overrides into account */
 	setLocationOverride(override?: ViewportLocation) {
 		this._override = override;
-		this.update();
+		this._updateSize();
 	}
 
 	/** Measure the current viewport and update context properties */
-	update() {
+	private _updateSize() {
 		let w = getWindowInnerWidth();
 		let h = getWindowInnerHeight();
 		if (this._override) {
@@ -73,7 +76,16 @@ export class WebViewportContext
 			this.row5 = gh >= 5;
 			this.emitChange("Resize");
 		}
-		return this;
+	}
+
+	/** Update the color scheme preference */
+	private _updateColorScheme() {
+		let m = window.matchMedia("(prefers-color-scheme: dark)");
+		let dark = m.matches;
+		if (this.prefersDark !== dark) {
+			this.prefersDark = dark;
+			this.emitChange("ColorScheme");
+		}
 	}
 
 	private _addHandler() {
@@ -81,12 +93,17 @@ export class WebViewportContext
 		_handlerAdded = true;
 		function update() {
 			if (app.renderer?.viewport instanceof WebViewportContext) {
-				app.renderer.viewport.update();
+				app.renderer.viewport._updateSize();
 			}
 			return false;
 		}
 		window.addEventListener("resize", update);
 		setInterval(update, 800);
+		window
+			.matchMedia("(prefers-color-scheme: dark)")
+			.addEventListener("change", () => {
+				this._updateColorScheme();
+			});
 	}
 
 	private _colSize = 300;

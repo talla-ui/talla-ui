@@ -52,6 +52,12 @@ export class WebContextOptions extends ConfigOptions {
 	/** A {@link WebTheme} instance that will be set as the active theme */
 	theme = new WebTheme();
 
+	/**
+	 * An optional {@link WebTheme} instance to be used automatically when the color scheme preference is set to dark mode
+	 * - To set this property, use the {@link UITheme.clone()} method on the {@link theme} property, or create a new instance from scratch.
+	 */
+	darkTheme?: WebTheme;
+
 	/** A list of URLs for CSS files to import */
 	importCSS: string[] = [];
 
@@ -159,6 +165,20 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 	renderer.listen((e) => {
 		if (e.name === "Remount") WebTheme.initializeCSS(options);
 	});
+
+	// apply dark theme automatically, if any
+	if (options.darkTheme) {
+		renderer.viewport.listen((e) => {
+			if (e.name === "ColorScheme") {
+				app.theme = renderer.viewport.prefersDark
+					? options.darkTheme
+					: options.theme;
+			}
+		});
+		if (renderer.viewport.prefersDark) {
+			app.theme = options.darkTheme;
+		}
+	}
 
 	// create navigation path
 	app.navigation.unlink();

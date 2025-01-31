@@ -28,7 +28,7 @@ export class WebRenderer extends RenderContext {
 	/** Creates a new render context instance, used by `useWebContext()` */
 	constructor(options: WebContextOptions) {
 		super();
-		this.viewport = new WebViewportContext(options).update();
+		this.viewport = new WebViewportContext(options);
 		this._mounts = new Map();
 		this._queue = app.scheduler.createQueue(
 			"WebRenderer",

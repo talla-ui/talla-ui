@@ -167,6 +167,9 @@ export namespace RenderContext {
 		/** True if the viewport is at least 5 grid columns tall */
 		row5: boolean;
 
+		/** True if the user's preferences indicate a dark color scheme */
+		prefersDark?: boolean;
+
 		/**
 		 * Sets grid size to determine number of rows and columns
 		 * - Other properties are updated immediately when this method is called.
