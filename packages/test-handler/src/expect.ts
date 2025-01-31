@@ -27,8 +27,8 @@ export class ExpectNavOptions extends ConfigOptions {
 /**
  * Waits for the global navigation location to match the given page ID and detail
  *
- * @summary This method starts checking the navigation controller periodically, and waits for the path to match the provided string. If the path still doesn't match after the given timeout (number of milliseconds) this method throws an error.
- * @note This method is asynchronous and **must** be `await`-ed.
+ * @summary This function starts checking the navigation controller periodically, and waits for the path to match the provided string. If the path still doesn't match after the given timeout (number of milliseconds) this function throws an error.
+ * @note This function is asynchronous and **must** be `await`-ed.
  * @param timeout Timeout, in milliseconds
  * @param pageId Page ID to wait for, must be an exact match
  * @param detail Detail string to wait for (defaults to empty string), must be an exact match
@@ -73,8 +73,8 @@ export async function expectNavAsync(
 
 /**
  * Waits for output to be rendered (by the test renderer) that matches the provided filters
- * - This method uses {@link TestRenderer.expectOutputAsync()}, refer to its documentation for details.
- * - This method is asynchronous and **must** be `await`-ed.
+ * - This function uses {@link TestRenderer.expectOutputAsync()}, refer to its documentation for details.
+ * - This function is asynchronous and **must** be `await`-ed.
  * @param select A set of output filters to match, including optional timeout (defaults to 200ms)
  * @param nested Further output filters to match, if any
  * @returns A promise that's resolved to an {@link OutputAssertion} instance for matching output, or rejected when a timeout occurs.
@@ -93,9 +93,24 @@ export async function expectOutputAsync(
 }
 
 /**
+ * Returns an assertion for the elements matching the provided filters
+ * - This function returns the same result as {@link expectOutputAsync} but without waiting for (new) rendering to complete.
+ * - This function uses {@link TestRenderer.expectOutputAsync()}, refer to its documentation for details.
+ * @param select A set of output filters to match, including optional timeout (defaults to 200ms)
+ * @param nested Further output filters to match, if any
+ * @returns A promise that's resolved to an {@link OutputAssertion} instance for matching output, or rejected when a timeout occurs.
+ */
+export function expectOutput(
+	select: OutputSelectFilter & { timeout?: number },
+	...nested: OutputSelectFilter[]
+): OutputAssertion {
+	return getTestRenderer().expectOutput(select, ...nested);
+}
+
+/**
  * Waits for an alert or confirm dialog to be rendered (by the test renderer)
- * - This method uses {@link TestRenderer.expectMessageDialogAsync()}, refer to its documentation for details.
- * - This method is asynchronous and **must** be `await`-ed.
+ * - This function uses {@link TestRenderer.expectMessageDialogAsync()}, refer to its documentation for details.
+ * - This function is asynchronous and **must** be `await`-ed.
  * @param timeout Timeout, in milliseconds
  * @param match A list of strings or regular expressions to match the dialog message
  * @returns A promise that's resolved to a {@link RenderedTestMessageDialog} instance for checking content or pressing buttons, or rejected when a timeout occurs.
@@ -120,11 +135,10 @@ export async function expectMessageDialogAsync(
 
 /**
  * Waits for matching output to be rendered, and simulates a user click event
- * - This method awaits the result of {@link expectOutputAsync()}, finds a single element, and sends a click event using {@link TestOutputElement.click()}.
- * @error This method throws an error if the output is not found after the provided timeout (or default value of 200ms) or if multiple elements match the selection criteria.
+ * - This function awaits the result of {@link expectOutputAsync()}, finds a single element, and sends a click event using {@link TestOutputElement.click()}.
+ * @error This function throws an error if the output is not found after the provided timeout (or default value of 200ms) or if multiple elements match the selection criteria.
  * @returns The test output element itself
  */
-
 export async function clickOutputAsync(
 	select: OutputSelectFilter & { timeout?: number },
 	...nested: OutputSelectFilter[]
@@ -135,9 +149,9 @@ export async function clickOutputAsync(
 
 /**
  * Waits for matching output to be rendered, and simulates user text input
- * - This method awaits the result of {@link expectOutputAsync()}, finds a single element, and sends text input using {@link TestOutputElement.setValue()}.
+ * - This function awaits the result of {@link expectOutputAsync()}, finds a single element, and sends text input using {@link TestOutputElement.setValue()}.
  * - The selection criteria don't automatically include the text field type; to match a text field element, use the `textfield` type, or use an accessible label or name property.
- * @error This method throws an error if the output is not found after the provided timeout (or default value of 200ms) or if multiple elements match the selection criteria.
+ * @error This function throws an error if the output is not found after the provided timeout (or default value of 200ms) or if multiple elements match the selection criteria.
  * @returns The test output element itself
  */
 export async function enterTextOutputAsync(
@@ -151,8 +165,8 @@ export async function enterTextOutputAsync(
 
 /**
  * Renders the specified view using the current test application context
- * - This method is provided as a shortcut to render a view exclusively. It clears all rendered test output, if any, and then renders the specified view.
- * - The test application context must be initialized using {@link useTestContext()} before calling this method.
+ * - This function is provided as a shortcut to render a view exclusively. It clears all rendered test output, if any, and then renders the specified view.
+ * - The test application context must be initialized using {@link useTestContext()} before calling this function.
  */
 export function renderTestView(view: View) {
 	let renderer = getTestRenderer();

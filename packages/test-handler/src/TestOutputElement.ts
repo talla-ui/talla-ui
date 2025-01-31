@@ -191,7 +191,7 @@ export class TestOutputElement {
 
 	/**
 	 * Checks if given styles match with the current styles object
-	 * - This method is used by {@link TestRenderer.expectOutputAsync()}.
+	 * - This method is used by {@link expectOutputAsync()}.
 	 * - While styles are usually applied to the rendered element in a platform-dependent way, the test renderer simply stores all properties in the {@link styles} object, which therefore has no specific type.
 	 * @param styles A set of style properties on a single object
 	 * @returns True, if _all_ of the properties in the provided object match with current styles.

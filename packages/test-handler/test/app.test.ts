@@ -16,6 +16,7 @@ import {
 	enterTextOutputAsync,
 	expectMessageDialogAsync,
 	expectNavAsync,
+	expectOutput,
 	expectOutputAsync,
 	renderTestView,
 	useTestContext,
@@ -45,14 +46,14 @@ class CountActivity extends Activity {
 
 let activity: CountActivity;
 
-beforeEach((c) => {
+beforeEach(() => {
 	// initialize test app before every test
 	useTestContext({ navigationPageId: "count" });
 	activity = new CountActivity();
 	app.addActivity(activity);
 });
 
-test("Single view is rendered", async (t) => {
+test("Single view is rendered", async () => {
 	const MyView = ViewComposite.define(
 		{ title: StringConvertible.EMPTY },
 		ui.label($view("title")),
@@ -62,13 +63,13 @@ test("Single view is rendered", async (t) => {
 	await expectOutputAsync({ text: "TEST" });
 });
 
-test("Path activates activity", async (t) => {
+test("Path activates activity", async () => {
 	await expect
 		.poll(() => activity.isActive(), { interval: 5, timeout: 100 })
 		.toBe(true);
 });
 
-test("Another path inactivates activity", async (t) => {
+test("Another path inactivates activity", async () => {
 	// initial path should be set directly
 	expect(app.navigation.pageId).toBe("count");
 
@@ -82,13 +83,16 @@ test("Another path inactivates activity", async (t) => {
 		.toBe(true);
 });
 
-test("Activity shows view when active", async (t) => {
+test("Activity shows view when active", async () => {
 	let expectCell = await expectOutputAsync({ type: "cell" });
 	expectCell.containing({ value: "0" }).toBeRendered();
-	expectCell.containing({ type: "button" }).toBeRendered();
+	let expectCellButton = expectCell.containing({ type: "button" });
+	expectCellButton.toBeRendered();
+	let expectButton = expectOutput({ type: "button" });
+	expect(expectCellButton.elements).toEqual(expectButton.elements);
 });
 
-test("Other filters are not matched", async (t) => {
+test("Other filters are not matched", async () => {
 	await expect(
 		expectOutputAsync({
 			timeout: 10,
@@ -99,25 +103,25 @@ test("Other filters are not matched", async (t) => {
 	).rejects.toThrow(/timeout/);
 });
 
-test("Button increases count", async (t) => {
+test("Button increases count", async () => {
 	// wait for view, then click the button twice
 	(await clickOutputAsync({ type: "button" })).click();
 	await expectOutputAsync({ value: "2" });
 });
 
-test("Entering text sets count property", async (t) => {
+test("Entering text sets count property", async () => {
 	await enterTextOutputAsync("5", { type: "textfield" });
 	await expectOutputAsync({ value: "5" });
 	expect(activity.count).toBe(5);
 });
 
-test("Button click sets focus", async (t) => {
+test("Button click sets focus", async () => {
 	// wait for view, then click the button
 	let btnElement = await clickOutputAsync({ type: "button" });
 	expect(btnElement.hasFocus()).toBeTruthy();
 });
 
-test("Alert dialog can be dismissed", async (t) => {
+test("Alert dialog can be dismissed", async () => {
 	let p = app.showAlertDialogAsync("Foo");
 	let dialog = await expectMessageDialogAsync(100, "Foo");
 	await dialog.confirmAsync();
@@ -125,14 +129,14 @@ test("Alert dialog can be dismissed", async (t) => {
 	expect(result).toBeUndefined();
 });
 
-test("Confirm dialog can be cancelled", async (t) => {
+test("Confirm dialog can be cancelled", async () => {
 	let p = app.showConfirmDialogAsync("Foo?");
 	await (await expectMessageDialogAsync(100, /^Foo/)).cancelAsync();
 	let result = await p;
 	expect(result).toBeFalsy();
 });
 
-test("Confirm dialog can be confirmed", async (t) => {
+test("Confirm dialog can be confirmed", async () => {
 	let p = app.showConfirmDialogAsync((d) => {
 		d.messages = ["Foo?", "Bar?"];
 		d.confirmLabel = "Yes";
