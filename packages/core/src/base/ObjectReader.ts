@@ -67,13 +67,24 @@ export class ObjectReader<TSchema extends ObjectReader.Schema> {
 	readonly schema: TSchema;
 
 	/**
+	 * Returns a new {@link ObjectReader} that only parses the specified fields
+	 * @param fields The fields that should be parsed
+	 * @returns A new `ObjectReader` instance with a partial schema
+	 */
+	partial<TFields extends keyof TSchema>(
+		fields: TFields[],
+	): ObjectReader<{ [k in TFields]: TSchema[k] }> {
+		let schema: any = {};
+		for (let f of fields) schema[f] = this.schema[f];
+		return new ObjectReader(schema);
+	}
+
+	/**
 	 * Parses and validates the specified object
 	 * @param object The object to validate
 	 * @returns A tuple that consists of the parsed (and validated) object, if it was indeed correctly parsed, and an object that contains an error for each field that was incorrectly parsed.
 	 */
-	read(
-		object: Partial<Record<keyof TSchema, unknown>>,
-	): ObjectReader.ReadResult<TSchema> {
+	read(object: Record<string, unknown>): ObjectReader.ReadResult<TSchema> {
 		if (!isObject(object)) return [undefined, { _: TypeError() }];
 		let v = _validateObject(object, this.schema, MAX_RECURSE);
 		return [v.value, v.errors];

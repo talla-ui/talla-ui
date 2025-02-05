@@ -395,4 +395,20 @@ describe("ObjectReader", () => {
 			Error,
 		);
 	});
+
+	test("partial reader", () => {
+		let reader = new ObjectReader({
+			name: { isString: {} },
+			age: { isNumber: {} },
+			email: { isString: { match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ } },
+		});
+		let partial = reader.partial(["name", "email"]);
+		expect(Object.keys(partial.schema)).toEqual(["name", "email"]);
+		expect(
+			partial.read({ name: "John", age: 42, email: "john@example.com" })[0],
+		).toEqual({
+			name: "John",
+			email: "john@example.com",
+		});
+	});
 });
