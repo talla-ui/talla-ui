@@ -60,21 +60,18 @@ export class FormContext<
 > extends ManagedObject {
 	/** Creates a new instance with the provided validation schema and/or values */
 	constructor(
-		schema?: TSchema,
+		schemaOrReader?: TSchema | ObjectReader<TSchema>,
 		values?: Partial<Record<keyof TSchema, unknown>>,
 	) {
 		super();
-		this.schema = schema || ({} as any);
+		if (schemaOrReader) {
+			this._reader =
+				schemaOrReader instanceof ObjectReader
+					? schemaOrReader
+					: new ObjectReader(schemaOrReader);
+		}
 		if (values) Object.assign(this._values, values);
 	}
-
-	/**
-	 * The schema that's used for validating all field values
-	 * - The validation schema follows the type defined by {@link ObjectReader.Schema}.
-	 * - Field values are only validated after {@link validate()} has been called at least once (and until {@link clear()} is called).
-	 * @see {@link ObjectReader}
-	 */
-	readonly schema: TSchema;
 
 	/**
 	 * An object that contains current form field values
@@ -122,7 +119,7 @@ export class FormContext<
 		// set and validate if needed
 		if (this._values[name] !== value) {
 			this._values[name] = value;
-			if (this._reader) {
+			if (this._reader && this._validated) {
 				let [_, error] = this._reader.readField(this.values, name);
 				if (error) this._errors[name] = error;
 				else delete this._errors[name];
@@ -141,7 +138,7 @@ export class FormContext<
 		this._values = Object.create(null);
 		this._errors = Object.create(null);
 		this._valid = true;
-		this._reader = undefined;
+		this._validated = false;
 		this.emitFormChange();
 		return this;
 	}
@@ -160,15 +157,19 @@ export class FormContext<
 	 * - After this method has been called at least once, fields are checked automatically whenever a field is updated, maintaining the validation status in the {@link errors} and {@link valid} properties. To stop automatic validation until this method is called again, use the {@link clear()} method.
 	 */
 	validate() {
+		let reader = this._reader;
+		if (!reader) return;
 		let wasValid = this._valid;
-		let reader = (this._reader = new ObjectReader(this.schema));
 		let [result, errors] = reader.read(this.values);
 		this._errors = errors;
 		this._valid = !!result;
+		this._validated = true;
 		if (wasValid && !result) this.emitFormChange();
 		if (result) return result;
 	}
+
 	private _reader?: ObjectReader<TSchema>;
+	private _validated = false;
 }
 
 export namespace FormContext {

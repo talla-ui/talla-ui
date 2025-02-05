@@ -8,6 +8,7 @@ import {
 	AppContext,
 	FormContext,
 	ManagedEvent,
+	ObjectReader,
 	UILabel,
 	UIRow,
 	UITextField,
@@ -108,6 +109,17 @@ test("Validation", () => {
 	expect(ctx.valid).toBe(true);
 	expect(ctx.validate()).toBeDefined();
 	expect(counter.changes, "Change counter").toBe(6);
+});
+
+test("ObjectReader validation", () => {
+	let reader = new ObjectReader({
+		foo: { isString: { required: { err: "Foo is required" } } },
+	});
+	let ctx = new FormContext(reader);
+	ctx.set("foo", "");
+	expect(ctx.errors).not.toHaveProperty("foo");
+	ctx.validate();
+	expect(ctx.errors).toHaveProperty("foo");
 });
 
 test("Composite, binding to value and error", () => {
