@@ -32,7 +32,8 @@ export class UITextFieldRenderer extends TestBaseObserver<UITextField> {
 	) {
 		// update 'value' first, reflecting the element value
 		if (this.element) {
-			this.observed.value = this.element.value || "";
+			let value = this.element.value || "";
+			this.observed.value = this.observed.trim ? value.trim() : value;
 		}
 
 		data.value = this.observed?.value;

@@ -27,11 +27,16 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 	}
 
 	override onDOMEvent(e: Event, data: any) {
+		let elt = this.element as HTMLInputElement;
 		if (e.type === "focusin" && this.observed.selectOnFocus) {
-			(this.element as HTMLInputElement).select();
+			elt.select();
+		}
+		if (e.type === "focusout" && this.observed.trim) {
+			elt.value = elt.value.trim();
 		}
 		if (e.type !== "input" && e.type !== "change") return;
-		let value = (this.element as HTMLInputElement).value;
+		let value = elt.value;
+		if (this.observed.trim) value = value.trim();
 		if (this.observed!.value !== value) {
 			this.observed!.value = value;
 		}
@@ -102,6 +107,8 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 
 		let value = this.observed.value;
 		value = value == null ? "" : String(value);
-		if (element.value != value) element!.value = value;
+		let elementValue = element.value;
+		if (this.observed.trim) elementValue = elementValue.trim();
+		if (elementValue != value) element!.value = value;
 	}
 }

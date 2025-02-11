@@ -27,6 +27,7 @@ export class UITextField extends UIComponent {
 			| "formField"
 			| "enterKeyHint"
 			| "disableSpellCheck"
+			| "trim"
 			| "selectOnFocus"
 			| "disabled"
 			| "readOnly"
@@ -66,7 +67,7 @@ export class UITextField extends UIComponent {
 				this.value = value === undefined ? "" : String(value);
 			},
 			function () {
-				return this.value;
+				return this.trim ? this.value.trim() : this.value;
 			},
 		);
 	}
@@ -103,6 +104,9 @@ export class UITextField extends UIComponent {
 
 	/** True if spell and/or grammar checks should be disabled, where supported */
 	disableSpellCheck?: boolean;
+
+	/** True if the text field should automatically trim whitespace from the input value */
+	trim?: boolean;
 
 	/** True if the entire text in the text field should be selected whenever it gains input focus */
 	selectOnFocus?: boolean;

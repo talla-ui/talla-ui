@@ -65,6 +65,20 @@ test("User input, value on event", async () => {
 	expect(eventValue).toBe("foo");
 });
 
+test("User input with trim", async () => {
+	let tf = new UITextField();
+	tf.trim = true;
+	let eventValue: any;
+	tf.listen((e) => {
+		eventValue = e.data.value;
+	});
+	renderTestView(tf);
+	let tfElt = (await expectOutputAsync({ type: "textfield" })).getSingle();
+	tfElt.value = " foo  ";
+	tfElt.sendPlatformEvent("input");
+	expect(eventValue).toBe("foo");
+});
+
 test("User input with form context", async () => {
 	class Host extends ManagedObject {
 		// note that formContext must exist before it can be bound
