@@ -170,14 +170,23 @@ export class AppContext extends ManagedObject {
 	 * Adds an activity to the list of root activities
 	 *
 	 * @summary
-	 * This method adds an {@link Activity} instance to the {@link ActivityList} (i.e. `app.activities`), activating it automatically if the current location matches {@link Activity.navigationPageId} or if the `activate` argument was set to true.
+	 * This method adds an {@link Activity} instance to the {@link ActivityList} (i.e. `app.activities`), activating it automatically if the current location matches {@link Activity.navigationPageId}, or if the `activate` argument was set to true.
 	 *
 	 * @param activity The activity to be added
-	 * @param activate True if the activity should be activated immediately regardless of page ID
-	 *
-	 * @note Activities don't need to be added using this method if they're activated programmatically, e.g. as attached objects of a parent activity.
+	 * @param activate True if the activity should be activated immediately
+	 * @param listen A listener function that will be called when the activity is activated or deactivated
 	 */
-	addActivity(activity: Activity, activate?: boolean) {
+	addActivity(activity: Activity, activate?: boolean, listen?: () => void) {
+		if (listen) {
+			activity.listen((e) => {
+				if (
+					e.data.change === activity &&
+					(e.name === "Active" || e.name === "Inactive")
+				) {
+					listen();
+				}
+			});
+		}
 		this.activities.add(activity);
 		if (activate) safeCall(activity.activateAsync, activity);
 		return this;

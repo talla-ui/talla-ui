@@ -3,7 +3,7 @@ import {
 	expectOutputAsync,
 	useTestContext,
 } from "@talla-ui/test-handler";
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
 	$navigation,
 	Activity,
@@ -301,6 +301,24 @@ describe("Global context and parents", () => {
 		let activity = new Activity();
 		app.addActivity(activity);
 		expect(app.activities.getActivities().includes(activity)).toBeTruthy();
+	});
+
+	test("Find activity instance", () => {
+		class MyActivity extends Activity {}
+		let activity = new MyActivity();
+		app.addActivity(activity);
+		expect(app.activities.getInstance(MyActivity)).toBe(activity);
+	});
+
+	test("Add activity with listener", async () => {
+		let activity = new Activity();
+		let count = 0;
+		app.addActivity(activity, true, () => count++);
+		expect(count).toBe(0);
+		await activity.activateAsync();
+		expect(count).toBe(1);
+		await activity.deactivateAsync();
+		expect(count).toBe(2);
 	});
 
 	test("Global context is parent", () => {

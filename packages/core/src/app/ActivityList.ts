@@ -29,6 +29,15 @@ export class ActivityList extends ManagedObject {
 		return this._list.toArray();
 	}
 
+	/** Returns the first activity in the list that is an instance of the specified class */
+	getInstance<T extends Activity>(
+		type: new (...args: any[]) => T,
+	): T | undefined {
+		return this._list.find((activity) => activity instanceof type) as
+			| T
+			| undefined;
+	}
+
 	/** Iterator symbol, allows for iterating over activities */
 	[Symbol.iterator](): IterableIterator<Activity> {
 		return this._list[Symbol.iterator]();

@@ -268,7 +268,7 @@ export class Activity extends ManagedObject {
 	 * @see {@link UITheme.modalFactory}
 	 * @see {@link UITheme.ModalControllerFactory}
 	 */
-	protected setRenderMode(
+	setRenderMode(
 		mode: RenderContext.PlacementMode | "dialog",
 		options?: Partial<RenderContext.PlacementOptions>,
 	) {
