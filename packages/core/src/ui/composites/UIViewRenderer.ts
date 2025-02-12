@@ -1,5 +1,5 @@
 import { app, RenderContext, View, ViewBuilder } from "../../app/index.js";
-import { Binding, ManagedEvent } from "../../base/index.js";
+import { Binding, ManagedEvent, ManagedObject } from "../../base/index.js";
 import { invalidArgErr } from "../../errors.js";
 
 /**
@@ -37,11 +37,21 @@ export class UIViewRenderer extends View {
 	/**
 	 * The current view to be rendered
 	 * - The object assigned to this property is **not** attached (like e.g. {@link ViewComposite.body}). It must be attached to another object, such as an activity.
-	 * - View objects can't be rendered twice, hence the bound object can't be part of the view hierarchy on its own or referenced by another {@link UIViewRenderer} instance.
+	 * - View objects can't be rendered twice, hence the bound object can't be part of the view hierarchy on its own or referenced by another {@link UIViewRenderer} instance that's currenty rendered.
 	 * - If the view is unlinked after rendering, a ViewUnlinked event is emitted by the {@link UIViewRenderer} instance.
+	 * - If the view is the {@link UIViewRenderer} instance itself or an attached parent, the view is not rendered (i.e. there can be no loops).
 	 */
 	set view(view: View | undefined) {
 		if (view && !(view instanceof View)) throw invalidArgErr("view");
+
+		// check for circular references
+		let parent: ManagedObject | undefined = this;
+		while (parent && parent !== view) {
+			parent = ManagedObject.whence(parent);
+		}
+		if (parent === view) view = undefined;
+
+		// if the view is the same as the current view, do nothing
 		if (this._view === view) return;
 
 		// stop observing old view, if any

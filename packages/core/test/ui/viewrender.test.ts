@@ -58,6 +58,23 @@ test("Unlink view after rendering", async () => {
 	expect((app.renderer as TestRenderer).hasOutput()).toBeFalsy();
 });
 
+test("Rendering self fails silently", async () => {
+	let viewRenderer = new UIViewRenderer();
+	viewRenderer.view = viewRenderer;
+	renderTestView(viewRenderer);
+	await new Promise((resolve) => setTimeout(resolve, 20));
+	expect((app.renderer as TestRenderer).hasOutput()).toBeFalsy();
+});
+
+test("Rendering parent fails silently", async () => {
+	let parent = ui.cell(ui.label("foo")).create();
+	let viewRenderer = new UIViewRenderer();
+	parent.content.add(viewRenderer);
+	viewRenderer.view = parent;
+	renderTestView(parent);
+	await expectOutputAsync({ text: "foo" }); // label rendered, no errors
+});
+
 test("Set view using view composite, and render", async () => {
 	const CompView = ViewComposite.define(
 		{ text: StringConvertible.EMPTY },
