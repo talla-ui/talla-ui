@@ -10,6 +10,7 @@ import {
 	app,
 	AppContext,
 	AsyncTaskQueue,
+	ManagedEvent,
 	ManagedList,
 	ManagedObject,
 	ui,
@@ -303,6 +304,12 @@ describe("Global context and parents", () => {
 		expect(app.activities.getActivities().includes(activity)).toBeTruthy();
 	});
 
+	test("Global context is parent", () => {
+		let activity = new Activity();
+		app.addActivity(activity);
+		expect(ManagedObject.whence.call(AppContext as any, activity)).toBe(app);
+	});
+
 	test("Find activity instance", () => {
 		class MyActivity extends Activity {}
 		let activity = new MyActivity();
@@ -321,10 +328,21 @@ describe("Global context and parents", () => {
 		expect(count).toBe(2);
 	});
 
-	test("Global context is parent", () => {
-		let activity = new Activity();
+	test("Add activity watch for activity list", async () => {
+		let events: string[] = [];
+		class MyActivity extends Activity {
+			constructor() {
+				super();
+				this.watch(app.activities, (_, e) => {
+					events.push(e.name);
+				});
+			}
+		}
+		let activity = new MyActivity();
 		app.addActivity(activity);
-		expect(ManagedObject.whence.call(AppContext as any, activity)).toBe(app);
+		await activity.activateAsync();
+		await activity.deactivateAsync();
+		expect(events).toEqual(["Add", "Active", "Inactive"]);
 	});
 
 	test("Nested activities", () => {

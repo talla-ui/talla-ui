@@ -453,7 +453,7 @@ export class Activity extends ManagedObject {
 	) {
 		target.listen({
 			handler: (t, e) => {
-				if (e.data.change === t) return changeHandler(t, e);
+				if (e.data.change) return changeHandler(t, e);
 			},
 			init: (_, stop) => {
 				this.listen({ unlinked: stop });
