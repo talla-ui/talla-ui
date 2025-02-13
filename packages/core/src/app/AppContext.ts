@@ -173,17 +173,21 @@ export class AppContext extends ManagedObject {
 	 * This method adds an {@link Activity} instance to the {@link ActivityList} (i.e. `app.activities`), activating it automatically if the current location matches {@link Activity.navigationPageId}, or if the `activate` argument was set to true.
 	 *
 	 * @param activity The activity to be added
-	 * @param activate True if the activity should be activated immediately
-	 * @param listen A listener function that will be called when the activity is activated or deactivated
+	 * @param activate True if the activity should be activated immediately (asynchronously)
+	 * @param listen A listener function that will be called when the activity is either activated or deactivated
 	 */
-	addActivity(activity: Activity, activate?: boolean, listen?: () => void) {
+	addActivity<T extends Activity>(
+		activity: T,
+		activate?: boolean,
+		listen?: (a: T) => void | Promise<void>,
+	) {
 		if (listen) {
 			activity.listen((e) => {
 				if (
 					e.data.change === activity &&
 					(e.name === "Active" || e.name === "Inactive")
 				) {
-					listen();
+					return listen(activity);
 				}
 			});
 		}
