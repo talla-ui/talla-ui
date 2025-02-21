@@ -1,4 +1,4 @@
-import { ManagedObject, ObjectReader } from "../base/index.js";
+import { ObservedObject, ObjectReader } from "../base/index.js";
 
 /**
  * A class that controls persisted object data
@@ -25,7 +25,7 @@ import { ManagedObject, ObjectReader } from "../base/index.js";
  * let [profile, errors] = await app.localData.readAsync("profile", { fullName: { string: {} }});
  * if (profile) console.log(profile.fullName);
  */
-export class LocalData extends ManagedObject {
+export class LocalData extends ObservedObject {
 	constructor(defaults?: Record<string, Record<string, unknown>>) {
 		super();
 		this._defaults = { ...defaults };

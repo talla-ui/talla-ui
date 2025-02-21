@@ -1,7 +1,7 @@
 import { app, RenderContext, View } from "../app/index.js";
 import {
 	BindingOrValue,
-	ManagedEvent,
+	ObservedEvent,
 	StringConvertible,
 } from "../base/index.js";
 import { err, ERROR } from "../errors.js";
@@ -13,7 +13,7 @@ const _viewContent: any[] = Object.freeze([]) as any;
 /** @internal Helper function to emit a non-propagated event; returns true */
 function emitRendered(source: View, name: string) {
 	source.emit(
-		new ManagedEvent(name, source, undefined, undefined, undefined, true),
+		new ObservedEvent(name, source, undefined, undefined, undefined, true),
 	);
 	return true;
 }
@@ -179,7 +179,7 @@ export abstract class UIComponent extends View {
 
 		// create Render event with provided callback
 		// (to be handled by platform renderer)
-		let event = new ManagedEvent(
+		let event = new ObservedEvent(
 			"Render",
 			this,
 			{ render: callback },

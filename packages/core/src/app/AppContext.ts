@@ -1,7 +1,7 @@
 import {
 	ConfigOptions,
 	LazyString,
-	ManagedObject,
+	ObservedObject,
 	StringConvertible,
 } from "../base/index.js";
 import { ERROR, err, safeCall, setErrorHandler } from "../errors.js";
@@ -31,7 +31,7 @@ let once = 0;
  *
  * @docgen {hideconstructor}
  */
-export class AppContext extends ManagedObject {
+export class AppContext extends ObservedObject {
 	/**
 	 * Sets a global unhandled error handler
 	 * - This method _replaces_ the current handler, if any, and is not cleared by {@link AppContext.clear()}.
@@ -49,7 +49,7 @@ export class AppContext extends ManagedObject {
 		super();
 
 		// set as root object (cannot be attached, no more bindings)
-		ManagedObject.makeRoot(this);
+		ObservedObject.makeRoot(this);
 		(this as any)[$_app_bind_label] = true;
 
 		// set renderer property to undefined, to enable bindings

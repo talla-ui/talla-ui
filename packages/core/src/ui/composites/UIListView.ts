@@ -7,9 +7,9 @@ import {
 import {
 	Binding,
 	BindingOrValue,
-	ManagedEvent,
-	ManagedList,
-	ManagedObject,
+	ObservedEvent,
+	ObservedList,
+	ObservedObject,
 } from "../../base/index.js";
 import { ERROR, err } from "../../errors.js";
 import { UIContainer, UIColumn, UIRow } from "../containers/index.js";
@@ -22,8 +22,8 @@ const defaultContainerBuilder = UIColumn.getViewBuilder({
 	accessibleRole: "list",
 });
 
-// use this property for duck typing ManagedList instances
-const ManagedList_take = ManagedList.prototype.take;
+// use this property for duck typing ObservedList instances
+const ObservedList_take = ObservedList.prototype.take;
 
 /** Label property used to filter bindings using $list */
 const $_list_bind_label = Symbol("list");
@@ -53,7 +53,7 @@ export const $list = Binding.createFactory<`item.${string}` | "item">(
  *   while (e && !(e.data.listViewItem instanceof MyItem)) e = e.inner;
  *   // ... same as above
  */
-export type UIListViewEvent<T = unknown> = ManagedEvent<
+export type UIListViewEvent<T = unknown> = ObservedEvent<
 	View,
 	Record<string, unknown> & {
 		/** The list item value that's associated with the event source view */
@@ -69,7 +69,7 @@ export type UIListViewEvent<T = unknown> = ManagedEvent<
  * @online_docs Refer to the online documentation for more documentation on using this UI component class.
  */
 export class UIListView<
-	TItem extends ManagedObject = ManagedObject,
+	TItem extends ObservedObject = ObservedObject,
 > extends ViewComposite {
 	/** @internal Creates an observer that populates the list with the provided item body and book end */
 	static createObserver(
@@ -77,7 +77,7 @@ export class UIListView<
 		bookEndBuilder?: ViewBuilder,
 	) {
 		// return a unique class for the provided views, to be attached
-		return class PresetListObserver extends ManagedObject {
+		return class PresetListObserver extends ObservedObject {
 			constructor(public list: UIListView) {
 				super();
 				let doUpdate = this.doUpdateAsync.bind(this);
@@ -115,7 +115,7 @@ export class UIListView<
 			UIListView,
 			"firstIndex" | "maxItems" | "renderOptions"
 		> & {
-			/** List of objects, either an array, {@link ManagedList} object, or binding for either */
+			/** List of objects, either an array, {@link ObservedList} object, or binding for either */
 			items?: BindingOrValue<Iterable<any>>;
 			/** Event that's emitted when list item views are rendered */
 			onListItemsChange?: string;
@@ -135,7 +135,7 @@ export class UIListView<
 	/** Creates a new list view composite object */
 	constructor() {
 		super();
-		let list: ManagedList | undefined;
+		let list: ObservedList | undefined;
 		Object.defineProperty(this, "items", {
 			configurable: true,
 			enumerable: true,
@@ -150,11 +150,11 @@ export class UIListView<
 
 	/**
 	 * The list of objects, from which each object is used to construct one view object
-	 * - This property should be set or bound to a {@link ManagedList} object or an array.
-	 * - When set to an array, the property setter _converts_ the array to a {@link ManagedList} automatically, and uses that instead.
+	 * - This property should be set or bound to an {@link ObservedList} object or an array.
+	 * - When set to an array, the property setter _converts_ the array to an {@link ObservedList} automatically, and uses that instead.
 	 * - When updated, a {@link UIListView.ItemControllerView} view instance is created for each list item and added to the {@link ViewComposite.body} container.
 	 */
-	declare items?: ManagedList<TItem>;
+	declare items?: ObservedList<TItem>;
 
 	/**
 	 * Render options, including asynchronous and delayed rendering
@@ -183,17 +183,17 @@ export class UIListView<
 	 * Returns the list index of the specified view, or of its parent(s)
 	 * - If the specified view object is (currently) not contained within the list container, this method returns -1.
 	 */
-	getIndexOfView(view?: ManagedObject) {
+	getIndexOfView(view?: ObservedObject) {
 		let content = this.getContent();
 		if (!content) return -1;
-		while (view && ManagedObject.whence(view) !== content) {
-			view = ManagedObject.whence(view);
+		while (view && ObservedObject.whence(view) !== content) {
+			view = ObservedObject.whence(view);
 		}
 		if (view) return content.indexOf(view as any);
 		return -1;
 	}
 
-	/** Returns the current content of the list item view container (a managed list of views), if any */
+	/** Returns the current content of the list item view container (an observed list of views), if any */
 	getContent() {
 		return this.body instanceof UIContainer ? this.body.content : undefined;
 	}
@@ -296,7 +296,7 @@ export class UIListView<
 		let maxItems = this.maxItems;
 		let list = this.items;
 		let items =
-			list instanceof ManagedList &&
+			list instanceof ObservedList &&
 			(firstIndex > 0 || maxItems! >= 0
 				? list.count > 0 && firstIndex < list.count
 					? list.take(
@@ -317,7 +317,7 @@ export class UIListView<
 
 		// keep track of existing view instances for each object
 		let existing = this._contentMap;
-		let map = new Map<ManagedObject, UIListView.ItemControllerView<TItem>>();
+		let map = new Map<ObservedObject, UIListView.ItemControllerView<TItem>>();
 		let components: View[] = [];
 		let { async, delayEach, maxDelayCount } = this.renderOptions || {};
 		if (delayEach) async = true;
@@ -357,22 +357,22 @@ export class UIListView<
 		this.emit("ListItemsChange");
 	}
 
-	/** Helper function to turn any iterable into a managed list if needed */
+	/** Helper function to turn any iterable into an observed list if needed */
 	private _makeList(v?: Iterable<any>) {
 		if (v == null) return undefined;
-		if ("take" in v && v.take === ManagedList_take) return v as ManagedList;
+		if ("take" in v && v.take === ObservedList_take) return v as ObservedList;
 		if (!(Symbol.iterator in v)) throw err(ERROR.UIList_Invalid);
 		let items = [...v];
-		return new ManagedList(
+		return new ObservedList(
 			...items.map((it) =>
-				it instanceof ManagedObject ? it : new UIListView.ItemValueWrapper(it),
+				it instanceof ObservedObject ? it : new UIListView.ItemValueWrapper(it),
 			),
 		);
 	}
 
 	/** Map of already-created content components */
 	private _contentMap?: Map<
-		ManagedObject,
+		ObservedObject,
 		UIListView.ItemControllerView<TItem>
 	>;
 
@@ -397,11 +397,11 @@ export namespace UIListView {
 	};
 
 	/**
-	 * @internal A managed object class containing a single list item value
+	 * @internal An observed object class containing a single list item value
 	 * @see {@link UIListView}
 	 * @see {@link UIListView.ItemControllerView}
 	 */
-	export class ItemValueWrapper<TValue> extends ManagedObject {
+	export class ItemValueWrapper<TValue> extends ObservedObject {
 		/**
 		 * Creates a new wrapper object
 		 * - This constructor is used by {@link UIListView} and should not be used from an application.
@@ -431,9 +431,9 @@ export namespace UIListView {
 			this.createView = () => body.create();
 		}
 
-		override delegate(event: ManagedEvent): true {
+		override delegate(event: ObservedEvent): true {
 			this.emit(
-				new ManagedEvent(
+				new ObservedEvent(
 					event.name,
 					event.source,
 					{ ...event.data, listViewItem: this.item },

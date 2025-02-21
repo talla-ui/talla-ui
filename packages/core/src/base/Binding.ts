@@ -1,6 +1,6 @@
 import { invalidArgErr } from "../errors.js";
 import { LazyString } from "./LazyString.js";
-import { ManagedObject } from "./ManagedObject.js";
+import { ObservedObject } from "./ObservedObject.js";
 import { $_unlinked, watchBinding } from "./object_util.js";
 
 /** Constant used to check against (new) binding value */
@@ -30,23 +30,23 @@ export namespace BindingOrValue {
  * A class that represents a property binding
  *
  * @description
- * A binding connects an object (an instance of {@link ManagedObject}) with one of the properties of one of its _containing_ (attached) objects. Bindings can be used to update properties on the target object, keeping the bound property in sync with the original property.
+ * A binding connects an object (an instance of {@link ObservedObject}) with one of the properties of one of its _containing_ (attached) objects. Bindings can be used to update properties on the target object, keeping the bound property in sync with the original property.
  *
  * For example, given an object `A` with property `p`, a binding can be used on an attached object `B` to update target property `q`. When the value of `p` changes, the same value is set on `q` immediately. This is considered a one-way data binding, since direct updates on property `q` don't affect the source property `p` at all.
  *
  * To make bindings work across a chain — or technically, a tree structure — of attached objects, bindings keep track of object attachments _to_ the target object (i.e. object B) all the way up the chain, to find a matching source property. Therefore, a binding on `C`, itself attached from `B`, may _also_ read property values from `A`.
  *
- * Instead of a single source property, bindings can also specify a source property 'path' using dots to separate property names: a path of `p.foo.bar` first watches `p`, then (if `p` refers to an object) its property `foo`, and so on — going first _up_ the tree structure to find the object containing `p`, and then down again to find the rest.
+ * Instead of a single source property, bindings can also specify a source property 'path' using dots to separate property names: a path of `p.foo.bar` first watches `p`, then (if `p` refers to an object) its property `foo`, and so on — going first _up_ the tree structure to find the object containing `p`, and then down again to find the rest.
  *
  * As a concrete example, a binding can be used to update the `text` property of a {@link UILabel} view, with the value of a string property `labelText` of the activity. Or perhaps the property `name` of a `user` object referenced by the activity (see example below). Whenever the data in the activity changes, so does the label text.
  *
- * **Creating bindings** — To create a binding, use the {@link $bind()} function, or one of the functions of e.g. {@link $activity} and {@link $view} to bind a number, string, (negated) boolean, list, or a string composed using a format string and one or more embedded bindings, e.g. `$bind("anyValue")`, `$bind.not("showList")`, `$activity.string("labelText")`, or `$strf("Value: %i", $activity.number("lines.count"))`.
+ * **Creating bindings** — To create a binding, use the {@link $bind()} function, or one of the functions of e.g. {@link $activity} and {@link $view} to bind a number, string, (negated) boolean, list, or a string composed using a format string and one or more embedded bindings, e.g. `$bind("anyValue")`, `$bind.not("showList")`, `$activity.string("labelText")`, or `$strf("Value: %i", $activity.number("lines.count"))`.
  *
- * **Binding to managed lists** — {@link ManagedList} instances include special properties that may be referenced by a binding path. Use `.count` to bind to the list count, `.#first` and `.#last` to bind to the first and last item in the list, respectively.
+ * **Binding to observed lists** — {@link ObservedList} instances include special properties that may be referenced by a binding path. Use `.count` to bind to the list count, `.#first` and `.#last` to bind to the first and last item in the list, respectively.
  *
  * **Applying bindings** — Include the result of {@link $bind()} in the preset object or parameters passed to {@link ui} factory functions (or JSX attributes), to add a bound property to a view, e.g. `ui.label($activity.string("labelText"))` or `<textfield placeholder={$view.string("placeholderText")} />`.
  *
- * To apply a binding to any other managed object, use to the {@link bindTo()} method. This method can be used to bind a target property, or to call a function whenever the source value changes.
+ * To apply a binding to any other observed object, use to the {@link bindTo()} method. This method can be used to bind a target property, or to call a function whenever the source value changes.
  *
  * **Adding filters** — To convert the value of the original property, or to combine multiple bindings using boolean operations (and/or), use one of the Binding methods such as {@link Binding.and and()}, {@link Binding.select select()}, or {@link Binding.matches matches()}.
  *
@@ -110,7 +110,7 @@ export class Binding<T = any> {
 	 * @param target The target (attached) object
 	 * @param propertyOrFunction The property to update, or a custom function to handle value updates
 	 */
-	bindTo<TObject extends ManagedObject>(
+	bindTo<TObject extends ObservedObject>(
 		target: TObject,
 		propertyOrFunction: keyof TObject | ((value?: T, bound?: boolean) => void),
 	) {
@@ -149,7 +149,7 @@ export class Binding<T = any> {
 
 	/**
 	 * Adds a filter, to make sure that the bound value is an iterable list
-	 * - This method allows arrays, Maps, ManagedList instances, and any other object that includes Symbol.iterator.
+	 * - This method allows arrays, Maps, ObservedList instances, and any other object that includes Symbol.iterator.
 	 * - Other values are changed to undefined.
 	 * @returns A new binding, typed as an Iterable object
 	 */
@@ -371,10 +371,10 @@ export class Binding<T = any> {
 	/** A method that's used for type checking, doesn't actually exist */
 	declare [BindingOrValue.TYPE_CHECK]: () => T;
 
-	/** @internal Apply this binding to a managed object using given update callback; cascades down to child bindings (for boolean logic and string bindings) */
+	/** @internal Apply this binding to an observed object using given update callback; cascades down to child bindings (for boolean logic and string bindings) */
 	_apply: (
 		this: unknown,
-		target: ManagedObject,
+		target: ObservedObject,
 		update: (value: any, bound: boolean) => void,
 	) => void;
 
@@ -641,7 +641,7 @@ export function binding(source: string | Binding) {
 			throw TypeError();
 		}
 		context.addInitializer(function () {
-			if (!(this instanceof ManagedObject)) throw Error();
+			if (!(this instanceof ObservedObject)) throw Error();
 			binding.bindTo(this, context.name as any);
 		});
 	};

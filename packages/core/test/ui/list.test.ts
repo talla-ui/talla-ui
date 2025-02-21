@@ -8,8 +8,8 @@ import { beforeEach, expect, test } from "vitest";
 import {
 	$bind,
 	$list,
-	ManagedList,
-	ManagedObject,
+	ObservedList,
+	ObservedObject,
 	UILabel,
 	UIListView,
 	UIListViewEvent,
@@ -33,7 +33,7 @@ function getListText(list: UIListView) {
 		);
 }
 
-// helper function to get a list of managed objects
+// helper function to get a list of observed objects
 function getObjects() {
 	return [
 		new NamedObject("a"),
@@ -43,7 +43,7 @@ function getObjects() {
 	] as const;
 }
 
-class NamedObject extends ManagedObject {
+class NamedObject extends ObservedObject {
 	constructor(public name: string) {
 		super();
 	}
@@ -65,8 +65,8 @@ test("Empty list, rendered", async () => {
 	await expectOutputAsync({ type: "column" });
 });
 
-test("List of labels from ManagedList, rendered", async () => {
-	let list = new ManagedList(...getObjects());
+test("List of labels from ObservedList, rendered", async () => {
+	let list = new ObservedList(...getObjects());
 
 	console.log("Creating instance");
 	let myList = ui.list(
@@ -97,7 +97,7 @@ test("List of labels from bound array, rendered", async () => {
 		ui.label($list("item")),
 		ui.row(),
 	);
-	class ArrayProvider extends ManagedObject {
+	class ArrayProvider extends ObservedObject {
 		array = ["a", "b", "c"];
 		readonly view = this.attach(myList.create());
 	}
@@ -112,7 +112,7 @@ test("List of labels from bound array, rendered", async () => {
 
 test("List of labels, rendered, then updated", async () => {
 	let [a, b, c, d] = getObjects();
-	let list = new ManagedList(a, b, c);
+	let list = new ObservedList(a, b, c);
 
 	console.log("Creating instance");
 	let myList = ui.list(
@@ -140,7 +140,7 @@ test("Event propagation through list", async () => {
 	let view = ui
 		.row(
 			ui.list(
-				{ items: new ManagedList(...getObjects()) },
+				{ items: new ObservedList(...getObjects()) },
 				ui.label($list.string("item.name"), { onClick: "Foo" }),
 				ui.row(),
 			),
@@ -180,7 +180,7 @@ test("Event propagation through list", async () => {
 test("Bookend", async () => {
 	console.log("Creating instance");
 	let myList = ui.list(
-		{ items: new ManagedList(...getObjects()) },
+		{ items: new ObservedList(...getObjects()) },
 		ui.label($list.string("item.name")),
 		ui.row(),
 		ui.label("end"),
@@ -193,7 +193,7 @@ test("Bookend", async () => {
 	expect(getListText(instance)).toEqual(["a", "b", "c", "d", "end"]);
 
 	console.log("Update");
-	instance.items = new ManagedList(...[...getObjects()].reverse());
+	instance.items = new ObservedList(...[...getObjects()].reverse());
 	await expectOutputAsync({ type: "row" });
 	expect(getListText(instance)).toEqual(["d", "c", "b", "a", "end"]);
 });
@@ -201,7 +201,7 @@ test("Bookend", async () => {
 test("Pagination", async () => {
 	console.log("Creating instance");
 	let myList = ui.list(
-		{ items: new ManagedList(...getObjects()), maxItems: 2 },
+		{ items: new ObservedList(...getObjects()), maxItems: 2 },
 		ui.label($list.string("item.name")),
 		ui.row(),
 	);
@@ -236,7 +236,7 @@ test("Pagination", async () => {
 
 test("Get indices for components", async () => {
 	let myList = ui.list(
-		{ items: new ManagedList(...getObjects()) },
+		{ items: new ObservedList(...getObjects()) },
 		ui.label($list.string("item.name"), { allowFocus: true }),
 	);
 	let list = myList.create();
@@ -252,7 +252,7 @@ test("Request focus on list focuses previous item", async () => {
 	let myList = ui.cell(
 		ui.button("button"),
 		ui.list(
-			{ items: new ManagedList(...getObjects()) },
+			{ items: new ObservedList(...getObjects()) },
 			ui.label($list.string("item.name"), { allowFocus: true }),
 			ui.cell({ allowKeyboardFocus: true, accessibleRole: "list" }),
 		),
@@ -274,7 +274,7 @@ test("Request focus on list focuses previous item", async () => {
 
 test("Arrow key focus, single list", async () => {
 	let myList = ui.list(
-		{ items: new ManagedList(...getObjects()) },
+		{ items: new ObservedList(...getObjects()) },
 		ui.label({
 			text: $list.string("item.name"),
 			allowFocus: true,

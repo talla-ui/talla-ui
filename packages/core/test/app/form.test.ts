@@ -7,7 +7,7 @@ import {
 	Activity,
 	AppContext,
 	FormContext,
-	ManagedEvent,
+	ObservedEvent,
 	ObjectReader,
 	UILabel,
 	UIRow,
@@ -29,7 +29,7 @@ class ChangeCounter {
 	constructor(formContext: FormContext) {
 		formContext.listen(this);
 	}
-	handler(_: FormContext, event: ManagedEvent) {
+	handler(_: FormContext, event: ObservedEvent) {
 		if (event.name === "FormChange") this.changes++;
 	}
 	changes = 0;

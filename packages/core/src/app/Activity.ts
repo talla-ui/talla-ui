@@ -1,8 +1,8 @@
 import {
 	Binding,
 	ConfigOptions,
-	ManagedEvent,
-	ManagedObject,
+	ObservedEvent,
+	ObservedObject,
 	StringConvertible,
 } from "../base/index.js";
 import { ERROR, err, errorHandler, safeCall } from "../errors.js";
@@ -61,7 +61,7 @@ export const $activity = Binding.createFactory<
  *
  * app.addActivity(new MyActivity(), true);
  */
-export class Activity extends ManagedObject {
+export class Activity extends ObservedObject {
 	/** @internal Update prototype for given class with newer prototype, and rebuild view */
 	static _$hotReload(
 		Old: undefined | typeof Activity,
@@ -148,14 +148,14 @@ export class Activity extends ManagedObject {
 
 	/**
 	 * Delegates incoming events to methods of this object, notably from the attached view
-	 * - This method is called automatically when an event is emitted by the current view object (except if {@link ManagedEvent.noPropagation} was set on the event; see {@link ManagedObject.attach()} which is used to set up view event delegation).
+	 * - This method is called automatically when an event is emitted by the current view object (except if {@link ObservedEvent.noPropagation} was set on the event; see {@link ObservedObject.attach()} which is used to set up view event delegation).
 	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true` (event handled), false/undefined, or a promise (which is awaited just to be able to handle any errors).
 	 * @param event The event to be delegated
 	 * @returns The result of the event handler method, or undefined.
-	 * @see {@link ManagedObject.attach}
-	 * @see {@link ManagedObject.EventDelegate}
+	 * @see {@link ObservedObject.attach}
+	 * @see {@link ObservedObject.EventDelegate}
 	 */
-	delegate(event: ManagedEvent): Promise<boolean | void> | boolean | void {
+	delegate(event: ObservedEvent): Promise<boolean | void> | boolean | void {
 		return (this as any)["on" + event.name]?.(event);
 	}
 
@@ -301,7 +301,7 @@ export class Activity extends ManagedObject {
 		}
 
 		// assert that view makes sense
-		if (ManagedObject.whence(view) !== this) {
+		if (ObservedObject.whence(view) !== this) {
 			throw err(ERROR.View_NotAttached);
 		}
 		if (!this._boundRenderer) throw err(ERROR.Render_Unavailable);
@@ -380,8 +380,8 @@ export class Activity extends ManagedObject {
 	 * - This method calls {@link navigateAsync()} in turn, which may be overridden.
 	 */
 	protected onNavigate(
-		e: ManagedEvent<
-			ManagedObject & { getNavigationTarget?: () => NavigationTarget }
+		e: ObservedEvent<
+			ObservedObject & { getNavigationTarget?: () => NavigationTarget }
 		>,
 	) {
 		if (typeof e.source.getNavigationTarget === "function") {
@@ -444,11 +444,11 @@ export class Activity extends ManagedObject {
 	 * @param changeHandler A function that will be called for each change event that's emitted from the target object
 	 * @param unlinked A function that will be called when the target object (not the activity) is unlinked
 	 * @returns The target object
-	 * @see {@link ManagedObject.emitChange}
+	 * @see {@link ObservedObject.emitChange}
 	 */
-	watch<T extends ManagedObject>(
+	watch<T extends ObservedObject>(
 		target: T,
-		changeHandler: (object: T, event: ManagedEvent) => Promise<void> | void,
+		changeHandler: (object: T, event: ObservedEvent) => Promise<void> | void,
 		unlinked?: (object: T) => void,
 	) {
 		target.listen({

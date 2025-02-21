@@ -1,4 +1,4 @@
-import { ManagedList } from "../../base/index.js";
+import { ObservedList } from "../../base/index.js";
 import { View, type ViewBuilder } from "../../app/index.js";
 import { UIComponent } from "../UIComponent.js";
 import type { UIColor } from "../UIColor.js";
@@ -33,7 +33,7 @@ export abstract class UIContainer extends UIComponent {
 		super();
 
 		// create content list and delegate events
-		this.content = this.attach(new ManagedList(), (event) => {
+		this.content = this.attach(new ObservedList(), (event) => {
 			if (event.source instanceof View && !event.noPropagation) {
 				this.emit(event);
 			}
@@ -56,7 +56,7 @@ export abstract class UIContainer extends UIComponent {
 	}
 
 	/** The list of all content view objects */
-	declare readonly content: ManagedList<View>;
+	declare readonly content: ObservedList<View>;
 
 	/**
 	 * Padding around contained elements, in pixels or CSS length with unit, **or** an object with separate offset values

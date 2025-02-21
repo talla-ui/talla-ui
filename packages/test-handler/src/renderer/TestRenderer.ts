@@ -1,6 +1,6 @@
 import {
 	AsyncTaskQueue,
-	ManagedObject,
+	ObservedObject,
 	RenderContext,
 	View,
 	app,
@@ -322,7 +322,7 @@ export class TestRenderer extends RenderContext {
  * @internal Test viewport information
  * TODO: make this do something interesting, use options to set grid
  */
-class TestViewport extends ManagedObject implements RenderContext.Viewport {
+class TestViewport extends ObservedObject implements RenderContext.Viewport {
 	height?: number;
 	width?: number;
 	portrait = false;

@@ -1,6 +1,6 @@
 import {
-	ManagedEvent,
-	ManagedObject,
+	ObservedEvent,
+	ObservedObject,
 	RenderContext,
 	UIComponent,
 	UIStyle,
@@ -71,7 +71,7 @@ export function applyElementStyle(element: TestOutputElement, styles: any[]) {
 /** @internal Abstract observer class for all `UIComponent` instances, to create output and call render callback; implemented for all types of UI components, created upon rendering, and attached to enable property bindings */
 export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
 	constructor(public observed: TUIComponent) {
-		this._thisRenderedEvent = new ManagedEvent(
+		this._thisRenderedEvent = new ObservedEvent(
 			"Rendered",
 			observed,
 			undefined,
@@ -88,7 +88,7 @@ export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
 
 	/** Set up one or more property listeners, to call {@link propertyChange} on this observer */
 	protected observeProperties(...properties: (keyof this["observed"])[]) {
-		ManagedObject.observe(this.observed, properties, (_, p, v) =>
+		ObservedObject.observe(this.observed, properties, (_, p, v) =>
 			this.propertyChange(p as any, v),
 		);
 	}
@@ -177,7 +177,7 @@ export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
 	handlePlatformEvent(name: TestOutputElement.PlatformEvent, data?: any) {
 		let baseEvent = _eventNames[name];
 		if (baseEvent && !this.observed.isUnlinked()) {
-			let event = new ManagedEvent(
+			let event = new ObservedEvent(
 				baseEvent,
 				this.observed,
 				data,
@@ -191,7 +191,7 @@ export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
 
 	/** Render event handler, calls encapsulated render callback with existing or new output */
 	onRender(
-		event: ManagedEvent<UIComponent, { render: RenderContext.RenderCallback }>,
+		event: ObservedEvent<UIComponent, { render: RenderContext.RenderCallback }>,
 	) {
 		if (
 			typeof event.data.render === "function" &&
@@ -233,7 +233,7 @@ export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
 	}
 
 	/** Focus current element if possible */
-	onRequestFocus(event: ManagedEvent) {
+	onRequestFocus(event: ObservedEvent) {
 		if (event.source === this.observed) {
 			if (this.element)
 				(app.renderer as TestRenderer).tryFocusElement(this.element);
@@ -244,7 +244,7 @@ export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
 	private _requestedFocus?: boolean;
 
 	/** Focus next sibling element if possible */
-	onRequestFocusNext(event: ManagedEvent) {
+	onRequestFocusNext(event: ObservedEvent) {
 		if (event.source === this.observed && this.element) {
 			let current = this.element;
 			if (current.parent) {
@@ -262,7 +262,7 @@ export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
 	}
 
 	/** Focus previous sibling element if possible */
-	onRequestFocusPrevious(event: ManagedEvent) {
+	onRequestFocusPrevious(event: ObservedEvent) {
 		if (event.source === this.observed && this.element) {
 			let current = this.element;
 			if (current.parent) {
@@ -280,5 +280,5 @@ export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
 	}
 
 	private _updateCallback?: RenderContext.RenderCallback;
-	private _thisRenderedEvent?: ManagedEvent;
+	private _thisRenderedEvent?: ObservedEvent;
 }

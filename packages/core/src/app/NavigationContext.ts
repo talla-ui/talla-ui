@@ -1,4 +1,4 @@
-import { ManagedEvent, ManagedObject } from "../base/index.js";
+import { ObservedEvent, ObservedObject } from "../base/index.js";
 import { invalidArgErr, safeCall } from "../errors.js";
 import { Activity } from "./Activity.js";
 import { ActivityList } from "./ActivityList.js";
@@ -11,7 +11,7 @@ import type { NavigationTarget } from "./NavigationTarget.js";
  * - When overridden by a platform-specific (or test) implementation, this object also provides a way to navigate to a new location.
  * @docgen {hideconstructor}
  */
-export class NavigationContext extends ManagedObject {
+export class NavigationContext extends ObservedObject {
 	/** Creates a new instance; do not use directly */
 	constructor(activities: ActivityList) {
 		super();
@@ -22,7 +22,7 @@ export class NavigationContext extends ManagedObject {
 			init: (_: unknown, stop: () => void) => {
 				this.listen({ unlinked: stop });
 			},
-			handler: (_: unknown, event: ManagedEvent) => {
+			handler: (_: unknown, event: ObservedEvent) => {
 				if (
 					event.data.added instanceof Activity &&
 					typeof event.data.added.navigationPageId === "string"

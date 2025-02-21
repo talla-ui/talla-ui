@@ -5,7 +5,7 @@ import {
 	AppContext,
 	I18nProvider,
 	LazyString,
-	ManagedObject,
+	ObservedObject,
 	strf,
 } from "../../dist/index.js";
 
@@ -174,9 +174,9 @@ test("Local format binding", () => {
 		}
 	}
 	LazyString.setI18nInterface(new MyI18nProvider() as any);
-	let parent: any = new ManagedObject();
+	let parent: any = new ObservedObject();
 	parent.value = 123;
-	parent.child = parent.attach(new ManagedObject());
+	parent.child = parent.attach(new ObservedObject());
 	$bind("value").local("test", "format").bindTo(parent.child, "value");
 	expect(parent.child).toHaveProperty("value", "{123:test,format}");
 });

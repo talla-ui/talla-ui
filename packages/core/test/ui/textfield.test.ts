@@ -6,7 +6,7 @@ import {
 import { beforeEach, expect, test } from "vitest";
 import {
 	FormContext,
-	ManagedObject,
+	ObservedObject,
 	strf,
 	ui,
 	UITextField,
@@ -80,7 +80,7 @@ test("User input with trim", async () => {
 });
 
 test("User input with form context", async () => {
-	class Host extends ManagedObject {
+	class Host extends ObservedObject {
 		// note that formContext must exist before it can be bound
 		readonly formContext = new FormContext().set("foo", "bar");
 		readonly tf = this.attach(new UITextField());

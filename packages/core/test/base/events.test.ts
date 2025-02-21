@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { AppContext, ManagedEvent, ManagedObject } from "../../dist/index.js";
+import { AppContext, ObservedEvent, ObservedObject } from "../../dist/index.js";
 
 let numErrors = 0;
 let pendingError: any;
@@ -16,20 +16,20 @@ beforeEach((c) => {
 });
 
 test("Constructor", () => {
-	let e = new ManagedEvent("Foo", new ManagedObject());
+	let e = new ObservedEvent("Foo", new ObservedObject());
 	expect(e).toHaveProperty("name", "Foo");
 });
 
 test("Change event", () => {
-	let o = new ManagedObject();
-	let e = new ManagedEvent("Change", o, { change: o });
+	let o = new ObservedObject();
+	let e = new ObservedEvent("Change", o, { change: o });
 	expect(e).toHaveProperty("name", "Change");
 	expect(e).toHaveProperty("source", o);
 	expect(e.data).toHaveProperty("change", o);
 });
 
 describe("Emitting events", () => {
-	class TestObject extends ManagedObject {}
+	class TestObject extends ObservedObject {}
 
 	test("Emit event", () => {
 		expect(() => {
@@ -42,7 +42,7 @@ describe("Emitting events", () => {
 		let c = new TestObject();
 		c.listen((event: any) => {
 			try {
-				expect(event).toBeInstanceOf(ManagedEvent);
+				expect(event).toBeInstanceOf(ObservedEvent);
 				expect(event).toHaveProperty("name", "Testing");
 				count++;
 			} catch (err) {
@@ -82,14 +82,14 @@ describe("Emitting events", () => {
 
 describe("Async iterator listeners", () => {
 	test("Unlink cancels iterator", async () => {
-		let c = new ManagedObject();
+		let c = new ObservedObject();
 		let iter = c.listen(true)[Symbol.asyncIterator]();
 		c.unlink();
 		expect(await iter.next()).toHaveProperty("done", true);
 	});
 
 	test("Unlink stops waiting iterator", async () => {
-		let c = new ManagedObject();
+		let c = new ObservedObject();
 		let events = 0;
 		new Promise((r) => setTimeout(r, 10)).then(() => c.unlink());
 		for await (let _ of c.listen(true)) {
@@ -99,7 +99,7 @@ describe("Async iterator listeners", () => {
 	});
 
 	test("Iterator handles events using buffer", async () => {
-		let c = new ManagedObject();
+		let c = new ObservedObject();
 		new Promise((r) => setTimeout(r, 10)).then(() => {
 			c.emit("Foo");
 			c.emit("Bar");
@@ -114,7 +114,7 @@ describe("Async iterator listeners", () => {
 	});
 
 	test("Iterator handles events directly", async () => {
-		let c = new ManagedObject();
+		let c = new ObservedObject();
 		new Promise((r) => setTimeout(r, 10)).then(() => c.emit("Foo"));
 		for await (let event of c.listen(true)) {
 			if (event.name === "Foo") c.emit("Bar");
@@ -123,7 +123,7 @@ describe("Async iterator listeners", () => {
 	});
 
 	test("Iterator handles exceptions", async () => {
-		let c = new ManagedObject();
+		let c = new ObservedObject();
 		let errors = 0;
 		new Promise((r) => setTimeout(r, 10)).then(() => c.emit("Foo"));
 		try {

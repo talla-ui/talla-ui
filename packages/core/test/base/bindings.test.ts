@@ -5,8 +5,8 @@ import {
 	$strf,
 	AppContext,
 	Binding,
-	ManagedList,
-	ManagedObject,
+	ObservedList,
+	ObservedObject,
 	app,
 	binding,
 } from "../../dist/index.js";
@@ -53,7 +53,7 @@ test("Constructor with path and filters", () => {
 
 describe("Basic bindings", () => {
 	function setup() {
-		class ObjectWithBind extends ManagedObject {
+		class ObjectWithBind extends ObservedObject {
 			bind(property: keyof this, source: Binding | string) {
 				if (typeof source === "string") {
 					source = $bind(source);
@@ -327,7 +327,7 @@ describe("Basic bindings", () => {
 	});
 
 	test("Update 2-step non-observed binding using change event", () => {
-		class ChangedObject extends ManagedObject {
+		class ChangedObject extends ObservedObject {
 			get nonObserved() {
 				return this._nonObserved;
 			}
@@ -336,13 +336,13 @@ describe("Basic bindings", () => {
 			}
 			private _nonObserved = 1;
 		}
-		class BoundObject extends ManagedObject {
+		class BoundObject extends ObservedObject {
 			a?: number;
 			bindnonObserved() {
 				$bind("changeable.nonObserved").bindTo(this, "a");
 			}
 		}
-		class Parent extends ManagedObject {
+		class Parent extends ObservedObject {
 			constructor() {
 				super();
 				this.changeable = new ChangedObject();
@@ -359,23 +359,23 @@ describe("Basic bindings", () => {
 		expect(p.bound).toHaveProperty("a", 2);
 	});
 
-	test("Bind to property of managed list item: indexed, first, last", () => {
-		class ListItem extends ManagedObject {
+	test("Bind to property of observed list item: indexed, first, last", () => {
+		class ListItem extends ObservedObject {
 			constructor(n: number) {
 				super();
 				this.n = n;
 			}
 			n: number;
 		}
-		class BoundObject extends ManagedObject {
+		class BoundObject extends ObservedObject {
 			a?: number;
 			bindNumber(b: string) {
 				$bind(b).bindTo(this, "a");
 				return this;
 			}
 		}
-		class Parent extends ManagedObject {
-			list = new ManagedList().restrict(ListItem);
+		class Parent extends ObservedObject {
+			list = new ObservedList().restrict(ListItem);
 			readonly boundIndex = this.attach(
 				new BoundObject().bindNumber("list.0.n"),
 			);
@@ -419,7 +419,7 @@ describe("Basic bindings", () => {
 
 	test("Binding non-observable property: error", () => {
 		expect(() => {
-			class Child extends ManagedObject {
+			class Child extends ObservedObject {
 				constructor() {
 					super();
 					$bind("nonObserved").bindTo(this, "nonObserved");
@@ -427,7 +427,7 @@ describe("Basic bindings", () => {
 				}
 				nonObserved?: number;
 			}
-			class Parent extends ManagedObject {
+			class Parent extends ObservedObject {
 				get nonObserved() {
 					return 1;
 				}
@@ -485,9 +485,9 @@ describe("Basic bindings", () => {
 
 describe("Bindings with source labels", () => {
 	function setup(property: string | symbol) {
-		let c = Object.assign(new ManagedObject(), { a: 0 });
-		let p1 = Object.assign(new ManagedObject(), { a: 1 });
-		let p2 = Object.assign(new ManagedObject(), {
+		let c = Object.assign(new ObservedObject(), { a: 0 });
+		let p1 = Object.assign(new ObservedObject(), { a: 1 });
+		let p2 = Object.assign(new ObservedObject(), {
 			a: 2 as any,
 			[property]: true,
 		});
@@ -564,11 +564,11 @@ describe("Bindings with source labels", () => {
 
 describe("Binding decorator", () => {
 	test("Decorator using string argument", () => {
-		class ParentObject extends ManagedObject {
+		class ParentObject extends ObservedObject {
 			a = 123;
 			child = this.attach(new ChildObject());
 		}
-		class ChildObject extends ManagedObject {
+		class ChildObject extends ObservedObject {
 			@binding("a")
 			a?: number;
 		}
@@ -577,11 +577,11 @@ describe("Binding decorator", () => {
 	});
 
 	test("Decorator using binding argument", () => {
-		class ParentObject extends ManagedObject {
+		class ParentObject extends ObservedObject {
 			a = 123;
 			child = this.attach(new ChildObject());
 		}
-		class ChildObject extends ManagedObject {
+		class ChildObject extends ObservedObject {
 			@binding($bind("a"))
 			a?: number;
 		}
@@ -590,14 +590,14 @@ describe("Binding decorator", () => {
 	});
 });
 
-describe("Managed list / array bindings", () => {
+describe("Observed list / array bindings", () => {
 	function setup() {
-		class Parent extends ManagedObject {
+		class Parent extends ObservedObject {
 			child = this.attach(new Child());
 			value?: any;
 		}
-		class Child extends ManagedObject {
-			list = new ManagedList();
+		class Child extends ObservedObject {
+			list = new ObservedList();
 			bindList(b: string) {
 				$bind(b).bindTo(this, "list");
 			}
@@ -605,19 +605,19 @@ describe("Managed list / array bindings", () => {
 		return { Parent };
 	}
 
-	test("Can bind ManagedList to other instance", () => {
+	test("Can bind ObservedList to other instance", () => {
 		let { Parent } = setup();
 		let parent = new Parent();
-		let newList = new ManagedList();
+		let newList = new ObservedList();
 		parent.value = newList;
 		parent.child.bindList("value");
 		expect(parent.child).toHaveProperty("list", newList);
 	});
 
-	test("Can bind ManagedList to other instance, then remove", () => {
+	test("Can bind ObservedList to other instance, then remove", () => {
 		let { Parent } = setup();
 		let parent = new Parent();
-		let newList = new ManagedList();
+		let newList = new ObservedList();
 		parent.value = newList;
 		parent.child.bindList("value");
 		expect(parent.child).toHaveProperty("list", newList);
@@ -626,16 +626,16 @@ describe("Managed list / array bindings", () => {
 	});
 
 	test("Shouldn't bind to `count` within list", () => {
-		class Child extends ManagedObject {
+		class Child extends ObservedObject {
 			constructor() {
 				super();
 				$bind("count").bindTo(this, "count");
 			}
 			count?: number;
 		}
-		class Parent extends ManagedObject {
+		class Parent extends ObservedObject {
 			count = 123;
-			list = this.attach(new ManagedList(new Child()));
+			list = this.attach(new ObservedList(new Child()));
 		}
 		let p = new Parent();
 		expect(p.list.first()).toHaveProperty("count", 123);
@@ -644,7 +644,7 @@ describe("Managed list / array bindings", () => {
 
 describe("Filtered/boolean bindings", () => {
 	function setup() {
-		class Parent extends ManagedObject {
+		class Parent extends ObservedObject {
 			readonly child = this.attach(new Child());
 			value1 = 1;
 			value2 = 2;
@@ -653,7 +653,7 @@ describe("Filtered/boolean bindings", () => {
 			list?: any;
 		}
 
-		class Child extends ManagedObject {
+		class Child extends ObservedObject {
 			bindValue(b: Binding) {
 				b.bindTo(this, "value");
 			}
@@ -900,13 +900,13 @@ describe("Filtered/boolean bindings", () => {
 
 describe("String format bindings", () => {
 	function setup() {
-		class Parent extends ManagedObject {
+		class Parent extends ObservedObject {
 			readonly child = this.attach(new Child());
 			value1 = 1;
 			str = "ABC";
 		}
 
-		class Child extends ManagedObject {
+		class Child extends ObservedObject {
 			value?: any;
 			bindValue(b: Binding) {
 				b.bindTo(this, "value");

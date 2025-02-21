@@ -6,7 +6,7 @@ import {
 import { beforeEach, expect, test } from "vitest";
 import {
 	$view,
-	ManagedObject,
+	ObservedObject,
 	UICell,
 	ViewComposite,
 	ui,
@@ -22,7 +22,7 @@ test("Set state directly", () => {
 	expect(cond.body).toBeUndefined();
 	cond.state = true;
 	expect(cond.body).toBeInstanceOf(UICell);
-	expect(ManagedObject.whence(cond.body)).toBe(cond);
+	expect(ObservedObject.whence(cond.body)).toBe(cond);
 });
 
 test("Events are propagated", async () => {

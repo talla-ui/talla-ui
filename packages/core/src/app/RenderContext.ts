@@ -1,4 +1,4 @@
-import { ManagedObject, StringConvertible } from "../base/index.js";
+import { ObservedObject, StringConvertible } from "../base/index.js";
 import type { UIColor } from "../ui/index.js";
 import { errorHandler, invalidArgErr, safeCall } from "../errors.js";
 import { View } from "./View.js";
@@ -9,7 +9,7 @@ import { View } from "./View.js";
  * - The current renderer, once initialized, should be available as {@link AppContext.renderer app.renderer}.
  * @docgen {hideconstructor}
  */
-export abstract class RenderContext extends ManagedObject {
+export abstract class RenderContext extends ObservedObject {
 	/** Returns a render callback for root view output; do not use directly */
 	abstract getRenderCallback(): RenderContext.RenderCallback;
 	/** Creates a new renderer observer for the provided view object; do not use directly */
@@ -133,7 +133,7 @@ export namespace RenderContext {
 	 *   // ...view for wide viewports with at least 3 grid 'columns'
 	 * </conditional>
 	 */
-	export interface Viewport extends ManagedObject {
+	export interface Viewport extends ObservedObject {
 		/** The viewport width in logical pixel units */
 		width?: number;
 

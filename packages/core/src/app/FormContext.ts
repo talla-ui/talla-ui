@@ -1,5 +1,5 @@
 import { View } from "./index.js";
-import { Binding, ManagedObject, ObjectReader } from "../base/index.js";
+import { Binding, ObservedObject, ObjectReader } from "../base/index.js";
 
 /** An object that can be used to create bindings for properties of the nearest `formContext` property */
 export const $form = Binding.createFactory<
@@ -57,7 +57,7 @@ export const $form = Binding.createFactory<
  */
 export class FormContext<
 	TSchema extends ObjectReader.Schema = Record<string, ObjectReader.SchemaRule>,
-> extends ManagedObject {
+> extends ObservedObject {
 	/** Creates a new instance with the provided validation schema and/or values */
 	constructor(
 		schemaOrReader?: TSchema | ObjectReader<TSchema>,
@@ -196,7 +196,7 @@ export namespace FormContext {
 				setValue.call(host, ctx.values[host.formField]);
 			}
 		});
-		ManagedObject.observe(host, ["formField"], (host, _, value) => {
+		ObservedObject.observe(host, ["formField"], (host, _, value) => {
 			if (
 				formContext &&
 				typeof value === "string" &&

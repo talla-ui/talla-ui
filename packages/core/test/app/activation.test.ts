@@ -5,7 +5,7 @@ import {
 	ActivityList,
 	app,
 	AppContext,
-	ManagedObject,
+	ObservedObject,
 	NavigationContext,
 } from "../../dist/index.js";
 
@@ -55,7 +55,7 @@ describe("ActivityList and activities", () => {
 	}
 
 	test("Activity context Object and properties", () => {
-		expect(ManagedObject.whence(app.activities)).toBe(app);
+		expect(ObservedObject.whence(app.activities)).toBe(app);
 		expect(app.activities.getActivities()).toEqual([]);
 		expect(app.activities.count).toBe(0);
 		expect(app.navigation).toBeInstanceOf(NavigationContext);

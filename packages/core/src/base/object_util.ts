@@ -1,8 +1,8 @@
-import { isManagedObject, ManagedObject } from "./ManagedObject.js";
+import { isObservedObject, ObservedObject } from "./ObservedObject.js";
 import { err, ERROR, errorHandler } from "../errors.js";
-import type { ManagedEvent } from "./ManagedEvent.js";
+import type { ObservedEvent } from "./ObservedEvent.js";
 
-// Symbols used for ManagedObject properties:
+// Symbols used for ObservedObject properties:
 
 /** @internal Property that's set to true when object is unlinked */
 export const $_unlinked = Symbol("unlinked");
@@ -22,14 +22,14 @@ export const $_get = Symbol("get");
 /** @internal Non-existent property, trap is invoked when an event is emitted */
 export const $_traps_event = Symbol("event");
 
-/** Map containing a list of traps for observable properties of managed objects */
-const _traps = new WeakMap<ManagedObject, TrapLookup>();
+/** Map containing a list of traps for observable properties of observed objects */
+const _traps = new WeakMap<ObservedObject, TrapLookup>();
 
-/** Map containing a list of attached objects for each origin managed object */
-const _attached = new WeakMap<ManagedObject, NullableArray<ManagedObject>>();
+/** Map containing a list of attached objects for each origin observed object */
+const _attached = new WeakMap<ObservedObject, NullableArray<ObservedObject>>();
 
-/** Map containing a list of active bindings for each managed object */
-const _bindings = new WeakMap<ManagedObject, Bound[]>();
+/** Map containing a list of active bindings for each observed object */
+const _bindings = new WeakMap<ObservedObject, Bound[]>();
 
 /** Initial binding value, not equal to anything else */
 const NO_VALUE = { none: 0 };
@@ -106,12 +106,12 @@ export type TrapRef = {
 	/** List to which this trap has been added (for removal) */
 	l: NullableArray<TrapRef>;
 	/** Object to which this trap has been added (for unlinked check) */
-	o: ManagedObject;
+	o: ObservedObject;
 };
 
 /** Function that's called when a trap is invoked */
 type TrapFunction = (
-	target: ManagedObject,
+	target: ObservedObject,
 	p: string | number | symbol,
 	value: unknown,
 ) => void;
@@ -121,16 +121,16 @@ type TrapLookup = { [p: string | number | symbol]: TrapRef[] | undefined };
 
 /**
  * @internal
- * Add a trap to a managed object (target) for a given property
- * @param target The managed object to add the trap to
+ * Add a trap to an observed object (target) for a given property
+ * @param target The observed object to add the trap to
  * @param p The property to add the trap to
  * @param trap Function to call when value is set (will be guarded)
- * @param unlinked Function to call when the managed object is unlinked
+ * @param unlinked Function to call when the observed object is unlinked
  * @param init True if trap function should be invoked immediately
  * @returns Trap reference, can be used to remove trap
  */
 export function addTrap(
-	target: ManagedObject,
+	target: ObservedObject,
 	p: string | number | symbol,
 	trap?: TrapFunction,
 	unlinked?: () => void,
@@ -171,15 +171,15 @@ export function removeTrap(trap?: TrapRef) {
 
 /** @internal Invoke all trap functions for a given object and property, with given value */
 export function invokeTrap(
-	managedObject: ManagedObject,
+	observedObject: ObservedObject,
 	p: string | number | symbol,
 	value: any,
 ) {
-	let list = _traps.get(managedObject);
+	let list = _traps.get(observedObject);
 	if (list && list[p]) {
 		for (let t of list[p]!.slice()) {
-			if (t && !managedObject[$_unlinked]) {
-				t.t(managedObject, p, value);
+			if (t && !observedObject[$_unlinked]) {
+				t.t(observedObject, p, value);
 			}
 		}
 	}
@@ -187,14 +187,14 @@ export function invokeTrap(
 
 /** @internal Returns true if given property can be observed on given object, by already initializing the trap if possible */
 export function canTrap(
-	managedObject: ManagedObject,
+	observedObject: ObservedObject,
 	p: string | number | symbol,
 ) {
-	return p in managedObject && !!getTrapList(managedObject, p);
+	return p in observedObject && !!getTrapList(observedObject, p);
 }
 
 /** Returns or creates the current list of traps for given property on given object, may initialize traps for the object altogether, and make property observable by adding a getter and setter */
-function getTrapList(target: ManagedObject, p: string | number | symbol) {
+function getTrapList(target: ObservedObject, p: string | number | symbol) {
 	// happy path first: find lookup and return traps list
 	let lookup = _traps.get(target)!;
 	if (lookup && p in lookup) return lookup[p] || (lookup[p] = []);
@@ -222,25 +222,25 @@ function getTrapList(target: ManagedObject, p: string | number | symbol) {
 	return lookup[p];
 }
 
-/** Add a getter/setter for an (own) property on given managed object, to invoke its trap (only used by getTrapList above) */
+/** Add a getter/setter for an (own) property on given observed object, to invoke its trap (only used by getTrapList above) */
 function setTrapDescriptor(
-	managedObject: ManagedObject,
+	target: ObservedObject,
 	p: string | number | symbol,
 	desc: PropertyDescriptor,
 ) {
 	if (desc.set) {
 		// override property with new setter that calls old one
-		Object.defineProperty(managedObject, p, {
+		Object.defineProperty(target, p, {
 			...desc,
 			set(v) {
 				desc.set!.call(this, v);
-				invokeTrap(managedObject, p, (managedObject as any)[p]);
+				invokeTrap(target, p, (target as any)[p]);
 			},
 		});
 	} else if (!desc.get && desc.writable) {
 		// override property with getter and setter
 		let value = desc.value;
-		Object.defineProperty(managedObject, p, {
+		Object.defineProperty(target, p, {
 			enumerable: desc.enumerable,
 			get() {
 				return value;
@@ -248,7 +248,7 @@ function setTrapDescriptor(
 			set(v) {
 				if (value !== v) {
 					value = v;
-					invokeTrap(managedObject, p, v);
+					invokeTrap(target, p, v);
 				}
 			},
 		});
@@ -257,24 +257,24 @@ function setTrapDescriptor(
 
 // -- Link management functions --------------------------------------
 
-/** @internal Unlink given managed object, detaching it and removing all traps, then recurse */
-export function unlinkObject(managedObject: ManagedObject) {
-	if (managedObject[$_unlinked]) return;
+/** @internal Unlink given observed object, detaching it and removing all traps, then recurse */
+export function unlinkObject(observedObject: ObservedObject) {
+	if (observedObject[$_unlinked]) return;
 
 	// call beforeUnlink method, handle errors
-	guard((managedObject as any).beforeUnlink).call(managedObject);
-	managedObject[$_unlinked] = true;
+	guard((observedObject as any).beforeUnlink).call(observedObject);
+	observedObject[$_unlinked] = true;
 
-	// detach from origin managed object
-	let origin = managedObject[$_origin];
+	// detach from origin observed object
+	let origin = observedObject[$_origin];
 	if (origin && !origin[$_unlinked]) {
-		detachObject(origin, managedObject);
+		detachObject(origin, observedObject);
 	}
 
 	// clear traps list
-	let trapRefs = _traps.get(managedObject);
+	let trapRefs = _traps.get(observedObject);
 	if (trapRefs) {
-		_traps.delete(managedObject);
+		_traps.delete(observedObject);
 
 		// call handlers on traps on own properties (strings AND symbols, e.g. origin ref)
 		let unlinkHandlers: Array<() => void> = [];
@@ -291,29 +291,29 @@ export function unlinkObject(managedObject: ManagedObject) {
 		for (let u of unlinkHandlers) u();
 	}
 
-	// unlink all attached managed objects, if not unlinked yet
-	let attached = _attached.get(managedObject);
+	// unlink all attached observed objects, if not unlinked yet
+	let attached = _attached.get(observedObject);
 	if (attached) {
-		_attached.delete(managedObject);
+		_attached.delete(observedObject);
 		for (let c of attached.splice(0)) {
 			if (c) unlinkObject(c);
 		}
 	}
 
 	// remove bindings list reference explicitly
-	_bindings.delete(managedObject);
+	_bindings.delete(observedObject);
 }
 
 /**
- * @internal Attach given target to a managed object, and start observing it
+ * @internal Attach given target to an observed object, and start observing it
  * @error Throws an error if target is already attached to same origin, or loop detected
  */
 export function attachObject(
-	origin: ManagedObject,
-	target: ManagedObject,
-	listen?: (target: ManagedObject, event: ManagedEvent) => void,
-	detach?: (target: ManagedObject) => void,
-): ManagedObject | undefined {
+	origin: ObservedObject,
+	target: ObservedObject,
+	listen?: (target: ObservedObject, event: ObservedEvent) => void,
+	detach?: (target: ObservedObject) => void,
+): ObservedObject | undefined {
 	// check if target is already unlinked
 	if (target[$_unlinked]) throw err(ERROR.Object_Unlinked, "target");
 
@@ -358,8 +358,8 @@ export function attachObject(
 
 	// update bindings recursively
 	function updateWatched(
-		target: ManagedObject,
-		origin: ManagedObject,
+		target: ObservedObject,
+		origin: ObservedObject,
 		nestingLevel: number,
 	) {
 		if (target[$_unlinked]) return;
@@ -372,7 +372,7 @@ export function attachObject(
 			}
 		}
 
-		// recurse for attached managed objects, increase level
+		// recurse for attached observed objects, increase level
 		let attached = _attached.get(target);
 		if (attached) {
 			for (let c of attached) c && updateWatched(c, origin, nestingLevel + 1);
@@ -382,8 +382,8 @@ export function attachObject(
 	return target;
 }
 
-/** Detach given target from a managed object, either before moving or when unlinked (called above) */
-function detachObject(origin: ManagedObject, target: ManagedObject) {
+/** Detach given target from an observed object, either before moving or when unlinked (called above) */
+function detachObject(origin: ObservedObject, target: ObservedObject) {
 	if (target[$_origin] === origin) {
 		// remove link both ways
 		target[$_origin] = undefined;
@@ -391,8 +391,8 @@ function detachObject(origin: ManagedObject, target: ManagedObject) {
 
 		// update bindings recursively
 		function updateWatched(
-			target: ManagedObject,
-			origin: ManagedObject,
+			target: ObservedObject,
+			origin: ObservedObject,
 			nestingLevel: number,
 		) {
 			// clear bindings from given nesting level
@@ -401,7 +401,7 @@ function detachObject(origin: ManagedObject, target: ManagedObject) {
 				for (let bound of bindings) bound.clear(nestingLevel);
 			}
 
-			// recurse for attached managed objects, increase level
+			// recurse for attached observed objects, increase level
 			let attached = _attached.get(target);
 			if (attached) {
 				for (let c of attached) c && updateWatched(c, origin, nestingLevel + 1);
@@ -413,30 +413,30 @@ function detachObject(origin: ManagedObject, target: ManagedObject) {
 
 // -- Binding functions ----------------------------------------------
 
-/** @internal Add a watched binding path on origin(s) of given managed object */
+/** @internal Add a watched binding path on origin(s) of given observed object */
 export function watchBinding(
-	managedObject: ManagedObject,
+	observedObject: ObservedObject,
 	label: string | symbol | undefined,
 	path: ReadonlyArray<string>,
 	f: (value: any, bound: boolean) => void,
 ) {
-	if (!managedObject || !path.length) throw TypeError();
-	if (managedObject[$_unlinked]) return;
+	if (!observedObject || !path.length) throw TypeError();
+	if (observedObject[$_unlinked]) return;
 
 	// add Bound structure to list of bindings for object
-	let bound = new Bound(managedObject, label, path, guard(f));
-	if (!_bindings.has(managedObject)) _bindings.set(managedObject, [bound]);
-	else _bindings.get(managedObject)!.push(bound);
+	let bound = new Bound(observedObject, label, path, guard(f));
+	if (!_bindings.has(observedObject)) _bindings.set(observedObject, [bound]);
+	else _bindings.get(observedObject)!.push(bound);
 
 	// if already attached, try to start watching already
-	if (managedObject[$_origin]) bound.start();
+	if (observedObject[$_origin]) bound.start();
 }
 
-/** @internal Object that encapsulates a watched binding path on a managed object instance */
+/** @internal Object that encapsulates a watched binding path on an observed object instance */
 class Bound {
 	constructor(
 		/** Object to which the binding is applied (binding target) */
-		public o: ManagedObject,
+		public o: ObservedObject,
 		/** Source origin label, if any */
 		public b: string | symbol | undefined,
 		/** Property path to watch */
@@ -446,7 +446,7 @@ class Bound {
 	) {}
 
 	/** Try to start watching from the provided (or original) origin, if not already bound */
-	start(origin?: ManagedObject, nestingLevel = 0) {
+	start(origin?: ObservedObject, nestingLevel = 0) {
 		if (this.t || !this.o || this.o[$_unlinked]) return;
 		if (!origin) {
 			origin = this.o[$_origin];
@@ -474,7 +474,7 @@ class Bound {
 	private t: TrapRef[] | undefined = undefined;
 
 	/** Check for a possible source, and watch property path if possible */
-	private _check(origin: ManagedObject | undefined, nestingLevel: number) {
+	private _check(origin: ObservedObject | undefined, nestingLevel: number) {
 		// if can't be bound, set bound value to undefined
 		if (!origin || origin[$_unlinked]) {
 			if (this.i !== -2) {
@@ -508,7 +508,7 @@ class Bound {
 	}
 
 	/** Add a trap to listen for property changes on given object, for link `i` */
-	private _trapProperty(target: ManagedObject, i: number) {
+	private _trapProperty(target: ObservedObject, i: number) {
 		let self = this;
 		let traps = this.t!;
 		let trap: TrapRef | undefined = (traps[i] = addTrap(
@@ -516,7 +516,7 @@ class Bound {
 			this.p[i]!,
 			this._makeChainCallback(i),
 			function () {
-				// managed object unlinked and/or detached
+				// observed object unlinked and/or detached
 				if (trap === traps[i]) {
 					if (!i) {
 						// if this was the first trap, start all over
@@ -539,14 +539,14 @@ class Bound {
 	}
 
 	/** Add a trap to listen for change events on given object, for link `i` (always > 0) */
-	private _trapChangeEvent(object: ManagedObject, i: number) {
+	private _trapChangeEvent(object: ObservedObject, i: number) {
 		let self = this;
 		let traps = this.t!;
 		let trap = (traps[i] = addTrap(
 			object,
 			$_traps_event,
 			function (t, _, v) {
-				if ((v as ManagedEvent).data.change === t) {
+				if ((v as ObservedEvent).data.change === t) {
 					if (trap === traps[i]) {
 						self._invoke(self._get(object, i - 1), false, true);
 					}
@@ -576,11 +576,11 @@ class Bound {
 			if (last) {
 				// last part of path: invoke with found value
 				self._invoke(value);
-			} else if (value == undefined || (value as ManagedObject)[$_unlinked]) {
+			} else if (value == undefined || (value as ObservedObject)[$_unlinked]) {
 				// undefined/null or unlinked object, don't look further
 				self._invoke(undefined);
-			} else if (isManagedObject(value)) {
-				// found a managed object along the way
+			} else if (isObservedObject(value)) {
+				// found an observed object along the way
 				if (canTrap(value, nextProp)) {
 					// observe this property and move on if/when value set
 					self._trapProperty(value, next);
@@ -602,7 +602,7 @@ class Bound {
 		for (let j = i + 1; j < pathLen; j++) {
 			let nextP = this.p[j]!;
 			if (source == null) break;
-			if (isManagedObject(source)) source = source[$_get](nextP);
+			if (isObservedObject(source)) source = source[$_get](nextP);
 			else source = source[nextP];
 		}
 		return source;

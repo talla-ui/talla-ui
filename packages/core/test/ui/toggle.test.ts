@@ -6,7 +6,7 @@ import {
 import { beforeEach, expect, test } from "vitest";
 import {
 	FormContext,
-	ManagedObject,
+	ObservedObject,
 	strf,
 	ui,
 	UIToggle,
@@ -53,7 +53,7 @@ test("User input, directly setting checked value", async () => {
 });
 
 test("User input with form context", async () => {
-	class Host extends ManagedObject {
+	class Host extends ObservedObject {
 		// note that formContext must exist before it can be bound
 		readonly formContext = new FormContext().set("foo", true);
 		readonly toggle = this.attach(new UIToggle());

@@ -1,10 +1,12 @@
 import type { View, ViewBuilder } from "../../app/index.js";
-import { ManagedEvent } from "../../base/index.js";
+import { ObservedEvent } from "../../base/index.js";
 import { UIContainer } from "./UIContainer.js";
 
 /** @internal Helper function to emit a scroll event */
 function emitScroll(source: View, name: string, data: any) {
-	source.emit(new ManagedEvent(name, source, data, undefined, undefined, true));
+	source.emit(
+		new ObservedEvent(name, source, data, undefined, undefined, true),
+	);
 }
 
 /**
@@ -88,7 +90,7 @@ export namespace UIScrollContainer {
 	 * Type definition for an event that's emitted when the user scrolls up, down, left, or right in a {@link UIScrollContainer}
 	 * - Scroll events are emitted either as `Scroll` or `ScrollEnd` events. The latter is emitted after the user has stopped scrolling.
 	 */
-	export type ScrollEvent = ManagedEvent<UIScrollContainer, ScrollEventData>;
+	export type ScrollEvent = ObservedEvent<UIScrollContainer, ScrollEventData>;
 
 	/**
 	 * The data structure contained by each {@link UIScrollContainer.ScrollEvent}

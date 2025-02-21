@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { AppContext, ManagedEvent, ManagedObject } from "../../dist/index.js";
+import { AppContext, ObservedEvent, ObservedObject } from "../../dist/index.js";
 
 let numErrors = 0;
 let pendingError: any;
@@ -16,14 +16,14 @@ beforeEach((c) => {
 });
 
 test("Constructor", () => {
-	class C extends ManagedObject {}
+	class C extends ObservedObject {}
 	let c = new C();
-	expect(c).toBeInstanceOf(ManagedObject);
+	expect(c).toBeInstanceOf(ObservedObject);
 	expect(c.isUnlinked()).not.toBeTruthy();
 });
 
 test("Basic unlinking", () => {
-	class C extends ManagedObject {}
+	class C extends ObservedObject {}
 	let c = new C();
 	expect(() => c.unlink()).not.toThrowError();
 	expect(c.isUnlinked()).toBeTruthy();
@@ -35,7 +35,7 @@ test("Basic unlinking", () => {
 
 test("Unlinking invokes beforeUnlink method", () => {
 	let unlinked = 0;
-	class C extends ManagedObject {
+	class C extends ObservedObject {
 		override beforeUnlink() {
 			unlinked++;
 		}
@@ -48,12 +48,12 @@ test("Unlinking invokes beforeUnlink method", () => {
 
 describe("Observe properties", () => {
 	test("Observe single property", () => {
-		class MyObject extends ManagedObject {
+		class MyObject extends ObservedObject {
 			foo = "foo";
 		}
 		let c = new MyObject();
 		let values: any[] = [];
-		ManagedObject.observe(c, ["foo"], (object, p, value) => {
+		ObservedObject.observe(c, ["foo"], (object, p, value) => {
 			expect(object).toBe(c);
 			expect(p).toBe("foo");
 			values.push(value);
@@ -65,25 +65,25 @@ describe("Observe properties", () => {
 	});
 
 	test("Cannot observe unlinked object", () => {
-		let c = new ManagedObject();
+		let c = new ObservedObject();
 		c.unlink();
 		expect(() =>
-			ManagedObject.observe(c, ["foo"] as any, () => {}),
+			ObservedObject.observe(c, ["foo"] as any, () => {}),
 		).toThrowError();
 	});
 });
 
-describe("Basic attached managed objects", () => {
+describe("Basic attached observed objects", () => {
 	let id = 0;
 
-	class AnotherObject extends ManagedObject {
+	class AnotherObject extends ObservedObject {
 		id = id++;
 	}
-	class ChildObject extends ManagedObject {
+	class ChildObject extends ObservedObject {
 		id = id++;
 		readonly another = this.attach(new AnotherObject());
 	}
-	class TestObject extends ManagedObject {
+	class TestObject extends ObservedObject {
 		constructor(child: ChildObject = new ChildObject()) {
 			super();
 			this.child = this.attach(child);
@@ -106,10 +106,10 @@ describe("Basic attached managed objects", () => {
 
 	test("Find parent", () => {
 		let { parent, child, another } = setup();
-		expect(ManagedObject.whence(another)).toBe(child);
-		expect(ManagedObject.whence(child)).toBe(parent);
-		expect(ManagedObject.whence(parent)).toBeUndefined();
-		expect(ManagedObject.whence()).toBeUndefined();
+		expect(ObservedObject.whence(another)).toBe(child);
+		expect(ObservedObject.whence(child)).toBe(parent);
+		expect(ObservedObject.whence(parent)).toBeUndefined();
+		expect(ObservedObject.whence()).toBeUndefined();
 	});
 
 	test("Find parent of type", () => {
@@ -137,7 +137,7 @@ describe("Basic attached managed objects", () => {
 
 	test("Event handler on attach", () => {
 		let events: string[] = [];
-		class TestObject extends ManagedObject {
+		class TestObject extends ObservedObject {
 			constructor() {
 				super();
 				this.child = this.attach(new ChildObject(), (e) => {
@@ -155,7 +155,7 @@ describe("Basic attached managed objects", () => {
 
 	test("Event handler on attach, use callback object", () => {
 		let events: string[] = [];
-		class TestObject extends ManagedObject {
+		class TestObject extends ObservedObject {
 			constructor() {
 				super();
 				this.child = this.attach(new ChildObject(), {
@@ -176,12 +176,12 @@ describe("Basic attached managed objects", () => {
 
 	test("Event delegate on attach", () => {
 		let events: string[] = [];
-		class TestObject extends ManagedObject {
+		class TestObject extends ObservedObject {
 			constructor() {
 				super();
 				this.child = this.attach(new ChildObject(), { delegate: this });
 			}
-			delegate(e: ManagedEvent) {
+			delegate(e: ObservedEvent) {
 				if (e.source !== this.child) throw Error("Not the same object");
 				events.push(e.name);
 			}
@@ -200,7 +200,7 @@ describe("Basic attached managed objects", () => {
 
 	test("Async event delegate, expect to catch error", async () => {
 		let p = new Promise((r) => setTimeout(r, 1));
-		class TestObject extends ManagedObject {
+		class TestObject extends ObservedObject {
 			constructor() {
 				super();
 				this.child = this.attach(new ChildObject(), { delegate: this });
@@ -226,7 +226,7 @@ describe("Basic attached managed objects", () => {
 
 	test("Detach handler on attach, then unlink", () => {
 		let detached = 0;
-		class TestObject extends ManagedObject {
+		class TestObject extends ObservedObject {
 			constructor() {
 				super();
 				this.child = this.attach(new ChildObject(), {
@@ -246,7 +246,7 @@ describe("Basic attached managed objects", () => {
 	test("Detach handler on attach, then move", () => {
 		let events: string[] = [];
 		let detached = 0;
-		class TestObject extends ManagedObject {
+		class TestObject extends ObservedObject {
 			constructor(child: ChildObject = new ChildObject()) {
 				super();
 				this.child = this.attach(child, {
@@ -270,7 +270,7 @@ describe("Basic attached managed objects", () => {
 	});
 
 	test("Enforce strict hierarchy without loops", () => {
-		class MyLoop extends ManagedObject {
+		class MyLoop extends ObservedObject {
 			loop?: MyLoop;
 			attachSelf() {
 				this.attach(this);
@@ -287,16 +287,16 @@ describe("Basic attached managed objects", () => {
 	});
 
 	test("Cannot attach root object", () => {
-		let root = new ManagedObject();
-		ManagedObject.makeRoot(root);
-		let parent = new ManagedObject();
+		let root = new ObservedObject();
+		ObservedObject.makeRoot(root);
+		let parent = new ObservedObject();
 		expect(() => (parent as any).attach(root)).toThrowError();
 	});
 
 	test("Cannot root attached object", () => {
-		let root = new ManagedObject();
-		let parent = new ManagedObject();
+		let root = new ObservedObject();
+		let parent = new ObservedObject();
 		(parent as any).attach(root);
-		expect(() => ManagedObject.makeRoot(root)).toThrowError();
+		expect(() => ObservedObject.makeRoot(root)).toThrowError();
 	});
 });

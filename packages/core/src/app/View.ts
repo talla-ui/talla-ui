@@ -2,8 +2,8 @@ import {
 	BindingOrValue,
 	ConfigOptions,
 	isBinding,
-	ManagedEvent,
-	ManagedObject,
+	ObservedEvent,
+	ObservedObject,
 } from "../base/index.js";
 import { invalidArgErr } from "../errors.js";
 import { RenderContext } from "./RenderContext.js";
@@ -12,7 +12,7 @@ import { RenderContext } from "./RenderContext.js";
 export type ViewEvent<
 	TSource extends View = View,
 	TData extends Record<string, unknown> = Record<string, unknown>,
-> = ManagedEvent<TSource, TData>;
+> = ObservedEvent<TSource, TData>;
 
 /**
  * An abstract class that represents a view
@@ -32,7 +32,7 @@ export type ViewEvent<
  *
  * @docgen {hideconstructor}
  */
-export abstract class View extends ManagedObject {
+export abstract class View extends ObservedObject {
 	/**
 	 * Creates a view builder for the current view class, with the provided properties, bindings, and event handlers
 	 * @param preset The properties, bindings, and event handlers to apply to each view.
@@ -86,9 +86,9 @@ export class ViewBuilder<TView extends View = View> {
 				}
 				let forward = v[0] === "+";
 				if (forward) v = v.slice(1);
-				ManagedObject.intercept(view, eventName, (e, emit) => {
+				ObservedObject.intercept(view, eventName, (e, emit) => {
 					if (forward) emit(e);
-					view.emit(new ManagedEvent(v, view, e.data, undefined, e));
+					view.emit(new ObservedEvent(v, view, e.data, undefined, e));
 				});
 				continue;
 			}

@@ -2,8 +2,8 @@ import {
 	Binding,
 	BindingOrValue,
 	ConfigOptions,
-	ManagedEvent,
-	ManagedObject,
+	ObservedEvent,
+	ObservedObject,
 } from "../base/index.js";
 import { ERROR, err } from "../errors.js";
 import { RenderContext } from "./RenderContext.js";
@@ -152,14 +152,14 @@ export class ViewComposite extends View {
 
 	/**
 	 * Delegates incoming events to methods of this object, notably from the attached view body
-	 * - This method is called automatically when an event is emitted by the current view object (except if {@link ManagedEvent.noPropagation} was set on the event; see {@link ManagedObject.attach()} which is used to set up view event delegation).
+	 * - This method is called automatically when an event is emitted by the current view object (except if {@link ObservedEvent.noPropagation} was set on the event; see {@link ObservedObject.attach()} which is used to set up view event delegation).
 	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true` (event handled), false/undefined, or a promise (which is awaited just to be able to handle any errors).
 	 * @param event The event to be delegated
 	 * @returns The result of the event handler method, or undefined.
-	 * @see {@link ManagedObject.attach}
-	 * @see {@link ManagedObject.EventDelegate}
+	 * @see {@link ObservedObject.attach}
+	 * @see {@link ObservedObject.EventDelegate}
 	 */
-	delegate(event: ManagedEvent): Promise<boolean | void> | boolean | void {
+	delegate(event: ObservedEvent): Promise<boolean | void> | boolean | void {
 		return (this as any)["on" + event.name]?.(event);
 	}
 
@@ -180,7 +180,7 @@ export class ViewComposite extends View {
 				});
 			}
 		}
-		if (this.body && ManagedObject.whence(this.body) !== this) {
+		if (this.body && ObservedObject.whence(this.body) !== this) {
 			throw err(ERROR.View_NotAttached);
 		}
 		if (!this._rendered) this.beforeRender();
@@ -201,7 +201,7 @@ export namespace ViewComposite {
 			preset?: PresetWithEvents<TPreset>,
 			...content: ViewBuilder[]
 		): ViewBuilder<ViewComposite & TDefaults>;
-		whence: typeof ManagedObject.whence;
+		whence: typeof ObservedObject.whence;
 		new (preset?: PresetWithEvents<TPreset>): ViewComposite & TDefaults;
 	}
 

@@ -1,4 +1,4 @@
-import { ManagedList, ManagedObject } from "../base/index.js";
+import { ObservedList, ObservedObject } from "../base/index.js";
 import { Activity } from "./Activity.js";
 
 /**
@@ -11,7 +11,7 @@ import { Activity } from "./Activity.js";
  * @see {@link AppContext.addActivity}
  * @docgen {hideconstructor}
  */
-export class ActivityList extends ManagedObject {
+export class ActivityList extends ObservedObject {
 	/**
 	 * A reference to the _last_ activity in the list that was activated
 	 * - This reference is set when an activity in the list emits an `Active` change event.
@@ -75,7 +75,7 @@ export class ActivityList extends ManagedObject {
 	}
 
 	// keep track of activities in an attached list
-	private _list = this.attach(new ManagedList().restrict(Activity), (e) => {
+	private _list = this.attach(new ObservedList().restrict(Activity), (e) => {
 		// if Active event, update own `activated` property
 		if (
 			e.name === "Active" &&

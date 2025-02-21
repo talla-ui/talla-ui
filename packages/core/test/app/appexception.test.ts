@@ -5,7 +5,7 @@ import {
 	app,
 	AppException,
 	I18nProvider,
-	ManagedObject,
+	ObservedObject,
 } from "../../dist/index.js";
 
 beforeEach(() => {
@@ -51,7 +51,7 @@ test("Constructor with formatted string and cause", () => {
 });
 
 test("Constructor with translated string", () => {
-	class MyI18n extends ManagedObject implements I18nProvider {
+	class MyI18n extends ObservedObject implements I18nProvider {
 		constructor(public word: string) {
 			super();
 		}

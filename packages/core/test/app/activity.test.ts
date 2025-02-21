@@ -10,9 +10,9 @@ import {
 	app,
 	AppContext,
 	AsyncTaskQueue,
-	ManagedEvent,
-	ManagedList,
-	ManagedObject,
+	ObservedEvent,
+	ObservedList,
+	ObservedObject,
 	ui,
 	UILabel,
 } from "../../dist/index.js";
@@ -25,7 +25,7 @@ beforeEach(() => {
 
 // use private property from Binding to create mock app object
 const appLabel = ($navigation("pageId") as any)._label;
-const mockApp = Object.assign(new ManagedObject(), {
+const mockApp = Object.assign(new ObservedObject(), {
 	[appLabel]: true,
 	add<T extends Activity>(a: T) {
 		return (this as any).attach(a) as T;
@@ -260,7 +260,7 @@ describe("Change event watches", () => {
 	test("Watch receives change events", () => {
 		let events = 0;
 		let a = new Activity();
-		let o = new ManagedObject();
+		let o = new ObservedObject();
 		a.watch(o, () => {
 			events++;
 		});
@@ -271,7 +271,7 @@ describe("Change event watches", () => {
 	test("Watch doesn't receive other events", () => {
 		let events = 0;
 		let a = new Activity();
-		let o = new ManagedObject();
+		let o = new ObservedObject();
 		a.watch(o, () => {
 			events++;
 		});
@@ -282,7 +282,7 @@ describe("Change event watches", () => {
 	test("Watch stops when activity unlinked", () => {
 		let events = 0;
 		let a = new Activity();
-		let o = new ManagedObject();
+		let o = new ObservedObject();
 		a.watch(o, () => {
 			events++;
 		});
@@ -307,7 +307,7 @@ describe("Global context and parents", () => {
 	test("Global context is parent", () => {
 		let activity = new Activity();
 		app.addActivity(activity);
-		expect(ManagedObject.whence.call(AppContext as any, activity)).toBe(app);
+		expect(ObservedObject.whence.call(AppContext as any, activity)).toBe(app);
 	});
 
 	test("Find activity instance", () => {
@@ -347,7 +347,7 @@ describe("Global context and parents", () => {
 
 	test("Nested activities", () => {
 		class MyActivity extends Activity {
-			nested = this.attach(new ManagedList().restrict(MyActivity));
+			nested = this.attach(new ObservedList().restrict(MyActivity));
 		}
 		let activity = new MyActivity();
 		activity.nested.add(new MyActivity());
@@ -355,7 +355,7 @@ describe("Global context and parents", () => {
 		expect(Activity.whence(activity)).toBeUndefined();
 		expect(Activity.whence(activity.nested.first())).toBe(activity);
 		expect(
-			ManagedObject.whence.call(AppContext as any, activity.nested.first()),
+			ObservedObject.whence.call(AppContext as any, activity.nested.first()),
 		).toBe(app);
 	});
 

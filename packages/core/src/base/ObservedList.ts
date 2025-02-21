@@ -1,10 +1,10 @@
-import { ManagedObject } from "./ManagedObject.js";
+import { ObservedObject } from "./ObservedObject.js";
 import { addTrap, $_origin, $_get, unlinkObject } from "./object_util.js";
-import { ManagedEvent } from "./ManagedEvent.js";
+import { ObservedEvent } from "./ObservedEvent.js";
 import { err, ERROR, invalidArgErr } from "../errors.js";
 
 /** Private structure that's used to maintain a doubly-linked list */
-type LinkedList<TObject extends ManagedObject> = {
+type LinkedList<TObject extends ObservedObject> = {
 	/** Map containing all links, referring to objects in the list */
 	map: Map<TObject, RefLink<TObject>>;
 
@@ -15,9 +15,9 @@ type LinkedList<TObject extends ManagedObject> = {
 	t?: RefLink<TObject>;
 };
 
-/** Doubly linked list chain object: stored in a map for each ManagedList */
-type RefLink<TObject extends ManagedObject> = {
-	/** Managed object (list element) itself; this must be *cleared* when removed from the list */
+/** Doubly linked list chain object: stored in a map for each ObservedList */
+type RefLink<TObject extends ObservedObject> = {
+	/** Observed object (list element) itself; this must be *cleared* when removed from the list */
 	o: TObject;
 
 	/** Previous link in the list, if any */
@@ -31,32 +31,32 @@ type RefLink<TObject extends ManagedObject> = {
 const $_list = Symbol("list");
 
 /**
- * A data structure that contains an ordered set of managed objects
+ * A data structure that contains an ordered set of observed objects
  *
  * @description
- * Lists of managed objects — instances of {@link ManagedObject} — can be represented using regular arrays. However, often a 'list of objects' needs to be more restrictive, especially in the context of a UI framework. A managed list is useful in the following cases:
+ * Lists of observed objects — instances of {@link ObservedObject} — can be represented using regular arrays. However, often a 'list of objects' needs to be more restrictive, especially in the context of a UI framework. An observed list is useful in the following cases:
  *
- * - The list should only contain instances of a certain type, or at least only ManagedObject instances.
+ * - The list should only contain instances of a certain type, or at least only ObservedObject instances.
  * - The list shouldn't contain any duplicates, gaps, or undefined values.
  * - The list should be observable: actions can be taken when items are added, removed, or reordered.
- * - Events from (attached) list items should be 'propagated' on the list, to avoid having to add event listeners for all items — see {@link ManagedEvent}.
- * - List items should be able to bind to the object containing the (attached) list — see {@link Binding}.
+ * - Events from (attached) list items should be 'propagated' on the list, to avoid having to add event listeners for all items — see {@link ObservedEvent}.
+ * - List items should be able to bind to the object containing the (attached) list — see {@link Binding}.
  *
- * Managed lists are used in many places throughout the framework, such as to reference view objects within a {@link UIContainer} object. Managed lists can also be used by application code to efficiently represent lists of data models or other records.
+ * Observed lists are used in many places throughout the framework, such as to reference view objects within a {@link UIContainer} object. Observed lists can also be used by application code to efficiently represent lists of data models or other records.
  *
- * **Attaching list items** — By default, objects aren't attached to the list, so they could be attached to other objects themselves and still be part of a managed list. However, you can enable auto-attaching of objects in a list using the {@link ManagedList.attachAll()} method — **or** by attaching the list itself to another object. This ensures that objects in a list are only attached to the list itself, and are unlinked when they're removed from the list (and removed from the list when they're no longer attached to it, e.g. when moved to another auto-attaching list).
+ * **Attaching list items** — By default, objects aren't attached to the list, so they could be attached to other objects themselves and still be part of an observed list. However, you can enable auto-attaching of objects in a list using the {@link ObservedList.attachAll()} method — **or** by attaching the list itself to another object. This ensures that objects in a list are only attached to the list itself, and are unlinked when they're removed from the list (and removed from the list when they're no longer attached to it, e.g. when moved to another auto-attaching list).
  *
- * **Events** — Since ManagedList itself inherits from ManagedObject, a list can emit events, too. When any objects are added, moved, or removed, a change event is emitted. The event names are either `Change`, `Add`, or `Remove`, with objects referenced by `added` or `removed` event data properties if possible. In addition, for auto-attaching lists (see {@link ManagedList.attachAll()}) any events that are emitted by an object are re-emitted on the list itself. The {@link ManagedEvent.source} property can be used to find the object that originally emitted the event.
+ * **Events** — Since ObservedList itself inherits from ObservedObject, a list can emit events, too. When any objects are added, moved, or removed, a change event is emitted. The event names are either `Change`, `Add`, or `Remove`, with objects referenced by `added` or `removed` event data properties if possible. In addition, for auto-attaching lists (see {@link ObservedList.attachAll()}) any events that are emitted by an object are re-emitted on the list itself. The {@link ObservedEvent.source} property can be used to find the object that originally emitted the event.
  *
- * **Nested lists** — Managed lists can contain (and even attach to) other managed lists, which allows for building nested or recursive data structures that fully support bindings and events.
+ * **Nested lists** — Observed lists can contain (and even attach to) other observed lists, which allows for building nested or recursive data structures that fully support bindings and events.
  *
  * @example
  * // Create a list, add and remove objects
- * let a = Object.assign(new ManagedObject(), { foo: "a" })
- * let b = Object.assign(new ManagedObject(), { foo: "b" })
- * let list = new ManagedList(a, b);
+ * let a = Object.assign(new ObservedObject(), { foo: "a" })
+ * let b = Object.assign(new ObservedObject(), { foo: "b" })
+ * let list = new ObservedList(a, b);
  *
- * let c = Object.assign(new ManagedObject(), { foo: "c" })
+ * let c = Object.assign(new ObservedObject(), { foo: "c" })
  * list.add(c);
  * list.count // => 3
  *
@@ -71,10 +71,10 @@ const $_list = Symbol("list");
  *   // ...do something for each item
  * }
  */
-export class ManagedList<
-	T extends ManagedObject = ManagedObject,
-> extends ManagedObject {
-	/** Creates a new managed list containing the provided objects */
+export class ObservedList<
+	T extends ObservedObject = ObservedObject,
+> extends ObservedObject {
+	/** Creates a new observed list containing the provided objects */
 	constructor(...objects: T[]) {
 		super();
 		this[$_list] = { map: new Map(), h: undefined, t: undefined };
@@ -148,7 +148,7 @@ export class ManagedList<
 	 * Adds the provided objects to the end of the list
 	 * @param targets The objects to add to the list
 	 * @error This method throws an error if one of the objects is already in the list.
-	 * @error This method throws an error if one of the objects isn't of the correct type (see {@link ManagedList.restrict restrict()}).
+	 * @error This method throws an error if one of the objects isn't of the correct type (see {@link ObservedList.restrict restrict()}).
 	 */
 	add(...targets: T[]) {
 		for (let t of targets) this.insert(t);
@@ -161,13 +161,13 @@ export class ManagedList<
 	 * @param target The object to insert
 	 * @param before The reference object, before which to insert the target object
 	 * @error This method throws an error if the target object is already in the list.
-	 * @error This method throws an error if the target object isn't of the correct type (see {@link ManagedList.restrict restrict()}).
+	 * @error This method throws an error if the target object isn't of the correct type (see {@link ObservedList.restrict restrict()}).
 	 * @error This method throws an error if the reference object isn't in the list.
 	 */
 	insert(target: T, before?: T) {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 		if (!target || target.isUnlinked()) throw invalidArgErr("target");
-		if (!(target instanceof (this._restriction || ManagedObject)))
+		if (!(target instanceof (this._restriction || ObservedObject)))
 			throw err(ERROR.List_Restriction);
 		const refs = this[$_list];
 		if (before && !refs.map.has(before)) throw invalidArgErr("before");
@@ -246,7 +246,7 @@ export class ManagedList<
 	 */
 	splice(target?: T, removeCount?: number, ...objects: T[]) {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
-		if (target != null && !(target instanceof ManagedObject))
+		if (target != null && !(target instanceof ObservedObject))
 			throw invalidArgErr("target");
 
 		// find objects to remove, plus one (insertion point); if any
@@ -273,7 +273,7 @@ export class ManagedList<
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 		if (!replacement || replacement.isUnlinked())
 			throw invalidArgErr("replace");
-		if (!(replacement instanceof (this._restriction || ManagedObject)))
+		if (!(replacement instanceof (this._restriction || ObservedObject)))
 			throw err(ERROR.List_Restriction);
 		let map = this[$_list].map;
 		if (map.has(replacement)) throw err(ERROR.List_Duplicate);
@@ -301,9 +301,9 @@ export class ManagedList<
 	/**
 	 * Replaces (or moves) all items in this list with the specified items
 	 * - Existing items can be moved within the list if they're included in the new list of objects.
-	 * - Items that aren't included in the provided list are removed from the managed list.
-	 * - Items in the provided list that are not yet in the managed list are added such that the order of items matches that of the provided list.
-	 * @param objects The objects that this list should contain; either in an array or another ManagedList instance
+	 * - Items that aren't included in the provided list are removed from the observed list.
+	 * - Items in the provided list that are not yet in the observed list are added such that the order of items matches that of the provided list.
+	 * @param objects The objects that this list should contain; either in an array or another ObservedList instance
 	 */
 	replaceAll(objects: Iterable<T | undefined>) {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
@@ -605,31 +605,31 @@ export class ManagedList<
 	/**
 	 * Restricts the type of objects that can be added to this list
 	 * @summary This method can be used to limit the type of objects that can be added to the list: all new objects should inherit from the specified class, otherwise they can't be added.
-	 * @param ManagedObjectClass The class that all objects in this list should inherit from
+	 * @param ObservedObjectClass The class that all objects in this list should inherit from
 	 * @returns The list itself, typed using the specified class.
 	 * @error This method throws an error if the list currently already contains any objects that don't inherit from the specified class.
 	 */
-	restrict<R extends T>(ManagedObjectClass: {
+	restrict<R extends T>(ObservedObjectClass: {
 		new (...args: any[]): R;
-	}): ManagedList<R> {
+	}): ObservedList<R> {
 		if (this[$_list].map.size) {
 			// check existing objects
 			for (let object of this[$_list].map.keys()) {
-				if (!(object instanceof ManagedObjectClass))
+				if (!(object instanceof ObservedObjectClass))
 					throw err(ERROR.List_Restriction);
 			}
 		}
-		this._restriction = ManagedObjectClass;
+		this._restriction = ObservedObjectClass;
 		return this as any;
 	}
 
 	/**
 	 * Enable (or disable) attaching of new objects to the list itself
-	 * @summary This method can be used to make the list contain all of its (current and new) objects by attaching them. After enabling auto-attachment, adding an object to the list automatically attaches it; removing an object from the list automatically unlinks it (since it's no longer attached); attaching an object to another object (or list) automatically removes it from the list (since it can no longer be attached) — but the object won't be unlinked.
+	 * @summary This method can be used to make the list contain all of its (current and new) objects by attaching them. After enabling auto-attachment, adding an object to the list automatically attaches it; removing an object from the list automatically unlinks it (since it's no longer attached); attaching an object to another object (or list) automatically removes it from the list (since it can no longer be attached) — but the object won't be unlinked.
 	 *
 	 * When enabled, if the list currently contains any objects, they're immediately attached. Note that the feature can't be disabled once it has been enabled and there are any objects in the list.
 	 *
-	 * When enabled, events emitted on any object in the list are automatically re-emitted on the list itself (propagating the event) — unless the `noEventPropagation` argument is set to true, or the {@link ManagedEvent.noPropagation} property is set on the event itself.
+	 * When enabled, events emitted on any object in the list are automatically re-emitted on the list itself (propagating the event) — unless the `noEventPropagation` argument is set to true, or the {@link ObservedEvent.noPropagation} property is set on the event itself.
 	 *
 	 * @note Objects in a list that's itself attached to another object are also automatically attached. On a list that's itself attached, you may use this method to _disable_ this feature before adding any objects.
 	 *
@@ -688,4 +688,4 @@ export class ManagedList<
 }
 
 // set iterator to objects() method
-ManagedList.prototype[Symbol.iterator] = ManagedList.prototype.objects;
+ObservedList.prototype[Symbol.iterator] = ObservedList.prototype.objects;

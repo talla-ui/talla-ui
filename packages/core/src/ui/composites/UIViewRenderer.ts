@@ -1,5 +1,5 @@
 import { app, RenderContext, View, ViewBuilder } from "../../app/index.js";
-import { Binding, ManagedEvent, ManagedObject } from "../../base/index.js";
+import { Binding, ObservedEvent, ObservedObject } from "../../base/index.js";
 import { invalidArgErr } from "../../errors.js";
 
 /**
@@ -30,7 +30,7 @@ export class UIViewRenderer extends View {
 	/**
 	 * True if events from the referenced view should be re-emitted from this view renderer instance
 	 * - This setting defaults to false, to avoid handling the same event in two different places (e.g. activities). Set this property to true if events are not handled by the attached parent of the view itself.
-	 * - Note that events that have their {@link ManagedEvent.noPropagation noPropagation} property set to true are never re-emitted.
+	 * - Note that events that have their {@link ObservedEvent.noPropagation noPropagation} property set to true are never re-emitted.
 	 */
 	propagateEvents = false;
 
@@ -45,9 +45,9 @@ export class UIViewRenderer extends View {
 		if (view && !(view instanceof View)) throw invalidArgErr("view");
 
 		// check for circular references
-		let parent: ManagedObject | undefined = this;
+		let parent: ObservedObject | undefined = this;
 		while (parent && parent !== view) {
-			parent = ManagedObject.whence(parent);
+			parent = ObservedObject.whence(parent);
 		}
 		if (parent === view) view = undefined;
 
@@ -114,7 +114,7 @@ class ViewListener {
 	init(_view: View, stop: () => void) {
 		this.stop = stop;
 	}
-	handler(_view: View, event: ManagedEvent) {
+	handler(_view: View, event: ObservedEvent) {
 		if (!event.noPropagation && this.host.propagateEvents) {
 			this.host.emit(event);
 		}
