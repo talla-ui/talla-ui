@@ -1,15 +1,15 @@
 import type { RenderContext, ViewBuilder } from "../../app/index.js";
 import type { UIColor } from "../UIColor.js";
-import type { UIComponent } from "../UIComponent.js";
+import type { UIRenderable } from "../UIRenderable.js";
 import type { UIStyle } from "../UIStyle.js";
 import { UIContainer } from "./UIContainer.js";
 
 /**
- * A view class that represents a cell container component
+ * A view class that represents a cell container element
  *
- * @description A cell container functions like a basic container component (using column layout), taking up as much space as possible by default, and with additional properties for decoration and styling.
+ * @description A cell container functions like a basic container element (using column layout), taking up as much space as possible by default, and with additional properties for decoration and styling.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
 export class UICell extends UIContainer {
 	/**
@@ -45,11 +45,11 @@ export class UICell extends UIContainer {
 		return super.getViewBuilder(preset, ...content);
 	}
 
-	/** Text direction (rtl or ltr) for all components within this cell */
+	/** Text direction (rtl or ltr) for all UI elements within this cell */
 	textDirection?: "ltr" | "rtl" = undefined;
 
 	/** Additional space to be added around the entire cell, in pixels or CSS length with unit, **or** an object with separate offset values */
-	margin?: UIComponent.Offsets = undefined;
+	margin?: UIRenderable.Offsets = undefined;
 
 	/** Border radius, in pixels or CSS length with unit */
 	borderRadius?: string | number = undefined;
@@ -97,7 +97,8 @@ export namespace UICell {
 		| undefined;
 
 	/** The type definition for styles applicable to {@link UICell.style} */
-	export type StyleDefinition = UIComponent.Dimensions & UIComponent.Decoration;
+	export type StyleDefinition = UIRenderable.Dimensions &
+		UIRenderable.Decoration;
 }
 
 /**
@@ -105,7 +106,7 @@ export namespace UICell {
  *
  * @description An animated cell container functions like a regular cell container (see {@link UICell}), but shows animations for all style-related updates where possible.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
 export class UIAnimatedCell extends UICell {
 	/**

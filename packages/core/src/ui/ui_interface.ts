@@ -27,7 +27,7 @@ import type { UITextField } from "./controls/UITextField.js";
 import type { UIToggle } from "./controls/UIToggle.js";
 
 /**
- * An object with functions for creating UI components and other resources
+ * An object with functions for creating UI elements and other resources
  */
 export const ui: Readonly<ui> = Object.create(null) as any;
 export namespace ui {
@@ -70,7 +70,7 @@ export namespace ui {
 }
 export interface ui {
 	/**
-	 * JSX support for UI components
+	 * JSX support for UI elements
 	 *
 	 * @summary This function provides support for JSX elements, when used in `.jsx` or `.tsx` files. it's used by the TypeScript compiler (or any other JSX compiler) to convert JSX elements to function calls.
 	 *

@@ -324,7 +324,7 @@ export class Activity extends ObservedObject {
 
 	/**
 	 * Searches the view hierarchy for view objects of the provided type
-	 * @summary This method looks for matching view objects in the current view structure — including the activity's view itself. If a component is an instance of the provided class, it's added to the list. Components _within_ matching components aren't searched for further matches.
+	 * @summary This method looks for matching view objects in the current view structure — including the activity's view itself. If an object is an instance of the provided class, it's added to the list. Views _within_ matching objects aren't searched for further matches.
 	 * @param type A view class
 	 * @returns An array with instances of the provided view class; may be empty but never undefined.
 	 */

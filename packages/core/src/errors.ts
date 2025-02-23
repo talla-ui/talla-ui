@@ -49,7 +49,7 @@ export const enum ERROR {
 	Render_NoModal,
 	View_Invalid,
 	View_NotAttached,
-	UIComponent_NoRenderer,
+	UIRenderable_NoRenderer,
 	UIList_Invalid,
 	JSX_InvalidTag,
 }
@@ -69,7 +69,7 @@ const messages = [
 	"No modal controller available",
 	"Invalid body view type",
 	"View is not attached",
-	"No renderer for this component",
+	"No renderer for this UI element",
 	"Invalid list type",
 	"Invalid JSX tag",
 ] as const;

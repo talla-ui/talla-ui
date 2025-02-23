@@ -1,16 +1,16 @@
 import type { ViewBuilder } from "../../app/index.js";
 import type { StringConvertible } from "../../base/index.js";
-import { UIComponent } from "../UIComponent.js";
+import { UIRenderable } from "../UIRenderable.js";
 import type { UIStyle } from "../UIStyle.js";
 
 /**
  * A view class that represents an image control
  *
- * @description An image component is rendered on-screen as a rectangular image, loaded from the provided (data or remote) URL.
+ * @description An image UI element is rendered on-screen as a rectangular image, loaded from the provided (data or remote) URL.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
-export class UIImage extends UIComponent {
+export class UIImage extends UIRenderable {
 	/**
 	 * Creates a new {@link ViewBuilder} instance for the current view class
 	 * @see {@link View.getViewBuilder}
@@ -18,7 +18,7 @@ export class UIImage extends UIComponent {
 	 */
 	static override getViewBuilder(
 		preset: ViewBuilder.ExtendPreset<
-			typeof UIComponent,
+			typeof UIRenderable,
 			UIImage,
 			"url" | "width" | "height" | "style" | "allowFocus" | "allowKeyboardFocus"
 		> & {
@@ -70,5 +70,6 @@ export namespace UIImage {
 		| undefined;
 
 	/** The type definition for styles applicable to {@link UIImage.style} */
-	export type StyleDefinition = UIComponent.Dimensions & UIComponent.Decoration;
+	export type StyleDefinition = UIRenderable.Dimensions &
+		UIRenderable.Decoration;
 }

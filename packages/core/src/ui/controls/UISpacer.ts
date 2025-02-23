@@ -1,14 +1,14 @@
 import type { ViewBuilder } from "../../app/index.js";
-import { UIComponent } from "../UIComponent.js";
+import { UIRenderable } from "../UIRenderable.js";
 
 /**
  * A view class that represents a flexible control without any content
  *
- * @description A spacer component is rendered on-screen as an empty placeholder.
+ * @description A spacer UI element is rendered on-screen as an empty placeholder.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
-export class UISpacer extends UIComponent {
+export class UISpacer extends UIRenderable {
 	/**
 	 * Creates a new {@link ViewBuilder} instance for the current view class
 	 * @see {@link View.getViewBuilder}
@@ -16,14 +16,14 @@ export class UISpacer extends UIComponent {
 	 */
 	declare static getViewBuilder: (
 		preset: ViewBuilder.ExtendPreset<
-			typeof UIComponent,
+			typeof UIRenderable,
 			UISpacer,
 			"width" | "height" | "minWidth" | "minHeight"
 		>,
-	) => ViewBuilder<UIComponent>;
+	) => ViewBuilder<UIRenderable>;
 
 	/**
-	 * Creates a new spacer component, with optional width and height
+	 * Creates a new spacer element, with optional width and height
 	 * @param width The spacer width, in pixels or CSS length with unit
 	 * @param height The spacer height, in pixels or CSS length with unit
 	 */

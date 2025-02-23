@@ -4,7 +4,7 @@ import {
 	AppContext,
 	ui,
 	UIColor,
-	UIComponent,
+	UIRenderable,
 } from "@talla-ui/core";
 import { WebHashNavigationContext } from "./WebHashNavigationContext.js";
 import { WebHistoryNavigationContext } from "./WebHistoryNavigationContext.js";
@@ -62,13 +62,13 @@ export class WebContextOptions extends ConfigOptions {
 	importCSS: string[] = [];
 
 	/** Control text styles, defaults to system font at 14 logical pixels if not set */
-	controlTextStyle?: UIComponent.TextStyle;
+	controlTextStyle?: UIRenderable.TextStyle;
 
 	/** Opacity value to be used for labels with `dim` set to true */
 	dimLabelOpacity = 0.5;
 
 	/** Custom focus (outline) decoration styles, if any */
-	focusDecoration?: UIComponent.Decoration;
+	focusDecoration?: UIRenderable.Decoration;
 
 	/**
 	 * Page background color (or CSS value), defaults to Background color

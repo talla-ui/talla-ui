@@ -1,8 +1,8 @@
-import { UIColor, UIComponent, UIStyle, ui } from "@talla-ui/core";
+import { UIColor, UIRenderable, UIStyle, ui } from "@talla-ui/core";
 
-type CombinedStyleType = UIComponent.Dimensions &
-	UIComponent.Decoration &
-	UIComponent.TextStyle &
+type CombinedStyleType = UIRenderable.Dimensions &
+	UIRenderable.Decoration &
+	UIRenderable.TextStyle &
 	UIStyle.StyleStateOptions;
 
 /** @internal Defaults used for control text style */

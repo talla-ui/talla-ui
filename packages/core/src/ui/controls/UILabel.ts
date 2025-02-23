@@ -1,18 +1,18 @@
 import type { ViewBuilder } from "../../app/index.js";
 import type { StringConvertible } from "../../base/index.js";
 import type { UIColor } from "../UIColor.js";
-import { UIComponent } from "../UIComponent.js";
+import { UIRenderable } from "../UIRenderable.js";
 import { UIIconResource } from "../UIIconResource.js";
 import type { UIStyle } from "../UIStyle.js";
 
 /**
  * A view class that represents a label control
  *
- * @description A label component is rendered on-screen as a stand-alone piece of text.
+ * @description A label UI element is rendered on-screen as a stand-alone piece of text.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
-export class UILabel extends UIComponent {
+export class UILabel extends UIRenderable {
 	/**
 	 * Creates a new {@link ViewBuilder} instance for the current view class
 	 * @see {@link View.getViewBuilder}
@@ -20,7 +20,7 @@ export class UILabel extends UIComponent {
 	 */
 	static override getViewBuilder(
 		preset: ViewBuilder.ExtendPreset<
-			typeof UIComponent,
+			typeof UIRenderable,
 			UILabel,
 			| "headingLevel"
 			| "htmlFormat"
@@ -71,13 +71,13 @@ export class UILabel extends UIComponent {
 
 	/**
 	 * True if text should wrap if the text is too long to fit on one line
-	 * - If set, this property overrides `lineBreakMode` (see {@link UIComponent.TextStyle}) to `pre-wrap`.
+	 * - If set, this property overrides `lineBreakMode` (see {@link UIRenderable.TextStyle}) to `pre-wrap`.
 	 */
 	wrap?: boolean = undefined;
 
 	/**
 	 * True if text should be user-selectable using input gestures, mouse, or keyboard
-	 * - If set, this property overrides `userSelect` (see {@link UIComponent.TextStyle}).
+	 * - If set, this property overrides `userSelect` (see {@link UIRenderable.TextStyle}).
 	 */
 	selectable?: boolean = undefined;
 
@@ -111,13 +111,13 @@ export class UILabel extends UIComponent {
 	 * Padding around the label, in pixels or CSS length with unit, **or** an object with separate offset values
 	 * - If this property is set, its value overrides `padding` from the current label style.
 	 */
-	padding?: UIComponent.Offsets = undefined;
+	padding?: UIRenderable.Offsets = undefined;
 
 	/**
 	 * The text alignment to be applied to this label
 	 * - If set, this property overrides the `textAlign` property of the current label style.
 	 */
-	align?: UIComponent.TextStyle["textAlign"] = undefined;
+	align?: UIRenderable.TextStyle["textAlign"] = undefined;
 
 	/**
 	 * The font size to be applied to this label (pixels or string with unit)
@@ -161,7 +161,7 @@ export namespace UILabel {
 		| undefined;
 
 	/** The type definition for styles applicable to {@link UILabel.style} */
-	export type StyleDefinition = UIComponent.Dimensions &
-		UIComponent.Decoration &
-		UIComponent.TextStyle;
+	export type StyleDefinition = UIRenderable.Dimensions &
+		UIRenderable.Decoration &
+		UIRenderable.TextStyle;
 }

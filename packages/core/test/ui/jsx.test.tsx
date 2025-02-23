@@ -24,20 +24,20 @@ import {
 } from "../../dist/index.js";
 
 function renderComposite(c: ViewComposite) {
-	c.render((() => { }) as any);
+	c.render((() => {}) as any);
 }
 
 beforeEach(() => {
 	useTestContext();
 });
 
-test("Single component", () => {
+test("Single element", () => {
 	let myCell = <cell />;
 	let cell = myCell.create();
 	expect(cell).toBeInstanceOf(UICell);
 });
 
-test("Single component with preset", () => {
+test("Single element with preset", () => {
 	let myCell = <cell padding={8} textColor={ui.color.RED} />;
 	let cell = myCell.create();
 	expect(cell).toBeInstanceOf(UICell);
@@ -45,7 +45,7 @@ test("Single component with preset", () => {
 	expect(cell).toHaveProperty("textColor", ui.color.RED);
 });
 
-test("Single component with text", () => {
+test("Single element with text", () => {
 	let myLabel = <label>Foo</label>;
 	let label = myLabel.create() as UILabel;
 	expect(label).toBeInstanceOf(UILabel);
@@ -53,25 +53,25 @@ test("Single component with text", () => {
 	expect(label.text?.toString()).toBe("Foo");
 });
 
-test("Single component with interpolated text", () => {
+test("Single element with interpolated text", () => {
 	let myLabel = <label>Foo {"foo"}</label>;
 	let label = myLabel.create() as UILabel;
 	expect(label.text?.toString()).toBe("Foo foo");
 });
 
-test("Single component with interpolated text, number", () => {
+test("Single element with interpolated text, number", () => {
 	let myLabel = <label>Foo {123}</label>;
 	let label = myLabel.create() as UILabel;
 	expect(label.text?.toString()).toBe("Foo 123");
 });
 
-test("Single component with interpolated text, number upfront", () => {
+test("Single element with interpolated text, number upfront", () => {
 	let myLabel = <label>{123}. Foo</label>;
 	let label = myLabel.create() as UILabel;
 	expect(label.text?.toString()).toBe("123. Foo");
 });
 
-test("Single component with lazy string", () => {
+test("Single element with lazy string", () => {
 	let myLabel = <label>{strf("Foo")}</label>;
 	let label = myLabel.create() as UILabel;
 	expect(label).toBeInstanceOf(UILabel);
@@ -79,7 +79,7 @@ test("Single component with lazy string", () => {
 	expect(label.text?.toString()).toBe("Foo");
 });
 
-test("Component with content", () => {
+test("element with content", () => {
 	let myCell = (
 		<cell>
 			<label text={"foo"} />

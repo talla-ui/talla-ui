@@ -1,17 +1,17 @@
 import {
-	ManagedEvent,
-	ManagedObject,
+	ObservedEvent,
+	ObservedObject,
 	RenderContext,
-	UIComponent,
+	UIRenderable,
 	app,
 } from "@talla-ui/core";
 import { WebRenderer } from "../WebRenderer.js";
 import { ELT_HND_PROP } from "../events.js";
 
-/** @internal Abstract observer class for all `UIComponent` instances, to create output and call render callback; implemented for all types of UI components */
-export abstract class BaseObserver<TUIComponent extends UIComponent> {
-	constructor(public observed: TUIComponent) {
-		this._thisRenderedEvent = new ManagedEvent(
+/** @internal Abstract observer class for all `UIRenderable` instances, to create output and call render callback; implemented for all types of UI elements */
+export abstract class BaseObserver<TUIRenderable extends UIRenderable> {
+	constructor(public observed: TUIRenderable) {
+		this._thisRenderedEvent = new ObservedEvent(
 			"Rendered",
 			observed,
 			undefined,
@@ -28,12 +28,12 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 
 	/** Set up one or more property listeners, to call {@link propertyChange} on this observer */
 	protected observeProperties(...properties: (keyof this["observed"])[]) {
-		ManagedObject.observe(this.observed, properties, (_, p, v) =>
+		ObservedObject.observe(this.observed, properties, (_, p, v) =>
 			this.propertyChange(p as any, v),
 		);
 	}
 
-	/** Handler for base property changes; must be overridden to handle other UI component properties */
+	/** Handler for base property changes; must be overridden to handle other UI element properties */
 	protected propertyChange(property: string, value: any) {
 		if (!this.element) return;
 		if (property === "hidden") {
@@ -49,16 +49,16 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 	/** Rendered output, if any; set by `onRender` handler based on return value of `getOutput()` method */
 	output?: RenderContext.Output<HTMLElement>;
 
-	/** Creates output (with element to render) for the observed UI component; called before rendering, must be overridden to create instances of `RenderContext.Output` */
+	/** Creates output (with element to render) for the observed UI element; called before rendering, must be overridden to create instances of `RenderContext.Output` */
 	abstract getOutput(): RenderContext.Output & { element: HTMLElement };
 
-	/** Updates the specified output element with content: either from properties (e.g. text content) or from other UI components; called automatically by `update()`, but can also be called when state properties change; must be overridden */
+	/** Updates the specified output element with content: either from properties (e.g. text content) or from other UI elements; called automatically by `update()`, but can also be called when state properties change; must be overridden */
 	abstract updateContent(element: HTMLElement): void;
 
 	/** Updates the specified output element with all style properties; called automatically by `update()`, but can also be called when state properties change; must be overridden to update output styles */
 	abstract updateStyle(element: HTMLElement): void;
 
-	/** Updates the specified output element with all properties of the UI component; called automatically before rendering (after `getOutput`), but can also be called when state properties change */
+	/** Updates the specified output element with all properties of the UI element; called automatically before rendering (after `getOutput`), but can also be called when state properties change */
 	update(element: HTMLElement) {
 		this._hidden = this.observed.hidden;
 		this._asyncContentUp = undefined;
@@ -118,7 +118,10 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 
 	/** Render event handler, calls encapsulated render callback with existing or new output */
 	onRender(
-		event: ManagedEvent<UIComponent, { render: RenderContext.RenderCallback }>,
+		event: ObservedEvent<
+			UIRenderable,
+			{ render: RenderContext.RenderCallback }
+		>,
 	) {
 		if (
 			typeof event.data.render === "function" &&
@@ -135,7 +138,7 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 				(output.element as any)[ELT_HND_PROP] = this;
 			}
 
-			// update output element with data from source component
+			// update output element with data from source
 			this.update(this.element);
 
 			// call render callback with new element
@@ -159,13 +162,13 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 		}
 	}
 
-	/** Called before handling DOM events, for some components (see `events.ts`); the component has already been checked here and must be defined */
+	/** Called before handling DOM events, for some elements (see `events.ts`); the view has already been checked here and must be defined */
 	onDOMEvent(event: Event, data: any) {
 		// nothing here
 	}
 
 	/** Focuses current element if possible */
-	onRequestFocus(event: ManagedEvent) {
+	onRequestFocus(event: ObservedEvent) {
 		if (event.source === this.observed) {
 			let elt = this._getFocusElement();
 			if (elt) (app.renderer as WebRenderer).tryFocusElement(elt);
@@ -176,7 +179,7 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 	private _requestedFocus?: boolean;
 
 	/** Focuses next sibling element if possible */
-	onRequestFocusNext(event: ManagedEvent) {
+	onRequestFocusNext(event: ObservedEvent) {
 		if (event.source === this.observed && this.element) {
 			let siblings = this._getFocusableSiblings();
 			if (!siblings) return;
@@ -195,7 +198,7 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 	}
 
 	/** Focuses previous sibling element if possible */
-	onRequestFocusPrevious(event: ManagedEvent) {
+	onRequestFocusPrevious(event: ObservedEvent) {
 		if (event.source === this.observed && this.element) {
 			let siblings = this._getFocusableSiblings();
 			if (!siblings) return;
@@ -243,5 +246,5 @@ export abstract class BaseObserver<TUIComponent extends UIComponent> {
 	}
 
 	private _updateCallback?: RenderContext.RenderCallback;
-	private _thisRenderedEvent?: ManagedEvent;
+	private _thisRenderedEvent?: ObservedEvent;
 }

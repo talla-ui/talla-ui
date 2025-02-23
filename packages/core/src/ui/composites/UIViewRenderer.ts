@@ -5,9 +5,9 @@ import { invalidArgErr } from "../../errors.js";
 /**
  * A view object that dynamically renders a referenced (bound) view
  *
- * @description An view renderer component renders unattached view content within its parent view component.
+ * @description An view renderer object renders unattached view content.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  * @docgen {hideconstructor}
  *
  * - The rendered view is not attached to the view renderer object itself. Therefore, it must be attached to another object, such as an activity.
@@ -80,7 +80,7 @@ export class UIViewRenderer extends View {
 
 	/**
 	 * Searches the view hierarchy for view objects of the provided type
-	 * @summary This method looks for matching view objects in the current view structure — including the current view itself. If a component is an instance of the provided class, it's added to the list. Components _within_ matching components aren't searched for further matches.
+	 * @summary This method looks for matching view objects in the current view structure — including the current view itself. If a view object is an instance of the provided class, it's added to the list. Objects _within_ matching views aren't searched for further matches.
 	 * @param type A view class
 	 * @returns An array with instances of the provided view class; may be empty but never undefined.
 	 */

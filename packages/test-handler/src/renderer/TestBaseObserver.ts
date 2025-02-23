@@ -2,14 +2,14 @@ import {
 	ObservedEvent,
 	ObservedObject,
 	RenderContext,
-	UIComponent,
+	UIRenderable,
 	UIStyle,
 	app,
 } from "@talla-ui/core";
 import { TestOutputElement } from "../TestOutputElement.js";
 import type { TestRenderer } from "./TestRenderer.js";
 
-/** UI component event names that are used for basic platform events */
+/** UI element event names that are used for basic platform events */
 const _eventNames: { [p in TestOutputElement.PlatformEvent]?: string } = {
 	click: "Click",
 	dblclick: "DoubleClick",
@@ -68,9 +68,9 @@ export function applyElementStyle(element: TestOutputElement, styles: any[]) {
 	element.styles = result || {};
 }
 
-/** @internal Abstract observer class for all `UIComponent` instances, to create output and call render callback; implemented for all types of UI components, created upon rendering, and attached to enable property bindings */
-export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
-	constructor(public observed: TUIComponent) {
+/** @internal Abstract observer class for all `UIRenderable` instances, to create output and call render callback; implemented for all types of UI elements, created upon rendering, and attached to enable property bindings */
+export abstract class TestBaseObserver<TUIRenderable extends UIRenderable> {
+	constructor(public observed: TUIRenderable) {
 		this._thisRenderedEvent = new ObservedEvent(
 			"Rendered",
 			observed,
@@ -93,7 +93,7 @@ export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
 		);
 	}
 
-	/** Handler for base property changes; must be overridden to handle other UI component properties */
+	/** Handler for base property changes; must be overridden to handle other UI element properties */
 	protected propertyChange(property: string, value: any) {
 		if (!this.element) return;
 		if (property === "hidden") {
@@ -109,16 +109,16 @@ export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
 	/** Rendered output, if any; set by `onRender` handler based on return value of `getOutput()` method */
 	output?: RenderContext.Output<TestOutputElement>;
 
-	/** Creates test output (with element to render) for the observed UI component; called before rendering, must be overridden to create instances of `TestOutputElement` */
+	/** Creates test output (with element to render) for the observed UI element; called before rendering, must be overridden to create instances of `TestOutputElement` */
 	abstract getOutput(): RenderContext.Output & { element: TestOutputElement };
 
-	/** Updates the specified output element with content: either from properties (e.g. text content) or from other UI components; called automatically by `update()`, but can also be called when state properties change; must be overridden */
+	/** Updates the specified output element with content: either from properties (e.g. text content) or from other UI elements; called automatically by `update()`, but can also be called when state properties change; must be overridden */
 	abstract updateContent(element: TestOutputElement): void;
 
 	/** Updates the specified output element with all style properties; called automatically by `update()`, but can also be called when state properties change; must be overridden to update test output element styles */
 	abstract updateStyle(element: TestOutputElement): void;
 
-	/** Updates the specified output element with all properties of the UI component; called automatically before rendering (after `getOutput`), but can also be called when state properties change */
+	/** Updates the specified output element with all properties of the UI element; called automatically before rendering (after `getOutput`), but can also be called when state properties change */
 	update(element: TestOutputElement) {
 		this._hidden = this.observed.hidden;
 		this._asyncContentUp = undefined;
@@ -191,7 +191,10 @@ export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
 
 	/** Render event handler, calls encapsulated render callback with existing or new output */
 	onRender(
-		event: ObservedEvent<UIComponent, { render: RenderContext.RenderCallback }>,
+		event: ObservedEvent<
+			UIRenderable,
+			{ render: RenderContext.RenderCallback }
+		>,
 	) {
 		if (
 			typeof event.data.render === "function" &&
@@ -209,7 +212,7 @@ export abstract class TestBaseObserver<TUIComponent extends UIComponent> {
 				return this.element!;
 			};
 
-			// update output element with data from source component
+			// update output element with data from source
 			this.update(this.element);
 
 			// call render callback with new element

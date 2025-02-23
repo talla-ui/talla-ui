@@ -234,7 +234,7 @@ test("Pagination", async () => {
 	expect(getListText(instance)).toEqual(["a", "b", "c", "d"]);
 });
 
-test("Get indices for components", async () => {
+test("Get indices for elements", async () => {
 	let myList = ui.list(
 		{ items: new ObservedList(...getObjects()) },
 		ui.label($list.string("item.name"), { allowFocus: true }),

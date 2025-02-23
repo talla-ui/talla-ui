@@ -5,7 +5,7 @@ import { View } from "./View.js";
 
 /**
  * An abstract class that supports global view rendering, part of the global application context
- * - This class is implemented by a platform renderer, e.g. to render components to the browser DOM, or in-memory (for testing). Most of these methods should not be used directly by an application.
+ * - This class is implemented by a platform renderer, e.g. to render UI elements to the browser DOM, or in-memory (for testing). Most of these methods should not be used directly by an application.
  * - The current renderer, once initialized, should be available as {@link AppContext.renderer app.renderer}.
  * @docgen {hideconstructor}
  */

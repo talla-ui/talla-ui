@@ -10,11 +10,11 @@ function emitScroll(source: View, name: string, data: any) {
 }
 
 /**
- * A view class that represents a container component that allows users to scroll, emitting asynchronous scroll events
+ * A view class that represents a container element that allows users to scroll, emitting asynchronous scroll events
  *
- * @description A scroll container functions like a regular container component, but allows users to scroll horizontally and/or vertically.
+ * @description A scroll container functions like a regular container element, but allows users to scroll horizontally and/or vertically.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
 export class UIScrollContainer extends UIContainer {
 	/**

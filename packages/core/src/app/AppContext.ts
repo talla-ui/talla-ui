@@ -306,14 +306,14 @@ export class AppContext extends ObservedObject {
 	/** Displays a context/dropdown menu with the provided list of items
 	 *
 	 * @summary
-	 * This method displays a modal menu, using the specified options (or options that are set in a configuration function). The menu is positioned near a particular UI component, an instance of {@link UIComponent}, e.g. a button that was clicked by the user.
+	 * This method displays a modal menu, using the specified options (or options that are set in a configuration function). The menu is positioned near a particular UI element, an instance of {@link UIRenderable}, e.g. a button that was clicked by the user.
 	 *
 	 * The `key` value of the chosen menu item, if any, is returned asynchronously. If the menu was dismissed, the returned promise is resolved to `undefined`.
 	 *
 	 * @note Use {@link strf} to translate item labels if necessary; this method doesn't localize strings by default.
 	 *
 	 * @param config An instance of {@link ModalMenuOptions}, including a list of menu items; or a callback function to set options for the menu to be displayed
-	 * @param ref The related UI component
+	 * @param ref The related UI element
 	 * @returns A promise that resolves to the selected item key, if any
 	 * @error This method throws an error if the theme modal menu controller can't be initialized (i.e. there's no current theme, or the theme doesn't support modal menu views).
 	 */
@@ -339,7 +339,7 @@ export class AppContext extends ObservedObject {
 	 * @see {@link RenderContext.OutputTransformer}
 	 * @see {@link UITheme.animations}
 	 *
-	 * @param ref The UI component to be animated
+	 * @param ref The UI element to be animated
 	 * @param transformer An asynchronous function that performs transformations, or a named animation from the current theme
 	 * @error This method throws an error if the renderer hasn't been initialized yet.
 	 */

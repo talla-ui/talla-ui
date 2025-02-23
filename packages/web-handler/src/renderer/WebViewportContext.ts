@@ -1,4 +1,4 @@
-import { ManagedObject, RenderContext, app } from "@talla-ui/core";
+import { ObservedObject, RenderContext, app } from "@talla-ui/core";
 import type { WebContextOptions } from "../WebContext.js";
 import {
 	getWindowInnerHeight,
@@ -11,7 +11,7 @@ let _handlerAdded = false;
 
 /** @internal */
 export class WebViewportContext
-	extends ManagedObject
+	extends ObservedObject
 	implements RenderContext.Viewport
 {
 	constructor(options: WebContextOptions) {

@@ -19,7 +19,7 @@ export const $view = Binding.createFactory($_bind_label);
  * A class that encapsulates a dynamic view
  *
  * @description
- * View composites contain a single (attached) view object. ViewComposite instances are themselves also views, and as such can be included in a view hierarchy or used as the view object of an {@link Activity}. When rendered, view composites display the contained view component.
+ * View composites contain a single (attached) view object. ViewComposite instances are themselves also views, and as such can be included in a view hierarchy or used as the view object of an {@link Activity}. When rendered, view composites display the contained body view object.
  *
  * The encapsulated view is referenced by the {@link ViewComposite.body body} property, which is usually set automatically, either when the ViewComposite is instantiated or right before rendering. It may be changed or unlinked at any time; the rendered view will be updated accordingly by the ViewComposite itself.
  *
@@ -45,7 +45,7 @@ export class ViewComposite extends View {
 	 *
 	 * The resulting class can be used as a JSX tag on its own, with attributes corresponding to the properties of the (default) preset object, or it can be used with the {@link ui.use()} function. In both cases, the result is a {@link ViewBuilder} object.
 	 *
-	 * @note Note that while view _composites_ and view _activities_ are very similar, as a rule, view composites should not include any business logic (in event handlers or other methods). Hence, use this function only to define groups of UI components and determine their look and feel. Where more code is required, consider either view activities, or view models that can be passed around in your code.
+	 * @note Note that while view _composites_ and view _activities_ are very similar, as a rule, view composites should not include any business logic (in event handlers or other methods). Hence, use this function only to define groups of UI elements and determine their look and feel. Where more code is required, consider either view activities, or view models that can be passed around in your code.
 	 */
 	static define<
 		TDefaults extends {},
@@ -129,7 +129,7 @@ export class ViewComposite extends View {
 
 	/**
 	 * Searches the view hierarchy for view objects of the provided type
-	 * @summary This method looks for matching view objects in the current view structure — including the view itself. If a component is an instance of the provided class, it's added to the list. Components _within_ matching components aren't searched for further matches.
+	 * @summary This method looks for matching view objects in the current view structure — including the view itself. If a view object is an instance of the provided class, it's added to the list. Objects _within_ matching views aren't searched for further matches.
 	 * @param type A view class
 	 * @returns An array with instances of the provided view class; may be empty but never undefined.
 	 */

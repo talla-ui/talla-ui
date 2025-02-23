@@ -1,4 +1,4 @@
-import { UIComponent } from "@talla-ui/core";
+import { UIRenderable } from "@talla-ui/core";
 import { BaseObserver } from "./observers/BaseObserver.js";
 
 /** @internal Unique ID that's used as a property name for output references on DOM elements */
@@ -11,7 +11,7 @@ export const ELT_HND_PROP =
 /** @internal Dataset property name for boolean on page and modal mount elements */
 const DATA_MOUNT_PROP = "webhandler__focusmount";
 
-/** UI component event names that are used for DOM events */
+/** UI element event names that are used for DOM events */
 const _eventNames: { [domEventName: string]: string } = {
 	click: "Click",
 	dblclick: "DoubleClick",
@@ -90,7 +90,7 @@ export function registerHandlers(elt: HTMLElement, isFullMount?: boolean) {
 	if (isFullMount) elt.dataset[DATA_MOUNT_PROP] = "1";
 }
 
-/** Helper function that handles DOM events on all UI components, max 2 levels up from target element */
+/** Helper function that handles DOM events on all UI elements, max 2 levels up from target element */
 function eventHandler(this: HTMLElement, e: Event) {
 	let target = e.target as Node | null;
 
@@ -166,19 +166,19 @@ function detractFocus(this: HTMLElement, e: Event) {
 	}
 }
 
-/** Helper function that emits one or more events on a UI component */
-function handleObserverEvent(observer: BaseObserver<UIComponent>, e: Event) {
+/** Helper function that emits one or more events on a UI element */
+function handleObserverEvent(observer: BaseObserver<UIRenderable>, e: Event) {
 	if (e.type === "click" || e.type === "mousedown" || e.type === "mouseup") {
 		if (_lastTouchT > Date.now() - 1000) return;
 	}
 
-	// find event name and propagate event to component itself
+	// find event name and propagate event to view itself
 	let uiEventName = _eventNames[e.type];
-	let component = observer.observed;
-	if (!uiEventName || !component) return;
+	let view = observer.observed;
+	if (!uiEventName || !view) return;
 	let data = { event: e };
 	observer.onDOMEvent(e, data);
-	component.emit(uiEventName, data);
+	view.emit(uiEventName, data);
 
 	// set time of last touch event, and watch for moves
 	if (e.type === "touchstart") {
@@ -194,15 +194,15 @@ function handleObserverEvent(observer: BaseObserver<UIComponent>, e: Event) {
 				}),
 			);
 		}
-		component.emit("Press", { event: e });
+		view.emit("Press", { event: e });
 	}
 
 	// simulate mouse up and click on touch (if not moved)
 	if (e.type === "touchend") {
 		_lastTouchT = Date.now();
 		if (_lastTouchObserver === observer) {
-			component.emit("Release", { event: e });
-			component.emit("Click", { event: e });
+			view.emit("Release", { event: e });
+			view.emit("Click", { event: e });
 		}
 	}
 
@@ -228,7 +228,7 @@ function handleObserverEvent(observer: BaseObserver<UIComponent>, e: Event) {
 		}
 		if (!ignore && keyName) {
 			setTimeout(() => {
-				component!.emit(keyName + "Press", { event: e });
+				view!.emit(keyName + "Press", { event: e });
 			}, 0);
 		}
 	}

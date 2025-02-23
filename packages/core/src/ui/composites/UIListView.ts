@@ -64,9 +64,9 @@ export type UIListViewEvent<T = unknown> = ObservedEvent<
 /**
  * A view composite that manages views for each item in a list of objects or values
  *
- * @description A list component creates and renders content based on a provided list data structure.
+ * @description A list view creates and renders content based on a provided list data structure.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
 export class UIListView<
 	TItem extends ObservedObject = ObservedObject,
@@ -200,7 +200,7 @@ export class UIListView<
 
 	/** Requests input focus on the last-focused list view object, or the first one, if possible */
 	override requestFocus() {
-		// pass on to last focused component (or first)
+		// pass on to last focused view (or first)
 		let content = this.getContent();
 		if (content && content.count > 0) {
 			let lastFocusedIdx = Math.max(this.lastFocusedIndex, 0);
@@ -282,7 +282,7 @@ export class UIListView<
 		}
 	}
 
-	/** Update the container with (existing or new) components, one for each list item; only called from list observer */
+	/** Update the container with (existing or new) views, one for each list item; only called from list observer */
 	private async _updateItems(
 		itemBuilder: ViewBuilder,
 		bookEndBuilder?: ViewBuilder,
@@ -318,26 +318,25 @@ export class UIListView<
 		// keep track of existing view instances for each object
 		let existing = this._contentMap;
 		let map = new Map<ObservedObject, UIListView.ItemControllerView<TItem>>();
-		let components: View[] = [];
+		let views: View[] = [];
 		let { async, delayEach, maxDelayCount } = this.renderOptions || {};
 		if (delayEach) async = true;
 		if (!maxDelayCount) maxDelayCount = DEFAULT_MAX_DELAY_COUNT;
 		let n = 0;
 		for (let item of items) {
-			let component = existing && existing.get(item);
-			if (!component) {
-				component = new UIListView.ItemControllerView(item, itemBuilder);
-			}
-			components.push(component);
-			map.set(item, component);
+			let v =
+				existing?.get(item) ||
+				new UIListView.ItemControllerView(item, itemBuilder);
+			views.push(v);
+			map.set(item, v);
 			if (async) {
 				if (cancel?.abort) return;
 				let timeout = delayEach || 0;
 				if (
 					(delayEach && n < maxDelayCount) ||
-					components.length % ASYNC_BATCH_SIZE === 0
+					views.length % ASYNC_BATCH_SIZE === 0
 				) {
-					content.replaceAll(components);
+					content.replaceAll(views);
 					await new Promise((r) => setTimeout(r, timeout));
 				}
 			}
@@ -347,11 +346,11 @@ export class UIListView<
 			if (!this._lastBookEnd || content.last() !== this._lastBookEnd) {
 				this._lastBookEnd = bookEndBuilder.create();
 			}
-			components.push(this._lastBookEnd);
+			views.push(this._lastBookEnd);
 		}
 		this._contentMap = map;
 		if (cancel?.abort) return;
-		content.replaceAll(components);
+		content.replaceAll(views);
 
 		// emit an event specific to this UIList
 		this.emit("ListItemsChange");
@@ -370,7 +369,7 @@ export class UIListView<
 		);
 	}
 
-	/** Map of already-created content components */
+	/** Map of already-created content views */
 	private _contentMap?: Map<
 		ObservedObject,
 		UIListView.ItemControllerView<TItem>

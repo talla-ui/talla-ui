@@ -1,6 +1,6 @@
-import { ManagedObject } from "talla-ui";
+import { ObservedObject } from "@talla-ui/core";
 
-export class SearchResult extends ManagedObject {
+export class SearchResult extends ObservedObject {
 	constructor(
 		public id: string,
 		public title: string,

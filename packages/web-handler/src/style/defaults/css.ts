@@ -1,4 +1,4 @@
-/** @internal UI component class name */
+/** @internal UI element class name */
 export const CLASS_UI = "WebHandler__UI";
 /** @internal Page root element class name */
 export const CLASS_PAGE_ROOT = "WebHandler__Pg";
@@ -36,7 +36,7 @@ export const CLASS_TOGGLE_TYPE = {
 /** @internal Returns an object with necessary global CSS classes */
 export function makeBaseCSS() {
 	return {
-		// add UI component base styles
+		// add UI element base styles
 		[`.${CLASS_UI}`]: {
 			display: "block",
 			margin: "0",

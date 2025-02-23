@@ -1,9 +1,9 @@
 import {
-	ManagedEvent,
+	ObservedEvent,
 	RenderContext,
 	UIAnimatedCell,
 	UICell,
-	UIComponent,
+	UIRenderable,
 	ViewEvent,
 	ui,
 } from "@talla-ui/core";
@@ -23,7 +23,7 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 
 		// add mouse handlers (events not propagated)
 		elt.addEventListener("mouseenter", (e) => {
-			let event = new ManagedEvent(
+			let event = new ObservedEvent(
 				"MouseEnter",
 				cell,
 				{ event: e },
@@ -34,7 +34,7 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 			if (this.observed === cell) cell.emit(event);
 		});
 		elt.addEventListener("mouseleave", (e) => {
-			let event = new ManagedEvent(
+			let event = new ObservedEvent(
 				"MouseLeave",
 				cell,
 				{ event: e },
@@ -120,7 +120,7 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 	}
 
 	/** Switch tabindex on focus */
-	onFocusIn(e: ViewEvent<UIComponent>) {
+	onFocusIn(e: ViewEvent<UIRenderable>) {
 		if (!this.element) return;
 		if (e.source !== this.observed && this.observed.allowKeyboardFocus) {
 			// temporarily disable keyboard focus on this parent
@@ -140,8 +140,8 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 		}
 	}
 
-	/** Last focused component, if this cell is keyboard-focusable */
-	lastFocused?: UIComponent;
+	/** Last focused UI element, if this cell is keyboard-focusable */
+	lastFocused?: UIRenderable;
 
 	/** Last applied effect, if any */
 	lastEffect?: RenderContext.OutputEffect;

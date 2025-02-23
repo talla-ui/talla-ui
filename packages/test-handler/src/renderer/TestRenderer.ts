@@ -121,7 +121,7 @@ export class TestRenderer extends RenderContext {
 
 	/**
 	 * Attempts to set input focus to the specified element in the background
-	 * - This method is used by the UI component renderer. To acquire input focus, use the {@link UIComponent.requestFocus()} method instead of calling this method directly.
+	 * - This method is used by the UI element renderer. To acquire input focus, use the {@link UIRenderable.requestFocus()} method instead of calling this method directly.
 	 * - Use a poll function or {@link expectOutputAsync()} to wait until the element has received input focus.
 	 * @param element The output element to focus
 	 */
@@ -144,7 +144,7 @@ export class TestRenderer extends RenderContext {
 	/** Transforms or animates the provided output element (not supported in test renderer) */
 	transform(_output: RenderContext.Output) {}
 
-	/** Attaches a renderer to the the provided UI component (called internally) */
+	/** Attaches a renderer to the the provided UI element (called internally) */
 	createObserver(target: View): unknown {
 		return makeObserver(target);
 	}

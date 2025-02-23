@@ -16,16 +16,16 @@ export class TestOutputElement {
 	/** A unique ID for this element, which can be used to check for unnecessary re-rendering */
 	readonly uid = _uid++;
 
-	/** The component type that rendered this output element, one of {@link TestOutputElement.TypeString TypeString} values */
+	/** The UI element type that rendered this output element, one of {@link TestOutputElement.TypeString TypeString} values */
 	readonly type: TestOutputElement.TypeString;
 
-	/** The parent element, if any, as rendered by a container UI component */
+	/** The parent element, if any, as rendered by a container UI element */
 	parent?: TestOutputElement;
 
 	/** A reference back to the rendered output object */
 	output?: RenderContext.Output & { element: TestOutputElement };
 
-	/** Component name, if any */
+	/** UI element name, if any */
 	name?: string;
 
 	/** True if input has been disabled for a control element */
@@ -162,7 +162,7 @@ export class TestOutputElement {
 	/**
 	 * Handles the specified (simulated) platform event
 	 * - Event names are based on DOM events, but the data object isn't DOM specific.
-	 * - This method is overridden by the renderer for the specific component type.
+	 * - This method is overridden by the renderer for the specific UI element type.
 	 * @param _name The event name, e.g. `click`
 	 * @param _data Arbitrary event data
 	 */

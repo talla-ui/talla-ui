@@ -15,13 +15,13 @@ export const $form = Binding.createFactory<
  * An object that contains form field data and validation rules
  *
  * @description
- * The FormContext class provides a data model for user input, allowing UI components to read and write data from/to a single form context object — instead of having to use individual bindings and event handlers for each field.
+ * The FormContext class provides a data model for user input, allowing UI elements to read and write data from/to a single form context object — instead of having to use individual bindings and event handlers for each field.
  *
  * The form context object provides methods to get, set, and clear field values, as well as a way to validate current values according to a schema or custom validation functions. Form values and validation errors can be bound to any other view properties to be displayed in the UI.
  *
  * The validation schema follows the type definition from {@link ObjectReader.Schema}, since validation takes place using {@link ObjectReader}. Errors must be set as text (strings, or the result of {@link strf()}) on the `err` properties within the validation schema, since default error messages are not included for any language.
  *
- * To use a FormContext object with {@link UITextField} or {@link UIToggle} input components (or e.g. a custom view composite object), set their `formField` property to a field name. The input component automatically binds to a `formContext` property from the current activity or a view composite, and gets/sets the input value when needed.
+ * To use a FormContext object with {@link UITextField} or {@link UIToggle} input elements (or e.g. a custom view composite object), set their `formField` property to a field name. The input view object automatically binds to a `formContext` property from the current activity or a view composite, and gets/sets the input value when needed.
  *
  * @example
  * const FormView = ui.column(

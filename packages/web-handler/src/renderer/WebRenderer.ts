@@ -23,7 +23,7 @@ export type ViewportLocation = {
 	height?: number;
 };
 
-/** @internal A renderer class that uses the DOM to render UI components */
+/** @internal A renderer class that uses the DOM to render UI elements */
 export class WebRenderer extends RenderContext {
 	/** Creates a new render context instance, used by `useWebContext()` */
 	constructor(options: WebContextOptions) {
@@ -124,7 +124,7 @@ export class WebRenderer extends RenderContext {
 	}
 	private _elementToFocus?: HTMLElement;
 
-	/** Attaches a renderer to given UI component */
+	/** Attaches a renderer to given UI element */
 	createObserver(target: View): unknown {
 		return makeObserver(target);
 	}

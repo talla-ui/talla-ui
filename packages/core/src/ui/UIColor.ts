@@ -12,7 +12,7 @@ let LightText: UIColor;
  * An object that represents a single color value
  *
  * @description
- * Instances of UIColor can be used with style classes and overrides, as well as properties of various UI components, such as {@link UICell.background}. The {@link UIColor.toString toString()} method simply evaluates a CSS-compatible color string as needed, requiring no further logic where colors are used.
+ * Instances of UIColor can be used with style classes and overrides, as well as properties of various UI elements, such as {@link UICell.background}. The {@link UIColor.toString toString()} method simply evaluates a CSS-compatible color string as needed, requiring no further logic where colors are used.
  *
  * UIColor instances can be created with a base color such as `#000` or `rgba(0, 0, 0, 0.5)`, **or** a color defined by the current theme (see {@link UITheme}). Afterwards, UIColor methods can be used to create derived colors — changing brightness, transparency, or mixing colors together.
  *

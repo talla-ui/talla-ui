@@ -1,14 +1,14 @@
 import { ObservedList } from "../../base/index.js";
 import { View, type ViewBuilder } from "../../app/index.js";
-import { UIComponent } from "../UIComponent.js";
+import { UIRenderable } from "../UIRenderable.js";
 import type { UIColor } from "../UIColor.js";
 
 /**
- * A base view class that represents a container component with no specific layout or styling
+ * A base view class that represents a container element with no specific layout or styling
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
-export abstract class UIContainer extends UIComponent {
+export abstract class UIContainer extends UIRenderable {
 	/**
 	 * Creates a new {@link ViewBuilder} instance for the current view class
 	 * @see {@link View.getViewBuilder}
@@ -16,7 +16,7 @@ export abstract class UIContainer extends UIComponent {
 	 */
 	static override getViewBuilder(
 		preset: ViewBuilder.ExtendPreset<
-			typeof UIComponent,
+			typeof UIRenderable,
 			UIContainer,
 			"padding" | "layout"
 		>,
@@ -62,17 +62,17 @@ export abstract class UIContainer extends UIComponent {
 	 * Padding around contained elements, in pixels or CSS length with unit, **or** an object with separate offset values
 	 * - If this property is set, its value overrides `padding` from the {@link layout} object.
 	 */
-	padding?: UIComponent.Offsets = undefined;
+	padding?: UIRenderable.Offsets = undefined;
 
 	/**
-	 * Options related to layout of content components within this container
+	 * Options related to layout of content UI elements within this container
 	 * - These options _override_ the defaults for the type of container.
 	 */
 	layout?: Readonly<UIContainer.Layout> = undefined;
 }
 
 export namespace UIContainer {
-	/** Options for layout of components within a container */
+	/** Options for layout of UI elements within a container */
 	export type Layout = {
 		/** Axis along which content is distributed (defaults to vertical) */
 		axis?: "horizontal" | "vertical" | "";
@@ -84,10 +84,10 @@ export namespace UIContainer {
 		wrapContent?: boolean;
 		/** True if content should be clipped within this container */
 		clip?: boolean;
-		/** Options for separator between each component */
+		/** Options for separator between each UI element */
 		separator?: Readonly<SeparatorOptions>;
-		/** Padding around contained elements, in pixels or CSS length with unit, **or** an object with separate offset values */
-		padding?: UIComponent.Offsets;
+		/** Padding around contained UI elements, in pixels or CSS length with unit, **or** an object with separate offset values */
+		padding?: UIRenderable.Offsets;
 	};
 
 	/**

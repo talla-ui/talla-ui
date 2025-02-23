@@ -1,6 +1,6 @@
 import type { ViewBuilder } from "../../app/index.js";
 import { UIColor } from "../UIColor.js";
-import { UIComponent } from "../UIComponent.js";
+import { UIRenderable } from "../UIRenderable.js";
 import { UITheme } from "../UITheme.js";
 
 const SEPARATOR_COLOR = new UIColor("Separator");
@@ -8,11 +8,11 @@ const SEPARATOR_COLOR = new UIColor("Separator");
 /**
  * A view class that represents a horizontal or vertical line separator
  *
- * @description A separator component is rendered on-screen as a single horizontal or vertical line.
+ * @description A separator UI element is rendered on-screen as a single horizontal or vertical line.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
-export class UISeparator extends UIComponent {
+export class UISeparator extends UIRenderable {
 	/**
 	 * Creates a new {@link ViewBuilder} instance for the current view class
 	 * @see {@link View.getViewBuilder}
@@ -20,11 +20,11 @@ export class UISeparator extends UIComponent {
 	 */
 	declare static getViewBuilder: (
 		preset: ViewBuilder.ExtendPreset<
-			typeof UIComponent,
+			typeof UIRenderable,
 			UISeparator,
 			"thickness" | "margin" | "color" | "vertical"
 		>,
-	) => ViewBuilder<UIComponent>;
+	) => ViewBuilder<UIRenderable>;
 
 	/** Separator line thickness, in pixels or CSS length with unit */
 	thickness: string | number = 1;

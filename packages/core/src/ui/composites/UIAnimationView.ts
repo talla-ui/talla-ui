@@ -14,9 +14,9 @@ let _nextUpdateId = 1;
 /**
  * A view composite that manages animation playback on the contained view
  *
- * @description An animation controller view component can be used to play animations and/or automatically play them when the contained component is shown or hidden.
+ * @description An animation controller view can be used to play animations and/or automatically play them when the contained UI element is shown or hidden.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
 export class UIAnimationView extends ViewComposite {
 	/**
@@ -111,7 +111,7 @@ export class UIAnimationView extends ViewComposite {
 	/** Animation that will be played automatically when the content view is shown */
 	showAnimation?: RenderContext.OutputTransformer;
 
-	/** Animation that will be played when the content view is hidden (through `UIComponent.hidden` property or `UIConditionalView`) */
+	/** Animation that will be played when the content view is hidden (through `UIRenderable.hidden` property or `UIConditionalView`) */
 	hideAnimation?: RenderContext.OutputTransformer;
 
 	/** Animation that will be played repeatedly after the content view is shown */

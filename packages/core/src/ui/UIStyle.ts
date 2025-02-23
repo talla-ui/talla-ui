@@ -4,14 +4,14 @@ import { app } from "../app/index.js";
 let _nextStyleId = 0x1234;
 
 /**
- * A class that represents a collection of styles that can be applied to UI components
+ * A class that represents a collection of styles that can be applied to UI elements
  *
  * @description
- * The UIStyle class manages style definitions that can be applied to UI components. Style properties are defined as objects, with each property representing a style value (e.g. text color, font family, padding, etc.). Multiple objects can be combined to create a list of style definitions, which can be applied to UI components based on their state (e.g. hovered, pressed, focused, etc.).
+ * The UIStyle class manages style definitions that can be applied to UI elements. Style properties are defined as objects, with each property representing a style value (e.g. text color, font family, padding, etc.). Multiple objects can be combined to create a list of style definitions, which can be applied to UI elements based on their state (e.g. hovered, pressed, focused, etc.).
  *
- * The type parameter `TDefinition` is used to define the type of style properties that can be applied, which depends on the UI component being styled.
+ * The type parameter `TDefinition` is used to define the type of style properties that can be applied, which depends on the UI element being styled.
  *
- * Styles can be created directly with style definitions, inherited from other styles (extended with additional style properties), and further overridden (with properties that may be applied directly to a UI element rather than reused). Note that properties of UI component objects may further override style properties.
+ * Styles can be created directly with style definitions, inherited from other styles (extended with additional style properties), and further overridden (with properties that may be applied directly to a UI element rather than reused). Note that properties of UI element objects may further override style properties.
  *
  * Styles are resolved at runtime based on the current theme and any inherited styles. The resulting styles are cached, until the theme is changed using {@link AppContext.theme app.theme}.
  *
@@ -64,7 +64,7 @@ export class UIStyle<TDefinition> {
 	}
 
 	/**
-	 * Creates a new style that inherits from this style, adding overrides to be applied directly to a UI component
+	 * Creates a new style that inherits from this style, adding overrides to be applied directly to a UI element
 	 * @param styles Style definition objects containing values to override
 	 * @returns A new {@link UIStyle} instance
 	 */
@@ -103,7 +103,7 @@ export class UIStyle<TDefinition> {
 	}
 
 	/**
-	 * Returns any overridden style values for this style, which should be applied directly to a UI component
+	 * Returns any overridden style values for this style, which should be applied directly to a UI element
 	 * @returns The overridden style definition, if any
 	 */
 	getOverrides(): Readonly<TDefinition> | undefined {

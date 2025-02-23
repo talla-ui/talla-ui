@@ -5,7 +5,7 @@ import type { TestOutputElement } from "./TestOutputElement.js";
 export interface OutputSelectFilter {
 	/** The element itself, if known */
 	element?: TestOutputElement;
-	/** The source component that rendered the output */
+	/** The source view object that rendered the output */
 	source?: View;
 	/** A type of element (string or class) */
 	type?: (new (...args: any[]) => View) | TestOutputElement.TypeString;
@@ -123,9 +123,8 @@ export class OutputAssertion {
 		let elements = this.elements.filter(
 			(elt) => elt.output?.source instanceof type,
 		);
-		if (!elements.length) throw Error("Component does not match");
-		if (elements.length > 1)
-			throw Error("Components match more than one element");
+		if (!elements.length) throw Error("No matching views");
+		if (elements.length > 1) throw Error("Multiple matching views");
 		return elements[0]!.output!.source as any;
 	}
 

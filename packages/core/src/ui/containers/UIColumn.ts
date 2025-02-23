@@ -2,11 +2,11 @@ import type { ViewBuilder } from "../../app/index.js";
 import { UIContainer } from "./UIContainer.js";
 
 /**
- * A view class that represents a column container component
+ * A view class that represents a column container element
  *
- * @description A column container lays out its contained components vertically.
+ * @description A column container lays out its contained UI elements vertically.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
 export class UIColumn extends UIContainer {
 	/**
@@ -30,7 +30,7 @@ export class UIColumn extends UIContainer {
 	width?: string | number = undefined;
 
 	/**
-	 * Space between components, in pixels or CSS length with unit
+	 * Space between UI elements, in pixels or CSS length with unit
 	 * - This property is undefined by default.
 	 * - If this property is set, its value overrides `separator` from the current {@link UIContainer.layout layout} object (if any).
 	 */

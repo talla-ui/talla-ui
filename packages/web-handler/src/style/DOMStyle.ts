@@ -1,4 +1,4 @@
-import { UIComponent, UIContainer, UIStyle } from "@talla-ui/core";
+import { UIRenderable, UIContainer, UIStyle } from "@talla-ui/core";
 import {
 	CLASS_CONTAINER,
 	CLASS_TEXTCONTROL,
@@ -68,7 +68,7 @@ export function getLabelDimOpacity() {
 
 /** @internal Helper method to convert a CSS length unit *or* pixels number to a CSS string or given default string (e.g. `auto`) */
 export function getCSSLength(
-	length?: UIComponent.Offsets,
+	length?: UIRenderable.Offsets,
 	defaultValue: any = "auto",
 ): string {
 	if (typeof length === "string") return length;
@@ -133,7 +133,7 @@ export function getWindowInnerHeight() {
 }
 
 /** @internal Sets the global focus 'glow' outline width and blur (pixels or string with unit), and color */
-export function setFocusDecoration(decoration: UIComponent.Decoration) {
+export function setFocusDecoration(decoration: UIRenderable.Decoration) {
 	let styles = {};
 	addDecorationStyleCSS(styles, decoration);
 	setGlobalCSS({
@@ -145,7 +145,7 @@ export function setFocusDecoration(decoration: UIComponent.Decoration) {
 }
 
 /** @internal Sets the global control style based on given text styles */
-export function setControlTextStyle(textStyle: UIComponent.TextStyle) {
+export function setControlTextStyle(textStyle: UIRenderable.TextStyle) {
 	let styles = {};
 	addTextStyleCSS(styles, textStyle);
 	setGlobalCSS({ [`.${CLASS_UI}.${CLASS_TEXTCONTROL}`]: styles });
@@ -229,7 +229,7 @@ export function applyStyles(
 	systemName?: string,
 	isTextControl?: boolean,
 	isContainer?: boolean,
-	position?: UIComponent.Position,
+	position?: UIRenderable.Position,
 	layout?: UIContainer.Layout,
 ) {
 	// if element is hidden, stop early
@@ -299,7 +299,7 @@ function addInlineCSS(
 /** Helper function to append CSS styles to given object for a given `Position` object */
 function addPositionCSS(
 	result: Partial<CSSStyleDeclaration>,
-	position: UIComponent.Position,
+	position: UIRenderable.Position,
 ) {
 	let alignSelf = position.gravity;
 	let hasHorizontalPosition: boolean | undefined;
@@ -340,7 +340,7 @@ function addPositionCSS(
 /** Helper function to append CSS styles to given object for a given `Dimensions` object */
 function addDimensionsCSS(
 	result: Partial<CSSStyleDeclaration>,
-	dimensions: UIComponent.Dimensions,
+	dimensions: UIRenderable.Dimensions,
 ) {
 	let width = dimensions.width;
 	if (width !== undefined) result.width = getCSSLength(width);
@@ -365,7 +365,7 @@ function addDimensionsCSS(
 /** Helper function to append CSS styles to given object for a given `TextStyle` object */
 function addTextStyleCSS(
 	result: Partial<CSSStyleDeclaration>,
-	textStyle: UIComponent.TextStyle,
+	textStyle: UIRenderable.TextStyle,
 ) {
 	let direction = textStyle.direction;
 	if (direction !== undefined) result.direction = direction;
@@ -419,7 +419,7 @@ function addTextStyleCSS(
 /** Helper function to append CSS styles to given object for a given `Decoration` object */
 function addDecorationStyleCSS(
 	result: Partial<CSSStyleDeclaration> & { className?: string }, // TODO: why className?
-	decoration: UIComponent.Decoration,
+	decoration: UIRenderable.Decoration,
 ) {
 	let background = decoration.background;
 	if (background !== undefined) result.background = String(background);
@@ -468,7 +468,7 @@ function addContainerLayoutCSS(
 
 function addPadding(
 	result: Partial<CSSStyleDeclaration>,
-	padding?: UIComponent.Offsets,
+	padding?: UIRenderable.Offsets,
 ) {
 	if (padding !== undefined) result.padding = getCSSLength(padding);
 	if (typeof padding === "object") {

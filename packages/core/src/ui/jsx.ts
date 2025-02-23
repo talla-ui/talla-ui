@@ -17,7 +17,7 @@ const tagNames: any = {
 	render: "renderView",
 };
 
-/** Helper function to flatten component arrays */
+/** Helper function to flatten arrays */
 function flatten(a: any[]): any {
 	let result: any[] = [];
 	a.forEach((it) => {
@@ -35,7 +35,7 @@ export function jsx(tag: any, presets: any, ...rest: any[]): ViewBuilder {
 	let nBindings = 0;
 	let hasText: boolean | undefined;
 	let bindings: { [id: string]: Binding } = {};
-	let components: ViewBuilder[] = [];
+	let views: ViewBuilder[] = [];
 	for (let r of rest) {
 		if (r instanceof LazyString) {
 			r = String(r.getOriginal());
@@ -45,7 +45,7 @@ export function jsx(tag: any, presets: any, ...rest: any[]): ViewBuilder {
 			fmt += "%[" + nBindings + "]";
 			nBindings++;
 		} else if (r instanceof ViewBuilder) {
-			components.push(r);
+			views.push(r);
 		} else {
 			fmt += String(r).replace(
 				/\%\[([^\]\:\s\=]+)(?:\=([^\]\:\s]*))?/g,
@@ -82,10 +82,10 @@ export function jsx(tag: any, presets: any, ...rest: any[]): ViewBuilder {
 	let f = typeof tag === "string" ? (ui as any)[tagNames[tag] || tag] : tag;
 	if (typeof f !== "function") throw err(ERROR.JSX_InvalidTag, String(tag));
 	if (f.prototype instanceof ViewComposite) {
-		return f.getViewBuilder(merged, ...components);
+		return f.getViewBuilder(merged, ...views);
 	}
 	if (f.prototype instanceof View) {
 		throw err(ERROR.JSX_InvalidTag, f.name);
 	}
-	return f(merged, ...components);
+	return f(merged, ...views);
 }

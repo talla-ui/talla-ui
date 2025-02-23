@@ -19,28 +19,28 @@ function emitRendered(source: View, name: string) {
 }
 
 /**
- * Base class for built-in UI components
+ * Base class for built-in UI elements that can be rendered to the screen
  *
- * This class provides common infrastructure for UI components such as {@link UIButton} and {@link UIColumn}. The UIComponent class is an abstract class and can't be instantiated or rendered on its own.
+ * This class provides common infrastructure for renderable UI elements such as {@link UIButton} and {@link UIColumn}. The UIRenderable class is an abstract class and can't be instantiated or rendered on its own.
  *
- * @online_docs Refer to the online documentation for more documentation on using UI components.
+ * @online_docs Refer to the online documentation for more documentation on using UI elements.
  * @docgen {hideconstructor}
  */
-export abstract class UIComponent extends View {
+export abstract class UIRenderable extends View {
 	/**
 	 * Creates a new {@link ViewBuilder} instance for the current view class
 	 * @see {@link View.getViewBuilder}
 	 * @docgen {hide}
 	 */
 	static override getViewBuilder(
-		this: new () => UIComponent,
+		this: new () => UIRenderable,
 		preset: {
 			/** An identifier for this component */
 			name?: string;
 			/** True if this component should be hidden from view (doesn't stop the component from being rendered) */
 			hidden?: BindingOrValue<boolean>;
 			/** Options for the positioning of this component within parent component(s) (overrides) */
-			position?: BindingOrValue<UIComponent.Position>;
+			position?: BindingOrValue<UIRenderable.Position>;
 			/** True if this component should grow to fill available space */
 			grow?: boolean;
 			/** WAI-ARIA role for this component, if applicable */
@@ -115,7 +115,7 @@ export abstract class UIComponent extends View {
 
 	/**
 	 * True if the component should be hidden from view
-	 * - UI components may still be rendered even if they're hidden. However, container component isn't rendered while containers themselves are hidden.
+	 * - UI elements may still be rendered even if they're hidden. However, container component isn't rendered while containers themselves are hidden.
 	 * - Alternatively, use {@link UIConditionalView} to show and hide content dynamically.
 	 * @see UIConditionalView
 	 */
@@ -125,11 +125,11 @@ export abstract class UIComponent extends View {
 	 * Options related to the position of this component
 	 * - If set, these options replace the defaults for the type of component.
 	 */
-	position?: Readonly<UIComponent.Position> = undefined;
+	position?: Readonly<UIRenderable.Position> = undefined;
 
 	/**
 	 * True if this component should grow to fill available space
-	 * - If set, this property overrides {@link UIComponent.Dimensions grow} of the component's `style` object, if any.
+	 * - If set, this property overrides {@link UIRenderable.Dimensions grow} of the component's `style` object, if any.
 	 * - As an exception, cells grow by default, even if this property is set to undefined. Set this property to `false` to contain cells to their content size instead.
 	 */
 	grow?: boolean = undefined;
@@ -166,13 +166,13 @@ export abstract class UIComponent extends View {
 
 	/**
 	 * Triggers asynchronous rendering for this component, and all contained components, if any
-	 * - This method is invoked automatically, and should not be called by application code. However, it may be overridden to implement a UI component with custom platform-specific rendering code.
+	 * - This method is invoked automatically, and should not be called by application code. However, it may be overridden to implement a UI element with custom platform-specific rendering code.
 	 * @param callback A render callback, usually provided by a container or the application {@link RenderContext} instance
 	 */
 	render(callback: RenderContext.RenderCallback) {
 		if (!this._renderer) {
 			let renderer = app.renderer?.createObserver(this);
-			if (!renderer) throw err(ERROR.UIComponent_NoRenderer);
+			if (!renderer) throw err(ERROR.UIRenderable_NoRenderer);
 			this._renderer = renderer;
 			emitRendered(this, "BeforeRender");
 		}
@@ -198,16 +198,16 @@ export abstract class UIComponent extends View {
 		return _viewContent;
 	}
 
-	/** Last rendered output, if any; set by the UI component renderer */
+	/** Last rendered output, if any; set by the UI element renderer */
 	lastRenderOutput?: RenderContext.Output;
 
 	private _renderer?: any;
 }
 
-export namespace UIComponent {
+export namespace UIRenderable {
 	/**
 	 * Options for component positioning within their parent component(s)
-	 * @see {@link UIComponent.position}
+	 * @see {@link UIRenderable.position}
 	 */
 	export type Position = {
 		/** Position of the component in the direction perpendicular to the distribution axis of the parent component, or `overlay` if the component should be placed on top of other components (i.e. CSS absolute positioning) */
@@ -274,7 +274,7 @@ export namespace UIComponent {
 	};
 
 	/**
-	 * Options for the appearance of UI components
+	 * Options for the appearance of UI elements
 	 * - The `css` property can be used to include miscellaneous CSS attributes, at your own risk.
 	 * @see {@link UIStyle}
 	 */
@@ -300,7 +300,7 @@ export namespace UIComponent {
 	};
 
 	/**
-	 * Options for typography used on UI components
+	 * Options for typography used on UI elements
 	 * @see {@link UIStyle}
 	 */
 	export type TextStyle = {

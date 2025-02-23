@@ -3,9 +3,9 @@ import { app, RenderContext, View, ViewBuilder } from "../../app/index.js";
 /**
  * A view composite that automatically creates and unlinks the contained view
  *
- * @description A conditional component creates and renders its contained content based on the value of the {@link state} property.
+ * @description A conditional view creates and renders its contained content based on the value of the {@link state} property.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
 export class UIConditionalView extends View {
 	/**
@@ -76,7 +76,7 @@ export class UIConditionalView extends View {
 
 	/**
 	 * Searches the view hierarchy for view objects of the provided type
-	 * @summary This method looks for matching view objects in the current view structure — including the current view itself. If a component is an instance of the provided class, it's added to the list. Components _within_ matching components aren't searched for further matches.
+	 * @summary This method looks for matching view objects in the current view structure — including the current view itself. If a view object is an instance of the provided class, it's added to the list. Objects _within_ matching views aren't searched for further matches.
 	 * @param type A view class
 	 * @returns An array with instances of the provided view class; may be empty but never undefined.
 	 */
@@ -103,6 +103,6 @@ export class UIConditionalView extends View {
 		this.body = undefined;
 	}
 
-	/** Stateful renderer wrapper, handles content component */
+	/** Stateful renderer wrapper, handles content view */
 	private _renderer?: RenderContext.ViewController;
 }

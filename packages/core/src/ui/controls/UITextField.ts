@@ -1,16 +1,16 @@
 import { type ViewBuilder, FormContext } from "../../app/index.js";
 import { StringConvertible } from "../../base/index.js";
-import { UIComponent } from "../UIComponent.js";
+import { UIRenderable } from "../UIRenderable.js";
 import type { UIStyle } from "../UIStyle.js";
 
 /**
  * A view class that represents a text field control
  *
- * @description A text field component is rendered on-screen as a single-line (default) or multi-line input field.
+ * @description A text field UI element is rendered on-screen as a single-line (default) or multi-line input field.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
-export class UITextField extends UIComponent {
+export class UITextField extends UIRenderable {
 	/**
 	 * Creates a new {@link ViewBuilder} instance for the current view class
 	 * @see {@link View.getViewBuilder}
@@ -18,7 +18,7 @@ export class UITextField extends UIComponent {
 	 */
 	static override getViewBuilder(
 		preset: ViewBuilder.ExtendPreset<
-			typeof UIComponent,
+			typeof UIRenderable,
 			UITextField,
 			| "placeholder"
 			| "value"
@@ -132,9 +132,9 @@ export namespace UITextField {
 		| undefined;
 
 	/** The type definition for styles applicable to {@link UITextField.style} */
-	export type StyleDefinition = UIComponent.Dimensions &
-		UIComponent.Decoration &
-		UIComponent.TextStyle;
+	export type StyleDefinition = UIRenderable.Dimensions &
+		UIRenderable.Decoration &
+		UIRenderable.TextStyle;
 
 	/** An identifier for a text field input type */
 	export type InputType = "text" | "password" | "number" | "date" | "color";

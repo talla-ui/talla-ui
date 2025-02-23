@@ -1,4 +1,4 @@
-import { ManagedEvent, UIScrollContainer } from "@talla-ui/core";
+import { ObservedEvent, UIScrollContainer } from "@talla-ui/core";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
 const EMIT_INTERVAL = 100;
@@ -27,7 +27,7 @@ export class UIScrollContainerRenderer extends UIContainerRenderer<UIScrollConta
 	}
 
 	onUIScrollTarget(
-		e: ManagedEvent<
+		e: ObservedEvent<
 			UIScrollContainer,
 			{ target?: string; xOffset: any; yOffset: any }
 		>,

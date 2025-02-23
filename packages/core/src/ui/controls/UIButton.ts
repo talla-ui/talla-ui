@@ -6,18 +6,18 @@ import {
 	StringConvertible,
 } from "../../base/index.js";
 import type { UIColor } from "../UIColor.js";
-import { UIComponent } from "../UIComponent.js";
+import { UIRenderable } from "../UIRenderable.js";
 import type { UIIconResource } from "../UIIconResource.js";
 import type { UIStyle } from "../UIStyle.js";
 
 /**
  * A view class that represents a button control
  *
- * @description A button component is rendered on-screen as a button control.
+ * @description A button UI element is rendered on-screen as a button control.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
-export class UIButton extends UIComponent {
+export class UIButton extends UIRenderable {
 	/**
 	 * Creates a new {@link ViewBuilder} instance for the current view class
 	 * @see {@link View.getViewBuilder}
@@ -25,7 +25,7 @@ export class UIButton extends UIComponent {
 	 */
 	static override getViewBuilder(
 		preset: ViewBuilder.ExtendPreset<
-			typeof UIComponent,
+			typeof UIRenderable,
 			UIButton,
 			| "label"
 			| "icon"
@@ -153,7 +153,7 @@ export namespace UIButton {
 		| undefined;
 
 	/** The type definition for styles applicable to {@link UIButton.style} */
-	export type StyleDefinition = UIComponent.Dimensions &
-		UIComponent.Decoration &
-		UIComponent.TextStyle;
+	export type StyleDefinition = UIRenderable.Dimensions &
+		UIRenderable.Decoration &
+		UIRenderable.TextStyle;
 }

@@ -18,16 +18,16 @@ export type ViewEvent<
  * An abstract class that represents a view
  *
  * @description
- * The view is one of the main architectural components of an application. It provides a method to render its encapsulated content, either directly or using a collection of built-in UI components.
+ * The view is one of the main architectural components of an application. It provides a method to render its encapsulated content, either directly or using a collection of built-in UI elements.
  *
  * Views can be rendered on their own (using {@link AppContext.render app.render()}) or included as content within another view. In most cases, a top-level view is created from the {@link Activity.createView()} method.
  *
  * The View class can't be used on its own. Instead, define views using the following classes and methods:
- * - {@link UIComponent} classes, and the various {@link ui} factory functions (e.g. `ui.button(...)`) that create a {@link ViewBuilder} for built-in UI components and composites.
+ * - {@link UIRenderable} classes, and the various {@link ui} factory functions (e.g. `ui.button(...)`) that create a {@link ViewBuilder} for built-in UI elements and composites.
  * - For a complete UI hierarchy, use {@link UIContainer} classes such as {@link UICell}, {@link UIRow}, and {@link UIColumn}, which represent containers that contain other views (including containers).
  * - The {@link ViewComposite.define()} function, which creates a {@link ViewComposite} subclass.
  *
- * @see {@link UIComponent}
+ * @see {@link UIRenderable}
  * @see {@link ViewComposite}
  *
  * @docgen {hideconstructor}
@@ -48,10 +48,10 @@ export abstract class View extends ObservedObject {
 	 */
 	abstract render(callback: RenderContext.RenderCallback): void;
 
-	/** A method that should be implemented to request input focus on the view output element */
+	/** Requests input focus on the output element */
 	abstract requestFocus(): void;
 
-	/** A method that should be implemented to find matching components in the view hierarchy */
+	/** Finds matching objects in the view hierarchy */
 	abstract findViewContent<T extends View>(
 		type: new (...args: any[]) => T,
 	): T[];

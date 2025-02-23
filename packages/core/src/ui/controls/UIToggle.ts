@@ -1,16 +1,16 @@
 import { type ViewBuilder, FormContext } from "../../app/index.js";
 import { StringConvertible } from "../../base/index.js";
-import { UIComponent } from "../UIComponent.js";
+import { UIRenderable } from "../UIRenderable.js";
 import type { UIStyle } from "../UIStyle.js";
 
 /**
  * A view control that represents a checkbox or toggle input
  *
- * @description A toggle component is rendered on-screen as a checkbox or toggle control that can be switched on and off by the user.
+ * @description A toggle UI element is rendered on-screen as a checkbox or toggle control that can be switched on and off by the user.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI component class.
+ * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
-export class UIToggle extends UIComponent {
+export class UIToggle extends UIRenderable {
 	/**
 	 * Creates a new {@link ViewBuilder} instance for the current view class
 	 * @see {@link View.getViewBuilder}
@@ -18,7 +18,7 @@ export class UIToggle extends UIComponent {
 	 */
 	static override getViewBuilder(
 		preset: ViewBuilder.ExtendPreset<
-			typeof UIComponent,
+			typeof UIRenderable,
 			UIToggle,
 			| "label"
 			| "state"
@@ -98,9 +98,9 @@ export namespace UIToggle {
 		| undefined;
 
 	/** The type definition for styles applicable to {@link UIToggle.style} */
-	export type StyleDefinition = UIComponent.Dimensions & {
+	export type StyleDefinition = UIRenderable.Dimensions & {
 		/** Padding within control element (in pixels or CSS string, or separate offset values) */
-		padding?: UIComponent.Offsets;
+		padding?: UIRenderable.Offsets;
 		/** Opacity (0-1) */
 		opacity?: number;
 		/** Miscellaneous CSS attributes */
@@ -110,6 +110,6 @@ export namespace UIToggle {
 	};
 
 	/** The type definition for styles applicable to {@link UIToggle.labelStyle} */
-	export type LabelStyleDefinition = UIComponent.Decoration &
-		UIComponent.TextStyle;
+	export type LabelStyleDefinition = UIRenderable.Decoration &
+		UIRenderable.TextStyle;
 }

@@ -33,10 +33,10 @@ export class UITheme {
 		return app.theme ? app.theme.rowSpacing : BASE_SPACING;
 	}
 
-	/** Default spacing between components in a row, defaults to 8 */
+	/** Default spacing between UI elements in a row, defaults to 8 */
 	rowSpacing: string | number = BASE_SPACING;
 
-	/** Default margin around separator components, defaults to 8 */
+	/** Default margin around separator UI elements, defaults to 8 */
 	separatorMargin: string | number = BASE_SPACING;
 
 	/** Default icon and chevron icon size, in pixels or string with unit; no default */
@@ -134,7 +134,7 @@ export class UITheme {
 export namespace UITheme {
 	/**
 	 * An interface that defines methods for creating modal views
-	 * - An object of this type should be assigned to {@link UITheme.modalFactory}, which is used by the `app` methods that display modal view components, as well as {@link Activity} when using the `dialog` rendering mode.
+	 * - An object of this type should be assigned to {@link UITheme.modalFactory}, which is used by the `app` methods that display modal views, as well as {@link Activity} when using the `dialog` rendering mode.
 	 */
 	export interface ModalControllerFactory {
 		/** A factory method that returns an instance that implements the {@link DialogController} interface, for the provided view */
