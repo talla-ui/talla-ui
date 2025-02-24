@@ -21,7 +21,7 @@ export const $form = Binding.createFactory<
  *
  * The validation schema follows the type definition from {@link ObjectReader.Schema}, since validation takes place using {@link ObjectReader}. Errors must be set as text (strings, or the result of {@link strf()}) on the `err` properties within the validation schema, since default error messages are not included for any language.
  *
- * To use a FormContext object with {@link UITextField} or {@link UIToggle} input elements (or e.g. a custom view composite object), set their `formField` property to a field name. The input view object automatically binds to a `formContext` property from the current activity or a view composite, and gets/sets the input value when needed.
+ * To use a FormContext object with {@link UITextField} or {@link UIToggle} input elements (or e.g. a custom UI component), set their `formField` property to a field name. The input view object automatically binds to a `formContext` property from the current activity or UI component, and gets/sets the input value when needed.
  *
  * @example
  * const FormView = ui.column(
@@ -176,9 +176,9 @@ export namespace FormContext {
 	/**
 	 * Maintain the intrinsic value of a view based on its `formField` property and the closest (bound) `formContext` reference
 	 *
-	 * @summary This function is used by {@link UITextField} and {@link UIToggle} to keep their values in sync with a bound {@link FormContext}, if their `formField` property has been set. This function can also be used on custom views such as {@link ViewComposite} instances, to support the use of {@link FormContext} to keep track of an intrinsic value.
+	 * @summary This function is used by {@link UITextField} and {@link UIToggle} to keep their values in sync with a bound {@link FormContext}, if their `formField` property has been set. This function can also be used on custom views such as {@link UIComponent} instances, to support the use of {@link FormContext} to keep track of an intrinsic value.
 	 *
-	 * @note Do not call this function more than once for the same view instance. In most cases, it should be called only from the view constructor or `beforeRender` method of a {@link ViewComposite} object.
+	 * @note Do not call this function more than once for the same view instance. In most cases, it should be called only from the view constructor or `onBeforeRender` handler of a {@link UIComponent} object.
 	 *
 	 * @param host The view instance that contains a `formField` property
 	 * @param setValue A function that's used to update the view's intrinsic value, called with the new value as a single parameter

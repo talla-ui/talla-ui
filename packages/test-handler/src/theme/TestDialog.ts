@@ -3,14 +3,14 @@ import {
 	RenderContext,
 	UITheme,
 	View,
-	ViewComposite,
+	UIComponent,
 	app,
 	ui,
 } from "@talla-ui/core";
 
 /** @internal Limited implementation of a dialog controller */
 export class TestDialog
-	extends ViewComposite
+	extends UIComponent
 	implements UITheme.DialogController
 {
 	constructor(public dialogView: View) {

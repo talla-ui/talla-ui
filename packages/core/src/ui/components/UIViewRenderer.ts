@@ -36,7 +36,7 @@ export class UIViewRenderer extends View {
 
 	/**
 	 * The current view to be rendered
-	 * - The object assigned to this property is **not** attached (like e.g. {@link ViewComposite.body}). It must be attached to another object, such as an activity.
+	 * - The object assigned to this property is **not** attached (like e.g. {@link UIComponent.body}). It must be attached to another object, such as an activity.
 	 * - View objects can't be rendered twice, hence the bound object can't be part of the view hierarchy on its own or referenced by another {@link UIViewRenderer} instance that's currenty rendered.
 	 * - If the view is unlinked after rendering, a ViewUnlinked event is emitted by the {@link UIViewRenderer} instance.
 	 * - If the view is the {@link UIViewRenderer} instance itself or an attached parent, the view is not rendered (i.e. there can be no loops).

@@ -7,7 +7,7 @@ import {
 	ui,
 	View,
 	ViewBuilder,
-	ViewComposite,
+	UIComponent,
 } from "../index.js";
 
 /** Tag names with `ui` function names that are different */
@@ -81,7 +81,7 @@ export function jsx(tag: any, presets: any, ...rest: any[]): ViewBuilder {
 	// invoke function with merged presets and content
 	let f = typeof tag === "string" ? (ui as any)[tagNames[tag] || tag] : tag;
 	if (typeof f !== "function") throw err(ERROR.JSX_InvalidTag, String(tag));
-	if (f.prototype instanceof ViewComposite) {
+	if (f.prototype instanceof UIComponent) {
 		return f.getViewBuilder(merged, ...views);
 	}
 	if (f.prototype instanceof View) {

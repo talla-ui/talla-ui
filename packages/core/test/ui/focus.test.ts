@@ -7,7 +7,7 @@ import { beforeEach, expect, test } from "vitest";
 import {
 	UIButton,
 	UICell,
-	ViewComposite,
+	UIComponent,
 	ViewEvent,
 	ui,
 } from "../../dist/index.js";
@@ -33,8 +33,8 @@ test("Single element, request focus", async () => {
 	await expectOutputAsync({ type: "cell", focused: true });
 });
 
-test("Single view composite, request focus", async () => {
-	const MyView = ViewComposite.define({}, ui.cell({ allowFocus: true }));
+test("Single UI component, request focus", async () => {
+	const MyView = UIComponent.define({}, ui.cell({ allowFocus: true }));
 	let view = new MyView();
 	renderTestView(view);
 	await expectOutputAsync({ type: "cell" });
@@ -64,7 +64,7 @@ test("Focus requests", async () => {
 test("Focusing one element blurs another", async () => {
 	let events: string[] = [];
 	let done = false;
-	class MyView extends ViewComposite {
+	class MyView extends UIComponent {
 		protected override defineView() {
 			return ui.cell(
 				ui.cell({

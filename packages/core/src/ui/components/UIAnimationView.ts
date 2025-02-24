@@ -1,24 +1,19 @@
-import {
-	app,
-	RenderContext,
-	View,
-	ViewBuilder,
-	ViewComposite,
-} from "../../app/index.js";
+import { app, RenderContext, View, ViewBuilder } from "../../app/index.js";
 import { errorHandler } from "../../errors.js";
+import { UIComponent } from "./UIComponent.js";
 
 const MIN_REPEAT_MS = 8;
 
 let _nextUpdateId = 1;
 
 /**
- * A view composite that manages animation playback on the contained view
+ * A UI component that manages animation playback on the contained view
  *
  * @description An animation controller view can be used to play animations and/or automatically play them when the contained UI element is shown or hidden.
  *
  * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
-export class UIAnimationView extends ViewComposite {
+export class UIAnimationView extends UIComponent {
 	/**
 	 * Creates a new {@link ViewBuilder} instance for the current view class
 	 * @see {@link View.getViewBuilder}

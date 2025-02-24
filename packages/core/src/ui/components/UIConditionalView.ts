@@ -1,7 +1,7 @@
 import { app, RenderContext, View, ViewBuilder } from "../../app/index.js";
 
 /**
- * A view composite that automatically creates and unlinks the contained view
+ * A UI component that automatically creates and unlinks the contained view
  *
  * @description A conditional view creates and renders its contained content based on the value of the {@link state} property.
  *

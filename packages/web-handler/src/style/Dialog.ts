@@ -5,7 +5,7 @@ import {
 	UICell,
 	UITheme,
 	View,
-	ViewComposite,
+	UIComponent,
 	ViewEvent,
 	app,
 	ui,
@@ -37,7 +37,7 @@ export class WebDialogStyles extends ConfigOptions {
 }
 
 /** @internal Default modal dialog view; shown synchronously, removed when view is unlinked */
-export class Dialog extends ViewComposite implements UITheme.DialogController {
+export class Dialog extends UIComponent implements UITheme.DialogController {
 	static styles = new WebDialogStyles();
 
 	constructor(public dialogView: View) {

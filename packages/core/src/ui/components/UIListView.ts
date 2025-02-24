@@ -1,9 +1,4 @@
-import {
-	View,
-	ViewBuilder,
-	ViewComposite,
-	ViewEvent,
-} from "../../app/index.js";
+import { View, ViewBuilder, ViewEvent } from "../../app/index.js";
 import {
 	Binding,
 	BindingOrValue,
@@ -12,7 +7,8 @@ import {
 	ObservedObject,
 } from "../../base/index.js";
 import { ERROR, err } from "../../errors.js";
-import { UIContainer, UIColumn, UIRow } from "../containers/index.js";
+import { UIColumn, UIContainer, UIRow } from "../containers/index.js";
+import { UIComponent } from "./UIComponent.js";
 
 const ASYNC_BATCH_SIZE = 100;
 const DEFAULT_MAX_DELAY_COUNT = 100;
@@ -62,7 +58,7 @@ export type UIListViewEvent<T = unknown> = ObservedEvent<
 >;
 
 /**
- * A view composite that manages views for each item in a list of objects or values
+ * A UI component that manages views for each item in a list of objects or values
  *
  * @description A list view creates and renders content based on a provided list data structure.
  *
@@ -70,7 +66,7 @@ export type UIListViewEvent<T = unknown> = ObservedEvent<
  */
 export class UIListView<
 	TItem extends ObservedObject = ObservedObject,
-> extends ViewComposite {
+> extends UIComponent {
 	/** @internal Creates an observer that populates the list with the provided item body and book end */
 	static createObserver(
 		itemBuilder: ViewBuilder,
@@ -132,7 +128,7 @@ export class UIListView<
 		});
 	}
 
-	/** Creates a new list view composite object */
+	/** Creates a new list view object */
 	constructor() {
 		super();
 		let list: ObservedList | undefined;
@@ -152,7 +148,7 @@ export class UIListView<
 	 * The list of objects, from which each object is used to construct one view object
 	 * - This property should be set or bound to an {@link ObservedList} object or an array.
 	 * - When set to an array, the property setter _converts_ the array to an {@link ObservedList} automatically, and uses that instead.
-	 * - When updated, a {@link UIListView.ItemControllerView} view instance is created for each list item and added to the {@link ViewComposite.body} container.
+	 * - When updated, a {@link UIListView.ItemControllerView} view instance is created for each list item and added to the {@link UIComponent.body} container.
 	 */
 	declare items?: ObservedList<TItem>;
 
@@ -418,7 +414,7 @@ export namespace UIListView {
 	 * A view that's created automatically for each list item by {@link UIListView}
 	 * @see {@link UIListView}
 	 */
-	export class ItemControllerView<TItem> extends ViewComposite {
+	export class ItemControllerView<TItem> extends UIComponent {
 		/**
 		 * Creates a new item controller view object
 		 * - This constructor is used by {@link UIListView} and should not be used directly by an application.

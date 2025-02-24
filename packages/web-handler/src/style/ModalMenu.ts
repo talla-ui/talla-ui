@@ -11,7 +11,7 @@ import {
 	UISpacer,
 	UIStyle,
 	UITheme,
-	ViewComposite,
+	UIComponent,
 	ViewEvent,
 	app,
 	ui,
@@ -93,7 +93,7 @@ export class WebModalMenuStyles extends ConfigOptions {
 }
 
 /** @internal Default modal menu view; shown asynchronously and resolves a promise */
-export class ModalMenu extends ViewComposite implements UITheme.MenuController {
+export class ModalMenu extends UIComponent implements UITheme.MenuController {
 	static styles = new WebModalMenuStyles();
 
 	constructor(public options: ModalMenuOptions) {

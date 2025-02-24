@@ -7,7 +7,6 @@ export * from "./ActivityList.js";
 export * from "./NavigationContext.js";
 export * from "./Activity.js";
 export * from "./View.js";
-export * from "./ViewComposite.js";
 export * from "./FormContext.js";
 export * from "./LogWriter.js";
 export * from "./LocalData.js";

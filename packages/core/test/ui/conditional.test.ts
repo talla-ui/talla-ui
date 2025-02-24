@@ -8,7 +8,7 @@ import {
 	$view,
 	ObservedObject,
 	UICell,
-	ViewComposite,
+	UIComponent,
 	ui,
 } from "../../dist/index.js";
 
@@ -48,7 +48,7 @@ test("Events are propagated", async () => {
 });
 
 test("Rendering content using bound state", async () => {
-	const MyViewComposite = ViewComposite.define(
+	const MyUIComponent = UIComponent.define(
 		{ condition: false },
 		ui.cell(
 			ui.conditional(
@@ -58,11 +58,11 @@ test("Rendering content using bound state", async () => {
 			),
 		),
 	);
-	const myViewComposite = ui.use(MyViewComposite, { condition: false });
+	const myUIComponent = ui.use(MyUIComponent, { condition: false });
 
 	console.log("Creating view");
 	useTestContext();
-	let myView = myViewComposite.create();
+	let myView = myUIComponent.create();
 
 	console.log("Rendering view");
 	renderTestView(myView);

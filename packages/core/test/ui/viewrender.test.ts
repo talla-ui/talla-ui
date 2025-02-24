@@ -15,7 +15,7 @@ import {
 	UILabel,
 	UITextField,
 	UIViewRenderer,
-	ViewComposite,
+	UIComponent,
 } from "../../dist/index.js";
 
 beforeEach(() => {
@@ -75,8 +75,8 @@ test("Rendering parent fails silently", async () => {
 	await expectOutputAsync({ text: "foo" }); // label rendered, no errors
 });
 
-test("Set view using view composite, and render", async () => {
-	const CompView = ViewComposite.define(
+test("Set view using UI component, and render", async () => {
+	const CompView = UIComponent.define(
 		{ text: StringConvertible.EMPTY },
 		ui.label($view.string("text")),
 	);

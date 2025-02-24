@@ -7,7 +7,7 @@ import {
 	UIContainer,
 	UILabel,
 	UITheme,
-	ViewComposite,
+	UIComponent,
 	app,
 	strf,
 	ui,
@@ -102,7 +102,7 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 
 /** @internal Default modal message dialog view; shown asynchronously and resolves a promise */
 export class MessageDialog
-	extends ViewComposite
+	extends UIComponent
 	implements UITheme.AlertDialogController, UITheme.ConfirmDialogController
 {
 	static styles = new WebMessageDialogStyles();

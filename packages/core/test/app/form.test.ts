@@ -12,7 +12,7 @@ import {
 	UILabel,
 	UIRow,
 	UITextField,
-	ViewComposite,
+	UIComponent,
 	app,
 	strf,
 	ui,
@@ -122,7 +122,7 @@ test("ObjectReader validation", () => {
 	expect(ctx.errors).toHaveProperty("foo");
 });
 
-test("Composite, binding to value and error", () => {
+test("UI component, binding to value and error", () => {
 	useTestContext();
 	let ERR = "Foo must have at least 3 characters";
 	let ctx = new FormContext(
@@ -130,7 +130,7 @@ test("Composite, binding to value and error", () => {
 		{ foo: "bar" },
 	);
 
-	const MyComp = ViewComposite.define(
+	const MyComp = UIComponent.define(
 		{ formContext: undefined as FormContext | undefined },
 		ui.row(
 			ui.label($view("formContext.errors.foo.message")),
@@ -161,7 +161,7 @@ test("Composite, binding to value and error", () => {
 
 test("Custom form container, rendered", async () => {
 	useTestContext();
-	const FormContainer = ViewComposite.define(
+	const FormContainer = UIComponent.define(
 		{ formContext: undefined as FormContext | undefined },
 		(_, ...content) => ui.column(...content),
 	);

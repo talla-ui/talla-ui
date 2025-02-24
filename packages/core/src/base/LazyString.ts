@@ -34,7 +34,7 @@ export type StringConvertible = string | { toString(): string };
 export namespace StringConvertible {
 	/**
 	 * The empty string, typed as {@link StringConvertible}
-	 * - This constant can be used in place of an empty string, forcing a property type to `StringConvertible`, e.g. for use with {@link ViewComposite.define()}.
+	 * - This constant can be used in place of an empty string, forcing a property type to `StringConvertible`, e.g. for use with {@link UIComponent.define()}.
 	 */
 	export const EMPTY: StringConvertible = "";
 }

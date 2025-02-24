@@ -6,12 +6,12 @@ import {
 	StringConvertible,
 	ui,
 	UITheme,
-	ViewComposite,
+	UIComponent,
 } from "@talla-ui/core";
 
 /** @internal Limited implementation of a message dialog controller, that can be used to test for message display and button presses */
 export class TestMessageDialog
-	extends ViewComposite
+	extends UIComponent
 	implements UITheme.AlertDialogController, UITheme.ConfirmDialogController
 {
 	constructor(public options: MessageDialogOptions) {

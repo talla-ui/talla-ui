@@ -21,7 +21,7 @@ import {
 	UIIconResource,
 	UILabel,
 	UITheme,
-	ViewComposite,
+	UIComponent,
 	app,
 	strf,
 	ui,
@@ -155,8 +155,8 @@ describe("Rendering views", () => {
 		await app.renderer.expectOutputAsync({ source: view });
 	});
 
-	test("Cell view from single composite", async () => {
-		const MyView = ViewComposite.define({}, ui.cell());
+	test("Cell view from single UI component", async () => {
+		const MyView = UIComponent.define({}, ui.cell());
 		let view = new MyView();
 		let app = useTestContext();
 		renderTestView(view);
@@ -164,7 +164,7 @@ describe("Rendering views", () => {
 	});
 
 	test("Cell view from single controller, handle events", async () => {
-		class MyView extends ViewComposite.define({}, ui.cell()) {
+		class MyView extends UIComponent.define({}, ui.cell()) {
 			async onClick() {
 				await Promise.resolve();
 				throw Error("Catch me");
@@ -181,7 +181,7 @@ describe("Rendering views", () => {
 	});
 
 	test("Remove view after rendering", async () => {
-		const MyView = ViewComposite.define({}, ui.cell());
+		const MyView = UIComponent.define({}, ui.cell());
 		let view = new MyView();
 		let app = useTestContext();
 		let rendered = app.render(view);

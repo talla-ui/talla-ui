@@ -5,7 +5,7 @@ import {
 	StringConvertible,
 	UILabel,
 	UITextField,
-	ViewComposite,
+	UIComponent,
 	ViewEvent,
 	app,
 	ui,
@@ -54,7 +54,7 @@ beforeEach(() => {
 });
 
 test("Single view is rendered", async () => {
-	const MyView = ViewComposite.define(
+	const MyView = UIComponent.define(
 		{ title: StringConvertible.EMPTY },
 		ui.label($view("title")),
 	);

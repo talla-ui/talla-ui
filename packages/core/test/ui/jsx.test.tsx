@@ -17,13 +17,13 @@ import {
 	UILabel,
 	UITextField,
 	UIToggle,
-	ViewComposite,
+	UIComponent,
 	app,
 	strf,
 	ui,
 } from "../../dist/index.js";
 
-function renderComposite(c: ViewComposite) {
+function renderUIComponent(c: UIComponent) {
 	c.render((() => {}) as any);
 }
 
@@ -114,8 +114,8 @@ test("Too many arguments", () => {
 	)).toThrow(/content/);
 });
 
-test("Custom view composite", () => {
-	class MyView extends ViewComposite {
+test("Custom UI component", () => {
+	class MyView extends UIComponent {
 		constructor(_p: { foo?: BindingOrValue<number> }) {
 			super();
 			// note that JSX applies the preset using `ui.use`
@@ -136,33 +136,32 @@ test("Custom view composite", () => {
 	expect(cell.content.first()).toHaveProperty("foo", 123);
 });
 
-test("Custom view composite, with defaults", () => {
-	const MyView = ViewComposite.define({ foo: "" }, <label>Foo</label>);
+test("Custom UI component, with defaults", () => {
+	const MyView = UIComponent.define({ foo: "" }, <label>Foo</label>);
 	let viewPreset = <MyView foo="bar" />;
-	let c = viewPreset.create() as ViewComposite;
-	renderComposite(c);
+	let c = viewPreset.create() as UIComponent;
+	renderUIComponent(c);
 	expect(c).toHaveProperty("foo", "bar");
 	expect(c.findViewContent(UILabel)[0]?.text?.toString()).toBe("Foo");
 });
 
-test("Custom view composite, with defaults, half class", () => {
-	class MyView extends ViewComposite.define({ foo: "" }) {
+test("Custom UI component, with defaults, half class", () => {
+	class MyView extends UIComponent.define({ foo: "" }) {
 		override defineView() {
 			return <label>Foo</label>;
 		}
 	}
 	let viewPreset = <MyView foo="bar" />;
-	let c = viewPreset.create() as ViewComposite;
-	renderComposite(c);
+	let c = viewPreset.create() as UIComponent;
+	renderUIComponent(c);
 	expect(c).toHaveProperty("foo", "bar");
 	expect(c.findViewContent(UILabel)[0]?.text?.toString()).toBe("Foo");
 });
 
-test("Custom view composite, with defaults, using function", () => {
-	const MyView = ViewComposite.define(
-		{ chevron: "up" as "up" | "down" },
-		(v) => <button chevron={v.chevron}>test</button>,
-	);
+test("Custom UI component, with defaults, using function", () => {
+	const MyView = UIComponent.define({ chevron: "up" as "up" | "down" }, (v) => (
+		<button chevron={v.chevron}>test</button>
+	));
 	let myCell = (
 		<cell>
 			<MyView chevron="down" />
@@ -171,12 +170,12 @@ test("Custom view composite, with defaults, using function", () => {
 	let cell = myCell.create() as UICell;
 	expect(cell.content.toArray()).toHaveLength(1);
 	expect(cell.content.first()).toHaveProperty("chevron", "down");
-	renderComposite(cell.content.first() as ViewComposite);
+	renderUIComponent(cell.content.first() as UIComponent);
 	expect(cell.findViewContent(UIButton)[0]?.chevron).toBe("down");
 });
 
-test("Custom view composite with column content and styles", () => {
-	const MyColumn = ViewComposite.define(
+test("Custom UI component with column content and styles", () => {
+	const MyColumn = UIComponent.define(
 		{ foo: "", styles: { spacing: 8 } },
 		(v, ...content) => <column spacing={v.styles.spacing}>{...content}</column>,
 	);
@@ -190,14 +189,14 @@ test("Custom view composite with column content and styles", () => {
 	);
 	let cell = myCell.create() as UICell;
 
-	console.log("Property on view composite itself");
-	let viewComposite = cell.content.first() as ViewComposite;
-	expect(viewComposite).toHaveProperty("foo", "bar");
+	console.log("Property on UI component itself");
+	let component = cell.content.first() as UIComponent;
+	expect(component).toHaveProperty("foo", "bar");
 
-	console.log("Render content of view composite");
-	renderComposite(viewComposite);
-	let column = viewComposite.findViewContent(UIColumn)[0];
-	expect(column).toBe(viewComposite.body);
+	console.log("Render content of UI component");
+	renderUIComponent(component);
+	let column = component.findViewContent(UIColumn)[0];
+	expect(column).toBe(component.body);
 	expect(column).toHaveProperty("spacing", 8);
 
 	console.log("Label content inside column");
@@ -207,8 +206,8 @@ test("Custom view composite with column content and styles", () => {
 	expect(labels[1].text?.toString()).toBe("bar");
 });
 
-test("Composite with defaults", async () => {
-	const MyView = ViewComposite.define(
+test("UI component with defaults", async () => {
+	const MyView = UIComponent.define(
 		{ foo: 123 },
 		<label>{strf("Foo is %[foo]")}</label>,
 	);
@@ -216,13 +215,13 @@ test("Composite with defaults", async () => {
 	await expectOutputAsync({ text: "Foo is 123" });
 });
 
-test("Composite with ConfigOptions", async () => {
+test("UI component with ConfigOptions", async () => {
 	class MyConfig extends ConfigOptions {
 		static default = new MyConfig();
 		foo = 123;
 		bar = "bar";
 	}
-	const MyView = ViewComposite.define(
+	const MyView = UIComponent.define(
 		{ config: MyConfig.default },
 		<label>{strf("%[config.foo]:%[config.bar]")}</label>,
 	);
@@ -230,33 +229,39 @@ test("Composite with ConfigOptions", async () => {
 	await expectOutputAsync({ text: "321:bar" });
 });
 
-test("Composite with content", async () => {
-	const MyView = ViewComposite.define({}, (_values, ...content) => (
+test("UI component with content", async () => {
+	const MyView = UIComponent.define({}, (_values, ...content) => (
 		<row>{...content}</row>
 	));
 	renderTestView(ui.use(MyView, ui.label("Foo")).create());
 	await expectOutputAsync({ text: "Foo" });
 });
 
-test("Composite with bound content", async () => {
-	class MyView extends ViewComposite {
+test("UI component with bound content", async () => {
+	let count = 0;
+	class MyView extends UIComponent {
 		constructor(_p?: { foo?: BindingOrValue<number> }) {
 			super();
 			// note that JSX applies the preset using `ui.use`
 			expect(_p).toBeUndefined();
 		}
 		foo: number = 0;
+		override beforeRender() {
+			count++;
+		}
 		override defineView() {
 			return <label>{$view("foo")}</label>;
 		}
 	}
 	let instance = ui.use(MyView, { foo: 123 }).create();
 	renderTestView(instance);
+	renderTestView(instance);
 	await expectOutputAsync({ text: "123" });
+	expect(count).toBe(1);
 });
 
-test("Composite with bound content using lazy string", async () => {
-	const MyView = ViewComposite.define(
+test("UI component with bound content using lazy string", async () => {
+	const MyView = UIComponent.define(
 		{ foo: StringConvertible.EMPTY },
 		<label>{strf("Foo is %[foo]")}</label>,
 	);
@@ -264,9 +269,9 @@ test("Composite with bound content using lazy string", async () => {
 	await expectOutputAsync({ text: "Foo is 123" });
 });
 
-test("Composite with event handler", async () => {
+test("UI component with event handler", async () => {
 	let count = 0;
-	class MyView extends ViewComposite {
+	class MyView extends UIComponent {
 		override defineView() {
 			return (
 				<cell>
@@ -283,8 +288,38 @@ test("Composite with event handler", async () => {
 	expect(count).toBe(1);
 });
 
-test("Composite with bound content and text", async () => {
-	const MyView = ViewComposite.define(
+test("UI component with intercept", async () => {
+	let count = 0;
+	let instance: UIComponent | undefined;
+	let events: string[] = [];
+	const MyView = UIComponent.define(
+		{},
+		<cell>
+			<button onClick="FooClicked">Foo</button>
+		</cell>,
+		(v) => ({
+			BeforeRender(e, emit) {
+				instance = v;
+				emit(e);
+			},
+			FooClicked: () => {
+				count++;
+			},
+		}),
+	);
+	let v = new MyView();
+	v.listen((e) => {
+		events.push(e.name);
+	});
+	renderTestView(v);
+	await clickOutputAsync({ type: "button" });
+	expect(count).toBe(1);
+	expect(instance).toBe(v);
+	expect(events).toEqual(["BeforeRender", "Press", "FocusIn", "Release"]);
+});
+
+test("UI component with bound content and text", async () => {
+	const MyView = UIComponent.define(
 		{ foo: 0, bar: undefined as any },
 		<row>
 			<label>foo='{$view("foo")}'</label>
@@ -306,8 +341,8 @@ test("Composite with bound content and text", async () => {
 	expectRow.containing({ text: "nope_bound='Nothing'" }).toBeRendered();
 });
 
-test("Composite with bound content and text, translated", async () => {
-	const Comp = ViewComposite.define(
+test("UI component with bound content and text, translated", async () => {
+	const Comp = UIComponent.define(
 		{ emails: { count: 0 } },
 		<label>
 			You have %[numEmails=emails.count:n] %[numEmails:plural|email|emails]

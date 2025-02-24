@@ -23,12 +23,12 @@ export type ViewEvent<
  * Views can be rendered on their own (using {@link AppContext.render app.render()}) or included as content within another view. In most cases, a top-level view is created from the {@link Activity.createView()} method.
  *
  * The View class can't be used on its own. Instead, define views using the following classes and methods:
- * - {@link UIRenderable} classes, and the various {@link ui} factory functions (e.g. `ui.button(...)`) that create a {@link ViewBuilder} for built-in UI elements and composites.
+ * - {@link UIRenderable} classes, and the various {@link ui} factory functions (e.g. `ui.button(...)`) that create a {@link ViewBuilder} for built-in UI elements and components.
  * - For a complete UI hierarchy, use {@link UIContainer} classes such as {@link UICell}, {@link UIRow}, and {@link UIColumn}, which represent containers that contain other views (including containers).
- * - The {@link ViewComposite.define()} function, which creates a {@link ViewComposite} subclass.
+ * - The {@link UIComponent.define()} function, which creates a {@link UIComponent} subclass.
  *
  * @see {@link UIRenderable}
- * @see {@link ViewComposite}
+ * @see {@link UIComponent}
  *
  * @docgen {hideconstructor}
  */

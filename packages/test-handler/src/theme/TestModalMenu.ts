@@ -6,12 +6,12 @@ import {
 	UILabel,
 	UISeparator,
 	UITheme,
-	ViewComposite,
+	UIComponent,
 } from "@talla-ui/core";
 
 /** @internal Limited implementation of a menu controller, that can be used to test menu selection using label clicks */
 export class TestModalMenu
-	extends ViewComposite
+	extends UIComponent
 	implements UITheme.MenuController
 {
 	constructor(public options: ModalMenuOptions) {

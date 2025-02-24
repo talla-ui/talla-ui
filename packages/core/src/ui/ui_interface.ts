@@ -1,18 +1,13 @@
-import type {
-	RenderContext,
-	View,
-	ViewBuilder,
-	ViewComposite,
-} from "../app/index.js";
+import type { RenderContext, View, ViewBuilder } from "../app/index.js";
 import type { Binding, BindingOrValue, LazyString } from "../base/index.js";
 import type { UIColor } from "./UIColor.js";
 import type { UIIconResource } from "./UIIconResource.js";
 import { UIStyle } from "./UIStyle.js";
 import type { UITheme } from "./UITheme.js";
-import type { UIAnimationView } from "./composites/UIAnimationView.js";
-import type { UIConditionalView } from "./composites/UIConditionalView.js";
-import type { UIListView } from "./composites/UIListView.js";
-import type { UIViewRenderer } from "./composites/UIViewRenderer.js";
+import type { UIAnimationView } from "./components/UIAnimationView.js";
+import type { UIConditionalView } from "./components/UIConditionalView.js";
+import type { UIListView } from "./components/UIListView.js";
+import type { UIViewRenderer } from "./components/UIViewRenderer.js";
 import type { UIAnimatedCell, UICell } from "./containers/UICell.js";
 import type { UIColumn } from "./containers/UIColumn.js";
 import type { UIContainer } from "./containers/UIContainer.js";
@@ -265,7 +260,7 @@ export interface ui {
 
 	/**
 	 * Creates a new view builder for the specified view class
-	 * - This function is used to create a new view builder for a specific view class, in particular for a {@link ViewComposite} class. The view builder can be used to create new view instances with preset properties, bindings, and event handlers, as well as any content based on the provided view builders.
+	 * - This function is used to create a new view builder for a specific view class, in particular for a {@link UIComponent} class. The view builder can be used to create new view instances with preset properties, bindings, and event handlers, as well as any content based on the provided view builders.
 	 * - The type of preset object is inferred from the view class, and the type of the view builder is inferred from the view class's instance type.
 	 * @param viewClass The view class for which to create a new view builder
 	 * @param preset The preset properties, bindings, and event handlers for the view instance
