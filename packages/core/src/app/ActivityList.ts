@@ -14,19 +14,27 @@ import { Activity } from "./Activity.js";
 export class ActivityList extends ObservedObject {
 	/**
 	 * A reference to the _last_ activity in the list that was activated
-	 * - This reference is set when an activity in the list emits an `Active` change event.
+	 * - This reference is set when an activity in the list emits an `Active` change event, either from the list or from a nested activity list.
 	 * - This reference is **not** updated when the activity is deactivated or unlinked.
 	 */
 	activated?: Activity = undefined;
 
-	/** The number of activities in this list */
+	/** The number of activities or activity lists that have been added to this list */
 	get count() {
 		return this._list.count;
 	}
 
-	/** Returns an array of all activities in this list */
+	/** Returns an array of all (nested) activities in this list */
 	getActivities() {
-		return this._list.toArray();
+		let result: Activity[] = [];
+		for (let activity of this._list) {
+			if (activity instanceof ActivityList) {
+				result.push(...activity.getActivities());
+			} else {
+				result.push(activity);
+			}
+		}
+		return result;
 	}
 
 	/** Returns the first activity in the list that is an instance of the specified class */
@@ -40,14 +48,16 @@ export class ActivityList extends ObservedObject {
 
 	/** Iterator symbol, allows for iterating over activities */
 	[Symbol.iterator](): IterableIterator<Activity> {
-		return this._list[Symbol.iterator]();
+		return this.getActivities()[Symbol.iterator]();
 	}
 
-	/** Adds (and attaches) the specified activities */
-	add(...activities: Activity[]) {
+	/** Adds (and attaches) the specified activities or activity lists */
+	add(...activities: (Activity | ActivityList)[]) {
 		for (let activity of activities) {
 			this._list.add(activity);
-			this.emitChange("Add", { added: activity });
+			if (activity instanceof Activity) {
+				this.emitChange("Add", { added: activity });
+			}
 		}
 		return this;
 	}
@@ -58,8 +68,10 @@ export class ActivityList extends ObservedObject {
 	 */
 	remove(...activities: Activity[]) {
 		for (let activity of activities) {
-			this._list.remove(activity);
-			this.emitChange("Remove", { removed: activity });
+			if (this._list.includes(activity)) {
+				this._list.remove(activity);
+				this.emitChange("Remove", { removed: activity });
+			}
 		}
 		return this;
 	}
@@ -75,17 +87,20 @@ export class ActivityList extends ObservedObject {
 	}
 
 	// keep track of activities in an attached list
-	private _list = this.attach(new ObservedList().restrict(Activity), (e) => {
-		// if Active event, update own `activated` property
-		if (
-			e.name === "Active" &&
-			e.data.change === e.source &&
-			this._list.includes(e.source as any)
-		) {
-			this.activated = e.source as Activity;
-		}
+	private _list = this.attach(
+		new ObservedList<Activity | ActivityList>(),
+		(e) => {
+			// if Active event, update own `activated` property
+			if (
+				e.name === "Active" &&
+				e.data.change === e.source &&
+				this.getActivities().includes(e.source as any)
+			) {
+				this.activated = e.source as Activity;
+			}
 
-		// re-emit all events *except* changes from the list itself
-		if (e.source !== this._list) this.emit(e);
-	});
+			// re-emit all events *except* changes from the list itself
+			if (e.source !== this._list) this.emit(e);
+		},
+	);
 }

@@ -3,14 +3,14 @@ import {
 	expectOutputAsync,
 	useTestContext,
 } from "@talla-ui/test-handler";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import {
 	$navigation,
 	Activity,
+	ActivityList,
 	app,
 	AppContext,
 	AsyncTaskQueue,
-	ObservedEvent,
 	ObservedList,
 	ObservedObject,
 	ui,
@@ -320,7 +320,9 @@ describe("Global context and parents", () => {
 	test("Add activity with listener", async () => {
 		let activity = new Activity();
 		let count = 0;
-		app.addActivity(activity, true, () => count++);
+		app.addActivity(activity, true, () => {
+			count++;
+		});
 		expect(count).toBe(0);
 		await activity.activateAsync();
 		expect(count).toBe(1);
@@ -343,6 +345,30 @@ describe("Global context and parents", () => {
 		await activity.activateAsync();
 		await activity.deactivateAsync();
 		expect(events).toEqual(["Add", "Active", "Inactive"]);
+	});
+
+	test("Nested activity list", async () => {
+		let activity1 = new Activity();
+		let activity2 = new Activity();
+		let activity3 = new Activity();
+		let list = new ActivityList();
+		list.add(activity1, activity2);
+		app.activities.add(list);
+		app.addActivity(activity3);
+		await activity1.activateAsync();
+		expect(list.activated).toBe(activity1);
+		expect(app.activities.count).toBe(2); // Note: not counting nested list
+		expect(app.activities.activated).toBe(activity1);
+		expect(app.activities.getActivities()).toEqual([
+			activity1,
+			activity2,
+			activity3,
+		]);
+
+		// activate activity3: does not affect nested list
+		await activity3.activateAsync();
+		expect(list.activated).toBe(activity1);
+		expect(app.activities.activated).toBe(activity3);
 	});
 
 	test("Nested activities", () => {
