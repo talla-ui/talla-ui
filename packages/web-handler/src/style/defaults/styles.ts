@@ -16,7 +16,6 @@ export const defaultControlTextStyle: CombinedStyleType = {
 const _color_bg = ui.color.BACKGROUND;
 const _color_clear = ui.color.CLEAR;
 const _color_text = ui.color.TEXT;
-const _color_controlBase = ui.color.CONTROL_BASE;
 const _color_inherit = ui.color("inherit");
 
 const baseButtonStyle: CombinedStyleType = {
@@ -34,8 +33,22 @@ const baseButtonStyle: CombinedStyleType = {
 		position: "relative",
 		overflow: "hidden",
 		cursor: "pointer",
-		transition: "background 0.1s ease, border-color 0.1s ease",
+		transition: "background 0.2s ease, border-color 0.2s ease",
 	},
+};
+
+const baseLabelStyle: CombinedStyleType = {
+	shrink: 1,
+	maxWidth: "100%",
+	lineBreakMode: "ellipsis",
+	css: { cursor: "inherit" },
+};
+
+const baseBadgeLabelStyle: CombinedStyleType = {
+	fontSize: 12,
+	borderRadius: 6,
+	padding: { x: 8, y: 2 },
+	background: _color_text.alpha(0.1),
 };
 
 const disabledStyle: CombinedStyleType = {
@@ -100,7 +113,15 @@ export const styles: [
 			},
 		],
 	],
-	["Button", makeButtonStyle(undefined, _color_controlBase)],
+	[
+		"Button",
+		makeButtonStyle(
+			undefined,
+			_color_text.alpha(0.15),
+			_color_text,
+			_color_text.alpha(0.1),
+		),
+	],
 	["PrimaryButton", makeButtonStyle(undefined, ui.color.PRIMARY_BG)],
 	["SuccessButton", makeButtonStyle(undefined, ui.color.SUCCESS_BG)],
 	[
@@ -109,7 +130,7 @@ export const styles: [
 			undefined,
 			ui.color.DANGER_BG,
 			undefined,
-			_color_controlBase,
+			_color_text.alpha(0.15),
 			ui.color.DANGER,
 		),
 	],
@@ -132,7 +153,9 @@ export const styles: [
 				minWidth: 88,
 				borderRadius: 8,
 			},
-			_color_controlBase,
+			_color_text.alpha(0.15),
+			_color_text,
+			_color_text.alpha(0.1),
 		),
 	],
 	[
@@ -157,14 +180,28 @@ export const styles: [
 			_color_inherit,
 		),
 	],
+	["Label", [baseLabelStyle]],
+	["SmallLabel", [baseLabelStyle, { fontSize: 12 }]],
+	["BadgeLabel", [baseLabelStyle, baseBadgeLabelStyle]],
 	[
-		"Label",
+		"DangerBadgeLabel",
 		[
+			baseLabelStyle,
+			baseBadgeLabelStyle,
 			{
-				shrink: 1,
-				maxWidth: "100%",
-				lineBreakMode: "ellipsis",
-				css: { cursor: "inherit" },
+				background: ui.color.DANGER_BG.alpha(0.1),
+				textColor: ui.color.DANGER,
+			},
+		],
+	],
+	[
+		"SuccessBadgeLabel",
+		[
+			baseLabelStyle,
+			baseBadgeLabelStyle,
+			{
+				background: ui.color.SUCCESS_BG.alpha(0.1),
+				textColor: ui.color.SUCCESS,
 			},
 		],
 	],
@@ -184,12 +221,12 @@ export const styles: [
 				background: _color_bg,
 				textColor: _color_text,
 				borderThickness: 1,
-				borderColor: _color_text.alpha(0.25),
+				borderColor: _color_text.alpha(0.2),
 				borderRadius: 5,
 				minWidth: 96,
 				shrink: 1,
-				height: 38,
-				padding: { x: 8, y: 4 },
+				height: 36,
+				padding: { x: 10, y: 4 },
 				lineBreakMode: "pre-wrap",
 				lineHeight: 1.5,
 				userSelect: true,
@@ -198,7 +235,7 @@ export const styles: [
 			{
 				...hoveredNotDisabled,
 				[UIStyle.STATE_READONLY]: false,
-				borderColor: _color_text.alpha(0.5),
+				borderColor: _color_text.alpha(0.3),
 			},
 			{
 				[UIStyle.STATE_READONLY]: true,
@@ -212,7 +249,7 @@ export const styles: [
 		"Toggle",
 		[
 			{
-				borderColor: _color_text.alpha(0.25),
+				borderColor: _color_text.alpha(0.2),
 				textColor: ui.color.PRIMARY_BG, // :checked fill
 				padding: { y: 4 },
 				shrink: 1,
@@ -220,7 +257,7 @@ export const styles: [
 			},
 			{
 				...hoveredNotDisabled,
-				borderColor: _color_text.alpha(0.5),
+				borderColor: _color_text.alpha(0.3),
 			},
 			disabledStyle,
 		],

@@ -315,7 +315,6 @@ export interface ui {
 		readonly PURPLE: UIColor;
 		readonly MAGENTA: UIColor;
 		readonly SEPARATOR: UIColor;
-		readonly CONTROL_BASE: UIColor;
 		readonly BACKGROUND: UIColor;
 		readonly TEXT: UIColor;
 		readonly DANGER: UIColor;
@@ -398,6 +397,10 @@ export interface ui {
 		readonly CELL: UIStyle<UICell.StyleDefinition>;
 		readonly CELL_BG: UIStyle<UICell.StyleDefinition>;
 		readonly LABEL: UIStyle<UILabel.StyleDefinition>;
+		readonly LABEL_SMALL: UIStyle<UILabel.StyleDefinition>;
+		readonly LABEL_BADGE: UIStyle<UILabel.StyleDefinition>;
+		readonly LABEL_BADGE_DANGER: UIStyle<UILabel.StyleDefinition>;
+		readonly LABEL_BADGE_SUCCESS: UIStyle<UILabel.StyleDefinition>;
 		readonly BUTTON: UIStyle<UIButton.StyleDefinition>;
 		readonly BUTTON_PRIMARY: UIStyle<UIButton.StyleDefinition>;
 		readonly BUTTON_PLAIN: UIStyle<UIButton.StyleDefinition>;

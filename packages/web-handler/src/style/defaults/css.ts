@@ -253,7 +253,7 @@ export function makeBaseCSS() {
 			borderWidth: "1px",
 			borderColor: "inherit",
 			borderRadius: "1rem",
-			background: "rgba(128,128,128,.5)",
+			background: "rgba(128,128,128,.3)",
 			cursor: "inherit",
 		},
 		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.switch}>input:checked`]:
