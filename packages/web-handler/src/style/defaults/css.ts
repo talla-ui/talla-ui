@@ -97,6 +97,20 @@ export function makeBaseCSS() {
 			opacity: "0.5",
 		},
 
+		// CSS for alignment of images
+		[`.${CLASS_UI} figure`]: {
+			display: "flex",
+			alignItems: "center",
+			justifyContent: "center",
+			overflow: "hidden",
+		},
+		[`.${CLASS_UI} figure>img`]: {
+			display: "block",
+			width: "100%",
+			height: "100%",
+			objectFit: "cover",
+		},
+
 		// CSS for alignment of elements within buttons/labels
 		[`.${CLASS_UI} icon`]: {
 			display: "inline-flex",

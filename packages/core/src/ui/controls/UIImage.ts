@@ -1,12 +1,14 @@
 import type { ViewBuilder } from "../../app/index.js";
 import type { StringConvertible } from "../../base/index.js";
+import { UIColor } from "../UIColor.js";
+import { UIIconResource } from "../UIIconResource.js";
 import { UIRenderable } from "../UIRenderable.js";
 import type { UIStyle } from "../UIStyle.js";
 
 /**
- * A view class that represents an image control
+ * A view class that represents an image or icon control
  *
- * @description An image UI element is rendered on-screen as a rectangular image, loaded from the provided (data or remote) URL.
+ * @description An image UI element is rendered on-screen as a rectangular image, loaded from the provided icon resource or (data or remote) URL.
  *
  * @online_docs Refer to the online documentation for more documentation on using this UI element class.
  */
@@ -20,7 +22,14 @@ export class UIImage extends UIRenderable {
 		preset: ViewBuilder.ExtendPreset<
 			typeof UIRenderable,
 			UIImage,
-			"url" | "width" | "height" | "style" | "allowFocus" | "allowKeyboardFocus"
+			| "url"
+			| "icon"
+			| "iconColor"
+			| "width"
+			| "height"
+			| "style"
+			| "allowFocus"
+			| "allowKeyboardFocus"
 		> & {
 			/** Event that's emitted when the image couldn't be loaded */
 			onLoadError?: string;
@@ -31,13 +40,23 @@ export class UIImage extends UIRenderable {
 	}
 
 	/** Creates a new image view object with the specified URL */
-	constructor(url?: StringConvertible) {
+	constructor(source?: StringConvertible | UIIconResource) {
 		super();
-		this.url = url;
+		if (source instanceof UIIconResource) {
+			this.icon = source;
+		} else {
+			this.url = source;
+		}
 	}
 
-	/** The image resource URL */
+	/** Image resource URL */
 	url?: StringConvertible;
+
+	/** Icon image resource */
+	icon?: UIIconResource;
+
+	/** Icon color */
+	iconColor?: UIColor;
 
 	/** Target width of the image, in pixels or CSS length with unit */
 	width?: string | number = undefined;

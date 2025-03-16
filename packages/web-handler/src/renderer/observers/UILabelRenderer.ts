@@ -1,10 +1,8 @@
 import {
-	app,
 	RenderContext,
 	StringConvertible,
 	ui,
 	UIColor,
-	UIIconResource,
 	UILabel,
 } from "@talla-ui/core";
 import {
@@ -13,6 +11,20 @@ import {
 	getLabelDimOpacity,
 } from "../../style/DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
+import { getIconElt } from "./UIImageRenderer.js";
+
+type TextContentProperties = {
+	text?: StringConvertible;
+	htmlFormat?: boolean;
+	icon?: StringConvertible;
+	iconSize?: string | number;
+	iconMargin?: string | number;
+	iconColor?: UIColor;
+	chevron?: "up" | "down" | "back" | "next";
+	chevronSize?: string | number;
+	chevronInset?: string | number;
+	chevronColor?: UIColor;
+};
 
 const CHEVRON_ICONS = {
 	up: ui.icon.CHEVRON_UP,
@@ -99,19 +111,6 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 	}
 }
 
-type TextContentProperties = {
-	text?: StringConvertible;
-	htmlFormat?: boolean;
-	icon?: StringConvertible;
-	iconSize?: string | number;
-	iconMargin?: string | number;
-	iconColor?: UIColor;
-	chevron?: "up" | "down" | "back" | "next";
-	chevronSize?: string | number;
-	chevronInset?: string | number;
-	chevronColor?: UIColor;
-};
-
 /** @internal Helper function to set the (text or html) content for given element */
 export function setTextOrHtmlContent(
 	element: HTMLElement,
@@ -129,16 +128,8 @@ export function setTextOrHtmlContent(
 
 	// add icon element
 	if (content.icon) {
-		try {
-			let icon = getIconElt(content);
-			element.appendChild(icon);
-		} catch (err: any) {
-			let iconSource = String(content.icon);
-			if (!_failedIconNotified[iconSource]) {
-				_failedIconNotified[iconSource] = true;
-				app.log.error(err);
-			}
-		}
+		let icon = getIconElt(content);
+		element.appendChild(icon);
 	}
 
 	// add margin element
@@ -192,51 +183,4 @@ export function setTextOrHtmlContent(
 		chevronWrapper.appendChild(chevronElement);
 		element.appendChild(chevronWrapper);
 	}
-}
-let _failedIconNotified: { [name: string]: true } = {};
-
-const _memoizedIcons: { [memo: string]: HTMLElement } = {};
-
-/** Memoized function to create an icon element for given icon name/content, size, and color */
-function getIconElt(content: TextContentProperties) {
-	let icon = content.icon;
-	let mirrorRTL = false;
-	if (icon instanceof UIIconResource) {
-		if (icon.isMirrorRTL()) mirrorRTL = true;
-	}
-	let size = getCSSLength(content.iconSize ?? app.theme?.iconSize, "1.5rem");
-	let color = content.iconColor ? String(content.iconColor) : "";
-	let iconSource = String(icon || "");
-	let memo = iconSource + ":" + size + ":" + color;
-	if (_memoizedIcons[memo]) {
-		return _memoizedIcons[memo]!.cloneNode(true) as HTMLElement;
-	}
-
-	// not memoized yet, get HTML content and create element
-	let temp = document.createElement("div");
-	temp.innerHTML = iconSource.trim();
-	let iconElement = temp.firstChild;
-	let iconWrapper = document.createElement("icon");
-	if (color) iconWrapper.style.color = color;
-	if (mirrorRTL) iconWrapper.className = "_RTL-flip";
-	if (!iconElement) iconElement = document.createTextNode("");
-	if (String(iconElement.nodeName).toLowerCase() === "svg") {
-		let elt = iconElement as HTMLElement;
-		elt.removeAttribute("width");
-		elt.removeAttribute("height");
-		if (elt.hasAttribute("stroke")) {
-			elt.style.stroke = "currentColor";
-		} else {
-			elt.style.fill = "currentColor";
-		}
-		elt.style.display = "inline-block";
-		elt.style.height = "100%";
-	} else {
-		iconWrapper.style.fontSize = size;
-	}
-	iconWrapper.style.width = size;
-	iconWrapper.style.height = size;
-	iconWrapper.appendChild(iconElement);
-	_memoizedIcons[memo] = iconWrapper.cloneNode(true) as HTMLElement;
-	return iconWrapper;
 }

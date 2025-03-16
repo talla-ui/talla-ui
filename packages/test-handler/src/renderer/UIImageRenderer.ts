@@ -6,13 +6,15 @@ import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 export class UIImageRenderer extends TestBaseObserver<UIImage> {
 	constructor(observed: UIImage) {
 		super(observed);
-		this.observeProperties("url", "style");
+		this.observeProperties("url", "icon", "iconColor", "style");
 	}
 
 	protected override propertyChange(property: string, value: any) {
 		if (!this.element) return;
 		switch (property) {
 			case "url":
+			case "icon":
+			case "iconColor":
 				return this.scheduleUpdate(this.element);
 		}
 		super.propertyChange(property, value);
@@ -43,5 +45,6 @@ export class UIImageRenderer extends TestBaseObserver<UIImage> {
 
 	updateContent(element: TestOutputElement) {
 		element.imageUrl = String(this.observed.url || "");
+		element.icon = String(this.observed.icon || "");
 	}
 }
