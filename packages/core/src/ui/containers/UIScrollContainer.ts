@@ -1,5 +1,5 @@
 import type { View, ViewBuilder } from "../../app/index.js";
-import { ObservedEvent } from "../../base/index.js";
+import { ObservedEvent } from "../../object/index.js";
 import { UIContainer } from "./UIContainer.js";
 
 /** @internal Helper function to emit a scroll event */

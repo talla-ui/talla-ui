@@ -1,4 +1,4 @@
-import { ObservedList } from "../../base/index.js";
+import { ObservedList } from "../../object/index.js";
 import { View, type ViewBuilder } from "../../app/index.js";
 import { UIRenderable } from "../UIRenderable.js";
 import type { UIColor } from "../UIColor.js";

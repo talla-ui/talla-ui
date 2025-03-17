@@ -35,7 +35,7 @@ LazyString.setErrorHandler(errorHandler);
 export const app = new AppContext();
 AppContext.setErrorHandler(errorHandler);
 
-import { Binding } from "../base/index.js";
+import { Binding } from "../object/index.js";
 Binding.log_debug = (message, data) => {
 	app.log.debug(message, data);
 };

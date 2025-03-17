@@ -4,7 +4,7 @@ import {
 	LazyString,
 	StringConvertible,
 } from "@talla-ui/util";
-import { ObservedObject } from "../base/index.js";
+import { ObservedObject } from "../object/index.js";
 import { ERROR, err, safeCall, setErrorHandler } from "../errors.js";
 import type { UITheme } from "../ui/UITheme.js";
 import { Activity } from "./Activity.js";

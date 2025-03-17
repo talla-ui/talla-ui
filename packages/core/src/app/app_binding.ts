@@ -1,4 +1,4 @@
-import { Binding, ObservedObject } from "../base/index.js";
+import { Binding, ObservedObject } from "../object/index.js";
 import type { NavigationContext } from "./NavigationContext.js";
 import { RenderContext } from "./RenderContext.js";
 

@@ -1,5 +1,5 @@
 import { ObjectReader } from "@talla-ui/util";
-import { Binding, ObservedObject } from "../base/index.js";
+import { Binding, ObservedObject } from "../object/index.js";
 import { View } from "./index.js";
 
 /** An object that can be used to create bindings for properties of the nearest `formContext` property */

@@ -1,5 +1,5 @@
 import type { ConfigOptions, StringConvertible } from "@talla-ui/util";
-import { Binding, ObservedEvent, ObservedObject } from "../base/index.js";
+import { Binding, ObservedEvent, ObservedObject } from "../object/index.js";
 import { ERROR, err, errorHandler, safeCall } from "../errors.js";
 import type { UITheme } from "../ui/index.js";
 import { $_app_bind_label } from "./app_binding.js";

@@ -1,6 +1,6 @@
 import type { LazyString } from "@talla-ui/util";
 import type { RenderContext, View, ViewBuilder } from "../app/index.js";
-import type { Binding, BindingOrValue } from "../base/index.js";
+import type { Binding, BindingOrValue } from "../object/index.js";
 import type { UIColor } from "./UIColor.js";
 import type { UIIconResource } from "./UIIconResource.js";
 import type { UIStyle } from "./UIStyle.js";

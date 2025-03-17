@@ -5,7 +5,7 @@ import {
 	ObservedEvent,
 	ObservedList,
 	ObservedObject,
-} from "../../base/index.js";
+} from "../../object/index.js";
 import { ERROR, err } from "../../errors.js";
 import { UIColumn, UIContainer, UIRow } from "../containers/index.js";
 import { UIComponent } from "./UIComponent.js";

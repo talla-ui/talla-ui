@@ -1,4 +1,4 @@
-import { ObservedList, ObservedObject } from "../base/index.js";
+import { ObservedList, ObservedObject } from "../object/index.js";
 import { Activity } from "./Activity.js";
 
 /**

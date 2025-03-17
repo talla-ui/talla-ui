@@ -1,4 +1,4 @@
-import { ObservedEvent, ObservedObject } from "../base/index.js";
+import { ObservedEvent, ObservedObject } from "../object/index.js";
 import { invalidArgErr, safeCall } from "../errors.js";
 import { Activity } from "./Activity.js";
 import { ActivityList } from "./ActivityList.js";

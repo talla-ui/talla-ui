@@ -4,7 +4,7 @@ import {
 	isBinding,
 	ObservedEvent,
 	ObservedObject,
-} from "../base/index.js";
+} from "../object/index.js";
 import { invalidArgErr } from "../errors.js";
 import { RenderContext } from "./RenderContext.js";
 

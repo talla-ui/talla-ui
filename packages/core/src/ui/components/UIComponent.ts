@@ -5,7 +5,7 @@ import {
 	BindingOrValue,
 	ObservedEvent,
 	ObservedObject,
-} from "../../base/index.js";
+} from "../../object/index.js";
 import { ERROR, err } from "../../errors.js";
 import { ui } from "../ui_interface.js";
 

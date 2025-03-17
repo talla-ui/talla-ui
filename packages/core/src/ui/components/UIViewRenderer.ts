@@ -1,5 +1,5 @@
 import { app, RenderContext, View, ViewBuilder } from "../../app/index.js";
-import { Binding, ObservedEvent, ObservedObject } from "../../base/index.js";
+import { Binding, ObservedEvent, ObservedObject } from "../../object/index.js";
 import { invalidArgErr } from "../../errors.js";
 
 /**
