@@ -1,5 +1,5 @@
+import { LazyString, strf } from "@talla-ui/util";
 import { invalidArgErr } from "../errors.js";
-import { LazyString } from "./LazyString.js";
 import { ObservedObject } from "./ObservedObject.js";
 import { $_unlinked, watchBinding } from "./object_util.js";
 
@@ -130,12 +130,12 @@ export class Binding<T = any> {
 
 	/**
 	 * Adds a filter, to convert the bound value to a string.
-	 * @param format A {@link strf} format placeholder (without `%` character) to format the value, e.g. `n`, `.2f`, `lc`
+	 * @param format A {@link strf} format string to format the value, e.g. `%n`, `%.2f`, `%{lc}`
 	 * @returns A new binding, typed as a string
 	 */
 	asString(format?: string): Binding<string> {
 		return this._filter((value) =>
-			format ? LazyString.formatValue(format, value) : String(value ?? ""),
+			format ? strf(format, value).toString() : String(value ?? ""),
 		);
 	}
 

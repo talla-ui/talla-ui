@@ -1,4 +1,4 @@
-import { LazyString, StringConvertible } from "../base/index.js";
+import { LazyString, StringConvertible } from "@talla-ui/util";
 
 /**
  * A class that represents an application error, including a localizable message

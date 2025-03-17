@@ -1,12 +1,8 @@
 import { useTestContext } from "@talla-ui/test-handler";
+import { I18nProvider } from "@talla-ui/util";
 import { beforeEach } from "node:test";
 import { afterEach, expect, test } from "vitest";
-import {
-	app,
-	AppException,
-	I18nProvider,
-	ObservedObject,
-} from "../../dist/index.js";
+import { app, AppException, ObservedObject } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();

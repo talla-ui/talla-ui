@@ -2,12 +2,11 @@ import {
 	app,
 	MessageDialogOptions,
 	RenderContext,
-	strf,
-	StringConvertible,
 	ui,
-	UITheme,
 	UIComponent,
+	UITheme,
 } from "@talla-ui/core";
+import { strf, StringConvertible } from "@talla-ui/util";
 
 /** @internal Limited implementation of a message dialog controller, that can be used to test for message display and button presses */
 export class TestMessageDialog

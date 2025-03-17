@@ -1,4 +1,4 @@
-import type { LazyString, StringConvertible } from "../base/index.js";
+import type { LazyString, StringConvertible } from "@talla-ui/util";
 import { invalidArgErr } from "../errors.js";
 import { Activity } from "./Activity.js";
 

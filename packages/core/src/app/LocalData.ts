@@ -1,4 +1,5 @@
-import { ObservedObject, ObjectReader } from "../base/index.js";
+import { ObjectReader } from "@talla-ui/util";
+import { ObservedObject } from "../base/index.js";
 
 /**
  * A class that controls persisted object data

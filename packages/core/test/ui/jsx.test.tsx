@@ -4,23 +4,25 @@ import {
 	renderTestView,
 	useTestContext,
 } from "@talla-ui/test-handler";
+import {
+	ConfigOptions,
+	LazyString,
+	strf,
+	StringConvertible,
+} from "@talla-ui/util";
 import { beforeEach, expect, test } from "vitest";
 import {
 	$view,
+	app,
 	BindingOrValue,
-	ConfigOptions,
-	LazyString,
-	StringConvertible,
+	ui,
 	UIButton,
 	UICell,
 	UIColumn,
+	UIComponent,
 	UILabel,
 	UITextField,
 	UIToggle,
-	UIComponent,
-	app,
-	strf,
-	ui,
 } from "../../dist/index.js";
 
 function renderUIComponent(c: UIComponent) {

@@ -1,6 +1,6 @@
+import { ConfigOptions } from "@talla-ui/util";
 import {
 	BindingOrValue,
-	ConfigOptions,
 	isBinding,
 	ObservedEvent,
 	ObservedObject,

@@ -3,14 +3,9 @@ import {
 	renderTestView,
 	useTestContext,
 } from "@talla-ui/test-handler";
+import { strf } from "@talla-ui/util";
 import { beforeEach, expect, test } from "vitest";
-import {
-	FormContext,
-	ObservedObject,
-	strf,
-	ui,
-	UIToggle,
-} from "../../dist/index.js";
+import { FormContext, ObservedObject, ui, UIToggle } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();

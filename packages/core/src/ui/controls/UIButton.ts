@@ -1,13 +1,9 @@
+import type { LazyString, StringConvertible } from "@talla-ui/util";
 import { NavigationTarget, ViewBuilder } from "../../app/index.js";
-import {
-	Binding,
-	BindingOrValue,
-	LazyString,
-	StringConvertible,
-} from "../../base/index.js";
+import type { Binding, BindingOrValue } from "../../base/index.js";
 import type { UIColor } from "../UIColor.js";
-import { UIRenderable } from "../UIRenderable.js";
 import type { UIIconResource } from "../UIIconResource.js";
+import { UIRenderable } from "../UIRenderable.js";
 import type { UIStyle } from "../UIStyle.js";
 
 /**

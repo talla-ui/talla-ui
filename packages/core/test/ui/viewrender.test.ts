@@ -4,18 +4,18 @@ import {
 	TestRenderer,
 	useTestContext,
 } from "@talla-ui/test-handler";
+import { StringConvertible } from "@talla-ui/util";
 import { beforeEach, expect, test } from "vitest";
 import {
 	$bind,
 	$view,
 	Activity,
 	app,
-	StringConvertible,
 	ui,
+	UIComponent,
 	UILabel,
 	UITextField,
 	UIViewRenderer,
-	UIComponent,
 } from "../../dist/index.js";
 
 beforeEach(() => {

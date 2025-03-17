@@ -1,4 +1,4 @@
-import { ConfigOptions, LazyString, StringConvertible } from "../base/index.js";
+import { ConfigOptions, LazyString, StringConvertible } from "@talla-ui/util";
 
 /**
  * A representation of the contents of an alert or confirm dialog

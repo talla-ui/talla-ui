@@ -1,11 +1,13 @@
-import type { I18nProvider } from "../app/I18nProvider.js";
-import { err, ERROR, errorHandler } from "../errors.js";
+import type { I18nProvider } from "./I18nProvider.js";
 
 /** Cache index; incremented by invalidateCache() */
 let _cacheIdx = 0;
 
 /** Current I18n provider */
 let _i18n: I18nProvider | undefined;
+
+/** Current error handler */
+let _errorHandler: (error: unknown) => void = () => {};
 
 /** Current decimal separator, changed when setting I18n provider */
 let _decimalSeparator = ".";
@@ -44,7 +46,7 @@ function _stringify(s: any) {
 	switch (typeof s) {
 		case "object":
 			if (s.toString === Object.prototype.toString) {
-				errorHandler(err(ERROR.Format_Invalid));
+				_errorHandler(Error("Invalid format value"));
 				return "???";
 			}
 			if (
@@ -127,7 +129,7 @@ export function strf(
 export class LazyString extends String {
 	/**
 	 * Invalidates all string values cached by {@link LazyString.cache()}
-	 * - This method is called automatically when the application I18n provider is changed (see {@link AppContext.i18n app.i18n}), so that all (localized) strings are re-evaluated when {@link LazyString.toString toString()} is called again on the same LazyString instance
+	 * - This method is called automatically when the application I18n provider is changed (see {@link AppContext.i18n app.i18n}), so that all (localized) strings are re-evaluated when {@link LazyString.toString toString()} is called again on the same LazyString instance.
 	 */
 	static invalidateCache() {
 		_cacheIdx++;
@@ -135,11 +137,19 @@ export class LazyString extends String {
 
 	/**
 	 * Sets the current I18n provider
-	 * - This method is called automatically when the application I18n provider is changed (see {@link AppContext.i18n app.i18n})
+	 * - This method is called automatically when the application I18n provider is changed (see {@link AppContext.i18n app.i18n}).
 	 */
 	static setI18nInterface(i18n?: I18nProvider) {
 		_i18n = i18n;
 		_decimalSeparator = String(i18n?.getAttributes().decimalSeparator || ".");
+	}
+
+	/**
+	 * Sets the current error handler
+	 * - This method is called automatically when the application initializes.
+	 */
+	static setErrorHandler(errorHandler: (error: unknown) => void) {
+		_errorHandler = errorHandler;
 	}
 
 	/**
@@ -324,7 +334,7 @@ export namespace LazyString {
 				case "_":
 					return "";
 				default:
-					errorHandler(err(ERROR.Format_Type, format));
+					_errorHandler(Error("Invalid format type: " + format));
 					return "???";
 			}
 		} else {

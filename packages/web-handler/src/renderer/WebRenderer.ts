@@ -2,15 +2,15 @@ import {
 	Activity,
 	AsyncTaskQueue,
 	RenderContext,
-	StringConvertible,
 	UIColor,
 	View,
 	app,
 } from "@talla-ui/core";
+import type { StringConvertible } from "@talla-ui/util";
 import type { WebContextOptions } from "../WebContext.js";
+import { makeObserver } from "./observers/observers.js";
 import { OutputMount } from "./OutputMount.js";
 import { WebOutputTransform } from "./WebOutputTransform.js";
-import { makeObserver } from "./observers/observers.js";
 import { WebViewportContext } from "./WebViewportContext.js";
 
 /** @internal Overrides for viewport location on the screen */

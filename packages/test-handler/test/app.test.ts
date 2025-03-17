@@ -2,14 +2,14 @@ import {
 	$activity,
 	$view,
 	Activity,
-	StringConvertible,
+	UIComponent,
 	UILabel,
 	UITextField,
-	UIComponent,
 	ViewEvent,
 	app,
 	ui,
 } from "@talla-ui/core";
+import { StringConvertible } from "@talla-ui/util";
 import { beforeEach, expect, test } from "vitest";
 import {
 	clickOutputAsync,

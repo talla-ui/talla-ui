@@ -34,9 +34,11 @@
 		"lib"
 	],
 	"peerDependencies": {
-		"@talla-ui/core": "4.0.0-dev.78"
+		"@talla-ui/core": "4.0.0-dev.78",
+		"@talla-ui/util": "4.0.0-dev.78"
 	},
 	"devDependencies": {
-		"@talla-ui/core": "file:../core"
+		"@talla-ui/core": "file:../core",
+		"@talla-ui/util": "file:../util"
 	}
 }

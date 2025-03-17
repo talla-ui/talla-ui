@@ -1,9 +1,6 @@
+import type { StringConvertible } from "@talla-ui/util";
 import { app, RenderContext, View } from "../app/index.js";
-import {
-	BindingOrValue,
-	ObservedEvent,
-	StringConvertible,
-} from "../base/index.js";
+import { BindingOrValue, ObservedEvent } from "../base/index.js";
 import { err, ERROR } from "../errors.js";
 import type { UIColor } from "./UIColor.js";
 

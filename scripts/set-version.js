@@ -6,6 +6,7 @@ let version = mainPackageJson.version;
 console.log("Setting package versions: " + version);
 
 mainPackageJson.dependencies["@talla-ui/core"] = version;
+mainPackageJson.dependencies["@talla-ui/util"] = version;
 fs.writeFileSync(
 	"package.json",
 	JSON.stringify(mainPackageJson, undefined, "\t") + "\n",
@@ -19,6 +20,9 @@ for (let d of dirs) {
 	dirPackageJson.version = version;
 	if (dirPackageJson.peerDependencies?.["@talla-ui/core"]) {
 		dirPackageJson.peerDependencies["@talla-ui/core"] = version;
+	}
+	if (dirPackageJson.peerDependencies?.["@talla-ui/util"]) {
+		dirPackageJson.peerDependencies["@talla-ui/util"] = version;
 	}
 	fs.writeFileSync(
 		packagePath,

@@ -1,11 +1,11 @@
 {
-	"name": "@talla-ui/core",
+	"name": "@talla-ui/util",
 	"version": "4.0.0-dev.78",
 	"publishConfig": {
 		"tag": "next",
 		"access": "public"
 	},
-	"description": "Tälla UI framework: core package",
+	"description": "Tälla UI framework: utility library",
 	"author": "Jelmer Cormont",
 	"license": "MIT",
 	"homepage": "https://talla-ui.com",
@@ -17,6 +17,7 @@
 	"main": "dist/index.js",
 	"module": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"sideEffects": false,
 	"scripts": {
 		"clean": "rimraf dist",
 		"prebuild": "npm run clean",
@@ -32,15 +33,5 @@
 	},
 	"files": [
 		"dist"
-	],
-	"dependencies": {
-		"tslib": "^2.7.0"
-	},
-	"peerDependencies": {
-		"@talla-ui/util": "4.0.0-dev.78"
-	},
-	"devDependencies": {
-		"@talla-ui/test-handler": "file:../test-handler",
-		"@talla-ui/util": "file:../util"
-	}
+	]
 }

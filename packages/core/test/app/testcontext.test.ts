@@ -7,6 +7,7 @@ import {
 	renderTestView,
 	useTestContext,
 } from "@talla-ui/test-handler";
+import { ObjectReader, strf } from "@talla-ui/util";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
 	Activity,
@@ -15,15 +16,13 @@ import {
 	MessageDialogOptions,
 	ModalMenuOptions,
 	NavigationTarget,
-	ObjectReader,
 	UIButton,
 	UICell,
+	UIComponent,
 	UIIconResource,
 	UILabel,
 	UITheme,
-	UIComponent,
 	app,
-	strf,
 	ui,
 } from "../../dist/index.js";
 

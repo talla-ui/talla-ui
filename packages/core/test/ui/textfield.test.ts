@@ -3,11 +3,11 @@ import {
 	renderTestView,
 	useTestContext,
 } from "@talla-ui/test-handler";
+import { strf } from "@talla-ui/util";
 import { beforeEach, expect, test } from "vitest";
 import {
 	FormContext,
 	ObservedObject,
-	strf,
 	ui,
 	UITextField,
 } from "../../dist/index.js";

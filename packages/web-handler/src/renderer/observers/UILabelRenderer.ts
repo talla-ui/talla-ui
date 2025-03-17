@@ -1,10 +1,5 @@
-import {
-	RenderContext,
-	StringConvertible,
-	ui,
-	UIColor,
-	UILabel,
-} from "@talla-ui/core";
+import { RenderContext, ui, UIColor, UILabel } from "@talla-ui/core";
+import type { StringConvertible } from "@talla-ui/util";
 import {
 	applyStyles,
 	getCSSLength,

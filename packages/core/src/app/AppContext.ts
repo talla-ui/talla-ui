@@ -1,15 +1,15 @@
 import {
 	ConfigOptions,
+	I18nProvider,
 	LazyString,
-	ObservedObject,
 	StringConvertible,
-} from "../base/index.js";
+} from "@talla-ui/util";
+import { ObservedObject } from "../base/index.js";
 import { ERROR, err, safeCall, setErrorHandler } from "../errors.js";
 import type { UITheme } from "../ui/UITheme.js";
 import { Activity } from "./Activity.js";
 import { ActivityList } from "./ActivityList.js";
 import { $_app_bind_label } from "./app_binding.js";
-import type { I18nProvider } from "./I18nProvider.js";
 import { LocalData } from "./LocalData.js";
 import { LogWriter } from "./LogWriter.js";
 import { MessageDialogOptions } from "./MessageDialogOptions.js";

@@ -1,4 +1,5 @@
 import { expectOutputAsync, useTestContext } from "@talla-ui/test-handler";
+import { ObjectReader, strf } from "@talla-ui/util";
 import { beforeEach } from "node:test";
 import { expect, test } from "vitest";
 import {
@@ -8,13 +9,11 @@ import {
 	AppContext,
 	FormContext,
 	ObservedEvent,
-	ObjectReader,
+	UIComponent,
 	UILabel,
 	UIRow,
 	UITextField,
-	UIComponent,
 	app,
-	strf,
 	ui,
 } from "../../dist/index.js";
 

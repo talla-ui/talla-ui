@@ -1,6 +1,7 @@
-import { ObservedObject, StringConvertible } from "../base/index.js";
-import type { UIColor } from "../ui/index.js";
+import type { StringConvertible } from "@talla-ui/util";
+import { ObservedObject } from "../base/index.js";
 import { errorHandler, invalidArgErr, safeCall } from "../errors.js";
+import type { UIColor } from "../ui/index.js";
 import { View } from "./View.js";
 
 /**

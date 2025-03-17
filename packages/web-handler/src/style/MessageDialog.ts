@@ -1,17 +1,16 @@
 import {
 	MessageDialogOptions,
 	RenderContext,
-	StringConvertible,
 	UIButton,
 	UICell,
+	UIComponent,
 	UIContainer,
 	UILabel,
 	UITheme,
-	UIComponent,
 	app,
-	strf,
 	ui,
 } from "@talla-ui/core";
+import { StringConvertible, strf } from "@talla-ui/util";
 import { WebDialogStyles } from "./Dialog.js";
 
 /**

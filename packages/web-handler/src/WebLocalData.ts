@@ -1,4 +1,5 @@
-import { LocalData, ObjectReader } from "@talla-ui/core";
+import { LocalData } from "@talla-ui/core";
+import { ObjectReader } from "@talla-ui/util";
 import { WebContextOptions } from "./WebContext.js";
 
 /** @internal Web platform specific implementation of `LocalData`, not exposed as-is */

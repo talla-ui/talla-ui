@@ -1,15 +1,15 @@
 import {
 	$view,
-	ConfigOptions,
 	RenderContext,
 	UICell,
+	UIComponent,
 	UITheme,
 	View,
-	UIComponent,
 	ViewEvent,
 	app,
 	ui,
 } from "@talla-ui/core";
+import { ConfigOptions } from "@talla-ui/util";
 
 /**
  * A class that defines the styles for the default modal dialog view

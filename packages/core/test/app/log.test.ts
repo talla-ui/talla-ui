@@ -1,5 +1,6 @@
+import { strf } from "@talla-ui/util";
 import { beforeEach, expect, test } from "vitest";
-import { app, AppContext, AppException, strf } from "../../dist/index.js";
+import { app, AppContext, AppException } from "../../dist/index.js";
 
 beforeEach(() => {
 	app.clear();

@@ -1,13 +1,12 @@
+import { LazyString, strf } from "@talla-ui/util";
 import { err, ERROR } from "../errors.js";
 import {
 	Binding,
-	LazyString,
-	strf,
 	StringFormatBinding,
 	ui,
+	UIComponent,
 	View,
 	ViewBuilder,
-	UIComponent,
 } from "../index.js";
 
 /** Tag names with `ui` function names that are different */

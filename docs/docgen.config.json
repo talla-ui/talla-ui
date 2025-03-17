@@ -1,5 +1,6 @@
 {
 	"input": [
+		"../packages/util/dist/**/*.d.ts",
 		"../packages/core/dist/**/*.d.ts",
 		"../packages/test-handler/dist/**/*.d.ts",
 		"../packages/web-handler/dist/**/*.d.ts",

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { ObjectReader } from "../../dist/index.js";
+import { ObjectReader } from "../dist/index.js";
 
 describe("ObjectReader", () => {
 	test("Constructor", () => {

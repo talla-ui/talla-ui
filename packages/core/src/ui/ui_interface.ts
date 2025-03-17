@@ -1,8 +1,9 @@
+import type { LazyString } from "@talla-ui/util";
 import type { RenderContext, View, ViewBuilder } from "../app/index.js";
-import type { Binding, BindingOrValue, LazyString } from "../base/index.js";
+import type { Binding, BindingOrValue } from "../base/index.js";
 import type { UIColor } from "./UIColor.js";
 import type { UIIconResource } from "./UIIconResource.js";
-import { UIStyle } from "./UIStyle.js";
+import type { UIStyle } from "./UIStyle.js";
 import type { UITheme } from "./UITheme.js";
 import type { UIAnimationView } from "./components/UIAnimationView.js";
 import type { UIConditionalView } from "./components/UIConditionalView.js";

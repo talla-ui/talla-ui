@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"jsx": "react",
+		"jsxFactory": "jj",
+		"declaration": true,
+		"pretty": true,
+		"stripInternal": true,
+		"strict": true,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noImplicitOverride": true,
+		"noUncheckedIndexedAccess": true,
+		"importHelpers": true,
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"esModuleInterop": true,
+		"target": "esnext",
+		"lib": ["dom", "es2015"],
+		"skipLibCheck": true,
+		"outDir": "../dist"
+	}
+}

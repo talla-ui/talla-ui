@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, test } from "vitest";
-import { AppContext, LazyString, strf } from "../../dist/index.js";
+import { LazyString, strf } from "../dist/index.js";
 
 beforeAll(() => {
-	AppContext.setErrorHandler((e) => {
+	LazyString.setErrorHandler((e) => {
 		throw e;
 	});
 });

@@ -1,5 +1,5 @@
+import { ConfigOptions } from "@talla-ui/util";
 import { errorHandler } from "../errors.js";
-import { ConfigOptions } from "../base/index.js";
 import { AppException } from "./AppException.js";
 
 /**

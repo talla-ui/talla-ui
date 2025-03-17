@@ -1,12 +1,12 @@
 import {
 	RenderContext,
-	StringConvertible,
 	UIColor,
 	UIIconResource,
 	UIImage,
 	app,
 	ui,
 } from "@talla-ui/core";
+import type { StringConvertible } from "@talla-ui/util";
 import { applyStyles, getCSSLength } from "../../style/DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
 

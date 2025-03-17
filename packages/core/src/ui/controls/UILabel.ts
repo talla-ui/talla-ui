@@ -1,5 +1,5 @@
+import type { StringConvertible } from "@talla-ui/util";
 import type { ViewBuilder } from "../../app/index.js";
-import type { StringConvertible } from "../../base/index.js";
 import type { UIColor } from "../UIColor.js";
 import { UIRenderable } from "../UIRenderable.js";
 import { UIIconResource } from "../UIIconResource.js";

@@ -1,4 +1,4 @@
-import { ConfigOptions, StringConvertible } from "../base/index.js";
+import { ConfigOptions, StringConvertible } from "@talla-ui/util";
 import type { UIIconResource, UILabel } from "../ui/index.js";
 
 /**

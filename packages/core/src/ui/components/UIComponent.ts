@@ -1,12 +1,12 @@
+import type { ConfigOptions } from "@talla-ui/util";
+import { RenderContext, View, ViewBuilder } from "../../app/index.js";
 import {
 	Binding,
 	BindingOrValue,
-	ConfigOptions,
 	ObservedEvent,
 	ObservedObject,
 } from "../../base/index.js";
 import { ERROR, err } from "../../errors.js";
-import { RenderContext, View, ViewBuilder } from "../../app/index.js";
 import { ui } from "../ui_interface.js";
 
 /** Label property used to filter bindings using $view */

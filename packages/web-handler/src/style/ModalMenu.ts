@@ -1,9 +1,9 @@
 import {
-	ConfigOptions,
 	ModalMenuOptions,
 	RenderContext,
 	UICell,
 	UIColumn,
+	UIComponent,
 	UIContainer,
 	UILabel,
 	UIRow,
@@ -11,11 +11,11 @@ import {
 	UISpacer,
 	UIStyle,
 	UITheme,
-	UIComponent,
 	ViewEvent,
 	app,
 	ui,
 } from "@talla-ui/core";
+import { ConfigOptions } from "@talla-ui/util";
 import { reduceElementMotion } from "../renderer/WebOutputTransform.js";
 
 /** @internal Fixed container position, used for each menu container */

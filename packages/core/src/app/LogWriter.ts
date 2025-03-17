@@ -1,4 +1,4 @@
-import { LazyString } from "../base/index.js";
+import { LazyString } from "@talla-ui/util";
 import { safeCall } from "../errors.js";
 import { AppException } from "./AppException.js";
 

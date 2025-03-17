@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { ConfigOptions } from "../../dist/index.js";
+import { ConfigOptions } from "../dist/index.js";
 
 class MyOptions extends ConfigOptions {
 	foo = "bar";

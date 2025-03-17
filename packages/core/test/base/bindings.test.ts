@@ -726,7 +726,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Convert and format: asString(format) with number", () => {
 		let { parent } = setup();
-		parent.child.bindValue($bind("value1").asString(".2f"));
+		parent.child.bindValue($bind("value1").asString("%.2f"));
 		parent.child.expectValue().toBe("1.00");
 		parent.value1 = 0;
 		parent.child.expectValue().toBe("0.00");
@@ -736,7 +736,7 @@ describe("Filtered/boolean bindings", () => {
 
 	test("Convert and format: asString(format) with string", () => {
 		let { parent } = setup();
-		parent.child.bindValue($bind("str").asString("lc"));
+		parent.child.bindValue($bind("str").asString("%{lc}"));
 		parent.child.expectValue().toBe("");
 		parent.str = "ABC";
 		parent.child.expectValue().toBe("abc");

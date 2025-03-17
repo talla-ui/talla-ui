@@ -1,8 +1,9 @@
-import { app, ConfigOptions, View } from "@talla-ui/core";
+import { app, View } from "@talla-ui/core";
+import { ConfigOptions } from "@talla-ui/util";
 import { OutputAssertion, OutputSelectFilter } from "./OutputAssertion.js";
 import {
-	TestRenderer,
 	RenderedTestMessageDialog,
+	TestRenderer,
 } from "./renderer/TestRenderer.js";
 import { TestOutputElement } from "./TestOutputElement.js";
 

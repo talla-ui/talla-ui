@@ -1,13 +1,5 @@
-import {
-	app,
-	ConfigOptions,
-	AppContext,
-	ui,
-	UIColor,
-	UIRenderable,
-} from "@talla-ui/core";
-import { WebHashNavigationContext } from "./WebHashNavigationContext.js";
-import { WebHistoryNavigationContext } from "./WebHistoryNavigationContext.js";
+import { app, AppContext, ui, UIColor, UIRenderable } from "@talla-ui/core";
+import { ConfigOptions } from "@talla-ui/util";
 import { WebRenderer } from "./renderer/WebRenderer.js";
 import { Dialog, WebDialogStyles } from "./style/Dialog.js";
 import {
@@ -16,6 +8,8 @@ import {
 } from "./style/MessageDialog.js";
 import { ModalMenu, WebModalMenuStyles } from "./style/ModalMenu.js";
 import { WebTheme } from "./style/WebTheme.js";
+import { WebHashNavigationContext } from "./WebHashNavigationContext.js";
+import { WebHistoryNavigationContext } from "./WebHistoryNavigationContext.js";
 import { WebLocalData } from "./WebLocalData.js";
 
 /**

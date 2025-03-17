@@ -1,7 +1,8 @@
-import { AppContext, ConfigOptions, LocalData, app } from "@talla-ui/core";
+import { AppContext, LocalData, app } from "@talla-ui/core";
+import { ConfigOptions } from "@talla-ui/util";
 import { TestRenderer } from "./renderer/TestRenderer.js";
-import { makeTheme } from "./theme/theme.js";
 import { TestNavigationContext } from "./TestNavigationContext.js";
+import { makeTheme } from "./theme/theme.js";
 
 /** Type definition for the global {@link app} context with test-specific render and activity contexts, set by the {@link useTestContext} function */
 export type TestAppContext = AppContext & {
