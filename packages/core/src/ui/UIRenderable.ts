@@ -39,7 +39,7 @@ export abstract class UIRenderable extends View {
 			/** Options for the positioning of this component within parent component(s) (overrides) */
 			position?: BindingOrValue<UIRenderable.Position>;
 			/** True if this component should grow to fill available space */
-			grow?: boolean;
+			grow?: BindingOrValue<boolean>;
 			/** WAI-ARIA role for this component, if applicable */
 			accessibleRole?: BindingOrValue<StringConvertible>;
 			/** WAI-ARIA label text for this component (not tooltip), if applicable */

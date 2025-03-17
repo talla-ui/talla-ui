@@ -19,7 +19,7 @@ export abstract class BaseObserver<TUIRenderable extends UIRenderable> {
 			undefined,
 			true,
 		);
-		this.observeProperties("hidden", "position");
+		this.observeProperties("hidden", "position", "grow");
 		observed.listen((e) => {
 			let handler = (this as any)["on" + e.name];
 			if (typeof handler === "function") handler.call(this, e);
@@ -39,6 +39,7 @@ export abstract class BaseObserver<TUIRenderable extends UIRenderable> {
 		if (property === "hidden") {
 			this.scheduleHide(value);
 		} else {
+			// schedule style update only
 			this.scheduleUpdate(undefined, this.element);
 		}
 	}
