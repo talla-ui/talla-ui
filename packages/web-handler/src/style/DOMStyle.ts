@@ -1,4 +1,4 @@
-import { UIRenderable, UIContainer, UIStyle } from "@talla-ui/core";
+import { UIRenderable, UIContainer, UIStyle, UIColor } from "@talla-ui/core";
 import {
 	CLASS_CONTAINER,
 	CLASS_TEXTCONTROL,
@@ -429,14 +429,45 @@ function addDecorationStyleCSS(
 	if (borderThickness !== undefined)
 		result.borderWidth = getCSSLength(borderThickness);
 	let borderColor = decoration.borderColor;
-	if (borderColor != undefined) result.borderColor = String(borderColor);
+	if (borderColor instanceof UIColor) result.borderColor = String(borderColor);
+	else if (borderColor != undefined) {
+		result.borderColor = [
+			borderColor.top,
+			borderColor.right,
+			borderColor.bottom,
+			borderColor.left,
+		]
+			.map((c) => String(c || "transparent"))
+			.join(" ");
+		if (borderColor.start)
+			result.borderInlineStartColor = String(borderColor.start);
+		if (borderColor.end) result.borderInlineEndColor = String(borderColor.end);
+	}
 	let borderStyle = decoration.borderStyle;
-	if (borderStyle != undefined) result.borderStyle = decoration.borderStyle;
-
+	if (borderStyle != undefined) result.borderStyle = borderStyle;
 	let borderRadius = decoration.borderRadius;
-	if (borderRadius !== undefined)
-		result.borderRadius = getCSSLength(decoration.borderRadius);
-	if (decoration.opacity! >= 0) result.opacity = String(decoration.opacity);
+	if (typeof borderRadius === "number" || typeof borderRadius === "string") {
+		result.borderRadius = getCSSLength(borderRadius);
+	} else if (borderRadius != undefined) {
+		result.borderRadius = [
+			borderRadius.topLeft,
+			borderRadius.topRight,
+			borderRadius.bottomRight,
+			borderRadius.bottomLeft,
+		]
+			.map((b) => getCSSLength(b || 0))
+			.join(" ");
+		if (borderRadius.topStart)
+			result.borderStartStartRadius = getCSSLength(borderRadius.topStart);
+		if (borderRadius.bottomStart)
+			result.borderEndStartRadius = getCSSLength(borderRadius.bottomStart);
+		if (borderRadius.topEnd)
+			result.borderStartEndRadius = getCSSLength(borderRadius.topEnd);
+		if (borderRadius.bottomEnd)
+			result.borderEndEndRadius = getCSSLength(borderRadius.bottomEnd);
+	}
+	let opacity = decoration.opacity;
+	if (opacity != undefined) result.opacity = String(opacity);
 	if (decoration.css) {
 		// copy all properties to result
 		for (let p in decoration.css) result[p] = decoration.css[p];

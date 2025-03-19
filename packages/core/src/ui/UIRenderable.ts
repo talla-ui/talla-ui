@@ -281,13 +281,34 @@ export namespace UIRenderable {
 		/** Text color */
 		textColor?: UIColor;
 		/** Border color */
-		borderColor?: UIColor;
+		borderColor?:
+			| UIColor
+			| {
+					top?: UIColor;
+					bottom?: UIColor;
+					left?: UIColor;
+					right?: UIColor;
+					start?: UIColor;
+					end?: UIColor;
+			  };
 		/** Border style (CSS), defaults to "solid" */
 		borderStyle?: string;
 		/** Border thickness (in pixels or CSS string, or separate offset values) */
 		borderThickness?: Offsets;
 		/** Border radius (in pixels or CSS string) */
-		borderRadius?: string | number;
+		borderRadius?:
+			| string
+			| number
+			| {
+					topLeft?: string | number;
+					topRight?: string | number;
+					bottomLeft?: string | number;
+					bottomRight?: string | number;
+					topStart?: string | number;
+					bottomStart?: string | number;
+					topEnd?: string | number;
+					bottomEnd?: string | number;
+			  };
 		/** Padding within control element (in pixels or CSS string, or separate offset values) */
 		padding?: Offsets;
 		/** Opacity (0-1) */
