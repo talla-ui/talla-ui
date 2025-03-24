@@ -269,6 +269,8 @@ Object.assign(_ui.style, {
 	BUTTON_ICON: ui.style("IconButton"),
 	BUTTON_DANGER: ui.style("DangerButton"),
 	BUTTON_SUCCESS: ui.style("SuccessButton"),
+	BUTTON_TEXT: ui.style("TextButton"),
+	BUTTON_LINK: ui.style("LinkButton"),
 	LABEL: ui.style("Label"),
 	LABEL_SMALL: ui.style("SmallLabel"),
 	LABEL_BADGE: ui.style("BadgeLabel"),

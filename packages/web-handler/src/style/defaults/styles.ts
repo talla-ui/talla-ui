@@ -20,7 +20,7 @@ const _color_inherit = ui.color("inherit");
 
 const baseButtonStyle: CombinedStyleType = {
 	padding: { y: 4, x: 12 },
-	borderRadius: 12,
+	borderRadius: 14,
 	borderThickness: 1,
 	borderColor: _color_clear,
 	fontWeight: 600,
@@ -142,6 +142,35 @@ export const styles: [
 			_color_inherit,
 			_color_clear,
 			_color_inherit,
+		),
+	],
+	[
+		"TextButton",
+		makeButtonStyle(
+			{
+				minWidth: 0,
+				padding: { y: 4 },
+				borderRadius: 0,
+				borderThickness: 0,
+				textAlign: "start",
+			},
+			_color_clear,
+			_color_inherit,
+		),
+	],
+	[
+		"LinkButton",
+		makeButtonStyle(
+			{
+				minWidth: 0,
+				padding: { y: 4 },
+				borderRadius: 0,
+				borderThickness: 0,
+				textAlign: "start",
+				underline: true,
+			},
+			_color_clear,
+			ui.color.BLUE,
 		),
 	],
 	[
