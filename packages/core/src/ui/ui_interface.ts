@@ -411,6 +411,9 @@ export interface ui {
 		readonly BUTTON_ICON: UIStyle<UIButton.StyleDefinition>;
 		readonly BUTTON_DANGER: UIStyle<UIButton.StyleDefinition>;
 		readonly BUTTON_SUCCESS: UIStyle<UIButton.StyleDefinition>;
+		readonly BUTTON_ICONTOP: UIStyle<UIButton.StyleDefinition>;
+		readonly BUTTON_ICONTOP_START: UIStyle<UIButton.StyleDefinition>;
+		readonly BUTTON_ICONTOP_END: UIStyle<UIButton.StyleDefinition>;
 		readonly TEXTFIELD: UIStyle<UITextField.StyleDefinition>;
 		readonly TOGGLE: UIStyle<UIToggle.StyleDefinition>;
 		readonly TOGGLE_LABEL: UIStyle<UILabel.StyleDefinition>;

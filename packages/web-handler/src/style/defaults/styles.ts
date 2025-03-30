@@ -18,6 +18,13 @@ const _color_clear = ui.color.CLEAR;
 const _color_text = ui.color.TEXT;
 const _color_inherit = ui.color("inherit");
 
+const baseButtonCss = {
+	position: "relative",
+	overflow: "hidden",
+	cursor: "pointer",
+	transition: "background 0.2s ease, border-color 0.2s ease",
+};
+
 const baseButtonStyle: CombinedStyleType = {
 	padding: { y: 4, x: 12 },
 	borderRadius: 14,
@@ -29,12 +36,7 @@ const baseButtonStyle: CombinedStyleType = {
 	lineHeight: 2,
 	minWidth: 112,
 	shrink: 1,
-	css: {
-		position: "relative",
-		overflow: "hidden",
-		cursor: "pointer",
-		transition: "background 0.2s ease, border-color 0.2s ease",
-	},
+	css: baseButtonCss,
 };
 
 const baseLabelStyle: CombinedStyleType = {
@@ -198,14 +200,58 @@ export const styles: [
 				borderThickness: 0,
 				lineHeight: 1,
 				fontSize: "0",
-				css: {
-					cursor: "pointer",
-					transition: "background 0.2s ease, border-color 0.2s ease",
-				},
 			},
 			_color_text.alpha(0.1),
 			_color_inherit,
 			_color_clear,
+			_color_inherit,
+		),
+	],
+	[
+		"IconTopButton",
+		makeButtonStyle(
+			{
+				css: {
+					...baseButtonCss,
+					display: "flex",
+					flexDirection: "column",
+					justifyContent: "center",
+					alignItems: "center",
+				},
+			},
+			_color_text.alpha(0.1),
+			_color_inherit,
+		),
+	],
+	[
+		"IconTopStartButton",
+		makeButtonStyle(
+			{
+				css: {
+					...baseButtonCss,
+					display: "flex",
+					flexDirection: "column",
+					justifyContent: "start",
+					alignItems: "start",
+				},
+			},
+			_color_text.alpha(0.1),
+			_color_inherit,
+		),
+	],
+	[
+		"IconTopEndButton",
+		makeButtonStyle(
+			{
+				css: {
+					...baseButtonCss,
+					display: "flex",
+					flexDirection: "column",
+					justifyContent: "end",
+					alignItems: "end",
+				},
+			},
+			_color_text.alpha(0.1),
 			_color_inherit,
 		),
 	],
