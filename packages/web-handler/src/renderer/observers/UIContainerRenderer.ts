@@ -273,6 +273,7 @@ export class ContentUpdater {
 			let oldSeparators = this._separators;
 			this._separators = new Map();
 			for (let [content, sep] of oldSeparators.entries()) {
+				if (sep.parentNode !== this.element) continue;
 				let newSep = this._getSeparatorFor(content)!;
 				this.element.replaceChild(newSep, sep);
 			}
