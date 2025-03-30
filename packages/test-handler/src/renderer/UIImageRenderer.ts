@@ -46,5 +46,12 @@ export class UIImageRenderer extends TestBaseObserver<UIImage> {
 	updateContent(element: TestOutputElement) {
 		element.imageUrl = String(this.observed.url || "");
 		element.icon = String(this.observed.icon || "");
+
+		// simulate load event
+		if (this.observed.url) {
+			setTimeout(() => {
+				this.observed.emit("Load");
+			}, 10);
+		}
 	}
 }

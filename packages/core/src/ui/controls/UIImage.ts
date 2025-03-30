@@ -31,6 +31,8 @@ export class UIImage extends UIRenderable {
 			| "allowFocus"
 			| "allowKeyboardFocus"
 		> & {
+			/** Event that's emitted when the image is loaded */
+			onLoad?: string;
 			/** Event that's emitted when the image couldn't be loaded */
 			onLoadError?: string;
 		},

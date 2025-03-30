@@ -123,20 +123,25 @@ export class UIImageRenderer extends BaseObserver<UIImage> {
 		element.innerHTML = "";
 
 		// add image content
-		if (this.observed.url) {
+		let image = this.observed;
+		if (image.url) {
 			let inner = document.createElement("img");
-			inner.onerror = () => {
-				if (this.observed) this.observed.emit("LoadError");
+			inner.onload = () => {
+				image.emit("Load");
 			};
-			inner.src = String(this.observed.url || "");
+			inner.onerror = () => {
+				image.emit("LoadError");
+			};
+			inner.src = String(image.url || "");
 			element.appendChild(inner);
-		} else if (this.observed.icon) {
+		} else if (image.icon) {
 			let inner = getIconElt({
-				icon: this.observed.icon,
-				iconSize: this.observed.height || this.observed.width,
-				iconColor: this.observed.iconColor,
+				icon: image.icon,
+				iconSize: image.height || image.width,
+				iconColor: image.iconColor,
 			});
 			element.appendChild(inner);
+			image.emit("Load");
 		}
 	}
 }
