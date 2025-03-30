@@ -99,7 +99,7 @@ describe("Navigation paths", () => {
 	test("Navigation history: back", async () => {
 		let app = useTestContext({ navigationPageId: "foo" });
 		let nav = app.navigation;
-		await nav.navigateAsync(new NavigationTarget("foo"));
+		await nav.navigateAsync(new NavigationTarget("bar"));
 		await nav.navigateAsync(undefined, { back: true });
 		expect(nav.getHistory()).toEqual(["foo"]);
 	});
@@ -118,9 +118,9 @@ describe("Navigation paths", () => {
 	test("Navigation history: back using goBack() sync", async () => {
 		let app = useTestContext({ navigationPageId: "foo", navigationDelay: 0 });
 		let nav = app.navigation;
-		await nav.navigateAsync(new NavigationTarget("foo"));
+		await nav.navigateAsync(new NavigationTarget("foo", "bar"));
 		app.goBack();
-		await expectNavAsync({ pageId: "foo" });
+		await expectNavAsync({ pageId: "foo", detail: "" });
 		expect(nav.getHistory()).toEqual(["foo"]);
 	});
 

@@ -41,8 +41,7 @@ export class TestNavigationContext extends NavigationContext {
 		let { pageId, detail } = target || {};
 		if (pageId == null) return;
 
-		// update history after a delay, then finally set path
-		if (this._delay) await this._simulateDelay();
+		// check if path is valid
 		if (pageId.indexOf("/") >= 0)
 			throw Error("Invalid navigation target: page ID contains slash");
 		if (detail && !pageId)
@@ -51,6 +50,18 @@ export class TestNavigationContext extends NavigationContext {
 			throw Error("Invalid navigation target: detail contains leading slash");
 		if (detail && detail.endsWith("/"))
 			throw Error("Invalid navigation target: detail contains trailing slash");
+
+		// check if path is current path
+		let currentPath = this._history[this._history.length - 1];
+		if (
+			currentPath &&
+			currentPath.pageId === pageId &&
+			currentPath.detail === detail
+		)
+			return;
+
+		// update history after a delay, then finally set path
+		if (this._delay) await this._simulateDelay();
 		if (mode && mode.replace && this._history.length) {
 			this._history[this._history.length - 1] = { pageId, detail };
 		} else {

@@ -77,19 +77,20 @@ export class WebHistoryNavigationContext extends NavigationContext {
 				await new Promise((r) => setTimeout(r, 1));
 				return this.navigateAsync(target, { ...mode, back: false });
 			}
+			return;
+		}
+
+		// navigate to target path (if any, and not the current path)
+		let href = this.getPathHref(target);
+		if (!href || href === window.location.pathname) return;
+		if (mode?.replace) {
+			// replace path if requested
+			window.history.replaceState({}, document.title, href);
+			this.update();
 		} else {
-			let href = this.getPathHref(target);
-			if (href) {
-				if (mode && mode.replace) {
-					// replace path if requested
-					window.history.replaceState({}, document.title, href);
-					this.update();
-				} else {
-					// push path on history stack
-					window.history.pushState({}, document.title, href);
-					this.update();
-				}
-			}
+			// push path on history stack
+			window.history.pushState({}, document.title, href);
+			this.update();
 		}
 	}
 
