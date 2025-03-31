@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, test } from "vitest";
 import {
 	$bind,
 	$either,
+	$neither,
 	$strf,
 	AppContext,
 	Binding,
@@ -764,6 +765,22 @@ describe("Filtered/boolean bindings", () => {
 		parent.child.expectValue().toBe(false);
 	});
 
+	test("MatchesNone: single parameter", () => {
+		let { parent } = setup();
+		parent.child.bindValue($bind("value1").matchesNone(1));
+		parent.child.expectValue().toBe(false);
+		parent.value1 = 0;
+		parent.child.expectValue().toBe(true);
+	});
+
+	test("MatchesNone: multiple parameters", () => {
+		let { parent } = setup();
+		parent.child.bindValue($bind("value1").matchesNone(3, 2, 1));
+		parent.child.expectValue().toBe(false);
+		parent.value1 = 0;
+		parent.child.expectValue().toBe(true);
+	});
+
 	test("Equals", () => {
 		let { parent } = setup();
 		parent.child.bindValue($bind("value1").equals("value2"));
@@ -864,6 +881,17 @@ describe("Filtered/boolean bindings", () => {
 		parent.value2 = 0;
 		parent.value3 = 0;
 		expect(JSON.stringify(parent.child.updates)).toBe("[1,2,3,0]");
+	});
+
+	test("Neither-binding, 3 terms", () => {
+		let { parent } = setup();
+		parent.child.bindValue($neither("value1", "value2", $bind("value3")));
+		parent.value1 = 0;
+		parent.value2 = 0;
+		parent.value3 = 0;
+		expect(JSON.stringify(parent.child.updates)).toBe(
+			"[false,false,false,true]",
+		);
 	});
 
 	test("And-Or-binding", () => {

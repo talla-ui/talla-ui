@@ -238,8 +238,6 @@ export class Binding<T = any> {
 	 *
 	 * @summary This method can be used to substitute the bound value with true or false. If the original value matches at least one of the provided values, it's replaced with true; otherwise with false.
 	 *
-	 * To do the opposite, and substitute with false if any of the provided values match, use the {@link Binding.not not()} method afterwards (see example).
-	 *
 	 * @param values A list of values to compare the bound value to
 	 * @returns A new binding, typed as a boolean
 	 *
@@ -258,9 +256,25 @@ export class Binding<T = any> {
 	 *   { hidden: $activity("tab").matches("contacts").not() },
 	 *   // ...
 	 * )
+	 *
+	 * @see {@link Binding.matchesNone matchesNone()}
 	 */
 	matches(...values: any[]): Binding<boolean> {
 		return this._filter((value) => values.some((a) => a === value));
+	}
+
+	/**
+	 * Adds a filter, to compare the bound value and replace it with true or false
+	 *
+	 * @summary This method produces the opposite bound value of {@link Binding.matches matches()}. If the original value matches none of the provided values, the bound value becomes true, otherwise false.
+	 *
+	 * @param values A list of values to compare the bound value to
+	 * @returns A new binding, typed as a boolean
+	 *
+	 * @see {@link Binding.matches matches()}
+	 */
+	matchesNone(...values: any[]): Binding<boolean> {
+		return this._filter((value) => !values.some((a) => a === value));
 	}
 
 	/**
@@ -653,6 +667,15 @@ export function $either(...sources: Array<string | Binding>) {
 		result = result.or(sources.shift()!);
 	}
 	return result;
+}
+
+/**
+ * Creates a new {@link Binding} object, for a binding that is true if none of the specified bindings are true
+ * - This function repeatedly calls {@link Binding.or} for each source and returns the negated resulting binding (using {@link Binding.not}).
+ * @param sources One or more instances of {@link Binding} or source paths that will be passed to {@link $bind()}
+ */
+export function $neither(...sources: Array<string | Binding>) {
+	return $either(...sources).not();
 }
 
 /**
