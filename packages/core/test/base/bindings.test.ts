@@ -489,6 +489,7 @@ describe("Bindings with source labels", () => {
 		let p1 = Object.assign(new ObservedObject(), { a: 1 });
 		let p2 = Object.assign(new ObservedObject(), {
 			a: 2 as any,
+			b: 0 as any,
 			[property]: true,
 		});
 		(p1 as any).attach(c);
@@ -518,31 +519,6 @@ describe("Bindings with source labels", () => {
 		expect(c.a).toBe(2);
 	});
 
-	test("Custom factory, .string", () => {
-		let [c] = setup(sym);
-		const $test = Binding.createFactory(sym);
-		$test.string("a").bindTo(c, "a");
-		expect(c.a).toBe("2");
-	});
-
-	test("Custom factory, .number", () => {
-		let [c, _, p2] = setup(sym);
-		const $test = Binding.createFactory(sym);
-		$test.number("a").bindTo(c, "a");
-		expect(c.a).toBe(2);
-		p2.a = "3";
-		expect(c.a).toBe(3);
-	});
-
-	test("Custom factory, .boolean", () => {
-		let [c, _, p2] = setup(sym);
-		const $test = Binding.createFactory(sym);
-		$test.boolean("a").bindTo(c, "a");
-		expect(c.a).toBe(true);
-		p2.a = 0;
-		expect(c.a).toBe(false);
-	});
-
 	test("Custom factory, .not", () => {
 		let [c, _, p2] = setup(sym);
 		const $test = Binding.createFactory(sym);
@@ -552,13 +528,15 @@ describe("Bindings with source labels", () => {
 		expect(c.a).toBe(true);
 	});
 
-	test("Custom factory, .list", () => {
+	test("Custom factory, .not, .or", () => {
 		let [c, _, p2] = setup(sym);
 		const $test = Binding.createFactory(sym);
-		$test.list("a").bindTo(c, "a");
-		expect(c.a).toBeUndefined();
-		p2.a = [1, 2, 3];
-		expect(c.a).toEqual([1, 2, 3]);
+		$test.not("a").or("b").bindTo(c, "a");
+		expect(c.a).toBe(0);
+		p2.b = 1;
+		expect(c.a).toBe(1);
+		p2.a = 0;
+		expect(c.a).toBe(true);
 	});
 });
 

@@ -570,31 +570,19 @@ export namespace Binding {
 		readonly prefix?: ReadonlyArray<string>;
 	};
 
-	/** A binding factory that creates {@link Binding} objects for a particular source */
+	/** A binding factory function that creates {@link Binding} objects, along with a `.not()` version for negated bindings */
 	export type Factory<TKey extends string> = {
 		(source: TKey, defaultValue?: any): Binding;
 
-		/** Creates a new {@link Binding} object with type `string` */
-		string(source: TKey, defaultValue?: string): Binding<string>;
-
-		/** Creates a new {@link Binding} object with type `number` */
-		number(source: TKey, defaultValue?: number): Binding<number>;
-
-		/** Creates a new {@link Binding} object with type `boolean` */
-		boolean(source: TKey): Binding<boolean>;
-
 		/** Creates a new {@link Binding} object, negating the bound value */
 		not(source: TKey): Binding<boolean>;
-
-		/** Creates a new {@link Binding} object, ensuring that the bound value is an iterable list */
-		list<T = any>(source: TKey): Binding<Iterable<T>>;
 	};
 
 	/**
-	 * Creates an object with methods that can be used to create bindings for a specific source
-	 * - This function is used to create e.g. {@link $activity}, {@link $view}, and {@link $viewport}.
-	 * - You can use this function to create your own binding factory objects, by referencing a specific property of a class (i.e. the binding source label) and/or a property name that should be used as a prefix for all bindings.
-	 * @param sourceLabel The source label property that's used to filter candidate objects
+	 * Creates a {@link Binding} factory function, along with `.not()` version
+	 * - This function is used to create e.g. {@link $activity}, {@link $view}, and {@link $viewport} functions.
+	 * - You can use this function to create your own binding factory functions, by referencing a specific property of a class (i.e. the binding source label, usually a symbol) and/or a property name that should be used as a prefix for all bindings.
+	 * @param sourceLabel The source 'label' property that's used to filter candidate objects
 	 * @param propertyName An optional property name that's used as a prefix for all bindings, must be a property of the source object
 	 */
 	export function createFactory<TKey extends string>(
@@ -609,13 +597,9 @@ export namespace Binding {
 				prefix: properties,
 			});
 		} as any;
-		factory.string = (source: TKey, defaultValue?: string) =>
-			factory(source, defaultValue).asString();
-		factory.number = (source: TKey, defaultValue?: number) =>
-			factory(source, defaultValue).asNumber();
-		factory.boolean = (source: TKey) => factory(source).asBoolean();
-		factory.not = (source: TKey) => factory(source).not();
-		factory.list = (source: TKey) => factory(source).asList();
+		factory.not = (source: any) => factory(source).not();
+		// NOTE: ^ this seems like it would be inefficient, but testing shows it's
+		//   the same as creating a new factory with a 'negate' option ¯\_(ツ)_/¯
 		return factory;
 	}
 }

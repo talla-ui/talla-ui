@@ -69,11 +69,7 @@ test("List of labels from ObservedList, rendered", async () => {
 	let list = new ObservedList(...getObjects());
 
 	console.log("Creating instance");
-	let myList = ui.list(
-		{ items: list },
-		ui.label($list.string("item.name")),
-		ui.row(),
-	);
+	let myList = ui.list({ items: list }, ui.label($list("item.name")), ui.row());
 	let instance = myList.create();
 
 	console.log("Rendering");
@@ -115,11 +111,7 @@ test("List of labels, rendered, then updated", async () => {
 	let list = new ObservedList(a, b, c);
 
 	console.log("Creating instance");
-	let myList = ui.list(
-		{ items: list },
-		ui.label($list.string("item.name")),
-		ui.row(),
-	);
+	let myList = ui.list({ items: list }, ui.label($list("item.name")), ui.row());
 	let instance = myList.create();
 
 	console.log("Rendering");
@@ -141,7 +133,7 @@ test("Event propagation through list", async () => {
 		.row(
 			ui.list(
 				{ items: new ObservedList(...getObjects()) },
-				ui.label($list.string("item.name"), { onClick: "Foo" }),
+				ui.label($list("item.name"), { onClick: "Foo" }),
 				ui.row(),
 			),
 		)
@@ -181,7 +173,7 @@ test("Bookend", async () => {
 	console.log("Creating instance");
 	let myList = ui.list(
 		{ items: new ObservedList(...getObjects()) },
-		ui.label($list.string("item.name")),
+		ui.label($list("item.name")),
 		ui.row(),
 		ui.label("end"),
 	);
@@ -202,7 +194,7 @@ test("Pagination", async () => {
 	console.log("Creating instance");
 	let myList = ui.list(
 		{ items: new ObservedList(...getObjects()), maxItems: 2 },
-		ui.label($list.string("item.name")),
+		ui.label($list("item.name")),
 		ui.row(),
 	);
 	let instance = myList.create();
@@ -237,7 +229,7 @@ test("Pagination", async () => {
 test("Get indices for elements", async () => {
 	let myList = ui.list(
 		{ items: new ObservedList(...getObjects()) },
-		ui.label($list.string("item.name"), { allowFocus: true }),
+		ui.label($list("item.name"), { allowFocus: true }),
 	);
 	let list = myList.create();
 	renderTestView(list);
@@ -253,7 +245,7 @@ test("Request focus on list focuses previous item", async () => {
 		ui.button("button"),
 		ui.list(
 			{ items: new ObservedList(...getObjects()) },
-			ui.label($list.string("item.name"), { allowFocus: true }),
+			ui.label($list("item.name"), { allowFocus: true }),
 			ui.cell({ allowKeyboardFocus: true, accessibleRole: "list" }),
 		),
 	);
@@ -276,7 +268,7 @@ test("Arrow key focus, single list", async () => {
 	let myList = ui.list(
 		{ items: new ObservedList(...getObjects()) },
 		ui.label({
-			text: $list.string("item.name"),
+			text: $list("item.name"),
 			allowFocus: true,
 			onArrowDownKeyPress: "FocusNext",
 			onArrowUpKeyPress: "FocusPrevious",

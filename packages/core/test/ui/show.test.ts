@@ -57,7 +57,7 @@ test("Rendering content using bound state", async () => {
 		{ condition: false },
 		ui.cell(
 			ui.show(
-				{ state: $view.boolean("condition") },
+				{ state: $view("condition") },
 				// label should only be rendered when condition is true
 				ui.label("foo"),
 			),
@@ -140,7 +140,7 @@ test("Rendering parent as inserted view fails silently", async () => {
 test("Set inserted view using UI component, and render", async () => {
 	const CompView = UIComponent.define(
 		{ text: StringConvertible.EMPTY },
-		ui.label($view.string("text")),
+		ui.label($view("text")),
 	);
 	const vb = ui.use(CompView, { text: "foo" });
 	class MyActivity extends Activity {

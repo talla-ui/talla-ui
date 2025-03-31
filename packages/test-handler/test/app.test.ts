@@ -30,7 +30,7 @@ class CountActivity extends Activity {
 	protected override createView() {
 		return ui
 			.cell(
-				ui.textField({ value: $activity.string("count"), onInput: "SetCount" }),
+				ui.textField({ value: $activity("count"), onInput: "SetCount" }),
 				ui.button("+", { onClick: "CountUp" }),
 			)
 			.create();
