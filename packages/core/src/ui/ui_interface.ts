@@ -1,26 +1,30 @@
 import type { LazyString } from "@talla-ui/util";
 import type { RenderContext, View, ViewBuilder } from "../app/index.js";
 import type { Binding, BindingOrValue } from "../object/index.js";
-import type { UIColor } from "./UIColor.js";
-import type { UIIconResource } from "./UIIconResource.js";
-import type { UIStyle } from "./UIStyle.js";
-import type { UITheme } from "./UITheme.js";
-import type { UIAnimationView } from "./components/UIAnimationView.js";
-import type { UIConditionalView } from "./components/UIConditionalView.js";
-import type { UIListView } from "./components/UIListView.js";
-import type { UIViewRenderer } from "./components/UIViewRenderer.js";
-import type { UIAnimatedCell, UICell } from "./containers/UICell.js";
-import type { UIColumn } from "./containers/UIColumn.js";
-import type { UIContainer } from "./containers/UIContainer.js";
-import type { UIRow } from "./containers/UIRow.js";
-import type { UIScrollContainer } from "./containers/UIScrollContainer.js";
-import type { UIButton } from "./controls/UIButton.js";
-import type { UIImage } from "./controls/UIImage.js";
-import type { UILabel } from "./controls/UILabel.js";
-import type { UISeparator } from "./controls/UISeparator.js";
-import type { UISpacer } from "./controls/UISpacer.js";
-import type { UITextField } from "./controls/UITextField.js";
-import type { UIToggle } from "./controls/UIToggle.js";
+import type { UIListView, UIShowView } from "./components/index.js";
+import type {
+	UIAnimatedCell,
+	UICell,
+	UIColumn,
+	UIContainer,
+	UIRow,
+	UIScrollContainer,
+} from "./containers/index.js";
+import type {
+	UIButton,
+	UIImage,
+	UILabel,
+	UISeparator,
+	UISpacer,
+	UITextField,
+	UIToggle,
+} from "./controls/index.js";
+import type {
+	UIColor,
+	UIIconResource,
+	UIStyle,
+	UITheme,
+} from "./style/index.js";
 
 /**
  * An object with functions for creating UI elements and other resources
@@ -57,9 +61,7 @@ export namespace ui {
 			separator: ui.PresetType<typeof UISeparator>;
 			spacer: ui.PresetType<typeof UISpacer>;
 			image: ui.PresetType<typeof UIImage>;
-			render: ui.PresetType<typeof UIViewRenderer>;
-			animate: ui.PresetType<typeof UIAnimationView>;
-			conditional: ui.PresetType<typeof UIConditionalView>;
+			show: ui.PresetType<typeof UIShowView>;
 			list: ui.PresetType<typeof UIListView>;
 		}
 	}
@@ -214,35 +216,16 @@ export interface ui {
 	image(preset: ui.PresetType<typeof UIImage>): ViewBuilder<UIImage>;
 
 	/**
-	 * Creates a {@link ViewBuilder} for a {@link UIViewRenderer} with the provided options
-	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
-	 * @returns A ViewBuilder that creates {@link UIViewRenderer} instances
-	 */
-	renderView(
-		preset: ui.PresetType<typeof UIViewRenderer>,
-	): ViewBuilder<UIViewRenderer>;
-
-	/**
-	 * Creates a {@link ViewBuilder} for a {@link UIAnimationView} with the provided options
+	 * Creates a {@link ViewBuilder} for a {@link UIShowView} with the provided options
 	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
 	 * @param content The content that will be added to the view instance
-	 * @returns A ViewBuilder that creates {@link UIAnimationView} instances
+	 * @returns A ViewBuilder that creates {@link UIShowView} instances
 	 */
-	animate(
-		preset: ui.PresetType<typeof UIAnimationView>,
-		content: ViewBuilder,
-	): ViewBuilder<UIAnimationView>;
-
-	/**
-	 * Creates a {@link ViewBuilder} for a {@link UIConditionalView} with the provided options
-	 * @param preset The properties, bindings, and event handlers that will be set on the view instance
-	 * @param content The content that will be added to the view instance
-	 * @returns A ViewBuilder that creates {@link UIConditionalView} instances
-	 */
-	conditional(
-		preset: ui.PresetType<typeof UIConditionalView>,
-		content: ViewBuilder,
-	): ViewBuilder<UIConditionalView>;
+	show(
+		preset: ui.PresetType<typeof UIShowView>,
+		content?: ViewBuilder,
+	): ViewBuilder<UIShowView>;
+	show(content?: ViewBuilder): ViewBuilder<UIShowView>;
 
 	/**
 	 * Creates a {@link ViewBuilder} for a {@link UIListView} with the provided options

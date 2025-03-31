@@ -1,4 +1,4 @@
-import { app } from "../app/index.js";
+import { app } from "../../app/index.js";
 
 // Use string constants for some common values
 const STR_BLACK = "#000";

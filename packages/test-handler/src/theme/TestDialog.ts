@@ -15,21 +15,19 @@ export class TestDialog
 {
 	constructor(public dialogView: View) {
 		super();
+		dialogView.listen({
+			unlinked: () => this.unlink(),
+		});
 	}
 
 	protected override createView() {
 		return ui
 			.cell(
-				ui.renderView({
-					view: $view("dialogView"),
-					onViewUnlinked: "DialogViewUnlinked",
+				ui.show({
+					insert: $view("dialogView"),
 				}),
 			)
 			.create();
-	}
-
-	onDialogViewUnlinked() {
-		this.unlink();
 	}
 
 	show(place?: Partial<RenderContext.PlacementOptions>) {

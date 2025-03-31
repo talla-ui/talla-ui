@@ -1,5 +1,5 @@
 import type { ViewBuilder } from "../../app/index.js";
-import { UITheme } from "../UITheme.js";
+import { UITheme } from "../style/index.js";
 import { UIContainer } from "./UIContainer.js";
 
 /**

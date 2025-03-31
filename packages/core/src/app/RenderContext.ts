@@ -186,7 +186,7 @@ export namespace RenderContext {
 	 * @description
 	 * This object encapsulates a view output element, as well as any transformations that can be applied to it. The transformation methods stack particular transformations on top of each other. Timing functions can be used to control the animation speed and curve. To build complex animations that consist of multiple transformations, use a step-wise approach by chaining a call to `step()`.
 	 *
-	 * This interface is used to control animations within a {@link RenderContext.OutputTransformer}, which can be used on its own, with {@link AppContext.animateAsync app.animateAsync}, or from a {@link UIAnimationView}.
+	 * This interface is used to control animations within a {@link RenderContext.OutputTransformer}, which can be used on its own, with {@link AppContext.animateAsync app.animateAsync}, or from a {@link UIShowView}.
 	 *
 	 * @see {@link RenderContext.OutputTransformer}
 	 * @see {@link AppContext.animateAsync}
@@ -302,7 +302,7 @@ export namespace RenderContext {
 
 	/**
 	 * A class that's used to render a view referenced by a property
-	 * - Objects of this type are created by the {@link AppContext.render app.render()} method, and are mostly used internally to keep track of rendering state asynchronously.
+	 * - Objects of this type are created by the {@link AppContext.render app.render()} method, and used internally (e.g. by {@link UIShowView}) to keep track of rendering state asynchronously.
 	 *
 	 * @docgen {hideconstructor}
 	 */
@@ -346,13 +346,13 @@ export namespace RenderContext {
 			else if (!callback) callback = this.callback;
 
 			// render content if possible, and clear when unlinked
-			if (view && callback) {
+			if (callback) {
 				if (!this._ownCallback || isNewCallback) {
 					this._ownCallback = this._wrap(callback, place);
 				}
 				this.lastView = view;
-				this._listener = new ViewListener(this, view);
-				view.render(this._ownCallback);
+				this._listener = view && new ViewListener(this, view);
+				view?.render(this._ownCallback);
 			}
 			return this;
 		}
@@ -360,7 +360,9 @@ export namespace RenderContext {
 		/** Removes previously rendered output, asynchronously */
 		removeAsync() {
 			let out = this.lastRenderOutput;
+			if (!out) return;
 			let seq = this._seq;
+			this.lastRenderOutput = undefined;
 			return safeCall(async () => {
 				if (!this.callback) return;
 				let animation = out?.place?.transform?.hide;
@@ -397,9 +399,9 @@ export namespace RenderContext {
 				this._listener?.stop();
 				this._listener = undefined;
 				this._ownCallback = undefined;
-				this._seq++;
 				this.lastRenderOutput = undefined;
 				this.lastView = undefined;
+				if (this._seq) this._seq++;
 			});
 		}
 

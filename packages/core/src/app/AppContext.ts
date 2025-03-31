@@ -6,7 +6,7 @@ import {
 } from "@talla-ui/util";
 import { ObservedObject } from "../object/index.js";
 import { ERROR, err, safeCall, setErrorHandler } from "../errors.js";
-import type { UITheme } from "../ui/UITheme.js";
+import type { UITheme } from "../ui/style/UITheme.js";
 import { Activity } from "./Activity.js";
 import { ActivityList } from "./ActivityList.js";
 import { $_app_bind_label } from "./app_binding.js";

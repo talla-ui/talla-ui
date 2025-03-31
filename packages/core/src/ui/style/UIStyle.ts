@@ -1,4 +1,4 @@
-import { app } from "../app/index.js";
+import { app } from "../../app/index.js";
 
 /** Next 'random' ID assigned if style definition doesn't specify one */
 let _nextStyleId = 0x1234;

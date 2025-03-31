@@ -2,12 +2,11 @@ import { RenderContext, View, ViewBuilder, app } from "../app/index.js";
 import { invalidArgErr } from "../errors.js";
 import {
 	UIAnimatedCell,
-	UIAnimationView,
 	UIButton,
 	UICell,
 	UIColor,
 	UIColumn,
-	UIConditionalView,
+	UIShowView,
 	UIIconResource,
 	UIImage,
 	UILabel,
@@ -19,7 +18,6 @@ import {
 	UIStyle,
 	UITextField,
 	UIToggle,
-	UIViewRenderer,
 	ui,
 } from "./index.js";
 import { jsx } from "./jsx.js";
@@ -91,9 +89,7 @@ _ui.spacer = makeNonPresetViewBuilderFunction(UISpacer, (width, height) => ({
 	height,
 }));
 
-_ui.renderView = makeAnyViewBuilderFunction(UIViewRenderer, 0);
-_ui.animate = makeAnyViewBuilderFunction(UIAnimationView, 1);
-_ui.conditional = makeAnyViewBuilderFunction(UIConditionalView, 1);
+_ui.show = makeAnyViewBuilderFunction(UIShowView, 1);
 _ui.list = makeAnyViewBuilderFunction(UIListView, 3);
 
 _ui.use = function (type: any, ...args: any[]) {

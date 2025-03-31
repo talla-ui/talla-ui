@@ -1,7 +1,6 @@
 import type { RenderContext, ViewBuilder } from "../../app/index.js";
-import type { UIColor } from "../UIColor.js";
+import type { UIColor, UIStyle } from "../style/index.js";
 import type { UIRenderable } from "../UIRenderable.js";
-import type { UIStyle } from "../UIStyle.js";
 import { UIContainer } from "./UIContainer.js";
 
 /**

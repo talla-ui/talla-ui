@@ -109,10 +109,10 @@ test("element with content", () => {
 
 test("Too many arguments", () => {
 	expect(() => (
-		<conditional>
+		<show>
 			<label>foo</label>
 			<label>bar</label>
-		</conditional>
+		</show>
 	)).toThrow(/content/);
 });
 

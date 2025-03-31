@@ -1,8 +1,8 @@
 import type { StringConvertible } from "@talla-ui/util";
 import { app, RenderContext, View } from "../app/index.js";
-import { BindingOrValue, ObservedEvent } from "../object/index.js";
 import { err, ERROR } from "../errors.js";
-import type { UIColor } from "./UIColor.js";
+import { BindingOrValue, ObservedEvent } from "../object/index.js";
+import type { UIColor } from "./style/index.js";
 
 /** Empty array, used for findViewContent */
 const _viewContent: any[] = Object.freeze([]) as any;
@@ -113,8 +113,8 @@ export abstract class UIRenderable extends View {
 	/**
 	 * True if the component should be hidden from view
 	 * - UI elements may still be rendered even if they're hidden. However, container component isn't rendered while containers themselves are hidden.
-	 * - Alternatively, use {@link UIConditionalView} to show and hide content dynamically.
-	 * @see UIConditionalView
+	 * - Alternatively, use {@link UIShowView} to show and hide content dynamically.
+	 * @see UIShowView
 	 */
 	hidden = false;
 

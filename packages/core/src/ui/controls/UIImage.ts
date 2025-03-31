@@ -1,9 +1,7 @@
 import type { StringConvertible } from "@talla-ui/util";
 import type { ViewBuilder } from "../../app/index.js";
-import { UIColor } from "../UIColor.js";
-import { UIIconResource } from "../UIIconResource.js";
+import { UIColor, UIIconResource, UIStyle } from "../style/index.js";
 import { UIRenderable } from "../UIRenderable.js";
-import type { UIStyle } from "../UIStyle.js";
 
 /**
  * A view class that represents an image or icon control

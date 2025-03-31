@@ -11,71 +11,133 @@ import {
 	$view,
 	Activity,
 	app,
+	ObservedObject,
 	ui,
+	UICell,
 	UIComponent,
 	UILabel,
+	UIShowView,
 	UITextField,
-	UIViewRenderer,
 } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
 });
 
-test("Constructor", () => {
-	let viewRenderer = new UIViewRenderer();
-	expect(viewRenderer).toHaveProperty("view", undefined);
+test("Set state directly", () => {
+	let myShow = ui.show({}, ui.cell());
+	let show = myShow.create();
+	expect(show.body).toBeInstanceOf(UICell);
+	expect(ObservedObject.whence(show.body)).toBe(show);
+	show.state = false;
+	expect(show.body).toBeUndefined();
 });
 
-test("Set simple view and render", async () => {
+test("Body view events are propagated", async () => {
+	let myCell = ui.cell(
+		ui.show(ui.button("Click me", { onClick: "ButtonClick" })),
+	);
+
+	// create instance and listen for events on cell
+	let count = 0;
+	let cell = myCell.create();
+	cell.listen((e) => {
+		if (e.name === "ButtonClick") count++;
+	});
+	renderTestView(cell);
+	let expectButton = await expectOutputAsync({ type: "button" });
+
+	console.log("Clicking button");
+	expectButton.getSingle().click();
+	expect(count).toBe(1);
+});
+
+test("Rendering content using bound state", async () => {
+	const MyUIComponent = UIComponent.define(
+		{ condition: false },
+		ui.cell(
+			ui.show(
+				{ state: $view.boolean("condition") },
+				// label should only be rendered when condition is true
+				ui.label("foo"),
+			),
+		),
+	);
+	const myUIComponent = ui.use(MyUIComponent, { condition: false });
+
+	console.log("Creating view");
+	useTestContext();
+	let myView = myUIComponent.create();
+
+	console.log("Rendering view");
+	renderTestView(myView);
+
+	// after rendering, there should be a cell but no label
+	console.log("Checking for cell but no label");
+	let expectCell = await expectOutputAsync({ type: "cell" });
+	expectCell.containing({ text: "foo" }).toBeEmpty();
+
+	// when condition becomes true, label should be rendered
+	console.log("Setting state to true");
+	myView.condition = true;
+	await expectOutputAsync({ text: "foo" });
+
+	// when condition becomes false, label should be removed
+	console.log("Setting state to false");
+	myView.condition = false;
+	expectCell = await expectOutputAsync({ type: "cell" });
+	expectCell.containing({ text: "foo" }).toBeEmpty();
+});
+
+test("Set inserted view and render", async () => {
 	let myCell = ui.cell(ui.label("foo"));
-	let viewRenderer = new UIViewRenderer();
-	viewRenderer.view = myCell.create();
+	let viewRenderer = new UIShowView();
+	viewRenderer.insert = myCell.create();
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ text: "foo" });
 	expect(viewRenderer.findViewContent(UILabel)).toHaveLength(1);
 });
 
-test("Change view after rendering", async () => {
+test("Change inserted view after rendering", async () => {
 	let myCell1 = ui.cell(ui.label("foo"));
 	let myCell2 = ui.cell(ui.label("bar"));
-	let viewRenderer = new UIViewRenderer();
-	viewRenderer.view = myCell1.create();
+	let viewRenderer = new UIShowView();
+	viewRenderer.insert = myCell1.create();
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ text: "foo" });
-	viewRenderer.view = myCell2.create();
+	viewRenderer.insert = myCell2.create();
 	await expectOutputAsync({ text: "bar" });
 });
 
-test("Unlink view after rendering", async () => {
+test("Unlink inserted view after rendering", async () => {
 	let myCell = ui.cell(ui.label("foo"));
-	let viewRenderer = new UIViewRenderer();
-	viewRenderer.view = myCell.create();
+	let viewRenderer = new UIShowView();
+	viewRenderer.insert = myCell.create();
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ text: "foo" });
-	viewRenderer.view!.unlink();
+	viewRenderer.insert!.unlink();
 	await new Promise((resolve) => setTimeout(resolve, 20));
 	expect((app.renderer as TestRenderer).hasOutput()).toBeFalsy();
 });
 
-test("Rendering self fails silently", async () => {
-	let viewRenderer = new UIViewRenderer();
-	viewRenderer.view = viewRenderer;
+test("Rendering self as inserted view fails silently", async () => {
+	let viewRenderer = new UIShowView();
+	viewRenderer.insert = viewRenderer;
 	renderTestView(viewRenderer);
 	await new Promise((resolve) => setTimeout(resolve, 20));
 	expect((app.renderer as TestRenderer).hasOutput()).toBeFalsy();
 });
 
-test("Rendering parent fails silently", async () => {
+test("Rendering parent as inserted view fails silently", async () => {
 	let parent = ui.cell(ui.label("foo")).create();
-	let viewRenderer = new UIViewRenderer();
+	let viewRenderer = new UIShowView();
 	parent.content.add(viewRenderer);
-	viewRenderer.view = parent;
+	viewRenderer.insert = parent;
 	renderTestView(parent);
 	await expectOutputAsync({ text: "foo" }); // label rendered, no errors
 });
 
-test("Set view using UI component, and render", async () => {
+test("Set inserted view using UI component, and render", async () => {
 	const CompView = UIComponent.define(
 		{ text: StringConvertible.EMPTY },
 		ui.label($view.string("text")),
@@ -83,7 +145,7 @@ test("Set view using UI component, and render", async () => {
 	const vb = ui.use(CompView, { text: "foo" });
 	class MyActivity extends Activity {
 		protected override createView() {
-			return ui.renderView({ view: $bind("vc") }).create();
+			return ui.show({ insert: $bind("vc") }).create();
 		}
 		vc = this.attach(vb.create());
 	}
@@ -91,16 +153,16 @@ test("Set view using UI component, and render", async () => {
 	await expectOutputAsync({ text: "foo" });
 });
 
-test("Set view and focus", async () => {
-	let viewRenderer = new UIViewRenderer();
-	viewRenderer.view = new UITextField();
+test("Set inserted view and focus", async () => {
+	let viewRenderer = new UIShowView();
+	viewRenderer.insert = new UITextField();
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ type: "textfield", focused: false });
-	viewRenderer.requestFocus();
+	viewRenderer.insert!.requestFocus();
 	await expectOutputAsync({ type: "textfield", focused: true });
 });
 
-test("Use activity view and render", async () => {
+test("Use activity view as inserted view and render", async () => {
 	let countSecond = 0;
 	let countOuter = 0;
 
@@ -121,9 +183,9 @@ test("Use activity view and render", async () => {
 			return ui
 				.cell(
 					{ accessibleLabel: "outer" },
-					ui.renderView({
-						view: $bind("second.view"),
-						propagateEvents: true,
+					ui.show({
+						insert: $bind("second.view"),
+						propagateInsertedEvents: true,
 					}),
 				)
 				.create();

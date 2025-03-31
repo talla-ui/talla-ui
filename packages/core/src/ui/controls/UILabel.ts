@@ -1,9 +1,7 @@
 import type { StringConvertible } from "@talla-ui/util";
 import type { ViewBuilder } from "../../app/index.js";
-import type { UIColor } from "../UIColor.js";
+import type { UIColor, UIIconResource, UIStyle } from "../style/index.js";
 import { UIRenderable } from "../UIRenderable.js";
-import { UIIconResource } from "../UIIconResource.js";
-import type { UIStyle } from "../UIStyle.js";
 
 /**
  * A view class that represents a label control

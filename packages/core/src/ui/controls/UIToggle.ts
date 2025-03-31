@@ -1,7 +1,7 @@
 import type { StringConvertible } from "@talla-ui/util";
 import { type ViewBuilder, FormContext } from "../../app/index.js";
+import type { UIStyle } from "../style/index.js";
 import { UIRenderable } from "../UIRenderable.js";
-import type { UIStyle } from "../UIStyle.js";
 
 /**
  * A view control that represents a checkbox or toggle input

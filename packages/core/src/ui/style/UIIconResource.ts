@@ -1,4 +1,4 @@
-import { app } from "../app/index.js";
+import { app } from "../../app/index.js";
 
 // NOTE: this class is pretty basic right now, some features could be added
 // especially for SVG icons, e.g. rotation, combination, etc.

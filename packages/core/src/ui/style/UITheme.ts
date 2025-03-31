@@ -4,10 +4,10 @@ import {
 	View,
 	app,
 	type RenderContext,
-} from "../app/index.js";
+} from "../../app/index.js";
 import type { UIColor } from "./UIColor.js";
 import type { UIIconResource } from "./UIIconResource.js";
-import { UIStyle } from "./UIStyle.js";
+import type { UIStyle } from "./UIStyle.js";
 
 /** Default row spacing and separator margin for new themes */
 const BASE_SPACING = 8;
@@ -82,7 +82,7 @@ export class UITheme {
 	 * A map that defines a set of predefined output transform animations
 	 *
 	 * @description
-	 * The animations defined by this map can be used with the {@link AppContext.animateAsync} method, as well as {@link UIAnimationView} and the animations set on the {@link RenderContext.PlacementOptions} object. Default animations are also available as static properties of `ui.animation()`, e.g. `ui.animation.FADE_IN`.
+	 * The animations defined by this map can be used with the {@link AppContext.animateAsync} method, as well as {@link UIShowView} and the animations set on the {@link RenderContext.PlacementOptions} object. Default animations are also available as static properties of `ui.animation()`, e.g. `ui.animation.FADE_IN`.
 	 */
 	animations = new Map<string, RenderContext.OutputTransformer>();
 

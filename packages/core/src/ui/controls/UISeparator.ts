@@ -1,7 +1,6 @@
 import type { ViewBuilder } from "../../app/index.js";
-import { UIColor } from "../UIColor.js";
+import { UIColor, UITheme } from "../style/index.js";
 import { UIRenderable } from "../UIRenderable.js";
-import { UITheme } from "../UITheme.js";
 
 const SEPARATOR_COLOR = new UIColor("Separator");
 

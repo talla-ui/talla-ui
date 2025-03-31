@@ -1,7 +1,7 @@
-import { ObservedList } from "../../object/index.js";
 import { View, type ViewBuilder } from "../../app/index.js";
+import { ObservedList } from "../../object/index.js";
+import type { UIColor } from "../style/index.js";
 import { UIRenderable } from "../UIRenderable.js";
-import type { UIColor } from "../UIColor.js";
 
 /**
  * A base view class that represents a container element with no specific layout or styling

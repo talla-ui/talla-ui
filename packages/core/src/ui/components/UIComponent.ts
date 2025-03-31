@@ -27,7 +27,7 @@ export const $view = Binding.createFactory($_bind_label);
  *
  * UI components are primarily used in two different ways:
  *
- * - As a way to _control_ an encapsulated view. Refer to e.g. {@link UIConditionalView} and {@link UIListView}, which are built-in UIComponent classes.
+ * - As a way to _control_ an encapsulated view, e.g. to set properties dynamically, or to handle events.
  * - As a way to create reusable view structures. Refer to the static {@link define()} method which can be used to create a UIComponent class using a function and/or a class.
  */
 export class UIComponent extends View {

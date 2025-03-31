@@ -42,6 +42,9 @@ export class Dialog extends UIComponent implements UITheme.DialogController {
 
 	constructor(public dialogView: View) {
 		super();
+		dialogView.listen({
+			unlinked: () => this.unlink(),
+		});
 	}
 
 	protected override createView() {
@@ -52,16 +55,11 @@ export class Dialog extends UIComponent implements UITheme.DialogController {
 					effect: Dialog.styles.effect,
 					style: Dialog.styles.containerStyle,
 				},
-				ui.renderView({
-					view: $view("dialogView"),
-					onViewUnlinked: "DialogViewUnlinked",
+				ui.show({
+					insert: $view("dialogView"),
 				}),
 			)
 			.create();
-	}
-
-	onDialogViewUnlinked() {
-		this.unlink();
 	}
 
 	onEscapeKeyPress(e: ViewEvent) {
