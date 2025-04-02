@@ -21,7 +21,6 @@ export class UISpacerRenderer extends TestBaseObserver<UISpacer> {
 	override updateStyle(element: TestOutputElement) {
 		let spacer = this.observed;
 		let { width, height, minWidth, minHeight } = spacer;
-		let hasMinimum = minWidth !== undefined || minHeight !== undefined;
 		let hasFixed = width !== undefined || height !== undefined;
 		applyElementStyle(element, [
 			{
@@ -30,7 +29,6 @@ export class UISpacerRenderer extends TestBaseObserver<UISpacer> {
 				minWidth,
 				minHeight,
 				grow: spacer.grow ?? (hasFixed ? 0 : 1),
-				shrink: hasMinimum ? 0 : 1,
 			},
 			spacer.position,
 		]);

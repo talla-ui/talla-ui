@@ -21,7 +21,6 @@ export class UISpacerRenderer extends BaseObserver<UISpacer> {
 		let spacer = this.observed;
 		// set CSS styles
 		let { width, height, minWidth, minHeight } = spacer;
-		let hasMinimum = minWidth !== undefined || minHeight !== undefined;
 		let hasFixed = width !== undefined || height !== undefined;
 		applyStyles(
 			element,
@@ -32,7 +31,6 @@ export class UISpacerRenderer extends BaseObserver<UISpacer> {
 					minWidth,
 					minHeight,
 					grow: spacer.grow ?? (hasFixed ? 0 : 1),
-					shrink: hasMinimum ? 0 : 1,
 				},
 			],
 			undefined,
