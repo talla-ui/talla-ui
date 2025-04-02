@@ -266,6 +266,7 @@ export class ContentUpdater {
 				sep.style.height = size;
 			}
 		}
+		if (sep) sep.dataset.isSeparator = "true";
 		this._sepTemplate = sep;
 
 		// update all separators now
@@ -429,6 +430,10 @@ export class ContentUpdater {
 						this.element.removeChild(sep);
 					}
 					if (lastElt && lastElt.parentNode === this.element) {
+						let nextSep = !lastElt.previousSibling && lastElt.nextSibling;
+						if (nextSep && (nextSep as HTMLElement).dataset.isSeparator) {
+							this.element.removeChild(nextSep);
+						}
 						this.element.removeChild(lastElt);
 					}
 					scheduleAfter && scheduleAfter();
