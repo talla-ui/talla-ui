@@ -31,7 +31,7 @@ export class WebHashNavigationContext extends NavigationContext {
 			insert.push(base + initial[0]);
 		}
 		if (insert.length) {
-			insert.push(base + initial.join("/"));
+			insert.push(base + initial.join("/").replace(/\/$/, ""));
 		}
 		insert.forEach((href, i) =>
 			i ? history.pushState({}, "", href) : history.replaceState({}, "", href),
