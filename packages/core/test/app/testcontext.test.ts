@@ -139,6 +139,30 @@ describe("Navigation paths", () => {
 			nav.navigateAsync(undefined, { back: true }),
 		).rejects.toThrowError(/exit/);
 	});
+
+	test("Navigation history: replace 'page'", async () => {
+		let app = useTestContext();
+		let nav = app.navigation;
+		let R = { replace: "page" } as const;
+		await nav.navigateAsync(new NavigationTarget("foo"), R);
+		expect(nav.getHistory()).toEqual(["", "foo"]);
+		await nav.navigateAsync(new NavigationTarget("bar"), R);
+		expect(nav.getHistory()).toEqual(["", "bar"]);
+	});
+
+	test("Navigation history: replace 'detail'", async () => {
+		let app = useTestContext();
+		let nav = app.navigation;
+		let R = { replace: "detail" } as const;
+		await nav.navigateAsync(new NavigationTarget("foo"), R);
+		expect(nav.getHistory()).toEqual(["", "foo"]);
+		await nav.navigateAsync(new NavigationTarget("bar"), R);
+		expect(nav.getHistory()).toEqual(["", "foo", "bar"]);
+		await nav.navigateAsync(new NavigationTarget("bar", "1"), R);
+		expect(nav.getHistory()).toEqual(["", "foo", "bar", "bar/1"]);
+		await nav.navigateAsync(new NavigationTarget("bar", "2"), R);
+		expect(nav.getHistory()).toEqual(["", "foo", "bar", "bar/2"]);
+	});
 });
 
 describe("Rendering views", () => {

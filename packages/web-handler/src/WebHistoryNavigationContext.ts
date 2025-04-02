@@ -83,15 +83,23 @@ export class WebHistoryNavigationContext extends NavigationContext {
 		// navigate to target path (if any, and not the current path)
 		let href = this.getPathHref(target);
 		if (!href || href === window.location.pathname) return;
-		if (mode?.replace) {
+		let replaceMode = mode?.replace === true;
+		if (mode) {
+			let currentPath = this._getPath();
+			if (mode.replace === "page") {
+				replaceMode = !!currentPath[0];
+			} else if (mode.replace === "detail") {
+				replaceMode = currentPath[0] === target.pageId && !!currentPath[1];
+			}
+		}
+		if (replaceMode) {
 			// replace path if requested
 			window.history.replaceState({}, document.title, href);
-			this.update();
 		} else {
 			// push path on history stack
 			window.history.pushState({}, document.title, href);
-			this.update();
 		}
+		this.update();
 	}
 
 	/**

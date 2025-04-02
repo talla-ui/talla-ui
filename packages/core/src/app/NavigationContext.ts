@@ -144,10 +144,12 @@ export namespace NavigationContext {
 	 * Type definition for an object supported by {@link AppContext.navigate app.navigate()} and {@link NavigationContext.navigateAsync()} that indicates how a new location should be applied
 	 * - Set the `back` property to `true` to navigate back in history **before** navigating to the new path.
 	 * - Set the `replace` property to `true` to **replace** the current path if possible; afterwards, going back in history won't result in the current navigation path, but the one before it.
+	 * - Set the `replace` property to `"page"` to replace the current path only if the current page ID is not blank (i.e. any page other than `/`, the root page).
+	 * - Set the `replace` property to `"detail"` to replace the current path only if the current path references the same page ID with a different non-empty detail part (i.e. only replace the detail part of the path if any, otherwise use 'push' mode).
 	 * - Set both properties to `true` to navigate back first, and then replace the (previous) navigation path.
 	 */
 	export type NavigationMode = {
 		back?: boolean;
-		replace?: boolean;
+		replace?: boolean | "page" | "detail";
 	};
 }

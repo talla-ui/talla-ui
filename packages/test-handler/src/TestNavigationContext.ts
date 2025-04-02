@@ -62,7 +62,16 @@ export class TestNavigationContext extends NavigationContext {
 
 		// update history after a delay, then finally set path
 		if (this._delay) await this._simulateDelay();
-		if (mode && mode.replace && this._history.length) {
+		let replaceMode = mode?.replace === true;
+		if (mode && this._history.length) {
+			let currentPath = this._history[this._history.length - 1]!;
+			if (mode.replace === "page") {
+				replaceMode = !!currentPath.pageId;
+			} else if (mode.replace === "detail") {
+				replaceMode = currentPath.pageId === pageId && !!currentPath.detail;
+			}
+		}
+		if (replaceMode) {
 			this._history[this._history.length - 1] = { pageId, detail };
 		} else {
 			this._history.push({ pageId, detail });
