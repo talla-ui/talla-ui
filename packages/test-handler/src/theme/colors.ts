@@ -21,7 +21,7 @@ export const colors: [name: string, color: UIColor][] = [
 	["Violet", new UIColor("#8844ee")],
 	["Purple", new UIColor("#aa4488")],
 	["Magenta", new UIColor("#dd2299")],
-	["Separator", new UIColor("Text").alpha(0.1)],
+	["Separator", new UIColor("Background").text().alpha(0.25)],
 	["Background", new UIColor("White")],
 	["Text", new UIColor("Background").text()],
 	["Danger", new UIColor("Red")],
