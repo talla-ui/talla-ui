@@ -1,6 +1,6 @@
 {
 	"name": "@talla-ui/util",
-	"version": "4.0.0-dev.82",
+	"version": "4.0.0-dev.83",
 	"publishConfig": {
 		"tag": "next",
 		"access": "public"
