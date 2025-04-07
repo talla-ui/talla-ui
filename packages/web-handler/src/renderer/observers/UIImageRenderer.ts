@@ -109,6 +109,7 @@ export class UIImageRenderer extends BaseObserver<UIImage> {
 					height: image.height,
 					minHeight: image.height,
 					grow: image.grow,
+					shrink: image.icon ? 0 : undefined,
 				},
 			],
 			undefined,
