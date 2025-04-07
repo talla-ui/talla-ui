@@ -34,7 +34,7 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 	 * - The default style only includes padding. A `DragModal` effect is applied to the container to use the cell as a grab handle for the entire dialog.
 	 */
 	messageCellStyle: UICell.StyleValue = ui.style.CELL.extend({
-		padding: 16,
+		padding: { top: 32, bottom: 24, x: 16 },
 	});
 
 	/**
