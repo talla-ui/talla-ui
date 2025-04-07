@@ -22,7 +22,6 @@ const CloseButtonStyle = ui.style.BUTTON_ICON.extend(
 	},
 	{
 		[UIStyle.STATE_HOVERED]: true,
-		[UIStyle.STATE_DISABLED]: false,
 		background: ui.color.CLEAR,
 		textColor: ui.color("inherit"),
 	},

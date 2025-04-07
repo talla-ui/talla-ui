@@ -52,11 +52,23 @@ export function applyElementStyle(element: TestOutputElement, styles: any[]) {
 					if (overrides[p] !== undefined) result[p] = overrides[p];
 				}
 			} else {
-				if (UIStyle.STATE_DISABLED in style && !element.disabled) continue;
-				if (UIStyle.STATE_FOCUSED in style && !element.hasFocus()) continue;
-				if (UIStyle.STATE_PRESSED in style && !element.pressed) continue;
-				if (UIStyle.STATE_READONLY in style && !element.readOnly) continue;
-				if (UIStyle.STATE_HOVERED in style) continue;
+				// ignore hover state in test handler
+				if (style[UIStyle.STATE_HOVERED]) continue;
+
+				// check other matching states
+				if (
+					(UIStyle.STATE_DISABLED in style &&
+						style[UIStyle.STATE_DISABLED] !== !!element.disabled) ||
+					(UIStyle.STATE_FOCUSED in style &&
+						style[UIStyle.STATE_FOCUSED] !== element.hasFocus()) ||
+					(UIStyle.STATE_PRESSED in style &&
+						style[UIStyle.STATE_PRESSED] !== !!element.pressed) ||
+					(UIStyle.STATE_READONLY in style &&
+						style[UIStyle.STATE_READONLY] !== !!element.readOnly)
+				)
+					continue;
+
+				// apply all styles to result
 				result ||= {};
 				for (let p in style) {
 					if (style[p] !== undefined) result[p] = style[p];

@@ -59,16 +59,6 @@ const disabledStyle: CombinedStyleType = {
 	css: { cursor: "default" },
 };
 
-const hoveredNotDisabled: CombinedStyleType = {
-	[UIStyle.STATE_HOVERED]: true,
-	[UIStyle.STATE_DISABLED]: false,
-};
-
-const pressedNotDisabled: CombinedStyleType = {
-	[UIStyle.STATE_PRESSED]: true,
-	[UIStyle.STATE_DISABLED]: false,
-};
-
 function makeButtonStyle(
 	styles: CombinedStyleType | undefined,
 	bg: UIColor,
@@ -84,12 +74,12 @@ function makeButtonStyle(
 			...styles,
 		},
 		{
-			...hoveredNotDisabled,
+			[UIStyle.STATE_HOVERED]: true,
 			background: baseBg ? bg : bg.contrast(-0.05),
 			textColor: fg,
 		},
 		{
-			...pressedNotDisabled,
+			[UIStyle.STATE_PRESSED]: true,
 			background: bg.contrast(-0.1),
 			textColor: fg,
 		},
@@ -308,7 +298,7 @@ export const styles: [
 				css: { cursor: "text" },
 			},
 			{
-				...hoveredNotDisabled,
+				[UIStyle.STATE_HOVERED]: true,
 				[UIStyle.STATE_READONLY]: false,
 				borderColor: _color_text.alpha(0.3),
 			},
@@ -331,7 +321,7 @@ export const styles: [
 				css: { cursor: "pointer" },
 			},
 			{
-				...hoveredNotDisabled,
+				[UIStyle.STATE_HOVERED]: true,
 				borderColor: _color_text.alpha(0.3),
 			},
 			disabledStyle,

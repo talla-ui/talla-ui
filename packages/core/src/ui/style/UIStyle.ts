@@ -133,7 +133,7 @@ export class UIStyle<TDefinition> {
 }
 
 export namespace UIStyle {
-	/** A property that is used on {@link StyleStateOptions} to apply styles to hovered elements */
+	/** A property that is used on {@link StyleStateOptions} to apply styles to hovered elements (and not disabled, pressed, or focused) */
 	export const STATE_HOVERED = Symbol("hovered");
 
 	/** A property that is used on {@link StyleStateOptions} to apply styles to pressed elements */
@@ -142,11 +142,11 @@ export namespace UIStyle {
 	/** A property that is used on {@link StyleStateOptions} to apply styles to focused elements */
 	export const STATE_FOCUSED = Symbol("focused");
 
-	/** A property that is used on {@link StyleStateOptions} to apply styles to disabled elements */
-	export const STATE_DISABLED = Symbol("disabled");
-
 	/** A property that is used on {@link StyleStateOptions} to apply styles to readonly elements */
 	export const STATE_READONLY = Symbol("readonly");
+
+	/** A property that is used on {@link StyleStateOptions} to apply styles to disabled elements */
+	export const STATE_DISABLED = Symbol("disabled");
 
 	/**
 	 * Type definition for an object that includes style state options
@@ -157,8 +157,8 @@ export namespace UIStyle {
 		[STATE_HOVERED]?: boolean;
 		[STATE_PRESSED]?: boolean;
 		[STATE_FOCUSED]?: boolean;
-		[STATE_DISABLED]?: boolean;
 		[STATE_READONLY]?: boolean;
+		[STATE_DISABLED]?: boolean;
 	};
 
 	/**

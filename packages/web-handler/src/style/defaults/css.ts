@@ -55,6 +55,10 @@ export function makeBaseCSS() {
 			webkitTapHighlightColor: "transparent",
 			webkitTextSizeAdjust: "100%",
 		},
+		[`.${CLASS_UI}[disabled]`]: {
+			pointerEvents: "none",
+			cursor: "default",
+		},
 		[`.${CLASS_UI}.${CLASS_CONTAINER}`]: {
 			pointerEvents: "auto",
 			position: "relative",

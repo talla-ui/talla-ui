@@ -190,24 +190,32 @@ export function defineStyleClass(style: UIStyle<any>, isTextStyle?: boolean) {
 		if (object[UIStyle.STATE_READONLY]) stateSelector += "[readonly]";
 		else if (object[UIStyle.STATE_READONLY] === false)
 			stateSelector += ":not([readonly])";
-		if (object[UIStyle.STATE_HOVERED]) stateSelector += ":hover";
-		else if (object[UIStyle.STATE_HOVERED] === false)
-			stateSelector += ":not(:hover)";
 		if (object[UIStyle.STATE_FOCUSED]) stateSelector += ":focus";
 		else if (object[UIStyle.STATE_FOCUSED] === false)
 			stateSelector += ":not(:focus)";
 
+		// hover state is only applied if not pressed or focused
+		// (unless explicitly set to true; note that disabled elements have
+		// pointer events disabled, so we don't need to check for that)
+		if (object[UIStyle.STATE_HOVERED])
+			stateSelector +=
+				(object[UIStyle.STATE_PRESSED]
+					? ""
+					: ":not(:active):not([aria-pressed])") +
+				(object[UIStyle.STATE_FOCUSED] ? "" : ":not(:focus-visible)") +
+				":hover";
+		else if (object[UIStyle.STATE_HOVERED] === false)
+			stateSelector += ":not(:hover)";
+
 		// pressed state is controlled by two selectors
-		if (object[UIStyle.STATE_PRESSED]) {
-			stateSelector =
-				stateSelector + ":active," + stateSelector + "[aria-pressed=true]";
-		} else if (object[UIStyle.STATE_PRESSED] === false) {
-			stateSelector =
-				stateSelector +
+		if (object[UIStyle.STATE_PRESSED])
+			stateSelector += ":active," + stateSelector + "[aria-pressed=true]";
+		else if (object[UIStyle.STATE_PRESSED] === false)
+			stateSelector +=
 				":not(:active):not([aria-pressed])," +
 				stateSelector +
 				"[aria-pressed=false]";
-		}
+
 		let css = combined[stateSelector] || {};
 		addDimensionsCSS(css, object);
 		addDecorationStyleCSS(css, object);
