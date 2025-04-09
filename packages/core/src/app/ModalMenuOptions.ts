@@ -10,14 +10,17 @@ export class ModalMenuOptions extends ConfigOptions {
 	 * Creates a new object with the specified options
 	 * @param items List of items to be included in the menu
 	 * @param width Target width of the menu, in pixels or CSS length with unit (optional)
+	 * @param minWidth Minimum width of the menu, in pixels or CSS length with unit (optional)
 	 */
 	constructor(
 		items: ModalMenuOptions.MenuItem[] = [],
 		width?: string | number,
+		minWidth?: string | number,
 	) {
 		super();
 		this.items = items;
 		this.width = width;
+		this.minWidth = minWidth;
 	}
 
 	/** List of items to be included in the menu */
@@ -25,6 +28,9 @@ export class ModalMenuOptions extends ConfigOptions {
 
 	/** Target width of the menu, in pixels or CSS length with unit */
 	width?: string | number;
+
+	/** Minimum width of the menu, in pixels or CSS length with unit */
+	minWidth?: string | number;
 }
 
 export namespace ModalMenuOptions {

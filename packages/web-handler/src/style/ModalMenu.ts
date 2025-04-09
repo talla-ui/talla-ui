@@ -131,9 +131,11 @@ export class ModalMenu extends UIComponent implements UITheme.MenuController {
 		let container = new UICell(column);
 		container.accessibleRole = "menu";
 		container.effect = ModalMenu.styles.effect;
-		container.style = ModalMenu.styles.containerStyle;
 		container.position = _containerPosition;
-		column.width = this.options.width || ModalMenu.styles.defaultWidth;
+		container.style = ui.style(ModalMenu.styles.containerStyle, {
+			width: this.options.width || ModalMenu.styles.defaultWidth,
+			minWidth: this.options.minWidth,
+		});
 
 		// reposition the menu after rendering
 		let shown = Date.now();
