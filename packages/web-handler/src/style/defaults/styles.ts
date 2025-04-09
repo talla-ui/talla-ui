@@ -75,7 +75,7 @@ function makeButtonStyle(
 		},
 		{
 			[UIStyle.STATE_HOVERED]: true,
-			background: baseBg ? bg : bg.contrast(-0.05),
+			background: baseBg ? bg : bg.contrast(-0.1),
 			textColor: fg,
 		},
 		{
@@ -133,7 +133,6 @@ export const styles: [
 			_color_text.alpha(0.1),
 			_color_inherit,
 			_color_clear,
-			_color_inherit,
 		),
 	],
 	[
@@ -194,7 +193,6 @@ export const styles: [
 			_color_text.alpha(0.1),
 			_color_inherit,
 			_color_clear,
-			_color_inherit,
 		),
 	],
 	[
@@ -209,8 +207,9 @@ export const styles: [
 					alignItems: "center",
 				},
 			},
+			_color_text.alpha(0.15),
+			_color_text,
 			_color_text.alpha(0.1),
-			_color_inherit,
 		),
 	],
 	[
@@ -225,8 +224,9 @@ export const styles: [
 					alignItems: "start",
 				},
 			},
+			_color_text.alpha(0.15),
+			_color_text,
 			_color_text.alpha(0.1),
-			_color_inherit,
 		),
 	],
 	[
@@ -241,8 +241,9 @@ export const styles: [
 					alignItems: "end",
 				},
 			},
+			_color_text.alpha(0.15),
+			_color_text,
 			_color_text.alpha(0.1),
-			_color_inherit,
 		),
 	],
 	["Label", [baseLabelStyle]],
