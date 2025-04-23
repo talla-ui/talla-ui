@@ -159,6 +159,7 @@ export class ObservedObject {
 	/**
 	 * Intercepts events on an observed object
 	 * @summary This method intercepts events on an observed object, calling a function when the specified event would be emitted. The function is called with the event, and a callback argument that can be used to emit an event without further interception (e.g. to emit the original event; otherwise the event is not emitted).
+	 * @note If the event is already intercepted, the new handler will be unused (i.e. only one handler is allowed for each event name).
 	 * @param object The object to intercept events on
 	 * @param eventName The name of the event to intercept
 	 * @param f A function that will be called when the event would be emitted
@@ -168,7 +169,8 @@ export class ObservedObject {
 		eventName: string,
 		f: (event: ObservedEvent, emit: (event: ObservedEvent) => void) => void,
 	) {
-		(object[$_intercept] ||= Object.create(null))[eventName] = f;
+		let intercept = (object[$_intercept] ||= Object.create(null));
+		intercept[eventName] ||= f;
 	}
 
 	/**
