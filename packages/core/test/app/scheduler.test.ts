@@ -44,6 +44,49 @@ test("Replace a named queue", () => {
 	expect(app.scheduler.getQueue(s)).toBe(q2);
 });
 
+describe("app.schedule()", () => {
+	test("should schedule and run a synchronous task", async () => {
+		let ran = false;
+		app.schedule(() => {
+			ran = true;
+		});
+		// Wait for the default queue to process the task
+		await app.scheduler.getDefault().waitAsync();
+		expect(ran).toBe(true);
+	});
+
+	test("should schedule and run an async task", async () => {
+		let ran = false;
+		app.schedule(async () => {
+			await new Promise((r) => setTimeout(r, 1));
+			ran = true;
+		});
+		await app.scheduler.getDefault().waitAsync();
+		expect(ran).toBe(true);
+	});
+
+	test("should pass the task argument", async () => {
+		let gotTask = false;
+		app.schedule((task) => {
+			if (task && typeof task.cancelled === "boolean") gotTask = true;
+		});
+		await app.scheduler.getDefault().waitAsync();
+		expect(gotTask).toBe(true);
+	});
+
+	test("should respect priority argument", async () => {
+		let order: number[] = [];
+		app.schedule(() => {
+			order.push(1);
+		}, 10);
+		app.schedule(() => {
+			order.push(2);
+		}, 1);
+		await app.scheduler.getDefault().waitAsync();
+		expect(order).toEqual([2, 1]);
+	});
+});
+
 describe("Synchronous tasks", () => {
 	afterAll(() => {
 		app.clear(); // remove all queues

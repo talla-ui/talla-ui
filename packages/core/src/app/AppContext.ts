@@ -17,7 +17,7 @@ import { ModalMenuOptions } from "./ModalMenuOptions.js";
 import { NavigationContext } from "./NavigationContext.js";
 import { NavigationTarget } from "./NavigationTarget.js";
 import { RenderContext } from "./RenderContext.js";
-import { Scheduler } from "./Scheduler.js";
+import { AsyncTaskQueue, Scheduler } from "./Scheduler.js";
 import type { View } from "./View.js";
 
 /** @internal Counter that blocks multiple invocations of AppContext constructor */
@@ -107,6 +107,7 @@ export class AppContext extends ObservedObject {
 	/**
 	 * The global asynchronous task scheduler, an instance of {@link Scheduler}
 	 * - You can use `app.scheduler` to create and manage queues for scheduling asynchronous (background) tasks.
+	 * - You can use {@link schedule()} to schedule a task on the default queue of this scheduler.
 	 * - Refer to {@link Scheduler} for available methods of `app.scheduler`.
 	 */
 	scheduler = new Scheduler();
@@ -164,6 +165,15 @@ export class AppContext extends ObservedObject {
 		this.theme = undefined;
 		this.log = new LogWriter();
 		return this;
+	}
+
+	/**
+	 * Schedules a task on the default queue of the global scheduler
+	 * @param f An (async) function that accepts a single argument, an instance of {@link AsyncTaskQueue.Task}
+	 * @param priority The priority of the task (higher values _deprioritize_ the task)
+	 */
+	schedule(f: (t: AsyncTaskQueue.Task) => Promise<void> | void, priority = 0) {
+		this.scheduler.getDefault().add(f, priority);
 	}
 
 	/**

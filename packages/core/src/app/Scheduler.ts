@@ -2,6 +2,8 @@ import { ConfigOptions } from "@talla-ui/util";
 import { errorHandler } from "../errors.js";
 import { AppException } from "./AppException.js";
 
+const DEFAULT_QUEUE_NAME = Symbol("default");
+
 /**
  * A class that creates and manages asynchronous task queues
  */
@@ -40,6 +42,11 @@ export class Scheduler {
 		return this._queues.find((q) => q.name === name);
 	}
 
+	/** Returns the default queue, i.e. a queue that's created with default options */
+	getDefault() {
+		return this._queues[0]!;
+	}
+
 	/**
 	 * Stops all queues that have been created by this scheduler
 	 * @see {@link AsyncTaskQueue.stop}
@@ -48,7 +55,10 @@ export class Scheduler {
 		for (let q of this._queues) q.stop();
 	}
 
-	private _queues: AsyncTaskQueue[] = [];
+	/** All queues managed by the scheduler, including a default queue */
+	private _queues: AsyncTaskQueue[] = [
+		new AsyncTaskQueue(DEFAULT_QUEUE_NAME, new AsyncTaskQueue.Options()),
+	];
 }
 
 /**
