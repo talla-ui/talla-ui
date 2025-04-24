@@ -244,7 +244,7 @@ export class Binding<T = any> {
 	 * @example
 	 * // A cell that's rendered only if a string matches
 	 * ui.show(
-	 *   { state: $activity("tab").matches("contacts") },
+	 *   { when: $activity("tab").matches("contacts") },
 	 *   ui.cell(
 	 *     // ...
 	 *   )
@@ -290,7 +290,7 @@ export class Binding<T = any> {
 	 * @example
 	 * // A cell that's rendered only if two bindings match
 	 * ui.show(
-	 *   { state: $list("item").equals("selectedItem") },
+	 *   { when: $list("item").equals("selectedItem") },
 	 *   ui.cell(
 	 *     // ...
 	 *   )

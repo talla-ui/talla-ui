@@ -7,7 +7,7 @@ const MIN_ANIM_REPEAT_MS = 8;
 /**
  * A UI component that renders and controls a view
  *
- * @description A `UIShowView` object renders its contained view object, when the {@link state} property is true.
+ * @description A `UIShowView` object renders its contained view object, when the {@link when} property is equal to true.
  *
  * The contained view object can be preset (using {@link ui.show()}, or the `<show>` tag), or dynamically set or bound using the {@link insert} property. In the latter case, the view object is not directly attached to the `UIShowView` object, but must be attached to another object, such as an activity.
  *
@@ -25,7 +25,7 @@ export class UIShowView extends View {
 		preset: ViewBuilder.ExtendPreset<
 			typeof View,
 			UIShowView,
-			| "state"
+			| "when"
 			| "insert"
 			| "propagateInsertedEvents"
 			| "showAnimation"
@@ -45,7 +45,7 @@ export class UIShowView extends View {
 			};
 
 			// create and attach the body view if state is already true
-			if (view.state) view.setBody();
+			if (view.when) view.setBody();
 		});
 	}
 
@@ -68,7 +68,7 @@ export class UIShowView extends View {
 
 		// add state accessor
 		let state = true;
-		Object.defineProperty(this, "state", {
+		Object.defineProperty(this, "when", {
 			configurable: true,
 			get() {
 				return state;
@@ -92,7 +92,7 @@ export class UIShowView extends View {
 	 * - The content view is (created and) rendered only if this property is set to true.
 	 * - If preset content is used (instead of a bound `insert` property), the content view is _unlinked_, not just hidden, when this property is set to false.
 	 */
-	declare state: boolean;
+	declare when: boolean;
 
 	/** The current (attached) view content to be rendered */
 	body?: View;

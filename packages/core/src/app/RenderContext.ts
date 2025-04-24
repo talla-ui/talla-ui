@@ -130,9 +130,9 @@ export namespace RenderContext {
 	 *
 	 * @example
 	 * // Bind to viewport properties from a JSX view:
-	 * <conditional state={$viewport("col3")}>
+	 * <show when={$viewport("col3")}>
 	 *   // ...view for wide viewports with at least 3 grid 'columns'
-	 * </conditional>
+	 * </show>
 	 */
 	export interface Viewport extends ObservedObject {
 		/** The viewport width in logical pixel units */

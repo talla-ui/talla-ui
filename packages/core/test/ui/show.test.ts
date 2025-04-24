@@ -29,7 +29,7 @@ test("Set state directly", () => {
 	let show = myShow.create();
 	expect(show.body).toBeInstanceOf(UICell);
 	expect(ObservedObject.whence(show.body)).toBe(show);
-	show.state = false;
+	show.when = false;
 	expect(show.body).toBeUndefined();
 });
 
@@ -57,7 +57,7 @@ test("Rendering content using bound state", async () => {
 		{ condition: false },
 		ui.cell(
 			ui.show(
-				{ state: $view("condition") },
+				{ when: $view("condition") },
 				// label should only be rendered when condition is true
 				ui.label("foo"),
 			),
