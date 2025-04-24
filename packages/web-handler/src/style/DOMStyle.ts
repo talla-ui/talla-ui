@@ -201,7 +201,7 @@ export function defineStyleClass(style: UIStyle<any>, isTextStyle?: boolean) {
 			stateSelector +=
 				(object[UIStyle.STATE_PRESSED]
 					? ""
-					: ":not(:active):not([aria-pressed])") +
+					: ":not(:active):not([aria-pressed=true])") +
 				(object[UIStyle.STATE_FOCUSED] ? "" : ":not(:focus-visible)") +
 				":hover";
 		else if (object[UIStyle.STATE_HOVERED] === false)
@@ -211,10 +211,7 @@ export function defineStyleClass(style: UIStyle<any>, isTextStyle?: boolean) {
 		if (object[UIStyle.STATE_PRESSED])
 			stateSelector += ":active," + stateSelector + "[aria-pressed=true]";
 		else if (object[UIStyle.STATE_PRESSED] === false)
-			stateSelector +=
-				":not(:active):not([aria-pressed])," +
-				stateSelector +
-				"[aria-pressed=false]";
+			stateSelector += ":not(:active):not([aria-pressed=true])";
 
 		let css = combined[stateSelector] || {};
 		addDimensionsCSS(css, object);
