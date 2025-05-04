@@ -435,7 +435,7 @@ function addDecorationStyleCSS(
 		result.borderWidth = getCSSLength(borderThickness);
 	let borderColor = decoration.borderColor;
 	if (borderColor instanceof UIColor) result.borderColor = String(borderColor);
-	else if (borderColor != undefined) {
+	else if (borderColor !== undefined) {
 		result.borderColor = [
 			borderColor.top,
 			borderColor.right,
@@ -449,11 +449,11 @@ function addDecorationStyleCSS(
 		if (borderColor.end) result.borderInlineEndColor = String(borderColor.end);
 	}
 	let borderStyle = decoration.borderStyle;
-	if (borderStyle != undefined) result.borderStyle = borderStyle;
+	if (borderStyle !== undefined) result.borderStyle = borderStyle;
 	let borderRadius = decoration.borderRadius;
 	if (typeof borderRadius === "number" || typeof borderRadius === "string") {
 		result.borderRadius = getCSSLength(borderRadius);
-	} else if (borderRadius != undefined) {
+	} else if (borderRadius !== undefined) {
 		result.borderRadius = [
 			borderRadius.topLeft,
 			borderRadius.topRight,
@@ -472,7 +472,9 @@ function addDecorationStyleCSS(
 			result.borderEndEndRadius = getCSSLength(borderRadius.bottomEnd);
 	}
 	let opacity = decoration.opacity;
-	if (opacity != undefined) result.opacity = String(opacity);
+	if (opacity !== undefined) result.opacity = String(opacity);
+	let cursor = decoration.cursor;
+	if (cursor !== undefined) result.cursor = String(cursor);
 	if (decoration.css) {
 		// copy all properties to result
 		for (let p in decoration.css) result[p] = decoration.css[p];

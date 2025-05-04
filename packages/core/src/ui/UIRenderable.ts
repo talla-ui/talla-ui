@@ -313,6 +313,8 @@ export namespace UIRenderable {
 		padding?: Offsets;
 		/** Opacity (0-1) */
 		opacity?: number;
+		/** Cursor style (same values as CSS, if supported) */
+		cursor?: string;
 		/** Miscellaneous CSS attributes */
 		css?: Partial<CSSStyleDeclaration>;
 	};

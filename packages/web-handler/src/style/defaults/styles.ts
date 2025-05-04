@@ -21,7 +21,6 @@ const _color_inherit = ui.color("inherit");
 const baseButtonCss = {
 	position: "relative",
 	overflow: "hidden",
-	cursor: "pointer",
 	transition: "background 0.2s ease, border-color 0.2s ease",
 };
 
@@ -36,6 +35,7 @@ const baseButtonStyle: CombinedStyleType = {
 	lineHeight: 2,
 	minWidth: 112,
 	shrink: 1,
+	cursor: "pointer",
 	css: baseButtonCss,
 };
 
@@ -43,7 +43,7 @@ const baseLabelStyle: CombinedStyleType = {
 	shrink: 1,
 	maxWidth: "100%",
 	lineBreakMode: "ellipsis",
-	css: { cursor: "inherit" },
+	cursor: "inherit",
 };
 
 const baseBadgeLabelStyle: CombinedStyleType = {
@@ -56,7 +56,7 @@ const baseBadgeLabelStyle: CombinedStyleType = {
 const disabledStyle: CombinedStyleType = {
 	[UIStyle.STATE_DISABLED]: true,
 	opacity: 0.5,
-	css: { cursor: "default" },
+	cursor: "default",
 };
 
 function makeButtonStyle(
@@ -296,7 +296,7 @@ export const styles: [
 				lineBreakMode: "pre-wrap",
 				lineHeight: 1.5,
 				userSelect: true,
-				css: { cursor: "text" },
+				cursor: "text",
 			},
 			{
 				[UIStyle.STATE_HOVERED]: true,
@@ -319,7 +319,7 @@ export const styles: [
 				textColor: ui.color.PRIMARY_BG, // :checked fill
 				padding: { y: 4 },
 				shrink: 1,
-				css: { cursor: "pointer" },
+				cursor: "pointer",
 			},
 			{
 				[UIStyle.STATE_HOVERED]: true,
