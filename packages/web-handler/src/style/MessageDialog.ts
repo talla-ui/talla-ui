@@ -55,10 +55,25 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 	};
 
 	/**
+	 * Options for the layout of the row of buttons on narrow viewports
+	 * - By default, buttons are stretched in a column (vertical axis) on narrow viewports to maximize the use of vertical space.
+	 */
+	narrowButtonRowLayout: UIContainer.Layout = {
+		axis: "vertical",
+		gravity: "stretch",
+	};
+
+	/**
 	 * True if the buttons should be shown in reverse order
 	 * - This property defaults to true, which means that the confirm button is displayed last. Set to false to display the confirm button first.
 	 */
 	reverseButtons = true;
+
+	/**
+	 * True if the buttons should be shown in reverse order on narrow viewports
+	 * - This property defaults to false. Set to true to display the confirm button last.
+	 */
+	narrowReverseButtons = false;
 
 	/**
 	 * The label style used for the first message label
@@ -149,57 +164,62 @@ export class MessageDialog
 	}
 
 	protected override createView() {
+		let narrow = !app.renderer?.viewport.col2;
+		let styles = MessageDialog.styles;
 		let messageLabels = this.options.messages.map((text, i) =>
 			ui.label(String(text), {
-				style: i
-					? MessageDialog.styles.labelStyle
-					: MessageDialog.styles.firstLabelStyle,
+				style: i ? styles.labelStyle : styles.firstLabelStyle,
 			}),
 		);
 		let buttons = [
 			ui.button({
-				style: MessageDialog.styles.confirmButtonStyle,
+				style: styles.confirmButtonStyle,
 				label: this.confirmLabel,
 				onClick: "+Confirm",
 				requestFocus: true,
 			}),
 			ui.button({
-				style: MessageDialog.styles.buttonStyle,
+				style: styles.buttonStyle,
 				hidden: !this.otherLabel,
 				label: this.otherLabel,
 				onClick: "+Other",
 			}),
 			ui.button({
-				style: MessageDialog.styles.buttonStyle,
+				style: styles.buttonStyle,
 				hidden: !this.cancelLabel,
 				label: this.cancelLabel,
 				onClick: "+Cancel",
 			}),
 		];
-		if (MessageDialog.styles.reverseButtons) buttons.reverse();
+		let reverse = narrow ? styles.narrowReverseButtons : styles.reverseButtons;
+		if (reverse) buttons.reverse();
 		return ui
 			.cell(
 				{
 					accessibleRole: "alertdialog",
-					margin: MessageDialog.styles.margin,
-					effect: MessageDialog.styles.effect,
-					style: ui.style(MessageDialog.styles.containerStyle, {
-						maxWidth: MessageDialog.styles.maxWidth,
+					margin: styles.margin,
+					effect: styles.effect,
+					style: ui.style(styles.containerStyle, {
+						maxWidth: styles.maxWidth,
 					}),
 				},
 				ui.cell(
 					{
 						effect: ui.effect("DragModal"),
-						style: MessageDialog.styles.messageCellStyle,
+						style: styles.messageCellStyle,
 					},
-					ui.column(
-						{ spacing: MessageDialog.styles.labelSpacing },
-						...messageLabels,
-					),
+					ui.column({ spacing: styles.labelSpacing }, ...messageLabels),
 				),
 				ui.cell(
-					{ style: MessageDialog.styles.buttonCellStyle },
-					ui.row({ layout: MessageDialog.styles.buttonRowLayout }, ...buttons),
+					{ style: styles.buttonCellStyle },
+					ui.row(
+						{
+							layout: narrow
+								? styles.narrowButtonRowLayout
+								: styles.buttonRowLayout,
+						},
+						...buttons,
+					),
 				),
 			)
 			.create();
