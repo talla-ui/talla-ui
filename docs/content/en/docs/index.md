@@ -7,5 +7,4 @@ root: true
 ## Getting started <!--{#getting-started}-->
 
 - {@link introduction} +
-
-TODO
+- {@link placeholder} +
