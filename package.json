@@ -1,6 +1,6 @@
 {
 	"name": "talla-ui",
-	"version": "4.0.0-dev.88",
+	"version": "4.0.0-dev.89",
 	"publishConfig": {
 		"tag": "next",
 		"access": "public"
@@ -81,8 +81,8 @@
 		"useTabs": true
 	},
 	"dependencies": {
-		"@talla-ui/core": "4.0.0-dev.88",
-		"@talla-ui/util": "4.0.0-dev.88"
+		"@talla-ui/core": "4.0.0-dev.89",
+		"@talla-ui/util": "4.0.0-dev.89"
 	},
 	"devDependencies": {
 		"@talla-ui/util": "file:packages/util",
