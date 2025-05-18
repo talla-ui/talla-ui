@@ -379,10 +379,16 @@ export class Binding<T = any> {
 		return new Binding(this);
 	}
 
-	/** A method that's used for duck typing, always returns true */
+	/**
+	 * A method that's used for duck typing, always returns true
+	 * @docgen {hide}
+	 */
 	declare isBinding: () => true; // set on prototype
 
-	/** A method that's used for type checking, doesn't actually exist */
+	/**
+	 * A method that's used for type checking, doesn't actually exist
+	 * @docgen {hide}
+	 */
 	declare [BindingOrValue.TYPE_CHECK]: () => T;
 
 	/** @internal Apply this binding to an observed object using given update callback; cascades down to child bindings (for boolean logic and string bindings) */
