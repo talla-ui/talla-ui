@@ -26,6 +26,7 @@ export class UIShowView extends View {
 			typeof View,
 			UIShowView,
 			| "when"
+			| "unless"
 			| "insert"
 			| "propagateInsertedEvents"
 			| "showAnimation"
@@ -45,12 +46,41 @@ export class UIShowView extends View {
 			};
 
 			// create and attach the body view if state is already true
-			if (view.when) view.setBody();
+			if (view.when && !view.unless) view.setBody();
 		});
 	}
 
 	constructor() {
 		super();
+
+		// add state accessors
+		let when = true;
+		let unless = false;
+		Object.defineProperty(this, "when", {
+			configurable: true,
+			get() {
+				return when;
+			},
+			set(this: UIShowView, v) {
+				update(this, (when = !!v) && !unless);
+			},
+		});
+		Object.defineProperty(this, "unless", {
+			configurable: true,
+			get() {
+				return unless;
+			},
+			set(this: UIShowView, v) {
+				update(this, (unless = !!v) ? false : when);
+			},
+		});
+		function update(self: UIShowView, state: boolean) {
+			if (!!self.body !== state) {
+				if (inserted) self.setInsertedView(state ? inserted : undefined);
+				else state ? self.setBody() : self.removeBody();
+			}
+			self.render();
+		}
 
 		// add inserted view accessor
 		let inserted: View | undefined;
@@ -62,24 +92,8 @@ export class UIShowView extends View {
 			set(this: UIShowView, v) {
 				if (v === inserted) return;
 				inserted = v;
+				let state = when && !unless;
 				this.setInsertedView(state ? v : undefined);
-			},
-		});
-
-		// add state accessor
-		let state = true;
-		Object.defineProperty(this, "when", {
-			configurable: true,
-			get() {
-				return state;
-			},
-			set(this: UIShowView, v) {
-				state = !!v;
-				if (!!this.body !== state) {
-					if (inserted) this.setInsertedView(state ? inserted : undefined);
-					else state ? this.setBody() : this.removeBody();
-				}
-				this.render();
 			},
 		});
 	}
@@ -89,10 +103,17 @@ export class UIShowView extends View {
 
 	/**
 	 * True if the view content should be rendered, defaults to true
-	 * - The content view is (created and) rendered only if this property is set to true.
+	 * - The content view is (created and) rendered only if this property is set to true, and the {@link unless} property is set to false.
 	 * - If preset content is used (instead of a bound `insert` property), the content view is _unlinked_, not just hidden, when this property is set to false.
 	 */
 	declare when: boolean;
+
+	/**
+	 * True if the view content should not be rendered, defaults to false
+	 * - The content view is (created and) rendered only if this property is set to false, and the {@link when} property is set to true.
+	 * - If preset content is used (instead of a bound `insert` property), the content view is _unlinked_, not just hidden, when this property is set to true.
+	 */
+	declare unless: boolean;
 
 	/** The current (attached) view content to be rendered */
 	body?: View;

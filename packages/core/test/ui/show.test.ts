@@ -24,13 +24,41 @@ beforeEach(() => {
 	useTestContext();
 });
 
-test("Set state directly", () => {
+test("Set state directly with when", () => {
 	let myShow = ui.show({}, ui.cell());
 	let show = myShow.create();
 	expect(show.body).toBeInstanceOf(UICell);
 	expect(ObservedObject.whence(show.body)).toBe(show);
 	show.when = false;
 	expect(show.body).toBeUndefined();
+});
+
+test("Set state directly with unless", () => {
+	let myShow = ui.show({ unless: true }, ui.cell());
+	let show = myShow.create();
+	expect(show.body).toBeUndefined();
+
+	show.unless = false;
+	expect(show.body).toBeInstanceOf(UICell);
+	expect(ObservedObject.whence(show.body)).toBe(show);
+
+	show.unless = true;
+	expect(show.body).toBeUndefined();
+});
+
+test("When both when and unless are set, unless takes precedence", () => {
+	let myShow = ui.show({ when: true, unless: true }, ui.cell());
+	let show = myShow.create();
+	expect(show.body).toBeUndefined();
+
+	show.when = false;
+	expect(show.body).toBeUndefined();
+
+	show.unless = false;
+	expect(show.body).toBeUndefined();
+
+	show.when = true;
+	expect(show.body).toBeInstanceOf(UICell);
 });
 
 test("Body view events are propagated", async () => {
