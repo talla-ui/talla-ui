@@ -17,6 +17,11 @@ export class UIIconResource {
 		if (content) this._content = String(content);
 	}
 
+	/** The icon name (read only) */
+	get id() {
+		return this._id;
+	}
+
 	/**
 	 * Indicate that this icon should be mirrored in RTL mode
 	 * @param mirror True if this icon should be mirrored in RTL mode, may be omitted (default is true)

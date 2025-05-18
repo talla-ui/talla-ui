@@ -57,16 +57,27 @@ export class UITheme {
 	 * @description
 	 * The colors defined by this map are used by {@link UIColor} objects that are instantiated with the color name, e.g. `ui.color("Primary")` (which returns `new UIColor("Primary")`). Default colors are also available as static properties of `ui.color()`, e.g. `ui.color.PRIMARY`.
 	 *
-	 * Styles and colors are cached during rendering. To apply changes to existing views, set a new theme rather than modifying this object.
-	 *
-	 * @example
-	 * useWebContext((options) => {
-	 *   options.theme.colors.set("Background", ui.color.DARKER_GRAY);
-	 *   options.theme.colors.set("Foo", ui.color("#e0b0ff"))
-	 *   // ...
-	 * });
+	 * Styles and colors are cached during rendering. To apply changes to existing views, set a new theme (and use {@link setColors()}) rather than modifying this object.
 	 */
 	colors = new Map<string, UIColor>();
+
+	/**
+	 * Sets one or more colors in the theme
+	 * @note Colors only take effect when a new theme is set on the application context. This method is usually called from e.g. a `useWebContext` callback, or on a cloned theme before setting it as the application theme.
+	 * @param colors An object with color names as keys and color values as values
+	 * @returns This theme instance for method chaining
+	 * @example
+	 * theme.setColors({
+	 *   Background: ui.color.DARKER_GRAY,
+	 *   Foo: ui.color("#e0b0ff")
+	 * });
+	 */
+	setColors(colors: Record<string, UIColor | undefined>): this {
+		for (let key in colors) {
+			if (colors[key]) this.colors.set(key, colors[key]);
+		}
+		return this;
+	}
 
 	/**
 	 * A map that defines a set of predefined icons
@@ -79,12 +90,51 @@ export class UITheme {
 	icons = new Map<string, UIIconResource>();
 
 	/**
+	 * Sets one or more icons in the theme
+	 * @param icons An array of {@link UIIconResource} objects
+	 * @returns This theme instance for method chaining
+	 * @example
+	 * theme.setIcons([
+	 *   ui.icon("CustomIcon", "<svg>...</svg>")
+	 * ]);
+	 *
+	 * // use as:
+	 * ui.icon("CustomIcon");
+	 */
+	setIcons(icons: UIIconResource[]): this {
+		for (let icon of icons) {
+			if (icon) this.icons.set(icon.id, icon);
+		}
+		return this;
+	}
+
+	/**
 	 * A map that defines a set of predefined output transform animations
 	 *
 	 * @description
 	 * The animations defined by this map can be used with the {@link AppContext.animateAsync} method, as well as {@link UIShowView} and the animations set on the {@link RenderContext.PlacementOptions} object. Default animations are also available as static properties of `ui.animation()`, e.g. `ui.animation.FADE_IN`.
 	 */
 	animations = new Map<string, RenderContext.OutputTransformer>();
+
+	/**
+	 * Adds an animation to the theme
+	 * @param name The name of the animation
+	 * @param animation The animation to add
+	 * @returns This theme instance for method chaining
+	 * @example
+	 * theme.addAnimation("Zoom", {
+	 *   applyTransform: (transform) => {
+	 *     // ...
+	 *   }
+	 * });
+	 */
+	setAnimation<TElement>(
+		name: string,
+		animation: RenderContext.OutputTransformer<TElement>,
+	): this {
+		this.animations.set(name, animation);
+		return this;
+	}
 
 	/**
 	 * A map that defines a set of predefined output effects
@@ -95,25 +145,54 @@ export class UITheme {
 	effects = new Map<string, RenderContext.OutputEffect>();
 
 	/**
+	 * Adds an effect to the theme
+	 * @param name The name of the effect
+	 * @param effect The effect to add
+	 * @returns This theme instance for method chaining
+	 */
+	setEffect<TElement>(
+		name: string,
+		effect: RenderContext.OutputEffect<TElement>,
+	): this {
+		this.effects.set(name, effect);
+		return this;
+	}
+
+	/**
 	 * A map that defines a set of predefined styles
 	 *
 	 * @description
 	 * This map includes base style definitions that are applied to instances of {@link UIStyle}. Each key is a base style name, and each value is a list of style definitions (as an array).
 	 *
-	 * These style definitions are used by default styles (and any extensions or overrides) available as static properties of `ui.style()`, e.g. `ui.style.BUTTON`. To modify styles, _add_ objects with style definitions to each array. The format of style definitions is the same as the arguments of {@link UIStyle.extend}.
+	 * These style definitions are used by default styles (and any extensions or overrides) available as static properties of `ui.style()`, e.g. `ui.style.BUTTON`. To modify styles, use the {@link UITheme.setStyles} method.
 	 *
 	 * Styles and colors are cached during rendering. To apply changes to existing views, set a new theme rather than modifying this object.
-	 *
+	 */
+	styles: Map<string, UITheme.ThemeStyleDefinition> = new Map();
+
+	/**
+	 * Sets or extends one or more styles in the theme
+	 * @note Styles only take effect when a new theme is set on the application context. This method is usually called from e.g. a `useWebContext` callback, or on a cloned theme before setting it as the application theme.
+	 * @param styles An object with style names as keys and style definitions as values
+	 * @returns This theme instance for method chaining
 	 * @example
-	 * useWebContext((options) => {
-	 *   options.theme.styles.set("Button", [
-	 *     ...options.theme.styles.get("Button")!,
-	 *     { minHeight: 48 },
-	 *   ]);
-	 *   // ... (apply the same to other button styles)
+	 * theme.setStyles({
+	 *   TextField: [
+	 *     { background: ui.color.BACKGROUND.contrast(1) }
+	 *   ]
 	 * });
 	 */
-	styles: Map<string, UIStyle.StyleSelectorList<any>> = new Map();
+	setStyles(styles: Record<string, UITheme.ThemeStyleDefinition>): this {
+		for (let key in styles) {
+			if (styles[key]) {
+				this.styles.set(
+					key,
+					this.styles.get(key)?.concat(styles[key]) ?? styles[key],
+				);
+			}
+		}
+		return this;
+	}
 
 	/** Returns a new {@link UITheme} object that's a clone of this object */
 	clone() {
@@ -124,7 +203,7 @@ export class UITheme {
 		result.lightTextColor = this.lightTextColor;
 		result.icons = new Map(this.icons);
 		result.colors = new Map(this.colors);
-		result.styles = new Map(this.styles) as any;
+		result.styles = new Map(this.styles);
 		result.animations = new Map(this.animations);
 		result.effects = new Map(this.effects);
 		return result;
@@ -132,6 +211,9 @@ export class UITheme {
 }
 
 export namespace UITheme {
+	/** Type for theme style definitions */
+	export type ThemeStyleDefinition = UIStyle.StyleSelectorList<any>;
+
 	/**
 	 * An interface that defines methods for creating modal views
 	 * - An object of this type should be assigned to {@link UITheme.modalFactory}, which is used by the `app` methods that display modal views, as well as {@link Activity} when using the `dialog` rendering mode.

@@ -8,7 +8,7 @@ import {
 	useTestContext,
 } from "@talla-ui/test-handler";
 import { ObjectReader, strf } from "@talla-ui/util";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import {
 	Activity,
 	AppContext,
@@ -379,6 +379,12 @@ describe("Rendering views", () => {
 });
 
 describe("Theme and base styles", () => {
+	let theme: UITheme;
+
+	beforeEach(() => {
+		theme = new UITheme();
+	});
+
 	test("Clone theme", () => {
 		let app = useTestContext();
 		let oldTheme = app.theme!;
@@ -394,6 +400,116 @@ describe("Theme and base styles", () => {
 		app.theme.darkTextColor = "#123456";
 		app = useTestContext();
 		expect(app.theme?.darkTextColor).toBe(oldTheme.darkTextColor);
+	});
+
+	describe("setColors", () => {
+		test("should set colors in the theme", () => {
+			const color1 = ui.color("#ff0000");
+			const color2 = ui.color("#00ff00");
+			theme.setColors({
+				Primary: color1,
+				Secondary: color2,
+				Undefined: undefined, // Should be ignored
+			});
+			expect(theme.colors.get("Primary")).toBe(color1);
+			expect(theme.colors.get("Secondary")).toBe(color2);
+			expect(theme.colors.has("Undefined")).toBe(false);
+		});
+
+		test("should be chainable", () => {
+			const result = theme.setColors({
+				Primary: ui.color("#ff0000"),
+			});
+			expect(result).toBe(theme);
+		});
+	});
+
+	describe("setIcons", () => {
+		test("should set icons in the theme", () => {
+			const icon1 = ui.icon("CustomIcon1", "<svg>Icon 1</svg>");
+			const icon2 = ui.icon("CustomIcon2", "<svg>Icon 2</svg>");
+			theme.setIcons([icon1, icon2]);
+			expect(theme.icons.get("CustomIcon1")).toBe(icon1);
+			expect(theme.icons.get("CustomIcon2")).toBe(icon2);
+		});
+
+		test("should ignore undefined icons", () => {
+			theme.setIcons([undefined as any]);
+			expect(theme.icons.size).toBe(0);
+		});
+
+		test("should be chainable", () => {
+			const icon = ui.icon("CustomIcon", "<svg>Icon</svg>");
+			const result = theme.setIcons([icon]);
+			expect(result).toBe(theme);
+		});
+	});
+
+	describe("setAnimation", () => {
+		test("should add an animation to the theme", () => {
+			const animation = { applyTransform: vi.fn() };
+			theme.setAnimation("customAnimation", animation);
+			expect(theme.animations.get("customAnimation")).toBe(animation);
+		});
+
+		test("should be chainable", () => {
+			const result = theme.setAnimation("test", { applyTransform: vi.fn() });
+			expect(result).toBe(theme);
+		});
+	});
+
+	describe("setEffect", () => {
+		test("should add an effect to the theme", () => {
+			const effect = { applyEffect: vi.fn() };
+			theme.setEffect("customEffect", effect);
+			expect(theme.effects.get("customEffect")).toBe(effect);
+		});
+
+		test("should be chainable", () => {
+			const result = theme.setEffect("test", { applyEffect: vi.fn() });
+			expect(result).toBe(theme);
+		});
+	});
+
+	describe("setStyles", () => {
+		test("should set styles in the theme", () => {
+			const style1 = { color: "red" };
+			const style2 = { color: "blue" };
+			theme.setStyles({
+				Button: [style1],
+				Input: [style2],
+				Undefined: undefined as any, // Should be ignored
+			});
+			expect(theme.styles.get("Button")).toEqual([style1]);
+			expect(theme.styles.get("Input")).toEqual([style2]);
+			expect(theme.styles.has("Undefined")).toBe(false);
+		});
+
+		test("should be chainable", () => {
+			const result = theme.setStyles({
+				Button: [{ color: "red" }],
+			});
+			expect(result).toBe(theme);
+		});
+
+		test("should append styles for existing keys", () => {
+			const style1 = { color: "red" };
+			const style2 = { color: "blue" };
+			theme.setStyles({
+				Button: [style1],
+			});
+			theme.setStyles({
+				Button: [style2],
+			});
+			expect(theme.styles.get("Button")).toEqual([style1, style2]);
+		});
+
+		test("should ignore undefined styles", () => {
+			theme.setStyles({
+				Button: undefined as any,
+			});
+			expect(theme.styles.has("Button")).toBe(false);
+		});
 	});
 
 	test("Select icons are mirrored in RTL", () => {
