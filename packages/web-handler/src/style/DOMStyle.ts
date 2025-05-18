@@ -30,8 +30,14 @@ const _flexAlignOptions = {
 	"": "",
 };
 
+// Note: styles and imports are defined in separate elements to prevent FOUC
+// while loading styles from external sources
+
 /** Root CSS style element, if defined already */
 let _cssElt: HTMLStyleElement | undefined;
+
+/** Root CSS imports style element, if defined already */
+let _cssImportElt: HTMLStyleElement | undefined;
 
 /** Root CSS style updater, after creating style element the first time */
 let _cssUpdater:
@@ -579,16 +585,25 @@ function _makeCSSUpdater() {
 
 		// create a new style sheet, and delete the old one after a while
 		// (prevents FOUC in some browsers while new styles are parsed)
-		let old = _cssElt;
+		let oldStyle = _cssElt;
 		_cssElt = document.createElement("style");
 		_cssElt.setAttribute("type", "text/css");
 		document.head!.appendChild(_cssElt);
-		_cssElt.textContent =
-			allImports
-				.map((s) => "@import url(" + JSON.stringify(s) + ");\n")
-				.join("") + text;
+		_cssElt.textContent = text;
+
+		// create a separate style sheet for imports
+		let oldImports = _cssImportElt;
+		_cssImportElt = document.createElement("style");
+		_cssImportElt.setAttribute("type", "text/css");
+		document.head!.appendChild(_cssImportElt);
+		_cssImportElt.textContent = allImports
+			.map((s) => "@import url(" + JSON.stringify(s) + ");\n")
+			.join("");
+
+		// remove old style sheets after a while
 		setTimeout(() => {
-			old && old.remove();
+			oldStyle?.remove();
+			oldImports?.remove();
 		}, 30);
 	};
 }
