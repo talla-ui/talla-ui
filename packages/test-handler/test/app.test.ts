@@ -30,7 +30,11 @@ class CountActivity extends Activity {
 	protected override createView() {
 		return ui
 			.cell(
-				ui.textField({ value: $activity("count"), onInput: "SetCount" }),
+				ui.textField({
+					value: $activity("count"),
+					onInput: "SetCount",
+					name: "count-input",
+				}),
 				ui.button("+", { onClick: "CountUp" }),
 			)
 			.create();
@@ -110,7 +114,7 @@ test("Button increases count", async () => {
 });
 
 test("Entering text sets count property", async () => {
-	await enterTextOutputAsync("5", { type: "textfield" });
+	await enterTextOutputAsync("5", { name: "count-input" });
 	await expectOutputAsync({ value: "5" });
 	expect(activity.count).toBe(5);
 });

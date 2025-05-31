@@ -9,6 +9,8 @@ export interface OutputSelectFilter {
 	source?: View;
 	/** A type of element (string or class) */
 	type?: (new (...args: any[]) => View) | TestOutputElement.TypeString;
+	/** The name of the element, if any */
+	name?: string;
 	/** True if the element must be disabled, false if it must not */
 	disabled?: boolean;
 	/** True if the element must be readonly, false if it must not */
@@ -45,6 +47,7 @@ function _matchElement(select: OutputSelectFilter, elt: TestOutputElement) {
 		(typeof select.type === "string" && elt.type !== select.type) ||
 		(typeof select.type === "function" &&
 			!(elt.output?.source instanceof select.type)) ||
+		(select.name !== undefined && elt.name !== select.name) ||
 		(select.disabled !== undefined && !!elt.disabled !== !!select.disabled) ||
 		(select.readOnly !== undefined && !!elt.readOnly !== !!select.readOnly) ||
 		(select.pressed !== undefined && !!elt.pressed !== !!select.pressed) ||
