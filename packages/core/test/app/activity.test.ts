@@ -1,38 +1,23 @@
-import {
-	expectNavAsync,
-	expectOutputAsync,
-	useTestContext,
-} from "@talla-ui/test-handler";
+import { expectOutputAsync, useTestContext } from "@talla-ui/test-handler";
 import { beforeEach, describe, expect, test } from "vitest";
 import {
-	$navigation,
 	Activity,
-	ActivityList,
 	app,
 	AppContext,
 	AsyncTaskQueue,
-	ObservedList,
-	ObservedObject,
-	ui,
+	UI,
+	ObservableObject,
 	UILabel,
 } from "../../dist/index.js";
 
 beforeEach(() => {
-	AppContext.setErrorHandler((err) => {
-		throw err;
-	});
+	useTestContext();
 });
 
-// use private property from Binding to create mock app object
-const appLabel = ($navigation("pageId") as any)._label;
-const mockApp = Object.assign(new ObservedObject(), {
-	[appLabel]: true,
-	add<T extends Activity>(a: T) {
-		return (this as any).attach(a) as T;
-	},
-	navigation: {},
-	renderer: {},
-});
+function addActivity<T extends Activity>(a: T) {
+	app.addActivity(a);
+	return a;
+}
 
 describe("Activation and deactivation, standalone", () => {
 	function setup() {
@@ -52,7 +37,9 @@ describe("Activation and deactivation, standalone", () => {
 	}
 
 	test("Activate base class", async () => {
-		let a = mockApp.add(new Activity());
+		let a = addActivity(new Activity());
+		expect(app.activities.includes(a)).toBeTruthy();
+		expect(app.getActivity(Activity)).toBe(a);
 		expect(a.isActive()).toBeFalsy();
 		await a.activateAsync();
 		expect(a.isActive()).toBeTruthy();
@@ -64,7 +51,7 @@ describe("Activation and deactivation, standalone", () => {
 	});
 
 	test("Deactivate base class", async () => {
-		let a = mockApp.add(new Activity());
+		let a = addActivity(new Activity());
 		await a.activateAsync();
 		expect(a.isActive()).toBeTruthy();
 		await a.deactivateAsync();
@@ -72,7 +59,7 @@ describe("Activation and deactivation, standalone", () => {
 	});
 
 	test("Activate base class twice, awaited", async () => {
-		let a = mockApp.add(new Activity());
+		let a = addActivity(new Activity());
 		await a.activateAsync();
 		expect(a.isActive()).toBeTruthy();
 		await a.activateAsync();
@@ -80,7 +67,7 @@ describe("Activation and deactivation, standalone", () => {
 	});
 
 	test("Activate base class twice, not awaited", async () => {
-		let a = mockApp.add(new Activity());
+		let a = addActivity(new Activity());
 		a.activateAsync().catch((err) => expect.fail(String(err)));
 		expect(a.isActive()).toBeFalsy();
 		expect(a.isActivating()).toBeTruthy();
@@ -89,7 +76,7 @@ describe("Activation and deactivation, standalone", () => {
 	});
 
 	test("Deactivate base class twice, awaited", async () => {
-		let a = mockApp.add(new Activity());
+		let a = addActivity(new Activity());
 		await a.activateAsync();
 		await a.deactivateAsync();
 		expect(a.isActive()).toBeFalsy();
@@ -98,7 +85,7 @@ describe("Activation and deactivation, standalone", () => {
 	});
 
 	test("Deactivate base class twice, not awaited", async () => {
-		let a = mockApp.add(new Activity());
+		let a = addActivity(new Activity());
 		await a.activateAsync();
 		a.deactivateAsync().catch((err) => expect.fail(String(err)));
 		expect(a.isActive()).toBeTruthy();
@@ -109,7 +96,7 @@ describe("Activation and deactivation, standalone", () => {
 
 	test("Handlers called on derived class", async () => {
 		let { MyActivity } = setup();
-		let a = mockApp.add(new MyActivity());
+		let a = addActivity(new MyActivity());
 		await a.activateAsync();
 		await a.deactivateAsync();
 		expect(a).toHaveProperty("beforeActiveCalled", 1);
@@ -120,7 +107,7 @@ describe("Activation and deactivation, standalone", () => {
 		let active = 0;
 		let inactive = 0;
 		let { MyActivity } = setup();
-		let a = mockApp.add(new MyActivity());
+		let a = addActivity(new MyActivity());
 		a.listen((e) => {
 			if (e.name === "Active") active++;
 			if (e.name === "Inactive") inactive++;
@@ -135,7 +122,7 @@ describe("Activation and deactivation, standalone", () => {
 
 	test("Deactivate while activating runs after", async () => {
 		let { MyActivity } = setup();
-		let a = mockApp.add(new MyActivity());
+		let a = addActivity(new MyActivity());
 		let p = a.activateAsync().catch((err) => {
 			throw new Error(err);
 		});
@@ -156,7 +143,7 @@ describe("Activation and deactivation, standalone", () => {
 	test("Cancelling and skipping based on activation queue", async () => {
 		let { MyActivity } = setup();
 		let cancelled = 0;
-		let a = mockApp.add(new MyActivity());
+		let a = addActivity(new MyActivity());
 		a.activateAsync().catch(() => cancelled++); // activates
 		a.activateAsync().catch(() => cancelled++); // skips
 		a.deactivateAsync().catch(() => cancelled++); // cancelled
@@ -171,7 +158,7 @@ describe("Activation and deactivation, standalone", () => {
 		let active = 0;
 		let inactive = 0;
 		let { MyActivity } = setup();
-		let a = mockApp.add(new MyActivity());
+		let a = addActivity(new MyActivity());
 		a.listen((e) => {
 			if (e.name === "Active") active++;
 			if (e.name === "Inactive") inactive++;
@@ -196,18 +183,18 @@ describe("Activation and deactivation, standalone", () => {
 	});
 
 	test("Unlinked activity can't be transitioned", async () => {
-		let a = mockApp.add(new Activity());
+		let a = addActivity(new Activity());
 		a.unlink();
 		await expect(a.activateAsync()).rejects.toThrow();
 		await expect(a.deactivateAsync()).rejects.toThrow();
 	});
 
 	test("Unlinked activity can't be transitioned async", async () => {
-		let a = mockApp.add(new Activity());
+		let a = addActivity(new Activity());
 		let p = expect(a.activateAsync()).rejects.toThrow();
 		a.unlink();
 		await p;
-		let b = mockApp.add(new Activity());
+		let b = addActivity(new Activity());
 		await b.activateAsync();
 		let q = expect(b.deactivateAsync()).rejects.toThrow();
 		b.unlink();
@@ -222,7 +209,7 @@ describe("Active task queue", () => {
 
 	test("Queue starts when activated", async () => {
 		let task = 0;
-		let activity = mockApp.add(new MyActivity());
+		let activity = addActivity(new MyActivity());
 		expect(activity.q).toBeInstanceOf(AsyncTaskQueue);
 		expect(activity.q.options.maxSyncTime).toBe(10);
 		activity.q.add(() => {
@@ -236,7 +223,7 @@ describe("Active task queue", () => {
 	});
 
 	test("Queue pauses when inactivated", async () => {
-		let activity = mockApp.add(new MyActivity());
+		let activity = addActivity(new MyActivity());
 		await activity.activateAsync();
 		await activity.q.waitAsync();
 		await activity.deactivateAsync();
@@ -245,7 +232,7 @@ describe("Active task queue", () => {
 
 	test("Queue stops when unlinked", async () => {
 		let task = 0;
-		let activity = mockApp.add(new MyActivity());
+		let activity = addActivity(new MyActivity());
 		await activity.activateAsync();
 		activity.q.add(() => {
 			task++;
@@ -253,43 +240,6 @@ describe("Active task queue", () => {
 		let p = activity.q.waitAsync().catch((err) => err);
 		activity.unlink();
 		expect(String(await p)).toMatch(/stopped/);
-	});
-});
-
-describe("Change event watches", () => {
-	test("Watch receives change events", () => {
-		let events = 0;
-		let a = new Activity();
-		let o = new ObservedObject();
-		a.watch(o, () => {
-			events++;
-		});
-		o.emitChange("Yes");
-		expect(events).toBe(1);
-	});
-
-	test("Watch doesn't receive other events", () => {
-		let events = 0;
-		let a = new Activity();
-		let o = new ObservedObject();
-		a.watch(o, () => {
-			events++;
-		});
-		o.emit("Nope");
-		expect(events).toBe(0);
-	});
-
-	test("Watch stops when activity unlinked", () => {
-		let events = 0;
-		let a = new Activity();
-		let o = new ObservedObject();
-		a.watch(o, () => {
-			events++;
-		});
-		o.emitChange("Yes");
-		a.unlink();
-		o.emitChange("Yes");
-		expect(events).toBe(1);
 	});
 });
 
@@ -301,106 +251,13 @@ describe("Global context and parents", () => {
 	test("Add activity", () => {
 		let activity = new Activity();
 		app.addActivity(activity);
-		expect(app.activities.getActivities().includes(activity)).toBeTruthy();
+		expect(app.activities.includes(activity)).toBeTruthy();
 	});
 
 	test("Global context is parent", () => {
 		let activity = new Activity();
 		app.addActivity(activity);
-		expect(ObservedObject.whence.call(AppContext as any, activity)).toBe(app);
-	});
-
-	test("Find activity instance", () => {
-		class MyActivity extends Activity {}
-		let activity = new MyActivity();
-		app.addActivity(activity);
-		expect(app.activities.getInstance(MyActivity)).toBe(activity);
-	});
-
-	test("Add activity with listener", async () => {
-		let activity = new Activity();
-		let count = 0;
-		app.addActivity(activity, true, () => {
-			count++;
-		});
-		expect(count).toBe(0);
-		await activity.activateAsync();
-		expect(count).toBe(1);
-		await activity.deactivateAsync();
-		expect(count).toBe(2);
-	});
-
-	test("Add activity watch for activity list", async () => {
-		let events: string[] = [];
-		class MyActivity extends Activity {
-			constructor() {
-				super();
-				this.watch(app.activities, (_, e) => {
-					events.push(e.name);
-				});
-			}
-		}
-		let activity = new MyActivity();
-		app.addActivity(activity);
-		await activity.activateAsync();
-		await activity.deactivateAsync();
-		expect(events).toEqual(["Add", "Active", "Inactive"]);
-	});
-
-	test("Nested activity list", async () => {
-		let activity1 = new Activity();
-		let activity2 = new Activity();
-		let activity3 = new Activity();
-		let list = new ActivityList();
-		list.add(activity1, activity2);
-		app.activities.add(list);
-		app.addActivity(activity3);
-		await activity1.activateAsync();
-		expect(list.activated).toBe(activity1);
-		expect(app.activities.count).toBe(2); // Note: not counting nested list
-		expect(app.activities.activated).toBe(activity1);
-		expect(app.activities.getActivities()).toEqual([
-			activity1,
-			activity2,
-			activity3,
-		]);
-
-		// activate activity3: does not affect nested list
-		await activity3.activateAsync();
-		expect(list.activated).toBe(activity1);
-		expect(app.activities.activated).toBe(activity3);
-	});
-
-	test("Nested activities", () => {
-		class MyActivity extends Activity {
-			nested = this.attach(new ObservedList().restrict(MyActivity));
-		}
-		let activity = new MyActivity();
-		activity.nested.add(new MyActivity());
-		app.addActivity(activity);
-		expect(Activity.whence(activity)).toBeUndefined();
-		expect(Activity.whence(activity.nested.first())).toBe(activity);
-		expect(
-			ObservedObject.whence.call(AppContext as any, activity.nested.first()),
-		).toBe(app);
-	});
-
-	test("Navigate app to activity path", async () => {
-		let activity = new Activity();
-		activity.navigationPageId = "foo";
-		app.addActivity(activity);
-		app.navigate(activity);
-		await expectNavAsync({ timeout: 10, pageId: "foo" });
-		expect(activity.isActive()).toBeTruthy();
-	});
-
-	test("Navigate app to activity path with detail", async () => {
-		let activity = new Activity();
-		activity.navigationPageId = "foo";
-		app.addActivity(activity);
-		app.navigate(activity.getNavigationTarget("bar"));
-		await expectNavAsync({ timeout: 10, pageId: "foo", detail: "bar" });
-		expect(activity.isActive()).toBeTruthy();
+		expect(ObservableObject.whence.call(AppContext as any, activity)).toBe(app);
 	});
 });
 
@@ -412,7 +269,7 @@ describe("View rendering", () => {
 	test("Rendered page view", async () => {
 		class MyActivity extends Activity {
 			protected override createView() {
-				return ui.cell(ui.label("Hello, world!")).create();
+				return UI.Cell(UI.Label("Hello, world!")).create();
 			}
 		}
 		let activity = new MyActivity();
@@ -423,7 +280,7 @@ describe("View rendering", () => {
 	test("Find views", async () => {
 		class MyActivity extends Activity {
 			protected override createView() {
-				return ui.cell(ui.label("foo"), ui.label("bar")).create();
+				return UI.Cell(UI.Label("foo"), UI.Label("bar")).create();
 			}
 		}
 		let activity = new MyActivity();

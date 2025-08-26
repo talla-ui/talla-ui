@@ -1,18 +1,16 @@
-import { ConfigOptions } from "@talla-ui/util";
 import {
 	BindingOrValue,
 	isBinding,
-	ObservedEvent,
-	ObservedObject,
+	ObservableEvent,
+	ObservableObject,
 } from "../object/index.js";
-import { invalidArgErr } from "../errors.js";
-import { RenderContext } from "./RenderContext.js";
+import type { RenderContext } from "./RenderContext.js";
 
 /** Type definition for an event that's emitted on a view object */
 export type ViewEvent<
 	TSource extends View = View,
 	TData extends Record<string, unknown> = Record<string, unknown>,
-> = ObservedEvent<TSource, TData>;
+> = ObservableEvent<TSource, TData>;
 
 /**
  * An abstract class that represents a view
@@ -22,26 +20,14 @@ export type ViewEvent<
  *
  * Views can be rendered on their own (using {@link AppContext.render app.render()}) or included as content within another view. In most cases, a top-level view is created from the {@link Activity.createView()} method.
  *
- * The View class can't be used on its own. Instead, define views using the following classes and methods:
- * - {@link UIRenderable} classes, and the various {@link ui} factory functions (e.g. `ui.button(...)`) that create a {@link ViewBuilder} for built-in UI elements and components.
- * - For a complete UI hierarchy, use {@link UIContainer} classes such as {@link UICell}, {@link UIRow}, and {@link UIColumn}, which represent containers that contain other views (including containers).
- * - The {@link UIComponent.define()} function, which creates a {@link UIComponent} subclass.
+ * The View class can't be used on its own. Instead, define views using functions that return view _builders_, e.g. `UI.Column()`, `UI.Button()`, and `UI.ShowWhen()`; or define a custom view for reusable content, using the {@link CustomView} class.
  *
- * @see {@link UIRenderable}
- * @see {@link UIComponent}
+ * @see {@link UIViewElement}
+ * @see {@link CustomView}
  *
  * @docgen {hideconstructor}
  */
-export abstract class View extends ObservedObject {
-	/**
-	 * Creates a view builder for the current view class, with the provided properties, bindings, and event handlers
-	 * @param preset The properties, bindings, and event handlers to apply to each view.
-	 * @returns A {@link ViewBuilder} instance that can be used to create views with the provided preset.
-	 */
-	static getViewBuilder(this: new () => View, preset: {}): ViewBuilder {
-		return new ViewBuilder(this, preset);
-	}
-
+export abstract class View extends ObservableObject {
 	/**
 	 * A method that should be implemented to render a View object
 	 * - The view may be rendered asynchronously, providing output as well as any updates to the provided renderer callback.
@@ -58,110 +44,198 @@ export abstract class View extends ObservedObject {
 }
 
 /**
- * A class that provides a way to create view objects with preset properties, bindings, and event handlers
+ * An interface for 'view builder' objects that can create pre-configured view instances
  *
- * A view builder object can be used to create instances of a view class with a specific set of properties, bindings, and event handlers applied to them. Each view builder object can be used to create multiple instances of the view class with the same preset.
+ * @description
+ * Classes that extend this type (such as {@link UIButton.ButtonBuilder}) typically provide a fluent interface for creating and configuring views. They use a {@link ViewBuilder.Initializer} to configure the initialization logic, including property setting, binding, event interception, and initialization callbacks (e.g. for adding content to container views), and expose this functionality using methods on the builder class.
  *
- * View builders are normally created using {@link ui} functions (e.g. `ui.button()`), or directly using the {@link View.getViewBuilder()} method on a view class.
+ * For reusable views, use the static {@link CustomView.builder()} method which returns a view builder for a custom view class.
+ *
+ * @see {@link CustomView}
  */
-export class ViewBuilder<TView extends View = View> {
+export interface ViewBuilder<TView extends View = View> {
 	/**
-	 * Applies the provided preset properties, bindings, and event handlers to a view instance
-	 * - This method is called by the {@link ViewBuilder.create()} method to apply a preset to the view instance, but can also be called directly to apply a preset to an existing view instance.
-	 * @param view The view instance to apply the preset to
-	 * @param preset The preset properties, bindings, and event handlers to apply to the view
-	 * @returns The view instance (`view` parameter) itself
+	 * Creates a new instance of the view using the embedded initializer
+	 * @returns A newly created and initialized view instance
 	 */
-	static applyPreset<TView extends View>(view: TView, preset: any) {
-		for (let p in preset) {
-			if (p[0] === "_") continue;
-			let v = (preset as any)[p];
-
-			// intercept and/or forward events
-			if (p[0] === "o" && p[1] === "n" && (p[2]! < "a" || p[2]! > "z")) {
-				let eventName = p.slice(2);
-				if (!v) continue;
-				if (typeof v !== "string" || eventName === v) {
-					throw invalidArgErr("preset." + p);
-				}
-				let forward = v[0] === "+";
-				if (forward) v = v.slice(1);
-				ObservedObject.intercept(view, eventName, (e, emit) => {
-					if (forward) emit(e);
-					view.emit(new ObservedEvent(v, view, e.data, undefined, e));
-				});
-				continue;
-			}
-
-			// ignore undefined values, unless the property was never added
-			if (v === undefined && p in this) continue;
-
-			// apply binding or set property
-			if (isBinding(v)) {
-				v.bindTo(view, p as any);
-			} else {
-				(view as any)[p] =
-					(view as any)[p] instanceof ConfigOptions
-						? (view as any)[p].constructor.init(v)
-						: v;
-			}
-		}
-		return view;
-	}
-
-	/** Creates a new instance for the provided view class and preset options */
-	constructor(View: new () => TView, preset: any) {
-		this.View = View;
-		this.preset = preset;
-	}
-
-	/** The view class that this view builder is associated with */
-	readonly View: new () => TView;
-
-	/** The preset properties, bindings, and event handlers that will be applied to each view instance created by this view builder */
-	readonly preset: Readonly<{}>;
-
-	/**
-	 * Creates a new view instance with this view builder's preset properties, bindings, and event handlers
-	 */
-	create() {
-		return ViewBuilder.applyPreset(new this.View(), this.preset);
-	}
-
-	/**
-	 * Registers a callback function that initializes all new view instances after they have been created
-	 * @param init A function that initializes the view instance after it has been created
-	 */
-	addInitializer(init: (view: TView) => void): this {
-		let create = this.create;
-		this.create = function () {
-			let result = create.call(this);
-			init(result);
-			return result;
-		};
-		return this;
-	}
+	create(): TView;
 }
 
 export namespace ViewBuilder {
 	/**
-	 * Type definition for the preset object that can be passed to a view builder
-	 * @summary This type is used to put together the object type for e.g. `ui.cell(...)`, based on the provided type parameters.
-	 * - `TBaseClass` is used to infer the type of the parameter accepted by {@link View.getViewBuilder()} on a subclass.
-	 * - `TView` is used to infer property types.
-	 * - `K` is a string type containing all properties to take from TView.
+	 * A class that handles the initialization and configuration of views, as part of a view builder
+	 *
+	 * @description
+	 * The Initializer class provides methods to configure view properties, bindings, event handlers, and initialization callbacks. It provides the implementation for fluent configuration methods on {@link ViewBuilder} interfaces, for many types of built-in view builders as well as custom view classes.
 	 */
-	export type ExtendPreset<
-		TBaseClass,
-		TView = any,
-		K extends keyof TView = never,
-	> = TBaseClass extends {
-		getViewBuilder(preset: infer P): ViewBuilder;
-	}
-		? P & {
-				[P in K]?: TView[P] extends ConfigOptions
-					? ConfigOptions.Arg<TView[P]>
-					: BindingOrValue<TView[P]>;
+	export class Initializer<TView extends View> {
+		/**
+		 * Creates a new initializer for the specified view class
+		 * @param ViewClass The view class constructor
+		 */
+		constructor(
+			ViewClass: new () => TView,
+			initialize?: (view: TView) => void,
+		) {
+			this.ViewClass = ViewClass;
+			if (initialize) this._before.push(initialize);
+		}
+
+		/** The view class constructor that will be used to create instances */
+		readonly ViewClass: new () => TView;
+
+		/**
+		 * Sets a property value or binding on each view instance after it is created
+		 *
+		 * @description
+		 * This method allows setting either a static value or a binding for any property of the view. If a binding is provided, it will be automatically bound after the view is created.
+		 *
+		 * @param name The name of the property to set
+		 * @param valueOrBinding The value or binding to set for the property
+		 */
+		set<
+			K extends string &
+				keyof {
+					[P in keyof TView as TView[P] extends Function ? never : P]: TView[P];
+				},
+		>(name: K, valueOrBinding: BindingOrValue<TView[K]>) {
+			this._properties[name] = valueOrBinding;
+		}
+
+		/**
+		 * Registers a callback to be called during view initialization
+		 * @note The provided callback will be invoked after the view instance is created but before properties are set. This is useful for performing early initialization logic.
+		 * @param callback The initialization callback that receives the view instance
+		 */
+		initialize(callback: (view: TView) => void) {
+			this._before.push(callback);
+		}
+
+		/**
+		 * Registers a callback to be called after view initialization is complete
+		 * @note The provided callback will be invoked after all properties have been set and bindings have been applied. This is useful for performing final setup or validation.
+		 * @param callback The finalization callback that receives the view instance
+		 */
+		finalize(callback: (view: TView) => void) {
+			this._after.push(callback);
+		}
+
+		/**
+		 * Registers an update handler for a value or binding
+		 *
+		 * @description
+		 * This method allows you to specify a custom handler that will be called immediately for a view instance (for a static value), or whenever a bound value changes (for a binding). This is useful for implementing a fluent interface that isn't mapped directly to a single view property.
+		 * @param valueOrBinding The value or binding to use
+		 * @param handle The handler function to call when the value changes
+		 */
+		update(valueOrBinding: any, handle: (this: TView, value: any) => void) {
+			this._after.push((view) => {
+				if (isBinding(valueOrBinding)) {
+					view.observe(valueOrBinding, handle);
+				} else {
+					handle.call(view, valueOrBinding);
+				}
+			});
+		}
+
+		/**
+		 * Configures event handling to emit an aliased event or call a function
+		 *
+		 * @description
+		 * This method intercepts events with the specified name and re-emits them with an alias, or calls a function. If the `forward` parameter is true, the original event will also be forwarded.
+		 *
+		 * Typically, an aliased event is used to handle events at the parent level, e.g. in an activity. In some cases, a function can be used to handle the event (not recommended, to avoid mixing application logic into view code).
+		 *
+		 * @param eventName The name of the event to intercept
+		 * @param alias The alias to emit instead, or a function to call
+		 * @param data The data properties to add to the alias event, if any
+		 * @param forward Whether to forward the original event as well (defaults to false)
+		 */
+		intercept(
+			eventName: string,
+			alias: string | ObservableObject.InterceptHandler<TView>,
+			data?: Record<string, unknown>,
+			forward?: boolean,
+		) {
+			if (typeof alias === "string") {
+				let a = alias;
+				alias = function (e, emit) {
+					if (forward) emit(e);
+					let eventData = data ? { ...e.data, ...data } : e.data;
+					this.emit(new ObservableEvent(a, this, eventData, undefined, e));
+				};
 			}
-		: never;
+			this._intercept[eventName] = alias;
+		}
+
+		/**
+		 * Creates and initializes a new view instance
+		 *
+		 * @description
+		 * This method creates a new instance of the view class and applies all configured properties, bindings, callbacks, and event interceptors.
+		 *
+		 * The following steps are performed in order:
+		 * 1. Run all initialization callbacks
+		 * 2. Set properties and apply bindings
+		 * 3. Run all finalization callbacks
+		 * 4. Set up event interceptors
+		 *
+		 * @returns A fully initialized view instance
+		 */
+		create() {
+			return this._apply(new this.ViewClass());
+		}
+
+		/**
+		 * Applies all configuration to a view instance
+		 *
+		 * @description
+		 * This private method handles the actual application of all configured settings to a view instance. It executes in the following order:
+		 * 1. Runs all initialization callbacks
+		 * 2. Sets properties and applies bindings
+		 * 3. Runs all finalization callbacks
+		 * 4. Sets up event interceptors
+		 *
+		 * @param view The view instance to configure
+		 * @returns The configured view instance
+		 */
+		private _apply(view: TView) {
+			// call initialize(...) callbacks
+			for (let f of this._before) f(view);
+
+			// set properties, or apply bindings
+			for (let p in this._properties) {
+				let valueOrBinding = this._properties[p];
+				if (isBinding(valueOrBinding)) {
+					if (!(p in view)) (view as any)[p] = undefined;
+					view.observe(valueOrBinding, (v) => {
+						(view as any)[p] = v;
+					});
+				} else {
+					(view as any)[p] = valueOrBinding;
+				}
+			}
+
+			// call finalize(...) callbacks
+			for (let f of this._after) f(view);
+
+			// add event intercepts
+			for (let eventName in this._intercept) {
+				ObservableObject.intercept(
+					view,
+					eventName,
+					this._intercept[eventName]!,
+				);
+			}
+			return view;
+		}
+
+		private _before: ((view: TView) => void)[] = [];
+		private _after: ((view: TView) => void)[] = [];
+		private _properties: Record<string, any> = {};
+		private _intercept: Record<
+			string,
+			ObservableObject.InterceptHandler<TView>
+		> = {};
+	}
 }

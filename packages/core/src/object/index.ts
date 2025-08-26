@@ -1,4 +1,4 @@
-export * from "./ObservedObject.js";
-export * from "./ObservedList.js";
-export * from "./ObservedEvent.js";
+export * from "./ObservableObject.js";
+export * from "./ObservableList.js";
+export * from "./ObservableEvent.js";
 export * from "./Binding.js";

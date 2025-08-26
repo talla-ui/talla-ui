@@ -1,11 +1,11 @@
-import { ObjectReader } from "@talla-ui/util";
-import { ObservedObject } from "../object/index.js";
+import { InputValidator } from "@talla-ui/util";
+import { ObservableObject } from "../object/index.js";
 
 /**
- * A class that controls persisted object data
+ * A class that controls persisted data
  *
  * @description
- * This class allows you to store serializable objects (i.e. objects with properties that are serializable as JSON), indexed using string keys. The data can be retrieved using the same keys, validated and read using the {@link ObjectReader} class.
+ * This class allows you to store serializable values (e.g. objects with properties that are serializable as JSON),. The data can be retrieved using the same keys, validated and read using the {@link InputValidator} class.
  *
  * An instance of this class is available as `app.localData`. Where possible (e.g. on the web platform), data is persisted to the user's device or runtime environment. In that case, the persisted data can be retrieved after the app is closed and started again.
  *
@@ -13,7 +13,7 @@ import { ObservedObject } from "../object/index.js";
  *
  * On any write (or clear) operation, the `LocalData` object emits a change event. If possible, the `key` property of the event data indicates which object has been modified.
  *
- * @see {@link ObjectReader}
+ * @see {@link InputValidator}
  * @see {@link useWebContext}
  * @see {@link useTestContext}
  * @hideconstructor
@@ -23,41 +23,41 @@ import { ObservedObject } from "../object/index.js";
  * await app.localData.writeAsync("profile", { fullName: "John Doe" });
  *
  * // ... later, read it back, if possible
- * let [profile, errors] = await app.localData.readAsync("profile", { fullName: { string: {} }});
- * if (profile) console.log(profile.fullName);
+ * let { data, errors } = await app.localData.readAsync("profile", (v) =>
+ *   v.object({ fullName: v.string().optional() })
+ * );
+ * if (data) console.log(data.fullName);
  */
-export class LocalData extends ObservedObject {
-	constructor(defaults?: Record<string, Record<string, unknown>>) {
+export class LocalData extends ObservableObject {
+	constructor(defaults?: Record<string, unknown>) {
 		super();
 		this._defaults = { ...defaults };
 	}
 
 	/**
-	 * Read persisted data from the specified key using a schema or object reader
+	 * Read persisted data from the specified key using an input validator
 	 * @param key The persisted key
-	 * @param reader Either an ObjectReader instance or a schema to validate and read data
-	 * @returns A tuple containing either the data (object) that was read, or a set of errors for fields in the schema definition
+	 * @param validator Either an {@link InputValidator} instance or callback to create one
+	 * @returns A tuple containing either the data that was read, or a set of errors for fields in the schema definition
 	 */
-	async readAsync<T extends ObjectReader.Schema>(
+	async readAsync<T = unknown>(
 		key: string,
-		reader: T | ObjectReader<T>,
-	): Promise<ObjectReader.ReadResult<T>> {
-		if (!(reader instanceof ObjectReader)) {
-			reader = new ObjectReader(reader);
-		}
+		validator: InputValidator.Initializer<T>,
+	) {
+		validator = new InputValidator(validator);
 		let json = this._obj?.[key];
 		return json
-			? reader.readJSONString(json)
-			: reader.read(this._defaults[key] || ({} as any));
+			? validator.safeParse(JSON.parse(json))
+			: validator.safeParse(this._defaults[key] || ({} as any));
 	}
 
 	/**
-	 * Write and persist the specified object
+	 * Write and persist the specified data
 	 * @param key The key to persist the data to
 	 * @param data The data to be persisted, must be serializable as JSON (or undefined)
 	 */
-	async writeAsync(key: string, data?: Record<string, unknown>) {
-		(this._obj ||= {})[key] = data && JSON.stringify(data);
+	async writeAsync(key: string, data?: unknown) {
+		(this._obj ||= {})[key] = data == null ? undefined : JSON.stringify(data);
 		return this.emitChange(undefined, { key });
 	}
 
@@ -70,5 +70,5 @@ export class LocalData extends ObservedObject {
 	/** A map of JSON strings that gets used by the default implementation (i.e. not persisted at all) */
 	declare private _obj?: Record<string, string | undefined>;
 
-	private _defaults: Record<string, Record<string, unknown>>;
+	private _defaults: Record<string, unknown>;
 }

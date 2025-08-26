@@ -1,6 +1,6 @@
 import { LocalData } from "@talla-ui/core";
-import { ObjectReader } from "@talla-ui/util";
-import { WebContextOptions } from "./WebContext.js";
+import { InputValidator } from "@talla-ui/util";
+import { WebContextOptions } from "./WebContextOptions.js";
 
 /** @internal Web platform specific implementation of `LocalData`, not exposed as-is */
 export class WebLocalData extends LocalData {
@@ -9,18 +9,18 @@ export class WebLocalData extends LocalData {
 		this._name = options?.localDataName || "LocalData";
 	}
 
-	override async readAsync<T extends ObjectReader.Schema>(
+	override async readAsync<T = unknown>(
 		key: string,
-		reader: T | ObjectReader<T>,
+		validator: InputValidator.Initializer<T>,
 	) {
+		validator = new InputValidator(validator);
 		let data = await this._transact((s) => s.get(String(key)));
-		if (!(reader instanceof ObjectReader)) reader = new ObjectReader(reader);
 		return data && data.value !== undefined
-			? reader.read(data.value as any)
-			: super.readAsync(key, reader);
+			? validator.safeParse(data.value)
+			: super.readAsync(key, validator);
 	}
 
-	override async writeAsync(key: string, value?: Record<string, unknown>) {
+	override async writeAsync(key: string, value?: unknown) {
 		await this._transact((s) => {
 			if (value === undefined) s.delete(key);
 			else s.put({ key, value });

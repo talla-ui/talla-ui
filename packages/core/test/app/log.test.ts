@@ -1,4 +1,4 @@
-import { strf } from "@talla-ui/util";
+import { fmt } from "@talla-ui/util";
 import { beforeEach, expect, test } from "vitest";
 import { app, AppContext, AppException } from "../../dist/index.js";
 
@@ -31,12 +31,12 @@ test("Add log sink, min level", () => {
 	expect(seen).toEqual([2, 3, 4, 5]);
 });
 
-test("Write message using strf", () => {
+test("Write message using fmt", () => {
 	app.log.addHandler(0, (data) => {
 		expect(data.message).toBe("Hello, world!");
 		expect(data.data).toEqual(["world"]);
 	});
-	app.log.information(strf("Hello, %s!", "world"));
+	app.log.information(fmt("Hello, {}!", "world"));
 });
 
 test("Write message using multiple args", () => {
@@ -56,13 +56,13 @@ test("Dump data using multiple args", () => {
 	app.log.dump(a, b);
 });
 
-test("Write message using strf, named property", () => {
+test("Write message using fmt, named property", () => {
 	app.log.addHandler(0, (data) => {
 		expect(data.message).toBe("Hello, world!");
 		expect(data.data).toHaveLength(1);
 		expect(data.data[0]).toHaveProperty("who", "world");
 	});
-	app.log.information(strf("Hello, %[who]!", { who: "world" }));
+	app.log.information(fmt("Hello, {who}!", { who: "world" }));
 });
 
 test("Write plain error", () => {
@@ -75,7 +75,7 @@ test("Write plain error", () => {
 });
 
 test("Write AppException", () => {
-	const MyError = AppException.type("MyError", "Hello, %[who]!");
+	const MyError = AppException.type("MyError", "Hello, {who}!");
 	app.log.addHandler(0, (data) => {
 		expect(data.message).toBe("Hello, world!");
 		expect(data.data[0]).toHaveProperty("who", "world");
@@ -86,7 +86,7 @@ test("Write AppException", () => {
 });
 
 test("Write AppException with cause", () => {
-	const MyError = AppException.type("MyError", "Hello, %[who]!");
+	const MyError = AppException.type("MyError", "Hello, {who}!");
 	app.log.addHandler(0, (data) => {
 		expect(data.data[2].cause).toMatch(/Hello/);
 	});

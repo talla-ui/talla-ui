@@ -43,7 +43,8 @@
 		"clean:web": "cd packages/web-handler && npm run clean",
 		"clean:docgen": "cd packages/docgen && npm run clean",
 		"clean:docs": "cd docs && npm run clean",
-		"test": "npm run test:test && npm run test:core",
+		"test": "vitest run --silent=true",
+		"test:coverage": "vitest --coverage",
 		"test:util": "cd packages/util && npm test",
 		"test:core": "cd packages/core && npm test",
 		"test:test": "cd packages/test-handler && npm test",
@@ -85,9 +86,10 @@
 		"@talla-ui/util": "4.0.0-dev.91"
 	},
 	"devDependencies": {
-		"@talla-ui/util": "file:packages/util",
 		"@talla-ui/core": "file:packages/core",
+		"@talla-ui/util": "file:packages/util",
 		"@types/node": "20",
+		"@vitest/coverage-v8": "3",
 		"concurrently": "latest",
 		"esbuild": "^0.23.1",
 		"http-server": "latest",
@@ -95,6 +97,6 @@
 		"rimraf": "latest",
 		"tslib": "^2.7.0",
 		"typescript": "5.6",
-		"vitest": "^3.0.2"
+		"vitest": "3"
 	}
 }

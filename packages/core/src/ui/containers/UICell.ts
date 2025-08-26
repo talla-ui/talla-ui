@@ -1,79 +1,15 @@
-import type { RenderContext, ViewBuilder } from "../../app/index.js";
-import type { UIColor, UIStyle } from "../style/index.js";
-import type { UIRenderable } from "../UIRenderable.js";
+import { ViewBuilder } from "../../app/index.js";
 import { UIContainer } from "./UIContainer.js";
+import { UIScrollView } from "./UIScrollView.js";
 
 /**
- * A view class that represents a cell container element
+ * A view class that represents an interactive container element
  *
  * @description A cell container functions like a basic container element (using column layout), taking up as much space as possible by default, and with additional properties for decoration and styling.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI element class.
+ * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
 export class UICell extends UIContainer {
-	/**
-	 * Creates a new {@link ViewBuilder} instance for the current view class
-	 * @see {@link View.getViewBuilder}
-	 * @docgen {hide}
-	 */
-	static override getViewBuilder(
-		preset: ViewBuilder.ExtendPreset<
-			typeof UIContainer,
-			UICell,
-			| "textDirection"
-			| "margin"
-			| "background"
-			| "textColor"
-			| "borderRadius"
-			| "opacity"
-			| "effect"
-			| "width"
-			| "height"
-			| "style"
-			| "allowFocus"
-			| "allowKeyboardFocus"
-		> & {
-			/** Event that's emitted when the mouse cursor enters the cell area */
-			onMouseEnter?: string;
-			/** Event that's emitted when the mouse cursor leaves the cell area */
-			onMouseLeave?: string;
-		},
-		...content: ViewBuilder[]
-	) {
-		if (preset.allowKeyboardFocus) preset.allowFocus = true;
-		return super.getViewBuilder(preset, ...content);
-	}
-
-	/** Text direction (rtl or ltr) for all UI elements within this cell */
-	textDirection?: "ltr" | "rtl" = undefined;
-
-	/** Additional space to be added around the entire cell, in pixels or CSS length with unit, **or** an object with separate offset values */
-	margin?: UIRenderable.Offsets = undefined;
-
-	/** Border radius, in pixels or CSS length with unit */
-	borderRadius?: string | number = undefined;
-
-	/** Cell background color, defaults to undefined (no fill) */
-	background?: UIColor = undefined;
-
-	/** Text color for labels within this cell */
-	textColor?: UIColor = undefined;
-
-	/** Opacity level (0–1), defaults to undefined (opaque) */
-	opacity?: number = undefined;
-
-	/** An output effect that will be applied when the cell is rendered */
-	effect?: RenderContext.OutputEffect = undefined;
-
-	/** Cell width, in pixels or CSS length with unit */
-	width?: string | number = undefined;
-
-	/** Cell height, in pixels or CSS length with unit */
-	height?: string | number = undefined;
-
-	/** The style to be applied to this cell */
-	style?: UICell.StyleValue = undefined;
-
 	/**
 	 * True if this cell *itself* may receive direct input focus
 	 * - This property can't be changed after rendering.
@@ -89,45 +25,50 @@ export class UICell extends UIContainer {
 }
 
 export namespace UICell {
-	/** A style object or overrides that can be applied to {@link UICell} */
-	export type StyleValue =
-		| UIStyle<UICell.StyleDefinition>
-		| UICell.StyleDefinition
-		| undefined;
-
-	/** The type definition for styles applicable to {@link UICell.style} */
-	export type StyleDefinition = UIRenderable.Dimensions &
-		UIRenderable.Decoration;
-}
-
-/**
- * A view class that represents a cell with animated style updates
- *
- * @description An animated cell container functions like a regular cell container (see {@link UICell}), but shows animations for all style-related updates where possible.
- *
- * @online_docs Refer to the online documentation for more documentation on using this UI element class.
- */
-export class UIAnimatedCell extends UICell {
 	/**
-	 * Creates a new {@link ViewBuilder} instance for the current view class
-	 * @see {@link View.getViewBuilder}
-	 * @docgen {hide}
+	 * Creates a view builder for an interactive cell container element
+	 * @param builders Optional view builders for the content of the cell.
+	 * @returns A builder object for configuring the cell.
+	 * @see {@link UICell}
+	 * @see {@link UIContainer}
 	 */
-	declare static getViewBuilder: (
-		preset: ViewBuilder.ExtendPreset<
-			typeof UICell,
-			UIAnimatedCell,
-			"animationDuration" | "animationTiming"
-		>,
-		...content: ViewBuilder[]
-	) => ViewBuilder<UIAnimatedCell>;
-
-	/** Duration of _all_ style update animations */
-	animationDuration?: number;
+	export function cellBuilder(...builders: ViewBuilder[]) {
+		return new CellBuilder().with(...builders);
+	}
 
 	/**
-	 * Timing curve of _all_ style update animations
-	 * - This property may be set to `linear`, `ease`, or an array with cubic bezier curve parameters.
+	 * A builder class for creating `UICell` instances.
+	 * - Objects of this type are returned by the `UI.Cell()` function.
 	 */
-	animationTiming?: "linear" | "ease" | [number, number, number, number];
+	export class CellBuilder extends UIContainer.ContainerBuilder<UICell> {
+		/** The initializer that is used to create each cell instance */
+		readonly initializer = new ViewBuilder.Initializer(UICell);
+
+		/**
+		 * Allows the cell to receive input focus.
+		 * @param allow If `true`, the cell can be focused. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		allowFocus(allow = true) {
+			return this.setProperty("allowFocus", allow);
+		}
+
+		/**
+		 * Allows the cell to receive input focus via the keyboard.
+		 * @param allow If `true`, the cell can be focused with the keyboard. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		allowKeyboardFocus(allow = true) {
+			if (allow) this.allowFocus(true);
+			return this.setProperty("allowKeyboardFocus", allow);
+		}
+
+		/**
+		 * Wraps the cell in a scroll view container.
+		 * @returns A new scroll view builder, for the scrolling container that will contain this cell.
+		 */
+		scroll() {
+			return new UIScrollView.ScrollViewBuilder().setContent(this);
+		}
+	}
 }

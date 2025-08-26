@@ -1,20 +1,22 @@
 import { expectOutputAsync, useTestContext } from "@talla-ui/test-handler";
-import { ObjectReader, strf } from "@talla-ui/util";
+import { fmt, InputValidator } from "@talla-ui/util";
 import { beforeEach } from "node:test";
 import { expect, test } from "vitest";
 import {
-	$activity,
-	$view,
 	Activity,
+	app,
 	AppContext,
+	bind,
+	BindingOrValue,
+	CustomView,
 	FormContext,
-	ObservedEvent,
-	UIComponent,
+	ObservableEvent,
+	UI,
 	UILabel,
 	UIRow,
 	UITextField,
-	app,
-	ui,
+	View,
+	ViewBuilder,
 } from "../../dist/index.js";
 
 beforeEach(() => {
@@ -28,7 +30,7 @@ class ChangeCounter {
 	constructor(formContext: FormContext) {
 		formContext.listen(this);
 	}
-	handler(_: FormContext, event: ObservedEvent) {
+	handler(_: FormContext, event: ObservableEvent) {
 		if (event.name === "FormChange") this.changes++;
 	}
 	changes = 0;
@@ -67,15 +69,16 @@ test("Clear values", () => {
 });
 
 test("Validation", () => {
-	let ctx = new FormContext({
-		foo: {
-			isString: {
-				required: { err: "Foo is required" },
-				min: { length: 3, err: "Too short" },
-			},
-		},
-		baz: { isNumber: {}, isOptional: true },
-	});
+	let ctx = new FormContext((b) =>
+		b.object({
+			foo: b
+				.string()
+				.required("Foo is required")
+				.check((s) => s.length >= 3)
+				.error("Too short"),
+			baz: b.number().optional(),
+		}),
+	);
 
 	console.log("No validation yet");
 	let counter = new ChangeCounter(ctx);
@@ -110,39 +113,59 @@ test("Validation", () => {
 	expect(counter.changes, "Change counter").toBe(6);
 });
 
-test("ObjectReader validation", () => {
-	let reader = new ObjectReader({
-		foo: { isString: { required: { err: "Foo is required" } } },
-	});
-	let ctx = new FormContext(reader);
-	ctx.set("foo", "");
-	expect(ctx.errors).not.toHaveProperty("foo");
+test("Validation using existing InputValidator", () => {
+	let validator = new InputValidator((b) =>
+		b.object({
+			foo: b.string(),
+		}),
+	);
+	let ctx = new FormContext(validator, { foo: 123 });
 	ctx.validate();
 	expect(ctx.errors).toHaveProperty("foo");
+	expect(ctx.valid).toBe(false);
+
+	ctx.set("foo", "bar");
+	expect(ctx.errors).not.toHaveProperty("foo");
+	expect(ctx.valid).toBe(true);
 });
 
-test("UI component, binding to value and error", () => {
+test("Custom view, binding to value and error", () => {
 	useTestContext();
 	let ERR = "Foo must have at least 3 characters";
 	let ctx = new FormContext(
-		{ foo: { isString: { min: { length: 3, err: strf(ERR) } } } },
+		(b) =>
+			b.object({
+				foo: b
+					.string()
+					.check((s) => s.length >= 3)
+					.error(fmt(ERR)),
+			}),
 		{ foo: "bar" },
 	);
 
-	const MyComp = UIComponent.define(
-		{ formContext: undefined as FormContext | undefined },
-		ui.row(
-			ui.label($view("formContext.errors.foo.message")),
-			ui.textField({ formField: "foo" }),
+	UI.Toggle()
+		.accessibleRole("checkbox")
+		.label("Foo")
+		.borderRadius(10)
+		.accessibleLabel("Foo")
+		.bold();
+
+	class FormView extends CustomView {
+		form = undefined as FormContext | undefined;
+	}
+	const MyComp = FormView.builder(() =>
+		UI.Row(
+			UI.Label(bind("form.errors.foo")),
+			UI.TextField().bindFormField("foo"),
 		),
 	);
 
-	let view = new MyComp();
-	expect(view).toHaveProperty("formContext");
+	let view = MyComp.create();
+	expect(view).toHaveProperty("form");
 	view.render((() => {}) as any); // force render to get reference to body
-	let row = view.body as UIRow;
+	let row = (view as any).body as UIRow;
 	let [label, tf] = row.content.toArray() as [UILabel, UITextField];
-	view.formContext = ctx;
+	view.form = ctx;
 
 	// set and check text field
 	expect(tf.value).toBe("bar");
@@ -154,27 +177,25 @@ test("UI component, binding to value and error", () => {
 	tf.value = "1";
 	tf.emit("Change");
 	expect(ctx.validate(), "validate() result").toBeUndefined();
-	expect(ctx.errors, "formContext errors").toHaveProperty("foo");
+	expect(ctx.errors, "form errors").toHaveProperty("foo");
 	expect(String(label.text)).toBe(ERR);
 });
 
 test("Custom form container, rendered", async () => {
 	useTestContext();
-	const FormContainer = UIComponent.define(
-		{ formContext: undefined as FormContext | undefined },
-		(_, ...content) => ui.column(...content),
-	);
-	const view = ui.row(
-		ui.use(
-			FormContainer,
-			{ formContext: $activity("form1") },
-			ui.textField({ formField: "text" }),
-		),
-		ui.use(
-			FormContainer,
-			{ formContext: $activity("form2") },
-			ui.textField({ formField: "text" }),
-		),
+
+	const FormContainer = (
+		formContext: BindingOrValue<FormContext>,
+		...content: ViewBuilder[]
+	) =>
+		CustomView.builder<{ form?: FormContext }>((initializer) => {
+			initializer.set("form", formContext);
+			return UI.Column(...content);
+		});
+
+	const view = UI.Row(
+		FormContainer(bind("form1"), UI.TextField().bindFormField("text")),
+		FormContainer(bind("form2"), UI.TextField().bindFormField("text")),
 	);
 	class MyActivity extends Activity {
 		protected override createView() {

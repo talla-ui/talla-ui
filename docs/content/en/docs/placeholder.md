@@ -43,9 +43,9 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link NavigationContext} +
 - {@link NavigationTarget} +
 - {@link ObjectReader} +
-- {@link ObservedEvent} +
-- {@link ObservedList} +
-- {@link ObservedObject} +
+- {@link ObservableEvent} +
+- {@link ObservableList} +
+- {@link ObservableObject} +
 - {@link OutputAssertion} +
 - {@link OutputSelectFilter} +
 - {@link RenderContext} +

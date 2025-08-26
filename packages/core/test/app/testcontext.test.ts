@@ -7,23 +7,21 @@ import {
 	renderTestView,
 	useTestContext,
 } from "@talla-ui/test-handler";
-import { ObjectReader, strf } from "@talla-ui/util";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { fmt } from "@talla-ui/util";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import {
 	Activity,
 	AppContext,
+	CustomView,
 	LocalData,
 	MessageDialogOptions,
 	ModalMenuOptions,
-	NavigationTarget,
+	UI,
 	UIButton,
 	UICell,
-	UIComponent,
-	UIIconResource,
 	UILabel,
-	UITheme,
+	ViewEvent,
 	app,
-	ui,
 } from "../../dist/index.js";
 
 test("useTestContext result", () => {
@@ -36,132 +34,132 @@ describe("Local data", () => {
 	test("Empty data", async () => {
 		let app = useTestContext();
 		expect(app.localData).toBeInstanceOf(LocalData);
-		let read = await app.localData.readAsync("test", {
-			foo: { isOptional: true },
-		});
-		expect(read?.[0]).toHaveProperty("foo", undefined);
+		let read = await app.localData.readAsync("test", (b) =>
+			b.object({
+				foo: b.any(),
+			}),
+		);
+		expect(read?.data).toHaveProperty("foo", undefined);
 	});
 
 	test("Specified local data", async () => {
 		let app = useTestContext({ localData: { test: { foo: 123 } } });
-		let read = await app.localData.readAsync("test", { foo: { isNumber: {} } });
-		expect(read?.[0]).toHaveProperty("foo", 123);
-	});
-
-	test("Use ObjectReader", async () => {
-		let app = useTestContext({ localData: { test: { foo: 123 } } });
-		let reader = new ObjectReader({ foo: { isNumber: {} } });
-		let read = await app.localData.readAsync("test", reader);
-		expect(read?.[0]).toHaveProperty("foo", 123);
+		let read = await app.localData.readAsync("test", (b) =>
+			b.object({ foo: b.number() }),
+		);
+		expect(read?.data).toHaveProperty("foo", 123);
 	});
 
 	test("Write and read local data", async () => {
 		let app = useTestContext({
-			localData: { test: { foo: 123 }, other: { foo: 456 } },
+			localData: { foo: 123, test: { foo: 123 }, other: { foo: 456 } },
 		});
+		await app.localData.writeAsync("foo", 321);
+		let readFoo = await app.localData.readAsync("foo", (b) => b.number());
+		expect(readFoo?.errors).toBeUndefined();
+		expect(readFoo?.data).toBe(321);
 		await app.localData.writeAsync("test", { foo: 321 });
-		let read = await app.localData.readAsync("test", { foo: { isNumber: {} } });
-		expect(read?.[0]).toHaveProperty("foo", 321);
-		let def = await app.localData.readAsync("other", { foo: { isNumber: {} } });
-		expect(def?.[0]).toHaveProperty("foo", 456);
+		let readTest = await app.localData.readAsync("test", (b) =>
+			b.object({ foo: b.number() }),
+		);
+		expect(readTest?.data).toHaveProperty("foo", 321);
+		let def = await app.localData.readAsync("other", (b) =>
+			b.object({ foo: b.number() }),
+		);
+		expect(def?.data).toHaveProperty("foo", 456);
 	});
 });
 
 describe("Navigation paths", () => {
 	test("Initial path: default", () => {
 		let app = useTestContext();
-		expect(app.navigation.pageId).toBe("");
-		expect(app.navigation.detail).toBe("");
+		expect(app.navigation.path).toBe("");
 	});
 
 	test("Initial path: set in options", () => {
-		let app = useTestContext({ navigationPageId: "foo" });
-		expect(app.navigation.pageId).toBe("foo");
+		let app = useTestContext({ navigationPath: "foo" });
+		expect(app.navigation.path).toBe("foo");
 	});
 
 	test("Navigation history: set once", async () => {
-		let app = useTestContext({ navigationPageId: "foo" });
+		let app = useTestContext({ navigationPath: "foo" });
 		let nav = app.navigation;
-		await nav.navigateAsync(new NavigationTarget("foo/bar"));
+		await nav.navigateAsync("foo/bar");
 		expect(nav.getHistory()).toEqual(["foo", "foo/bar"]);
 	});
 
 	test("Navigation history: set, replace", async () => {
-		let app = useTestContext({ navigationPageId: "foo" });
+		let app = useTestContext({ navigationPath: "foo" });
 		let nav = app.navigation;
-		await nav.navigateAsync(new NavigationTarget("foo/bar"));
-		await nav.navigateAsync(new NavigationTarget("foo/bar/baz"), {
+		await nav.navigateAsync("foo/bar");
+		await nav.navigateAsync("foo/bar/baz", {
 			replace: true,
 		});
 		expect(nav.getHistory()).toEqual(["foo", "foo/bar/baz"]);
 	});
 
 	test("Navigation history: back", async () => {
-		let app = useTestContext({ navigationPageId: "foo" });
+		let app = useTestContext({ navigationPath: "foo" });
 		let nav = app.navigation;
-		await nav.navigateAsync(new NavigationTarget("bar"));
+		await nav.navigateAsync("bar");
 		await nav.navigateAsync(undefined, { back: true });
 		expect(nav.getHistory()).toEqual(["foo"]);
 	});
 
 	test("Navigation history: back twice", async () => {
-		let app = useTestContext({ navigationPageId: "foo" });
+		let app = useTestContext({ navigationPath: "foo" });
 		app.navigate("foo/bar");
-		await expectNavAsync({ pageId: "foo", detail: "bar" });
+		await expectNavAsync({ path: "foo/bar" });
 		app.navigate("/baz");
-		await expectNavAsync({ pageId: "baz" });
-		app.navigate(new NavigationTarget(), { back: true });
+		await expectNavAsync({ path: "baz" });
 		app.goBack();
-		await expectNavAsync({ pageId: "foo" });
+		app.goBack();
+		await expectNavAsync({ path: "foo" });
 	});
 
 	test("Navigation history: back using goBack() sync", async () => {
-		let app = useTestContext({ navigationPageId: "foo", navigationDelay: 0 });
+		let app = useTestContext({ navigationPath: "foo" });
 		let nav = app.navigation;
-		await nav.navigateAsync(new NavigationTarget("foo", "bar"));
+		await nav.navigateAsync("foo/bar");
 		app.goBack();
-		await expectNavAsync({ pageId: "foo", detail: "" });
+		await expectNavAsync({ path: "foo" });
 		expect(nav.getHistory()).toEqual(["foo"]);
 	});
 
 	test("Navigation history: back, set", async () => {
-		let app = useTestContext({ navigationPageId: "foo" });
+		let app = useTestContext({ navigationPath: "foo" });
 		let nav = app.navigation;
-		await nav.navigateAsync(new NavigationTarget("bar"));
-		await nav.navigateAsync(new NavigationTarget("baz"), { back: true });
+		await nav.navigateAsync("bar");
+		await nav.navigateAsync("baz", { back: true });
 		expect(nav.getHistory()).toEqual(["foo", "baz"]);
 	});
 
 	test("Navigation history: back, error if app would exit", async () => {
-		let app = useTestContext({ navigationPageId: "foo" });
+		let app = useTestContext({ navigationPath: "foo" });
 		let nav = app.navigation;
 		await expect(
 			nav.navigateAsync(undefined, { back: true }),
 		).rejects.toThrowError(/exit/);
 	});
 
-	test("Navigation history: replace 'page'", async () => {
+	test("Navigation history: replace 'prefix' without slash", async () => {
 		let app = useTestContext();
 		let nav = app.navigation;
-		let R = { replace: "page" } as const;
-		await nav.navigateAsync(new NavigationTarget("foo"), R);
+		let R = { replace: "prefix", prefix: "foo" } as const;
+		await nav.navigateAsync("foo", R);
 		expect(nav.getHistory()).toEqual(["", "foo"]);
-		await nav.navigateAsync(new NavigationTarget("bar"), R);
-		expect(nav.getHistory()).toEqual(["", "bar"]);
+		await nav.navigateAsync("foo/1", R);
+		expect(nav.getHistory()).toEqual(["", "foo/1"]);
 	});
 
-	test("Navigation history: replace 'detail'", async () => {
+	test("Navigation history: replace 'prefix' with slash", async () => {
 		let app = useTestContext();
 		let nav = app.navigation;
-		let R = { replace: "detail" } as const;
-		await nav.navigateAsync(new NavigationTarget("foo"), R);
+		let R = { replace: "prefix", prefix: "foo/" } as const;
+		await nav.navigateAsync("foo/", R); // slash will be stripped
 		expect(nav.getHistory()).toEqual(["", "foo"]);
-		await nav.navigateAsync(new NavigationTarget("bar"), R);
-		expect(nav.getHistory()).toEqual(["", "foo", "bar"]);
-		await nav.navigateAsync(new NavigationTarget("bar", "1"), R);
-		expect(nav.getHistory()).toEqual(["", "foo", "bar", "bar/1"]);
-		await nav.navigateAsync(new NavigationTarget("bar", "2"), R);
-		expect(nav.getHistory()).toEqual(["", "foo", "bar", "bar/2"]);
+		await nav.navigateAsync("foo/1", R); // not replaced, foo itself doesn't match
+		expect(nav.getHistory()).toEqual(["", "foo", "foo/1"]);
 	});
 });
 
@@ -178,43 +176,53 @@ describe("Rendering views", () => {
 		await app.renderer.expectOutputAsync({ source: view });
 	});
 
-	test("Cell view from single UI component", async () => {
-		const MyView = UIComponent.define({}, ui.cell());
-		let view = new MyView();
+	test("Cell view from single custom view", async () => {
+		const MyView = CustomView.builder(() => UI.Cell());
+		let view = MyView.create();
 		let app = useTestContext();
 		renderTestView(view);
-		await app.renderer.expectOutputAsync({ source: view.body! });
+		await app.renderer.expectOutputAsync({
+			type: "cell",
+			source: view.findViewContent(UICell)[0]!,
+		});
 	});
 
-	test("Cell view from single controller, handle events", async () => {
-		class MyView extends UIComponent.define({}, ui.cell()) {
-			async onClick() {
+	test("Cell view from single custom view, handle events async", async () => {
+		class CellView extends CustomView {
+			async onClick(e: ViewEvent) {
+				expect(e.source).toBeInstanceOf(UICell);
 				await Promise.resolve();
 				throw Error("Catch me");
 			}
 		}
-		let view = new MyView();
+		const MyView = CellView.builder(() => UI.Cell());
+		let view = MyView.create();
 		useTestContext({ throwUncaughtErrors: false });
 		let mockErrorHandler = vi.fn();
 		AppContext.setErrorHandler(mockErrorHandler);
 		renderTestView(view);
-		expect(clickOutputAsync({ source: view.body! })).resolves;
+		expect(clickOutputAsync({ source: view.findViewContent(UICell)[0]! }))
+			.resolves;
 		await new Promise((r) => setTimeout(r, 10));
 		expect(mockErrorHandler).toHaveBeenCalled();
 	});
 
 	test("Remove view after rendering", async () => {
-		const MyView = UIComponent.define({}, ui.cell());
-		let view = new MyView();
+		const MyView = CustomView.builder(() => UI.Cell());
+		let view = MyView.create();
 		let app = useTestContext();
 		let rendered = app.render(view);
-		await app.renderer.expectOutputAsync({ source: view.body! });
+		await app.renderer.expectOutputAsync({
+			type: "cell",
+			source: view.findViewContent(UICell)[0]!,
+		});
 		await rendered.removeAsync();
 		app.renderer.expectOutput({ type: "cell" }).toBeEmpty();
 	});
 
 	test("View is not rendered twice", async () => {
-		const view = new UICell(new UILabel("Test"));
+		const view = new UICell();
+		view.content.add(new UILabel("Test"));
 		let app = useTestContext();
 		app.render(view);
 		let out1 = await app.renderer.expectOutputAsync({ type: "label" });
@@ -264,7 +272,9 @@ describe("Rendering views", () => {
 		class MyActivity extends Activity {
 			protected override createView() {
 				this.setRenderMode("dialog");
-				return new UICell(new UILabel("foo"));
+				let view = new UICell();
+				view.content.add(new UILabel("foo"));
+				return view;
 			}
 		}
 		let activity = new MyActivity();
@@ -335,9 +345,9 @@ describe("Rendering views", () => {
 	test("Show confirm dialog, formatted", async () => {
 		let app = useTestContext();
 		let myDialog = new MessageDialogOptions(
-			strf("This is a test, foo = %[foo]"),
-			strf("OK"),
-			strf("Foo: %[foo]"),
+			fmt("This is a test, foo = {foo}"),
+			fmt("OK"),
+			fmt("Foo: {foo}"),
 		);
 		let formatted = myDialog.format({ foo: 123 });
 		let p = app.showConfirmDialogAsync(formatted);
@@ -368,203 +378,14 @@ describe("Rendering views", () => {
 		let app = useTestContext();
 		let p = app.showModalMenuAsync((options) => {
 			options.items.push({ key: "one", text: "One", hint: "1" });
-			options.items.push({ separate: true });
+			options.items.push({ divider: true });
 			options.items.push({ key: "two", text: "Two", hint: "2" });
 			options.width = 200;
 		});
-		await clickOutputAsync({ text: "Two" });
+
+		// click the label 'Two' inside of a row with accessibleRole 'menuitem':
+		await clickOutputAsync({ accessibleRole: "menuitem" }, { text: "Two" });
 		let result = await p;
 		expect(result).toBe("two");
-	});
-});
-
-describe("Theme and base styles", () => {
-	let theme: UITheme;
-
-	beforeEach(() => {
-		theme = new UITheme();
-	});
-
-	test("Clone theme", () => {
-		let app = useTestContext();
-		let oldTheme = app.theme!;
-		expect(oldTheme).toBeInstanceOf(UITheme);
-		expect(oldTheme.darkTextColor).toBe("#000000");
-		app.theme = app.theme!.clone();
-		expect(app.theme).not.toBe(oldTheme);
-		expect(app.theme.colors).not.toBe(oldTheme.colors);
-		expect(app.theme.icons).not.toBe(oldTheme.icons);
-		expect(app.theme.animations).not.toBe(oldTheme.animations);
-		expect(app.theme.styles).not.toBe(oldTheme.styles);
-		expect(app.theme.darkTextColor).toBe(oldTheme.darkTextColor);
-		app.theme.darkTextColor = "#123456";
-		app = useTestContext();
-		expect(app.theme?.darkTextColor).toBe(oldTheme.darkTextColor);
-	});
-
-	describe("setColors", () => {
-		test("should set colors in the theme", () => {
-			const color1 = ui.color("#ff0000");
-			const color2 = ui.color("#00ff00");
-			theme.setColors({
-				Primary: color1,
-				Secondary: color2,
-				Undefined: undefined, // Should be ignored
-			});
-			expect(theme.colors.get("Primary")).toBe(color1);
-			expect(theme.colors.get("Secondary")).toBe(color2);
-			expect(theme.colors.has("Undefined")).toBe(false);
-		});
-
-		test("should be chainable", () => {
-			const result = theme.setColors({
-				Primary: ui.color("#ff0000"),
-			});
-			expect(result).toBe(theme);
-		});
-	});
-
-	describe("setIcons", () => {
-		test("should set icons in the theme", () => {
-			const icon1 = ui.icon("CustomIcon1", "<svg>Icon 1</svg>");
-			const icon2 = ui.icon("CustomIcon2", "<svg>Icon 2</svg>");
-			theme.setIcons([icon1, icon2]);
-			expect(theme.icons.get("CustomIcon1")).toBe(icon1);
-			expect(theme.icons.get("CustomIcon2")).toBe(icon2);
-		});
-
-		test("should ignore undefined icons", () => {
-			theme.setIcons([undefined as any]);
-			expect(theme.icons.size).toBe(0);
-		});
-
-		test("should be chainable", () => {
-			const icon = ui.icon("CustomIcon", "<svg>Icon</svg>");
-			const result = theme.setIcons([icon]);
-			expect(result).toBe(theme);
-		});
-	});
-
-	describe("setAnimation", () => {
-		test("should add an animation to the theme", () => {
-			const animation = { applyTransform: vi.fn() };
-			theme.setAnimation("customAnimation", animation);
-			expect(theme.animations.get("customAnimation")).toBe(animation);
-		});
-
-		test("should be chainable", () => {
-			const result = theme.setAnimation("test", { applyTransform: vi.fn() });
-			expect(result).toBe(theme);
-		});
-	});
-
-	describe("setEffect", () => {
-		test("should add an effect to the theme", () => {
-			const effect = { applyEffect: vi.fn() };
-			theme.setEffect("customEffect", effect);
-			expect(theme.effects.get("customEffect")).toBe(effect);
-		});
-
-		test("should be chainable", () => {
-			const result = theme.setEffect("test", { applyEffect: vi.fn() });
-			expect(result).toBe(theme);
-		});
-	});
-
-	describe("setStyles", () => {
-		test("should set styles in the theme", () => {
-			const style1 = { color: "red" };
-			const style2 = { color: "blue" };
-			theme.setStyles({
-				Button: [style1],
-				Input: [style2],
-				Undefined: undefined as any, // Should be ignored
-			});
-			expect(theme.styles.get("Button")).toEqual([style1]);
-			expect(theme.styles.get("Input")).toEqual([style2]);
-			expect(theme.styles.has("Undefined")).toBe(false);
-		});
-
-		test("should be chainable", () => {
-			const result = theme.setStyles({
-				Button: [{ color: "red" }],
-			});
-			expect(result).toBe(theme);
-		});
-
-		test("should append styles for existing keys", () => {
-			const style1 = { color: "red" };
-			const style2 = { color: "blue" };
-			theme.setStyles({
-				Button: [style1],
-			});
-			theme.setStyles({
-				Button: [style2],
-			});
-			expect(theme.styles.get("Button")).toEqual([style1, style2]);
-		});
-
-		test("should ignore undefined styles", () => {
-			theme.setStyles({
-				Button: undefined as any,
-			});
-			expect(theme.styles.has("Button")).toBe(false);
-		});
-	});
-
-	test("Select icons are mirrored in RTL", () => {
-		let icon = new UIIconResource("Test").setMirrorRTL();
-		expect(icon.isMirrorRTL()).toBe(true);
-
-		// check on standard icons
-		let app = useTestContext();
-		expect(app.theme!.icons.get("ChevronNext")!.isMirrorRTL()).toBe(true);
-		expect(app.theme!.icons.get("ChevronBack")!.isMirrorRTL()).toBe(true);
-		expect(app.theme!.icons.get("ChevronUp")!.isMirrorRTL()).toBe(false);
-		expect(app.theme!.icons.get("ChevronDown")!.isMirrorRTL()).toBe(false);
-	});
-
-	describe("Styles", () => {
-		test("Extend base style", () => {
-			let myStyle = ui.style.BUTTON.extend({
-				textColor: ui.color.GREEN,
-			});
-			let styles = myStyle.getStyles();
-			expect(Array.isArray(styles)).toBe(true);
-			expect(styles[styles.length - 1]).toHaveProperty(
-				"textColor",
-				ui.color.GREEN,
-			);
-		});
-
-		test("Override base style", () => {
-			let override = ui.style.BUTTON.override(
-				{
-					width: 1,
-					textColor: ui.color.BLUE,
-				},
-				{
-					textColor: ui.color.GREEN,
-				},
-			);
-			let object = override.getOverrides();
-			expect(object).toHaveProperty("textColor", ui.color.GREEN);
-		});
-
-		test("Styles cached until theme changed", () => {
-			let app = useTestContext();
-			app.theme!.styles.set("Button", [{ textColor: ui.color.GREEN }]);
-			let myButtonStyle = ui.style.BUTTON.extend({ padding: 8 });
-			let styles = myButtonStyle.getStyles().slice(-2);
-			expect(styles[0]?.textColor).toBe(ui.color.GREEN);
-			expect(styles[1]?.padding).toBe(8);
-
-			console.log("Clearing test context");
-			app = useTestContext();
-			app.theme!.styles.set("Button", [{ padding: 0 }]);
-			styles = myButtonStyle.getStyles().slice(-2);
-			expect("textColor" in styles[0]!).toBeFalsy();
-			expect(styles[1]).toHaveProperty("padding", 8);
-		});
 	});
 });

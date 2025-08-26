@@ -1,8 +1,8 @@
-import { isObservedObject, ObservedObject } from "./ObservedObject.js";
+import { isObservableObject, ObservableObject } from "./ObservableObject.js";
 import { err, ERROR, errorHandler } from "../errors.js";
-import type { ObservedEvent } from "./ObservedEvent.js";
+import type { ObservableEvent } from "./ObservableEvent.js";
 
-// Symbols used for ObservedObject properties:
+// Symbols used for ObservableObject properties:
 
 /** @internal Property that's set to true when object is unlinked */
 export const $_unlinked = Symbol("unlinked");
@@ -13,23 +13,34 @@ export const $_origin = Symbol("origin");
 /** @internal Property that is set only on root objects (cannot be attached) */
 export const $_root = Symbol("root");
 
+/** @internal Property that is set to the constructor to which bindings should be limited; if not set, properties are not bound */
+export const $_bind = Symbol("bind");
+
 /** @internal Property that refers to a list of event interceptors */
 export const $_intercept = Symbol("intercept");
 
-/** @internal Getter for non-observable properties (used for e.g. list count) */
+/** @internal Getter for non-observable properties (used for e.g. list length) */
 export const $_get = Symbol("get");
 
 /** @internal Non-existent property, trap is invoked when an event is emitted */
 export const $_traps_event = Symbol("event");
 
-/** Map containing a list of traps for observable properties of observed objects */
-const _traps = new WeakMap<ObservedObject, TrapLookup>();
+/** Map containing a list of traps for observable properties of observable objects */
+const _traps = new WeakMap<ObservableObject, TrapLookup>();
 
-/** Map containing a list of attached objects for each origin observed object */
-const _attached = new WeakMap<ObservedObject, NullableArray<ObservedObject>>();
+/** Map containing a list of attached objects for each origin observable object */
+const _attached = new WeakMap<
+	ObservableObject,
+	NullableArray<ObservableObject>
+>();
 
-/** Map containing a list of active bindings for each observed object */
-const _bindings = new WeakMap<ObservedObject, Bound[]>();
+/** Map containing a list of active bindings for each observable object */
+const _bindings = new WeakMap<ObservableObject, Bound[]>();
+
+// Values used for bindings
+
+/** Symbol for a property that references the method to apply a binding to a target object */
+export const $_bind_apply = Symbol("bind_apply");
 
 /** Initial binding value, not equal to anything else */
 const NO_VALUE = { none: 0 };
@@ -100,20 +111,19 @@ function removeFromNullableArray<T>(a: NullableArray<T>, v: T) {
 /** @internal Object that encapsulates a trap function and unlink function */
 export type TrapRef = {
 	/** Function that's called when value is updated */
-	t: TrapFunction;
+	t: TrapFunction<any>;
 	/** Function that's called when trap is unlinked */
 	u: () => void;
 	/** List to which this trap has been added (for removal) */
 	l: NullableArray<TrapRef>;
 	/** Object to which this trap has been added (for unlinked check) */
-	o: ObservedObject;
+	o: ObservableObject;
 };
 
 /** Function that's called when a trap is invoked */
-type TrapFunction = (
-	target: ObservedObject,
-	p: string | number | symbol,
-	value: unknown,
+type TrapFunction<TObject extends ObservableObject, TValue = unknown> = (
+	target: TObject,
+	value: TValue,
 ) => void;
 
 /** Object that contains traps that are set for different properties */
@@ -121,18 +131,18 @@ type TrapLookup = { [p: string | number | symbol]: TrapRef[] | undefined };
 
 /**
  * @internal
- * Add a trap to an observed object (target) for a given property
- * @param target The observed object to add the trap to
+ * Add a trap to an observable object (target) for a given property
+ * @param target The observable object to add the trap to
  * @param p The property to add the trap to
  * @param trap Function to call when value is set (will be guarded)
- * @param unlinked Function to call when the observed object is unlinked
+ * @param unlinked Function to call when the observable object is unlinked
  * @param init True if trap function should be invoked immediately
  * @returns Trap reference, can be used to remove trap
  */
-export function addTrap(
-	target: ObservedObject,
+export function addTrap<TObject extends ObservableObject>(
+	target: TObject,
 	p: string | number | symbol,
-	trap?: TrapFunction,
+	trap?: TrapFunction<TObject>,
 	unlinked?: () => void,
 	init?: boolean,
 ) {
@@ -156,7 +166,7 @@ export function addTrap(
 	if (init) {
 		try {
 			let value = (target as any)[p];
-			t(target, p, value);
+			t(target, value);
 		} catch {}
 	}
 	return trapObj;
@@ -171,7 +181,7 @@ export function removeTrap(trap?: TrapRef) {
 
 /** @internal Invoke all trap functions for a given object and property, with given value */
 export function invokeTrap(
-	observedObject: ObservedObject,
+	observedObject: ObservableObject,
 	p: string | number | symbol,
 	value: any,
 ) {
@@ -179,7 +189,7 @@ export function invokeTrap(
 	if (list && list[p]) {
 		for (let t of list[p]!.slice()) {
 			if (t && !observedObject[$_unlinked]) {
-				t.t(observedObject, p, value);
+				t.t(observedObject, value);
 			}
 		}
 	}
@@ -187,14 +197,14 @@ export function invokeTrap(
 
 /** @internal Returns true if given property can be observed on given object, by already initializing the trap if possible */
 export function canTrap(
-	observedObject: ObservedObject,
+	observedObject: ObservableObject,
 	p: string | number | symbol,
 ) {
 	return p in observedObject && !!getTrapList(observedObject, p);
 }
 
 /** Returns or creates the current list of traps for given property on given object, may initialize traps for the object altogether, and make property observable by adding a getter and setter */
-function getTrapList(target: ObservedObject, p: string | number | symbol) {
+function getTrapList(target: ObservableObject, p: string | number | symbol) {
 	// happy path first: find lookup and return traps list
 	let lookup = _traps.get(target)!;
 	if (lookup && p in lookup) return lookup[p] || (lookup[p] = []);
@@ -222,9 +232,9 @@ function getTrapList(target: ObservedObject, p: string | number | symbol) {
 	return lookup[p];
 }
 
-/** Add a getter/setter for an (own) property on given observed object, to invoke its trap (only used by getTrapList above) */
+/** Add a getter/setter for an (own) property on given observable object, to invoke its trap (only used by getTrapList above) */
 function setTrapDescriptor(
-	target: ObservedObject,
+	target: ObservableObject,
 	p: string | number | symbol,
 	desc: PropertyDescriptor,
 ) {
@@ -257,15 +267,15 @@ function setTrapDescriptor(
 
 // -- Link management functions --------------------------------------
 
-/** @internal Unlink given observed object, detaching it and removing all traps, then recurse */
-export function unlinkObject(observedObject: ObservedObject) {
+/** @internal Unlink given observable object, detaching it and removing all traps, then recurse */
+export function unlinkObject(observedObject: ObservableObject) {
 	if (observedObject[$_unlinked]) return;
 
 	// call beforeUnlink method, handle errors
 	guard((observedObject as any).beforeUnlink).call(observedObject);
 	observedObject[$_unlinked] = true;
 
-	// detach from origin observed object
+	// detach from origin observable object
 	let origin = observedObject[$_origin];
 	if (origin && !origin[$_unlinked]) {
 		detachObject(origin, observedObject);
@@ -291,7 +301,7 @@ export function unlinkObject(observedObject: ObservedObject) {
 		for (let u of unlinkHandlers) u();
 	}
 
-	// unlink all attached observed objects, if not unlinked yet
+	// unlink all attached observable objects, if not unlinked yet
 	let attached = _attached.get(observedObject);
 	if (attached) {
 		_attached.delete(observedObject);
@@ -305,15 +315,15 @@ export function unlinkObject(observedObject: ObservedObject) {
 }
 
 /**
- * @internal Attach given target to an observed object, and start observing it
- * @error Throws an error if target is already attached to same origin, or loop detected
+ * @internal Attach given target to an observable object, and start observing it
+ * @error Throws an error if a loop is detected
  */
 export function attachObject(
-	origin: ObservedObject,
-	target: ObservedObject,
-	listen?: (target: ObservedObject, event: ObservedEvent) => void,
-	detach?: (target: ObservedObject) => void,
-): ObservedObject | undefined {
+	origin: ObservableObject,
+	target: ObservableObject,
+	listen?: (target: ObservableObject, event: ObservableEvent) => void,
+	detach?: (target: ObservableObject) => void,
+): ObservableObject | undefined {
 	// check if target is already unlinked
 	if (target[$_unlinked]) throw err(ERROR.Object_Unlinked, "target");
 
@@ -338,14 +348,12 @@ export function attachObject(
 	// (stop listening when target is moved to other parent)
 	if (detach || listen) {
 		let eventTrap = listen
-			? addTrap(target, $_traps_event, function (t, p, v) {
-					listen(t, v as any);
-				})
+			? addTrap(target, $_traps_event, listen as any)
 			: undefined;
 		let detachTrap = addTrap(
 			target,
 			$_origin,
-			(t, p, v) => {
+			(t, v) => {
 				if (v !== origin) {
 					removeTrap(eventTrap);
 					removeTrap(detachTrap);
@@ -358,8 +366,8 @@ export function attachObject(
 
 	// update bindings recursively
 	function updateWatched(
-		target: ObservedObject,
-		origin: ObservedObject,
+		target: ObservableObject,
+		origin: ObservableObject,
 		nestingLevel: number,
 	) {
 		if (target[$_unlinked]) return;
@@ -372,7 +380,7 @@ export function attachObject(
 			}
 		}
 
-		// recurse for attached observed objects, increase level
+		// recurse for attached observable objects, increase level
 		let attached = _attached.get(target);
 		if (attached) {
 			for (let c of attached) c && updateWatched(c, origin, nestingLevel + 1);
@@ -382,8 +390,8 @@ export function attachObject(
 	return target;
 }
 
-/** Detach given target from an observed object, either before moving or when unlinked (called above) */
-function detachObject(origin: ObservedObject, target: ObservedObject) {
+/** Detach given target from an observable object, either before moving or when unlinked (called above) */
+function detachObject(origin: ObservableObject, target: ObservableObject) {
 	if (target[$_origin] === origin) {
 		// remove link both ways
 		target[$_origin] = undefined;
@@ -391,8 +399,8 @@ function detachObject(origin: ObservedObject, target: ObservedObject) {
 
 		// update bindings recursively
 		function updateWatched(
-			target: ObservedObject,
-			origin: ObservedObject,
+			target: ObservableObject,
+			origin: ObservableObject,
 			nestingLevel: number,
 		) {
 			// clear bindings from given nesting level
@@ -401,7 +409,7 @@ function detachObject(origin: ObservedObject, target: ObservedObject) {
 				for (let bound of bindings) bound.clear(nestingLevel);
 			}
 
-			// recurse for attached observed objects, increase level
+			// recurse for attached observable objects, increase level
 			let attached = _attached.get(target);
 			if (attached) {
 				for (let c of attached) c && updateWatched(c, origin, nestingLevel + 1);
@@ -413,10 +421,10 @@ function detachObject(origin: ObservedObject, target: ObservedObject) {
 
 // -- Binding functions ----------------------------------------------
 
-/** @internal Add a watched binding path on origin(s) of given observed object */
+/** @internal Add a watched binding path on origin(s) of given observable object */
 export function watchBinding(
-	observedObject: ObservedObject,
-	label: string | symbol | undefined,
+	observedObject: ObservableObject,
+	type: Function | undefined,
 	path: ReadonlyArray<string>,
 	f: (value: any, bound: boolean) => void,
 ) {
@@ -424,7 +432,7 @@ export function watchBinding(
 	if (observedObject[$_unlinked]) return;
 
 	// add Bound structure to list of bindings for object
-	let bound = new Bound(observedObject, label, path, guard(f));
+	let bound = new Bound(observedObject, type, path, guard(f));
 	if (!_bindings.has(observedObject)) _bindings.set(observedObject, [bound]);
 	else _bindings.get(observedObject)!.push(bound);
 
@@ -432,21 +440,30 @@ export function watchBinding(
 	if (observedObject[$_origin]) bound.start();
 }
 
-/** @internal Object that encapsulates a watched binding path on an observed object instance */
+/** @internal Object that encapsulates a watched binding path on an observable object instance */
 class Bound {
 	constructor(
 		/** Object to which the binding is applied (binding target) */
-		public o: ObservedObject,
-		/** Source origin label, if any */
-		public b: string | symbol | undefined,
+		public o: ObservableObject,
+		/** Source constructor, if any */
+		public b: Function | undefined,
 		/** Property path to watch */
 		public p: ReadonlyArray<string>,
 		/** Function that's called when value is updated */
 		public f: (value: any, bound: boolean) => void,
 	) {}
 
+	/** Origin nesting level currently bound to, or -1 if not bound, -2 if not bound and already set to undefined */
+	private i = -1;
+
+	/** List of traps, if currently bound */
+	private t: TrapRef[] | undefined = undefined;
+
+	/** Last value for which the update function was invoked */
+	private _v = NO_VALUE;
+
 	/** Try to start watching from the provided (or original) origin, if not already bound */
-	start(origin?: ObservedObject, nestingLevel = 0) {
+	start(origin?: ObservableObject, nestingLevel = 0) {
 		if (this.t || !this.o || this.o[$_unlinked]) return;
 		if (!origin) {
 			origin = this.o[$_origin];
@@ -467,14 +484,8 @@ class Bound {
 		}
 	}
 
-	/** Origin nesting level currently bound to, or -1 if not bound, -2 if not bound and already set to undefined */
-	private i = -1;
-
-	/** List of traps, if currently bound */
-	private t: TrapRef[] | undefined = undefined;
-
 	/** Check for a possible source, and watch property path if possible */
-	private _check(origin: ObservedObject | undefined, nestingLevel: number) {
+	private _check(origin: ObservableObject | undefined, nestingLevel: number) {
 		// if can't be bound, set bound value to undefined
 		if (!origin || origin[$_unlinked]) {
 			if (this.i !== -2) {
@@ -485,30 +496,36 @@ class Bound {
 			return true;
 		}
 
-		// check source label, and check for lists
-		// (don't bind to e.g. `.count` on containing lists)
-		let first = this.p[0]!;
-		let candidate =
-			(this.b === undefined || this.b in origin) &&
-			!(Symbol.iterator in origin);
-		if (candidate && canTrap(origin, first)) {
-			// watch all properties along path
-			this.i = nestingLevel;
-			this.t = [];
-			this._trapProperty(origin, 0);
-			return true;
+		// check source binding type and check if property is observable
+		let matchesType = origin[$_bind] === (this.b || ObservableObject);
+		if (matchesType) {
+			let firstProp = this.p[0]!;
+			if (canTrap(origin, firstProp)) {
+				// watch all properties along path
+				this.i = nestingLevel;
+				this.t = [];
+				this._trapProperty(origin, 0);
+				return true;
+			}
+			if (firstProp in origin) {
+				// only watch for change events on this object
+				this.i = nestingLevel;
+				this.t = [];
+				this._trapChangeEvent(origin, 0, false);
+				this._invoke((origin as any)[firstProp]);
+				return true;
+			}
 		}
 
-		// error if already at root, or property exists
-		if (origin[$_root] || (candidate && first in origin)) {
-			let error = err(ERROR.Object_NoObserve, first);
-			errorHandler(error);
+		// error if already at root
+		if (origin[$_root]) {
+			errorHandler(err(ERROR.Object_NoObserve, this.p[0]!));
 			return true;
 		}
 	}
 
 	/** Add a trap to listen for property changes on given object, for link `i` */
-	private _trapProperty(target: ObservedObject, i: number) {
+	private _trapProperty(target: ObservableObject, i: number) {
 		let self = this;
 		let traps = this.t!;
 		let trap: TrapRef | undefined = (traps[i] = addTrap(
@@ -516,7 +533,7 @@ class Bound {
 			this.p[i]!,
 			this._makeChainCallback(i),
 			function () {
-				// observed object unlinked and/or detached
+				// observable object unlinked and/or detached
 				if (trap === traps[i]) {
 					if (!i) {
 						// if this was the first trap, start all over
@@ -538,34 +555,44 @@ class Bound {
 		));
 	}
 
-	/** Add a trap to listen for change events on given object, for link `i` (always > 0) */
-	private _trapChangeEvent(object: ObservedObject, i: number) {
+	/** Add a trap to listen for change events on given object, for link `i` */
+	private _trapChangeEvent(
+		object: ObservableObject,
+		i: number,
+		clear: boolean,
+	) {
 		let self = this;
 		let traps = this.t!;
 		let trap = (traps[i] = addTrap(
 			object,
 			$_traps_event,
-			function (t, _, v) {
-				if ((v as ObservedEvent).data.change === t) {
+			function (t, v) {
+				if ((v as ObservableEvent).data.change === t) {
 					if (trap === traps[i]) {
-						self._invoke(self._get(object, i - 1), false, true);
+						if (clear && canTrap(t, self.p[i]!)) {
+							// property is now observable, re-trap it
+							self._trapProperty(t, i);
+						} else {
+							// property is still not observable, get value
+							self._invoke(self._get(object, i - 1), false, true);
+						}
 					}
 				}
 			},
 			() => {
-				if (trap === traps[i]) self._invoke(undefined);
+				if (clear && trap === traps[i]) self._invoke(undefined);
 			},
 		));
 	}
 
 	/** Helper to make a callback that watches link `i` along the binding path */
-	private _makeChainCallback(i: number): TrapFunction {
+	private _makeChainCallback(i: number): TrapFunction<any> {
 		let self = this;
 		let traps = this.t!;
 		let next = i + 1;
 		let nextProp = this.p[next]!;
 		let last = next >= this.p.length;
-		return function (_, _p, value) {
+		return function (_, value) {
 			// remove traps beyond this point
 			for (let j = traps.length - 1; j > i; j--) {
 				removeTrap(traps[j]);
@@ -574,19 +601,22 @@ class Bound {
 
 			// use new value to invoke binding or keep looking
 			if (last) {
-				// last part of path: invoke with found value
+				// last part of path: watch for change events and invoke
+				if (isObservableObject(value)) {
+					self._trapChangeEvent(value, next, false);
+				}
 				self._invoke(value);
-			} else if (value == undefined || (value as ObservedObject)[$_unlinked]) {
+			} else if (value == null || (value as ObservableObject)[$_unlinked]) {
 				// undefined/null or unlinked object, don't look further
 				self._invoke(undefined);
-			} else if (isObservedObject(value)) {
-				// found an observed object along the way
+			} else if (isObservableObject(value)) {
+				// found an observable object along the way
 				if (canTrap(value, nextProp)) {
 					// observe this property and move on if/when value set
 					self._trapProperty(value, next);
 				} else {
 					// otherwise, at least watch for change events and unlink
-					self._trapChangeEvent(value, next);
+					self._trapChangeEvent(value, next, true);
 					self._invoke(self._get(value, i));
 				}
 			} else {
@@ -602,7 +632,7 @@ class Bound {
 		for (let j = i + 1; j < pathLen; j++) {
 			let nextP = this.p[j]!;
 			if (source == null) break;
-			if (isObservedObject(source)) source = source[$_get](nextP);
+			if (isObservableObject(source)) source = source[$_get](nextP);
 			else source = source[nextP];
 		}
 		return source;
@@ -614,7 +644,4 @@ class Bound {
 			this.f.call(undefined, (this._v = value), !unbound);
 		}
 	}
-
-	/** Last value for which the update function was invoked */
-	private _v = NO_VALUE;
 }

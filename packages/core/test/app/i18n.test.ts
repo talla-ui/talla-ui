@@ -1,64 +1,63 @@
-import { I18nProvider, LazyString, strf } from "@talla-ui/util";
+import { fmt } from "@talla-ui/util";
 import { afterEach, beforeEach, expect, test } from "vitest";
-import { $bind, app, AppContext, ObservedObject } from "../../dist/index.js";
+import { bind, app, AppContext, ObservableObject } from "../../dist/index.js";
 
 beforeEach(() => {
-	expect(app.i18n).toBeUndefined();
 	AppContext.setErrorHandler((err) => {
 		throw err;
 	});
 });
 afterEach(() => {
-	expect(app.i18n).toBeUndefined();
-	LazyString.setI18nInterface();
+	app.i18n.clear();
 });
-
-class BaseI18nProvider implements I18nProvider {
-	getAttributes(): Readonly<I18nProvider.Attributes> {
-		return { locale: "test" };
-	}
-	getText(_text: string): string {
-		throw new Error("Method not implemented.");
-	}
-	getPlural(_value: number, _forms: string[]): string {
-		throw new Error("Method not implemented.");
-	}
-	format(_value: any, ..._types: any[]): string {
-		throw new Error("Method not implemented.");
-	}
-}
 
 test("Set i18n provider with global context", () => {
-	class MyI18nProvider extends BaseI18nProvider {
-		constructor(private _s: string) {
-			super();
-		}
-		override getText() {
-			return this._s;
-		}
-	}
-	let i18n = new MyI18nProvider("foo");
-	app.i18n = i18n as any;
-	expect(strf("abc").toString()).toBe("foo");
-	i18n = new MyI18nProvider("bar");
-	app.i18n = i18n as any;
-	expect(strf("abc").toString()).toBe("bar");
-	app.i18n = undefined;
-	expect(strf("abc").toString()).toBe("abc");
+	let word = "foo";
+	app.i18n.configure("test", {
+		getText: () => word,
+	});
+	expect(app.i18n.locale).toBe("test");
+	expect(app.i18n.isRTL()).toBe(false);
+	expect(fmt("abc").toString()).toBe("foo");
+	word = "bar";
+	expect(fmt("abc").toString()).toBe("bar");
+	app.i18n.clear();
+	expect(fmt("abc").toString()).toBe("abc");
 });
 
-test("Local format binding", () => {
-	class MyI18nProvider extends BaseI18nProvider {
-		override getText = (s: string) => s;
-		override format(value: any, ...type: string[]) {
-			return "{" + String(value) + ":" + type.join() + "}";
-		}
+test("Set translations with global context", () => {
+	let abc = fmt("abc");
+	expect(abc.toString()).toBe("abc");
+	app.i18n.setTranslations({ abc: "def" });
+	expect(abc.toString()).toBe("def");
+});
+
+test("Pluralization with global context", () => {
+	app.i18n.configure("test");
+	let plural = fmt("email{:+//s}", 1);
+	expect(plural.toString()).toBe("email");
+	plural = fmt("email{:+//s}", 2);
+	expect(plural.toString()).toBe("emails");
+	plural = fmt("email{:+//s}", 0);
+	expect(plural.toString()).toBe("emails");
+});
+
+test("Locale format binding", () => {
+	class MyParent extends ObservableObject {
+		value = 123;
 	}
-	app.i18n = new MyI18nProvider();
-	let parent: any = new ObservedObject();
-	parent.value = 123;
-	parent.child = parent.attach(new ObservedObject());
-	$bind("value").local("test", "format").bindTo(parent.child, "value");
+	MyParent.enableBindings();
+	app.i18n.configure("test", {
+		format(value: any, ...type: string[]) {
+			return "{" + String(value) + ":" + type.join() + "}";
+		},
+	});
+	let parent: any = new MyParent();
+	parent.child = parent.attach(new ObservableObject());
+	parent.child.observe(
+		bind.fmt("{:Ltest/format}", bind("value")).asString(),
+		(v: any) => (parent.child.value = v),
+	);
 	expect(parent.child).toHaveProperty("value", "{123:test,format}");
-	app.i18n = undefined;
+	app.i18n.clear();
 });

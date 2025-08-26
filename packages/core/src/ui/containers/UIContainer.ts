@@ -1,47 +1,29 @@
-import { View, type ViewBuilder } from "../../app/index.js";
-import { ObservedList } from "../../object/index.js";
-import type { UIColor } from "../style/index.js";
-import { UIRenderable } from "../UIRenderable.js";
+import { View, ViewBuilder } from "../../app/index.js";
+import { BindingOrValue, ObservableList } from "../../object/index.js";
+import { UIColor, UIStyle } from "../style/index.js";
+import { UIViewElement } from "../UIViewElement.js";
 
 /**
  * A base view class that represents a container element with no specific layout or styling
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI element class.
+ * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
-export abstract class UIContainer extends UIRenderable {
+export abstract class UIContainer extends UIViewElement {
 	/**
-	 * Creates a new {@link ViewBuilder} instance for the current view class
-	 * @see {@link View.getViewBuilder}
-	 * @docgen {hide}
+	 * Options related to layout of content UI elements within this container
+	 * - These options _override_ the defaults for the type of container.
 	 */
-	static override getViewBuilder(
-		preset: ViewBuilder.ExtendPreset<
-			typeof UIRenderable,
-			UIContainer,
-			"padding" | "layout"
-		>,
-		...content: ViewBuilder[]
-	) {
-		let b = super.getViewBuilder(preset) as ViewBuilder<UIContainer>;
-		return b.addInitializer((container) => {
-			container.content.add(...content.map((b) => b.create()));
-		});
-	}
+	layout?: Readonly<UIContainer.Layout> = undefined;
 
-	/** Creates a new container view object with the provided view content */
-	constructor(...content: View[]) {
-		super();
-
-		// create content list and delegate events
-		this.content = this.attach(new ObservedList(), (event) => {
+	/** The list of all (attached) content view objects */
+	readonly content = this.attach(
+		new ObservableList<View>().attachItems(true),
+		(event) => {
 			if (event.source instanceof View && !event.noPropagation) {
 				this.emit(event);
 			}
-		});
-
-		// add the provided content
-		if (content.length) this.content.add(...content);
-	}
+		},
+	);
 
 	/** Implementation of {@link View.findViewContent()} that searches within this container */
 	override findViewContent<T extends View>(
@@ -54,21 +36,6 @@ export abstract class UIContainer extends UIRenderable {
 		}
 		return match;
 	}
-
-	/** The list of all content view objects */
-	declare readonly content: ObservedList<View>;
-
-	/**
-	 * Padding around contained elements, in pixels or CSS length with unit, **or** an object with separate offset values
-	 * - If this property is set, its value overrides `padding` from the {@link layout} object.
-	 */
-	padding?: UIRenderable.Offsets = undefined;
-
-	/**
-	 * Options related to layout of content UI elements within this container
-	 * - These options _override_ the defaults for the type of container.
-	 */
-	layout?: Readonly<UIContainer.Layout> = undefined;
 }
 
 export namespace UIContainer {
@@ -77,7 +44,13 @@ export namespace UIContainer {
 		/** Axis along which content is distributed (defaults to vertical) */
 		axis?: "horizontal" | "vertical" | "";
 		/** Positioning of content along the distribution axis (defaults to start) */
-		distribution?: "start" | "end" | "center" | "fill" | "space-around" | "";
+		distribution?:
+			| "start"
+			| "end"
+			| "center"
+			| "space-between"
+			| "space-around"
+			| "";
 		/** Positioning of content perpendicular to the distribution axis (defaults to stretch) */
 		gravity?: "start" | "end" | "center" | "stretch" | "baseline" | "";
 		/** True if content should wrap to new line/column if needed (defaults to false) */
@@ -87,7 +60,7 @@ export namespace UIContainer {
 		/** Options for separator between each UI element */
 		separator?: Readonly<SeparatorOptions>;
 		/** Padding around contained UI elements, in pixels or CSS length with unit, **or** an object with separate offset values */
-		padding?: UIRenderable.Offsets;
+		padding?: UIStyle.Offsets;
 	};
 
 	/**
@@ -99,11 +72,77 @@ export namespace UIContainer {
 		vertical?: boolean;
 		/** Width/height of separator space (CSS length or pixels) */
 		space?: string | number;
-		/** Separator line thickness (CSS length or pixels) */
-		lineThickness?: string | number;
+		/** Separator line width (CSS length or pixels) */
+		lineWidth?: string | number;
 		/** Line separator color, defaults to `separator` */
 		lineColor?: UIColor;
 		/** Line separator margin (CSS length or pixels) */
 		lineMargin?: string | number;
 	};
+
+	/**
+	 * An abstract builder class for `UIContainer` instances.
+	 * @note This class is used as a base class for container builders, such as the ones returned by `UI.Cell()` and `UI.Column()`. You should not use this class directly.
+	 */
+	export abstract class ContainerBuilder<
+		T extends UIContainer,
+	> extends UIViewElement.ElementBuilder<T> {
+		/**
+		 * Adds content to the container.
+		 * @param builders An array of view builders for the content elements.
+		 * @returns The builder instance for chaining.
+		 */
+		with(...builders: ViewBuilder[]) {
+			if (builders.length) {
+				this.initializer.finalize((view) => {
+					view.content.add(...builders.map((b) => b.create()));
+				});
+			}
+			return this;
+		}
+
+		/**
+		 * Applies a style to the container
+		 * @param style A {@link UIStyle} instance, a style options (overrides) object, or a binding.
+		 * @returns The builder instance for chaining.
+		 */
+		style(style?: BindingOrValue<UIStyle | UIStyle.StyleOptions | undefined>) {
+			return this.setStyleProperty(style);
+		}
+
+		/**
+		 * Sets the layout options for the container, using {@link UIContainer.layout}.
+		 * @param layout A {@link UIContainer.Layout} object or a binding.
+		 * @returns The builder instance for chaining.
+		 */
+		layout(layout?: BindingOrValue<UIContainer.Layout | undefined>) {
+			return this.setProperty("layout", layout);
+		}
+
+		/**
+		 * Enables or disables content wrapping.
+		 * - This method updates the {@link UIContainer.layout layout} property.
+		 * @param wrapContent If `true`, content will wrap. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		wrapContent(wrapContent: BindingOrValue<boolean> = true) {
+			this.initializer.update(wrapContent, function (value) {
+				this.layout = { ...this.layout, wrapContent: value };
+			});
+			return this;
+		}
+
+		/**
+		 * Enables or disables content clipping.
+		 * - This method updates the {@link UIContainer.layout layout} property.
+		 * @param clip If `true`, content will be clipped. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		clip(clip: BindingOrValue<boolean> = true) {
+			this.initializer.update(clip, function (value) {
+				this.layout = { ...this.layout, clip: value };
+			});
+			return this;
+		}
+	}
 }

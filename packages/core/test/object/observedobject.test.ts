@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { AppContext, ObservedEvent, ObservedObject } from "../../dist/index.js";
+import {
+	AppContext,
+	ObservableEvent,
+	ObservableObject,
+} from "../../dist/index.js";
 
 let numErrors = 0;
 let pendingError: any;
@@ -16,14 +20,14 @@ beforeEach((c) => {
 });
 
 test("Constructor", () => {
-	class C extends ObservedObject {}
+	class C extends ObservableObject {}
 	let c = new C();
-	expect(c).toBeInstanceOf(ObservedObject);
+	expect(c).toBeInstanceOf(ObservableObject);
 	expect(c.isUnlinked()).not.toBeTruthy();
 });
 
 test("Basic unlinking", () => {
-	class C extends ObservedObject {}
+	class C extends ObservableObject {}
 	let c = new C();
 	expect(() => c.unlink()).not.toThrowError();
 	expect(c.isUnlinked()).toBeTruthy();
@@ -35,7 +39,7 @@ test("Basic unlinking", () => {
 
 test("Unlinking invokes beforeUnlink method", () => {
 	let unlinked = 0;
-	class C extends ObservedObject {
+	class C extends ObservableObject {
 		override beforeUnlink() {
 			unlinked++;
 		}
@@ -48,14 +52,13 @@ test("Unlinking invokes beforeUnlink method", () => {
 
 describe("Observe properties", () => {
 	test("Observe single property", () => {
-		class MyObject extends ObservedObject {
+		class MyObject extends ObservableObject {
 			foo = "foo";
 		}
 		let c = new MyObject();
 		let values: any[] = [];
-		ObservedObject.observe(c, ["foo"], (object, p, value) => {
-			expect(object).toBe(c);
-			expect(p).toBe("foo");
+		c.observe("foo", function (value) {
+			expect(this).toBe(c);
 			values.push(value);
 		});
 		c.foo = "bar";
@@ -65,25 +68,64 @@ describe("Observe properties", () => {
 	});
 
 	test("Cannot observe unlinked object", () => {
-		let c = new ObservedObject();
+		let c = new ObservableObject();
 		c.unlink();
-		expect(() =>
-			ObservedObject.observe(c, ["foo"] as any, () => {}),
-		).toThrowError();
+		expect(() => c.observe("foo" as any, () => {})).toThrowError();
+	});
+
+	test("Observe observable object", () => {
+		let c = new ObservableObject();
+		let o = new ObservableObject();
+		let count = 0;
+		c.observe(o, (object) => {
+			expect(object).toBe(o);
+			count++;
+		});
+		o.emitChange(); // count should be 1
+		o.emitChange(); // count should be 2
+		c.unlink();
+		o.emitChange(); // not handled
+		expect(count).toBe(3);
+	});
+
+	test("Observe property with observable object", () => {
+		let o1 = new ObservableObject();
+		let o2 = new ObservableObject();
+		let c = Object.assign(new ObservableObject(), {
+			foo: o1 as ObservableObject | undefined,
+		});
+		let objects: any[] = [];
+		c.observe("foo", (object) => {
+			objects.push(object);
+		});
+		o1.emitChange();
+		o1.emitChange();
+		expect(objects).toEqual([o1, o1]);
+		c.foo = o2;
+		expect(objects).toEqual([o1, o1, o2]);
+		o2.emitChange();
+		o2.unlink();
+		expect(objects).toEqual([o1, o1, o2, o2]);
+		c.foo = undefined;
+		c.foo = o1;
+		expect(objects).toEqual([o1, o1, o2, o2, undefined, o1]);
+		c.foo.unlink();
+		o1.emitChange();
+		expect(objects).toEqual([o1, o1, o2, o2, undefined, o1]);
 	});
 });
 
-describe("Basic attached observed objects", () => {
+describe("Basic attached observable objects", () => {
 	let id = 0;
 
-	class AnotherObject extends ObservedObject {
+	class AnotherObject extends ObservableObject {
 		id = id++;
 	}
-	class ChildObject extends ObservedObject {
+	class ChildObject extends ObservableObject {
 		id = id++;
 		readonly another = this.attach(new AnotherObject());
 	}
-	class TestObject extends ObservedObject {
+	class TestObject extends ObservableObject {
 		constructor(child: ChildObject = new ChildObject()) {
 			super();
 			this.child = this.attach(child);
@@ -106,10 +148,10 @@ describe("Basic attached observed objects", () => {
 
 	test("Find parent", () => {
 		let { parent, child, another } = setup();
-		expect(ObservedObject.whence(another)).toBe(child);
-		expect(ObservedObject.whence(child)).toBe(parent);
-		expect(ObservedObject.whence(parent)).toBeUndefined();
-		expect(ObservedObject.whence()).toBeUndefined();
+		expect(ObservableObject.whence(another)).toBe(child);
+		expect(ObservableObject.whence(child)).toBe(parent);
+		expect(ObservableObject.whence(parent)).toBeUndefined();
+		expect(ObservableObject.whence()).toBeUndefined();
 	});
 
 	test("Find parent of type", () => {
@@ -137,7 +179,7 @@ describe("Basic attached observed objects", () => {
 
 	test("Event handler on attach", () => {
 		let events: string[] = [];
-		class TestObject extends ObservedObject {
+		class TestObject extends ObservableObject {
 			constructor() {
 				super();
 				this.child = this.attach(new ChildObject(), (e) => {
@@ -155,7 +197,7 @@ describe("Basic attached observed objects", () => {
 
 	test("Event handler on attach, use callback object", () => {
 		let events: string[] = [];
-		class TestObject extends ObservedObject {
+		class TestObject extends ObservableObject {
 			constructor() {
 				super();
 				this.child = this.attach(new ChildObject(), {
@@ -176,12 +218,12 @@ describe("Basic attached observed objects", () => {
 
 	test("Event delegate on attach", () => {
 		let events: string[] = [];
-		class TestObject extends ObservedObject {
+		class TestObject extends ObservableObject {
 			constructor() {
 				super();
 				this.child = this.attach(new ChildObject(), { delegate: this });
 			}
-			delegate(e: ObservedEvent) {
+			delegate(e: ObservableEvent) {
 				if (e.source !== this.child) throw Error("Not the same object");
 				events.push(e.name);
 			}
@@ -200,7 +242,7 @@ describe("Basic attached observed objects", () => {
 
 	test("Async event delegate, expect to catch error", async () => {
 		let p = new Promise((r) => setTimeout(r, 1));
-		class TestObject extends ObservedObject {
+		class TestObject extends ObservableObject {
 			constructor() {
 				super();
 				this.child = this.attach(new ChildObject(), { delegate: this });
@@ -226,7 +268,7 @@ describe("Basic attached observed objects", () => {
 
 	test("Detach handler on attach, then unlink", () => {
 		let detached = 0;
-		class TestObject extends ObservedObject {
+		class TestObject extends ObservableObject {
 			constructor() {
 				super();
 				this.child = this.attach(new ChildObject(), {
@@ -246,7 +288,7 @@ describe("Basic attached observed objects", () => {
 	test("Detach handler on attach, then move", () => {
 		let events: string[] = [];
 		let detached = 0;
-		class TestObject extends ObservedObject {
+		class TestObject extends ObservableObject {
 			constructor(child: ChildObject = new ChildObject()) {
 				super();
 				this.child = this.attach(child, {
@@ -269,8 +311,23 @@ describe("Basic attached observed objects", () => {
 		expect(detached).toBe(1);
 	});
 
+	test("Can attach object to same origin", () => {
+		class TestObject extends ObservableObject {
+			constructor() {
+				super();
+			}
+			attachSame() {
+				this.attach(this.child || new TestObject());
+			}
+			child?: TestObject;
+		}
+		let parent = new TestObject();
+		parent.attachSame();
+		expect(() => parent.attachSame()).not.toThrowError();
+	});
+
 	test("Enforce strict hierarchy without loops", () => {
-		class MyLoop extends ObservedObject {
+		class MyLoop extends ObservableObject {
 			loop?: MyLoop;
 			attachSelf() {
 				this.attach(this);
@@ -287,16 +344,16 @@ describe("Basic attached observed objects", () => {
 	});
 
 	test("Cannot attach root object", () => {
-		let root = new ObservedObject();
-		ObservedObject.makeRoot(root);
-		let parent = new ObservedObject();
+		let root = new ObservableObject();
+		ObservableObject.makeRoot(root);
+		let parent = new ObservableObject();
 		expect(() => (parent as any).attach(root)).toThrowError();
 	});
 
 	test("Cannot root attached object", () => {
-		let root = new ObservedObject();
-		let parent = new ObservedObject();
+		let root = new ObservableObject();
+		let parent = new ObservableObject();
 		(parent as any).attach(root);
-		expect(() => ObservedObject.makeRoot(root)).toThrowError();
+		expect(() => ObservableObject.makeRoot(root)).toThrowError();
 	});
 });

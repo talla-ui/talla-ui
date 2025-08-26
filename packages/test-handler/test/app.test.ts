@@ -1,13 +1,12 @@
 import {
-	$activity,
-	$view,
 	Activity,
-	UIComponent,
+	app,
+	bind,
+	CustomView,
+	UI,
 	UILabel,
 	UITextField,
 	ViewEvent,
-	app,
-	ui,
 } from "@talla-ui/core";
 import { StringConvertible } from "@talla-ui/util";
 import { beforeEach, expect, test } from "vitest";
@@ -23,21 +22,12 @@ import {
 } from "../dist/index.js";
 
 class CountActivity extends Activity {
-	constructor() {
-		super();
-		this.navigationPageId = "count";
-	}
+	override navigationPath = "count";
 	protected override createView() {
-		return ui
-			.cell(
-				ui.textField({
-					value: $activity("count"),
-					onInput: "SetCount",
-					name: "count-input",
-				}),
-				ui.button("+", { onClick: "CountUp" }),
-			)
-			.create();
+		return UI.Cell(
+			UI.TextField().value(bind("count")).emit("SetCount").name("count-input"),
+			UI.Button("+").emit("CountUp"),
+		).create();
 	}
 	count = 0;
 	onCountUp() {
@@ -52,17 +42,24 @@ let activity: CountActivity;
 
 beforeEach(() => {
 	// initialize test app before every test
-	useTestContext({ navigationPageId: "count" });
+	useTestContext({ navigationPath: "count" });
 	activity = new CountActivity();
 	app.addActivity(activity);
 });
 
-test("Single view is rendered", async () => {
-	const MyView = UIComponent.define(
-		{ title: StringConvertible.EMPTY },
-		ui.label($view("title")),
-	);
-	let myView = ui.use(MyView, { title: "TEST" }).create();
+test("Single control is rendered", async () => {
+	const view = UI.Label("FOO");
+	renderTestView(view.create());
+	await expectOutputAsync({ text: "FOO" });
+});
+
+test("Single custom view with binding is rendered", async () => {
+	let myView = class extends CustomView {
+		title = StringConvertible.EMPTY;
+	}
+		.builder(() => UI.Label(bind("title")))
+		.create();
+	myView.title = "TEST";
 	renderTestView(myView);
 	await expectOutputAsync({ text: "TEST" });
 });
@@ -75,11 +72,11 @@ test("Path activates activity", async () => {
 
 test("Another path inactivates activity", async () => {
 	// initial path should be set directly
-	expect(app.navigation.pageId).toBe("count");
+	expect(app.navigation?.path).toBe("count");
 
 	// setting another path takes some time
-	app.navigate("/another/path/here");
-	await expectNavAsync({ pageId: "another", detail: "path/here" });
+	app.navigate("another/path/here");
+	await expectNavAsync({ path: "another/path/here" });
 
 	// by then, the activity should be made inactive
 	await expect

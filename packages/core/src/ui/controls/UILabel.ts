@@ -1,51 +1,23 @@
-import type { StringConvertible } from "@talla-ui/util";
-import type { ViewBuilder } from "../../app/index.js";
-import type { UIColor, UIIconResource, UIStyle } from "../style/index.js";
-import { UIRenderable } from "../UIRenderable.js";
+import { fmt, StringConvertible } from "@talla-ui/util";
+import { ViewBuilder } from "../../app/index.js";
+import {
+	bind,
+	Binding,
+	BindingOrValue,
+	isBinding,
+} from "../../object/index.js";
+import { UIColor, UIIconResource, UIStyle } from "../style/index.js";
+import type { UI } from "../UI.js";
+import { UIViewElement } from "../UIViewElement.js";
 
 /**
  * A view class that represents a label control
  *
- * @description A label UI element is rendered on-screen as a stand-alone piece of text.
+ * @description A label UI element is rendered as a stand-alone piece of text.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI element class.
+ * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
-export class UILabel extends UIRenderable {
-	/**
-	 * Creates a new {@link ViewBuilder} instance for the current view class
-	 * @see {@link View.getViewBuilder}
-	 * @docgen {hide}
-	 */
-	static override getViewBuilder(
-		preset: ViewBuilder.ExtendPreset<
-			typeof UIRenderable,
-			UILabel,
-			| "headingLevel"
-			| "htmlFormat"
-			| "text"
-			| "icon"
-			| "iconSize"
-			| "iconMargin"
-			| "iconColor"
-			| "wrap"
-			| "selectable"
-			| "padding"
-			| "width"
-			| "bold"
-			| "italic"
-			| "color"
-			| "fontSize"
-			| "align"
-			| "dim"
-			| "style"
-			| "allowFocus"
-			| "allowKeyboardFocus"
-		>,
-	) {
-		if (preset.allowKeyboardFocus) preset.allowFocus = true;
-		return super.getViewBuilder(preset);
-	}
-
+export class UILabel extends UIViewElement {
 	/** Creates a new label view object with the specified text */
 	constructor(text?: StringConvertible) {
 		super();
@@ -58,26 +30,8 @@ export class UILabel extends UIRenderable {
 	/** The label icon to be displayed */
 	icon?: UIIconResource = undefined;
 
-	/** Icon size (in pixels or string with unit) */
-	iconSize?: string | number;
-
-	/** Space between the icon and label text (in pixels or string with unit) */
-	iconMargin?: string | number;
-
-	/** Icon color */
-	iconColor?: UIColor;
-
-	/**
-	 * True if text should wrap if the text is too long to fit on one line
-	 * - If set, this property overrides `lineBreakMode` (see {@link UIRenderable.TextStyle}) to `pre-wrap`.
-	 */
-	wrap?: boolean = undefined;
-
-	/**
-	 * True if text should be user-selectable using input gestures, mouse, or keyboard
-	 * - If set, this property overrides `userSelect` (see {@link UIRenderable.TextStyle}).
-	 */
-	selectable?: boolean = undefined;
+	/** Options for displaying the label icon */
+	iconStyle?: UILabel.IconStyle = undefined;
 
 	/**
 	 * Text heading level
@@ -88,6 +42,12 @@ export class UILabel extends UIRenderable {
 
 	/** True if text should be rendered as HTML instead of plain text */
 	htmlFormat?: boolean;
+
+	/**
+	 * True if text selection should be enabled within this label, defaults to false
+	 * - This property isn't observed, and can't be changed after rendering. If set, this value overrides the `userTextSelect` style property.
+	 */
+	selectable?: boolean;
 
 	/**
 	 * True if this label may receive input focus
@@ -101,65 +61,192 @@ export class UILabel extends UIRenderable {
 	 * - If this property is set to true, allowFocus is assumed to be true as well and no longer checked.
 	 */
 	allowKeyboardFocus?: boolean;
-
-	/** Target width of the label, in pixels or CSS length with unit */
-	width?: string | number = undefined;
-
-	/**
-	 * Padding around the label, in pixels or CSS length with unit, **or** an object with separate offset values
-	 * - If this property is set, its value overrides `padding` from the current label style.
-	 */
-	padding?: UIRenderable.Offsets = undefined;
-
-	/**
-	 * The text alignment to be applied to this label
-	 * - If set, this property overrides the `textAlign` property of the current label style.
-	 */
-	align?: UIRenderable.TextStyle["textAlign"] = undefined;
-
-	/**
-	 * The font size to be applied to this label (pixels or string with unit)
-	 * - If set, this property overrides the `fontSize` property of the current label style.
-	 */
-	fontSize?: string | number;
-
-	/**
-	 * True if this label should be displayed using bold text
-	 * - If set, this property overrides the `bold` property of the current label style.
-	 */
-	bold?: boolean = undefined;
-
-	/**
-	 * True if this label should be displayed using bold text
-	 * - If set, this property overrides the `italic` property of the current label style.
-	 */
-	italic?: boolean = undefined;
-
-	/**
-	 * The text color to be applied to this label
-	 * - If set, this property overrides the `textColor` property of the current label style.
-	 */
-	color?: UIColor = undefined;
-
-	/**
-	 * The opacity to be applied to this label, or `true` to use lower opacity
-	 * - If set, this property overrides the `opacity` property of the current label style.
-	 */
-	dim?: number | boolean = undefined;
-
-	/** The style to be applied to this label */
-	style?: UILabel.StyleValue = undefined;
 }
 
 export namespace UILabel {
-	/** A style object or overrides that can be applied to {@link UILabel} */
-	export type StyleValue =
-		| UIStyle<UILabel.StyleDefinition>
-		| UILabel.StyleDefinition
-		| undefined;
+	/** Options for displaying an icon within a label or button control */
+	export type IconStyle = {
+		/** Icon size (in pixels or string with unit) */
+		size?: string | number;
 
-	/** The type definition for styles applicable to {@link UILabel.style} */
-	export type StyleDefinition = UIRenderable.Dimensions &
-		UIRenderable.Decoration &
-		UIRenderable.TextStyle;
+		/** Space between icon and text (in pixels or string with unit) */
+		margin?: string | number;
+
+		/** Icon color */
+		color?: UIColor;
+	};
+}
+
+export namespace UILabel {
+	/**
+	 * Creates a view builder for a text label element
+	 * @param text The text content to display, or a binding to a string value.
+	 * @returns A builder object for configuring the label.
+	 * @see {@link UILabel}
+	 */
+	export function labelBuilder(text?: BindingOrValue<StringConvertible>) {
+		return new LabelBuilder().text(text);
+	}
+
+	export namespace labelBuilder {
+		/**
+		 * Creates a view builder for a text label element with a localizable or dynamic text label.
+		 * @param text The text to display, passed to {@link fmt()} or {@link bind.fmt()}
+		 * @param args Additional bindings, used to format the text dynamically
+		 * @returns A builder instance for chaining.
+		 */
+		export function fmt(text: StringConvertible, ...args: Binding[]) {
+			return new LabelBuilder().fmt(text, ...args);
+		}
+	}
+
+	/**
+	 * A builder class for creating `UILabel` instances.
+	 * - Objects of this type are returned by the `UI.Label()` function.
+	 */
+	export class LabelBuilder extends UIViewElement.ElementBuilder<UILabel> {
+		/** The initializer that is used to create each label instance */
+		readonly initializer = new ViewBuilder.Initializer(UILabel);
+
+		/**
+		 * Sets the text for the label, using {@link UILabel.text}.
+		 * @param text The text to display, or a binding to a string value.
+		 * @returns The builder instance for chaining.
+		 */
+		text(text?: BindingOrValue<StringConvertible>) {
+			return this.setProperty("text", text);
+		}
+
+		/**
+		 * Sets a localizable or dynamic text for the label.
+		 * @param text The text to display, passed to {@link fmt()} or {@link bind.fmt()}
+		 * @param args Additional bindings, used to format the text dynamically
+		 * @returns The builder instance for chaining.
+		 */
+		fmt(text: StringConvertible, ...args: Binding[]) {
+			if (args.length === 0) return this.text(fmt(text));
+			return this.text(bind.fmt(text, ...args));
+		}
+
+		/**
+		 * Sets the icon for the label, using {@link UILabel.icon}.
+		 * @param icon An icon resource, a theme icon name, or a binding to an icon.
+		 * @param iconStyle Styling options for the icon, or only the icon size (in pixels).
+		 * @returns The builder instance for chaining.
+		 */
+		icon(
+			icon: UI.IconName | BindingOrValue<UIIconResource | string | undefined>,
+			iconStyle?: BindingOrValue<UILabel.IconStyle> | number,
+		) {
+			if (iconStyle != null) {
+				this.initializer.update(iconStyle, function (value) {
+					this.iconStyle = typeof value === "number" ? { size: value } : value;
+				});
+			}
+			if (typeof icon === "string") {
+				icon = UIIconResource.theme.ref(icon as any);
+			} else if (isBinding(icon)) {
+				icon = icon.map((value) =>
+					typeof value === "string"
+						? UIIconResource.theme.ref(value as any)
+						: value,
+				);
+			}
+			return this.setProperty("icon", icon);
+		}
+
+		/**
+		 * Alias for `textAlign`, to set the text alignment.
+		 */
+		align(align?: BindingOrValue<UIStyle.StyleOptions["textAlign"]>) {
+			return this.textAlign(align);
+		}
+
+		/**
+		 * A shorthand for `textAlign("center")`, to set the text alignment to center.
+		 */
+		center() {
+			return this.textAlign("center");
+		}
+
+		/**
+		 * Enables or disables text wrapping by setting the line break mode
+		 * @param lineBreakMode Line break mode (string) or boolean. If `true`, sets the line break mode to `pre-wrap`. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		wrap(
+			mode: BindingOrValue<
+				boolean | UIStyle.StyleOptions["lineBreakMode"]
+			> = true,
+		) {
+			function t(value: boolean | UIStyle.StyleOptions["lineBreakMode"]) {
+				return value === true ? "pre-wrap" : value || "";
+			}
+			return this.setStyleOverride(
+				"lineBreakMode",
+				isBinding(mode) ? mode.map(t) : t(mode as any),
+			);
+		}
+
+		/**
+		 * Sets the heading level for semantic HTML output
+		 * @param level The heading level (1-6).
+		 * @returns The builder instance for chaining.
+		 */
+		headingLevel(level?: BindingOrValue<1 | 2 | 3 | 4 | 5 | 6>) {
+			return this.setProperty("headingLevel", level);
+		}
+
+		/**
+		 * Sets the label's text, to be interpreted as HTML
+		 * - This method sets the `htmlFormat` property to `true`, and then sets the text using {@link UILabel.text}.
+		 * @param text The HTML content to display, or a binding to a string value.
+		 * @returns The builder instance for chaining.
+		 */
+		html(text?: BindingOrValue<StringConvertible>) {
+			this.initializer.set("htmlFormat", true);
+			return this.setProperty("text", text);
+		}
+
+		/**
+		 * Makes the label's text selectable by the user, using {@link UILabel.selectable}.
+		 * @param selectable If `true`, text can be selected. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		selectable(selectable: BindingOrValue<boolean> = true) {
+			return this.setProperty("selectable", selectable);
+		}
+
+		/**
+		 * Applies a style to the label
+		 * @param style The name of a theme label style, a {@link UIStyle} instance, a style options (overrides) object, or a binding.
+		 * @returns The builder instance for chaining.
+		 */
+		labelStyle(
+			style?: BindingOrValue<
+				UI.styles.LabelStyleName | UIStyle | UIStyle.StyleOptions | undefined
+			>,
+		) {
+			return this.setStyleProperty(style, UIStyle.theme.label);
+		}
+
+		/**
+		 * Allows the label to receive input focus.
+		 * @param allow If `true`, the label can be focused. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		allowFocus(allow = true) {
+			return this.setProperty("allowFocus", allow);
+		}
+
+		/**
+		 * Allows the label to receive input focus via the keyboard.
+		 * @param allow If `true`, the label can be focused with the keyboard. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		allowKeyboardFocus(allow = true) {
+			if (allow) this.allowFocus(true);
+			return this.setProperty("allowKeyboardFocus", allow);
+		}
+	}
 }

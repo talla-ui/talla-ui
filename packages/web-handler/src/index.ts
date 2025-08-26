@@ -1,21 +1,23 @@
 import * as core from "@talla-ui/core";
-import { WebContextOptions, useWebContext } from "./WebContext.js";
-import { WebTheme } from "./style/WebTheme.js";
-import { WebHashNavigationContext } from "./WebHashNavigationContext.js";
-import { WebHistoryNavigationContext } from "./WebHistoryNavigationContext.js";
-import { WebDialogStyles } from "./style/Dialog.js";
-import { WebMessageDialogStyles } from "./style/MessageDialog.js";
-import { WebModalMenuStyles } from "./style/ModalMenu.js";
+import { WebDialogStyles } from "./modals/Dialog.js";
+import { WebMessageDialogStyles } from "./modals/MessageDialog.js";
+import { WebModalMenuStyles } from "./modals/ModalMenu.js";
+import { useWebContext } from "./setup.js";
+import { WebContextOptions } from "./WebContextOptions.js";
+import { WebNavigationContext } from "./WebNavigationContext.js";
+import { WebRenderer } from "./WebRenderer.js";
 export {
 	useWebContext,
 	WebContextOptions,
-	WebTheme,
-	WebHashNavigationContext,
-	WebHistoryNavigationContext,
 	WebDialogStyles,
 	WebMessageDialogStyles,
 	WebModalMenuStyles,
+	WebNavigationContext,
+	WebRenderer,
 };
+
+// Re-export app from core for convenience
+export { app } from "@talla-ui/core";
 
 if (!window.require) {
 	(window as any).require = function (s: string) {
@@ -28,9 +30,8 @@ if (!window.require) {
 				...core,
 				useWebContext,
 				WebContextOptions,
-				WebTheme,
-				WebHashNavigationContext,
-				WebHistoryNavigationContext,
+				WebNavigationContext,
+				WebRenderer,
 				WebDialogStyles,
 				WebMessageDialogStyles,
 				WebModalMenuStyles,

@@ -3,9 +3,13 @@ import {
 	renderTestView,
 	useTestContext,
 } from "@talla-ui/test-handler";
-import { strf } from "@talla-ui/util";
 import { beforeEach, expect, test } from "vitest";
-import { FormContext, ObservedObject, ui, UIToggle } from "../../dist/index.js";
+import {
+	FormContext,
+	ObservableObject,
+	UI,
+	UIToggle,
+} from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
@@ -16,18 +20,17 @@ test("Constructor with label", () => {
 	expect(tf).toHaveProperty("label", "foo");
 });
 
+test("Constructor with label and state", () => {
+	let tf = new UIToggle("Accept terms", true);
+	expect(tf.label).toBe("Accept terms");
+	expect(tf.state).toBe(true);
+});
+
 test("View builder with properties", () => {
-	let myToggle = ui.toggle({ label: "foo", state: true });
+	let myToggle = UI.Toggle("foo").state(true);
 	let toggle = myToggle.create();
 	expect(toggle).toHaveProperty("label", "foo");
 	expect(toggle).toHaveProperty("state", true);
-});
-
-test("View builder using form field", () => {
-	let myToggle = ui.toggle({ formField: "foo", label: strf("Foo") });
-	let toggle = myToggle.create();
-	expect(toggle).toHaveProperty("formField", "foo");
-	expect(toggle.label?.toString()).toBe("Foo");
 });
 
 test("Rendered with label", async () => {
@@ -48,16 +51,16 @@ test("User input, directly setting checked value", async () => {
 });
 
 test("User input with form context", async () => {
-	class Host extends ObservedObject {
-		// note that formContext must exist before it can be bound
-		readonly formContext = new FormContext().set("foo", true);
-		readonly toggle = this.attach(new UIToggle());
+	class Host extends ObservableObject {
+		// note that form must exist before it can be bound
+		readonly form = new FormContext().set("foo", true);
+		readonly toggle = this.attach(UI.Toggle().bindFormField("foo").create());
 	}
+	Host.enableBindings();
 	let host = new Host();
 	let toggle = host.toggle;
 
 	// use form context to check toggle
-	toggle.formField = "foo";
 	expect(toggle.state).toBe(true);
 
 	// render field, check that checkbox is checked
@@ -70,5 +73,5 @@ test("User input with form context", async () => {
 	console.log("Updating element to set form context");
 	toggleElt.checked = false;
 	toggleElt.sendPlatformEvent("change");
-	expect(host.formContext.values.foo).toBe(false);
+	expect(host.form.values.foo).toBe(false);
 });

@@ -1,37 +1,56 @@
 import {
 	ConfigOptions,
-	I18nProvider,
-	LazyString,
+	DeferredString,
 	StringConvertible,
+	fmt,
 } from "@talla-ui/util";
-import { ObservedObject } from "../object/index.js";
-import { ERROR, err, safeCall, setErrorHandler } from "../errors.js";
-import type { UITheme } from "../ui/style/UITheme.js";
-import { Activity } from "./Activity.js";
-import { ActivityList } from "./ActivityList.js";
-import { $_app_bind_label } from "./app_binding.js";
+import {
+	ERROR,
+	err,
+	invalidArgErr,
+	safeCall,
+	setErrorHandler,
+} from "../errors.js";
+import { ObservableList, ObservableObject } from "../object/index.js";
+import type { Activity } from "./Activity.js";
+import { I18nContext } from "./I18nContext.js";
 import { LocalData } from "./LocalData.js";
 import { LogWriter } from "./LogWriter.js";
 import { MessageDialogOptions } from "./MessageDialogOptions.js";
 import { ModalMenuOptions } from "./ModalMenuOptions.js";
-import { NavigationContext } from "./NavigationContext.js";
-import { NavigationTarget } from "./NavigationTarget.js";
-import { RenderContext } from "./RenderContext.js";
+import type { NavigationContext } from "./NavigationContext.js";
+import type { RenderContext } from "./RenderContext.js";
 import { AsyncTaskQueue, Scheduler } from "./Scheduler.js";
 import type { View } from "./View.js";
+import type { Viewport } from "./Viewport.js";
 
-/** @internal Counter that blocks multiple invocations of AppContext constructor */
-let once = 0;
+/** Last (and first) instance of AppContext, if any */
+let instance: AppContext | undefined;
 
 /**
  * A singleton class that represents the global application state
  *
  * @description
- * An instance of this class is available as {@link app} during the entire lifecycle of the application. Use that to access all properties and methods of AppContext, e.g. `app.theme` and `app.addActivity(...)`.
+ * An instance of this class is available as {@link app} during the entire lifecycle of the application. Use that to access all properties and methods of AppContext, e.g. `app.log` and `app.addActivity(...)`.
  *
  * @docgen {hideconstructor}
  */
-export class AppContext extends ObservedObject {
+export class AppContext extends ObservableObject {
+	static {
+		// Enable bindings on `app` itself
+		AppContext.enableBindings();
+	}
+
+	/**
+	 * Returns the current application context
+	 * - The application context is also exported as `app`, which should be used from application code instead of calling this method.
+	 * @error This method throws an error if the application context hasn't been initialized yet.
+	 */
+	static getInstance() {
+		if (!instance) throw Error;
+		return instance;
+	}
+
 	/**
 	 * Sets a global unhandled error handler
 	 * - This method _replaces_ the current handler, if any, and is not cleared by {@link AppContext.clear()}.
@@ -41,68 +60,50 @@ export class AppContext extends ObservedObject {
 	 */
 	static setErrorHandler(f: (err: unknown) => void) {
 		setErrorHandler(f);
+		DeferredString.setErrorHandler(f);
 	}
 
 	/** App constructor, do not use (refer to {@link app} instead) */
 	constructor() {
-		if (once++) throw Error;
 		super();
+		if (instance) throw Error;
+		instance = this;
 
 		// set as root object (cannot be attached, no more bindings)
-		ObservedObject.makeRoot(this);
-		(this as any)[$_app_bind_label] = true;
-
-		// set renderer property to undefined, to enable bindings
-		this.renderer = undefined;
-
-		// define i18n property and handle new objects when set
-		let i18n: I18nProvider | undefined;
-		Object.defineProperty(this, "i18n", {
-			configurable: true,
-			enumerable: true,
-			get() {
-				return i18n;
-			},
-			set(v: any) {
-				i18n = v;
-				LazyString.setI18nInterface(i18n);
-				LazyString.invalidateCache();
-			},
-		});
-
-		// define theme property and remount renderer when set
-		let theme: UITheme | undefined;
-		Object.defineProperty(this, "theme", {
-			configurable: true,
-			enumerable: true,
-			get() {
-				return theme;
-			},
-			set(v: any) {
-				theme = v;
-				Promise.resolve().then(() => {
-					if (v && this.renderer) {
-						this.renderer.remount();
-					}
-				});
-			},
-		});
+		ObservableObject.makeRoot(this);
 	}
 
 	/**
-	 * The current root activity list, an instance of {@link ActivityList}
-	 * - This object contains activity instances that have been added using {@link addActivity()}.
-	 * - The root activity list is used by the {@link NavigationContext} (i.e. {@link navigation app.navigation}) to activate and deactivate activities automatically based on their navigation page ID.
-	 * - Activities don't need to be added here if they're activated programmatically, e.g. as attached objects of a parent activity.
+	 * A list of activities managed by the application
+	 * - To add an activity, use the {@link AppContext.addActivity app.addActivity()} method.
+	 * - Activities that are added to this list are automatically attached to the application context, allowing activities and views to bind to properties of the application context.
+	 * - This list is used by the navigation context to activate activities based on their navigation path, if any.
 	 */
-	readonly activities = this.attach(new ActivityList());
+	readonly activities = this.attach(
+		new ObservableList<Activity>().attachItems(true),
+	);
 
 	/**
-	 * The current navigation context, an instance of {@link NavigationContext}
-	 * - This object encapsulates the current location path, and coordinates automatic activation of activities based on their page ID.
-	 * @note To navigate around the application, use the {@link AppContext.navigate app.navigate()} and {@link AppContext.goBack app.goBack()} methods, rather than calling the methods of the navigation context directly.
+	 * A list of services managed by the application
+	 * - Services are instances of {@link ObservableObject} that provide functionality that may be used throughout the application.
+	 * - To add a service, use the {@link AppContext.addService app.addService()} method.
+	 * - To find a service, e.g. from an activity, use the {@link AppContext.getService app.getService()} method.
 	 */
-	navigation = new NavigationContext(this.activities);
+	readonly services = this.attach(new ObservableList().attachItems(true));
+
+	/**
+	 * The global message log writer instance, an instance of {@link LogWriter}
+	 * - You can use `app.log` methods to write messages to the current application log, and add a log sink handler. If no handler is added, log messages are written to the console.
+	 * - Refer to {@link LogWriter} for available methods of `app.log`.
+	 */
+	readonly log = new LogWriter();
+
+	/**
+	 * The current i18n context, an instance of {@link I18nContext}
+	 * - This object encapsulates the current locale and options, which are used by {@link fmt()} and {@link bind.fmt()} to translate and format strings.
+	 * - To set the current locale, use {@link I18nContext.configure()} and/or {@link I18nContext.setTranslations()}.
+	 */
+	readonly i18n = new I18nContext();
 
 	/**
 	 * The global asynchronous task scheduler, an instance of {@link Scheduler}
@@ -110,60 +111,53 @@ export class AppContext extends ObservedObject {
 	 * - You can use {@link schedule()} to schedule a task on the default queue of this scheduler.
 	 * - Refer to {@link Scheduler} for available methods of `app.scheduler`.
 	 */
-	scheduler = new Scheduler();
+	readonly scheduler = new Scheduler();
 
 	/**
-	 * The global message log writer instance, an instance of {@link LogWriter}
-	 * - You can use `app.log` methods to write messages to the current application log, and add a log sink handler. If no handler is added, log messages are written to the console.
-	 * - Refer to {@link LogWriter} for available methods of `app.log`.
+	 * The current application output renderer, an instance of {@link RenderContext}
+	 * - This property is set by the platform-specific renderer package.
 	 */
-	log = new LogWriter();
+	renderer?: RenderContext = undefined;
+
+	/**
+	 * Current viewport information, an object of type {@link Viewport}
+	 * - This property is set by the platform-specific renderer package.
+	 */
+	viewport?: Viewport = undefined;
+
+	/**
+	 * The current navigation context, an instance of {@link NavigationContext}
+	 * - This object encapsulates the current location path, and coordinates automatic activation of activities based on their navigation path.
+	 * - This property is set by the platform-specific renderer package.
+	 * @note To navigate around the application, use the {@link AppContext.navigate app.navigate()} and {@link AppContext.goBack app.goBack()} methods, rather than calling the methods of the navigation context directly.
+	 */
+	navigation?: NavigationContext = undefined;
 
 	/**
 	 * Persisted key-value object data, made available as an instance of {@link LocalData}
 	 * - Data is persisted in a platform-dependent way. While testing, all data is _only_ persisted during the lifetime of the test handler.
+	 * - This property is set by the platform-specific renderer package.
 	 */
 	localData = new LocalData();
 
 	/**
-	 * The current application output renderer, an instance of {@link RenderContext}
-	 * - This property will be set by the platform-specific renderer package
-	 */
-	declare readonly renderer?: RenderContext; // (defined in constructor)
-
-	/**
-	 * The current internationalization context, an object that implements {@link I18nProvider}
-	 * - You can set `app.i18n` to an object that implements {@link I18nProvider}, to change the current internationalization context.
-	 * - Note that labels and other UI controls that are already rendered won't be updated automatically. If needed, use `app.renderer.remount()` to force a full re-render.
-	 */
-	declare i18n?: I18nProvider; // (defined in constructor)
-
-	/**
-	 * The current theme, an instance of {@link UITheme}
-	 * - Instead of modifying the existing theme instance, use the {@link UITheme.clone()} method and set this property to the new instance. This will trigger an update of all rendered output automatically.
-	 * @see {@link UITheme}
-	 */
-	declare theme?: UITheme; // (defined in constructor)
-
-	/**
 	 * Clears the state of the global application context
 	 * @summary This method is used to reset the app to its initial state. It's called automatically by context initialization functions such as `useTestContext()` and `useWebContext()`, before setting up a new global application context with platform-specific details. The following actions take place:
-	 * 1. The current renderer's output is cleared;
-	 * 2. All activities are unlinked;
-	 * 3. All scheduler queues are stopped;
-	 * 4. The i18n provider is unlinked;
-	 * 5. The theme is removed
-	 * 6. Log sink(s) are removed;
+	 * 1. All activities are unlinked and removed;
+	 * 2. All services are unlinked and removed;
+	 * 3. The current renderer's output is cleared;
+	 * 4. All scheduler queues are stopped and removed;
+	 * 5. Log sink handlers are removed;
+	 * 6. The i18n context is cleared, and the current locale is reset;
 	 */
 	clear() {
-		this.renderer?.clear();
 		this.activities.clear();
-		this.navigation.clear();
-		this.scheduler.stopAll();
-		this.scheduler = new Scheduler();
-		this.i18n = undefined;
-		this.theme = undefined;
-		this.log = new LogWriter();
+		this.services.clear();
+		this.navigation?.clear();
+		this.renderer?.clear();
+		this.scheduler.clear();
+		this.log.removeHandlers();
+		this.i18n.clear();
 		return this;
 	}
 
@@ -177,39 +171,75 @@ export class AppContext extends ObservedObject {
 	}
 
 	/**
-	 * Adds an activity to the list of root activities
+	 * Adds an activity to the application
 	 *
 	 * @summary
-	 * This method adds an {@link Activity} instance to the {@link ActivityList} (i.e. `app.activities`), activating it automatically if the current location matches {@link Activity.navigationPageId}, or if the `activate` argument was set to true.
+	 * This method adds an {@link Activity} instance, activating it automatically if the current location matches {@link Activity.navigationPath}, or if the `activate` argument was set to true.
 	 *
 	 * @param activity The activity to be added
 	 * @param activate True if the activity should be activated immediately (asynchronously)
-	 * @param listen A listener function that will be called when the activity is either activated or deactivated
 	 */
-	addActivity<T extends Activity>(
-		activity: T,
-		activate?: boolean,
-		listen?: (a: T) => void | Promise<void>,
-	) {
-		if (listen) {
-			activity.listen((e) => {
-				if (
-					e.data.change === activity &&
-					(e.name === "Active" || e.name === "Inactive")
-				) {
-					return listen(activity);
-				}
-			});
-		}
+	addActivity(activity: Activity, activate?: boolean) {
 		this.activities.add(activity);
 		if (activate) safeCall(activity.activateAsync, activity);
 		return this;
 	}
 
 	/**
+	 * Finds an activity of the specified type in the application context
+	 * - This method is used to find an activity instance that was added to the application context using {@link AppContext.addActivity app.addActivity()}.
+	 * @param type The type of activity to find (a class constructor)
+	 * @returns The activity instance
+	 * @error This method throws an error if the activity of the specified type is not found.
+	 * @example
+	 * test("...", async () => {
+	 *   let activity = app.getActivity(MyActivity);
+	 * 	 expect(activity.isActive()).toBe(true);
+	 * });
+	 */
+	getActivity<T extends Activity>(type: new (...args: any[]) => T) {
+		for (let activity of this.activities) {
+			if (activity instanceof type) return activity;
+		}
+		throw err(ERROR.Activity_NotFound);
+	}
+
+	/**
+	 * Adds a service to the application
+	 *
+	 * @summary
+	 * This method adds an {@link ObservableObject} instance as a service to the application context, allowing it to be used throughout the application by referencing its type (class constructor).
+	 *
+	 * @param service The service to be added
+	 * @see {@link AppContext.getService}
+	 */
+	addService(service: ObservableObject) {
+		this.services.add(service);
+		return this;
+	}
+
+	/**
+	 * Finds a service of the specified type in the application context
+	 * - This method is used to find a service instance that was added to the application context using {@link AppContext.addService app.addService()}.
+	 * @param type The type of service to find (a class constructor)
+	 * @returns The service instance
+	 * @error This method throws an error if the service of the specified type is not found.
+	 * @example
+	 * class MyActivity extends Activity {
+	 *   // reference a service from the activity
+	 * 	 myService = app.getService(MyService);
+	 * }
+	 */
+	getService<T extends ObservableObject>(type: new (...args: any[]) => T) {
+		for (let service of this.services) {
+			if (service instanceof type) return service;
+		}
+		throw err(ERROR.Service_NotFound);
+	}
+
+	/**
 	 * Navigates to the specified path asynchronously
-	 * - The behavior of this method is platform dependent. It uses {@link NavigationContext.navigateAsync()} to navigate to the specified path, which may in turn activate or deactivate activities using the {@link Activity.navigationPageId} property.
-	 * - The target location can be a {@link NavigationTarget} instance, an object that provides a navigation target (i.e. an {@link Activity}), or a URL-like path (i.e. `pageId/detail...`).
+	 * - The behavior of this method is platform dependent. It uses {@link NavigationContext.navigateAsync()} to navigate to the specified path, which may in turn activate or deactivate activities using the {@link Activity.navigationPath} property.
 	 * @param target The target location
 	 * @param mode The navigation mode, refer to {@link NavigationContext.navigateAsync()}
 	 *
@@ -217,38 +247,32 @@ export class AppContext extends ObservedObject {
 	 * // In a web application, navigate to the /foo URL
 	 * app.navigate("foo");
 	 */
-	navigate(
-		target:
-			| string
-			| LazyString
-			| NavigationTarget
-			| { getNavigationTarget(): NavigationTarget },
-		mode?: NavigationContext.NavigationMode,
-	) {
-		safeCall(
-			this.navigation.navigateAsync,
-			this.navigation,
-			new NavigationTarget(target),
-			mode,
-		);
+	navigate(target: StringConvertible, mode?: NavigationContext.NavigationMode) {
+		let path = String(target).replace(/^\/+|\/+$/g, "");
+		if (path.startsWith(".")) throw invalidArgErr("target");
+		if (this.navigation) {
+			safeCall(this.navigation.navigateAsync, this.navigation, path, mode);
+		}
 		return this;
 	}
 
 	/**
-	 * Navigates back to the previous location in the location history stack
+	 * Navigates back to the previous location in the history stack
 	 * - The behavior of this method is platform dependent. It uses {@link NavigationContext.navigateAsync()} to navigate back within navigation history, if possible.
 	 */
 	goBack() {
-		safeCall(this.navigation.navigateAsync, this.navigation, undefined, {
-			back: true,
-		});
+		if (this.navigation) {
+			safeCall(this.navigation.navigateAsync, this.navigation, undefined, {
+				back: true,
+			});
+		}
 		return this;
 	}
 
 	/**
 	 * Renders the provided view using specified placement options
 	 *
-	 * @summary This method can be used to render any view object to the screen (or in-memory test output, when called from a test function), such as a {@link UICell} or {@link UIComponent} instance.
+	 * @summary This method can be used to render any view object to the screen (or in-memory test output, when called from a test function), such as a {@link UICell} or {@link CustomView} instance.
 	 *
 	 * @param view The view object to be rendered
 	 * @param place View placement options, as an object of type {@link RenderContext.PlacementOptions}; defaults to page placement
@@ -262,53 +286,59 @@ export class AppContext extends ObservedObject {
 
 	/**
 	 * Displays an alert dialog with the specified content and a single dismiss button
-	 * - Use {@link strf} to translate content if necessary; this method doesn't localize strings by default.
+	 * - Use {@link fmt} to translate content if necessary; this method doesn't localize strings by default.
 	 * @param config An instance of {@link MessageDialogOptions}; or a callback function to set options for the dialog to be displayed; or one or more messages to be displayed
 	 * @param buttonLabel The label for the dismiss button (if a single message was provided)
 	 * @returns A promise that resolves when the dialog is closed.
-	 * @error This method throws an error if the theme modal dialog controller can't be initialized (i.e. there's no current theme, or the theme doesn't support modal dialog views).
+	 * @error This method throws an error if the modal dialog controller can't be initialized (i.e. there's no modal factory or alert dialog builder).
 	 */
 	async showAlertDialogAsync(
 		config:
 			| ConfigOptions.Arg<MessageDialogOptions>
-			| LazyString
+			| DeferredString
 			| string
 			| StringConvertible[],
 		buttonLabel?: StringConvertible,
 	) {
-		let controller = this.theme?.modalFactory?.buildAlertDialog?.(
+		let controller = this.renderer?.modalFactory.buildAlertDialog?.(
 			config instanceof MessageDialogOptions || typeof config === "function"
 				? MessageDialogOptions.init(config)
 				: new MessageDialogOptions(config, buttonLabel),
 		);
-		if (!controller) throw err(ERROR.Render_NoModal);
+		if (!controller) throw err(ERROR.Render_Unavailable);
 		await controller.showAsync();
 	}
 
 	/**
 	 * Displays a confirmation dialog with the specified text and buttons
-	 * - Use {@link strf} to translate content if necessary; this method doesn't localize strings by default.
+	 * - Use {@link fmt} to translate content if necessary; this method doesn't localize strings by default.
 	 * @param config An instance of {@link MessageDialogOptions}; or a callback function to set options for the dialog to be displayed; or one or more messages to be displayed
 	 * @param confirmLabel The label for the confirm button (if a single message was provided instead of an options object or callback)
 	 * @param cancelLabel The label for the cancel button (if a single message was provided instead of an options object or callback)
 	 * @returns A promise that resolves to true if the confirm button was clicked, false if cancelled, or the number 0 if the alternative option is selected (if any).
-	 * @error This method throws an error if the theme modal dialog controller can't be initialized (i.e. there's no current theme, or the theme doesn't support modal dialog views).
+	 * @error This method throws an error if the modal dialog controller can't be initialized (i.e. there's no modal factory or confirm dialog builder).
 	 */
 	async showConfirmDialogAsync(
 		config:
 			| ConfigOptions.Arg<MessageDialogOptions>
-			| LazyString
+			| DeferredString
 			| string
 			| StringConvertible[],
 		confirmLabel?: StringConvertible,
 		cancelLabel?: StringConvertible,
+		otherLabel?: StringConvertible,
 	) {
-		let controller = this.theme?.modalFactory?.buildConfirmDialog?.(
+		let controller = this.renderer?.modalFactory.buildConfirmDialog?.(
 			config instanceof MessageDialogOptions || typeof config === "function"
 				? MessageDialogOptions.init(config)
-				: new MessageDialogOptions(config, confirmLabel, cancelLabel),
+				: new MessageDialogOptions(
+						config,
+						confirmLabel,
+						cancelLabel,
+						otherLabel,
+					),
 		);
-		if (!controller) throw err(ERROR.Render_NoModal);
+		if (!controller) throw err(ERROR.Render_Unavailable);
 		let result = await controller.showAsync();
 		return result.confirmed ? true : result.other ? 0 : false;
 	}
@@ -316,25 +346,25 @@ export class AppContext extends ObservedObject {
 	/** Displays a context/dropdown menu with the provided list of items
 	 *
 	 * @summary
-	 * This method displays a modal menu, using the specified options (or options that are set in a configuration function). The menu is positioned near a particular UI element, an instance of {@link UIRenderable}, e.g. a button that was clicked by the user.
+	 * This method displays a modal menu, using the specified options (or options that are set in a configuration function). The menu is positioned near a particular UI element, an instance of {@link UIViewElement}, e.g. a button that was clicked by the user.
 	 *
 	 * The `key` value of the chosen menu item, if any, is returned asynchronously. If the menu was dismissed, the returned promise is resolved to `undefined`.
 	 *
-	 * @note Use {@link strf} to translate item labels if necessary; this method doesn't localize strings by default.
+	 * @note Use {@link fmt} to translate item labels if necessary; this method doesn't localize strings by default.
 	 *
 	 * @param config An instance of {@link ModalMenuOptions}, including a list of menu items; or a callback function to set options for the menu to be displayed
 	 * @param ref The related UI element
 	 * @returns A promise that resolves to the selected item key, if any
-	 * @error This method throws an error if the theme modal menu controller can't be initialized (i.e. there's no current theme, or the theme doesn't support modal menu views).
+	 * @error This method throws an error if the modal menu controller can't be initialized (i.e. there's no modal factory or menu builder).
 	 */
 	async showModalMenuAsync(
 		config: ConfigOptions.Arg<ModalMenuOptions>,
 		ref?: { lastRenderOutput?: RenderContext.Output },
 	) {
-		let controller = this.theme?.modalFactory?.buildMenu?.(
+		let controller = this.renderer?.modalFactory.buildMenu?.(
 			ModalMenuOptions.init(config),
 		);
-		if (!controller) throw err(ERROR.Render_NoModal);
+		if (!controller) throw err(ERROR.Render_Unavailable);
 		let result = await controller.showAsync({
 			ref: ref && ref.lastRenderOutput,
 		});
@@ -345,12 +375,10 @@ export class AppContext extends ObservedObject {
 	 * Runs an animation on the provided view output element
 	 *
 	 * @summary This method passes a renderer-specific transformation object to an asynchronous transformer, which may use methods on the transform object to animate a view.
-	 * @see {@link RenderContext.OutputTransform}
 	 * @see {@link RenderContext.OutputTransformer}
-	 * @see {@link UITheme.animations}
 	 *
 	 * @param ref The UI element to be animated
-	 * @param transformer An asynchronous function that performs transformations, or a named animation from the current theme
+	 * @param animation An animation transformer (see {@link UIAnimation})
 	 * @error This method throws an error if the renderer hasn't been initialized yet.
 	 */
 	async animateAsync(
@@ -377,5 +405,74 @@ export class AppContext extends ObservedObject {
 		Promise.resolve().then(() => {
 			if (this.hotReload !== f) this.hotReload(handle, ActivityClass);
 		});
+	}
+
+	/**
+	 * Re-renders output, and relocates existing mounted view output if needed
+	 * - Use this method to force a full re-render of all output, e.g. when the color theme has been updated, or when the current locale/language changes after some views have already been rendered.
+	 */
+	remount() {
+		this.renderer?.remount();
+	}
+}
+
+export namespace AppContext {
+	/**
+	 * An interface that defines methods for creating modal views
+	 * - An object of this type should be assigned to {@link RenderContext.modalFactory}, which is used by the `app` methods that display modal views, as well as {@link Activity} when using the `dialog` rendering mode.
+	 */
+	export interface ModalControllerFactory {
+		/** A factory method that returns an instance that implements the {@link DialogController} interface, for the provided view */
+		buildDialog?: (view: View) => DialogController;
+		/** A factory method that returns an instance that implements the {@link AlertDialogController} interface, using the provided dialog options */
+		buildAlertDialog?: (options: MessageDialogOptions) => AlertDialogController;
+		/** A factory method that returns an instance that implements the {@link ConfirmDialogController} interface, using the provided dialog options */
+		buildConfirmDialog?: (
+			options: MessageDialogOptions,
+		) => ConfirmDialogController;
+		/** A factory method that returns an instance that implements the {@link MenuController} interface, using the provided menu options */
+		buildMenu?: (options: ModalMenuOptions) => MenuController;
+	}
+
+	/**
+	 * An interface for a class that manages a modal dialog view
+	 * @see {@link AppContext.ModalControllerFactory}
+	 */
+	export interface DialogController {
+		/** Display the dialog, until the content view is unlinked */
+		show(place?: Partial<RenderContext.PlacementOptions>): void;
+	}
+
+	/**
+	 * An interface for a class that manages a modal alert dialog view
+	 * @see {@link AppContext.ModalControllerFactory}
+	 */
+	export interface AlertDialogController {
+		/** Display the dialog */
+		showAsync(
+			place?: Partial<RenderContext.PlacementOptions>,
+		): Promise<unknown>;
+	}
+
+	/**
+	 * An interface for a class that manages a modal confirmation dialog view
+	 * @see {@link AppContext.ModalControllerFactory}
+	 */
+	export interface ConfirmDialogController {
+		/** Display the dialog */
+		showAsync(
+			place?: Partial<RenderContext.PlacementOptions>,
+		): Promise<{ confirmed: boolean; other?: boolean }>;
+	}
+
+	/**
+	 * An interface for a class that manages a modal (dropdown) menu view
+	 * @see {@link AppContext.ModalControllerFactory}
+	 */
+	export interface MenuController {
+		/** Display the menu and get the result */
+		showAsync(
+			place?: Partial<RenderContext.PlacementOptions>,
+		): Promise<{ key: string } | undefined>;
 	}
 }

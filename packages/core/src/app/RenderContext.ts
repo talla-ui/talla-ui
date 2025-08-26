@@ -1,8 +1,10 @@
 import type { StringConvertible } from "@talla-ui/util";
-import { ObservedObject } from "../object/index.js";
+import { ObservableObject } from "../object/index.js";
 import { errorHandler, invalidArgErr, safeCall } from "../errors.js";
 import type { UIColor } from "../ui/index.js";
 import { View } from "./View.js";
+import { ModalFactory } from "./ModalFactory.js";
+import { AppContext } from "./AppContext.js";
 
 /**
  * An abstract class that supports global view rendering, part of the global application context
@@ -10,7 +12,7 @@ import { View } from "./View.js";
  * - The current renderer, once initialized, should be available as {@link AppContext.renderer app.renderer}.
  * @docgen {hideconstructor}
  */
-export abstract class RenderContext extends ObservedObject {
+export abstract class RenderContext extends ObservableObject {
 	/** Returns a render callback for root view output; do not use directly */
 	abstract getRenderCallback(): RenderContext.RenderCallback;
 	/** Creates a new renderer observer for the provided view object; do not use directly */
@@ -28,8 +30,11 @@ export abstract class RenderContext extends ObservedObject {
 	/** Overrides the current window title, if supported */
 	abstract setTitle(title: StringConvertible): void;
 
-	/** Information about the current viewport (screen or window) */
-	abstract viewport: RenderContext.Viewport;
+	/**
+	 * The current modal factory
+	 * - This object is created automatically by the renderer, but may be updated by the application for custom modal views
+	 */
+	abstract modalFactory: ModalFactory;
 
 	/** Uses the provided output transformer to animate a rendered view */
 	async animateAsync(
@@ -76,7 +81,7 @@ export namespace RenderContext {
 	 * - `refOffset` — The offset (in pixels) from the reference output element, if any. May be a single number or two numbers for X and Y, and may also be negative.
 	 * - `shade` — True if the modal element should be surrounded by a backdrop shade.
 	 * - `background` — The screen (or page) background color.
-	 * - `transform` — A set of functions or names of theme animations that should run for the view output. By default, showing and hiding (or removing) output can be animated.
+	 * - `transform` — A set of animations that should run for the view output. By default, showing and hiding (or removing) output can be animated.
 	 */
 	export type PlacementOptions = Readonly<{
 		mode: PlacementMode;
@@ -110,75 +115,6 @@ export namespace RenderContext {
 		| "modal"
 		| "overlay"
 		| "mount";
-
-	/**
-	 * Interface definition for an object that contains information about the user's viewport, e.g. screen or browser window
-	 *
-	 * @description
-	 * A viewport object is available on the global renderer context, as {@link RenderContext.viewport app.renderer.viewport}. Properties of this instance can be used to change the UI dynamically for different viewport sizes — either directly or through a binding.
-	 *
-	 * Bindings for viewport context properties can also be created using the {@link $viewport} object.
-	 *
-	 * @online_docs Refer to the online documentation for more information on responsive design and the viewport context.
-	 * @docgen {hideconstructor}
-	 *
-	 * @example
-	 * // Determine the viewport size directly:
-	 * if (app.renderer?.viewport.portrait) {
-	 *   // ...do something specific here
-	 * }
-	 *
-	 * @example
-	 * // Bind to viewport properties from a JSX view:
-	 * <show when={$viewport("col3")}>
-	 *   // ...view for wide viewports with at least 3 grid 'columns'
-	 * </show>
-	 */
-	export interface Viewport extends ObservedObject {
-		/** The viewport width in logical pixel units */
-		width?: number;
-
-		/** The viewport height in logical pixel units */
-		height?: number;
-
-		/** True if the viewport is taller than it is wide */
-		portrait: boolean;
-
-		/** True if the viewport is at least 2 grid columns wide */
-		col2: boolean;
-
-		/** True if the viewport is at least 3 grid columns wide */
-		col3: boolean;
-
-		/** True if the viewport is at least 4 grid columns wide */
-		col4: boolean;
-
-		/** True if the viewport is at least 5 grid columns wide */
-		col5: boolean;
-
-		/** True if the viewport is at least 2 grid columns tall */
-		row2: boolean;
-
-		/** True if the viewport is at least 3 grid columns tall */
-		row3: boolean;
-
-		/** True if the viewport is at least 4 grid columns tall */
-		row4: boolean;
-
-		/** True if the viewport is at least 5 grid columns tall */
-		row5: boolean;
-
-		/** True if the user's preferences indicate a dark color scheme */
-		prefersDark?: boolean;
-
-		/**
-		 * Sets grid size to determine number of rows and columns
-		 * - Other properties are updated immediately when this method is called.
-		 * @param colSize Column size, in logical pixels
-		 * @param rowSize Row size, in logical pixels
-		 */
-		setGridSize(colSize: number, rowSize: number): void;
-	}
 
 	/**
 	 * An interface for an object that represents transformations to be applied to an output element
@@ -261,18 +197,6 @@ export namespace RenderContext {
 	}
 
 	/**
-	 * A platform-dependent effect that can be applied to a rendered output element
-	 * - This type is used to apply visual effects to rendered (cell) output elements, when referenced from @{link UICell.effect}.
-	 * - Note that effects may be applied multiple times to the same element, and should be idempotent.
-	 */
-	export interface OutputEffect<TElement = unknown> {
-		/** Apply the effect to the provided output element */
-		applyEffect(element: TElement, source: View): void;
-		/** Remove the effect from the provided output element, if necessary */
-		removeEffect?(element: TElement, source: View): void;
-	}
-
-	/**
 	 * An object that encapsulates a rendered output element, created by the global rendering context
 	 * @docgen {hideconstructor}
 	 */
@@ -309,7 +233,19 @@ export namespace RenderContext {
 	export class ViewController {
 		/** Creates a new view controller */
 		constructor(renderer?: RenderContext) {
-			this.renderer = renderer;
+			this.renderer = renderer || AppContext.getInstance().renderer;
+
+			// listen for remount events, and re-render the last view if needed
+			// (only if renderer was provided, i.e. this is a root view)
+			renderer?.listen({
+				handler: (_r, e) => {
+					if (e.name === "Remount" && this.lastView && this._ownCallback)
+						this.render(this.lastView);
+				},
+				init: (_r, stop) => {
+					this._stopRenderListener = stop;
+				},
+			});
 		}
 
 		/** The relevant render context for this controller */
@@ -351,7 +287,7 @@ export namespace RenderContext {
 					this._ownCallback = this._wrap(callback, place);
 				}
 				this.lastView = view;
-				this._listener = view && new ViewListener(this, view);
+				this._listener = view && new ViewControllerListener(this, view);
 				view?.render(this._ownCallback);
 			}
 			return this;
@@ -363,6 +299,7 @@ export namespace RenderContext {
 			if (!out) return;
 			let seq = this._seq;
 			this.lastRenderOutput = undefined;
+			this._stopRenderListener?.();
 			return safeCall(async () => {
 				if (!this.callback) return;
 				let animation = out?.place?.transform?.hide;
@@ -405,13 +342,14 @@ export namespace RenderContext {
 			});
 		}
 
-		private _listener?: ViewListener;
+		private _listener?: ViewControllerListener;
+		private _stopRenderListener?: () => void;
 		private _ownCallback: any;
 		private _seq = 0;
 	}
 
 	/** @internal A listener that's used to observe dynamically rendered content views */
-	class ViewListener {
+	export class ViewControllerListener {
 		constructor(
 			public wrapper: ViewController,
 			view: View,

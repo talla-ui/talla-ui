@@ -1,13 +1,12 @@
 import { beforeEach, test } from "vitest";
-import { expectOutputAsync, useTestContext } from "@talla-ui/test-handler";
+import { expectOutputAsync, useTestContext, app } from "@talla-ui/test-handler";
 import { MainActivity } from "./main";
 
-let activity: MainActivity;
 beforeEach(() => {
-	activity = new MainActivity();
-	useTestContext().addActivity(activity, true);
+	useTestContext();
+	app.addActivity(new MainActivity(), true);
 });
 
-test("Shows hello world", async (t) => {
+test("Shows hello world", async () => {
 	await expectOutputAsync({ type: "label", text: "Hello, world!" });
 });

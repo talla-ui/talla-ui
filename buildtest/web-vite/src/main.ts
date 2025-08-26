@@ -1,0 +1,327 @@
+import {
+	Activity,
+	app,
+	bind,
+	BindingOrValue,
+	CustomView,
+	ObservableObject,
+	StringConvertible,
+	UI,
+	UIButton,
+	UITextField,
+	ViewBuilder,
+	ViewEvent,
+} from "talla-ui";
+
+function Collapsible(label: StringConvertible, ...content: ViewBuilder[]) {
+	class CollapsibleView extends CustomView {
+		width? = 300;
+		expanded = false;
+		onToggle() {
+			this.expanded = !this.expanded;
+		}
+	}
+	return CollapsibleView.builder(
+		() =>
+			UI.Column()
+				.width(bind("width"))
+				.with(
+					UI.Label(label)
+						.icon(bind("expanded").then("chevronDown", "chevronNext"))
+						.cursor("pointer")
+						.intercept("Click", "Toggle"),
+					UI.ShowWhen(bind("expanded"), UI.Column(...content)),
+				),
+		{
+			/** Set the expanded state of the view */
+			expand(expanded = true) {
+				this.initializer.set("expanded", expanded);
+			},
+			width(w: BindingOrValue<number | undefined>) {
+				this.initializer.set("width", w);
+			},
+		},
+	);
+}
+
+const MyTitle = (label?: StringConvertible) =>
+	class extends CustomView {
+		label?: StringConvertible;
+		width?: number;
+	}
+		.builder(
+			() =>
+				UI.Label(bind("label"))
+					.labelStyle("title")
+					.width(bind("width"))
+					.allowKeyboardFocus(),
+			{
+				label(l: BindingOrValue<StringConvertible | undefined>) {
+					this.initializer.set("label", l);
+				},
+				width(w: BindingOrValue<number | undefined>) {
+					this.initializer.set("width", w);
+				},
+			},
+		)
+		.intercept("Click", "Select")
+		.intercept("EnterKeyPress", "Select")
+		.intercept("Select", async () => {
+			let choice = await app.showConfirmDialogAsync([
+				"Are you sure you want to click this button?",
+			]);
+			console.log("Select", choice);
+		})
+		.label(label);
+
+class CountService extends ObservableObject {
+	count = 0;
+
+	constructor() {
+		super();
+		this.observe("count", (count) => {
+			console.log("Count updated in service:", count);
+		});
+	}
+
+	increment() {
+		this.count++;
+		if (this.count > 10) this.count = 0;
+	}
+}
+
+const mainView = UI.Column()
+	.align("center")
+	.with(
+		UI.Spacer(32),
+		MyTitle("Title").width(300),
+		Collapsible(
+			"Rendered",
+			UI.Column()
+				.divider()
+				.border()
+				.with(
+					UI.Label(bind.fmt("View created: {}", bind("viewCreated"))).padding(),
+					UI.Label(bind.fmt("Current: {}", bind("currentDate"))).padding(),
+					UI.Label(bind.fmt("Count: {}", bind("countService.count"))).padding(),
+				),
+		)
+			.expand()
+			.width(300),
+
+		UI.Label(bind.fmt("Current: {:L}", bind("currentDate"))).padding(),
+		UI.Spacer(8),
+		UI.Label(bind.fmt("Count: {}", bind("countService.count"))).dim(
+			bind.not("countService.count"),
+		),
+		UI.Spacer(8),
+		UI.Row(UI.Button("Up").icon("chevronUp").emit("Count")),
+		UI.Spacer(8),
+		UI.Row(
+			UI.Button("Sub")
+				.navigateTo("./sub")
+				.icon("chevronNext")
+				.buttonStyle("iconTopEnd"),
+			UI.Button("Remount").emit("Remount").buttonStyle("primary"),
+			UI.Button("Change").emit("ChangeEvent"),
+		),
+	);
+
+export class MainActivity extends Activity {
+	static {
+		import.meta.hot?.accept(); // for Vite
+		app.hotReload(import.meta, this);
+	}
+
+	navigationPath = "";
+	viewCreated = new Date();
+
+	get currentDate() {
+		return new Date();
+	}
+
+	constructor() {
+		super();
+		app.addService(new CountService());
+		this.countService = app.getService(CountService);
+		app.addActivity(new RouterActivity());
+	}
+
+	onRemount() {
+		app.remount();
+	}
+
+	onChangeEvent() {
+		this.emitChange();
+	}
+
+	countService: CountService;
+
+	protected override createView() {
+		this.viewCreated = new Date();
+		return mainView.create();
+	}
+
+	protected onCount() {
+		this.countService.increment();
+	}
+}
+
+export class RouterActivity extends Activity {
+	navigationPath = "";
+	matchNavigationPath(remainder: string): void | boolean | Activity {
+		if (remainder === "sub") return new SubActivity();
+		if (remainder === "other") return new OtherActivity();
+	}
+}
+
+const SubView = UI.Column()
+	.align("center")
+	.with(
+		UI.Spacer(32),
+		UI.Label(bind.fmt("Sub activity created {}", bind("created"))),
+		UI.Label(bind.fmt("Changes: {}", bind("activeCount.changes"))),
+		UI.Label(bind.fmt("Count: {}", bind("activeCount.state.count"))),
+		UI.Label(
+			bind.fmt("Count * 2: {}", bind("activeCount.state.countTimesTwo")),
+		),
+		UI.Label(
+			bind.fmt(
+				"Count is non-zero? {}",
+				bind("activeCount.state.countIsNonZero"),
+			),
+		),
+		UI.Spacer(8),
+		UI.Label(
+			bind.fmt(
+				"Viewport: {:i}×{:i}",
+				bind("viewport.width"),
+				bind("viewport.height"),
+			),
+		),
+		UI.Spacer(8),
+		UI.Row(
+			UI.TextField()
+				.value(bind("activeCount.state.count"))
+				.emit("SetCount")
+				.trim(),
+			UI.Button("Reset").emit("ResetCount"),
+		).padding(8),
+		UI.Row(
+			UI.Button("Back").icon("chevronBack").emit("NavigateBack"),
+			UI.Row(UI.Button("Other").navigateTo("/other").icon("chevronNext")),
+		).layout(bind("viewport.cols").lt(2).then({ axis: "vertical" })),
+	);
+
+export class SubActivity extends Activity {
+	created = new Date();
+
+	activeCount = this.createActiveState(
+		[app.getService(CountService)],
+		async (service: CountService) => {
+			let changes: number = this.activeCount.changes || 0;
+			return {
+				service,
+				changes: changes + 1,
+				state: this.createActiveState(
+					[bind("activeCount.service.count")],
+					(count) => {
+						console.log("activeCount.state updated", count);
+						return {
+							count: count,
+							countTimesTwo: count * 2,
+							countIsNonZero: count !== 0,
+						};
+					},
+				),
+			};
+		},
+	);
+
+	fooState = this.createActiveState([bind("foo")], () => {
+		return { foo: this.foo };
+	});
+	foo = "bar";
+
+	protected override createView() {
+		console.log("SubActivity createView", this.activeCount);
+		return SubView.create();
+	}
+
+	protected onSetCount(e: ViewEvent<UITextField>) {
+		console.log("onSetCount", e.source.value);
+		this.activeCount.service!.count = +e.source.value! || 0;
+		// this.countService.emitChange();
+	}
+
+	onResetCount() {
+		this.activeCount.service!.count = 0;
+		this.activeCount.service!.emitChange();
+	}
+
+	beforeUnlink() {
+		console.log("Sub activity unlinking");
+	}
+}
+
+const OtherView = UI.Column()
+	.align("center")
+	.with(
+		UI.Spacer(32),
+		UI.Label(bind.fmt("Other activity created {}", bind("created"))),
+		UI.Spacer(8),
+		UI.Row(UI.Button("Back").icon("chevronBack").emit("NavigateBack")),
+		UI.Row(UI.Button("Dialog").emit("ShowDialog")),
+	);
+
+export class OtherActivity extends Activity {
+	created = new Date();
+
+	protected override createView() {
+		return OtherView.create();
+	}
+
+	beforeUnlink() {
+		console.log("Other activity unlinking");
+	}
+
+	protected async onShowDialog() {
+		let d = await this.attachActivityAsync(new DialogActivity());
+	}
+}
+
+const DialogView = UI.Column()
+	.align("center")
+	.gap(8)
+	.padding(16)
+	.with(
+		UI.Spacer(32),
+		UI.Label("Dialog"),
+		UI.Button("Dropdown").chevron("down").emit("Drop"),
+		UI.Row(UI.Button("Close").icon("close").emit("Close")),
+	);
+
+export class DialogActivity extends Activity {
+	protected override createView() {
+		this.setRenderMode("dialog");
+		return DialogView.create();
+	}
+
+	protected onClose() {
+		this.unlink();
+	}
+
+	protected async onDrop(e: ViewEvent<UIButton>) {
+		let choice = await app.showModalMenuAsync((menu) => {
+			menu.items = [
+				{ key: "one", text: "One" },
+				{ key: "two", text: "Two" },
+				{ key: "disabled", text: "Disabled", disabled: true },
+				{ key: "three", text: "Three", hint: "⌘+T" },
+				{ divider: true },
+				{ key: "more", text: "More..." },
+			];
+		}, e.source);
+		app.showAlertDialogAsync(["You picked an option", String(choice)]);
+	}
+}

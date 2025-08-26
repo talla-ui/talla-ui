@@ -27,7 +27,7 @@ test("Create a queue", () => {
 	expect(q.name).toBe(s);
 	expect(q.options.parallel).toBe(1);
 	expect(q.errors).toHaveLength(0);
-	expect(q.count).toBe(0);
+	expect(q.length).toBe(0);
 });
 
 test("Retrieve a named queue", () => {
@@ -98,10 +98,10 @@ describe("Synchronous tasks", () => {
 		q.add(() => {
 			task++;
 		});
-		expect(q.count).toBe(1);
+		expect(q.length).toBe(1);
 		q.run();
 		expect(task).toBe(1);
-		expect(q.count).toBe(0);
+		expect(q.length).toBe(0);
 	});
 
 	test("Single task with error, not caught", () => {
@@ -110,7 +110,7 @@ describe("Synchronous tasks", () => {
 			throw Error("foo");
 		});
 		q.run();
-		expect(q.count).toBe(0);
+		expect(q.length).toBe(0);
 		expect(numErrors).toBe(1);
 		pendingError = undefined;
 	});
@@ -121,7 +121,7 @@ describe("Synchronous tasks", () => {
 			throw Error("foo");
 		});
 		q.run();
-		expect(q.count).toBe(0);
+		expect(q.length).toBe(0);
 		expect(q.errors).toHaveLength(1);
 		expect(numErrors).toBe(0);
 	});
@@ -132,34 +132,11 @@ describe("Synchronous tasks", () => {
 		q.add(() => {
 			count++;
 		});
-		app.scheduler.stopAll();
-		expect(q.count).toBe(0);
+		app.scheduler.clear();
+		expect(q.length).toBe(0);
 		q.run();
 		expect(count).toBe(0);
 		expect(q.errors).toHaveLength(0);
-	});
-
-	test("Single task, replaced", () => {
-		let q = app.scheduler.createQueue(Symbol());
-		let task1 = false;
-		q.addOrReplace("foo", () => {
-			task1 = true;
-		});
-		let task2 = false;
-		q.addOrReplace("foo", () => {
-			task2 = true;
-		});
-		expect(q.count).toBe(1);
-		q.run();
-		let task3 = false;
-		q.addOrReplace("foo", () => {
-			task3 = true;
-		});
-		q.run();
-		expect(task1).toBe(false);
-		expect(task2).toBe(true);
-		expect(task3).toBe(true);
-		expect(q.count).toBe(0);
 	});
 
 	test("Two tasks, stopped in between", () => {
@@ -189,10 +166,10 @@ describe("Synchronous tasks", () => {
 		});
 		q.run();
 		expect(count).toBe(1);
-		expect(q.count).toBe(1);
+		expect(q.length).toBe(1);
 		q.run();
 		expect(count).toBe(1);
-		expect(q.count).toBe(1);
+		expect(q.length).toBe(1);
 		q.resume();
 		q.run();
 		expect(count).toBe(2);
@@ -250,13 +227,13 @@ describe("Synchronous tasks", () => {
 		q.add(runFor5ms);
 		q.add(runFor5ms);
 		q.add(runFor5ms);
-		expect(q.count).toBe(3);
+		expect(q.length).toBe(3);
 		q.run();
-		expect(q.count).toBe(2);
+		expect(q.length).toBe(2);
 		q.run();
-		expect(q.count).toBe(1);
+		expect(q.length).toBe(1);
 		q.run();
-		expect(q.count).toBe(0);
+		expect(q.length).toBe(0);
 	});
 });
 
@@ -273,7 +250,7 @@ describe("Asynchronous tasks", () => {
 			fired++;
 		});
 		await q.waitAsync();
-		expect(q.count).toBe(0);
+		expect(q.length).toBe(0);
 		expect(fired).toBe(1);
 	});
 
@@ -284,7 +261,7 @@ describe("Asynchronous tasks", () => {
 			throw Error("foo");
 		});
 		await q.waitAsync();
-		expect(q.count).toBe(0);
+		expect(q.length).toBe(0);
 		expect(String(pendingError)).toMatch(/foo/);
 		pendingError = undefined;
 	});
@@ -296,7 +273,7 @@ describe("Asynchronous tasks", () => {
 			throw Error("foo");
 		});
 		await q.waitAsync();
-		expect(q.count).toBe(0);
+		expect(q.length).toBe(0);
 		expect(numErrors).toBe(0);
 		expect(q.errors).toHaveLength(1);
 	});
@@ -402,13 +379,13 @@ describe("Asynchronous tasks", () => {
 			.poll(() => before === 5, { interval: 5, timeout: 1000 })
 			.toBe(true);
 		await sleep(10);
-		expect(q.count).toBe(10); // nothing resolved yet, 5 running
+		expect(q.length).toBe(10); // nothing resolved yet, 5 running
 		expect(before).toBe(5);
 		resolve();
 		await q.waitAsync();
 		expect(before).toBe(10);
 		expect(after).toBe(10);
-		expect(q.count).toBe(0);
+		expect(q.length).toBe(0);
 	});
 
 	test("Wait for 1 task remaining", async () => {
@@ -426,12 +403,234 @@ describe("Asynchronous tasks", () => {
 			canceled++;
 		});
 		await q.waitAsync(1);
-		expect(q.count).toBe(1);
+		expect(q.length).toBe(1);
 		q.stop();
 		console.log("Waiting for cancelled task");
 		await expect
 			.poll(() => canceled > 0, { interval: 5, timeout: 1000 })
 			.toBe(true);
-		expect(q.count).toBe(0);
+		expect(q.length).toBe(0);
+	});
+});
+
+describe("Throttle", () => {
+	function sleep(ms: number) {
+		return new Promise((resolve) => setTimeout(resolve, ms));
+	}
+
+	test("Throttle executes immediately on first call", async () => {
+		let q = app.scheduler.createQueue(Symbol());
+		let executed = false;
+		let executionTime = 0;
+
+		const startTime = Date.now();
+		q.throttle(() => {
+			executed = true;
+			executionTime = Date.now() - startTime;
+		}, 50);
+
+		await q.waitAsync();
+		expect(executed).toBe(true);
+		expect(executionTime).toBeLessThan(20);
+	});
+
+	test("Throttle enforces minimum time between executions", async () => {
+		let q = app.scheduler.createQueue(Symbol());
+		let executions: number[] = [];
+		const startTime = Date.now();
+
+		// runs immediately (async)
+		q.throttle(() => {
+			executions.push(Date.now() - startTime);
+		}, 40);
+		await q.waitAsync();
+
+		// waits for timer
+		q.throttle(() => {
+			executions.push(Date.now() - startTime);
+		}, 40);
+		await q.waitAsync();
+
+		expect(executions).toHaveLength(2);
+		expect(executions[0]!).toBeLessThan(20);
+		expect(executions[1]! - executions[0]!).toBeGreaterThanOrEqual(35);
+	});
+
+	test("Throttle replaces pending task with latest call", async () => {
+		let q = app.scheduler.createQueue(Symbol());
+		let lastValue = "";
+
+		q.throttle(() => {
+			lastValue = "first";
+		}, 30);
+		q.throttle(() => {
+			lastValue = "second";
+		}, 30);
+		q.throttle(() => {
+			lastValue = "third";
+		}, 30);
+
+		await q.waitAsync();
+		expect(lastValue).toBe("third");
+	});
+
+	test("Throttle with zero timer executes immediately", async () => {
+		let q = app.scheduler.createQueue(Symbol());
+		let executed = false;
+
+		q.throttle(() => {
+			executed = true;
+		}, 0);
+		q.run(); // synchronous
+		expect(executed).toBe(true);
+	});
+
+	test("Throttle respects task cancellation", async () => {
+		let q = app.scheduler.createQueue(Symbol());
+		let executed = false;
+
+		q.throttle(async () => {
+			executed = true;
+		}, 20);
+		q.stop();
+
+		await sleep(30); // Wait longer than the throttle timer
+		expect(executed).toBe(false);
+	});
+
+	test("Throttle handles async functions", async () => {
+		let q = app.scheduler.createQueue(Symbol());
+		let result = 0;
+		q.throttle(async () => {
+			await sleep(10);
+			result = 42;
+		}, 20);
+		await q.waitAsync();
+		expect(result).toBe(42);
+	});
+
+	test("Multiple throttle calls with different timers", async () => {
+		let q = app.scheduler.createQueue(Symbol());
+		let executions: string[] = [];
+		let startTime = Date.now();
+
+		// Block next call by running synchronously first
+		q.throttle(() => {}, 0);
+		q.run();
+
+		// Call with shorter timer first
+		q.throttle(() => {
+			executions.push("short");
+		}, 20);
+
+		// Wait a bit, then call with longer timer
+		await sleep(1);
+		q.throttle(() => {
+			executions.push("long");
+		}, 50);
+
+		await q.waitAsync();
+		expect(executions).toEqual(["long"]);
+		expect(Date.now() - startTime).toBeGreaterThan(40);
+	});
+});
+
+describe("Debounce", () => {
+	function sleep(ms: number) {
+		return new Promise((resolve) => setTimeout(resolve, ms));
+	}
+
+	test("Debounce delays execution", async () => {
+		let q = app.scheduler.createQueue(Symbol());
+		let executed = false;
+		q.debounce(() => {
+			executed = true;
+		}, 30);
+
+		// Check immediately - should not be executed yet
+		await sleep(5);
+		expect(executed).toBe(false);
+
+		// Wait for debounce timer
+		await q.waitAsync();
+		expect(executed).toBe(true);
+	});
+
+	test("Debounce resets timer on subsequent calls", async () => {
+		let q = app.scheduler.createQueue(Symbol());
+		let executions = 0;
+
+		// First call
+		q.debounce(() => {
+			executions++;
+		}, 40);
+
+		// Wait a bit, then call again - should reset the timer
+		await sleep(20);
+		q.debounce(() => {
+			executions++;
+		}, 40);
+
+		// Wait another bit, call again - should reset timer again
+		await sleep(20);
+		q.debounce(() => {
+			executions++;
+		}, 40);
+
+		// Now wait for the final execution
+		await q.waitAsync();
+		expect(executions).toBe(1); // Only the last call should execute
+	});
+
+	test("Debounce replaces pending task with latest call", async () => {
+		let q = app.scheduler.createQueue(Symbol());
+		let lastValue = "";
+
+		q.debounce(() => {
+			lastValue = "first";
+		}, 25);
+
+		q.debounce(() => {
+			lastValue = "second";
+		}, 25);
+
+		q.debounce(() => {
+			lastValue = "third";
+		}, 25);
+
+		await q.waitAsync();
+		expect(lastValue).toBe("third"); // Only the last debounced function should execute
+	});
+
+	test("Debounce with zero timer executes immediately", async () => {
+		let q = app.scheduler.createQueue(Symbol());
+		let executed = false;
+		q.debounce(() => {
+			executed = true;
+		}, 0);
+		q.run(); // synchronous
+		expect(executed).toBe(true);
+	});
+
+	test("Debounce respects task cancellation", async () => {
+		let q = app.scheduler.createQueue(Symbol());
+		let executed = false;
+		q.debounce(async () => {
+			executed = true;
+		}, 20);
+		q.stop();
+		await sleep(30); // Wait longer than the debounce timer
+		expect(executed).toBe(false);
+	});
+
+	test("Debounce handles async functions", async () => {
+		let q = app.scheduler.createQueue(Symbol());
+		let result = 0;
+		q.debounce(async () => {
+			await sleep(10);
+			result = 99;
+		}, 15);
+		await q.waitAsync();
+		expect(result).toBe(99);
 	});
 });

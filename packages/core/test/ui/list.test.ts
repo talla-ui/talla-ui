@@ -6,14 +6,13 @@ import {
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
 import {
-	$bind,
-	$list,
-	ObservedList,
-	ObservedObject,
+	bind,
+	ObservableList,
+	ObservableObject,
+	UI,
 	UILabel,
 	UIListView,
 	UIListViewEvent,
-	ui,
 } from "../../dist/index.js";
 
 beforeEach(() => {
@@ -22,18 +21,14 @@ beforeEach(() => {
 
 // helper function to get the text content of a list
 function getListText(list: UIListView) {
-	return list
-		.getContent()!
-		.map((c) =>
-			String(
-				c instanceof UIListView.ItemControllerView
-					? c.body instanceof UILabel && c.body.text
-					: c instanceof UILabel && c.text,
-			),
-		);
+	return list.getContent()!.map((c) => {
+		let itemView =
+			c instanceof UIListView.ItemControllerView ? c.getListItemView() : c;
+		return itemView instanceof UILabel ? itemView.text : "";
+	});
 }
 
-// helper function to get a list of observed objects
+// helper function to get a list of observable objects
 function getObjects() {
 	return [
 		new NamedObject("a"),
@@ -43,7 +38,7 @@ function getObjects() {
 	] as const;
 }
 
-class NamedObject extends ObservedObject {
+class NamedObject extends ObservableObject {
 	constructor(public name: string) {
 		super();
 	}
@@ -60,21 +55,21 @@ test("Constructor", () => {
 });
 
 test("Empty list, rendered", async () => {
-	let myList = ui.list({}, ui.label("foo"));
+	let myList = UI.List([], UI.Label("foo"));
 	renderTestView(myList.create());
 	await expectOutputAsync({ type: "column" });
 });
 
-test("List of labels from ObservedList, rendered", async () => {
-	let list = new ObservedList(...getObjects());
+test("List of labels from ObservableList, rendered", async () => {
+	let list = new ObservableList(...getObjects());
 
 	console.log("Creating instance");
-	let myList = ui.list({ items: list }, ui.label($list("item.name")), ui.row());
+	let myList = UI.List(list, UI.Label(bind("item.name")));
 	let instance = myList.create();
 
 	console.log("Rendering");
 	renderTestView(instance);
-	let out = await expectOutputAsync({ type: "row" });
+	let out = await expectOutputAsync({ type: "column" });
 	expect(out.elements[0], "row element").toBeDefined();
 	out.containing({ text: "a" }).toBeRendered("list element a");
 	out.containing({ text: "b" }).toBeRendered("list element b");
@@ -83,20 +78,17 @@ test("List of labels from ObservedList, rendered", async () => {
 
 	console.log("Unlinking");
 	instance.unlink();
-	expect(instance.body).toBeUndefined();
+	expect(instance).toHaveProperty("body", undefined);
 });
 
 test("List of labels from bound array, rendered", async () => {
 	console.log("Creating instance");
-	let myList = ui.list(
-		{ items: $bind("array") },
-		ui.label($list("item")),
-		ui.row(),
-	);
-	class ArrayProvider extends ObservedObject {
+	let myList = UI.List(bind("array"), UI.Label(bind("item"))).outer(UI.Row());
+	class ArrayProvider extends ObservableObject {
 		array = ["a", "b", "c"];
 		readonly view = this.attach(myList.create());
 	}
+	ArrayProvider.enableBindings();
 	let parent = new ArrayProvider();
 	let instance = parent.view;
 
@@ -108,10 +100,33 @@ test("List of labels from bound array, rendered", async () => {
 
 test("List of labels, rendered, then updated", async () => {
 	let [a, b, c, d] = getObjects();
-	let list = new ObservedList(a, b, c);
+	let list = new ObservableList(a, b, c);
 
 	console.log("Creating instance");
-	let myList = ui.list({ items: list }, ui.label($list("item.name")), ui.row());
+	let myList = UI.List(list, UI.Label(bind("item.name"))).outer(UI.Row());
+	let instance = myList.create();
+
+	console.log("Rendering");
+	renderTestView(instance);
+	let out = await expectOutputAsync({ type: "row" }, { text: "c" });
+	let cRendered = out.getSingle();
+
+	console.log("Updating list");
+	list.replaceAll([c, b, d]);
+	await expectOutputAsync({ text: "d" });
+	expect(getListText(instance)).toEqual(["c", "b", "d"]);
+	let sameC = await expectOutputAsync({ type: "row" }, { text: "c" });
+	expect(sameC.getSingle()).toBe(cRendered);
+});
+
+test("List of labels, rendered, then updated, with scroll view", async () => {
+	let [a, b, c, d] = getObjects();
+	let list = new ObservableList(a, b, c);
+
+	console.log("Creating instance");
+	let myList = UI.List(list, UI.Label(bind("item.name"))).outer(
+		UI.Row().scroll(),
+	);
 	let instance = myList.create();
 
 	console.log("Rendering");
@@ -129,15 +144,12 @@ test("List of labels, rendered, then updated", async () => {
 
 test("Event propagation through list", async () => {
 	console.log("Creating view");
-	let view = ui
-		.row(
-			ui.list(
-				{ items: new ObservedList(...getObjects()) },
-				ui.label($list("item.name"), { onClick: "Foo" }),
-				ui.row(),
-			),
-		)
-		.create();
+	let view = UI.Row(
+		UI.List(
+			new ObservableList(...getObjects()),
+			UI.Label(bind("item.name")).intercept("Click", "Foo"),
+		),
+	).create();
 	let count = 0;
 	view.listen((event) => {
 		if (event.name === "Foo") {
@@ -169,34 +181,33 @@ test("Event propagation through list", async () => {
 	expect(count).toBe(1);
 });
 
-test("Bookend", async () => {
+test("Empty state", async () => {
 	console.log("Creating instance");
-	let myList = ui.list(
-		{ items: new ObservedList(...getObjects()) },
-		ui.label($list("item.name")),
-		ui.row(),
-		ui.label("end"),
-	);
+	let myList = UI.List(new ObservableList(...getObjects()))
+		.with(UI.Label(bind("item.name")))
+		.emptyState(UI.Label("empty"));
 	let instance = myList.create();
 
 	console.log("Rendering");
 	renderTestView(instance);
-	await expectOutputAsync({ type: "row" }, { text: "d" });
-	expect(getListText(instance)).toEqual(["a", "b", "c", "d", "end"]);
+	await expectOutputAsync({ type: "column" }, { text: "d" });
+	expect(getListText(instance)).toEqual(["a", "b", "c", "d"]);
 
 	console.log("Update");
-	instance.items = new ObservedList(...[...getObjects()].reverse());
-	await expectOutputAsync({ type: "row" });
-	expect(getListText(instance)).toEqual(["d", "c", "b", "a", "end"]);
+	instance.items = new ObservableList();
+	await expectOutputAsync({ type: "column" });
+	expect(getListText(instance)).toEqual(["empty"]);
+	instance.items.add(new NamedObject("e"));
+	await expectOutputAsync({ type: "column" });
+	expect(getListText(instance)).toEqual(["e"]);
 });
 
 test("Pagination", async () => {
 	console.log("Creating instance");
-	let myList = ui.list(
-		{ items: new ObservedList(...getObjects()), maxItems: 2 },
-		ui.label($list("item.name")),
-		ui.row(),
-	);
+	let myList = UI.List(new ObservableList(...getObjects()))
+		.with(UI.Label(bind("item.name")))
+		.outer(UI.Row())
+		.bounds(0, 2);
 	let instance = myList.create();
 
 	console.log("Rendering 0-1");
@@ -227,9 +238,9 @@ test("Pagination", async () => {
 });
 
 test("Get indices for elements", async () => {
-	let myList = ui.list(
-		{ items: new ObservedList(...getObjects()) },
-		ui.label($list("item.name"), { allowFocus: true }),
+	let myList = UI.List(
+		new ObservableList(...getObjects()),
+		UI.Label(bind("item.name")).allowFocus(true),
 	);
 	let list = myList.create();
 	renderTestView(list);
@@ -241,13 +252,11 @@ test("Get indices for elements", async () => {
 });
 
 test("Request focus on list focuses previous item", async () => {
-	let myList = ui.cell(
-		ui.button("button"),
-		ui.list(
-			{ items: new ObservedList(...getObjects()) },
-			ui.label($list("item.name"), { allowFocus: true }),
-			ui.cell({ allowKeyboardFocus: true, accessibleRole: "list" }),
-		),
+	let myList = UI.Cell(
+		UI.Button("button"),
+		UI.List(new ObservableList(...getObjects()))
+			.with(UI.Label(bind("item.name")).allowFocus(true))
+			.outer(UI.Cell().allowKeyboardFocus()),
 	);
 	renderTestView(myList.create());
 	let out = await expectOutputAsync({ text: "a" });
@@ -260,19 +269,19 @@ test("Request focus on list focuses previous item", async () => {
 	await clickOutputAsync({ type: "button" });
 
 	console.log("Focus list again");
-	(await expectOutputAsync({ accessibleRole: "list" })).getSingle().focus();
+	(await expectOutputAsync({ type: "cell", accessibleRole: "list" }))
+		.getSingle()
+		.focus();
 	await expectOutputAsync({ text: "a", focused: true });
 });
 
 test("Arrow key focus, single list", async () => {
-	let myList = ui.list(
-		{ items: new ObservedList(...getObjects()) },
-		ui.label({
-			text: $list("item.name"),
-			allowFocus: true,
-			onArrowDownKeyPress: "FocusNext",
-			onArrowUpKeyPress: "FocusPrevious",
-		}),
+	let myList = UI.List(
+		new ObservableList(...getObjects()),
+		UI.Label(bind("item.name"))
+			.allowFocus()
+			.intercept("ArrowDownKeyPress", "FocusNext")
+			.intercept("ArrowUpKeyPress", "FocusPrevious"),
 	);
 	let list = myList.create();
 	renderTestView(list);

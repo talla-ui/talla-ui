@@ -1,6 +1,6 @@
 import { useTestContext } from "@talla-ui/test-handler";
 import { beforeEach, describe, expect, test } from "vitest";
-import { UIColor, ui } from "../../dist/index.js";
+import { UIColor, UI } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
@@ -13,13 +13,14 @@ describe("Base colors", () => {
 	});
 
 	test("Color value using predefined instance", () => {
-		expect(ui.color.BLACK.toString()).toBe("#000000");
+		expect(UI.colors.black.toString()).toBe("#000000");
 	});
 
 	test("Color value using indirectly predefined instance", () => {
-		let blue = ui.color("Blue").toString();
-		expect(ui.color.PRIMARY.toString()).toBe("#222222");
-		expect(ui.color.TEXT.toString()).toBe("#000000");
+		let blue = UI.colors.blue;
+		expect(blue.toString()).toBe("#2277ff");
+		expect(UI.colors.primary.toString()).toBe("#222222");
+		expect(UI.colors.text.toString()).toBe("#000");
 	});
 });
 
@@ -30,20 +31,20 @@ describe("Brightness and text color", () => {
 
 	test("Black and white", () => {
 		expect(UIColor.isBrightColor(new UIColor())).toBeTruthy();
-		expect(UIColor.isBrightColor(ui.color.BLACK)).toBeFalsy();
-		expect(UIColor.isBrightColor(ui.color.WHITE)).toBeTruthy();
+		expect(UIColor.isBrightColor(UI.colors.black)).toBeFalsy();
+		expect(UIColor.isBrightColor(UI.colors.white)).toBeTruthy();
 	});
 
 	test("Black and white text", () => {
-		let blackText = ui.color.WHITE.text();
-		let whiteText = ui.color.BLACK.text();
+		let blackText = UI.colors.white.text();
+		let whiteText = UI.colors.black.text();
 		expect(UIColor.isBrightColor(blackText)).toBeFalsy();
 		expect(UIColor.isBrightColor(whiteText)).toBeTruthy();
 	});
 
 	test("Hex color text", () => {
-		let blackTextStr = ui.color.WHITE.text().toString();
-		let whiteTextStr = ui.color.BLACK.text().toString();
+		let blackTextStr = UI.colors.white.text().toString();
+		let whiteTextStr = UI.colors.black.text().toString();
 		let textOnDarkStr = new UIColor("#333333").text().toString();
 		let textOnLightStr = new UIColor("#cccccc").text().toString();
 		expect(textOnDarkStr).toBe(whiteTextStr);
@@ -51,8 +52,8 @@ describe("Brightness and text color", () => {
 	});
 
 	test("rgb color text", () => {
-		let blackTextStr = ui.color.WHITE.text().toString();
-		let whiteTextStr = ui.color.BLACK.text().toString();
+		let blackTextStr = UI.colors.white.text().toString();
+		let whiteTextStr = UI.colors.black.text().toString();
 		let textOnDarkStr = new UIColor("rgb(30,30,30)").text().toString();
 		let textOnLightStr = new UIColor("rgb(200,200,200)").text().toString();
 		expect(textOnDarkStr).toBe(whiteTextStr);
@@ -60,8 +61,8 @@ describe("Brightness and text color", () => {
 	});
 
 	test("rgba color text", () => {
-		let blackTextStr = ui.color.WHITE.text().toString();
-		let whiteTextStr = ui.color.BLACK.text().toString();
+		let blackTextStr = UI.colors.white.text().toString();
+		let whiteTextStr = UI.colors.black.text().toString();
 		let textOnDarkStr = new UIColor("rgba(30,30,30, 128)").text().toString();
 		let textOnLightStr = new UIColor("rgba(200,200,200,128)").text().toString();
 		expect(textOnDarkStr).toBe(whiteTextStr);
@@ -69,10 +70,10 @@ describe("Brightness and text color", () => {
 	});
 
 	test("Foreground selection", () => {
-		let lightFg = ui.color.WHITE.fg(ui.color.RED, ui.color.GREEN);
-		expect(lightFg.toString()).toBe(ui.color.RED.toString());
-		let darkFg = ui.color.BLACK.fg(ui.color.RED, ui.color.GREEN);
-		expect(darkFg.toString()).toBe(ui.color.GREEN.toString());
+		let lightFg = UI.colors.white.fg(UI.colors.red, UI.colors.green);
+		expect(lightFg.toString()).toBe(UI.colors.red.toString());
+		let darkFg = UI.colors.black.fg(UI.colors.red, UI.colors.green);
+		expect(darkFg.toString()).toBe(UI.colors.green.toString());
 	});
 });
 

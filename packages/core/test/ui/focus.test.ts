@@ -5,11 +5,11 @@ import {
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
 import {
+	CustomView,
+	UI,
 	UIButton,
 	UICell,
-	UIComponent,
 	ViewEvent,
-	ui,
 } from "../../dist/index.js";
 
 beforeEach(() => {
@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 
 test("Single element, initial focus", async () => {
-	let myCell = ui.cell({ requestFocus: true, allowFocus: true });
+	let myCell = UI.Cell().allowFocus().requestFocus();
 	let cell = myCell.create();
 	renderTestView(cell);
 	let elt = (await expectOutputAsync({ type: "cell" })).getSingle();
@@ -25,7 +25,7 @@ test("Single element, initial focus", async () => {
 });
 
 test("Single element, request focus", async () => {
-	let myCell = ui.cell({ allowFocus: true });
+	let myCell = UI.Cell().allowFocus();
 	let cell = myCell.create();
 	renderTestView(cell);
 	await expectOutputAsync({ type: "cell" });
@@ -33,8 +33,12 @@ test("Single element, request focus", async () => {
 	await expectOutputAsync({ type: "cell", focused: true });
 });
 
-test("Single UI component, request focus", async () => {
-	const MyView = UIComponent.define({}, ui.cell({ allowFocus: true }));
+test("Single custom view, request focus", async () => {
+	class MyView extends CustomView {
+		protected override createViewBody() {
+			return UI.Cell().allowFocus().create();
+		}
+	}
 	let view = new MyView();
 	renderTestView(view);
 	await expectOutputAsync({ type: "cell" });
@@ -43,10 +47,7 @@ test("Single UI component, request focus", async () => {
 });
 
 test("Focus requests", async () => {
-	let myCell = ui.cell(
-		ui.button("first", { requestFocus: true }),
-		ui.button("second"),
-	);
+	let myCell = UI.Cell(UI.Button("first").requestFocus(), UI.Button("second"));
 
 	console.log("Focusing first");
 	renderTestView(myCell.create());
@@ -64,22 +65,23 @@ test("Focus requests", async () => {
 test("Focusing one element blurs another", async () => {
 	let events: string[] = [];
 	let done = false;
-	class MyView extends UIComponent {
-		protected override defineView() {
-			return ui.cell(
-				ui.cell({
-					onBeforeRender: "Cell1Ref",
-					onFocusIn: "+Cell1Focus",
-					onFocusOut: "+Cell1Focus",
-					allowFocus: true,
-				}),
-				ui.cell({
-					onBeforeRender: "Cell2Ref",
-					onFocusIn: "+Done",
-					allowFocus: true,
-				}),
-			);
+	class MyView extends CustomView {
+		cell2?: UICell;
+
+		protected override createViewBody() {
+			return UI.Cell(
+				UI.Cell()
+					.allowFocus()
+					.intercept("BeforeRender", "Cell1Ref")
+					.intercept("FocusIn", "Cell1Focus")
+					.intercept("FocusOut", "Cell1Focus"),
+				UI.Cell()
+					.allowFocus()
+					.intercept("BeforeRender", "Cell2Ref")
+					.intercept("FocusIn", "Done"),
+			).create();
 		}
+
 		onCell1Ref(e: ViewEvent<UICell>) {
 			e.source.requestFocus();
 		}
@@ -91,7 +93,6 @@ test("Focusing one element blurs another", async () => {
 		onCell2Ref(e: ViewEvent<UICell>) {
 			this.cell2 = e.source;
 		}
-		cell2?: UICell;
 		onDone() {
 			done = true;
 		}

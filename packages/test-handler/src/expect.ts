@@ -1,10 +1,7 @@
 import { app, View } from "@talla-ui/core";
 import { ConfigOptions } from "@talla-ui/util";
 import { OutputAssertion, OutputSelectFilter } from "./OutputAssertion.js";
-import {
-	RenderedTestMessageDialog,
-	TestRenderer,
-} from "./renderer/TestRenderer.js";
+import { RenderedTestMessageDialog, TestRenderer } from "./TestRenderer.js";
 import { TestOutputElement } from "./TestOutputElement.js";
 
 /** @internal Retrieves app.renderer typed as TestRenderer */
@@ -17,10 +14,8 @@ function getTestRenderer() {
 
 /** Options to be used with {@link expectNavAsync()} */
 export class ExpectNavOptions extends ConfigOptions {
-	/** Page ID to wait for, must be an exact match */
-	pageId = "";
-	/** Detail string to wait for, must be an exact match; defaults to en empty string (i.e. exact page match) */
-	detail = "";
+	/** Navigation path to wait for, must be an exact match */
+	path?: string;
 	/** Timeout, in milliseconds; defaults to 200ms */
 	timeout = 200;
 }
@@ -30,15 +25,13 @@ export class ExpectNavOptions extends ConfigOptions {
  *
  * @summary This function starts checking the navigation controller periodically, and waits for the path to match the provided string. If the path still doesn't match after the given timeout (number of milliseconds) this function throws an error.
  * @note This function is asynchronous and **must** be `await`-ed.
- * @param timeout Timeout, in milliseconds
- * @param pageId Page ID to wait for, must be an exact match
- * @param detail Detail string to wait for (defaults to empty string), must be an exact match
+ * @param expect Options to be used for matching the navigation path
  * @returns A promise (void) that's resolved when the path matches, or rejected when a timeout occurs.
  *
  * @example
  * test("Wait for navigation", async (t) => {
  *   // ... navigate to a path somehow, then:
- *   await expectNavAsync({ pageId: "foo" });
+ *   await expectNavAsync({ path: "foo/bar" });
  * });
  */
 export async function expectNavAsync(
@@ -47,25 +40,17 @@ export async function expectNavAsync(
 	let options = ExpectNavOptions.init(expect);
 
 	// create error first, to capture accurate stack trace
-	let error = Error(
-		"Expected navigation to " + options.pageId + "/" + options.detail,
-	);
+	let error = Error("Expected navigation to " + options.path);
 
 	// start polling
 	let start = Date.now();
 	while (true) {
-		let match =
-			app.navigation.pageId === options.pageId &&
-			app.navigation.detail === options.detail;
+		let match = app.navigation?.path === options.path;
 		if (match) return;
 
 		// check timeout or loop
 		if (Date.now() - start > options.timeout) {
-			error.message +=
-				", but location is " +
-				app.navigation.pageId +
-				"/" +
-				app.navigation.detail;
+			error.message += ", but location is " + app.navigation?.path;
 			throw error;
 		}
 		await new Promise((r) => setTimeout(r, 5));

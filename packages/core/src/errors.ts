@@ -1,5 +1,7 @@
 /** @internal Reference to error handler, set by app context; this variable is used to break circular dependencies */
-export let errorHandler: (err: any) => void = () => {};
+export let errorHandler: (err: any) => void = (err) => {
+	console.error(err);
+};
 
 /** @internal Update the error handler referenced by `errorHandler` (called by app context) */
 export function setErrorHandler(handler: (err: any) => void) {
@@ -41,15 +43,15 @@ export const enum ERROR {
 	List_AttachState,
 	List_Restriction,
 	List_Duplicate,
+	Service_NotFound,
+	Activity_NotFound,
 	Activity_Cancelled,
 	Activity_NotAttached,
 	Render_Unavailable,
-	Render_NoModal,
 	View_Invalid,
 	View_NotAttached,
-	UIRenderable_NoRenderer,
+	UIViewElement_NoRenderer,
 	UIList_Invalid,
-	JSX_InvalidTag,
 }
 
 const messages = [
@@ -59,13 +61,13 @@ const messages = [
 	"Cannot change attached state",
 	"Unmatched object restriction",
 	"Duplicate object",
+	"Service not found",
+	"Activity not found",
 	"Activity transition cancelled",
 	"Activity is not attached",
 	"No renderer available",
-	"No modal controller available",
 	"Invalid body view type",
 	"View is not attached",
 	"No renderer for this UI element",
 	"Invalid list type",
-	"Invalid JSX tag",
 ] as const;

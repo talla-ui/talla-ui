@@ -1,75 +1,23 @@
 import type { StringConvertible } from "@talla-ui/util";
-import { type ViewBuilder, FormContext } from "../../app/index.js";
-import type { UIStyle } from "../style/index.js";
-import { UIRenderable } from "../UIRenderable.js";
+import { FormContext, ViewBuilder } from "../../app/index.js";
+import { BindingOrValue } from "../../object/index.js";
+import { UIStyle } from "../style/index.js";
+import type { UI } from "../UI.js";
+import { UIViewElement } from "../UIViewElement.js";
 
 /**
  * A view class that represents a text field control
  *
- * @description A text field UI element is rendered on-screen as a single-line (default) or multi-line input field.
+ * @description A text field UI element is rendered as a single-line (default) or multi-line input field.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI element class.
+ * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
-export class UITextField extends UIRenderable {
-	/**
-	 * Creates a new {@link ViewBuilder} instance for the current view class
-	 * @see {@link View.getViewBuilder}
-	 * @docgen {hide}
-	 */
-	static override getViewBuilder(
-		preset: ViewBuilder.ExtendPreset<
-			typeof UIRenderable,
-			UITextField,
-			| "placeholder"
-			| "value"
-			| "type"
-			| "multiline"
-			| "formField"
-			| "enterKeyHint"
-			| "disableSpellCheck"
-			| "trim"
-			| "selectOnFocus"
-			| "disabled"
-			| "readOnly"
-			| "width"
-			| "style"
-		> & {
-			/** Event that's emitted after the text field has updated and input focus lost */
-			onChange?: string;
-			/** Event that's emitted when the text field is updated */
-			onInput?: string;
-			/** Event that's emitted when the user performs a clipboard copy action */
-			onCopy?: string;
-			/** Event that's emitted when the user performs a clipboard cut action */
-			onCut?: string;
-			/** Event that's emitted when the user performs a clipboard paste action */
-			onPaste?: string;
-		},
-	) {
-		// quietly change 'text' to placeholder to support JSX tag content
-		if ("text" in preset) {
-			if (!("placeholder" in preset)) preset.placeholder = preset.text as any;
-			delete (preset as any).text;
-		}
-		return super.getViewBuilder(preset);
-	}
-
+export class UITextField extends UIViewElement {
 	/** Creates a new text field view instance */
 	constructor(placeholder?: StringConvertible, value?: string) {
 		super();
 		this.placeholder = placeholder;
 		this.value = value || "";
-
-		// get and set form context value using `formContext` binding
-		FormContext.listen(
-			this,
-			function (value) {
-				this.value = value === undefined ? "" : String(value);
-			},
-			function () {
-				return this.trim ? this.value.trim() : this.value;
-			},
-		);
 	}
 
 	/**
@@ -88,9 +36,6 @@ export class UITextField extends UIRenderable {
 	 * - This property can't be changed after rendering.
 	 */
 	multiline?: boolean;
-
-	/** Form context field name, used with {@link FormContext} */
-	formField?: string = undefined;
 
 	/**
 	 * The input field type, defaults to `text`
@@ -116,26 +61,9 @@ export class UITextField extends UIRenderable {
 
 	/** True if the text field should appear like a label */
 	readOnly = false;
-
-	/** Target width of the text field, in pixels or CSS length with unit */
-	width?: string | number = undefined;
-
-	/** The style to be applied to the text field */
-	style?: UITextField.StyleValue = undefined;
 }
 
 export namespace UITextField {
-	/** A style object or overrides that can be applied to {@link UITextField} */
-	export type StyleValue =
-		| UIStyle<UITextField.StyleDefinition>
-		| UITextField.StyleDefinition
-		| undefined;
-
-	/** The type definition for styles applicable to {@link UITextField.style} */
-	export type StyleDefinition = UIRenderable.Dimensions &
-		UIRenderable.Decoration &
-		UIRenderable.TextStyle;
-
 	/** An identifier for a text field input type */
 	export type InputType = "text" | "password" | "number" | "date" | "color";
 
@@ -148,4 +76,166 @@ export namespace UITextField {
 		| "previous"
 		| "search"
 		| "send";
+}
+
+export namespace UITextField {
+	/**
+	 * Creates a view builder for a text input field element
+	 * @param placeholder The placeholder text to display when the field is empty, or a binding to a string value.
+	 * @returns A builder object for configuring the text field.
+	 * @see {@link UITextField}
+	 */
+	export function textFieldBuilder(
+		placeholder?: BindingOrValue<StringConvertible>,
+	) {
+		return new TextFieldBuilder().placeholder(placeholder);
+	}
+
+	/**
+	 * A builder class for creating `UITextField` instances.
+	 * - Objects of this type are returned by the `UI.TextField()` function.
+	 */
+	export class TextFieldBuilder extends UIViewElement.ElementBuilder<UITextField> {
+		/** The initializer that is used to create each text field instance */
+		readonly initializer = new ViewBuilder.Initializer(UITextField);
+
+		/**
+		 * Sets the value of the text field, using {@link UITextField.value}.
+		 * @param value The text value or a binding to a string value.
+		 * @returns The builder instance for chaining.
+		 */
+		value(value: BindingOrValue<string>) {
+			return this.setProperty("value", value);
+		}
+
+		/**
+		 * Binds the text field to a form context field, using {@link FormContext.listen}.
+		 * @param formField The name of the form field.
+		 * @returns The builder instance for chaining.
+		 */
+		bindFormField(formField: string) {
+			this.initializer.initialize(function (view) {
+				FormContext.listen(
+					view,
+					formField,
+					(value) => {
+						view.value = String(value ?? "");
+					},
+					() => (view.trim ? view.value.trim() : view.value),
+				);
+			});
+			return this;
+		}
+
+		/**
+		 * Sets the placeholder text for the text field, using {@link UITextField.placeholder}.
+		 * @param placeholder The placeholder text, or a binding to a string value.
+		 * @returns The builder instance for chaining.
+		 */
+		placeholder(placeholder?: BindingOrValue<StringConvertible>) {
+			return this.setProperty("placeholder", placeholder);
+		}
+
+		/**
+		 * Enables multi-line input, using {@link UITextField.multiline}.
+		 * - Multi-line input fields don't have a default height. Provide a height using the `height` parameter, or use a predefined style that includes a height value to size the field.
+		 * @param multiline If `true`, the text field will be multi-line. Defaults to `true`.
+		 * @param height The height of the text field in pixels, or as a string with unit.
+		 * @returns The builder instance for chaining.
+		 */
+		multiline(multiline = true, height?: string | number) {
+			if (height != null) this.height(height);
+			return this.setProperty("multiline", multiline);
+		}
+
+		/**
+		 * Sets the input type of the text field, using {@link UITextField.type}.
+		 * @param type The input type (e.g., "text", "password", "number").
+		 * @returns The builder instance for chaining.
+		 */
+		type(type: UITextField.InputType | string) {
+			return this.setProperty("type", type);
+		}
+
+		/**
+		 * Sets the hint for the virtual keyboard's 'Enter' key, using {@link UITextField.enterKeyHint}.
+		 * @param enterKeyHint The hint type (e.g., "go", "search", "send").
+		 * @returns The builder instance for chaining.
+		 */
+		enterKeyHint(enterKeyHint: UITextField.EnterKeyHintType | string) {
+			return this.setProperty("enterKeyHint", enterKeyHint);
+		}
+
+		/**
+		 * Disables spell checking, using {@link UITextField.disableSpellCheck}.
+		 * @param disableSpellCheck If `true`, spell check is disabled. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		disableSpellCheck(disableSpellCheck = true) {
+			return this.setProperty("disableSpellCheck", disableSpellCheck);
+		}
+
+		/**
+		 * Automatically trims whitespace from the input value, using {@link UITextField.trim}.
+		 * @param trim If `true`, whitespace is trimmed. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		trim(trim = true) {
+			return this.setProperty("trim", trim);
+		}
+
+		/**
+		 * Selects all text in the field when it gains focus, using {@link UITextField.selectOnFocus}.
+		 * @param selectOnFocus If `true`, text is selected on focus. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		selectOnFocus(selectOnFocus = true) {
+			return this.setProperty("selectOnFocus", selectOnFocus);
+		}
+
+		/**
+		 * Disables the text field, using {@link UITextField.disabled}.
+		 * @param disabled If `true`, the text field is disabled. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		disabled(disabled: BindingOrValue<boolean> = true) {
+			return this.setProperty("disabled", disabled);
+		}
+
+		/**
+		 * Makes the text field read-only, using {@link UITextField.readOnly}.
+		 * @param readOnly If `true`, the text field is read-only. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		readOnly(readOnly: BindingOrValue<boolean> = true) {
+			return this.setProperty("readOnly", readOnly);
+		}
+
+		/**
+		 * Applies a style to the text field
+		 * @param style The name of a theme text field style, a {@link UIStyle} instance, a style options (overrides) object, or a binding.
+		 * @returns The builder instance for chaining.
+		 */
+		textfieldStyle(
+			style?: BindingOrValue<
+				| UI.styles.TextfieldStyleName
+				| UIStyle
+				| UIStyle.StyleOptions
+				| undefined
+			>,
+		) {
+			return this.setStyleProperty(style, UIStyle.theme.textfield);
+		}
+
+		/**
+		 * Intercepts the `Input` event and re-emits it with a different name.
+		 * @param alias The new event name to emit.
+		 * @param data The data properties to add to the alias event, if any
+		 * @returns The builder instance for chaining.
+		 */
+		emit(alias: string, data?: Record<string, unknown>) {
+			this.initializer.intercept("Input", alias, data);
+			return this;
+		}
+	}
 }

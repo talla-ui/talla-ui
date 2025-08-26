@@ -1,9 +1,6 @@
-import {
-	ActivityList,
-	NavigationContext,
-	NavigationTarget,
-} from "@talla-ui/core";
-import { TestContextOptions } from "./TestAppContext.js";
+import { NavigationContext } from "@talla-ui/core";
+import { StringConvertible } from "@talla-ui/util";
+import { TestContextOptions } from "./TestContextOptions.js";
 
 /**
  * A class that encapsulates the current navigation location, simulating browser-like behavior
@@ -11,10 +8,10 @@ import { TestContextOptions } from "./TestAppContext.js";
  */
 export class TestNavigationContext extends NavigationContext {
 	/** Creates a new navigation controller instance, used by `useTestContext()` */
-	constructor(activities: ActivityList, options: TestContextOptions) {
-		super(activities);
+	constructor(options: TestContextOptions) {
+		super();
 		this._delay = options.navigationDelay;
-		this.userNavigation(options.navigationPageId, options.navigationDetail);
+		this.userNavigation(options.navigationPath);
 	}
 
 	/** Flag for duck typing */
@@ -28,7 +25,7 @@ export class TestNavigationContext extends NavigationContext {
 	 * @error This method throws an error if the navigation target is invalid
 	 */
 	override async navigateAsync(
-		target: NavigationTarget,
+		target: StringConvertible,
 		mode?: NavigationContext.NavigationMode,
 	) {
 		// go back first, if needed
@@ -38,45 +35,35 @@ export class TestNavigationContext extends NavigationContext {
 		}
 
 		// stop here if path is empty
-		let { pageId, detail } = target || {};
-		if (pageId == null) return;
+		if (target == null) return;
 
 		// check if path is valid
-		if (pageId.indexOf("/") >= 0)
-			throw Error("Invalid navigation target: page ID contains slash");
-		if (detail && !pageId)
-			throw Error("Invalid navigation target: detail set without pageId");
-		if (detail && detail.startsWith("/"))
-			throw Error("Invalid navigation target: detail contains leading slash");
-		if (detail && detail.endsWith("/"))
-			throw Error("Invalid navigation target: detail contains trailing slash");
+		let path = String(target).replace(/^\/+|\/+$/g, "");
+		if (path.startsWith(".")) throw Error("Invalid navigation target: " + path);
 
 		// check if path is current path
 		let currentPath = this._history[this._history.length - 1];
-		if (
-			currentPath &&
-			currentPath.pageId === pageId &&
-			currentPath.detail === detail
-		)
-			return;
+		if (currentPath && currentPath.path === path) return;
 
 		// update history after a delay, then finally set path
 		if (this._delay) await this._simulateDelay();
 		let replaceMode = mode?.replace === true;
 		if (mode && this._history.length) {
 			let currentPath = this._history[this._history.length - 1]!;
-			if (mode.replace === "page") {
-				replaceMode = !!currentPath.pageId;
-			} else if (mode.replace === "detail") {
-				replaceMode = currentPath.pageId === pageId && !!currentPath.detail;
+			if (mode.replace === "prefix") {
+				let prefix = String(mode.prefix || "");
+				replaceMode = prefix.endsWith("/")
+					? currentPath.path.startsWith(prefix)
+					: currentPath.path.startsWith(prefix + "/") ||
+						currentPath.path === prefix;
 			}
 		}
 		if (replaceMode) {
-			this._history[this._history.length - 1] = { pageId, detail };
+			this._history[this._history.length - 1] = { path };
 		} else {
-			this._history.push({ pageId, detail });
+			this._history.push({ path });
 		}
-		this.set(pageId, detail);
+		this.set(path);
 	}
 
 	/**
@@ -84,10 +71,10 @@ export class TestNavigationContext extends NavigationContext {
 	 * - The provided target is added to the location history for the application context, and is not checked for correctness.
 	 * - To simulate programmatic navigation behavior, use the {@link navigateAsync()} method instead.
 	 */
-	userNavigation(pageId: string, detail = "") {
-		if (!this._firstLocation) this._firstLocation = { pageId, detail };
-		this._history.push({ pageId, detail });
-		this.set(pageId, detail);
+	userNavigation(path: string) {
+		if (!this._firstLocation) this._firstLocation = { path };
+		this._history.push({ path });
+		this.set(path);
 	}
 
 	/**
@@ -99,7 +86,7 @@ export class TestNavigationContext extends NavigationContext {
 			throw Error("Application exit: history stack would be empty");
 		this._history.pop();
 		let target = this._history[this._history.length - 1]!;
-		this.set(target.pageId, target.detail);
+		this.set(target.path);
 	}
 
 	/**
@@ -110,10 +97,7 @@ export class TestNavigationContext extends NavigationContext {
 		super.clear();
 		this._history = [];
 		if (this._firstLocation) {
-			this.userNavigation(
-				this._firstLocation.pageId,
-				this._firstLocation.detail,
-			);
+			this.userNavigation(this._firstLocation.path);
 		}
 		return this;
 	}
@@ -123,9 +107,7 @@ export class TestNavigationContext extends NavigationContext {
 	 * - Locations are returned as strings (e.g. `pageId` or `pageId/detail`), in the order they were navigated to, oldest first.
 	 */
 	getHistory() {
-		return this._history.map(
-			(h) => h.pageId + (h.detail ? "/" + h.detail : ""),
-		);
+		return this._history.map((h) => h.path);
 	}
 
 	private async _simulateDelay() {
@@ -133,6 +115,6 @@ export class TestNavigationContext extends NavigationContext {
 	}
 
 	private _delay: number;
-	private _history: Array<{ pageId: string; detail: string }> = [];
-	private _firstLocation?: { pageId: string; detail: string };
+	private _history: Array<{ path: string }> = [];
+	private _firstLocation?: { path: string };
 }

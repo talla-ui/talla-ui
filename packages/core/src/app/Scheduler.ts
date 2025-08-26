@@ -47,12 +47,11 @@ export class Scheduler {
 		return this._queues[0]!;
 	}
 
-	/**
-	 * Stops all queues that have been created by this scheduler
-	 * @see {@link AsyncTaskQueue.stop}
-	 */
-	stopAll() {
-		for (let q of this._queues) q.stop();
+	/** Stops and removes all queues managed by the scheduler */
+	clear() {
+		let queues = this._queues;
+		this._queues = [];
+		for (let q of queues) q.stop();
 	}
 
 	/** All queues managed by the scheduler, including a default queue */
@@ -88,7 +87,7 @@ export class AsyncTaskQueue {
 	readonly errors: unknown[] = [];
 
 	/** The number of tasks that are currently in this queue */
-	get count() {
+	get length() {
 		return this._n + this._p.length;
 	}
 
@@ -118,42 +117,41 @@ export class AsyncTaskQueue {
 	}
 
 	/**
-	 * Adds a task to be run asynchronously, possibly replacing a task currently in the queue
-	 *
-	 * @summary The provided function will be called just like it was provided to {@link AsyncTaskQueue.add add()}, however if a task already existed in the same queue with the same `handle` that task is removed first.
-	 *
-	 * This mechanism can be used to implement throttling or debouncing. By providing the same handle each time and setting the `throttleDelay` option, only the function added _last_ will be run, once within the specified time frame.
-	 *
-	 * @param handle A unique handle that identifies the task to be added and/or replaced
+	 * Throttles the execution of a task
+	 * @summary This method can be used to throttle the execution of a task. The task is invoked immediately if a throttled task has not already been run within the specified time, otherwise a delay is added. If this method is called multiple times, only the last call is considered (i.e there is always only a single throttled task in the queue).
 	 * @param f The function to be invoked, may be asynchronous
-	 * @param priority A number that specifies the priority of this task (a higher number _deprioritizes_ a task, keeping it at the end of the queue)
+	 * @param timer The amount of time (in milliseconds) to wait before invoking the function, defaults to zero
 	 */
-	addOrReplace(
-		handle: any,
-		f: (t: AsyncTaskQueue.Task) => Promise<void> | void,
-		priority = 0,
-	) {
-		// remove existing task(s), if any
-		for (let q of this._tasks) {
-			for (let i = q.length - 1; i >= 0; i--) {
-				if (q[i]!.handle === handle) {
-					q.splice(i, 1);
-					this._n--;
-					break;
+	throttle(f: (t: AsyncTaskQueue.Task) => Promise<void> | void, timer = 0) {
+		let wasThrottled = !!this._throttled;
+		this._throttled = f;
+		this._throttleUntil = this._throttleRan + timer;
+		if (!wasThrottled) {
+			this.add(async (t) => {
+				while (true) {
+					if (t.cancelled) return;
+					let wait = this._throttleUntil - Date.now();
+					if (wait <= 0) break;
+					await new Promise((resolve) => setTimeout(resolve, wait));
 				}
-			}
+				let f = this._throttled;
+				this._throttled = undefined;
+				this._throttleRan = Date.now();
+				return f?.(t);
+			});
 		}
-
-		// create new task and add it to the priority list
-		let task = new AsyncQueueTask(this, f);
-		task.handle = handle;
-		if (!this._tasks[priority]) this._tasks[priority] = [];
-		this._tasks[priority]!.push(task);
-		this._n++;
-
-		// schedule next run if needed
-		this._schedule();
 		return this;
+	}
+
+	/**
+	 * Debounces the execution of a task
+	 * @summary This method can be used to debounce the execution of a task. The task is invoked after the specified time, resetting the timer each time this method is called. Only the last call is considered (i.e there is always only a single debounced task in the queue). Since the logic is shared with {@link AsyncTaskQueue.throttle()}, consider creating a separate queue for each debounced or throttled task.
+	 * @param f The function to be invoked, may be asynchronous
+	 * @param timer The amount of time (in milliseconds) to wait before invoking the function, defaults to zero
+	 */
+	debounce(f: (t: AsyncTaskQueue.Task) => Promise<void> | void, timer = 0) {
+		this._throttleRan = Date.now();
+		return this.throttle(f, timer);
 	}
 
 	/**
@@ -206,17 +204,17 @@ export class AsyncTaskQueue {
 	/**
 	 * Waits until the number of pending tasks is equal to or lower than a specified count (or zero)
 	 * - This method is typically used to wait for a queue to be empty, i.e. when all tasks have completed. It can also be used as part of a throttling mechanism where a queue is filled up in batches, or if data needs to be loaded from a server in pages.
-	 * @param count The number of pending tasks until which to wait before resolving the returned promise
+	 * @param length The number of pending tasks until which to wait before resolving the returned promise
 	 * @returns A promise that's resolved when the number of pending tasks is equal to or lower than the specified count (or zero), or rejected when the queue is stopped.
 	 */
-	async waitAsync(count = 0) {
+	async waitAsync(length = 0) {
 		return new Promise<void>((resolve, reject) => {
 			const check = (stop?: boolean) => {
 				if (stop) {
 					// if stopped, reject promise
 					return reject(new AsyncTaskQueue.QueueStoppedError());
 				}
-				if (this.count <= count) {
+				if (this.length <= length) {
 					// if under limit, resolve now and remove from list
 					this._afterEach.delete(check);
 					return resolve();
@@ -245,7 +243,7 @@ export class AsyncTaskQueue {
 
 		// run a batch of tasks now, if possible
 		let parallel = this.options.parallel;
-		let start = (this._lastRun = Date.now());
+		let start = Date.now();
 		let end = start + this.options.maxSyncTime;
 		while (this._n > 0 && this._p.length < parallel && !this._paused) {
 			// get the first task to run, and run it
@@ -318,9 +316,7 @@ export class AsyncTaskQueue {
 	/** Helper function to reschedule a run, if needed at all */
 	private _schedule() {
 		if (this._n > 0 && !this._timer && !this._paused) {
-			let delay = this.options.throttleDelay;
-			if (delay && this._lastRun) delay -= Date.now() - this._lastRun;
-			this._timer = setTimeout(this.run.bind(this), Math.max(0, delay));
+			this._timer = setTimeout(this.run.bind(this), this.options.delayTime);
 		}
 	}
 
@@ -329,8 +325,10 @@ export class AsyncTaskQueue {
 	private _p: AsyncQueueTask[] = [];
 	private _paused?: boolean;
 	private _afterEach = new Set<(stop?: boolean) => void>();
-	private _lastRun?: number;
 	private _timer?: any;
+	private _throttleUntil = 0;
+	private _throttleRan = 0;
+	private _throttled?: (t: AsyncTaskQueue.Task) => Promise<void> | void;
 }
 
 export namespace AsyncTaskQueue {
@@ -345,8 +343,8 @@ export namespace AsyncTaskQueue {
 		 * - Set this value to zero to always run all tasks asynchronously. Set it to a higher number to continue running synchronous tasks (and parallel asynchronous tasks) in a tight loop for longer.
 		 */
 		maxSyncTime = 100;
-		/** A delay (in milliseconds) to be added between batches of tasks, defaults to zero */
-		throttleDelay = 0;
+		/** The amount of time (in milliseconds) to wait before scheduling the next asynchronous run, defaults to zero */
+		delayTime = 0;
 		/** A timeout value (in milliseconds) for each task, if any */
 		taskTimeout?: number;
 	}

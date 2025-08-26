@@ -1,4 +1,4 @@
-import { LazyString } from "@talla-ui/util";
+import { DeferredString } from "@talla-ui/util";
 import { safeCall } from "../errors.js";
 import { AppException } from "./AppException.js";
 
@@ -22,7 +22,7 @@ function makeEventData(
 		if (error instanceof AppException) data.unshift(...error.data);
 	} else {
 		message = String(first);
-		if (first instanceof LazyString) data.unshift(...first.getFormatArgs());
+		if (first instanceof DeferredString) data.unshift(...first.getFormatArgs());
 	}
 	return { message, level, error, data };
 }
@@ -42,11 +42,11 @@ function makeEventData(
 export class LogWriter {
 	/**
 	 * Writes a log message with severity 'verbose' (0)
-	 * - The specified message may be a string, a {@link LazyString} (the result of {@link strf()}), an Error instance, or any other value that can be converted to a string.
-	 * - For {@link LazyString} and {@link AppException} messages, placeholder values are included in the message data so that they can be stored separately in a structured log.
+	 * - The specified message may be a string, a {@link DeferredString} (the result of {@link fmt()}), an Error instance, or any other value that can be converted to a string.
+	 * - For {@link DeferredString} and {@link AppException} messages, placeholder values are included in the message data so that they can be stored separately in a structured log.
 	 * @example
 	 * // Write a formatted log message
-	 * app.log.verbose(strf("Logged in as %[name]", userData));
+	 * app.log.verbose(fmt("Logged in as {name}", userData));
 	 */
 	verbose(message: unknown, ...data: unknown[]) {
 		this._write(0, message, ...data);
@@ -54,11 +54,11 @@ export class LogWriter {
 
 	/**
 	 * Writes a log message with severity 'debug' (1)
-	 * - The specified message may be a string, a {@link LazyString} (the result of {@link strf()}), an Error instance, or any other value that can be converted to a string.
-	 * - For {@link LazyString} and {@link AppException} messages, placeholder values are included in the message data so that they can be stored separately in a structured log.
+	 * - The specified message may be a string, a {@link DeferredString} (the result of {@link fmt()}), an Error instance, or any other value that can be converted to a string.
+	 * - For {@link DeferredString} and {@link AppException} messages, placeholder values are included in the message data so that they can be stored separately in a structured log.
 	 * @example
 	 * // Write a formatted log message
-	 * app.log.debug(strf("Logged in as %[name]", userData));
+	 * app.log.debug(fmt("Logged in as {name}", userData));
 	 */
 	debug(message: unknown, ...data: unknown[]) {
 		this._write(1, message, ...data);
@@ -76,11 +76,11 @@ export class LogWriter {
 
 	/**
 	 * Writes a log message with severity 'information' (2)
-	 * - The specified message may be a string, a {@link LazyString} (the result of {@link strf()}), an Error instance, or any other value that can be converted to a string.
-	 * - For {@link LazyString} and {@link AppException} messages, placeholder values are included in the message data so that they can be stored separately in a structured log.
+	 * - The specified message may be a string, a {@link DeferredString} (the result of {@link fmt()}), an Error instance, or any other value that can be converted to a string.
+	 * - For {@link DeferredString} and {@link AppException} messages, placeholder values are included in the message data so that they can be stored separately in a structured log.
 	 * @example
 	 * // Write a formatted log message
-	 * app.log.information(strf("Logged in as %[name]", userData));
+	 * app.log.information(fmt("Logged in as {name}", userData));
 	 */
 	information(message: unknown, ...data: unknown[]) {
 		this._write(2, message, ...data);
@@ -88,11 +88,11 @@ export class LogWriter {
 
 	/**
 	 * Writes a log message with severity 'warning' (3)
-	 * - The specified message may be a string, a {@link LazyString} (the result of {@link strf()}), an Error instance, or any other value that can be converted to a string.
-	 * - For {@link LazyString} and {@link AppException} messages, placeholder values are included in the message data so that they can be stored separately in a structured log.
+	 * - The specified message may be a string, a {@link DeferredString} (the result of {@link fmt()}), an Error instance, or any other value that can be converted to a string.
+	 * - For {@link DeferredString} and {@link AppException} messages, placeholder values are included in the message data so that they can be stored separately in a structured log.
 	 * @example
 	 * // Write a formatted log message
-	 * app.log.warning(strf("User not found: %[name]", userData));
+	 * app.log.warning(fmt("User not found: {name}", userData));
 	 */
 	warning(message: unknown, ...data: unknown[]) {
 		this._write(3, message, ...data);
@@ -100,11 +100,11 @@ export class LogWriter {
 
 	/**
 	 * Writes a log message with severity 'error' (4)
-	 * - The specified message may be a string, a {@link LazyString} (the result of {@link strf()}), an Error instance, or any other value that can be converted to a string.
-	 * - For {@link LazyString} and {@link AppException} messages, placeholder values are included in the message data so that they can be stored separately in a structured log.
+	 * - The specified message may be a string, a {@link DeferredString} (the result of {@link fmt()}), an Error instance, or any other value that can be converted to a string.
+	 * - For {@link DeferredString} and {@link AppException} messages, placeholder values are included in the message data so that they can be stored separately in a structured log.
 	 * @example
 	 * // Write a formatted log message
-	 * app.log.error(strf("User not found: %[name]", userData));
+	 * app.log.error(fmt("User not found: {name}", userData));
 	 *
 	 * @example
 	 * // Catch an error and log it
@@ -120,11 +120,11 @@ export class LogWriter {
 
 	/**
 	 * Writes a log message with severity 'fatal' (5)
-	 * - The specified message may be a string, a {@link LazyString} (the result of {@link strf()}), an Error instance, or any other value that can be converted to a string.
-	 * - For {@link LazyString} and {@link AppException} messages, placeholder values are included in the message data so that they can be stored separately in a structured log.
+	 * - The specified message may be a string, a {@link DeferredString} (the result of {@link fmt()}), an Error instance, or any other value that can be converted to a string.
+	 * - For {@link DeferredString} and {@link AppException} messages, placeholder values are included in the message data so that they can be stored separately in a structured log.
 	 * @example
 	 * // Write a formatted log message
-	 * app.log.fatal(strf("User not found: %[name]", userData));
+	 * app.log.fatal(fmt("User not found: {name}", userData));
 	 *
 	 * @example
 	 * // Catch an error and log it
@@ -153,6 +153,11 @@ export class LogWriter {
 		this._sink.push((m) => {
 			if (m.level >= minLevel) safeCall(f, undefined, m);
 		});
+	}
+
+	/** Remove all current log sink handlers */
+	removeHandlers() {
+		this._sink = [];
 	}
 
 	/** Private implementation to emit a log message event, or write to the console */

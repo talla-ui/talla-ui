@@ -1,54 +1,44 @@
-import type { ViewBuilder } from "../../app/index.js";
-import { UIRenderable } from "../UIRenderable.js";
+import { ViewBuilder } from "../../app/index.js";
+import { BindingOrValue } from "../../object/index.js";
+import { UIViewElement } from "../UIViewElement.js";
 
 /**
- * A view class that represents a flexible control without any content
+ * A view class that represents an empty control without any content
  *
- * @description A spacer UI element is rendered on-screen as an empty placeholder.
+ * @description A spacer UI element is rendered as an empty placeholder.
  *
- * @online_docs Refer to the online documentation for more documentation on using this UI element class.
+ * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
-export class UISpacer extends UIRenderable {
-	/**
-	 * Creates a new {@link ViewBuilder} instance for the current view class
-	 * @see {@link View.getViewBuilder}
-	 * @docgen {hide}
-	 */
-	declare static getViewBuilder: (
-		preset: ViewBuilder.ExtendPreset<
-			typeof UIRenderable,
-			UISpacer,
-			"width" | "height" | "minWidth" | "minHeight"
-		>,
-	) => ViewBuilder<UIRenderable>;
+export class UISpacer extends UIViewElement {
+	// ...nothing here but space...
+}
 
+export namespace UISpacer {
 	/**
-	 * Creates a new spacer element, with optional width and height
-	 * @param width The spacer width, in pixels or CSS length with unit
-	 * @param height The spacer height, in pixels or CSS length with unit
+	 * Creates a view builder for a spacer element
+	 * @note The view builder automatically sets the `grow` property to `true` if no dimensions are specified, so the spacer will grow to fill the available space.
+	 * @param minWidth The minimum width of the spacer, in pixels or a string with unit.
+	 * @param minHeight The minimum height of the spacer, in pixels or a string with unit; defaults to `minWidth` if not specified.
+	 * @returns A builder object for configuring the spacer.
+	 * @see {@link UISpacer}
 	 */
-	constructor(
-		width?: string | number,
-		height?: string | number,
-		minWidth?: string | number,
-		minHeight?: string | number,
+	export function spacerBuilder(
+		minWidth?: BindingOrValue<string | number>,
+		minHeight: BindingOrValue<string | number> | undefined = minWidth,
 	) {
-		super();
-		this.width = width;
-		this.height = height;
-		this.minWidth = minWidth;
-		this.minHeight = minHeight;
+		let result = new SpacerBuilder();
+		if (minWidth) result.minWidth(minWidth);
+		if (minHeight) result.minHeight(minHeight);
+		if (!minWidth && !minHeight) result.grow();
+		return result;
 	}
 
-	/** Spacer width (in pixels or string with unit) */
-	width?: string | number;
-
-	/** Spacer height (in pixels or string with unit) */
-	height?: string | number;
-
-	/** Spacer minimum width (in pixels or string with unit) */
-	minWidth?: string | number;
-
-	/** Spacer minimum height (in pixels or string with unit) */
-	minHeight?: string | number;
+	/**
+	 * A builder class for creating `UISpacer` instances.
+	 * - Objects of this type are returned by the `UI.Spacer()` function.
+	 */
+	export class SpacerBuilder extends UIViewElement.ElementBuilder<UISpacer> {
+		/** The initializer that is used to create each spacer instance */
+		readonly initializer = new ViewBuilder.Initializer(UISpacer);
+	}
 }

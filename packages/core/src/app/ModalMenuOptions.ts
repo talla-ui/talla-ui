@@ -1,9 +1,10 @@
 import { ConfigOptions, StringConvertible } from "@talla-ui/util";
-import type { UIIconResource, UILabel } from "../ui/index.js";
+import type { AppContext } from "./AppContext.js";
+import type { UIIconResource, UIStyle } from "../ui/index.js";
 
 /**
  * A class that contains options for the display of a modal menu
- * @see {@link UITheme.MenuController}
+ * @see {@link AppContext.MenuController}
  */
 export class ModalMenuOptions extends ConfigOptions {
 	/**
@@ -35,25 +36,25 @@ export class ModalMenuOptions extends ConfigOptions {
 
 export namespace ModalMenuOptions {
 	/**
-	 * An object that represents a menu item, used by {@link UITheme.MenuController}
-	 * - Each item represents either a selectable menu item (with key), or a separator.
+	 * An object that represents a menu item, used by {@link AppContext.MenuController}
+	 * - Each item represents either a selectable menu item (with key), or a divider.
 	 */
 	export type MenuItem =
 		| {
 				key: string;
 				text?: StringConvertible;
 				icon?: UIIconResource;
-				iconSize?: string | number;
+				iconSize?: number;
 				hint?: StringConvertible;
 				hintIcon?: UIIconResource;
-				hintIconSize?: string | number;
-				labelStyle?: UILabel.StyleValue;
-				hintStyle?: UILabel.StyleValue;
+				hintIconSize?: number;
+				labelStyle?: UIStyle.StyleOptions;
+				hintStyle?: UIStyle.StyleOptions;
 				disabled?: boolean;
-				separate?: never;
+				divider?: never;
 		  }
 		| {
 				key?: never;
-				separate: true;
+				divider: true;
 		  };
 }

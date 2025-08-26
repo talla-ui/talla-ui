@@ -6,14 +6,12 @@
 		"noUncheckedIndexedAccess": true,
 		"module": "ESNext",
 		"moduleResolution": "Bundler",
-		"target": "ES2022",
+		"target": "ES6",
 		"noEmit": true,
 		"isolatedModules": true,
 		"moduleDetection": "force",
 		"lib": ["dom", "esnext"],
 		"skipLibCheck": true,
-		"jsx": "react",
-		"jsxFactory": "ui.jsx",
 		"types": ["vite/client"]
 	}
 }

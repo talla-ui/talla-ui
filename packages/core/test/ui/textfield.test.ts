@@ -3,12 +3,11 @@ import {
 	renderTestView,
 	useTestContext,
 } from "@talla-ui/test-handler";
-import { strf } from "@talla-ui/util";
 import { beforeEach, expect, test } from "vitest";
 import {
 	FormContext,
-	ObservedObject,
-	ui,
+	ObservableObject,
+	UI,
 	UITextField,
 } from "../../dist/index.js";
 
@@ -21,26 +20,34 @@ test("Constructor", () => {
 	expect(tf).toHaveProperty("type", "text");
 });
 
+test("Constructor with placeholder and value", () => {
+	let tf = new UITextField("Enter name", "John");
+	expect(tf.placeholder).toBe("Enter name");
+	expect(tf.value).toBe("John");
+});
+
 test("View builder with properties", () => {
-	let myTF = ui.textField({ placeholder: "foo", name: "bar" });
+	let myTF = UI.TextField("foo").name("bar");
 	let tf = myTF.create();
 	expect(tf).toHaveProperty("placeholder", "foo");
 	expect(tf).toHaveProperty("name", "bar");
 });
 
-test("View builder using form field", () => {
-	let myTF = ui.textField({
-		formField: "foo",
-		placeholder: strf("Placeholder"),
-	});
-	let tf = myTF.create();
-	expect(tf).toHaveProperty("formField", "foo");
-	expect(tf.placeholder?.toString()).toBe("Placeholder");
-});
-
 test("Rendered with placeholder", async () => {
 	renderTestView(new UITextField("foo", "bar"));
 	await expectOutputAsync({ text: "foo", value: "bar" });
+});
+
+test("Multiline text field with height", async () => {
+	let myTF = UI.TextField("Enter long text").multiline(true, 100);
+	let tf = myTF.create();
+	expect(tf.multiline).toBe(true);
+	renderTestView(tf);
+	await expectOutputAsync({
+		type: "textfield",
+		text: "Enter long text",
+		styles: { height: 100 },
+	});
 });
 
 test("User input, directly setting value", async () => {
@@ -80,16 +87,16 @@ test("User input with trim", async () => {
 });
 
 test("User input with form context", async () => {
-	class Host extends ObservedObject {
-		// note that formContext must exist before it can be bound
-		readonly formContext = new FormContext().set("foo", "bar");
-		readonly tf = this.attach(new UITextField());
+	class Host extends ObservableObject {
+		// note that form must exist before it can be bound
+		readonly form = new FormContext().set("foo", "bar");
+		readonly tf = this.attach(UI.TextField().bindFormField("foo").create());
 	}
+	Host.enableBindings();
 	let host = new Host();
 	let tf = host.tf;
 
 	// use form context to set value to 'bar'
-	tf.formField = "foo";
 	expect(tf.value).toBe("bar");
 
 	// render field, check that value is 'bar'
@@ -102,5 +109,5 @@ test("User input with form context", async () => {
 	console.log("Updating element to set form context");
 	tfElt.value = "baz";
 	tfElt.sendPlatformEvent("input");
-	expect(host.formContext.values.foo).toBe("baz");
+	expect(host.form.values.foo).toBe("baz");
 });

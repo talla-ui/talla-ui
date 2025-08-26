@@ -13,8 +13,6 @@
 		"moduleResolution": "node",
 		"target": "ES2022",
 		"lib": ["dom", "esnext"],
-		"skipLibCheck": true,
-		"jsx": "react",
-		"jsxFactory": "ui.jsx"
+		"skipLibCheck": true
 	}
 }

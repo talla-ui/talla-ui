@@ -1,7 +1,8 @@
-import { LazyString, strf } from "@talla-ui/util";
+import { DeferredString, fmt, StringConvertible } from "@talla-ui/util";
+import { AppContext } from "../app/index.js";
 import { invalidArgErr } from "../errors.js";
-import { ObservedObject } from "./ObservedObject.js";
-import { $_unlinked, watchBinding } from "./object_util.js";
+import { ObservableObject } from "./ObservableObject.js";
+import { $_bind_apply, watchBinding } from "./object_util.js";
 
 /** Constant used to check against (new) binding value */
 const NO_VALUE = {};
@@ -30,7 +31,7 @@ export namespace BindingOrValue {
  * A class that represents a property binding
  *
  * @description
- * A binding connects an object (an instance of {@link ObservedObject}) with one of the properties of one of its _containing_ (attached) objects. Bindings can be used to update properties on the target object, keeping the bound property in sync with the original property.
+ * A binding connects an object (an instance of {@link ObservableObject}) with one of the properties of one of its _containing_ (attached) objects. Bindings can be used to update properties on the target object, keeping the bound property in sync with the original property.
  *
  * For example, given an object `A` with property `p`, a binding can be used on an attached object `B` to update target property `q`. When the value of `p` changes, the same value is set on `q` immediately. This is considered a one-way data binding, since direct updates on property `q` don't affect the source property `p` at all.
  *
@@ -40,26 +41,21 @@ export namespace BindingOrValue {
  *
  * As a concrete example, a binding can be used to update the `text` property of a {@link UILabel} view, with the value of a string property `labelText` of the activity. Or perhaps the property `name` of a `user` object referenced by the activity (see example below). Whenever the data in the activity changes, so does the label text.
  *
- * **Creating bindings** — To create a binding, use the {@link $bind()} function, or one of the functions of e.g. {@link $activity} and {@link $view} to bind a number, string, (negated) boolean, list, or a string composed using a format string and one or more embedded bindings, e.g. `$bind("anyValue")`, `$bind.not("showList")`, `$activity.string("labelText")`, or `$strf("Value: %i", $activity.number("lines.count"))`.
+ * **Creating bindings** — To create a binding, use the {@link bind()} function to bind a single property (number, string, (negated) boolean, list), or use the {@link bind.fmt()} function to bind a string composed using a format string and one or more embedded bindings.
  *
- * **Binding to observed lists** — {@link ObservedList} instances include special properties that may be referenced by a binding path. Use `.count` to bind to the list count, `.#first` and `.#last` to bind to the first and last item in the list, respectively.
+ * **Binding to observable lists** — {@link ObservableList} instances include special properties that may be referenced by a binding path. Use `.length` to bind to the list length, `.#first` and `.#last` to bind to the first and last item in the list, respectively.
  *
- * **Applying bindings** — Include the result of {@link $bind()} in the preset object or parameters passed to {@link ui} factory functions (or JSX attributes), to add a bound property to a view, e.g. `ui.label($activity.string("labelText"))` or `<textfield placeholder={$view.string("placeholderText")} />`.
+ * **Applying bindings** — To add a binding to a View instance, pass the result of {@link bind()} to `UI` view builder functions, e.g. `UI.Label(bind("labelText"))`. To apply a binding to any other observable object directly, use the {@link ObservableObject.observe()} method.
  *
- * To apply a binding to any other observed object, use to the {@link bindTo()} method. This method can be used to bind a target property, or to call a function whenever the source value changes.
- *
- * **Adding filters** — To convert the value of the original property, or to combine multiple bindings using boolean operations (and/or), use one of the Binding methods such as {@link Binding.and and()}, {@link Binding.select select()}, or {@link Binding.matches matches()}.
+ * **Adding transformations** — To convert the value of the original property, or to combine multiple bindings using boolean operations (and/or), use one of the Binding methods such as {@link Binding.map map()} and {@link Binding.or or()}.
  *
  * @see {@link StringFormatBinding}
- * @see {@link $bind}
+ * @see {@link bind}
  */
 export class Binding<T = any> {
-	/** @internal Logs a binding debug message; set when app context is created */
-	static log_debug?: (message: string, data?: unknown) => void;
-
 	/**
-	 * Creates a new binding for given property and default value; use {@link $bind()} functions instead
-	 * @note Use the {@link $bind} function to create {@link Binding} objects rather than calling this constructor.
+	 * Creates a new binding for given property and default value; use {@link bind()} functions instead
+	 * @note Use the {@link bind} function to create {@link Binding} objects rather than calling this constructor.
 	 * @param source The source path that's used for obtaining the bound value, another {@link Binding} to clone from, or an object with advanced options
 	 * @param defaultValue An optional default value that's used when the bound value is undefined
 	 */
@@ -67,8 +63,8 @@ export class Binding<T = any> {
 		if (isBinding(source)) {
 			this._path = source._path;
 			this._prefix = source._prefix;
-			this._label = source._label;
-			this._apply = source._apply;
+			this._type = source._type;
+			this[$_bind_apply] = source[$_bind_apply];
 			return;
 		}
 
@@ -76,7 +72,7 @@ export class Binding<T = any> {
 		if (source && typeof source !== "string") {
 			if (!Array.isArray(source.path)) throw invalidArgErr("source");
 			defaultValue = source.default;
-			this._label = source.label;
+			this._type = source.type;
 			this._path = [...source.path];
 			if (source.prefix?.length) {
 				this._path.unshift(...(this._prefix = source.prefix));
@@ -86,278 +82,214 @@ export class Binding<T = any> {
 		}
 
 		// set basic apply method (function bound to this instance)
-		this._apply = !source
+		this[$_bind_apply] = !source
 			? function () {}
-			: (target, update) =>
-					watchBinding(target, this._label, this._path, (value, bound) =>
+			: function (target, update) {
+					watchBinding(target, this._type, this._path, (value, bound) =>
 						update(value ?? defaultValue, bound),
 					);
+				};
 	}
 
 	/** Binding source path */
 	private readonly _path: string[];
 
-	/** Property to filter source origin objects, i.e. only consider objects that include this property */
-	private readonly _label?: string | symbol;
-
 	/** A list of properties that were prepended before the binding path (used when creating associated bindings from another path) */
 	private readonly _prefix?: ReadonlyArray<string>;
 
+	/** Source type to which bindings should be limited, if specified (otherwise base type is inferred) */
+	private _type?: Function;
+
 	/**
-	 * Applies this binding to the specified target object
-	 * - This method should only be used once for each target, preferably from a constructor, since each call sets up a listener to watch the target again.
-	 * - The same binding can be applied multiple times (e.g. to different instances of an activity), removing the need to create a new {@link Binding} instance each time.
-	 * @param target The target (attached) object
-	 * @param propertyOrFunction The property to update, or a custom function to handle value updates
+	 * Creates a new binding, which only binds on properties of a class with limited bindings
+	 * - Use this method to create bindings that should only bind on properties of a specific class, which itself has enabled bindings only for its own type (using the {@link ObservableObject.enableBindings} method). Typically, this is used for custom views with content, and properties that may otherwise mask attached parent properties (e.g. on the activity).
+	 * @param type The type to which the binding should be limited
+	 * @returns A new binding, with the restriction applied
+	 * @see {@link ObservableObject.enableBindings}
 	 */
-	bindTo<TObject extends ObservedObject>(
-		target: TObject,
-		propertyOrFunction: keyof TObject | ((value?: T, bound?: boolean) => void),
-	) {
-		if (target[$_unlinked]) return;
-
-		if (typeof propertyOrFunction !== "function") {
-			let p = propertyOrFunction;
-			propertyOrFunction = function setBoundProperty(v: any) {
-				(target as any)[p] = v;
-			};
-
-			// create property if it doesn't exist yet
-			if (!(p in target)) target[p] = undefined as any;
-		}
-		this._apply(target, propertyOrFunction);
+	onType(type: Function) {
+		let result = this.clone();
+		result._type = type;
+		return result;
 	}
 
 	/**
-	 * Adds a filter, to convert the bound value to a string.
-	 * @param format A {@link strf} format string to format the value, e.g. `%n`, `%.2f`, `%{lc}`
+	 * Creates a copy of this binding
+	 * - This method is primarily used to be able to copy both plain bindings and string formatted bindings using the same method.
+	 * @returns A new binding, with the same source path and type
+	 */
+	protected clone() {
+		return new Binding(this);
+	}
+
+	/**
+	 * Transforms the bound value to a string
+	 * @param format A {@link fmt} format string to format the value, e.g. `Value: {}`, `{:.2f}`
 	 * @returns A new binding, typed as a string
 	 */
 	asString(format?: string): Binding<string> {
-		return this._filter((value) =>
-			format ? strf(format, value).toString() : String(value ?? ""),
+		return this.map((value) =>
+			format ? fmt(format, value).toString() : String(value ?? ""),
 		);
 	}
 
 	/**
-	 * Adds a filter, to convert the bound value to a number.
-	 * @returns A new binding, typed as a number
-	 */
-	asNumber(): Binding<number> {
-		return this._filter((value) => +value);
-	}
-
-	/**
-	 * Adds a filter, to make sure that the bound value is an iterable list
-	 * - This method allows arrays, Maps, ObservedList instances, and any other object that includes Symbol.iterator.
-	 * - Other values are changed to undefined.
-	 * @returns A new binding, typed as an Iterable object
-	 */
-	asList<T = any>(): Binding<Iterable<T>> {
-		return this._filter<any>((value) =>
-			value && typeof value === "object" && Symbol.iterator in value
-				? value
-				: undefined,
-		);
-	}
-
-	/**
-	 * Adds a filter, to convert the bound value to a boolean.
-	 * @returns A new binding, typed as a boolean
-	 */
-	asBoolean(): Binding<boolean> {
-		return this._filter((value) => !!value);
-	}
-
-	/**
-	 * Adds a filter, to convert the bound value to a boolean, and negate it.
+	 * Transforms the bound value to a boolean, and negates it
 	 * @returns A new binding, typed as a boolean
 	 */
 	not(): Binding<boolean> {
-		return this._filter((value) => !value);
+		return this.map((value) => !value);
 	}
 
 	/**
-	 * Adds a filter, to use the current I18n provider to localize the bound value
-	 * - The provided type is passed directly to the I18n provider. Commonly used types include `date` (with an additional `long` or `short` argument), and `currency` (with an optional currency symbol argument).
-	 *
-	 * @param type Argument(s) passed to {@link I18nProvider.format()}
-	 * @returns A new binding, typed as a string
-	 *
-	 * @example
-	 * // A label that shows a short last-modified date
-	 * ui.label(
-	 *   $bind("lastModified").local("date", "short")
-	 * )
+	 * Transforms the bound value, using the provided function
+	 * @param f A function that maps the bound value to a new value
+	 * @returns A new binding, typed as the new value
 	 */
-	local(...type: string[]): Binding<string> {
-		return this._filter((value) => LazyString.local(value, ...type));
+	map<U>(f: (value: T) => U): Binding<U> {
+		let result: Binding<U> = this.clone();
+		let _apply = this[$_bind_apply];
+		result[$_bind_apply] = function (target, update) {
+			_apply.call(this, target, (value, bound) => update(f(value), bound));
+		};
+		return result;
 	}
 
 	/**
-	 * Adds a filter, to use one of the provided values instead of the bound value
-	 *
-	 * @summary This method can be used to substitute the bound value with a fixed value. If the bound value is equal to true (according to the `==` operator), the value is replaced with the provided `trueValue`. Otherwise, the value is replaced with the provided `falseValue`, e.g. for bound undefined, null, false, zero, and empty string values. If `falseValue` isn't provided, undefined is used.
-	 *
-	 * @param trueValue The value to be used if the bound value is equal to true
-	 * @param falseValue The value to be used if the bound value is equal to false
-	 * @returns A new binding, typed like both of the given values
-	 *
-	 * @example
-	 * // A label that displays (localized) Yes or No
-	 * // depending on a property value
-	 * ui.label(
-	 *   $bind("isEnabled").select(strf("Yes"), strf("No"))
-	 * )
+	 * Transforms the bound value to either one of the specified values (or undefined)
+	 * @summary This method can be used to substitute the bound value with one of the specified values, depending on whether the bound value is equal to true according to the `==` operator.
+	 * @param trueValue The value to use if the bound value is equal to true
+	 * @param falseValue The value to use if the bound value is equal to false
+	 * @returns A new binding, typed as the new value or undefined
 	 */
-	select<U, V>(trueValue: U, falseValue?: V): Binding<U | V> {
-		return this._filter((value) => (value ? trueValue : falseValue));
+	then<U, V>(trueValue: U, falseValue: V): Binding<U | V>;
+	then<U>(trueValue: U): Binding<U | undefined>;
+	then(trueValue: unknown, falseValue?: unknown): Binding<any> {
+		return this.map((v) => (v ? trueValue : falseValue));
 	}
 
 	/**
-	 * Adds a filter, to use the provided value instead of a bound value that's equal to false
-	 *
-	 * @summary This method can be used to substitute the bound value with a fixed value, if the bound value is equal to false (according to the `==` operator), e.g. for bound undefined, null, false, zero, and empty string values.
-	 * @note Alternatively, use the `defaultValue` argument to the {@link $bind()} function to specify a default value that's used if the bound value is undefined.
-	 *
-	 * @param falseValue The value to be used if the bound value is equal to false
-	 * @returns A new binding, typed like the given value
-	 *
-	 * @example
-	 * // A label that displays a value OR (localized) "None"
-	 * ui.label(
-	 *   $bind("customer.name").else(strf("None"))
-	 * )
+	 * Transforms the bound value to the specified value, if the bound value is equal to false
+	 * @summary This method can be used to substitute the bound value with a value, if the bound value is equal to false according to the `==` operator.
+	 * @param falseValue The value to use if the bound value is equal to false
+	 * @returns A new binding, typed as the new value
 	 */
 	else<U>(falseValue: U): Binding<T | U> {
-		return this._filter((value) => (value || falseValue) as any);
+		return this.map((v) => v || falseValue);
 	}
 
 	/**
-	 * Adds a filter, to compare the bound value and replace it with true or false
-	 *
-	 * @summary This method can be used to substitute the bound value with true or false. If the original value matches at least one of the provided values, it's replaced with true; otherwise with false.
-	 *
-	 * @param values A list of values to compare the bound value to
+	 * Transforms to a boolean, true if the bound value exactly equals a literal value
+	 * @param value The literal value to compare with
 	 * @returns A new binding, typed as a boolean
-	 *
-	 * @example
-	 * // A cell that's rendered only if a string matches
-	 * ui.show(
-	 *   { when: $activity("tab").matches("contacts") },
-	 *   ui.cell(
-	 *     // ...
-	 *   )
-	 * )
-	 *
-	 * @example
-	 * // A cell that's hidden if a string doesn't match
-	 * ui.cell(
-	 *   { hidden: $activity("tab").matches("contacts").not() },
-	 *   // ...
-	 * )
-	 *
-	 * @see {@link Binding.matchesNone matchesNone()}
 	 */
-	matches(...values: any[]): Binding<boolean> {
-		return this._filter((value) => values.some((a) => a === value));
+	equals(value: T): Binding<boolean> {
+		return this.map((v) => v === value);
+	}
+
+	/** @internal Typo/hallucination alias */
+	eq(v: any) {
+		return this.equals(v);
 	}
 
 	/**
-	 * Adds a filter, to compare the bound value and replace it with true or false
-	 *
-	 * @summary This method produces the opposite bound value of {@link Binding.matches matches()}. If the original value matches none of the provided values, the bound value becomes true, otherwise false.
-	 *
-	 * @param values A list of values to compare the bound value to
+	 * Transforms to a boolean, true if the bound value is less than a literal value
+	 * @param value The literal value to compare with
 	 * @returns A new binding, typed as a boolean
-	 *
-	 * @see {@link Binding.matches matches()}
 	 */
-	matchesNone(...values: any[]): Binding<boolean> {
-		return this._filter((value) => !values.some((a) => a === value));
+	lt(value: number): Binding<boolean> {
+		return this.map((v) => +v < value);
 	}
 
 	/**
-	 * Adds a filter, to compare the bound value with another bound value
+	 * Transforms to a boolean, true if the bound value is greater than a literal value
+	 * @param value The literal value to compare with
+	 * @returns A new binding, typed as a boolean
+	 */
+	gt(value: number): Binding<boolean> {
+		return this.map((v) => +v > value);
+	}
+
+	/**
+	 * Transforms to a boolean, true if the bound value exactly equals another bound value
 	 *
 	 * @summary This method can be used to compare two bindings. If the original value matches the value of the provided binding, the bound value becomes true, otherwise false.
 	 *
 	 * To do the opposite, and substitute with false if the bindings match, use the {@link Binding.not not()} method afterwards.
 	 *
-	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link $bind()}
+	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bind()}
 	 * @returns A new binding, typed as a boolean
 	 *
 	 * @example
 	 * // A cell that's rendered only if two bindings match
-	 * ui.show(
-	 *   { when: $list("item").equals("selectedItem") },
-	 *   ui.cell(
-	 *     // ...
-	 *   )
-	 * )
+	 * UI.ShowWhen(bind("item").matches("selectedItem"), UI.Cell(
+	 *   // ...
+	 * ))
 	 */
-	equals(source: Binding | string): Binding<boolean> {
+	matches(source: Binding | string): Binding<boolean> {
 		return this._addBool(source, false, true) as any;
 	}
 
 	/**
-	 * Adds a filter, to perform a logical AND (i.e. `&&`) operation with another binding
+	 * Transforms the bound value and another binding, applying the `&&` operator
 	 *
 	 * @summary This method can be used to combine two bindings logically, using the `&&` operator. The resulting bound value is the value of the _other_ binding, if the current bound value is equal to true (according to the `==` operator). The result is the value of the current binding, if its value is equal to false.
 	 *
-	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link $bind()}
+	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bind()}
 	 * @returns A new binding, typed as a union of both original types
 	 *
 	 * @example
 	 * // A simple boolean AND
-	 * $bind.boolean("itemFound").and("hasPrice")
+	 * bind("itemFound").and("hasPrice")
 	 *
 	 * // A conditional string binding
-	 * $bind.boolean("showCustomer")
-	 *   .and($strf("Customer: %s", "customer.name"))
+	 * bind("showCustomer")
+	 *   .and(bind.fmt("Customer: {}", bind("customer.name")))
 	 */
 	and<U = any>(source: Binding<U> | string): Binding<T | U> {
 		return this._addBool(source, true) as any;
 	}
 
 	/**
-	 * Adds a filter, to perform a logical OR (i.e. `||`) operation with another binding
+	 * Transforms the bound value and another binding, applying the `||` operator
 	 *
 	 * @summary This method can be used to combine two bindings logically, using the `||` operator. The resulting bound value is the value of the _other_ binding, if the current bound value is equal to false (according to the `==` operator). The result is the value of the current binding, if its value is equal to true.
 	 *
-	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link $bind()}
+	 * @param source Another instance of {@link Binding}, or a source path that will be passed to {@link bind()}
 	 * @returns A new binding, typed as a union of both original types
 	 *
 	 * @example
 	 * // A simple boolean OR
-	 * $bind.boolean("itemFound").or("hasDefault")
+	 * bind("itemFound").or("hasDefault")
 	 *
 	 * // A conditional string binding
-	 * $bind.string("customer.name")
-	 *   .or($bind("Default: %s", "defaultCustomer.name"))
+	 * bind("customer.name")
+	 *   .or(bind.fmt("Default: {}", "defaultCustomer.name"))
 	 */
 	or<U = any>(source: Binding<U> | string): Binding<T | U> {
 		return this._addBool(source) as any;
 	}
 
 	/**
-	 * Adds a filter, to log a debug message whenever the bound value changes.
+	 * Logs a debug message whenever the bound value changes.
 	 * @returns The binding itself, with debug events enabled
 	 */
 	debug() {
-		let _apply = this._apply;
-		this._apply = (target, update) => {
+		let _apply = this[$_bind_apply];
+		this[$_bind_apply] = function (target, update) {
 			let hasValue: boolean | undefined;
-			_apply(target, (value, bound) => {
+			_apply.call(this, target, (value, bound) => {
 				hasValue = true;
-				Binding.log_debug?.(
+				AppContext.getInstance().log.debug(
 					this.toString() + (bound ? " =>" : " [not bound]"),
 					value,
 				);
 				update(value, bound);
 			});
 			setTimeout(() => {
-				if (!hasValue) Binding.log_debug?.(this.toString() + " [not bound]");
+				if (!hasValue) {
+					AppContext.getInstance().log.debug(this.toString() + " [not bound]");
+				}
 			}, 1);
 		};
 		return this;
@@ -368,15 +300,7 @@ export class Binding<T = any> {
 	 * @returns The string description.
 	 */
 	toString() {
-		return "$bind(" + this._path.join(".") + ")";
-	}
-
-	/**
-	 * Returns a copy of this object
-	 * - This method is used by other methods to return a new instance of the same type, before adding filters, e.g. {@link not()}.
-	 */
-	protected clone(): Binding<T> {
-		return new Binding(this);
+		return "bind(" + this._path.join(".") + ")";
 	}
 
 	/**
@@ -391,39 +315,39 @@ export class Binding<T = any> {
 	 */
 	declare [BindingOrValue.TYPE_CHECK]: () => T;
 
-	/** @internal Apply this binding to an observed object using given update callback; cascades down to child bindings (for boolean logic and string bindings) */
-	_apply: (
-		this: unknown,
-		target: ObservedObject,
+	/** @internal Apply this binding to an observable object using given update callback; cascades down to child bindings (for boolean logic and string bindings) */
+	[$_bind_apply]: (
+		this: Binding<any>,
+		target: ObservableObject,
 		update: (value: any, bound: boolean) => void,
 	) => void;
 
-	/** Implementation for `.and()`, `.or()`, and `.equals()` */
+	/** Implementation for `.and()`, `.or()`, and `.matches()` */
 	private _addBool(
 		other: string | Binding,
 		isAnd?: boolean,
-		isEqual?: boolean,
+		isMatch?: boolean,
 	) {
 		// create other binding (if needed)
 		if (!isBinding(other)) {
 			other = new Binding({
 				path: other.split("."),
-				label: this._label,
+				type: this._type,
 				prefix: this._prefix,
 			});
 		}
 
 		// update apply method to also apply other binding
 		let result = this.clone();
-		let _apply = this._apply;
-		result._apply = (target, update) => {
+		let _apply = this[$_bind_apply];
+		result[$_bind_apply] = function (target, update) {
 			let currentValue = NO_VALUE;
 
 			// keep track of status, only update when both values known
 			let flags = 3;
 			function set(v1: any, v2: any, noUpdate: any, bound: boolean) {
 				if (noUpdate) return;
-				let newValue = isEqual ? v1 === v2 : isAnd ? v1 && v2 : v1 || v2;
+				let newValue = isMatch ? v1 === v2 : isAnd ? v1 && v2 : v1 || v2;
 				if (newValue !== currentValue) {
 					currentValue = newValue;
 					update(newValue, bound);
@@ -433,21 +357,13 @@ export class Binding<T = any> {
 			// keep track of both values at the same time
 			let value1: any = undefined;
 			let value2: any = undefined;
-			_apply(target, (value, bound) =>
+			_apply.call(this, target, (value, bound) =>
 				set((value1 = value), value2, (flags &= 2), bound),
 			);
-			other._apply(target, (value, bound) =>
+			other[$_bind_apply].call(other, target, (value, bound) =>
 				set(value1, (value2 = value), (flags &= 1), bound),
 			);
 		};
-		return result;
-	}
-
-	private _filter<V>(f: (value: T) => V | undefined) {
-		let result: Binding<V> = this.clone() as any;
-		let _apply = this._apply;
-		result._apply = (target, update) =>
-			_apply(target, (value, bound) => update(f(value), bound));
 		return result;
 	}
 }
@@ -462,38 +378,38 @@ Binding.prototype.isBinding = _isBinding;
  *
  * After binding to an object, the underlying string value is updated whenever any of the nested bindings change — inserting the bound values into the string.
  *
- * Instances of this class can be created using the {@link $strf} function.
+ * Instances of this class can be created using the {@link bind.fmt} function.
  *
  * @example
  * // String-formatted bindings with positional arguments
- * $strf("Today is %s", $bind("dayOfTheWeek"))
- * $strf("%i table row#{/s}, total %.2f", $bind("rows.length"), $bind("calcTotal"))
+ * bind.fmt("Today is {}", bind("dayOfTheWeek"))
+ * bind.fmt("{} table {0:+/row/rows}, total {}", bind("rows.length"), bind("calcTotal"))
  *
  * @example
  * // String-formatted binding with object argument
- * $strf(
- *   "%[user] is %[age] years old",
+ * bind.fmt(
+ *   "{user} is {age} years old",
  *   {
- *     user: $bind("user.name", strf("Unknown user")),
- *     age: $bind.number("user.age").else(99)
+ *     user: bind("user.name", fmt("Unknown user")),
+ *     age: bind("user.age").map((age) => age ?? 99)
  *   }
  * )
  *
  * @example
  * // A label with bound text
- * // (Note: JSX element text is bound automatically)
- * ui.label(
- *   $strf("Welcome, %s", $bind("user.fullName"))
- * )
+ * UI.Label(bind.fmt("Welcome, {}", bind("user.fullName")))
  */
-export class StringFormatBinding extends Binding<LazyString> {
+export class StringFormatBinding extends Binding<DeferredString> {
 	/**
-	 * Creates a new string-formatted binding using; use {@link $strf()} instead
-	 * @note Use the {@link $strf()} function to create {@link StringFormatBinding} objects rather than calling this constructor.
-	 * @param format The format string, containing placeholders similar to {@link strf()}
+	 * Creates a new string-formatted binding using; use {@link bind.fmt()} instead
+	 * @note Use the {@link bind.fmt()} function to create {@link StringFormatBinding} objects rather than calling this constructor.
+	 * @param format The format string, containing placeholders similar to {@link fmt()}
 	 * @param args A list of associated bindings
 	 */
-	constructor(format: string, ...args: Binding[] | [{ [K: string]: Binding }]) {
+	constructor(
+		format: StringConvertible,
+		...args: Binding[] | [{ [K: string]: Binding }]
+	) {
 		super(undefined);
 		this._format = format;
 		if (!format) return;
@@ -502,42 +418,42 @@ export class StringFormatBinding extends Binding<LazyString> {
 
 	/** Returns a description of this binding, including its original format string. */
 	override toString() {
-		return "$strf(" + JSON.stringify(this._format) + ")";
+		return "bind.fmt(" + JSON.stringify(this._format) + ")";
 	}
 
 	protected override clone(): StringFormatBinding {
 		let result = new StringFormatBinding("");
 		result._format = this._format;
-		result._apply = this._apply;
+		result[$_bind_apply] = this[$_bind_apply];
 		return result;
 	}
 
 	/** Set the _apply method to update the bound string value */
 	private _makeApply(
-		format: string,
+		format: StringConvertible,
 		args: Binding[] | [{ [K: string]: Binding }],
 	) {
-		let base = new LazyString(() => format).translate();
+		let base = new DeferredString(format);
 		let obj = !isBinding(args[0]) ? args[0] : undefined;
 		if (obj) args = [];
 
 		// use shortcut if no interpolation arguments at all
 		if (!obj && !args.length) {
-			this._apply = (_, update) => update(base.cache(), false);
+			this[$_bind_apply] = (_, update) => update(base, false);
 			return;
 		}
 
-		// otherwise, use LazyString.format whenever bindings are updated
-		this._apply = (target, update) => {
+		// otherwise, use DeferredString.format whenever bindings are updated
+		this[$_bind_apply] = (target, update) => {
 			// keep track of all bound interpolation arguments
 			let values: any[] = [];
 			let nBindings = 0;
-			let count = 0;
+			let n = 0;
 
 			// register all nested bindings, update when values change
 			function updateString() {
-				if (count >= nBindings) {
-					let newValue = base.format(...values).cache();
+				if (n >= nBindings) {
+					let newValue = base.format(...values);
 					update(newValue, true);
 				}
 			}
@@ -545,8 +461,8 @@ export class StringFormatBinding extends Binding<LazyString> {
 				let binding = args[i];
 				if (isBinding(binding)) {
 					nBindings++;
-					binding._apply(target, (value) => {
-						count++;
+					binding[$_bind_apply](target, (value) => {
+						n++;
 						if (!(i in values) || values[i] !== value) {
 							values[i] = value;
 							updateString();
@@ -559,8 +475,8 @@ export class StringFormatBinding extends Binding<LazyString> {
 				for (let p in obj) {
 					if (isBinding(obj[p])) {
 						nBindings++;
-						obj[p]!._apply(target, (value: any) => {
-							count++;
+						obj[p]![$_bind_apply](target, (value: any) => {
+							n++;
 							if (!(p in valueObj) || valueObj[p] !== value) {
 								valueObj[p] = value;
 								updateString();
@@ -572,129 +488,90 @@ export class StringFormatBinding extends Binding<LazyString> {
 		};
 	}
 
-	private _format: string;
+	private _format: StringConvertible;
 }
 
 export namespace Binding {
 	/**
-	 * Options that can be passed to the {@link Binding} constructor, used by {@link $bind} and other binding factories
+	 * Options that can be passed to the {@link Binding} constructor, used by {@link bind} and other binding factories
 	 */
 	export type Options = {
 		/** The source property path, as an array */
 		readonly path: string[];
 		/** Default value, used when the bound value itself is undefined */
 		readonly default?: any;
-		/** The source label property that's used to filter parent objects */
-		readonly label?: string | symbol;
+		/** The parent object type to observe, if specified (otherwise base type is inferred) */
+		readonly type?: Function;
 		/** An optional list of property names that are prepended before all binding paths */
 		readonly prefix?: ReadonlyArray<string>;
 	};
-
-	/** A binding factory function that creates {@link Binding} objects, along with a `.not()` version for negated bindings */
-	export type Factory<TKey extends string> = {
-		(source: TKey, defaultValue?: any): Binding;
-
-		/** Creates a new {@link Binding} object, negating the bound value */
-		not(source: TKey): Binding<boolean>;
-	};
-
-	/**
-	 * Creates a {@link Binding} factory function, along with `.not()` version
-	 * - This function is used to create e.g. {@link $activity}, {@link $view}, and {@link $viewport} functions.
-	 * - You can use this function to create your own binding factory functions, by referencing a specific property of a class (i.e. the binding source label, usually a symbol) and/or a property name that should be used as a prefix for all bindings.
-	 * @param sourceLabel The source 'label' property that's used to filter candidate objects
-	 * @param propertyName An optional property name that's used as a prefix for all bindings, must be a property of the source object
-	 */
-	export function createFactory<TKey extends string>(
-		sourceLabel?: string | symbol,
-		...properties: string[]
-	): Binding.Factory<TKey> {
-		let factory: Factory<TKey> = function (source: string, defaultValue?: any) {
-			return new Binding({
-				path: source.split("."),
-				default: defaultValue,
-				label: sourceLabel,
-				prefix: properties,
-			});
-		} as any;
-		factory.not = (source: any) => factory(source).not();
-		// NOTE: ^ this seems like it would be inefficient, but testing shows it's
-		//   the same as creating a new factory with a 'negate' option ¯\_(ツ)_/¯
-		return factory;
-	}
 }
 
 /**
- * A property decorator function that applies the provided binding to the decorated property
- * @param source The source (property) path that's used for obtaining the bound value, or a {@link Binding} instance
- * @note This decorator can only be used on class fields with TypeScript 5.0 or later, or environments that support the latest ECMAScript standard for decorators.
- *
- * @example
- * class MyActivity extends Activity {
- *   // ...
- *
- *   // keep this property in sync with a parent activity (if any):
- *   @binding("selectedCustomer")
- *   customer?: Customer;
- * }
- */
-export function binding(source: string | Binding) {
-	return function (_: unknown, context: ClassFieldDecoratorContext) {
-		let binding = typeof source === "string" ? new Binding(source) : source;
-		if (!(binding instanceof Binding) || context.kind !== "field") {
-			throw TypeError();
-		}
-		context.addInitializer(function () {
-			if (!(this instanceof ObservedObject)) throw Error();
-			binding.bindTo(this, context.name as any);
-		});
-	};
-}
-
-/**
- * Creates a new generic {@link Binding}
- * @summary This function is used to create a new binding for a specific source path, with an optional default value. Calling this function is equivalent to `new Binding(sourcePath, defaultValue)`, and is the recommended way to create bindings.
- * @note You can use e.g. {@link $activity}, {@link $view}, and {@link $viewport} to create bindings for specific sources.
+ * Creates a new binding for a specific property or source path
+ * @summary This function is used to create a new binding for a specific source path, with an optional default value.
  * @param sourcePath The source (property) path that's used for obtaining the bound value
  * @param defaultValue An optional default value that's used when the bound value is undefined
- * @returns A new {@link Binding} object
+ * @returns A {@link Binding} object
  * @see {@link Binding}
  */
-export const $bind = Binding.createFactory();
-
-/**
- * Creates a new {@link Binding} object, for a binding that takes the value of the first binding of the specified bindings that has a non-false value
- * - This function repeatedly calls {@link Binding.or} for each source and returns the resulting binding.
- * @param sources One or more instances of {@link Binding} or source paths that will be passed to {@link $bind()}
- */
-export function $either(...sources: Array<string | Binding>) {
-	let result = new Binding(sources.shift());
-	while (sources.length) {
-		result = result.or(sources.shift()!);
+export function bind<T = any>(sourcePath: string, defaultValue?: any) {
+	if (defaultValue === undefined && _cache.has(sourcePath)) {
+		return _cache.get(sourcePath)!;
 	}
-	return result;
+	return new Binding<T>(sourcePath, defaultValue);
 }
 
-/**
- * Creates a new {@link Binding} object, for a binding that is true if none of the specified bindings are true
- * - This function repeatedly calls {@link Binding.or} for each source and returns the negated resulting binding (using {@link Binding.not}).
- * @param sources One or more instances of {@link Binding} or source paths that will be passed to {@link $bind()}
- */
-export function $neither(...sources: Array<string | Binding>) {
-	return $either(...sources).not();
-}
+/** @internal Cache of bindings, to avoid creating new instances for the same source path */
+const _cache = new Map<string, Binding>();
 
-/**
- * Creates a new {@link StringFormatBinding}
- * @summary This function is used to create a new binding for a string-formatted value with further embedded bindings. Calling this function is equivalent to `new StringFormatBinding(...)`, and is the recommended way to create such bindings.
- * @param format The format string, containing placeholders similar to {@link strf()}
- * @param args A list of associated bindings
- * @returns A new {@link StringFormatBinding} object
- * @see {@link StringFormatBinding}
- */
-export function $strf(
-	format: string,
-	...args: Binding[] | [{ [K: string]: Binding }]
-) {
-	return new StringFormatBinding(format, ...args);
+export namespace bind {
+	/**
+	 * Creates a new binding, negating the original binding
+	 * @summary This function is used to create a new binding that is the boolean opposite (i.e. `!`) of the original binding.
+	 * @param source The source (property) path that's used for obtaining the bound value
+	 * @returns A new {@link Binding} object
+	 */
+	export function not(source: string) {
+		return bind(source).not();
+	}
+
+	/**
+	 * Creates a new binding, resulting in the first non-false value out of multiple bindings
+	 * - This function repeatedly calls {@link Binding.or} for each source and returns the resulting binding.
+	 * @param sources One or more instances of {@link Binding} or source paths that will be passed to {@link bind()}
+	 */
+	export function either<T>(
+		...sources: Array<string | Binding<T>>
+	): Binding<T> {
+		let result = new Binding(sources.shift());
+		while (sources.length) {
+			result = result.or(sources.shift()!);
+		}
+		return result;
+	}
+
+	/**
+	 * Creates a new binding, resulting in true if none of the specified bindings are true
+	 * - This function repeatedly calls {@link Binding.or} for each source and returns the negated resulting binding (using {@link Binding.not}).
+	 * @param sources One or more instances of {@link Binding} or source paths that will be passed to {@link bind()}
+	 */
+	export function neither(...sources: Array<string | Binding>) {
+		return either(...sources).not();
+	}
+
+	/**
+	 * Creates a new binding for a string-formatted value
+	 * @summary This function is used to create a new binding for a string-formatted value with further embedded bindings.
+	 * @param format The format string, containing placeholders similar to {@link fmt()}
+	 * @param args A list of associated bindings
+	 * @returns A new {@link StringFormatBinding} object
+	 * @see {@link StringFormatBinding}
+	 */
+	export function fmt(
+		format: StringConvertible,
+		...args: Binding[] | [{ [K: string]: Binding }]
+	) {
+		return new StringFormatBinding(format, ...args);
+	}
 }

@@ -74,7 +74,7 @@ export class TestOutputElement {
 
 	/**
 	 * A combination of all styles applied to this element, including position and layout
-	 * - Styles are copied as specified from {@link UIStyle} objects and overrides such as {@link UIButton.style}, {@link UICell.style}, etc.
+	 * - Styles are copied as specified from {@link UIStyle} objects and overrides from {@link UIViewElement.style} and {@link UIViewElement.position}.
 	 * - While styles are usually applied to the rendered element in a platform-dependent way, the test renderer simply stores all properties in this object, which therefore has no specific type.
 	 */
 	styles: Record<string, any> = {};
@@ -280,7 +280,7 @@ export namespace TestOutputElement {
 		| "label"
 		| "button"
 		| "image"
-		| "separator"
+		| "divider"
 		| "spacer"
 		| "textfield"
 		| "toggle";

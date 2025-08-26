@@ -1,12 +1,17 @@
-import { ConfigOptions, LazyString, StringConvertible } from "@talla-ui/util";
+import {
+	ConfigOptions,
+	DeferredString,
+	StringConvertible,
+} from "@talla-ui/util";
+import type { AppContext } from "./AppContext.js";
 
 /**
  * A representation of the contents of an alert or confirm dialog
- * - Objects of this type are used by {@link UITheme.AlertDialogController} or {@link UITheme.ConfirmDialogController} to display a modal dialog view.
+ * - Objects of this type are used by {@link AppContext.AlertDialogController} or {@link AppContext.ConfirmDialogController} to display a modal dialog view.
  * @see {@link AppContext.showAlertDialogAsync}
  * @see {@link AppContext.showConfirmDialogAsync}
- * @see {@link UITheme.AlertDialogController}
- * @see {@link UITheme.ConfirmDialogController}
+ * @see {@link AppContext.AlertDialogController}
+ * @see {@link AppContext.ConfirmDialogController}
  */
 export class MessageDialogOptions extends ConfigOptions {
 	/**
@@ -49,21 +54,21 @@ export class MessageDialogOptions extends ConfigOptions {
 
 	/**
 	 * Returns a new instance, with messages formatted using the provided arguments
-	 * - This method can only format strings that are instances of {@link LazyString}, i.e. the result of the {@link strf()} function.
-	 * @see {@link LazyString.format}
+	 * - This method can only format strings that are instances of {@link DeferredString}, i.e. the result of the {@link fmt()} function.
+	 * @see {@link fmt}
 	 */
 	format(...args: any[]) {
 		return new MessageDialogOptions(
 			this.messages.map((m) =>
-				m instanceof LazyString ? m.format(...args) : m,
+				m instanceof DeferredString ? m.format(...args) : m,
 			),
-			this.confirmLabel instanceof LazyString
+			this.confirmLabel instanceof DeferredString
 				? this.confirmLabel.format(...args)
 				: this.confirmLabel,
-			this.cancelLabel instanceof LazyString
+			this.cancelLabel instanceof DeferredString
 				? this.cancelLabel.format(...args)
 				: this.cancelLabel,
-			this.otherLabel instanceof LazyString
+			this.otherLabel instanceof DeferredString
 				? this.otherLabel.format(...args)
 				: this.otherLabel,
 			this.type,
@@ -74,7 +79,7 @@ export class MessageDialogOptions extends ConfigOptions {
 export namespace MessageDialogOptions {
 	/**
 	 * Type definition for different types of dialogs that may be presented to the user
-	 * - Not all types may be used by themes or platforms to display specific versions of message dialogs.
+	 * - Not all types may be used by modal builders or platforms to display specific versions of message dialogs.
 	 * @see {@link MessageDialogOptions.type}
 	 */
 	export type DialogType =

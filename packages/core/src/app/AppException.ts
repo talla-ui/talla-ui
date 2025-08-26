@@ -1,4 +1,4 @@
-import { LazyString, StringConvertible } from "@talla-ui/util";
+import { DeferredString, StringConvertible } from "@talla-ui/util";
 
 /**
  * A class that represents an application error, including a localizable message
@@ -18,7 +18,7 @@ export class AppException extends Error {
 	 * @example
 	 * // Create a new error class and use it:
 	 * const ValidationError = AppException.type(
-	 *   "ValidationError", "Validation failed: %s");
+	 *   "ValidationError", "Validation failed: {}");
 	 *
 	 * try {
 	 *   throw new ValidationError("abc")
@@ -33,7 +33,7 @@ export class AppException extends Error {
 		name: string,
 		format: StringConvertible,
 	): { new (...args: any[]): AppException } {
-		let message = new LazyString(() => String(format));
+		let message = new DeferredString(format);
 		return class AppExceptionType extends this {
 			constructor(...args: any[]) {
 				super();
@@ -41,10 +41,7 @@ export class AppException extends Error {
 				// set name and message according to (static) arguments
 				this.data = args;
 				this.name = name;
-				this.message = message
-					.translate()
-					.format(...args)
-					.toString();
+				this.message = String(message.format(...args));
 
 				// scan arguments for 'cause' property
 				for (let arg of args) {

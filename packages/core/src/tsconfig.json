@@ -1,7 +1,5 @@
 {
 	"compilerOptions": {
-		"jsx": "react",
-		"jsxFactory": "jj",
 		"declaration": true,
 		"pretty": true,
 		"stripInternal": true,

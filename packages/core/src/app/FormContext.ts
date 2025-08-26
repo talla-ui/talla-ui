@@ -1,16 +1,6 @@
-import { ObjectReader } from "@talla-ui/util";
-import { Binding, ObservedObject } from "../object/index.js";
+import { InputValidator, StringConvertible } from "@talla-ui/util";
+import { bind, ObservableObject } from "../object/index.js";
 import { View } from "./index.js";
-
-/** An object that can be used to create bindings for properties of the nearest `formContext` property */
-export const $form = Binding.createFactory<
-	| "values"
-	| `values.${string}`
-	| "errors"
-	| `errors.${string}`
-	| "errorCount"
-	| "valid"
->("formContext", "formContext");
 
 /**
  * An object that contains form field data and validation rules
@@ -20,19 +10,16 @@ export const $form = Binding.createFactory<
  *
  * The form context object provides methods to get, set, and clear field values, as well as a way to validate current values according to a schema or custom validation functions. Form values and validation errors can be bound to any other view properties to be displayed in the UI.
  *
- * The validation schema follows the type definition from {@link ObjectReader.Schema}, since validation takes place using {@link ObjectReader}. Errors must be set as text (strings, or the result of {@link strf()}) on the `err` properties within the validation schema, since default error messages are not included for any language.
+ * Validation is performed using an {@link InputValidator} instance. Errors must be added as strings or {@link StringConvertible} values (e.g. the result of {@link fmt()}) using the `required()` or `error()` methods of each field in the schema.
  *
- * To use a FormContext object with {@link UITextField} or {@link UIToggle} input elements (or e.g. a custom UI component), set their `formField` property to a field name. The input view object automatically binds to a `formContext` property from the current activity or UI component, and gets/sets the input value when needed.
+ * To use a FormContext object with {@link UITextField} or {@link UIToggle} input elements (or e.g. a custom view), use their `.bindFormField()` builder method. The builder automatically binds to a `form` property from the current activity or custom view, and gets/sets the input value when needed.
  *
  * @example
- * const FormView = ui.column(
- *   ui.textField({ formField: "foo" }),
- *   ui.label({
- *     style: myStyles.errorLabel,
- *     hidden: $activity.not("formContext.errors.foo"),
- *     text: $activity.string("formContext.errors.foo.message")
- *   }),
- *   ui.button("Go", { onClick: "Submit" })
+ * const FormView = column(
+ *   textField().bindFormField("foo"),
+ *   label(bind("form.errors.foo.message"))
+ *     .hideWhen(bind.not("form.errors.foo")),
+ *   button("Go").emit("Submit")
  * );
  *
  * class MyActivity extends Activity {
@@ -40,44 +27,37 @@ export const $form = Binding.createFactory<
  *     return new formView();
  *   }
  *
- *   formContext = new FormContext({
- *     foo: {
- *       string: { required: { err: "Foo is required" } }
- *     }
- *   });
+ *   form = new FormContext((f) => f.object({
+ *     foo: f.string().required("Foo is required")
+ *   }));
  *
  *   onSubmit() {
- *     let values = this.formContext.validate();
+ *     let values = this.form.validate();
  *     // now, values.foo is a string with length > 0,
  *     // OR otherwise
  *     // - values is undefined, and
- *     // - this.formContext.valid is false, and
- *     // - this.formContext.errors.foo.message is "Foo is required"
+ *     // - this.form.valid is false, and
+ *     // - this.form.errors.foo is "Foo is required"
  *   }
  * }
  */
 export class FormContext<
-	TSchema extends ObjectReader.Schema = Record<string, ObjectReader.SchemaRule>,
-> extends ObservedObject {
+	TSchema extends Record<string, unknown> = Record<string, unknown>,
+> extends ObservableObject {
 	/** Creates a new instance with the provided validation schema and/or values */
 	constructor(
-		schemaOrReader?: TSchema | ObjectReader<TSchema>,
+		fields?: InputValidator.Initializer<TSchema>,
 		values?: Partial<Record<keyof TSchema, unknown>>,
 	) {
 		super();
-		if (schemaOrReader) {
-			this._reader =
-				schemaOrReader instanceof ObjectReader
-					? schemaOrReader
-					: new ObjectReader(schemaOrReader);
-		}
+		if (fields) this._validator = new InputValidator(fields);
 		if (values) Object.assign(this._values, values);
 	}
 
 	/**
 	 * An object that contains current form field values
 	 * - Do not set field values here. Instead, use the {@link FormContext.set()} method to update field values.
-	 * - These values are not (necessarily) valid. To validate form fields and get the result, use the {@link validate()} method.
+	 * - These values are not (necessarily) valid, and are typed as `unknown`. To validate form fields and get the result, use the {@link validate()} method.
 	 * - Properties of this object can be bound, e.g. to display form fields elsewhere in the view.
 	 * @readonly
 	 */
@@ -87,19 +67,20 @@ export class FormContext<
 	private _values: Record<string, unknown> = Object.create(null);
 
 	/**
-	 * An object that contains validation errors, if any
-	 * - Errors are set by the {@link validate()} method, as well as by the {@link set()} method but only after {@link validate()} has been called at least once.
+	 * An object that contains validation error messages, if any
+	 * - Errors are set by the {@link validate()} method. They are also set by the {@link set()} method, but only after {@link validate()} has been called at least once.
 	 * - Errors (and values) can be cleared using the {@link clear()} method.
 	 * @readonly
 	 */
-	get errors(): Readonly<{ [name in keyof TSchema]?: Error }> {
+	get errors(): Readonly<{ [name in keyof TSchema]?: StringConvertible }> {
 		return this._errors;
 	}
-	private _errors: { [name in keyof TSchema]?: Error } = Object.create(null);
+	private _errors: { [name in keyof TSchema]?: StringConvertible } =
+		Object.create(null);
 
 	/**
 	 * True if there are currently no recorded errors.
-	 * - This field is updated by the {@link validate()} method, as well as by the {@link set()} method but only after {@link validate()} has been called at least once. Before then, this field is always `true`.
+	 * - This field is updated by the {@link validate()} method. It is also updated by the {@link set()} method, but only after {@link validate()} has been called at least once. Before then, this field is always `true`.
 	 * - This field is set back to `true` by the {@link clear()} method.
 	 * @readonly
 	 */
@@ -120,10 +101,12 @@ export class FormContext<
 		// set and validate if needed
 		if (this._values[name] !== value) {
 			this._values[name] = value;
-			if (this._reader && this._validated) {
-				let [_, error] = this._reader.readField(this.values, name);
-				if (error) this._errors[name] = error;
-				else delete this._errors[name];
+			let v = this._validator?.schema?.shape?.[name];
+			if (v && this._validated) {
+				let validator = new InputValidator(() => v);
+				let result = validator.safeParse(value);
+				if (result.success) delete this._errors[name];
+				else this._errors[name] = result.error;
 				this._valid = !Object.keys(this._errors).length;
 			}
 			this.emitFormChange();
@@ -157,64 +140,50 @@ export class FormContext<
 	 * - This method returns the validated fields as a plain object, and also updates the {@link errors} and {@link valid} properties.
 	 * - After this method has been called at least once, fields are checked automatically whenever a field is updated, maintaining the validation status in the {@link errors} and {@link valid} properties. To stop automatic validation until this method is called again, use the {@link clear()} method.
 	 */
-	validate() {
-		let reader = this._reader;
-		if (!reader) return;
+	validate(): TSchema | undefined {
+		let validator = this._validator;
+		if (!validator) return;
 		let wasValid = this._valid;
-		let [result, errors] = reader.read(this.values);
-		this._errors = errors;
-		this._valid = !!result;
+		let { data, errors } = validator.safeParse(this._values);
+		this._errors = errors || Object.create(null);
+		this._valid = !errors;
 		this._validated = true;
-		if (wasValid && !result) this.emitFormChange();
-		if (result) return result;
+		if (wasValid && errors) this.emitFormChange();
+		if (data) return data;
 	}
 
-	private _reader?: ObjectReader<TSchema>;
+	private _validator?: InputValidator<any>;
 	private _validated = false;
 }
 
 export namespace FormContext {
 	/**
-	 * Maintain the intrinsic value of a view based on its `formField` property and the closest (bound) `formContext` reference
+	 * Maintain the intrinsic value of a view based on the closest bound form context
 	 *
-	 * @summary This function is used by {@link UITextField} and {@link UIToggle} to keep their values in sync with a bound {@link FormContext}, if their `formField` property has been set. This function can also be used on custom views such as {@link UIComponent} instances, to support the use of {@link FormContext} to keep track of an intrinsic value.
+	 * @summary This function uses two functions to keep a view's intrinsic value in sync with a form context value property. The closest form context is found using a binding on the `form` property. Whenever the form context value is updated, the `setValue` function is called with the new value. Whenever the view itself emits a 'Change' or 'Input' event, the `getValue` function is called to get the current value, and the form context is updated with the new value.
 	 *
-	 * @note Do not call this function more than once for the same view instance. In most cases, it should be called only from the view constructor or `onBeforeRender` handler of a {@link UIComponent} object.
+	 * @note Do not call this function more than once for the same view instance. In most cases, it should be called only from a single view builder method.
 	 *
-	 * @param host The view instance that contains a `formField` property
+	 * @param host The view instance that should be listened to
+	 * @param formField The name of the form field to bind to
 	 * @param setValue A function that's used to update the view's intrinsic value, called with the new value as a single parameter
 	 * @param getValue A function that's used to get the view's intrinsic value, to update the form context after a 'Change' or 'Input' event has been emitted by the view.
 	 */
 	export function listen<THost extends View & { formField?: string }>(
 		host: THost,
+		formField: string,
 		setValue: (this: THost, value: any) => void,
 		getValue: (this: THost) => any,
 	) {
 		let formContext: FormContext<any> | undefined;
-		_boundFormContext.bindTo(host, (ctx) => {
+		host.observe(bind("form"), (ctx: any) => {
+			if (!(ctx instanceof FormContext)) ctx = undefined;
 			formContext = ctx;
-			if (ctx && host.formField) {
-				setValue.call(host, ctx.values[host.formField]);
-			}
-		});
-		ObservedObject.observe(host, ["formField"], (host, _, value) => {
-			if (
-				formContext &&
-				typeof value === "string" &&
-				value in formContext.values
-			) {
-				setValue.call(host, (formContext.values as any)[value]);
-			}
+			if (ctx) setValue.call(host, ctx.values[formField]);
 		});
 		host.listen((event) => {
-			if (event.name === "Change" || event.name === "Input") {
-				if (formContext && host.formField) {
-					let value = getValue.call(host);
-					formContext.set(host.formField as any, value);
-				}
-			}
+			if (event.name !== "Change" && event.name !== "Input") return;
+			if (formContext) formContext.set(formField, getValue.call(host));
 		});
 	}
-
-	const _boundFormContext = new Binding("formContext.*");
 }

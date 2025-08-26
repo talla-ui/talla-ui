@@ -1,38 +1,16 @@
 import type { ConfigOptions, StringConvertible } from "@talla-ui/util";
-import { Binding, ObservedEvent, ObservedObject } from "../object/index.js";
-import { ERROR, err, errorHandler, safeCall } from "../errors.js";
-import type { UITheme } from "../ui/index.js";
-import { $_app_bind_label } from "./app_binding.js";
-import type { AppContext } from "./AppContext.js";
+import { ERROR, err, safeCall } from "../errors.js";
+import { Binding, ObservableEvent, ObservableObject } from "../object/index.js";
+import { $_origin } from "../object/object_util.js";
+import { AppContext } from "./AppContext.js";
 import { FormContext } from "./FormContext.js";
 import type { NavigationContext } from "./NavigationContext.js";
-import { NavigationTarget } from "./NavigationTarget.js";
 import type { RenderContext } from "./RenderContext.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
 import { View } from "./View.js";
 
-/** Label property used to filter bindings using $activity */
-const $_bind_label = Symbol("activity");
-
-/** Binding source for the app object itself */
-export const $app = Binding.createFactory($_app_bind_label);
-
 /** Global list of activity instances for (old) activity class, for HMR */
 const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
-
-/** Reused binding for the navigation context */
-const _navCtxBinding = $app("navigation");
-
-/** Reused binding for the global renderer instance, also listens for change events */
-const _rendererBinding = $app("renderer.*");
-
-/** Reused binding for the global theme instance */
-const _themeBinding = $app("theme");
-
-/** An object that can be used to create bindings for properties of the nearest activity */
-export const $activity = Binding.createFactory<
-	(string & {}) | "formContext" | `formContext.${string}` | "title"
->($_bind_label);
 
 /**
  * A class that represents a part of the application that can be activated when the user navigates to it
@@ -56,7 +34,12 @@ export const $activity = Binding.createFactory<
  *
  * app.addActivity(new MyActivity(), true);
  */
-export class Activity extends ObservedObject {
+export class Activity extends ObservableObject {
+	static {
+		// Enable bindings for all instances, using bind(...) without a type parameter
+		Activity.enableBindings();
+	}
+
 	/** @internal Update prototype for given class with newer prototype, and rebuild view */
 	static _$hotReload(
 		Old: undefined | typeof Activity,
@@ -91,39 +74,21 @@ export class Activity extends ObservedObject {
 	 */
 	constructor() {
 		super();
-		_navCtxBinding.bindTo(this, (ctx) => {
-			this._boundNavCtx = ctx;
-		});
-		_themeBinding.bindTo(this, (theme) => {
-			this._boundTheme = theme;
-		});
-		_rendererBinding.bindTo(this, (renderer) => {
-			this._boundRenderer = renderer;
-
-			// on remount, asynchronously recreate view from scratch
-			if (renderer && this.view) {
-				return Promise.resolve()
-					.then(() => this.isActive() && this._showView(true))
-					.catch(errorHandler);
-			}
-		});
+		// ...nothing else here
 	}
 
-	/** @internal */
-	[$_bind_label] = true;
-
 	/**
-	 * The page ID associated with this activity, to match the (first part of the) navigation path
+	 * The path associated with this activity, to match the navigation path
 	 * - This property is used by the {@link NavigationContext} class, but only if the activity has been added to the list of root activities using {@link AppContext.addActivity app.addActivity()}.
-	 * - If the page ID is set to a string, the activity will be activated automatically when the first part of the current path matches this value, and deactivated when it doesn't.
-	 * - To match the root path (`/`), set this property to an empty string
+	 * - If the path is set to a string, the application navigation path will be matched against this value. If the specified path matches the start of the current navigation path, the {@link matchNavigationPath()} method is called to check if the activity should be activated or deactivated. This method may be overridden. By default, the activity is activated if the path matches exactly.
+	 * - Do not include a leading or trailing slash in the path. To match the root path (`/`), set this property to an empty string.
 	 */
-	navigationPageId?: string = undefined;
+	navigationPath?: string = undefined;
 
 	/**
 	 * A user-facing name of this activity, if any
 	 * - The title string of an active activity may be displayed as the current window or document title.
-	 * - This property may be set to any object that includes a `toString()` method, notably {@link LazyString} — the result of a call to {@link strf()}. This way, the activity title is localized automatically using {@link AppContext.i18n}.
+	 * - This property may be set to any object that includes a `toString()` method, notably {@link DeferredString} — the result of a call to {@link fmt()}. This way, the activity title is localized automatically.
 	 */
 	title?: StringConvertible;
 
@@ -139,18 +104,18 @@ export class Activity extends ObservedObject {
 	 * Default form context used with input elements, if any
 	 * - This property defaults to undefined, and needs to be initialized (e.g. in the constructor) to an instance of {@link FormContext} for input elements to be bound automatically.
 	 */
-	formContext?: FormContext = undefined;
+	form?: FormContext = undefined;
 
 	/**
 	 * Delegates incoming events to methods of this object, notably from the attached view
-	 * - This method is called automatically when an event is emitted by the current view object (except if {@link ObservedEvent.noPropagation} was set on the event; see {@link ObservedObject.attach()} which is used to set up view event delegation).
+	 * - This method is called automatically when an event is emitted by the current view object (except if {@link ObservableEvent.noPropagation} was set on the event; see {@link ObservableObject.attach()} which is used to set up view event delegation).
 	 * - The base implementation calls activity methods starting with `on`, e.g. `onClick` for a `Click` event. The event is passed as a single argument, and the return value should either be `true` (event handled), false/undefined, or a promise (which is awaited just to be able to handle any errors).
 	 * @param event The event to be delegated
 	 * @returns The result of the event handler method, or undefined.
-	 * @see {@link ObservedObject.attach}
-	 * @see {@link ObservedObject.EventDelegate}
+	 * @see {@link ObservableObject.attach}
+	 * @see {@link ObservableObject.EventDelegate}
 	 */
-	delegate(event: ObservedEvent): Promise<boolean | void> | boolean | void {
+	delegate(event: ObservableEvent): Promise<boolean | void> | boolean | void {
 		return (this as any)["on" + event.name]?.(event);
 	}
 
@@ -182,7 +147,7 @@ export class Activity extends ObservedObject {
 		await this._activation.waitAndSetAsync(
 			true,
 			() => {
-				if (!this._boundNavCtx) throw err(ERROR.Activity_NotAttached);
+				if (!AppContext.whence(this)) throw err(ERROR.Activity_NotAttached);
 				if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 				return this.beforeActiveAsync();
 			},
@@ -197,11 +162,15 @@ export class Activity extends ObservedObject {
 						},
 					});
 				}
+				AppContext.getInstance().schedule(async () => {
+					// render view async to allow any processing to catch up
+					this._showView();
+				});
 				this.emitChange("Active");
-				this._showView();
 				await this.afterActiveAsync();
 			},
 		);
+		return this;
 	}
 
 	/**
@@ -229,6 +198,7 @@ export class Activity extends ObservedObject {
 				return this.afterInactiveAsync();
 			},
 		);
+		return this;
 	}
 
 	/** A method that's called and awaited before the activity is activated, to be overridden if needed */
@@ -255,13 +225,12 @@ export class Activity extends ObservedObject {
 	/**
 	 * Set rendering mode and additional options
 	 * - By default, the activity view is rendered using the `page` rendering mode, as soon as the activity is activated. The mode can be changed using this method, or rendering can be disabled by specifying the `none` mode.
-	 * - Use the special `dialog` mode to render the view within a dialog as defined by the current theme.
+	 * - Use the special `dialog` mode to render the view within a dialog as defined by the current modal factory.
 	 * - Additional options may be specified, including page/screen background color and transform animations.
 	 * @param mode The selected rendering mode
 	 * @param options Additional placement options, if any
 	 * @see {@link RenderContext.PlacementOptions}
-	 * @see {@link UITheme.modalFactory}
-	 * @see {@link UITheme.ModalControllerFactory}
+	 * @see {@link RenderContext.modalFactory}
 	 */
 	setRenderMode(
 		mode: RenderContext.PlacementMode | "dialog",
@@ -296,23 +265,24 @@ export class Activity extends ObservedObject {
 		}
 
 		// assert that view makes sense
-		if (ObservedObject.whence(view) !== this) {
+		if (view[$_origin] !== this) {
 			throw err(ERROR.View_NotAttached);
 		}
-		if (!this._boundRenderer) throw err(ERROR.Render_Unavailable);
+		let renderer = AppContext.getInstance().renderer;
+		if (!renderer) throw err(ERROR.Render_Unavailable);
 
-		// render view using theme dialog controller if needed
+		// render view using modal dialog controller if needed
 		let renderOptions = this._renderOptions;
 		if (this._renderDialog) {
-			let controller = this._boundTheme?.modalFactory?.buildDialog?.(view);
-			if (!controller) throw err(ERROR.Render_NoModal);
+			let controller = renderer.modalFactory.buildDialog?.(view);
+			if (!controller) throw err(ERROR.Render_Unavailable);
 			controller.show(renderOptions);
 			return this;
 		}
 
 		// render view normally if placed
 		if (renderOptions.mode !== "none") {
-			this._boundRenderer.render(view, renderOptions);
+			renderer.render(view, renderOptions);
 		}
 		return this;
 	}
@@ -332,65 +302,109 @@ export class Activity extends ObservedObject {
 	}
 
 	/**
-	 * Returns a {@link NavigationTarget} instance that refers to this activity
-	 * - The {@link navigationPageId} for this activity is used to determine the target page ID, and the provided detail parameter(s) are combined into the detail string.
-	 * @param detail One or more values to be used as detail parts of the navigation path
+	 * Checks if the provided path (remainder) should activate this activity
+	 * - This method is called automatically by {@link NavigationContext} to check if the activity should be activated, if the activity's {@link navigationPath} already matches the first part of the current navigation path. The argument is the remainder of the path after the activity's navigation path, without any leading or training slash.
+	 * - If this method returns false, the activity is (or stays) deactivated. If the result is true, the activity is (or stays) activated, and emits a 'PathMatch' event.
+	 * - If the method returns a different activity instance, that activity is attached, and activated _as well_. The new activity must not be attached yet, and must not be unlinked. It will be unlinked automatically when this activity is deactivated or unlinked itself, or when the next 'PathMatch' event is emitted.
+	 * - The default implementation only returns true if the remainder is empty, i.e. if the navigation path matches exactly.
+	 * - Override this method to allow the activity to be activated for sub paths, e.g. if the {@link navigationPath} is `foo`, then the activity may return true, or a sub activity instance to activate this activity.
+	 * @param remainder The remainder of the path to check (after the activity's navigation path)
+	 * @returns True if the path should activate this activity, false if not; or a different (sub) activity instance to activate _as well_ as this activity.
 	 */
-	getNavigationTarget(...detail: StringConvertible[]): NavigationTarget {
-		return new NavigationTarget({
-			title: this.title,
-			pageId: this.navigationPageId,
-			detail: detail.join("/"),
+	matchNavigationPath(remainder: string): void | boolean | Activity {
+		// by default, only activate on exact match
+		return !remainder;
+	}
+
+	/**
+	 * Attaches and activates another activity, as a sub activity
+	 * @summary This method attaches the provided activity and activates it. The provided activity is automatically unlinked when this activity is deactivated or unlinked itself, to prevent it from outlasting the current activity.
+	 * @param activity The activity to attach and activate
+	 * @param unlinkOnPathMatch If true, the activity will also be unlinked when the {@link matchNavigationPath()} method returns true, or a different activity instance (i.e. showing a different sub activity).
+	 * @returns A promise that resolves to the provided activity after activation
+	 * @error This method throws an error if either activity has been unlinked.
+	 *
+	 * @example
+	 * class MyActivity extends Activity {
+	 *   protected async onSomeEvent() {
+	 *     // show another activity by attaching and activating it (e.g. a dialog)
+	 *     let other = await this.attachActivityAsync(new OtherActivity());
+	 *
+	 *     // now listen for some event, for example:
+	 *     for await (let e of other.listenAsync()) {
+	 *       if (e.name === "Confirmed") {
+	 *         // ...
+	 *       }
+	 *     }
+	 *     // (here, the other activity is unlinked)
+	 *   }
+	 */
+	async attachActivityAsync<TActivity extends Activity>(
+		activity: TActivity,
+		unlinkOnPathMatch?: boolean,
+	) {
+		if (this.isUnlinked() || !activity || activity.isUnlinked()) {
+			throw err(ERROR.Object_Unlinked);
+		}
+
+		// attach the activity, then listen for deactivation to unlink
+		this.attach(activity);
+		this.listen({
+			init(_, stop) {
+				activity.listen({ unlinked: stop });
+			},
+			handler(_, event) {
+				if (
+					event.name === "Inactive" ||
+					(unlinkOnPathMatch && event.name === "PathMatch")
+				) {
+					activity.unlink();
+				}
+			},
 		});
+
+		// activate the activity and return it
+		return activity.activateAsync();
 	}
 
 	/**
-	 * A method that's called after the user navigated to a particular sub-path of this activity, to be overridden if needed
-	 * - This method is called automatically after the activity is activated (or was already active), if the current navigation path matches the activity's {@link navigationPageId}.
-	 * - If the navigation path matches the activity's {@link navigationPageId} exactly, this method is called with an empty string as the `detail` argument.
-	 * - This method can be used to show specific content within the activity's view, e.g. a tab or detail view, or to activate a child activity.
-	 * @param detail The part of the navigation path that comes after the page ID
-	 * @param navigationContext The current navigation context instance
-	 */
-	async handleNavigationDetailAsync(
-		detail: string,
-		navigationContext: NavigationContext,
-	): Promise<void> {
-		// nothing here, to be overridden
-	}
-
-	/**
-	 * Handles navigation to a provided navigation target or path, from the current activity
+	 * Handles navigation to a provided path, from the current activity
 	 * - This method is called automatically by {@link onNavigate} when a view object emits the `Navigate` event while this activity is active.
 	 * - The default implementation directly calls {@link NavigationContext.navigateAsync()}. Override this method to handle navigation differently, e.g. to _replace_ the current path for detail view activities.
 	 */
-	protected async navigateAsync(target: NavigationTarget) {
-		await this._boundNavCtx?.navigateAsync(target);
+	protected async navigateAsync(target: StringConvertible) {
+		await AppContext.getInstance().navigation?.navigateAsync(target);
 	}
 
 	/**
 	 * Handles a `Navigate` event emitted by the current view
 	 * - This method is called when a view object emits the `Navigate` event. Such events are emitted from views that include a `getNavigationTarget` method, such as {@link UIButton}.
-	 * - If the navigation target only includes a `detail` property, the `pageId` is set to the current activity's {@link navigationPageId}. If the activity doesn't have a page ID, this method returns false and the event is propagated instead.
-	 * - This method calls {@link navigateAsync()} in turn, which may be overridden.
+	 * - This method calls {@link navigateAsync()} in turn. Override that method rather than this one to handle navigation differently.
+	 * - If the target is a relative path (starting with a dot), it's combined with this activity's own {@link navigationPath}. If this activity has no navigation path, the event is propagated to the parent activity.
 	 */
 	protected onNavigate(
-		e: ObservedEvent<
-			ObservedObject & { getNavigationTarget?: () => NavigationTarget }
+		e: ObservableEvent<
+			ObservableObject & { getNavigationTarget?: () => StringConvertible }
 		>,
 	) {
-		if (typeof e.source.getNavigationTarget === "function") {
-			let target = e.source.getNavigationTarget();
-			let pageId = target.pageId ?? this.navigationPageId;
-			if (pageId == null) return false;
-			return this.navigateAsync(
-				new NavigationTarget({
-					...target,
-					pageId: target.pageId ?? this.navigationPageId,
-				}),
-			);
+		if (typeof e.source.getNavigationTarget !== "function") return false;
+		let target = e.source.getNavigationTarget();
+		if (target == null) return false;
+
+		// normalize target path
+		let path = String(target);
+		if (path.startsWith(".")) {
+			if (this.navigationPath == null) return false;
+			path = this.navigationPath + "/" + path + "/";
 		}
-		return false;
+		path = path
+			.replace(/\/+/g, "/") // remove multiple slashes
+			.replace(/^\.\/|\/\.\//g, "/") // change foo/./bar => foo/bar
+			.replace(/[^\/]*[^\/\.]\/\.\.\//g, "/") // change foo/bar/../baz => foo/baz
+			.replace(/^\/+|\/+$/, ""); // remove leading/trailing slash
+
+		// navigate to normalized path using own method
+		return this.navigateAsync(path);
 	}
 
 	/**
@@ -398,7 +412,9 @@ export class Activity extends ObservedObject {
 	 * - This method is called when a view object emits the `NavigateBack` event. This event can be used to go back in the navigation history, e.g. when a back button is clicked.
 	 */
 	protected onNavigateBack() {
-		return this._boundNavCtx?.navigateAsync(undefined, { back: true });
+		return AppContext.getInstance().navigation?.navigateAsync(undefined, {
+			back: true,
+		});
 	}
 
 	/**
@@ -434,28 +450,61 @@ export class Activity extends ObservedObject {
 	}
 
 	/**
-	 * Listens for change events from the provided target object, until either the object or the activity is unlinked
-	 * @param target The target object, to which a listener will be added
-	 * @param changeHandler A function that will be called for each change event that's emitted from the target object
-	 * @param unlinked A function that will be called when the target object (not the activity) is unlinked
-	 * @returns The target object
-	 * @see {@link ObservedObject.emitChange}
+	 * Creates an active state object, an object that's updated asynchronously while the activity is active
+	 * - The state object is updated using the provided update function, which is called with the current values of the observed objects or bindings.
+	 * - Nested state objects are automatically unlinked when the property referencing them is overwritten.
+	 * - Additional objects or bindings can be observed, updating the same state object, using the `watch` method on the resulting state object.
+	 * @param observe An array of objects or bindings to observe
+	 * @param update A function that's called with the current values of the observed objects or bindings, and should return updated state object property values
+	 * @returns The resulting active state object
 	 */
-	watch<T extends ObservedObject>(
-		target: T,
-		changeHandler: (object: T, event: ObservedEvent) => Promise<void> | void,
-		unlinked?: (object: T) => void,
-	) {
-		target.listen({
-			handler: (t, e) => {
-				if (e.data.change) return changeHandler(t, e);
-			},
-			init: (_, stop) => {
-				this.listen({ unlinked: stop });
-			},
-			unlinked,
-		});
-		return target;
+	protected createActiveState<T extends Record<string, any>>(
+		observe: (ObservableObject | Binding)[],
+		update: (...args: any[]) => T | Promise<T>,
+	): Activity.ActiveStateObject & Partial<T> {
+		const activity = this;
+		const queue = this.createActiveTaskQueue();
+		const object = new ObservableObject() as any;
+		(object.watch = watch as any).activity = this;
+		function watch(
+			observe: (ObservableObject | Binding)[],
+			update: (...args: any[]) => any,
+		) {
+			// start observing given objects or bindings, async
+			let scheduled = false;
+			let values: any[] = [];
+			queue.add(async () =>
+				observe.forEach((o, i) =>
+					object.observe(o as any, (value: any) => {
+						values[i] = value;
+
+						// run update async and add properties to object
+						if (scheduled) return;
+						scheduled = true;
+						queue.add(async () => {
+							if (object.isUnlinked()) return;
+							scheduled = false;
+							let data = await update(...values);
+							let added = false;
+							for (let key in data) {
+								let old = object[key];
+								if (old !== data[key]) {
+									if (!(key in object)) added = true;
+									object[key] = data[key];
+									if (old?.watch?.activity === activity) {
+										// unlink overwritten state object
+										old.unlink();
+									}
+								}
+							}
+							if (added) object.emitChange();
+						});
+					}),
+				),
+			);
+			return object as any;
+		}
+		return this.attach(watch(observe, update));
 	}
 
 	/** @internal Render placement options, modified using setRenderMode */
@@ -467,15 +516,6 @@ export class Activity extends ObservedObject {
 	/** @internal Activation queue for this activity */
 	private readonly _activation = new ActivationQueue();
 
-	/** @internal Last (bound) navigation context instance */
-	private _boundNavCtx?: NavigationContext;
-
-	/** @internal Last (bound) renderer instance */
-	private _boundRenderer?: RenderContext;
-
-	/** @internal Last (bound) theme instance */
-	private _boundTheme?: UITheme;
-
 	/** @internal Original class that's been updated using hot reload (set on prototype) */
 	declare private _OrigClass?: typeof Activity;
 
@@ -484,6 +524,17 @@ export class Activity extends ObservedObject {
 
 	/** @internal Set to true if a listener was added to remove this instance from the hot-reloaded list */
 	private _isHot?: boolean;
+}
+
+export namespace Activity {
+	/** An active state object, the result of {@link Activity.createActiveState()} */
+	export interface ActiveStateObject extends ObservableObject {
+		/** Observe additional objects or bindings, updating the same state object */
+		watch<T extends Record<string, any>>(
+			observe: (ObservableObject | Binding)[],
+			update: (...args: any[]) => T | Promise<T>,
+		): this & Partial<T>;
+	}
 }
 
 /** @internal Helper class that contains activation state, and runs callbacks on activation/deactivation asynchronously */

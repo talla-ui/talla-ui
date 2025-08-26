@@ -1,10 +1,10 @@
 import { beforeAll, describe, expect, test } from "vitest";
 import {
-	$bind,
 	AppContext,
-	ObservedEvent,
-	ObservedList,
-	ObservedObject,
+	bind,
+	ObservableEvent,
+	ObservableList,
+	ObservableObject,
 } from "../../dist/index.js";
 
 beforeAll(() => {
@@ -14,9 +14,12 @@ beforeAll(() => {
 });
 
 /** Class used throughout tests below */
-class NamedObject extends ObservedObject {
+class NamedObject extends ObservableObject {
 	constructor(public name: string) {
 		super();
+	}
+	override valueOf() {
+		return this.name;
 	}
 }
 
@@ -27,23 +30,23 @@ describe("Basic adding and removing", () => {
 	let c = new NamedObject("c");
 
 	test("Constructor", () => {
-		let list = new ObservedList();
-		expect(list).toBeInstanceOf(ObservedList);
-		expect(list.count).toBe(0);
+		let list = new ObservableList();
+		expect(list).toBeInstanceOf(ObservableList);
+		expect(list.length).toBe(0);
 	});
 
 	test("Constructor with initial list", () => {
-		let list = new ObservedList(a, b, c);
-		expect(list.count).toBe(3);
+		let list = new ObservableList(a, b, c);
+		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, b, c]);
 	});
 
 	test("Adding items: add", () => {
-		let list = new ObservedList<NamedObject>();
+		let list = new ObservableList<NamedObject>();
 		list.add(a);
-		expect(list.count).toBe(1);
+		expect(list.length).toBe(1);
 		list.add(b, c);
-		expect(list.count).toBe(3);
+		expect(list.length).toBe(3);
 
 		// test using first, last, toArray
 		expect(list.first()).toHaveProperty("name", "a");
@@ -56,11 +59,11 @@ describe("Basic adding and removing", () => {
 	});
 
 	test("Adding items: insert", () => {
-		let list = new ObservedList<NamedObject>();
+		let list = new ObservableList<NamedObject>();
 		list.insert(a);
 		list.insert(b);
 		list.insert(c, a);
-		expect(list.count).toBe(3);
+		expect(list.length).toBe(3);
 
 		// test using first, last, toArray
 		expect(list.first()).toHaveProperty("name", "c");
@@ -74,38 +77,38 @@ describe("Basic adding and removing", () => {
 	});
 
 	test("Can't add duplicates", () => {
-		let list = new ObservedList<NamedObject>();
+		let list = new ObservableList<NamedObject>();
 		list.insert(a);
 		expect(() => list.insert(a)).toThrowError();
 	});
 
 	test("Removing first, middle, last elements", () => {
 		// removing only element
-		let list = new ObservedList(a);
+		let list = new ObservableList(a);
 		list.remove(a);
-		expect(list.count).toBe(0);
+		expect(list.length).toBe(0);
 		expect(list.toArray()).toEqual([]);
 
 		// removing head and tail
-		list = new ObservedList(a, b, c);
+		list = new ObservableList(a, b, c);
 		list.remove(a);
-		expect(list.count).toBe(2);
+		expect(list.length).toBe(2);
 		expect(list.toArray()).toEqual([b, c]);
 		list.remove(c);
-		expect(list.count).toBe(1);
+		expect(list.length).toBe(1);
 		expect(list.toArray()).toEqual([b]);
 		expect(list.takeLast(10)).toEqual([b]);
 
 		// removing middle element
-		list = new ObservedList(a, b, c);
+		list = new ObservableList(a, b, c);
 		list.remove(b);
-		expect(list.count).toBe(2);
+		expect(list.length).toBe(2);
 		expect(list.toArray()).toEqual([a, c]);
 		expect(list.takeLast(10)).toEqual([a, c]);
 	});
 
 	test("Splice: empty result", () => {
-		let list = new ObservedList(a, b, c);
+		let list = new ObservableList(a, b, c);
 		expect(list.splice()).toEqual([]);
 		expect(list.splice(undefined, 0)).toEqual([]);
 		expect(list.splice(undefined, 3)).toEqual([]);
@@ -119,61 +122,61 @@ describe("Basic adding and removing", () => {
 	});
 
 	test("Splice: complete result, empty list (undefined)", () => {
-		let list = new ObservedList(a, b, c);
+		let list = new ObservableList(a, b, c);
 		expect(list.splice(a)).toEqual([a, b, c]);
-		expect(list.count).toBe(0);
+		expect(list.length).toBe(0);
 		expect(list.first() || list.last()).toBeUndefined();
 	});
 
 	test("Splice: complete result, empty list (number)", () => {
-		let list = new ObservedList(a, b, c);
+		let list = new ObservableList(a, b, c);
 		expect(list.splice(a, 3)).toEqual([a, b, c]);
-		expect(list.count).toBe(0);
+		expect(list.length).toBe(0);
 		expect(list.first() || list.last()).toBeUndefined();
 	});
 
 	test("Splice: partial result, partial list", () => {
 		// take from end
-		let list = new ObservedList(a, b, c);
+		let list = new ObservableList(a, b, c);
 		expect(list.splice(b, 2)).toEqual([b, c]);
-		expect(list.count).toBe(1);
+		expect(list.length).toBe(1);
 		expect(list.first()).toBe(a);
 		expect(list.last()).toBe(a);
 
 		// take from start
-		list = new ObservedList(a, b, c);
+		list = new ObservableList(a, b, c);
 		expect(list.splice(a, 2)).toEqual([a, b]);
-		expect(list.count).toBe(1);
+		expect(list.length).toBe(1);
 		expect(list.first()).toBe(c);
 		expect(list.last()).toBe(c);
 
 		// take from middle
-		list = new ObservedList(a, b, c);
+		list = new ObservableList(a, b, c);
 		expect(list.splice(b, 1)).toEqual([b]);
-		expect(list.count).toBe(2);
+		expect(list.length).toBe(2);
 		expect(list.toArray()).toEqual([a, c]);
 		expect(list.last()).toBe(c);
 	});
 
 	test("Splice: insert without removing", () => {
 		// insert at end
-		let list = new ObservedList(a, b);
+		let list = new ObservableList(a, b);
 		expect(list.splice(undefined, 0, c)).toEqual([]);
-		expect(list.count).toBe(3);
+		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, b, c]);
 		expect(list.last()).toBe(c);
 
 		// insert at start
-		list = new ObservedList(b, c);
+		list = new ObservableList(b, c);
 		expect(list.splice(b, 0, a)).toEqual([]);
-		expect(list.count).toBe(3);
+		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, b, c]);
 		expect(list.first()).toBe(a);
 
 		// insert in middle
-		list = new ObservedList(a, c);
+		list = new ObservableList(a, c);
 		expect(list.splice(c, 0, b)).toEqual([]);
-		expect(list.count).toBe(3);
+		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, b, c]);
 	});
 
@@ -181,81 +184,81 @@ describe("Basic adding and removing", () => {
 		let d = new NamedObject("d");
 
 		// remove end (undefined)
-		let list = new ObservedList(a, b, c);
+		let list = new ObservableList(a, b, c);
 		expect(list.splice(c, undefined, d)).toEqual([c]);
-		expect(list.count).toBe(3);
+		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, b, d]);
 		expect(list.last()).toBe(d);
 
 		// remove end (specific)
-		list = new ObservedList(a, b, c);
+		list = new ObservableList(a, b, c);
 		expect(list.splice(c, 1, d)).toEqual([c]);
-		expect(list.count).toBe(3);
+		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, b, d]);
 		expect(list.last()).toBe(d);
 
 		// remove start
-		list = new ObservedList(a, b, c);
+		list = new ObservableList(a, b, c);
 		expect(list.splice(a, 1, d)).toEqual([a]);
-		expect(list.count).toBe(3);
+		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([d, b, c]);
 		expect(list.first()).toBe(d);
 
 		// remove middle
-		list = new ObservedList(a, b, c);
+		list = new ObservableList(a, b, c);
 		expect(list.splice(b, 1, d)).toEqual([b]);
-		expect(list.count).toBe(3);
+		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, d, c]);
 
 		// remove and put back
-		list = new ObservedList(a, b, c);
+		list = new ObservableList(a, b, c);
 		expect(list.splice(b, 1, d, b)).toEqual([b]);
-		expect(list.count).toBe(4);
+		expect(list.length).toBe(4);
 		expect(list.toArray()).toEqual([a, d, b, c]);
 	});
 
 	test("Splice: string value as number", () => {
-		let list = new ObservedList(a, b, c);
+		let list = new ObservableList(a, b, c);
 		expect(list.splice(a, "2" as any)).toEqual([a, b]);
-		expect(list.count).toBe(1);
+		expect(list.length).toBe(1);
 		expect(list.first()).toBe(c);
 		expect(list.last()).toBe(c);
 	});
 
 	test("Replace: single object", () => {
-		let list = new ObservedList(a, b, c);
+		let list = new ObservableList(a, b, c);
 		let d = new NamedObject("d");
 		let e = new NamedObject("e");
 		list.replaceObject(b, d);
-		expect(list.count).toBe(3);
+		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, d, c]);
 		list.replaceObject(d, e);
 		expect(list.toArray()).toEqual([a, e, c]);
 	});
 
 	test("Replace: insert only", () => {
-		let list = new ObservedList<NamedObject>();
+		let list = new ObservableList<NamedObject>();
 		list.replaceAll([a, b, undefined, , null as any, c]); // gaps
-		expect(list.count).toBe(3);
+		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, b, c]);
 	});
 
 	test("Replace: remove only", () => {
-		let list = new ObservedList(a, b, c);
+		let list = new ObservableList(a, b, c);
 		list.replaceAll([]);
-		expect(list.count).toBe(0);
+		expect(list.length).toBe(0);
 		expect(list.toArray()).toEqual([]);
 	});
 
 	test("Replace: move only", () => {
-		let list = new ObservedList(a, b, c);
+		let list = new ObservableList(a, b, c);
 		list.replaceAll([c, b, a]);
-		expect(list.count).toBe(3);
+		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([c, b, a]);
 		expect(list.takeLast(3)).toEqual([c, b, a]);
 		list.replaceAll([c, b, a]);
 		list.replaceAll([b, c, a]);
-		expect(list.count).toBe(3);
+		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([b, c, a]);
 		expect(list.takeLast(3)).toEqual([b, c, a]);
 	});
@@ -265,16 +268,16 @@ describe("Basic adding and removing", () => {
 		for (let i = 0; i < 10; i++) {
 			items.push(new NamedObject(String(i)));
 		}
-		let list = new ObservedList(items[0]!, items[1]!, items[2]!);
+		let list = new ObservableList(items[0]!, items[1]!, items[2]!);
 		let order = [6, 7, 8, 9, 1, 3, 4, 0, 5];
 		list.replaceAll(order.map((i) => items[i]));
 		expect(list.map((o) => +o.name)).toEqual(order);
 	});
 
 	test("Clearing list: clear", () => {
-		let list = new ObservedList(a, b, c);
+		let list = new ObservableList(a, b, c);
 		list.clear();
-		expect(list.count).toBe(0);
+		expect(list.length).toBe(0);
 		expect(list.toArray()).toEqual([]);
 		expect(list.takeLast(1)).toEqual([]);
 
@@ -285,9 +288,9 @@ describe("Basic adding and removing", () => {
 	});
 
 	test("Clearing list: unlink", () => {
-		let list = new ObservedList(a, b, c);
+		let list = new ObservableList(a, b, c);
 		list.unlink();
-		expect(list.count).toBe(0);
+		expect(list.length).toBe(0);
 		expect(list.toArray()).toEqual([]);
 		expect(list.takeLast(1)).toEqual([]);
 
@@ -318,7 +321,7 @@ describe("Basic adding and removing", () => {
 	});
 
 	test("Reverse", () => {
-		let list = new ObservedList(a, b, c);
+		let list = new ObservableList(a, b, c);
 		let array = list.toArray();
 		array.reverse();
 		list.reverse();
@@ -328,14 +331,22 @@ describe("Basic adding and removing", () => {
 		expect(list.takeLast(3)).toEqual(array);
 	});
 
+	test("Sort", () => {
+		let list = new ObservableList(c, a, b);
+		list.sort((a, b) => a.name.localeCompare(b.name));
+		expect(list.toArray()).toEqual([a, b, c]);
+		list.sort((a, b) => b.name.localeCompare(a.name));
+		expect(list.toArray()).toEqual([c, b, a]);
+	});
+
 	test("Restrict by class", () => {
-		let list = new ObservedList().restrict(NamedObject);
+		let list = new ObservableList().restrict(NamedObject);
 		expect(() => list.add({ fails: true } as any)).toThrowError();
-		expect(() => list.add(new ObservedObject() as any)).toThrowError();
+		expect(() => list.add(new ObservableObject() as any)).toThrowError();
 		expect(() => list.add(new NamedObject("a"))).not.toThrowError();
 
-		let abcList = new ObservedList<any>(a, b, c);
-		class OtherClass extends ObservedObject {}
+		let abcList = new ObservableList<any>(a, b, c);
+		class OtherClass extends ObservableObject {}
 		expect(() => abcList.restrict(OtherClass)).toThrowError();
 		expect(() => abcList.restrict(NamedObject)).not.toThrowError();
 	});
@@ -353,10 +364,10 @@ describe("Accessors", () => {
 			new NamedObject("d"),
 			new NamedObject("e"),
 		] as const;
-		let list1 = new ObservedList<NamedObject>();
+		let list1 = new ObservableList<NamedObject>();
 		list1.add(...objects);
 
-		let list2 = new ObservedList<NamedObject>();
+		let list2 = new ObservableList<NamedObject>();
 		list2.add(objects[4]); // e
 		list2.insert(objects[2], objects[4]); // c, e
 		list2.insert(objects[0], objects[2]); // a, c, e
@@ -513,6 +524,13 @@ describe("Accessors", () => {
 		expect(list.every(() => true)).toBeTruthy();
 	});
 
+	test("forEach", () => {
+		let [list] = makeLists();
+		let result: any[] = [];
+		list.forEach((t) => result.push(t.name));
+		expect(result).toEqual(["a", "b", "c", "d", "e"]);
+	});
+
 	test("map", () => {
 		let [list1, list2, orig] = makeLists();
 		expect(list1.map((o) => o)).toEqual(orig);
@@ -525,8 +543,8 @@ describe("Accessors", () => {
 		expect(list2.toArray()).toEqual(orig);
 		expect(list2.toJSON()).toEqual(orig);
 		expect(list2.toJSON()).toEqual(orig);
-		expect(new ObservedList().toArray()).toEqual([]);
-		expect(new ObservedList().toJSON()).toEqual([]);
+		expect(new ObservableList().toArray()).toEqual([]);
+		expect(new ObservableList().toJSON()).toEqual([]);
 	});
 
 	test("Removing objects from an iterator", () => {
@@ -534,7 +552,7 @@ describe("Accessors", () => {
 		for (let t of list) {
 			list.remove(t);
 		}
-		expect(list.count).toBe(0);
+		expect(list.length).toBe(0);
 		expect(list.toArray()).toEqual([]);
 		expect(list.takeLast(1)).toEqual([]);
 	});
@@ -564,90 +582,90 @@ describe("Accessors", () => {
 describe("Attachment", () => {
 	test("Objects are attached when list is attached", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a);
-		expect(ObservedObject.whence(a)).toBeUndefined();
-		let parent = new ObservedList().attachAll(true);
-		parent.add(list);
-		expect(ObservedObject.whence(list)).toBe(parent);
-		expect(ObservedObject.whence(a)).toBe(list);
+		let list = new ObservableList(a);
+		expect(ObservableObject.whence(a)).toBeUndefined();
+		let parent = new ObservableList().attachItems(true);
+		parent.add(list.attachItems(true));
+		expect(ObservableObject.whence(list)).toBe(parent);
+		expect(ObservableObject.whence(a)).toBe(list);
 		let b = new NamedObject("b");
 		list.add(b);
-		expect(ObservedObject.whence(b)).toBe(list);
+		expect(ObservableObject.whence(b)).toBe(list);
 	});
 
 	test("Override auto attach", () => {
-		let list = new ObservedList().attachAll(false);
+		let list = new ObservableList().attachItems(false);
 		let a = new NamedObject("a");
 		list.add(a);
-		expect(ObservedObject.whence(a)).toBeUndefined();
-		let parent = new ObservedList().attachAll(true);
+		expect(ObservableObject.whence(a)).toBeUndefined();
+		let parent = new ObservableList().attachItems(true);
 		parent.add(list);
-		expect(ObservedObject.whence(list)).toBe(parent);
-		expect(ObservedObject.whence(a)).toBeUndefined();
+		expect(ObservableObject.whence(list)).toBe(parent);
+		expect(ObservableObject.whence(a)).toBeUndefined();
 		let b = new NamedObject("b");
 		list.add(b);
-		expect(ObservedObject.whence(b)).toBeUndefined();
+		expect(ObservableObject.whence(b)).toBeUndefined();
 	});
 
 	test("Can't override with existing objects", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a);
-		let parent = new ObservedList().attachAll(true);
+		let list = new ObservableList(a).attachItems(true);
+		let parent = new ObservableList().attachItems(true);
 		parent.add(list);
-		expect(() => list.attachAll(false)).toThrowError();
+		expect(() => list.attachItems(false)).toThrowError();
 	});
 
 	test("Attached objects, before adding", () => {
-		let list = new ObservedList().attachAll(true);
+		let list = new ObservableList().attachItems(true);
 		let a = new NamedObject("a");
 		list.add(a);
-		expect(ObservedObject.whence(a)).toBe(list);
+		expect(ObservableObject.whence(a)).toBe(list);
 	});
 
 	test("Attached objects, after adding", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a).attachAll(true);
-		expect(ObservedObject.whence(a)).toBe(list);
+		let list = new ObservableList(a).attachItems(true);
+		expect(ObservableObject.whence(a)).toBe(list);
 	});
 
 	test("Attached objects are unlinked when removed: remove", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a).attachAll(true);
+		let list = new ObservableList(a).attachItems(true);
 		list.remove(a);
 		expect(a.isUnlinked()).toBeTruthy();
 	});
 
 	test("Attached objects are unlinked when removed: clear", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a).attachAll(true);
+		let list = new ObservableList(a).attachItems(true);
 		list.clear();
 		expect(a.isUnlinked()).toBeTruthy();
 	});
 
 	test("Attached objects are unlinked when removed: unlink", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a).attachAll(true);
+		let list = new ObservableList(a).attachItems(true);
 		list.unlink();
 		expect(a.isUnlinked()).toBeTruthy();
 	});
 
 	test("Objects aren't unlinked when not attached: remove", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a).attachAll(false);
+		let list = new ObservableList(a).attachItems(false);
 		list.remove(a);
 		expect(a.isUnlinked()).toBeFalsy();
 	});
 
 	test("Objects aren't unlinked when not attached: clear", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a).attachAll(false);
+		let list = new ObservableList(a).attachItems(false);
 		list.clear();
 		expect(a.isUnlinked()).toBeFalsy();
 	});
 
 	test("Objects aren't unlinked when not attached: unlink", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a).attachAll(false);
+		let list = new ObservableList(a).attachItems(false);
 		list.unlink();
 		expect(a.isUnlinked()).toBeFalsy();
 	});
@@ -655,7 +673,7 @@ describe("Attachment", () => {
 	test("Attached objects are moved using replace", () => {
 		let a = new NamedObject("a");
 		let b = new NamedObject("b");
-		let list = new ObservedList(a, b).attachAll(true);
+		let list = new ObservableList(a, b).attachItems(true);
 		list.replaceAll([b, a]);
 		expect(a.isUnlinked()).toBeFalsy();
 		expect(b.isUnlinked()).toBeFalsy();
@@ -664,38 +682,38 @@ describe("Attachment", () => {
 	test("Attached objects can be moved to another list", () => {
 		let a = new NamedObject("a");
 		let b = new NamedObject("b");
-		let list1 = new ObservedList(a, b).attachAll(true);
-		let list2 = new ObservedList().attachAll(true);
+		let list1 = new ObservableList(a, b).attachItems(true);
+		let list2 = new ObservableList().attachItems(true);
 		list2.add(a);
-		expect(list1.count).toBe(1);
-		expect(list2.count).toBe(1);
+		expect(list1.length).toBe(1);
+		expect(list2.length).toBe(1);
 		expect(a.isUnlinked()).toBeFalsy();
 		expect(b.isUnlinked()).toBeFalsy();
-		expect(ObservedObject.whence(a)).toBe(list2);
-		expect(ObservedObject.whence(b)).toBe(list1);
+		expect(ObservableObject.whence(a)).toBe(list2);
+		expect(ObservableObject.whence(b)).toBe(list1);
 	});
 
 	test("Remove attached object when unlinked", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a).attachAll(true);
-		expect(ObservedObject.whence(a)).toBe(list);
+		let list = new ObservableList(a).attachItems(true);
+		expect(ObservableObject.whence(a)).toBe(list);
 		a.unlink();
-		expect(ObservedObject.whence(a)).toBeUndefined();
-		expect(list.count).toBe(0);
+		expect(ObservableObject.whence(a)).toBeUndefined();
+		expect(list.length).toBe(0);
 		expect(list.includes(a)).toBeFalsy();
 	});
 
 	test("Attached objects are unlinked when attached list unlinked", () => {
 		let unlinked = 0;
-		class MyChild extends ObservedObject {
+		class MyChild extends ObservableObject {
 			override beforeUnlink() {
 				unlinked++;
 			}
 		}
-		class MyParent extends ObservedObject {
+		class MyParent extends ObservableObject {
 			list = this.attach(
-				new ObservedList(new MyChild(), new MyChild(), new MyChild()),
-			);
+				new ObservableList(new MyChild(), new MyChild(), new MyChild()),
+			).attachItems(true);
 		}
 		let p = new MyParent();
 		p.unlink();
@@ -706,22 +724,22 @@ describe("Attachment", () => {
 // ------------------------------------------------------
 describe("Events and observation", () => {
 	class ListEventObserver {
-		constructor(list: ObservedList) {
+		constructor(list: ObservableList) {
 			list.listen(this);
 		}
 
 		added = 0;
 		removed = 0;
 		changed = 0;
-		lastEvent?: ObservedEvent;
+		lastEvent?: ObservableEvent;
 		lastObject?: any;
 		lastSource?: any;
 		countsSeen: number[] = [];
 
-		handler(list: ObservedList, event: any) {
+		handler(list: ObservableList, event: any) {
 			this.lastEvent = event;
 			this.lastSource = event.source;
-			this.countsSeen.push(list.count || 0);
+			this.countsSeen.push(list.length || 0);
 			if (event.name === "Change") this.changed++;
 			if (event.name === "Add") {
 				this.added++;
@@ -735,7 +753,7 @@ describe("Events and observation", () => {
 	}
 
 	test("Object added event: add, insert", () => {
-		let list = new ObservedList();
+		let list = new ObservableList();
 		let observer = new ListEventObserver(list);
 		let a = new NamedObject("a");
 		list.add(a);
@@ -752,7 +770,7 @@ describe("Events and observation", () => {
 
 	test("Object removed event: remove", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a);
+		let list = new ObservableList(a);
 		let observer = new ListEventObserver(list);
 		list.remove(a);
 		expect(observer.removed).toBe(1);
@@ -764,7 +782,7 @@ describe("Events and observation", () => {
 
 	test("Object removed event: unlink attached object", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a).attachAll(true);
+		let list = new ObservableList(a).attachItems(true);
 		let observer = new ListEventObserver(list);
 		a.unlink();
 		expect(observer.removed).toBe(1);
@@ -776,13 +794,13 @@ describe("Events and observation", () => {
 
 	test("Object removed event: move attached object", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a).attachAll(true);
-		expect(ObservedObject.whence(a)).toBe(list);
+		let list = new ObservableList(a).attachItems(true);
+		expect(ObservableObject.whence(a)).toBe(list);
 		console.log(list.toArray());
-		let other = new ObservedList().attachAll(true);
+		let other = new ObservableList().attachItems(true);
 		let observer = new ListEventObserver(list);
 		other.add(a);
-		expect(ObservedObject.whence(a)).toBe(other);
+		expect(ObservableObject.whence(a)).toBe(other);
 		console.log(list.toArray());
 		console.log(observer);
 		expect(observer.removed).toBe(1);
@@ -799,7 +817,7 @@ describe("Events and observation", () => {
 			new NamedObject("c"),
 			new NamedObject("d"),
 		];
-		let list = new ObservedList(a, b, c);
+		let list = new ObservableList(a, b, c);
 		let observer = new ListEventObserver(list);
 		list.replaceAll([b, a, d]);
 		expect(observer.added).toBe(1);
@@ -809,7 +827,7 @@ describe("Events and observation", () => {
 
 	test("List change event: clear", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a);
+		let list = new ObservableList(a);
 		let observer = new ListEventObserver(list);
 		list.clear();
 		expect(observer.removed).toBe(0);
@@ -820,7 +838,7 @@ describe("Events and observation", () => {
 
 	test("List change event: clear (attached)", () => {
 		let a = new NamedObject("a");
-		let list = new ObservedList(a).attachAll(true);
+		let list = new ObservableList(a).attachItems(true);
 		let observer = new ListEventObserver(list);
 		list.clear();
 		expect(observer.removed).toBe(0);
@@ -830,20 +848,23 @@ describe("Events and observation", () => {
 	});
 
 	test("Count can be bound", () => {
-		class MyObject extends ObservedObject {
+		class MyObject extends ObservableObject {
 			constructor() {
 				super();
-				$bind("list.count").bindTo(this, "boundCount");
+				this.observe(bind("list.length"), (v: any) => {
+					this.boundCount = v;
+				});
 			}
 			boundCount?: number;
 		}
-		class MyParent extends ObservedObject {
-			list = this.attach(new ObservedList());
+		class MyParent extends ObservableObject {
+			list = this.attach(new ObservableList().attachItems(true));
 			object = this.attach(new MyObject());
 		}
+		MyParent.enableBindings();
 		let p = new MyParent();
 		expect(p.object).toHaveProperty("boundCount", 0);
-		p.list.add(new ObservedObject());
+		p.list.add(new ObservableObject());
 		expect(p.object).toHaveProperty("boundCount", 1);
 		p.list.first()!.unlink();
 		expect(p.object).toHaveProperty("boundCount", 0);
