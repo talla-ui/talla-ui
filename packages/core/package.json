@@ -1,6 +1,6 @@
 {
 	"name": "@talla-ui/core",
-	"version": "4.0.0-dev.91",
+	"version": "4.0.0-dev.100",
 	"publishConfig": {
 		"tag": "next",
 		"access": "public"
@@ -37,7 +37,7 @@
 		"tslib": "^2.7.0"
 	},
 	"peerDependencies": {
-		"@talla-ui/util": "4.0.0-dev.91"
+		"@talla-ui/util": "4.0.0-dev.100"
 	},
 	"devDependencies": {
 		"@talla-ui/test-handler": "file:../test-handler",
