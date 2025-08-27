@@ -46,7 +46,7 @@ export namespace UIDivider {
 		if (lineWidth != null) result.lineWidth(lineWidth);
 		if (typeof lineColor === "string") lineColor = UIColor.theme.ref(lineColor);
 		if (lineColor) result.lineColor(lineColor);
-		if (lineMargin) result.lineMargin(lineMargin);
+		if (lineMargin != null) result.lineMargin(lineMargin);
 		return result;
 	}
 
