@@ -661,11 +661,13 @@ export namespace UIViewElement {
 				// set override dynamically, along with all bound overrides
 				if (!this._boundOverrides) {
 					this._boundOverrides = {};
+					this._boundRes = {};
 					this.initializer.finalize((view) => {
 						for (let key in this._boundOverrides) {
+							let res = this._boundRes![key];
 							view.observe(this._boundOverrides[key]!, function (value) {
-								if (resolver && typeof value === "string") {
-									value = resolver.ref(value);
+								if (res && typeof value === "string") {
+									value = res.ref(value);
 								}
 								addOverride(view, { [key]: value });
 							});
@@ -673,6 +675,7 @@ export namespace UIViewElement {
 					});
 				}
 				this._boundOverrides[key] = value;
+				this._boundRes![key] = resolver;
 			} else {
 				// set override only once, using finalize
 				if (!this._staticOverrides) {
@@ -734,5 +737,10 @@ export namespace UIViewElement {
 
 		/** @internal Bound style overrides to be applied */
 		private _boundOverrides?: { [key: string]: Binding };
+
+		/** @internal Resolvers for bound style overrides */
+		private _boundRes?: {
+			[key: string]: UIStyle.ThemeResolver<any, string> | undefined;
+		};
 	}
 }
