@@ -44,11 +44,12 @@ export class UIDividerRenderer extends BaseObserver<UIDivider> {
 		let margin = getCSSLength(
 			sep.lineMargin != null ? sep.lineMargin : UIStyle.defaultOptions.gap,
 		);
-		let cssMargin = margin
-			? sep.vertical
-				? "0 " + margin
-				: margin + " 0"
-			: "";
+		let cssMargin =
+			margin.indexOf(" ") < 0
+				? sep.vertical
+					? "0 " + margin
+					: margin + " 0"
+				: margin;
 		element.style.margin = cssMargin;
 	}
 }

@@ -22,7 +22,7 @@ export class UIDivider extends UIViewElement {
 	 * The amount of space to be added perpendicular to the divider, in pixels or CSS length with unit
 	 * - If this property is not set, the current default gap is used.
 	 */
-	lineMargin?: string | number = undefined;
+	lineMargin?: UIStyle.Offsets = undefined;
 
 	/** True if the divider should be drawn as a vertical line instead of a horizontal line */
 	vertical?: boolean;
@@ -97,8 +97,15 @@ export namespace UIDivider {
 		 * @param margin The margin in pixels or a string with unit.
 		 * @returns The builder instance for chaining.
 		 */
-		lineMargin(margin: BindingOrValue<string | number>) {
+		lineMargin(margin: BindingOrValue<UIStyle.Offsets | undefined>) {
 			return this.setProperty("lineMargin", margin);
+		}
+
+		/**
+		 * Alias for `lineMargin`, to set the margin around the divider line.
+		 */
+		override margin(margin?: BindingOrValue<UIStyle.Offsets | undefined>) {
+			return this.lineMargin(margin);
 		}
 
 		/**

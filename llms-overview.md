@@ -1472,6 +1472,8 @@ UI.Image("...") // URL or UIIconResource, or binding
 UI.Divider(); // default divider
 UI.Divider(1, "divider", 8) // width, color, margin (all optional, or bindings)
 	.vertical() // or .vertical(true), or binding
+	.fg("red") // or .lineColor("red")
+	.margin(8) // or .lineMargin(8)
 	.dividerStyle("dashed"); // or UIStyle instance, or binding
 
 UI.Spacer(); // flexible spacer
