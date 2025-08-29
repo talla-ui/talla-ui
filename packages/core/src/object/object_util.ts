@@ -432,7 +432,7 @@ export function watchBinding(
 	if (observedObject[$_unlinked]) return;
 
 	// add Bound structure to list of bindings for object
-	let bound = new Bound(observedObject, path, guard(f));
+	let bound = new Bound(observedObject, path, guard(f), !origin);
 	if (!_bindings.has(observedObject)) _bindings.set(observedObject, [bound]);
 	else _bindings.get(observedObject)!.push(bound);
 
@@ -445,11 +445,13 @@ export function watchBinding(
 class Bound {
 	constructor(
 		/** Object to which the binding is applied (binding target) */
-		public o: ObservableObject,
+		public a: ObservableObject,
 		/** Property path to watch */
 		public p: ReadonlyArray<string>,
 		/** Function that's called when value is updated */
 		public f: (value: any, bound: boolean) => void,
+		/** True if origin is not fixed (re-bind when object is attached/moved) */
+		public r: boolean,
 	) {}
 
 	/** Origin nesting level currently bound to, or -1 if not bound, -2 if not bound and already set to undefined */
@@ -463,8 +465,8 @@ class Bound {
 
 	/** Try to start watching from the provided (or original) origin, if not already bound */
 	start(origin?: ObservableObject, nestingLevel = 0) {
-		if (this.t || !this.o || this.o[$_unlinked]) return;
-		if (!origin) origin = this.o[$_origin];
+		if (this.t || !this.a || this.a[$_unlinked]) return;
+		if (!origin && this.r) origin = this.a[$_origin];
 		while (!this._check(origin, nestingLevel)) {
 			origin = origin![$_origin];
 			nestingLevel++;
@@ -637,7 +639,7 @@ class Bound {
 
 	/** Invoke the update function if needed */
 	private _invoke(value: any, unbound?: boolean, force?: boolean) {
-		if (!this.o[$_unlinked] && (force || value !== this._v)) {
+		if (!this.a[$_unlinked] && (force || value !== this._v)) {
 			this.f.call(undefined, (this._v = value), !unbound);
 		}
 	}

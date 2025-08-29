@@ -179,7 +179,7 @@ export class RouterActivity extends Activity {
 	}
 	navigationPath = "";
 	matchNavigationPath(remainder: string): void | boolean | Activity {
-		if (remainder === "sub") return new SubActivity();
+		if (remainder === "sub") return new SubActivity(this.countService);
 		if (remainder === "other") return new OtherActivity();
 	}
 }
@@ -223,17 +223,21 @@ const SubView = UI.Column()
 	);
 
 export class SubActivity extends Activity {
+	constructor(public readonly countService: CountService) {
+		super();
+	}
+
 	created = new Date();
 
 	activeCount = this.createActiveState(
-		[bind("countService")],
-		async (service: CountService) => {
+		[this.bind("countService")],
+		async () => {
 			let changes: number = this.activeCount.changes || 0;
 			return {
-				service,
+				service: this.countService,
 				changes: changes + 1,
 				state: this.createActiveState(
-					[bind("activeCount.service.count")],
+					[this.bind("activeCount.service.count")],
 					(count) => {
 						console.log("activeCount.state updated", count);
 						return {
@@ -264,13 +268,13 @@ export class SubActivity extends Activity {
 
 	protected onSetCount(e: ViewEvent<UITextField>) {
 		console.log("onSetCount", e.source.value);
-		this.activeCount.service!.count = +e.source.value! || 0;
+		this.countService.count = +e.source.value! || 0;
 		// this.countService.emitChange();
 	}
 
 	onResetCount() {
-		this.activeCount.service!.count = 0;
-		this.activeCount.service!.emitChange();
+		this.countService.count = 0;
+		this.countService.emitChange();
 	}
 
 	beforeUnlink() {

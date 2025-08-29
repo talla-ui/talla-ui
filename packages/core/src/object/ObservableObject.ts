@@ -440,16 +440,21 @@ export class ObservableObject {
 
 	/**
 	 * Create a binding to a property of this object
-	 * @param path The name of the property to bind to, or a path of properties separated by dots
+	 * - If the (first) source property doesn't exist yet, it will be initialized as undefined.
+	 * @param source The name of the property to bind to, or a path of properties separated by dots
 	 * @param defaultValue The default value to use if the property is undefined
 	 * @returns A binding to the property
 	 */
 	protected bind<K extends string & keyof this>(
-		path: K | `${string & keyof this}.${string}`,
+		source: `${K}${"" | `.${string}`}`,
 		defaultValue?: unknown,
-	): Binding<K extends string & keyof this ? this[K] : unknown> {
+	): Binding<this[K]> {
+		// TODO: typing not working
+		let path = source.split(".");
+		let first = path[0] as keyof this;
+		if (!(first in this)) (this as any)[first] = undefined;
 		return new Binding({
-			path: path.split("."),
+			path,
 			origin: this,
 			default: defaultValue,
 		});
