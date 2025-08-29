@@ -84,14 +84,6 @@ export class AppContext extends ObservableObject {
 	);
 
 	/**
-	 * A list of services managed by the application
-	 * - Services are instances of {@link ObservableObject} that provide functionality that may be used throughout the application.
-	 * - To add a service, use the {@link AppContext.addService app.addService()} method.
-	 * - To find a service, e.g. from an activity, use the {@link AppContext.getService app.getService()} method.
-	 */
-	readonly services = this.attach(new ObservableList().attachItems(true));
-
-	/**
 	 * The global message log writer instance, an instance of {@link LogWriter}
 	 * - You can use `app.log` methods to write messages to the current application log, and add a log sink handler. If no handler is added, log messages are written to the console.
 	 * - Refer to {@link LogWriter} for available methods of `app.log`.
@@ -144,15 +136,13 @@ export class AppContext extends ObservableObject {
 	 * Clears the state of the global application context
 	 * @summary This method is used to reset the app to its initial state. It's called automatically by context initialization functions such as `useTestContext()` and `useWebContext()`, before setting up a new global application context with platform-specific details. The following actions take place:
 	 * 1. All activities are unlinked and removed;
-	 * 2. All services are unlinked and removed;
-	 * 3. The current renderer's output is cleared;
-	 * 4. All scheduler queues are stopped and removed;
-	 * 5. Log sink handlers are removed;
-	 * 6. The i18n context is cleared, and the current locale is reset;
+	 * 2. The current renderer's output is cleared;
+	 * 3. All scheduler queues are stopped and removed;
+	 * 4. Log sink handlers are removed;
+	 * 5. The i18n context is cleared, and the current locale is reset;
 	 */
 	clear() {
 		this.activities.clear();
-		this.services.clear();
 		this.navigation?.clear();
 		this.renderer?.clear();
 		this.scheduler.clear();
@@ -202,39 +192,6 @@ export class AppContext extends ObservableObject {
 			if (activity instanceof type) return activity;
 		}
 		throw err(ERROR.Activity_NotFound);
-	}
-
-	/**
-	 * Adds a service to the application
-	 *
-	 * @summary
-	 * This method adds an {@link ObservableObject} instance as a service to the application context, allowing it to be used throughout the application by referencing its type (class constructor).
-	 *
-	 * @param service The service to be added
-	 * @see {@link AppContext.getService}
-	 */
-	addService(service: ObservableObject) {
-		this.services.add(service);
-		return this;
-	}
-
-	/**
-	 * Finds a service of the specified type in the application context
-	 * - This method is used to find a service instance that was added to the application context using {@link AppContext.addService app.addService()}.
-	 * @param type The type of service to find (a class constructor)
-	 * @returns The service instance
-	 * @error This method throws an error if the service of the specified type is not found.
-	 * @example
-	 * class MyActivity extends Activity {
-	 *   // reference a service from the activity
-	 * 	 myService = app.getService(MyService);
-	 * }
-	 */
-	getService<T extends ObservableObject>(type: new (...args: any[]) => T) {
-		for (let service of this.services) {
-			if (service instanceof type) return service;
-		}
-		throw err(ERROR.Service_NotFound);
 	}
 
 	/**

@@ -154,33 +154,6 @@ export class MyActivity extends Activity {
 // Methods: .add(), .remove(), .clear(), .replaceAll(), .toArray(), .length, etc.
 ```
 
-## Services
-
-```typescript
-// services/cart-service.ts
-export class CartService extends ObservableObject {
-	items = new ObservableList<CartItem>();
-
-	get total() {
-		return this.items.objects().reduce((sum, item) => sum + item.price, 0);
-	}
-
-	addItem(product: Product) {
-		this.items.add(new CartItem(product));
-		this.emitChange(); // updates bindings for computed properties
-	}
-}
-
-// In activity
-export class MyActivity extends Activity {
-	readonly cartService = app.getService(CartService);
-	// Use bind("cartService.total") in views
-}
-
-// In main.ts
-app.addService(new CartService());
-```
-
 ## Input Validators
 
 ```typescript

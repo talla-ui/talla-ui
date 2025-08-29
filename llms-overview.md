@@ -84,20 +84,19 @@ Apply the following strategy when writing code for Tälla UI. Do NOT think of th
 - With the view in mind, design the required state including raw data and derived values (e.g. `user` record, `items` list, `allCompleted` boolean property). Prefer exposing pre-computed or filtered state in the activity, over mapped bindings in the view.
 - Scaffold the activity class with the expected properties, methods to initialize/update the state, and event handlers.
 - Create the view builder hierarchy. To break up the view, export partial view builders in separate files. For layout, stick with a basic column/row hierarchy, closer to native app design (SwiftUI, WPF, JFX, etc.) than web design (HTML, React, etc.). AVOID premature optimization, it's fine to repeat view sections a few times if needed.
-- Use services for shared state, providing data (records and lists) and other methods, emitting change events when internal state changes (e.g. login, settings update).
 - Use further architecture tiers where appropriate, e.g. interface layer to centralize network requests.
 - Use a single entry point for code related to application startup, configuration, and resource initialization (e.g. icons).
 
-File structure (add more nested folders for a complex app):
+Example file structure:
 
 - `main.ts` - entry point
-- `activities/settings.ts` - SettingsActivity class (`export class SettingsActivity`...)
-- `activities/settings.view.ts` - main view (`export default UI.`...)
-- `activities/settings._profile.ts` - partial view block (`export default UI.`...)
-- `shared/common/SectionCard.ts` - reusable custom view (`export function SectionCard`...)
-- `shared/layout/MainPage.ts` - reusable custom layout view (`export function MainPage`...)
-- `services/SettingsService.ts` - service (`export class SettingsService`...)
+- `activities/settings/SettingsActivity.ts` - activity (`export class SettingsActivity`...)
+- `activities/settings/view.ts` - main view (`export default function`... returning a view builder)
+- `activities/settings/view.profile.ts` - partial view (`export default function`...)
+- `shared/widgets/SectionCard.ts` - reusable custom view (`export function SectionCard`...)
+- `shared/layouts/MainPage.ts` - reusable custom layout view (`export function MainPage`...)
 - `resources/icons.ts` - icon resources (e.g. re-export from package)
+- Other folders for models, services, infrastructure layer, etc.
 
 ## Basic Activities
 
@@ -145,19 +144,16 @@ Application state belongs in activities, not views. The activity exposes its sta
 
 ```typescript
 class MyActivity extends Activity {
-	// A simple property
-	count = 0;
-
-	// A service, whose properties can also be observed
-	messageService = app.getService(MessageService);
+	constructor(public readonly messageService: MessageService) {
+		super();
+	}
 
 	// Computed state (object with the returned properties)
 	messages = this.createActiveState(
 		[
-			// Observe objects or bindings:
-			this.messageService, // watches for change events
-			bind("filter"), // binds to activity property
-			bind("messageService.messages"), // nested property
+			bind("filter"), // binds to an activity property
+			bind("messageService"), // listens for change events
+			bind("messageService.messages"), // nested property changes
 		],
 		(service, filter, messages) => {
 			// Return the computed state object
@@ -168,6 +164,10 @@ class MyActivity extends Activity {
 			};
 		},
 	);
+
+	// Or use simply properties, which are also observable (but not getters)
+	count = 0;
+
 	// ...
 }
 ```
@@ -510,7 +510,7 @@ Avoid leaking business logic into the view layer. Where needed, add another prop
 
 Bindings and events work because of the `ObservableObject` class, the base class for activities and views. You can also use it for observable models and services. Observable objects provide ways to observe properties, add bindings, and emit events.
 
-Activities, views, and services are 'attached' to each other internally, which enables bindings to find the correct source object. The `unlink()` method clears all observers and listeners, and unlinks attached objects recursively.
+Activities and views are 'attached' to each other internally, which enables bindings to find the correct source object. The `unlink()` method clears all observers and listeners, and unlinks attached objects recursively.
 
 ```typescript
 import { ObservableObject } from "talla-ui";
@@ -596,45 +596,6 @@ Use these methods to work with observable lists:
 - `.reverse()` reverses the list in-place
 - `.replaceObject(item, replacement)` replaces an item
 - `.replaceAll(items)` replaces all items (efficiently)
-
-## Services
-
-Tälla UI includes the concept of services, reusing the functionality of `ObservableObject` and event handling.
-
-Create services for global application state, e.g. user session, settings, etc. Then, use those from activities as needed with the following pattern.
-
-```typescript
-import { app } from "talla-ui";
-
-// ... in a separate file, e.g. `services/my-service.ts`
-export class CartService extends ObservableObject {
-	items = new ObservableList<CartItem>();
-	get total() {
-		// ... calculate
-	}
-	addItem(product: Product, quantity: number) {
-		// ...
-		// Emit change to update bindings for 'total'
-		this.emitChange();
-	}
-}
-
-// ... in an activity, e.g. `my-activity.ts`
-export class MyActivity extends Activity {
-	readonly cartService = this.observe(app.getService(CartService), () => {
-		// Handle initial value, and change events here
-	});
-
-	// or simply, if you don't need to handle change events:
-	readonly cartService = app.getService(CartService);
-
-	// ... in the view, use e.g. bind("cartService.items") or bind("cartService.total")
-}
-
-// ... in the main file
-app.addService(new CartService()); // add first, otherwise getService() throws
-app.addActivity(MyActivity, true);
-```
 
 ## Config options
 
@@ -1031,9 +992,9 @@ class MyActivity extends Activity {
 
 For testing, use Vitest or any other compatible test runner. Tests can run in Node because the test handler 'renders' views in-memory.
 
-Typically, tests are written for a particular activity, and determine if a view with a specific name or text is rendered, then interact with it to validate the result. Activities, services, or custom views may also be tested in isolation.
+Typically, tests are written for a particular activity, and determine if a view with a specific name or text is rendered, then interact with it to validate the result. Activities and views (view builders) may also be tested in isolation.
 
-Register mock services where necessary, and if using local data, supply mock data when setting up the test context.
+If using local data, supply mock data when setting up the test context.
 
 ```typescript
 import { beforeEach } from "vitest";
@@ -1047,13 +1008,12 @@ beforeEach(() => {
 		localData: { foo: { bar: "baz" } }, // optional
 	});
 
-	// ... add (mock) services and activities here
+	// ... add (mock) activities here
 });
 
 test("...", async () => {
-	// Find activities and services to test if needed
+	// Find activities to test if needed
 	let activity = app.getActivity(MyActivity);
-	let service = app.getService(MyService);
 
 	// Expect navigation to a path
 	await expectNavAsync({

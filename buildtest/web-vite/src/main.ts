@@ -150,9 +150,7 @@ export class MainActivity extends Activity {
 
 	constructor() {
 		super();
-		app.addService(new CountService());
-		this.countService = app.getService(CountService);
-		app.addActivity(new RouterActivity());
+		app.addActivity(new RouterActivity(this.countService));
 	}
 
 	onRemount() {
@@ -163,7 +161,7 @@ export class MainActivity extends Activity {
 		this.emitChange();
 	}
 
-	countService: CountService;
+	countService = new CountService();
 
 	protected override createView() {
 		this.viewCreated = new Date();
@@ -176,6 +174,9 @@ export class MainActivity extends Activity {
 }
 
 export class RouterActivity extends Activity {
+	constructor(public readonly countService: CountService) {
+		super();
+	}
 	navigationPath = "";
 	matchNavigationPath(remainder: string): void | boolean | Activity {
 		if (remainder === "sub") return new SubActivity();
@@ -225,7 +226,7 @@ export class SubActivity extends Activity {
 	created = new Date();
 
 	activeCount = this.createActiveState(
-		[app.getService(CountService)],
+		[bind("countService")],
 		async (service: CountService) => {
 			let changes: number = this.activeCount.changes || 0;
 			return {
@@ -252,6 +253,11 @@ export class SubActivity extends Activity {
 	foo = "bar";
 
 	protected override createView() {
+		let parent = ObservableObject.whence(this);
+		while (parent) {
+			console.log("Parent is ", parent);
+			parent = ObservableObject.whence(parent);
+		}
 		console.log("SubActivity createView", this.activeCount);
 		return SubView.create();
 	}

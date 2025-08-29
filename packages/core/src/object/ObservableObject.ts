@@ -378,14 +378,14 @@ export class ObservableObject {
 	 *
 	 * @example
 	 * class SomeActivity extends Activity {
-	 *   // Observe an observable object (and return it)
-	 *   readonly myService = this.observe(
-	 *     app.getService(MyService),
-	 *     (service) => {
-	 *       // ... handle change events on the service
-	 *       //   as long as the activity and service are not unlinked
-	 *     }
-	 *   );
+	 *   // Observe an observable object
+	 *   constructor(public readonly auth: AuthProvider) {
+	 *     super();
+	 *     this.observe(auth, (auth) => {
+	 *       // ... handle change events on the auth provider object
+	 *       //   as long as the activity and provider are not unlinked
+	 *     });
+	 *   }
 	 * }
 	 */
 	observe<K extends string & keyof this>(
