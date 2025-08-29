@@ -11,6 +11,7 @@ import {
 	app,
 	bind,
 	CustomView,
+	CustomViewBuilder,
 	UI,
 	UIButton,
 	UIColor,
@@ -81,7 +82,9 @@ test("Rendered with fmt", async () => {
 		class MyButtonView extends CustomView {
 			bar = "bar";
 		}
-		return MyButtonView.builder(() => UI.Button.fmt("foo {}", bind("bar")));
+		return CustomViewBuilder(MyButtonView, () =>
+			UI.Button.fmt("foo {}", bind("bar")),
+		);
 	}
 	let myButton = MyButton().create();
 	renderTestView(myButton);

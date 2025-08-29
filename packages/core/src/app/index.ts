@@ -8,6 +8,7 @@ export * from "./NavigationContext.js";
 export * from "./Activity.js";
 export * from "./View.js";
 export * from "./CustomView.js";
+export * from "./ViewBuilder.js";
 export * from "./FormContext.js";
 export * from "./LogWriter.js";
 export * from "./LocalData.js";

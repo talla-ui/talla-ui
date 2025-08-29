@@ -242,33 +242,35 @@ UI.Column(
 ## Custom Views
 
 ```typescript
-// Reusable view
-export function TextFieldGroup(label: string, field: string) {
-	// Use a custom class instead of CustomView here for complex views
-	let bold = false;
-	return CustomView.builder(
-		() =>
-			UI.Column(
-				UI.Label(label).labelStyle("secondary").bold(bold),
-				UI.TextField().bindFormField(field),
-				UI.Label(bind(`form.errors.${field}`))
-					.labelStyle({ textColor: UI.colors.danger })
-					.hideWhen(bind.not(`form.errors.${field}`)),
-			),
-		{
-			// Optional builder methods
-			bold(b = true) {
-				bold = b;
-			},
-		},
-	);
+// Define a custom view to store view state
+export class CollapsibleView extends CustomView {
+	expanded = false;
+	onToggle() {
+		this.expanded = !this.expanded;
+	}
 }
 
-// Usage
-UI.Column(
-	TextFieldGroup("User name", "username").bold(),
-	TextFieldGroup("Password", "password"),
-);
+// Export a builder function that uses the class
+export function Collapsible(
+	title: StringConvertible,
+	...content: ViewBuilder[]
+) {
+	return {
+		...CustomViewBuilder(CollapsibleView, () =>
+			UI.Column(
+				UI.Label(title)
+					.icon(bind("expanded").then("chevronDown", "chevronNext"))
+					.cursor("pointer")
+					.intercept("Click", "Toggle"),
+				UI.ShowWhen(bind("expanded"), UI.Column(...content)),
+			),
+		),
+		expand(expanded = true) {
+			this.initializer.set("expanded", expanded);
+			return this;
+		},
+	};
+}
 ```
 
 ## Modal Dialogs

@@ -6,6 +6,7 @@ import {
 import { beforeEach, expect, test } from "vitest";
 import {
 	CustomView,
+	CustomViewBuilder,
 	UI,
 	UICell,
 	UILabel,
@@ -71,10 +72,12 @@ test("Rendered with text", async () => {
 
 test("Rendered with fmt", async () => {
 	function MyLabel() {
-		class MyLabelView extends CustomView {
-			bar = "bar";
-		}
-		return MyLabelView.builder(() => UI.Label.fmt("foo {}", bind("bar")));
+		return CustomViewBuilder(
+			class extends CustomView {
+				bar = "bar";
+			},
+			() => UI.Label.fmt("foo {}", bind("bar")),
+		);
 	}
 	let myLabel = MyLabel().create();
 	renderTestView(myLabel);
@@ -184,7 +187,9 @@ test("Rendered with bound named color", async () => {
 			text = "Foo";
 			color = "blue";
 		}
-		return MyLabelView.builder(() => UI.Label(bind("text")).fg(bind("color")));
+		return CustomViewBuilder(MyLabelView, () =>
+			UI.Label(bind("text")).fg(bind("color")),
+		);
 	}
 	let view = MyLabel().create();
 	renderTestView(view);

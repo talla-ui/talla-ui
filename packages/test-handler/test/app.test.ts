@@ -3,6 +3,7 @@ import {
 	app,
 	bind,
 	CustomView,
+	CustomViewBuilder,
 	UI,
 	UILabel,
 	UITextField,
@@ -54,11 +55,17 @@ test("Single control is rendered", async () => {
 });
 
 test("Single custom view with binding is rendered", async () => {
-	let myView = class extends CustomView {
-		title = StringConvertible.EMPTY;
+	function MyView() {
+		return {
+			...CustomViewBuilder(
+				class extends CustomView {
+					title = StringConvertible.EMPTY;
+				},
+				() => UI.Label(bind("title")),
+			),
+		};
 	}
-		.builder(() => UI.Label(bind("title")))
-		.create();
+	let myView = MyView().create();
 	myView.title = "TEST";
 	renderTestView(myView);
 	await expectOutputAsync({ text: "TEST" });

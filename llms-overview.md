@@ -843,24 +843,21 @@ export class MyActivity extends Activity {
 
 ## Custom Views
 
-Just like activities, custom views encapsulate a single content view, providing state and event handlers. However, custom views don't have active/inactive states, and should **not** include any business logic. Custom views provide a way to implement reusable UI components (e.g. button toggles, tab bars, grouped controls, cards, and layouts). Custom views should not be used to simply break up a view into smaller parts.
-
-To fit in with the declarative approach, custom views are created using a _builder_.
+Regular views may be expressed as functions that return a view builder object. The `DeferredViewBuilder` class can be used to create a builder object that's extended with custom methods.
 
 ```typescript
 import {
 	BindingOrValue,
-	CustomView,
+	DeferredViewBuilder,
 	StringConvertible,
 	UI,
 	bind,
 } from "talla-ui";
 
-// Simplest case: a function that returns a builder
 export function TextFieldGroup(label: StringConvertible, formField: string) {
 	let inputType = "text";
-	return CustomView.builder(
-		() =>
+	return {
+		...new DeferredViewBuilder(() =>
 			UI.Column(
 				UI.Label(label)
 					.labelStyle("secondary")
@@ -871,13 +868,12 @@ export function TextFieldGroup(label: StringConvertible, formField: string) {
 					.hideWhen(bind.not("form.errors." + formField))
 					.fg("danger"),
 			),
-		{
-			// Optionally: fluent builder methods
-			type(type: string) {
-				inputType = type;
-			},
+		),
+		type(type: string) {
+			inputType = type;
+			return this;
 		},
-	);
+	};
 }
 
 // Use within a view
@@ -887,74 +883,65 @@ export default UI.Column(
 );
 ```
 
-More complex custom views may use a class for state and event handling.
+More complex views may use a 'custom view' class. The `CustomView` class manages a view body, providing state and event handlers to it.
+
+Unlike activities, custom views don't have active/inactive states, and should **not** include any business logic. Custom views provide a way to implement reusable UI components (e.g. button toggles, tab bars, grouped controls, cards, and layouts). Custom views are not required to simply break up a view into smaller parts — use regular view builder functions instead.
 
 ```typescript
+// Define a custom view to store view state
 export class CollapsibleView extends CustomView {
-	label?: StringConvertible;
 	expanded = false;
-	protected onToggle() {
+	onToggle() {
 		this.expanded = !this.expanded;
 	}
 }
 
-export const Collapsible = (
-	label: StringConvertible,
+// Export a builder function that uses the class
+export function Collapsible(
+	title: StringConvertible,
 	...content: ViewBuilder[]
-) =>
-	CollapsibleView.builder(
-		() =>
+) {
+	return {
+		...CustomViewBuilder(CollapsibleView, () =>
 			UI.Column(
-				UI.Label(bind("label"))
-					.icon(bind("expanded").then(UI.icons.minus, UI.icons.plus))
+				UI.Label(title)
+					.icon(bind("expanded").then("chevronDown", "chevronNext"))
 					.cursor("pointer")
 					.intercept("Click", "Toggle"),
 				UI.ShowWhen(bind("expanded"), UI.Column(...content)),
 			),
-		{
-			// Extend the builder with methods
-			label(label: BindingOrValue<StringConvertible | undefined>) {
-				this.initializer.set("label", label);
-			},
-			expand(expanded: BindingOrValue<boolean> = true) {
-				this.initializer.set("expanded", expanded);
-			},
+		),
+		expand(expanded = true) {
+			this.initializer.set("expanded", expanded);
+			return this;
 		},
-	).label(label);
-
-// ... in a view:
-UI.Column(
-	Collapsible(
-		fmt("Description"),
-		UI.Label(bind("description")).wrap(),
-	).expand(),
-);
+	};
+}
 ```
 
 Custom views can provide a fluent interface to bind to form fields, similar to `UI.TextField` and `UI.Toggle`, using the `FormContext.listen` method. The form context value may be calculated from the view's value, or vice versa.
 
 ```typescript
-import { CustomView, FormContext } from "talla-ui";
-
-export const BoundInput = () =>
-	class extends CustomView {
-		value = 0; // initial value
-	}.builder(
-		() => UI.Column(/* ... */), // a complex view
-		{
-			bindFormField(name: string) {
-				this.initializer.initialize((view) => {
-					function setValue(value: number) {
-						view.value = value;
-					}
-					function getValue() {
-						return view.value;
-					}
-					FormContext.listen(view, name, setValue, getValue);
-				});
-			},
+export function BoundInput() {
+	return {
+		...CustomViewBuilder(
+			CustomInputView, // with `value` property
+			() => UI.Column(/* ... */), // a complex view
+		),
+		bindFormField(name: string) {
+			this.initializer.initialize((view) => {
+				function setValue(value: number) {
+					view.value = value;
+				}
+				function getValue() {
+					return view.value;
+				}
+				FormContext.listen(view, name, setValue, getValue);
+			});
+			return this;
 		},
-	);
+	};
+}
 ```
 
 ## Web Handler Setup

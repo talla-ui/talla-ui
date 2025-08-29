@@ -1,5 +1,5 @@
 import { err, ERROR, invalidArgErr, safeCall } from "../errors.js";
-import type { Binding } from "./Binding.js";
+import { Binding } from "./Binding.js";
 import { ObservableEvent } from "./ObservableEvent.js";
 import {
 	$_bind,
@@ -155,13 +155,12 @@ export class ObservableObject {
 
 	/**
 	 * Enables bindings on all instances of this class
-	 * @summary If this method is called on a class, bindings created using the global `bind()` function will bind on properties of instances of this class (when bound to an attached child object). If the `limitOn` parameter is `true`, bindings will only be bound onto instances of this class if the binding is limited to this class, using the {@link Binding.onType()} method. This is useful for custom views with content, and properties that may otherwise mask attached parent properties (e.g. on the activity).
-	 * @note This method is called automatically on {@link AppContext}, {@link Activity} and {@link CustomView} instances. If this method is called again from a subclass, its type will override the previous type for which bindings were enabled. You cannot call this method on the {@link ObservableObject} class itself.
-	 * @param limitOn If `true`, only bindings limited by type will be enabled for instances of this class.
+	 * @summary If this method is called on a class, bindings created using the global `bind()` function will bind on properties of instances of this class (when bound to an attached child object).
+	 * @note This method is called automatically on {@link AppContext}, {@link Activity} and {@link CustomView} instances. You cannot call this method on the {@link ObservableObject} class itself.
 	 */
-	static enableBindings(limitOn?: boolean) {
+	static enableBindings() {
 		if (this === ObservableObject) throw invalidArgErr("limitOn");
-		this.prototype[$_bind] = limitOn ? this : ObservableObject;
+		this.prototype[$_bind] = true;
 	}
 
 	/**
@@ -437,6 +436,23 @@ export class ObservableObject {
 			target[$_bind_apply](this, f.bind(this));
 		}
 		return target;
+	}
+
+	/**
+	 * Create a binding to a property of this object
+	 * @param path The name of the property to bind to, or a path of properties separated by dots
+	 * @param defaultValue The default value to use if the property is undefined
+	 * @returns A binding to the property
+	 */
+	protected bind<K extends string & keyof this>(
+		path: K | `${string & keyof this}.${string}`,
+		defaultValue?: unknown,
+	): Binding<K extends string & keyof this ? this[K] : unknown> {
+		return new Binding({
+			path: path.split("."),
+			origin: this,
+			default: defaultValue,
+		});
 	}
 
 	/**

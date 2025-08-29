@@ -1,4 +1,4 @@
-import { ViewBuilder } from "../../app/View.js";
+import { ViewBuilder } from "../../app/index.js";
 import type { BindingOrValue } from "../../object/index.js";
 import { UIColor } from "../style/index.js";
 import type { UI } from "../UI.js";

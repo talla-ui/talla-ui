@@ -9,13 +9,13 @@ import {
 	bind,
 	BindingOrValue,
 	CustomView,
+	CustomViewBuilder,
 	FormContext,
 	ObservableEvent,
 	UI,
 	UILabel,
 	UIRow,
 	UITextField,
-	View,
 	ViewBuilder,
 } from "../../dist/index.js";
 
@@ -153,14 +153,15 @@ test("Custom view, binding to value and error", () => {
 	class FormView extends CustomView {
 		form = undefined as FormContext | undefined;
 	}
-	const MyComp = FormView.builder(() =>
-		UI.Row(
-			UI.Label(bind("form.errors.foo")),
-			UI.TextField().bindFormField("foo"),
-		),
-	);
+	const MyComp = () =>
+		CustomViewBuilder(FormView, () =>
+			UI.Row(
+				UI.Label(bind("form.errors.foo")),
+				UI.TextField().bindFormField("foo"),
+			),
+		);
 
-	let view = MyComp.create();
+	let view = MyComp().create();
 	expect(view).toHaveProperty("form");
 	view.render((() => {}) as any); // force render to get reference to body
 	let row = (view as any).body as UIRow;
@@ -184,14 +185,19 @@ test("Custom view, binding to value and error", () => {
 test("Custom form container, rendered", async () => {
 	useTestContext();
 
-	const FormContainer = (
+	function FormContainer(
 		formContext: BindingOrValue<FormContext>,
 		...content: ViewBuilder[]
-	) =>
-		CustomView.builder<{ form?: FormContext }>((initializer) => {
-			initializer.set("form", formContext);
-			return UI.Column(...content);
-		});
+	) {
+		let b = CustomViewBuilder(
+			class extends CustomView {
+				form?: FormContext;
+			},
+			() => UI.Column(...content),
+		);
+		b.initializer.set("form", formContext);
+		return b;
+	}
 
 	const view = UI.Row(
 		FormContainer(bind("form1"), UI.TextField().bindFormField("text")),

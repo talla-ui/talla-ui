@@ -1,7 +1,7 @@
 import { ERROR, err } from "../errors.js";
 import { ObservableEvent, ObservableObject } from "../object/index.js";
 import { RenderContext } from "./RenderContext.js";
-import { View, ViewBuilder } from "./View.js";
+import { View } from "./View.js";
 
 /**
  * A class that encapsulates custom view content
@@ -9,30 +9,14 @@ import { View, ViewBuilder } from "./View.js";
  * @description
  * Custom views are view objects that may include their own state (properties) and event handlers, to render their own content.
  *
- * When defining a reusable custom view, you should export a builder function that calls and returns the result of the static {@link CustomView.builder} method. The builder function can be used from a parent view builder, and will return a builder object that can be extended with custom methods.
+ * To be able to use custom views in the view hierarchy, you should also export a builder function that uses {@link CustomViewBuilder} to create a builder object.
  *
  * For views that require a custom renderer (e.g. a platform-dependent graphic), define a view class that extends {@link CustomView}, and overrides the {@link CustomView.render} method altogether. In this case, the view builder should not include any content.
  *
  * @note Custom views are very similar to {@link Activity} objects, but they don't have an active/inactive lifecycle and typically don't include any application logic (especially not for loading or saving data).
  *
  * @example
- * // Define a basic custom view
- * export const MyTitle = (title: StringConvertible) =>
- *   CustomView.builder(() => UI.Label(title).labelStyle("title"));
- *
- * @example
- * // Defined a basic custom view with additional builder methods
- * export function MyTitle(title: StringConvertible) {
- *   let width: BindingOrValue<number | undefined>;
- *   return CustomView.builder(() => UI.Label(title).labelStyle("title").width(width), {
- *     width(w: BindingOrValue<number | undefined>) {
- *       width = w;
- *     },
- *   });
- * }
- *
- * @example
- * // Define a custom view using a class to encapsulate view state
+ * // Define a custom view to store view state
  * export class CollapsibleView extends CustomView {
  *   expanded = false;
  *   onToggle() {
@@ -42,8 +26,8 @@ import { View, ViewBuilder } from "./View.js";
  *
  * // Export a builder function that uses the class
  * export function Collapsible(title: StringConvertible, ...content: ViewBuilder[]) {
- *   return CollapsibleView.builder(
- *     () =>
+ *   return {
+ *     ...CustomViewBuilder(CollapsibleView, () =>
  *        UI.Column(
  *          UI.Label(title)
  *            .icon(bind("expanded").then("chevronDown", "chevronNext"))
@@ -51,12 +35,12 @@ import { View, ViewBuilder } from "./View.js";
  *            .intercept("Click", "Toggle"),
  *          UI.ShowWhen(bind("expanded"), UI.Column(...content)),
  *        ),
- *     {
- *       expand(expanded = true) {
- *         this.initializer.set("expanded", expanded);
- *       },
+ *     ),
+ *     expand(expanded = true) {
+ *       this.initializer.set("expanded", expanded);
+ *       return this;
  *     },
- *   );
+ *   };
  * }
  */
 export class CustomView extends View {
@@ -77,7 +61,7 @@ export class CustomView extends View {
 	 *
 	 * This method is called automatically when rendering a custom view. The result is attached to the instance, and assigned to {@link CustomView.body}.
 	 *
-	 * @note When using the builder pattern with {@link CustomView.builder}, this method is automatically implemented to return an instance of the content view.
+	 * @note When using the builder pattern with {@link CustomViewBuilder}, this method is automatically implemented to return an instance of the content view.
 	 */
 	protected createViewBody(): View | undefined | void {
 		// Nothing here...
@@ -165,110 +149,4 @@ export class CustomView extends View {
 	}
 
 	private _rendered = false;
-}
-
-export namespace CustomView {
-	/** The initializer for a custom view class, with a method to set the view body */
-	export class Initializer<
-		TView extends CustomView,
-	> extends ViewBuilder.Initializer<TView> {
-		/**
-		 * Uses the provided view builder to set the view body for each instance
-		 * - This method overrides the {@link CustomView.createViewBody} method.
-		 * - The view body is only created when the view is rendered.
-		 */
-		setViewBody(viewBuilder: ViewBuilder) {
-			this.finalize((view) => {
-				(view as any).createViewBody = () => {
-					return viewBuilder?.create();
-				};
-			});
-		}
-	}
-
-	/** A custom view builder object */
-	export type CustomViewBuilder<
-		TView extends CustomView,
-		M extends { [name: string]: (...args: any[]) => any },
-	> = ViewBuilder<TView> & {
-		[K in keyof M]: (...args: Parameters<M[K]>) => CustomViewBuilder<TView, M>;
-	} & {
-		/**
-		 * Configures event interception to emit an aliased event
-		 * @param origEvent The original event name to intercept
-		 * @param emit The new event name to emit, or a function to call
-		 * @param data The data properties to add to the alias event, if any
-		 * @param forward Whether to forward the original event as well (defaults to false)
-		 * @returns The builder instance for chaining
-		 */
-		intercept(
-			origEvent: string,
-			emit: string | ObservableObject.InterceptHandler<CustomView>,
-			data?: Record<string, unknown>,
-			forward?: boolean,
-		): CustomView.CustomViewBuilder<TView, M>;
-	};
-
-	/**
-	 * A type definition for custom view builder methods
-	 * @see {@link CustomView.builder}
-	 */
-	export type CustomViewBuilderMethods<TView extends CustomView> = Record<
-		string,
-		(
-			this: ViewBuilder<TView> & {
-				initializer: CustomView.Initializer<TView>;
-			},
-			...args: any[]
-		) => void
-	>;
-
-	/**
-	 * Creates a builder for this custom view class
-	 * @note For documentation and examples, see the {@link CustomView} class.
-	 * @param lazyInit An optional function that may return a view builder for the encapsulated view body. The function is called lazily, only when the first instance of the custom view is created.
-	 * @param extend An optional object containing builder method implementations. Each method receives its listed arguments, and does *not* need to return the 'this' value.
-	 * @returns A builder object for this custom view class
-	 */
-	export function builder<
-		T,
-		TView extends CustomView & T = CustomView & T,
-		M extends CustomViewBuilderMethods<TView> = CustomViewBuilderMethods<TView>,
-	>(
-		this: new () => TView,
-		lazyInit?: (
-			initializer: CustomView.Initializer<TView>,
-		) => ViewBuilder | void,
-		extend?: M,
-	): CustomView.CustomViewBuilder<
-		TView,
-		{ [K in keyof M]: (...args: Parameters<M[K]>) => any }
-	> {
-		let initializer = new CustomView.Initializer(this);
-		let result = {
-			initializer,
-			create() {
-				if (lazyInit) {
-					let body = lazyInit(initializer);
-					if (body) initializer.setViewBody(body);
-					lazyInit = undefined;
-				}
-				return initializer.create();
-			},
-			intercept(origEvent, emit, data, forward) {
-				initializer.intercept(origEvent, emit, data, forward);
-				return result;
-			},
-		} as CustomView.CustomViewBuilder<TView, {}>;
-		if (extend) {
-			for (let n in extend) {
-				let m = extend[n]!;
-				(result as any)[n] = function () {
-					m.apply(this, arguments as any);
-					return this;
-				};
-			}
-		}
-		return result as any;
-	}
 }

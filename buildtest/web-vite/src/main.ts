@@ -4,6 +4,9 @@ import {
 	bind,
 	BindingOrValue,
 	CustomView,
+	CustomViewBuilder,
+	DeferredViewBuilder,
+	fmt,
 	ObservableObject,
 	StringConvertible,
 	UI,
@@ -21,58 +24,62 @@ function Collapsible(label: StringConvertible, ...content: ViewBuilder[]) {
 			this.expanded = !this.expanded;
 		}
 	}
-	return CollapsibleView.builder(
-		() =>
+	return {
+		...CustomViewBuilder(CollapsibleView, () =>
 			UI.Column()
 				.width(bind("width"))
 				.with(
 					UI.Label(label)
 						.icon(bind("expanded").then("chevronDown", "chevronNext"))
 						.cursor("pointer")
+						.background("text")
+						.fg("background")
+						.padding()
 						.intercept("Click", "Toggle"),
 					UI.ShowWhen(bind("expanded"), UI.Column(...content)),
 				),
-		{
-			/** Set the expanded state of the view */
-			expand(expanded = true) {
-				this.initializer.set("expanded", expanded);
-			},
-			width(w: BindingOrValue<number | undefined>) {
-				this.initializer.set("width", w);
-			},
+		),
+		/** Set the expanded state of the view */
+		expand(expanded = true) {
+			this.initializer.set("expanded", expanded);
+			return this;
 		},
-	);
+		width(w: BindingOrValue<number | undefined>) {
+			this.initializer.set("width", w);
+			return this;
+		},
+	};
 }
 
-const MyTitle = (label?: StringConvertible) =>
-	class extends CustomView {
-		label?: StringConvertible;
-		width?: number;
-	}
-		.builder(
-			() =>
-				UI.Label(bind("label"))
-					.labelStyle("title")
-					.width(bind("width"))
-					.allowKeyboardFocus(),
-			{
-				label(l: BindingOrValue<StringConvertible | undefined>) {
-					this.initializer.set("label", l);
-				},
-				width(w: BindingOrValue<number | undefined>) {
-					this.initializer.set("width", w);
-				},
-			},
-		)
-		.intercept("Click", "Select")
-		.intercept("EnterKeyPress", "Select")
-		.intercept("Select", async () => {
-			let choice = await app.showConfirmDialogAsync([
-				"Are you sure you want to click this button?",
-			]);
-			console.log("Select", choice);
-		})
-		.label(label);
+function MyTitle(label?: StringConvertible) {
+	let width: BindingOrValue<number | undefined>;
+	return {
+		...DeferredViewBuilder(() =>
+			UI.Label(label)
+				.labelStyle("title")
+				.padding({ bottom: 8 })
+				.width(width)
+				.allowKeyboardFocus()
+				.intercept("Click", "Select")
+				.intercept("EnterKeyPress", "Select")
+				.intercept("Select", async function () {
+					this.text = "Confirming...";
+					let choice = await app.showConfirmDialogAsync([
+						"Are you sure you want to click this button?",
+					]);
+					console.log("Select", choice);
+				}),
+		),
+		label(l: BindingOrValue<StringConvertible | undefined>) {
+			label = l;
+			return this;
+		},
+		width(w: BindingOrValue<number | undefined>) {
+			width = w;
+			return this;
+		},
+	};
+}
 
 class CountService extends ObservableObject {
 	count = 0;
@@ -101,6 +108,7 @@ const mainView = UI.Column()
 				.divider()
 				.border()
 				.with(
+					UI.Label(fmt("Built: {}", new Date().toLocaleString())).padding(),
 					UI.Label(bind.fmt("View created: {}", bind("viewCreated"))).padding(),
 					UI.Label(bind.fmt("Current: {}", bind("currentDate"))).padding(),
 					UI.Label(bind.fmt("Count: {}", bind("countService.count"))).padding(),

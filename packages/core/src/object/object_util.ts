@@ -1,4 +1,4 @@
-import { isObservableObject, ObservableObject } from "./ObservableObject.js";
+import type { ObservableObject } from "./ObservableObject.js";
 import { err, ERROR, errorHandler } from "../errors.js";
 import type { ObservableEvent } from "./ObservableEvent.js";
 
@@ -13,7 +13,7 @@ export const $_origin = Symbol("origin");
 /** @internal Property that is set only on root objects (cannot be attached) */
 export const $_root = Symbol("root");
 
-/** @internal Property that is set to the constructor to which bindings should be limited; if not set, properties are not bound */
+/** @internal Property that is set to true (on the object prototype) if the object is observable for bindings */
 export const $_bind = Symbol("bind");
 
 /** @internal Property that refers to a list of event interceptors */
@@ -421,10 +421,10 @@ function detachObject(origin: ObservableObject, target: ObservableObject) {
 
 // -- Binding functions ----------------------------------------------
 
-/** @internal Add a watched binding path on origin(s) of given observable object */
+/** @internal Add a watched binding path on specified origin, or origin(s) of given observable object */
 export function watchBinding(
 	observedObject: ObservableObject,
-	type: Function | undefined,
+	origin: ObservableObject | undefined,
 	path: ReadonlyArray<string>,
 	f: (value: any, bound: boolean) => void,
 ) {
@@ -432,12 +432,13 @@ export function watchBinding(
 	if (observedObject[$_unlinked]) return;
 
 	// add Bound structure to list of bindings for object
-	let bound = new Bound(observedObject, type, path, guard(f));
+	let bound = new Bound(observedObject, path, guard(f));
 	if (!_bindings.has(observedObject)) _bindings.set(observedObject, [bound]);
 	else _bindings.get(observedObject)!.push(bound);
 
-	// if already attached, try to start watching already
-	if (observedObject[$_origin]) bound.start();
+	// if origin already set/attached, try to start watching already
+	let o = origin || observedObject[$_origin];
+	if (o) bound.start(o);
 }
 
 /** @internal Object that encapsulates a watched binding path on an observable object instance */
@@ -445,8 +446,6 @@ class Bound {
 	constructor(
 		/** Object to which the binding is applied (binding target) */
 		public o: ObservableObject,
-		/** Source constructor, if any */
-		public b: Function | undefined,
 		/** Property path to watch */
 		public p: ReadonlyArray<string>,
 		/** Function that's called when value is updated */
@@ -465,9 +464,7 @@ class Bound {
 	/** Try to start watching from the provided (or original) origin, if not already bound */
 	start(origin?: ObservableObject, nestingLevel = 0) {
 		if (this.t || !this.o || this.o[$_unlinked]) return;
-		if (!origin) {
-			origin = this.o[$_origin];
-		}
+		if (!origin) origin = this.o[$_origin];
 		while (!this._check(origin, nestingLevel)) {
 			origin = origin![$_origin];
 			nestingLevel++;
@@ -497,8 +494,7 @@ class Bound {
 		}
 
 		// check source binding type and check if property is observable
-		let matchesType = origin[$_bind] === (this.b || ObservableObject);
-		if (matchesType) {
+		if (origin[$_bind]) {
 			let firstProp = this.p[0]!;
 			if (canTrap(origin, firstProp)) {
 				// watch all properties along path
@@ -592,7 +588,7 @@ class Bound {
 		let next = i + 1;
 		let nextProp = this.p[next]!;
 		let last = next >= this.p.length;
-		return function (_, value) {
+		return function (_, value: any) {
 			// remove traps beyond this point
 			for (let j = traps.length - 1; j > i; j--) {
 				removeTrap(traps[j]);
@@ -602,14 +598,14 @@ class Bound {
 			// use new value to invoke binding or keep looking
 			if (last) {
 				// last part of path: watch for change events and invoke
-				if (isObservableObject(value)) {
+				if (typeof value === "object" && $_origin in value) {
 					self._trapChangeEvent(value, next, false);
 				}
 				self._invoke(value);
 			} else if (value == null || (value as ObservableObject)[$_unlinked]) {
 				// undefined/null or unlinked object, don't look further
 				self._invoke(undefined);
-			} else if (isObservableObject(value)) {
+			} else if (typeof value === "object" && $_origin in value) {
 				// found an observable object along the way
 				if (canTrap(value, nextProp)) {
 					// observe this property and move on if/when value set
@@ -632,7 +628,8 @@ class Bound {
 		for (let j = i + 1; j < pathLen; j++) {
 			let nextP = this.p[j]!;
 			if (source == null) break;
-			if (isObservableObject(source)) source = source[$_get](nextP);
+			if (typeof source === "object" && $_get in source)
+				source = source[$_get](nextP);
 			else source = source[nextP];
 		}
 		return source;

@@ -13,6 +13,7 @@ import {
 	Activity,
 	AppContext,
 	CustomView,
+	CustomViewBuilder,
 	LocalData,
 	MessageDialogOptions,
 	ModalMenuOptions,
@@ -177,7 +178,7 @@ describe("Rendering views", () => {
 	});
 
 	test("Cell view from single custom view", async () => {
-		const MyView = CustomView.builder(() => UI.Cell());
+		const MyView = CustomViewBuilder(CustomView, () => UI.Cell());
 		let view = MyView.create();
 		let app = useTestContext();
 		renderTestView(view);
@@ -195,7 +196,7 @@ describe("Rendering views", () => {
 				throw Error("Catch me");
 			}
 		}
-		const MyView = CellView.builder(() => UI.Cell());
+		const MyView = CustomViewBuilder(CellView, () => UI.Cell());
 		let view = MyView.create();
 		useTestContext({ throwUncaughtErrors: false });
 		let mockErrorHandler = vi.fn();
@@ -208,7 +209,7 @@ describe("Rendering views", () => {
 	});
 
 	test("Remove view after rendering", async () => {
-		const MyView = CustomView.builder(() => UI.Cell());
+		const MyView = CustomViewBuilder(CustomView, () => UI.Cell());
 		let view = MyView.create();
 		let app = useTestContext();
 		let rendered = app.render(view);

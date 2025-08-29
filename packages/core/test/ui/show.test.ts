@@ -11,6 +11,7 @@ import {
 	app,
 	bind,
 	CustomView,
+	CustomViewBuilder,
 	ObservableObject,
 	UI,
 	UICell,
@@ -105,7 +106,7 @@ test("Rendering content using bound state", async () => {
 		class TestView extends CustomView {
 			condition = false;
 		}
-		return TestView.builder(() =>
+		return CustomViewBuilder(TestView, () =>
 			UI.Cell(UI.ShowWhen(bind("condition"), UI.Label("foo"))),
 		);
 	}
@@ -188,12 +189,13 @@ test("Set inserted view using custom view, and render", async () => {
 		class MyContentView extends CustomView {
 			text = StringConvertible.EMPTY;
 		}
-		return MyContentView.builder(() => UI.Label(bind("text")), {
+		return {
+			...CustomViewBuilder(MyContentView, () => UI.Label(bind("text"))),
 			text(text: StringConvertible) {
 				this.initializer.set("text", text);
 				return this;
 			},
-		});
+		};
 	}
 
 	class MyActivity extends Activity {

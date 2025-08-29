@@ -1,7 +1,6 @@
 import { DeferredString, fmt, StringConvertible } from "@talla-ui/util";
-import { AppContext } from "../app/index.js";
 import { invalidArgErr } from "../errors.js";
-import { ObservableObject } from "./ObservableObject.js";
+import type { ObservableObject } from "./ObservableObject.js";
 import { $_bind_apply, watchBinding } from "./object_util.js";
 
 /** Constant used to check against (new) binding value */
@@ -31,7 +30,7 @@ export namespace BindingOrValue {
  * A class that represents a property binding
  *
  * @description
- * A binding connects an object (an instance of {@link ObservableObject}) with one of the properties of one of its _containing_ (attached) objects. Bindings can be used to update properties on the target object, keeping the bound property in sync with the original property.
+ * A binding connects an object (an instance of {@link ObservableObject}) with one of the properties of one of another object: either a specified source object, or one of the target object's _containing_ (attached) objects. Bindings can be used to update properties on the target object, keeping the bound property in sync with the original property.
  *
  * For example, given an object `A` with property `p`, a binding can be used on an attached object `B` to update target property `q`. When the value of `p` changes, the same value is set on `q` immediately. This is considered a one-way data binding, since direct updates on property `q` don't affect the source property `p` at all.
  *
@@ -45,7 +44,7 @@ export namespace BindingOrValue {
  *
  * **Binding to observable lists** — {@link ObservableList} instances include special properties that may be referenced by a binding path. Use `.length` to bind to the list length, `.#first` and `.#last` to bind to the first and last item in the list, respectively.
  *
- * **Applying bindings** — To add a binding to a View instance, pass the result of {@link bind()} to `UI` view builder functions, e.g. `UI.Label(bind("labelText"))`. To apply a binding to any other observable object directly, use the {@link ObservableObject.observe()} method.
+ * **Applying bindings** — To use a binding, pass it to a UI view builder function, e.g. `UI.Label(bind("labelText"))`. To apply a binding to any other observable object directly, use the {@link ObservableObject.observe()} method.
  *
  * **Adding transformations** — To convert the value of the original property, or to combine multiple bindings using boolean operations (and/or), use one of the Binding methods such as {@link Binding.map map()} and {@link Binding.or or()}.
  *
@@ -63,7 +62,7 @@ export class Binding<T = any> {
 		if (isBinding(source)) {
 			this._path = source._path;
 			this._prefix = source._prefix;
-			this._type = source._type;
+			this._origin = source._origin;
 			this[$_bind_apply] = source[$_bind_apply];
 			return;
 		}
@@ -72,7 +71,7 @@ export class Binding<T = any> {
 		if (source && typeof source !== "string") {
 			if (!Array.isArray(source.path)) throw invalidArgErr("source");
 			defaultValue = source.default;
-			this._type = source.type;
+			this._origin = source.origin;
 			this._path = [...source.path];
 			if (source.prefix?.length) {
 				this._path.unshift(...(this._prefix = source.prefix));
@@ -85,7 +84,7 @@ export class Binding<T = any> {
 		this[$_bind_apply] = !source
 			? function () {}
 			: function (target, update) {
-					watchBinding(target, this._type, this._path, (value, bound) =>
+					watchBinding(target, this._origin, this._path, (value, bound) =>
 						update(value ?? defaultValue, bound),
 					);
 				};
@@ -97,21 +96,8 @@ export class Binding<T = any> {
 	/** A list of properties that were prepended before the binding path (used when creating associated bindings from another path) */
 	private readonly _prefix?: ReadonlyArray<string>;
 
-	/** Source type to which bindings should be limited, if specified (otherwise base type is inferred) */
-	private _type?: Function;
-
-	/**
-	 * Creates a new binding, which only binds on properties of a class with limited bindings
-	 * - Use this method to create bindings that should only bind on properties of a specific class, which itself has enabled bindings only for its own type (using the {@link ObservableObject.enableBindings} method). Typically, this is used for custom views with content, and properties that may otherwise mask attached parent properties (e.g. on the activity).
-	 * @param type The type to which the binding should be limited
-	 * @returns A new binding, with the restriction applied
-	 * @see {@link ObservableObject.enableBindings}
-	 */
-	onType(type: Function) {
-		let result = this.clone();
-		result._type = type;
-		return result;
-	}
+	/** Binding origin object, if any */
+	private _origin?: ObservableObject;
 
 	/**
 	 * Creates a copy of this binding
@@ -271,31 +257,6 @@ export class Binding<T = any> {
 	}
 
 	/**
-	 * Logs a debug message whenever the bound value changes.
-	 * @returns The binding itself, with debug events enabled
-	 */
-	debug() {
-		let _apply = this[$_bind_apply];
-		this[$_bind_apply] = function (target, update) {
-			let hasValue: boolean | undefined;
-			_apply.call(this, target, (value, bound) => {
-				hasValue = true;
-				AppContext.getInstance().log.debug(
-					this.toString() + (bound ? " =>" : " [not bound]"),
-					value,
-				);
-				update(value, bound);
-			});
-			setTimeout(() => {
-				if (!hasValue) {
-					AppContext.getInstance().log.debug(this.toString() + " [not bound]");
-				}
-			}, 1);
-		};
-		return this;
-	}
-
-	/**
 	 * Returns a description of this binding, including its original source path, if any.
 	 * @returns The string description.
 	 */
@@ -332,7 +293,7 @@ export class Binding<T = any> {
 		if (!isBinding(other)) {
 			other = new Binding({
 				path: other.split("."),
-				type: this._type,
+				origin: this._origin,
 				prefix: this._prefix,
 			});
 		}
@@ -493,15 +454,16 @@ export class StringFormatBinding extends Binding<DeferredString> {
 
 export namespace Binding {
 	/**
-	 * Options that can be passed to the {@link Binding} constructor, used by {@link bind} and other binding factories
+	 * Options that can be passed to the {@link Binding} constructor
+	 * - This type is used internally by {@link bind()} and other binding factories
 	 */
 	export type Options = {
 		/** The source property path, as an array */
 		readonly path: string[];
 		/** Default value, used when the bound value itself is undefined */
 		readonly default?: any;
-		/** The parent object type to observe, if specified (otherwise base type is inferred) */
-		readonly type?: Function;
+		/** The origin object to observe, if specified */
+		readonly origin?: ObservableObject;
 		/** An optional list of property names that are prepended before all binding paths */
 		readonly prefix?: ReadonlyArray<string>;
 	};

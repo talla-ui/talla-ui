@@ -45,7 +45,10 @@ test("Constructor with path", () => {
 describe("Basic bindings", () => {
 	function setup() {
 		class ObjectWithBind extends ObservableObject {
-			bind(property: keyof this, source: Binding | string) {
+			getBinding(property: keyof this) {
+				return this.bind(property);
+			}
+			applyBind(property: keyof this, source: Binding | string) {
 				if (typeof source === "string") {
 					source = bind(source);
 				}
@@ -117,14 +120,14 @@ describe("Basic bindings", () => {
 	test("Single binding", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
-		c.child.bind("aa", "a");
+		c.child.applyBind("aa", "a");
 		expect(c.child).toHaveProperty("aa", 1);
 	});
 
 	test("Single binding, same property name", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
-		c.child.bind("a", "a");
+		c.child.applyBind("a", "a");
 		expect(c.child).toHaveProperty("a", 1);
 	});
 
@@ -132,7 +135,7 @@ describe("Basic bindings", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
 		// bind child.aa to a:
-		c.child.bind("aa", "a");
+		c.child.applyBind("aa", "a");
 		c.a = 2;
 		expect(c.child).toHaveProperty("aa", 2);
 	});
@@ -140,7 +143,7 @@ describe("Basic bindings", () => {
 	test("Single binding, update from setter", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
-		c.child.bind("aa", "x");
+		c.child.applyBind("aa", "x");
 		c.x = 2;
 		expect(c.child).toHaveProperty("aa", 2);
 	});
@@ -164,10 +167,10 @@ describe("Basic bindings", () => {
 			declare c: number | string;
 		}
 		let c = new SubObject();
-		c.child.bind("aa", "a");
+		c.child.applyBind("aa", "a");
 		expect(c.child).toHaveProperty("aa", 1);
 		c.c = "2";
-		c.child.bind("bb", "c");
+		c.child.applyBind("bb", "c");
 		expect(c.child).toHaveProperty("bb", 2);
 	});
 
@@ -212,7 +215,7 @@ describe("Basic bindings", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
 		let nested = c.child.attachNested();
-		nested.bind("aa", "child.a");
+		nested.applyBind("aa", "child.a");
 		c.child.a = 3;
 		expect(c.child.nested).toHaveProperty("aa", 3);
 	});
@@ -220,7 +223,7 @@ describe("Basic bindings", () => {
 	test("Single binding with 2-step path, change first", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
-		c.child.bind("aa", "other.aa");
+		c.child.applyBind("aa", "other.aa");
 		c.other.aa = 3;
 		expect(c.child).toHaveProperty("aa", 3);
 		c.changeOther();
@@ -232,7 +235,7 @@ describe("Basic bindings", () => {
 	test("Single binding with 2-step path, delete first", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
-		c.child.bind("aa", "other.aa");
+		c.child.applyBind("aa", "other.aa");
 		c.other.aa = 3;
 		expect(c.child).toHaveProperty("aa", 3);
 		(c as any).other = undefined;
@@ -244,7 +247,7 @@ describe("Basic bindings", () => {
 		let c = new TestObject();
 		let nested = c.other.attachNested();
 		// make other.nested.aa binding refer to other.a:
-		nested.bind("aa", "a");
+		nested.applyBind("aa", "a");
 		c.other.a = 3;
 		expect(c.other.nested).toHaveProperty("aa", 3);
 		c.changeOther(nested);
@@ -257,7 +260,7 @@ describe("Basic bindings", () => {
 		let c = new TestObject();
 		let nested = c.child.attachNested();
 		let nested2 = nested.attachNested();
-		nested2.bind("aa", "child.nested.aa");
+		nested2.applyBind("aa", "child.nested.aa");
 		nested.aa = 3;
 		expect(c.child.nested?.nested).toHaveProperty("aa", 3);
 	});
@@ -266,7 +269,7 @@ describe("Basic bindings", () => {
 		let { TestObject, ChildObject } = setup();
 		let c = new TestObject();
 		let otherNested = c.other.attachNested();
-		c.child.bind("aa", "other.nested.aa");
+		c.child.applyBind("aa", "other.nested.aa");
 		otherNested.aa = 3;
 		expect(c.child).toHaveProperty("aa", 3);
 		let newOther = new ChildObject();
@@ -280,7 +283,7 @@ describe("Basic bindings", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
 		let otherNested = c.other.attachNested();
-		c.child.bind("aa", "other.nested.aa");
+		c.child.applyBind("aa", "other.nested.aa");
 		otherNested.aa = 3;
 		expect(c.child).toHaveProperty("aa", 3);
 		c.other.unlink();
@@ -291,7 +294,7 @@ describe("Basic bindings", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
 		let otherNested = c.other.attachNested();
-		c.child.bind("aa", "other.nested.aa");
+		c.child.applyBind("aa", "other.nested.aa");
 		let updateCount = 0;
 		c.child.observe(bind("other.nested.aa"), (value, bound) => {
 			console.log("3-step path updated", value, bound);
@@ -314,7 +317,7 @@ describe("Basic bindings", () => {
 		c.other.nonObservableObject = new ChildObject();
 		let nonObsNested = c.other.nonObservableObject.attachNested();
 		nonObsNested.aa = 3;
-		c.child.bind("aa", "other.nonObservableObject.nested.aa");
+		c.child.applyBind("aa", "other.nonObservableObject.nested.aa");
 		expect(c.child).toHaveProperty("aa", 3);
 		nonObsNested.aa = 4;
 		expect(c.child).toHaveProperty("aa", 3);
@@ -439,12 +442,23 @@ describe("Basic bindings", () => {
 	test("Binding to plain object property", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
-		c.child.bind("aa", "obj.foo");
+		c.child.applyBind("aa", "obj.foo");
 		expect(c.child).toHaveProperty("aa", "bar");
 		c.obj = { foo: "baz" };
 		expect(c.child).toHaveProperty("aa", "baz");
 		c.obj = undefined;
 		expect(c.child).toHaveProperty("aa", undefined);
+	});
+
+	test("Binding to specific origin (object.bind())", () => {
+		let { TestObject } = setup();
+		let a = new TestObject();
+		a.a = 123;
+		let c = new TestObject();
+		c.applyBind("a", a.getBinding("a"));
+		expect(c).toHaveProperty("a", 123);
+		a.a = 234;
+		expect(c).toHaveProperty("a", 234);
 	});
 
 	test("Binding non-observable property directly", () => {
@@ -485,10 +499,10 @@ describe("Basic bindings", () => {
 			parentId?: string;
 		}
 		class ParentOne extends ObservableObject {
+			// bindings not enabled here
 			parentId = "one";
 			child = this.attach(new Child());
 		}
-		ParentOne.enableBindings(true);
 		class ParentTwo extends ObservableObject {
 			parentId = "two";
 			child = this.attach(new ParentOne());
@@ -498,55 +512,15 @@ describe("Basic bindings", () => {
 		expect(p.child.child).toHaveProperty("parentId", "two");
 	});
 
-	test("Binding to parent property using limited binding", () => {
-		class Child extends ObservableObject {
-			constructor() {
-				super();
-				// this should now bind to parent one, not two:
-				this.observe(bind("parentId").onType(ParentOne), (v: any) => {
-					this.parentId = v;
-				});
-			}
-			parentId?: string;
-		}
-		class ParentOne extends ObservableObject {
-			parentId = "one";
-			child = this.attach(new Child());
-		}
-		ParentOne.enableBindings(true);
-		class ParentTwo extends ObservableObject {
-			parentId = "two";
-			child = this.attach(new ParentOne());
-		}
-		ParentTwo.enableBindings();
-		let p = new ParentTwo();
-		expect(p.child.child).toHaveProperty("parentId", "one");
-	});
-
-	test("Debug handler", () => {
-		let { TestObject } = setup();
-		let logged: any;
-		app.log.addHandler(0, (msg) => {
-			logged = msg;
-		});
-		let c = new TestObject();
-		c.child.bind("aa", bind("a").debug());
-		c.a = 2;
-		expect(logged).toBeDefined();
-		expect(logged.message).toMatch(/bind\(/);
-		expect(logged.data).toEqual([2]);
-		app.clear();
-	});
-
 	test("Volume test", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
 		let child = c.child;
-		child.bind("aa", "b");
+		child.applyBind("aa", "b");
 		for (let i = 0; i < 100; i++) {
 			child = child.attachNested();
-			child.bind("aa", "b");
-			child.bind("bb", "child.a");
+			child.applyBind("aa", "b");
+			child.applyBind("bb", "child.a");
 		}
 		c.b = 2;
 		c.child.a = 3;
@@ -563,46 +537,7 @@ describe("Basic bindings", () => {
 		let c = new TestObject();
 		let child = c.child;
 		child.unlink();
-		expect(() => child.bind("aa", "a")).toThrow(/unlinked/);
-	});
-});
-
-describe("Bindings with source types", () => {
-	class Parent1 extends ObservableObject {}
-	Parent1.enableBindings(true);
-	class Parent2 extends ObservableObject {}
-	Parent2.enableBindings(true);
-	function setup() {
-		let c = Object.assign(new ObservableObject(), { a: 0 });
-		let p1 = Object.assign(new Parent1(), { a: 1 });
-		let p2 = Object.assign(new Parent2(), {
-			a: 2 as any,
-			b: 0 as any,
-		});
-		(p1 as any).attach(c);
-		(p2 as any).attach(p1);
-		return [c, p1, p2] as const;
-	}
-
-	test("Unbound binding", () => {
-		let [c] = setup();
-		c.observe(
-			new Binding({ path: ["a"], type: ObservableObject }),
-			(v: any) => {
-				c.a = v;
-			},
-		);
-		expect(c.a).toBeUndefined();
-	});
-
-	test("String label", () => {
-		let [c, _, p2] = setup();
-		c.observe(new Binding({ path: ["a"], type: Parent2 }), (v: any) => {
-			c.a = v;
-		});
-		expect(c.a).toBe(2);
-		p2.a = 3;
-		expect(c.a).toBe(3);
+		expect(() => child.applyBind("aa", "a")).toThrow(/unlinked/);
 	});
 });
 
