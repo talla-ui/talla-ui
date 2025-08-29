@@ -1,28 +1,25 @@
 import {
-	app,
-	UIListView,
-	UITextField,
 	Activity,
-	ViewEvent,
+	UIListView,
 	UIListViewEvent,
+	UITextField,
+	ViewEvent,
 } from "talla-ui";
-import { swapPageAsync } from "./swap";
 import { Search, SearchResult } from "./Search";
-import SearchView from "./SearchView";
+import { SearchView } from "./SearchView";
+import { swapPageAsync } from "./swap";
 
 export class SearchActivity extends Activity {
-	protected override createView() {
+	protected override defineView() {
 		this.setRenderMode("mount", { mountId: "docpage-search" });
-		return SearchView.create();
+		return SearchView();
 	}
 
 	search = new Search();
 	hasInput = false;
 	loading?: Promise<void> = undefined;
 	results?: SearchResult[] = undefined;
-	searchThrottle = app.scheduler.createQueue("searchThrottle", false, {
-		throttleDelay: 30,
-	});
+	searchDebounce = this.createActiveTaskQueue();
 
 	clear() {
 		let input = this.findViewContent(UITextField)[0];
@@ -44,12 +41,12 @@ export class SearchActivity extends Activity {
 			searchText = e.source.value || "";
 		}
 
-		this.searchThrottle.addOrReplace("search", async () => {
+		this.searchDebounce.debounce(async () => {
 			if (!(this.hasInput = !!searchText)) return;
 			this.hasInput = true;
 			let results = this.search.query(searchText)?.getResults() || [];
 			this.results = results;
-		});
+		}, 30);
 	}
 
 	protected async onClose() {

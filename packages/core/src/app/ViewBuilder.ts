@@ -177,7 +177,6 @@ export namespace ViewBuilder {
  * - The encapsulated function is called only once, before the first view is created.
  *
  * @example
- * ```ts
  * function MyButton() {
  *   let label = "";
  *   return {
@@ -188,7 +187,6 @@ export namespace ViewBuilder {
  *     },
  *   }
  * }
- * ```
  */
 export const DeferredViewBuilder = function (define: () => ViewBuilder) {
 	return {
@@ -218,7 +216,6 @@ export declare namespace DeferredViewBuilder {
  * - The encapsulated function is called only once, before the first view is created, to define the body of the view.
  *
  * @example
- * ```ts
  * class MyWrapper extends CustomView {
  *   label = "";
  * }
@@ -232,7 +229,6 @@ export declare namespace DeferredViewBuilder {
  *     },
  *   }
  * }
- * ```
  */
 export const CustomViewBuilder = function (
 	ViewClass: new () => View,

@@ -25,6 +25,9 @@ export const $_get = Symbol("get");
 /** @internal Non-existent property, trap is invoked when an event is emitted */
 export const $_traps_event = Symbol("event");
 
+/** @internal Symbol for a property that references the method to apply a binding to a target object */
+export const $_bind_apply = Symbol("bind_apply");
+
 /** Map containing a list of traps for observable properties of observable objects */
 const _traps = new WeakMap<ObservableObject, TrapLookup>();
 
@@ -38,9 +41,6 @@ const _attached = new WeakMap<
 const _bindings = new WeakMap<ObservableObject, Bound[]>();
 
 // Values used for bindings
-
-/** Symbol for a property that references the method to apply a binding to a target object */
-export const $_bind_apply = Symbol("bind_apply");
 
 /** Initial binding value, not equal to anything else */
 const NO_VALUE = { none: 0 };

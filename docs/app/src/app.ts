@@ -12,5 +12,4 @@ const app = useWebContext((options) => {
 		fontWeight: "normal",
 	};
 });
-const searchActivity = new SearchActivity();
-app.addActivity(searchActivity, true);
+app.addActivity(new SearchActivity(), true);
