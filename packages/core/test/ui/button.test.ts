@@ -174,8 +174,8 @@ test("Click event propagation", async () => {
 	let clicked = 0;
 	const view = UI.Cell(UI.Button("Button").emit("ButtonClicked"));
 	class MyActivity extends Activity {
-		protected override createView() {
-			return view.create();
+		protected override defineView() {
+			return view;
 		}
 		onButtonClicked() {
 			clicked++;
@@ -188,8 +188,8 @@ test("Click event propagation", async () => {
 
 test("Button navigation with navigateTo", async () => {
 	class MyActivity extends Activity {
-		protected override createView() {
-			return UI.Button("foo").navigateTo("/foo").create();
+		protected override defineView() {
+			return UI.Button("foo").navigateTo("/foo");
 		}
 	}
 	app.addActivity(new MyActivity(), true);
@@ -201,8 +201,8 @@ test("Button navigation with navigateTo", async () => {
 test("Button navigation with navigateTo, relative path", async () => {
 	class MyActivity extends Activity {
 		override navigationPath = "foo";
-		protected override createView() {
-			return UI.Button("bar").navigateTo("./bar").create();
+		protected override defineView() {
+			return UI.Button("bar").navigateTo("./bar");
 		}
 	}
 	app.addActivity(new MyActivity());
@@ -213,8 +213,8 @@ test("Button navigation with navigateTo, relative path", async () => {
 
 test("Back button navigation", async () => {
 	class MyActivity extends Activity {
-		protected override createView() {
-			return UI.Button("back").emit("NavigateBack").create();
+		protected override defineView() {
+			return UI.Button("back").emit("NavigateBack");
 		}
 	}
 	app.addActivity(new MyActivity(), true);

@@ -15,16 +15,18 @@ import { View } from "./index.js";
  * To use a FormContext object with {@link UITextField} or {@link UIToggle} input elements (or e.g. a custom view), use their `.bindFormField()` builder method. The builder automatically binds to a `form` property from the current activity or custom view, and gets/sets the input value when needed.
  *
  * @example
- * const FormView = column(
- *   textField().bindFormField("foo"),
- *   label(bind("form.errors.foo.message"))
- *     .hideWhen(bind.not("form.errors.foo")),
- *   button("Go").emit("Submit")
- * );
+ * function FormView() {
+ *   return UI.Column(
+ *     UI.TextField().bindFormField("foo"),
+ *     UI.Label(bind("form.errors.foo.message"))
+ *       .hideWhen(bind.not("form.errors.foo")),
+ *     UI.Button("Go").emit("Submit")
+ *   );
+ * }
  *
  * class MyActivity extends Activity {
- *   protected createView() {
- *     return new formView();
+ *   protected defineView() {
+ *     return FormView();
  *   }
  *
  *   form = new FormContext((f) => f.object({

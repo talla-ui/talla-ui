@@ -49,7 +49,7 @@ export class TestMessageDialog
 		return { confirmed, other };
 	}
 
-	protected override createViewBody() {
+	protected override defineView() {
 		return UI.Column()
 			.accessibleRole("alertdialog")
 			.with(
@@ -57,7 +57,6 @@ export class TestMessageDialog
 				UI.Button(this.confirmLabel).emit("Confirm").requestFocus(),
 				UI.Button(this.otherLabel).emit("Other").hideWhen(!this.otherLabel),
 				UI.Button(this.cancelLabel).emit("Cancel").hideWhen(!this.cancelLabel),
-			)
-			.create();
+			);
 	}
 }

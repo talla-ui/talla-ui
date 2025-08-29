@@ -8,6 +8,7 @@ import type { NavigationContext } from "./NavigationContext.js";
 import type { RenderContext } from "./RenderContext.js";
 import { AsyncTaskQueue } from "./Scheduler.js";
 import { View } from "./View.js";
+import type { ViewBuilder } from "./ViewBuilder.js";
 
 /** Global list of activity instances for (old) activity class, for HMR */
 const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
@@ -20,15 +21,17 @@ const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
  *
  * This class provides infrastructure for path-based routing, based on the application's navigation path (such as the browser's current URL). However, activities can also be activated and deactivated manually.
  *
- * Activities emit `Active` and `Inactive` change events when state transitions occur. Several methods can be overridden to add custom behavior when the activity is activated or deactivated – i.e. {@link beforeActiveAsync}, {@link afterActiveAsync}, {@link beforeInactiveAsync}, and {@link afterInactiveAsync}. In addition, the {@link createView()} method must be overridden to create a view object and set the {@link view} property when the activity becomes active.
+ * Activities emit `Active` and `Inactive` change events when state transitions occur. Several methods can be overridden to add custom behavior when the activity is activated or deactivated – i.e. {@link beforeActiveAsync}, {@link afterActiveAsync}, {@link beforeInactiveAsync}, and {@link afterInactiveAsync}.
+ *
+ * The {@link defineView()} method must be overridden to return a view builder, which is used to create the view object when the activity becomes active. This method is called only once for each activity, as well as when the activity is reloaded using Hot Module Replacement (HMR).
  *
  * As soon as the activity is activated and a view is created, the view is rendered. The view is unlinked when the activity is deactivated, and the {@link view} property is set to undefined. To change rendering options or disable automatic rendering, use the {@link setRenderMode()} method.
  *
  * @example
  * // Create an activity and activate it:
  * class MyActivity extends Activity {
- *   protected createView() {
- *     return view.create(); // imported from a view file
+ *   protected defineView() {
+ *     return view; // imported from a view file
  *   }
  * }
  *
@@ -94,7 +97,7 @@ export class Activity extends ObservableObject {
 
 	/**
 	 * The current view, if any (attached automatically)
-	 * - This property is set automatically when active, using the result of the {@link Activity.createView()} method, and then rendered. By default, the view is rendered as a scrollable page. This can be changed using the {@link setRenderMode()} method.
+	 * - This property is set automatically when active, using the view builder returned by the {@link Activity.defineView()} method. By default, the view is rendered as a scrollable page. This can be changed using the {@link setRenderMode()} method.
 	 * - The view is automatically unlinked when the activity is deactivated or unlinked.
 	 * - Events emitted by the view are automatically delegated to the activity, see {@link delegate()}.
 	 */
@@ -214,11 +217,11 @@ export class Activity extends ObservableObject {
 	protected async afterInactiveAsync() {}
 
 	/**
-	 * Creates the encapsulated view object, to be overridden
-	 * - The base implementation of this method in the Activity class does nothing. This method must be overridden to create (and return) the activity's view instance.
-	 * - This method is called automatically when the activity is activated, or when the view needs to be recreated (e.g. for hot module replacement in development). The result is attached to the activity object, and assigned to {@link Activity.view}. If the view is unlinked, the {@link Activity.view} property is set to undefined again.
+	 * Returns a view builder for the activity's view, to be overridden
+	 * - The base implementation of this method in the Activity class does nothing. This method must be overridden to return a view builder, which is used to create the view object when the activity becomes active.
+	 * - This method is called only once for each activity, as well as when the activity is reloaded using Hot Module Replacement (HMR).
 	 */
-	protected createView(): View | undefined | void {
+	protected defineView(): ViewBuilder | undefined | void {
 		// nothing here
 	}
 
@@ -245,15 +248,18 @@ export class Activity extends ObservableObject {
 	}
 
 	/** Creates and/or renders the activity's view, called automatically after activation */
-	private _showView(forceCreate?: boolean) {
+	private _showView(force?: boolean) {
 		if (!this.isActive()) return;
 		let view = this.view;
 
 		// create view and attach it
-		if (!view || forceCreate) {
-			let newView = this.createView();
+		if (!view || force) {
+			let builder =
+				(!force && this._viewBuilder) || this.defineView() || undefined;
+			let newView = builder?.create();
 			if (!newView) return;
 			if (!(newView instanceof View)) throw err(ERROR.View_Invalid);
+			this._viewBuilder = builder;
 			this.view = this.attach(newView, {
 				delegate: this,
 				detached: (view) => {
@@ -515,6 +521,9 @@ export class Activity extends ObservableObject {
 
 	/** @internal Activation queue for this activity */
 	private readonly _activation = new ActivationQueue();
+
+	/** @internal View builder, if already set */
+	declare private _viewBuilder?: ViewBuilder;
 
 	/** @internal Original class that's been updated using hot reload (set on prototype) */
 	declare private _OrigClass?: typeof Activity;

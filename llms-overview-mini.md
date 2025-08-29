@@ -29,14 +29,14 @@ Activity contains application logic:
 
 ```typescript
 import { Activity } from "talla-ui";
-import { fooView } from "./foo.view.js";
+import { FooView } from "./foo.view.js";
 
 export class FooActivity extends Activity {
 	count = 0; // state as public properties
 	someList = ["Alice", "Bob"];
 
-	protected createView() {
-		return fooView.create();
+	protected defineView() {
+		return FooView();
 	}
 
 	protected onCountUp() {
@@ -99,10 +99,10 @@ export class MyActivity extends Activity {
 }
 
 class DialogActivity extends Activity {
-	protected createView() {
+	protected defineView() {
 		// This is a dialog; leave out to render as scrolling page
 		this.setRenderMode("dialog");
-		return dialogView.create();
+		return DialogView();
 	}
 	protected onCancel() {
 		this.unlink();

@@ -97,43 +97,49 @@ class CountService extends ObservableObject {
 	}
 }
 
-const mainView = UI.Column()
-	.align("center")
-	.with(
-		UI.Spacer(32),
-		MyTitle("Title").width(300),
-		Collapsible(
-			"Rendered",
-			UI.Column()
-				.divider()
-				.border()
-				.with(
-					UI.Label(fmt("Built: {}", new Date().toLocaleString())).padding(),
-					UI.Label(bind.fmt("View created: {}", bind("viewCreated"))).padding(),
-					UI.Label(bind.fmt("Current: {}", bind("currentDate"))).padding(),
-					UI.Label(bind.fmt("Count: {}", bind("countService.count"))).padding(),
-				),
-		)
-			.expand()
-			.width(300),
+function MainView() {
+	return UI.Column()
+		.align("center")
+		.with(
+			UI.Spacer(32),
+			MyTitle("Title").width(300),
+			Collapsible(
+				"Rendered",
+				UI.Column()
+					.divider()
+					.border()
+					.with(
+						UI.Label(fmt("Built: {}", new Date().toLocaleString())).padding(),
+						UI.Label(
+							bind.fmt("View defined: {}", bind("viewDefined")),
+						).padding(),
+						UI.Label(bind.fmt("Current: {}", bind("currentDate"))).padding(),
+						UI.Label(
+							bind.fmt("Count: {}", bind("countService.count")),
+						).padding(),
+					),
+			)
+				.expand()
+				.width(300),
 
-		UI.Label(bind.fmt("Current: {:L}", bind("currentDate"))).padding(),
-		UI.Spacer(8),
-		UI.Label(bind.fmt("Count: {}", bind("countService.count"))).dim(
-			bind.not("countService.count"),
-		),
-		UI.Spacer(8),
-		UI.Row(UI.Button("Up").icon("chevronUp").emit("Count")),
-		UI.Spacer(8),
-		UI.Row(
-			UI.Button("Sub")
-				.navigateTo("./sub")
-				.icon("chevronNext")
-				.buttonStyle("iconTopEnd"),
-			UI.Button("Remount").emit("Remount").buttonStyle("primary"),
-			UI.Button("Change").emit("ChangeEvent"),
-		),
-	);
+			UI.Label(bind.fmt("Current: {:L}", bind("currentDate"))).padding(),
+			UI.Spacer(8),
+			UI.Label(bind.fmt("Count: {}", bind("countService.count"))).dim(
+				bind.not("countService.count"),
+			),
+			UI.Spacer(8),
+			UI.Row(UI.Button("Up").icon("chevronUp").emit("Count")),
+			UI.Spacer(8),
+			UI.Row(
+				UI.Button("Sub")
+					.navigateTo("./sub")
+					.icon("chevronNext")
+					.buttonStyle("iconTopEnd"),
+				UI.Button("Remount").emit("Remount").buttonStyle("primary"),
+				UI.Button("Change").emit("ChangeEvent"),
+			),
+		);
+}
 
 export class MainActivity extends Activity {
 	static {
@@ -142,7 +148,7 @@ export class MainActivity extends Activity {
 	}
 
 	navigationPath = "";
-	viewCreated = new Date();
+	viewDefined = new Date();
 
 	get currentDate() {
 		return new Date();
@@ -163,9 +169,9 @@ export class MainActivity extends Activity {
 
 	countService = new CountService();
 
-	protected override createView() {
-		this.viewCreated = new Date();
-		return mainView.create();
+	protected override defineView() {
+		this.viewDefined = new Date();
+		return MainView();
 	}
 
 	protected onCount() {
@@ -184,43 +190,45 @@ export class RouterActivity extends Activity {
 	}
 }
 
-const SubView = UI.Column()
-	.align("center")
-	.with(
-		UI.Spacer(32),
-		UI.Label(bind.fmt("Sub activity created {}", bind("created"))),
-		UI.Label(bind.fmt("Changes: {}", bind("activeCount.changes"))),
-		UI.Label(bind.fmt("Count: {}", bind("activeCount.state.count"))),
-		UI.Label(
-			bind.fmt("Count * 2: {}", bind("activeCount.state.countTimesTwo")),
-		),
-		UI.Label(
-			bind.fmt(
-				"Count is non-zero? {}",
-				bind("activeCount.state.countIsNonZero"),
+function SubView() {
+	return UI.Column()
+		.align("center")
+		.with(
+			UI.Spacer(32),
+			UI.Label(bind.fmt("Sub activity created {}", bind("created"))),
+			UI.Label(bind.fmt("Changes: {}", bind("activeCount.changes"))),
+			UI.Label(bind.fmt("Count: {}", bind("activeCount.state.count"))),
+			UI.Label(
+				bind.fmt("Count * 2: {}", bind("activeCount.state.countTimesTwo")),
 			),
-		),
-		UI.Spacer(8),
-		UI.Label(
-			bind.fmt(
-				"Viewport: {:i}×{:i}",
-				bind("viewport.width"),
-				bind("viewport.height"),
+			UI.Label(
+				bind.fmt(
+					"Count is non-zero? {}",
+					bind("activeCount.state.countIsNonZero"),
+				),
 			),
-		),
-		UI.Spacer(8),
-		UI.Row(
-			UI.TextField()
-				.value(bind("activeCount.state.count"))
-				.emit("SetCount")
-				.trim(),
-			UI.Button("Reset").emit("ResetCount"),
-		).padding(8),
-		UI.Row(
-			UI.Button("Back").icon("chevronBack").emit("NavigateBack"),
-			UI.Row(UI.Button("Other").navigateTo("/other").icon("chevronNext")),
-		).layout(bind("viewport.cols").lt(2).then({ axis: "vertical" })),
-	);
+			UI.Spacer(8),
+			UI.Label(
+				bind.fmt(
+					"Viewport: {:i}×{:i}",
+					bind("viewport.width"),
+					bind("viewport.height"),
+				),
+			),
+			UI.Spacer(8),
+			UI.Row(
+				UI.TextField()
+					.value(bind("activeCount.state.count"))
+					.emit("SetCount")
+					.trim(),
+				UI.Button("Reset").emit("ResetCount"),
+			).padding(8),
+			UI.Row(
+				UI.Button("Back").icon("chevronBack").emit("NavigateBack"),
+				UI.Row(UI.Button("Other").navigateTo("/other").icon("chevronNext")),
+			).layout(bind("viewport.cols").lt(2).then({ axis: "vertical" })),
+		);
+}
 
 export class SubActivity extends Activity {
 	constructor(public readonly countService: CountService) {
@@ -256,14 +264,9 @@ export class SubActivity extends Activity {
 	});
 	foo = "bar";
 
-	protected override createView() {
-		let parent = ObservableObject.whence(this);
-		while (parent) {
-			console.log("Parent is ", parent);
-			parent = ObservableObject.whence(parent);
-		}
-		console.log("SubActivity createView", this.activeCount);
-		return SubView.create();
+	protected override defineView() {
+		console.log("SubActivity defineView", this.activeCount);
+		return SubView();
 	}
 
 	protected onSetCount(e: ViewEvent<UITextField>) {
@@ -282,21 +285,23 @@ export class SubActivity extends Activity {
 	}
 }
 
-const OtherView = UI.Column()
-	.align("center")
-	.with(
-		UI.Spacer(32),
-		UI.Label(bind.fmt("Other activity created {}", bind("created"))),
-		UI.Spacer(8),
-		UI.Row(UI.Button("Back").icon("chevronBack").emit("NavigateBack")),
-		UI.Row(UI.Button("Dialog").emit("ShowDialog")),
-	);
+function OtherView() {
+	return UI.Column()
+		.align("center")
+		.with(
+			UI.Spacer(32),
+			UI.Label(bind.fmt("Other activity created {}", bind("created"))),
+			UI.Spacer(8),
+			UI.Row(UI.Button("Back").icon("chevronBack").emit("NavigateBack")),
+			UI.Row(UI.Button("Dialog").emit("ShowDialog")),
+		);
+}
 
 export class OtherActivity extends Activity {
 	created = new Date();
 
-	protected override createView() {
-		return OtherView.create();
+	protected override defineView() {
+		return OtherView();
 	}
 
 	beforeUnlink() {
@@ -308,21 +313,23 @@ export class OtherActivity extends Activity {
 	}
 }
 
-const DialogView = UI.Column()
-	.align("center")
-	.gap(8)
-	.padding(16)
-	.with(
-		UI.Spacer(32),
-		UI.Label("Dialog"),
-		UI.Button("Dropdown").chevron("down").emit("Drop"),
-		UI.Row(UI.Button("Close").icon("close").emit("Close")),
-	);
+function DialogView() {
+	return UI.Column()
+		.align("center")
+		.gap(8)
+		.padding(16)
+		.with(
+			UI.Spacer(32),
+			UI.Label("Dialog"),
+			UI.Button("Dropdown").chevron("down").emit("Drop"),
+			UI.Row(UI.Button("Close").icon("close").emit("Close")),
+		);
+}
 
 export class DialogActivity extends Activity {
-	protected override createView() {
+	protected override defineView() {
 		this.setRenderMode("dialog");
-		return DialogView.create();
+		return DialogView();
 	}
 
 	protected onClose() {

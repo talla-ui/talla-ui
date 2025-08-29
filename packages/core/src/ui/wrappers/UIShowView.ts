@@ -185,7 +185,6 @@ export class UIShowView extends View {
 	/** Requests input focus on the current view element */
 	requestFocus() {
 		this.body?.requestFocus();
-		return this;
 	}
 
 	/** @internal Creates or removes the body view content when state changes */

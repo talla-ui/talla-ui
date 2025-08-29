@@ -37,15 +37,15 @@ Create a first activity to contain application logic.
 
 ```typescript
 import { Activity } from "talla-ui";
-import { fooView } from "./foo.view.js";
+import { FooView } from "./foo.view.js";
 
 export class FooActivity extends Activity {
 	// State goes here, using public properties
 	count = 0;
 
 	// Create the view when activated, or on hot reload
-	protected createView() {
-		return fooView.create(); // see below
+	protected defineView() {
+		return FooView(); // see below
 	}
 
 	// Event handlers go here, as protected 'on...' methods
@@ -223,8 +223,8 @@ Normally, all activities are rendered as scrollable 'pages'. However, the 'none'
 export class BooksListActivity extends Activity {
 	navigationPath = "books";
 
-	protected createView() {
-		return booksListView.create(); // list/master view
+	protected defineView() {
+		return BooksListView(); // list/master view
 	}
 
 	// The nested activity is rendered by the parent view
@@ -266,9 +266,9 @@ export class MyActivity extends Activity {
 }
 
 class DialogActivity extends Activity {
-	protected createView() {
+	protected defineView() {
 		this.setRenderMode("dialog");
-		return dialogView.create(); // inner dialog view (with min/max width)
+		return DialogView(); // inner dialog view (with min/max width)
 	}
 
 	protected onCancel() {
@@ -964,7 +964,7 @@ export function CustomElement() {
 
 ## Development and Testing
 
-Tälla UI supports hot reload at the activity level, copying updated activity prototypes (methods) to running instances. Afterwards, the view is updated with the result of `createView()`.
+Tälla UI supports hot reload at the activity level, copying updated activity prototypes (methods) to running instances. Afterwards, the view is updated using the new view builder returned by `defineView()`.
 
 ```typescript
 class MyActivity extends Activity {
@@ -979,9 +979,9 @@ class MyActivity extends Activity {
 	// (i.e. state is preserved after hot reload)
 	foo = "bar";
 
-	createView() {
+	protected defineView() {
 		// This is called, to update the newly imported view if any
-		return myView.create();
+		return MyView();
 	}
 
 	onSomeEvent() {

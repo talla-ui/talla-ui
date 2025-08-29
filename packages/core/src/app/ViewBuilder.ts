@@ -44,7 +44,22 @@ export namespace ViewBuilder {
 			initialize?: (view: TView) => void,
 		) {
 			this.ViewClass = ViewClass;
-			if (initialize) this._before.push(initialize);
+			if (initialize) this._init.push(initialize);
+
+			// before finalize, set properties, or apply bindings
+			this._final.push((view) => {
+				for (let p in this._properties) {
+					let valueOrBinding = this._properties[p];
+					if (isBinding(valueOrBinding)) {
+						if (!(p in view)) (view as any)[p] = undefined;
+						view.observe(valueOrBinding, (v) => {
+							(view as any)[p] = v;
+						});
+					} else {
+						(view as any)[p] = valueOrBinding;
+					}
+				}
+			});
 		}
 
 		/** The view class constructor that will be used to create instances */
@@ -74,7 +89,7 @@ export namespace ViewBuilder {
 		 * @param callback The initialization callback that receives the view instance
 		 */
 		initialize(callback: (view: TView) => void) {
-			this._before.push(callback);
+			this._init.push(callback);
 		}
 
 		/**
@@ -83,7 +98,7 @@ export namespace ViewBuilder {
 		 * @param callback The finalization callback that receives the view instance
 		 */
 		finalize(callback: (view: TView) => void) {
-			this._after.push(callback);
+			this._final.push(callback);
 		}
 
 		/**
@@ -95,7 +110,7 @@ export namespace ViewBuilder {
 		 * @param handle The handler function to call when the value changes
 		 */
 		update(valueOrBinding: any, handle: (this: TView, value: any) => void) {
-			this._after.push((view) => {
+			this._final.push((view) => {
 				if (isBinding(valueOrBinding)) {
 					view.observe(valueOrBinding, handle);
 				} else {
@@ -131,78 +146,28 @@ export namespace ViewBuilder {
 					this.emit(new ObservableEvent(a, this, eventData, undefined, e));
 				};
 			}
-			this._intercept[eventName] = alias;
+			this._final.push((view) => {
+				ObservableObject.intercept(view, eventName, alias);
+			});
 		}
 
 		/**
 		 * Creates and initializes a new view instance
 		 *
 		 * @description
-		 * This method creates a new instance of the view class and applies all configured properties, bindings, callbacks, and event interceptors.
-		 *
-		 * The following steps are performed in order:
-		 * 1. Run all initialization callbacks
-		 * 2. Set properties and apply bindings
-		 * 3. Run all finalization callbacks
-		 * 4. Set up event interceptors
-		 *
+		 * This method creates a new instance of the view class and runs all configuration callbacks.
 		 * @returns A fully initialized view instance
 		 */
 		create() {
-			return this._apply(new this.ViewClass());
+			let result = new this.ViewClass();
+			for (let f of this._init) f(result);
+			for (let f of this._final) f(result);
+			return result;
 		}
 
-		/**
-		 * Applies all configuration to a view instance
-		 *
-		 * @description
-		 * This private method handles the actual application of all configured settings to a view instance. It executes in the following order:
-		 * 1. Runs all initialization callbacks
-		 * 2. Sets properties and applies bindings
-		 * 3. Runs all finalization callbacks
-		 * 4. Sets up event interceptors
-		 *
-		 * @param view The view instance to configure
-		 * @returns The configured view instance
-		 */
-		private _apply(view: TView) {
-			// call initialize(...) callbacks
-			for (let f of this._before) f(view);
-
-			// set properties, or apply bindings
-			for (let p in this._properties) {
-				let valueOrBinding = this._properties[p];
-				if (isBinding(valueOrBinding)) {
-					if (!(p in view)) (view as any)[p] = undefined;
-					view.observe(valueOrBinding, (v) => {
-						(view as any)[p] = v;
-					});
-				} else {
-					(view as any)[p] = valueOrBinding;
-				}
-			}
-
-			// call finalize(...) callbacks
-			for (let f of this._after) f(view);
-
-			// add event intercepts
-			for (let eventName in this._intercept) {
-				ObservableObject.intercept(
-					view,
-					eventName,
-					this._intercept[eventName]!,
-				);
-			}
-			return view;
-		}
-
-		private _before: ((view: TView) => void)[] = [];
-		private _after: ((view: TView) => void)[] = [];
+		private _init: ((view: TView) => void)[] = [];
+		private _final: ((view: TView) => void)[] = [];
 		private _properties: Record<string, any> = {};
-		private _intercept: Record<
-			string,
-			ObservableObject.InterceptHandler<TView>
-		> = {};
 	}
 }
 
@@ -277,7 +242,7 @@ export const CustomViewBuilder = function (
 	initializer.initialize((view) => {
 		let builder = _deferredBuilders.get(defineBody);
 		if (!builder) _deferredBuilders.set(defineBody, (builder = defineBody()));
-		(view as any).createViewBody = () => builder.create();
+		(view as any).defineView = () => builder;
 	});
 	return {
 		initializer,

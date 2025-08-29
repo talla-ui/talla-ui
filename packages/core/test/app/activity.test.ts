@@ -268,8 +268,8 @@ describe("View rendering", () => {
 
 	test("Rendered page view", async () => {
 		class MyActivity extends Activity {
-			protected override createView() {
-				return UI.Cell(UI.Label("Hello, world!")).create();
+			protected override defineView() {
+				return UI.Cell(UI.Label("Hello, world!"));
 			}
 		}
 		let activity = new MyActivity();
@@ -279,8 +279,8 @@ describe("View rendering", () => {
 
 	test("Find views", async () => {
 		class MyActivity extends Activity {
-			protected override createView() {
-				return UI.Cell(UI.Label("foo"), UI.Label("bar")).create();
+			protected override defineView() {
+				return UI.Cell(UI.Label("foo"), UI.Label("bar"));
 			}
 		}
 		let activity = new MyActivity();

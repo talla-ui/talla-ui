@@ -199,8 +199,8 @@ test("Set inserted view using custom view, and render", async () => {
 	}
 
 	class MyActivity extends Activity {
-		protected override createView() {
-			return UI.Show(bind("vc")).create();
+		protected override defineView() {
+			return UI.Show(bind("vc"));
 		}
 		vc = this.attach(MyContent().text("foo").create());
 	}
@@ -225,9 +225,9 @@ test("Use activity view as inserted view and render", async () => {
 
 	// activity that will be rendered as nested view
 	class MySecondActivity extends Activity {
-		protected override createView() {
+		protected override defineView() {
 			this.setRenderMode("none");
-			return UI.Cell(UI.Button("foo").emit("ButtonPress")).create();
+			return UI.Cell(UI.Button("foo").emit("ButtonPress"));
 		}
 		onButtonPress() {
 			countSecond++;
@@ -236,11 +236,10 @@ test("Use activity view as inserted view and render", async () => {
 
 	// containing activity
 	class MyActivity extends Activity {
-		protected override createView() {
+		protected override defineView() {
 			return UI.Cell()
 				.accessibleLabel("outer")
-				.with(UI.Show(bind("second.view"), true))
-				.create();
+				.with(UI.Show(bind("second.view"), true));
 		}
 		readonly second = this.attach(new MySecondActivity());
 		onButtonPress() {

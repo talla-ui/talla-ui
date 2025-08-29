@@ -2,6 +2,7 @@ import { ERROR, err } from "../errors.js";
 import { ObservableEvent, ObservableObject } from "../object/index.js";
 import { RenderContext } from "./RenderContext.js";
 import { View } from "./View.js";
+import type { ViewBuilder } from "./ViewBuilder.js";
 
 /**
  * A class that encapsulates custom view content
@@ -51,19 +52,19 @@ export class CustomView extends View {
 
 	/**
 	 * The encapsulated view object, an attached view
-	 * - Initially, this property is undefined. The view body is only created (using {@link createViewBody()}) when the CustomView instance is first rendered.
+	 * - Initially, this property is undefined. The view body is only created (using the result of {@link defineView()}) when the CustomView instance is first rendered.
 	 * - Alternatively, you can set it yourself, e.g. in the constructor. In this case, ensure that the object is a {@link View} instance that's attached directly to this view (for event handling and bindings), delegating events using {@link delegate()}.
 	 */
 	protected body?: View;
 
 	/**
-	 * Creates the encapsulated view object, may be overridden
+	 * Returns a view builder for the encapsulated view object, to be overridden if needed
 	 *
-	 * This method is called automatically when rendering a custom view. The result is attached to the instance, and assigned to {@link CustomView.body}.
+	 * This method is called automatically when rendering a custom view. A view instance is created, attached, and assigned to {@link CustomView.body}.
 	 *
-	 * @note When using the builder pattern with {@link CustomViewBuilder}, this method is automatically implemented to return an instance of the content view.
+	 * @note This method is overridden automatically by {@link CustomViewBuilder} to return the content builder function.
 	 */
-	protected createViewBody(): View | undefined | void {
+	protected defineView(): ViewBuilder | undefined | void {
 		// Nothing here...
 	}
 
@@ -86,8 +87,7 @@ export class CustomView extends View {
 	 * - This method should be overridden if input focus should be requested on another element than the view body itself.
 	 */
 	requestFocus() {
-		if (this.body) this.body.requestFocus();
-		return this;
+		this.body?.requestFocus();
 	}
 
 	/**
@@ -127,7 +127,7 @@ export class CustomView extends View {
 	 */
 	render(callback: RenderContext.RenderCallback) {
 		if (!this.body) {
-			let body = this.createViewBody();
+			let body = this.defineView()?.create();
 			if (body) {
 				if (!(body instanceof View)) throw err(ERROR.View_Invalid);
 				this.body = this.attach(body, {

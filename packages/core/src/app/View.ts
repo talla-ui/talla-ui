@@ -13,9 +13,7 @@ export type ViewEvent<
  * @description
  * The view is one of the main architectural components of an application. It provides a method to render its encapsulated content, either directly or using a collection of built-in UI elements.
  *
- * Views can be rendered on their own (using {@link AppContext.render app.render()}) or included as content within another view. In most cases, a top-level view is created from the {@link Activity.createView()} method.
- *
- * The View class can't be used on its own. Instead, define views using functions that return view _builders_, e.g. `UI.Column()`, `UI.Button()`, and `UI.ShowWhen()`; or define a custom view for reusable content, using the {@link CustomView} class.
+ * Views are typically expressed using functions that return view _builders_ (i.e. 'blueprints' or templates that define a view with a particular configuration and content). Afterwards, views can be rendered on their own (using {@link AppContext.render app.render()}), included as content within another view, or used as an activity's view (overriding the {@link Activity.defineView()} method).
  *
  * @see {@link UIViewElement}
  * @see {@link CustomView}

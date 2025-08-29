@@ -61,14 +61,6 @@ export class UIListView<
 		itemBuilder: ViewBuilder,
 		emptyStateBuilder?: ViewBuilder,
 	) {
-		function setRole(content?: View) {
-			if (content instanceof UIScrollView) {
-				setRole(content.content.first());
-			} else if (content instanceof UIContainer) {
-				content.accessibleRole ||= "list";
-			}
-			return content;
-		}
 		let sync = false;
 		let running: { abort?: boolean } | undefined;
 		async function doUpdateAsync() {
@@ -80,7 +72,7 @@ export class UIListView<
 			running = { abort: false };
 			instance._updateItems(itemBuilder, emptyStateBuilder, running);
 		}
-		instance.createViewBody = () => setRole(contentBuilder.create());
+		instance.defineView = () => contentBuilder;
 		instance.observe("items", doUpdateAsync);
 		instance.observe("firstIndex", doUpdateAsync);
 		instance.observe("maxItems", doUpdateAsync);
@@ -175,7 +167,6 @@ export class UIListView<
 			let goFocus: any = content.get(index);
 			if (typeof goFocus.requestFocus === "function") goFocus.requestFocus();
 		}
-		return this;
 	}
 
 	/**
@@ -255,6 +246,15 @@ export class UIListView<
 		this._contentMap = undefined;
 		this._lastEmptyState = undefined;
 		this._lastSpacer = undefined;
+	}
+
+	/** Render callback, sets the accessible role of the list container */
+	protected override beforeRender() {
+		let body = this.body;
+		while (body instanceof UIScrollView) body = body.content.first();
+		if (body instanceof UIContainer) {
+			body.accessibleRole ||= "list";
+		}
 	}
 
 	/** Update the container with (existing or new) views, one for each list item; only called from list observer */
@@ -425,7 +425,7 @@ export namespace UIListView {
 		constructor(item: any, body: ViewBuilder<View>) {
 			super();
 			this.item = item instanceof ItemValueWrapper ? item.value : item;
-			this.createViewBody = () => body.create();
+			this.defineView = () => body;
 		}
 
 		override delegate(event: ObservableEvent): true {

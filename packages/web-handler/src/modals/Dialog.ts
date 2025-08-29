@@ -44,10 +44,10 @@ export class Dialog extends CustomView implements AppContext.DialogController {
 		});
 	}
 
-	protected override createViewBody() {
-		return UI.Cell(UI.Show(bind("dialogView")))
-			.apply(Dialog.styles.containerModifier)
-			.create();
+	protected override defineView() {
+		return UI.Cell(UI.Show(bind("dialogView"))).apply(
+			Dialog.styles.containerModifier,
+		);
 	}
 
 	onEscapeKeyPress(e: ViewEvent) {

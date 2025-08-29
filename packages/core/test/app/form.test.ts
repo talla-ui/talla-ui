@@ -204,8 +204,8 @@ test("Custom form container, rendered", async () => {
 		FormContainer(bind("form2"), UI.TextField().bindFormField("text")),
 	);
 	class MyActivity extends Activity {
-		protected override createView() {
-			return view.create();
+		protected override defineView() {
+			return view;
 		}
 		form1 = new FormContext().set("text", "foo");
 		form2 = new FormContext().set("text", "bar");

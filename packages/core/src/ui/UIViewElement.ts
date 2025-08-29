@@ -75,7 +75,7 @@ export abstract class UIViewElement extends View {
 	 * - This method emits an event, which is handled by the renderer if and when possible.
 	 */
 	requestFocus() {
-		return emitRendered(this, "RequestFocus");
+		emitRendered(this, "RequestFocus");
 	}
 
 	/**
@@ -83,7 +83,7 @@ export abstract class UIViewElement extends View {
 	 * - This method emits an event, which is handled by the renderer if and when possible.
 	 */
 	requestFocusNext() {
-		return emitRendered(this, "RequestFocusNext");
+		emitRendered(this, "RequestFocusNext");
 	}
 
 	/**
@@ -91,7 +91,7 @@ export abstract class UIViewElement extends View {
 	 * - This method emits an event, which is handled by the renderer if and when possible.
 	 */
 	requestFocusPrevious() {
-		return emitRendered(this, "RequestFocusPrevious");
+		emitRendered(this, "RequestFocusPrevious");
 	}
 
 	/**

@@ -20,8 +20,8 @@ export class TestDialog
 		});
 	}
 
-	protected override createViewBody() {
-		return UI.Cell(UI.Show(bind("dialogView"))).create();
+	protected override defineView() {
+		return UI.Cell(UI.Show(bind("dialogView")));
 	}
 
 	show(place?: Partial<RenderContext.PlacementOptions>) {

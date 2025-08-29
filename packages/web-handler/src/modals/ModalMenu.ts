@@ -126,7 +126,7 @@ export class ModalMenu
 		});
 	}
 
-	protected override createViewBody() {
+	protected override defineView() {
 		let shown = Date.now();
 		const onMenuRendered = () => {
 			shown = Date.now();
@@ -193,8 +193,7 @@ export class ModalMenu
 						.intercept("SpacebarPress", "Select", item)
 						.with(content);
 				}),
-			)
-			.create();
+			);
 	}
 
 	onArrowDownKeyPress(e: ViewEvent) {

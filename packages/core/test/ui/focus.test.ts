@@ -35,8 +35,8 @@ test("Single element, request focus", async () => {
 
 test("Single custom view, request focus", async () => {
 	class MyView extends CustomView {
-		protected override createViewBody() {
-			return UI.Cell().allowFocus().create();
+		protected override defineView() {
+			return UI.Cell().allowFocus();
 		}
 	}
 	let view = new MyView();
@@ -68,7 +68,7 @@ test("Focusing one element blurs another", async () => {
 	class MyView extends CustomView {
 		cell2?: UICell;
 
-		protected override createViewBody() {
+		protected override defineView() {
 			return UI.Cell(
 				UI.Cell()
 					.allowFocus()
@@ -79,7 +79,7 @@ test("Focusing one element blurs another", async () => {
 					.allowFocus()
 					.intercept("BeforeRender", "Cell2Ref")
 					.intercept("FocusIn", "Done"),
-			).create();
+			);
 		}
 
 		onCell1Ref(e: ViewEvent<UICell>) {

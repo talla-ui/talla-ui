@@ -235,8 +235,8 @@ describe("Rendering views", () => {
 
 	test("Cell view from root activity", async () => {
 		class MyActivity extends Activity {
-			protected override createView() {
-				return new UICell();
+			protected override defineView() {
+				return UI.Cell();
 			}
 		}
 		let activity = new MyActivity();
@@ -247,8 +247,8 @@ describe("Rendering views", () => {
 
 	test("Remove view by deactivating activity", async () => {
 		class MyActivity extends Activity {
-			protected override createView() {
-				return new UICell();
+			protected override defineView() {
+				return UI.Cell();
 			}
 		}
 		let activity = new MyActivity();
@@ -271,11 +271,9 @@ describe("Rendering views", () => {
 
 	test("Show dialog", async () => {
 		class MyActivity extends Activity {
-			protected override createView() {
+			protected override defineView() {
 				this.setRenderMode("dialog");
-				let view = new UICell();
-				view.content.add(new UILabel("foo"));
-				return view;
+				return UI.Cell(UI.Label("foo"));
 			}
 		}
 		let activity = new MyActivity();

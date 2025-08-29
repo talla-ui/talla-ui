@@ -24,11 +24,11 @@ import {
 
 class CountActivity extends Activity {
 	override navigationPath = "count";
-	protected override createView() {
+	protected override defineView() {
 		return UI.Cell(
 			UI.TextField().value(bind("count")).emit("SetCount").name("count-input"),
 			UI.Button("+").emit("CountUp"),
-		).create();
+		);
 	}
 	count = 0;
 	onCountUp() {
