@@ -213,7 +213,7 @@ export declare namespace DeferredViewBuilder {
 /**
  * A view builder for a component view class with a function to define its body
  * - The view class is used to create each view instance.
- * - The encapsulated function is called only once, before the first view is created, to define the body of the view.
+ * - The encapsulated view builder function is called only once, before the first view is created, to define the body of the view.
  *
  * @example
  * class MyWrapper extends ComponentView {
@@ -232,14 +232,17 @@ export declare namespace DeferredViewBuilder {
  */
 export const ComponentViewBuilder = function (
 	ViewClass: new () => View,
-	defineBody: () => ViewBuilder,
+	viewBuilder?: () => ViewBuilder,
 ) {
 	let initializer = new ViewBuilder.Initializer(ViewClass);
-	initializer.initialize((view) => {
-		let builder = _deferredBuilders.get(defineBody);
-		if (!builder) _deferredBuilders.set(defineBody, (builder = defineBody()));
-		(view as any).viewBuilder = () => builder;
-	});
+	if (viewBuilder) {
+		initializer.initialize((view) => {
+			let builder = _deferredBuilders.get(viewBuilder);
+			if (!builder)
+				_deferredBuilders.set(viewBuilder, (builder = viewBuilder()));
+			(view as any).viewBuilder = () => builder;
+		});
+	}
 	return {
 		initializer,
 		create: initializer.create.bind(initializer),
@@ -289,11 +292,11 @@ export declare namespace ComponentViewBuilder {
 	export interface Type {
 		new <TView extends ComponentView = ComponentView>(
 			ViewClass: new () => TView,
-			defineBody: () => ViewBuilder,
+			viewBuilder: () => ViewBuilder,
 		): ComponentViewBuilder<TView>;
 		<TView extends ComponentView = ComponentView>(
 			ViewClass: new () => TView,
-			defineBody: () => ViewBuilder,
+			viewBuilder: () => ViewBuilder,
 		): ComponentViewBuilder<TView>;
 	}
 }
