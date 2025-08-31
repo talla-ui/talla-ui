@@ -1,11 +1,11 @@
-import { app, ObservableEvent, UIViewElement } from "@talla-ui/core";
+import { app, ObservableEvent, UIElement } from "@talla-ui/core";
 
 /**
  * @internal Adds a listener to the specified builder to allow dragging of the element, emitting relative position change events
  * @note This function is exported by {@link WebRenderer}.
  */
 export function applyDragRelative(
-	builder: UIViewElement.ElementBuilder<UIViewElement>,
+	builder: UIElement.ElementBuilder<UIElement>,
 ) {
 	builder.initializer.finalize((view) => {
 		view.listen((e: ObservableEvent) => {

@@ -12,8 +12,8 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import {
 	Activity,
 	AppContext,
-	CustomView,
-	CustomViewBuilder,
+	ComponentView,
+	ComponentViewBuilder,
 	LocalData,
 	MessageDialogOptions,
 	ModalMenuOptions,
@@ -177,8 +177,8 @@ describe("Rendering views", () => {
 		await app.renderer.expectOutputAsync({ source: view });
 	});
 
-	test("Cell view from single custom view", async () => {
-		const MyView = CustomViewBuilder(CustomView, () => UI.Cell());
+	test("Cell view from single component view", async () => {
+		const MyView = ComponentViewBuilder(ComponentView, () => UI.Cell());
 		let view = MyView.create();
 		let app = useTestContext();
 		renderTestView(view);
@@ -188,15 +188,15 @@ describe("Rendering views", () => {
 		});
 	});
 
-	test("Cell view from single custom view, handle events async", async () => {
-		class CellView extends CustomView {
+	test("Cell view from single component view, handle events async", async () => {
+		class CellView extends ComponentView {
 			async onClick(e: ViewEvent) {
 				expect(e.source).toBeInstanceOf(UICell);
 				await Promise.resolve();
 				throw Error("Catch me");
 			}
 		}
-		const MyView = CustomViewBuilder(CellView, () => UI.Cell());
+		const MyView = ComponentViewBuilder(CellView, () => UI.Cell());
 		let view = MyView.create();
 		useTestContext({ throwUncaughtErrors: false });
 		let mockErrorHandler = vi.fn();
@@ -209,7 +209,7 @@ describe("Rendering views", () => {
 	});
 
 	test("Remove view after rendering", async () => {
-		const MyView = CustomViewBuilder(CustomView, () => UI.Cell());
+		const MyView = ComponentViewBuilder(ComponentView, () => UI.Cell());
 		let view = MyView.create();
 		let app = useTestContext();
 		let rendered = app.render(view);
@@ -235,7 +235,7 @@ describe("Rendering views", () => {
 
 	test("Cell view from root activity", async () => {
 		class MyActivity extends Activity {
-			protected override defineView() {
+			protected override viewBuilder() {
 				return UI.Cell();
 			}
 		}
@@ -247,7 +247,7 @@ describe("Rendering views", () => {
 
 	test("Remove view by deactivating activity", async () => {
 		class MyActivity extends Activity {
-			protected override defineView() {
+			protected override viewBuilder() {
 				return UI.Cell();
 			}
 		}
@@ -271,7 +271,7 @@ describe("Rendering views", () => {
 
 	test("Show dialog", async () => {
 		class MyActivity extends Activity {
-			protected override defineView() {
+			protected override viewBuilder() {
 				this.setRenderMode("dialog");
 				return UI.Cell(UI.Label("foo"));
 			}

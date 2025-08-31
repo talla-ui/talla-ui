@@ -35,7 +35,7 @@ export class FooActivity extends Activity {
 	count = 0; // state as public properties
 	someList = ["Alice", "Bob"];
 
-	protected defineView() {
+	protected viewBuilder() {
 		return FooView();
 	}
 
@@ -99,7 +99,7 @@ export class MyActivity extends Activity {
 }
 
 class DialogActivity extends Activity {
-	protected defineView() {
+	protected viewBuilder() {
 		// This is a dialog; leave out to render as scrolling page
 		this.setRenderMode("dialog");
 		return DialogView();
@@ -212,11 +212,11 @@ UI.Column(
 );
 ```
 
-## Custom Views
+## Component views
 
 ```typescript
-// Define a custom view to store view state
-export class CollapsibleView extends CustomView {
+// Define a view class to store view state
+export class CollapsibleView extends ComponentView {
 	expanded = false;
 	onToggle() {
 		this.expanded = !this.expanded;
@@ -229,7 +229,7 @@ export function Collapsible(
 	...content: ViewBuilder[]
 ) {
 	return {
-		...CustomViewBuilder(CollapsibleView, () =>
+		...ComponentViewBuilder(CollapsibleView, () =>
 			UI.Column(
 				UI.Label(title)
 					.icon(bind("expanded").then("chevronDown", "chevronNext"))
@@ -329,7 +329,7 @@ UI.List(bind("items"))
 			),
 	);
 
-// Handle list events in activity/custom view
+// Handle list events in activity/component view
 protected onSelectItem(event: UIListViewEvent<Item>) {
 	let item = event.data.listViewItem;
 }

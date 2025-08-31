@@ -12,7 +12,7 @@ import { View } from "./index.js";
  *
  * Validation is performed using an {@link InputValidator} instance. Errors must be added as strings or {@link StringConvertible} values (e.g. the result of {@link fmt()}) using the `required()` or `error()` methods of each field in the schema.
  *
- * To use a FormContext object with {@link UITextField} or {@link UIToggle} input elements (or e.g. a custom view), use their `.bindFormField()` builder method. The builder automatically binds to a `form` property from the current activity or custom view, and gets/sets the input value when needed.
+ * To use a FormContext object with {@link UITextField} or {@link UIToggle} input elements (or e.g. a component view), use their `.bindFormField()` builder method. The builder automatically binds to a `form` property from the current activity or component view, and gets/sets the input value when needed.
  *
  * @example
  * function FormView() {
@@ -25,7 +25,7 @@ import { View } from "./index.js";
  * }
  *
  * class MyActivity extends Activity {
- *   protected defineView() {
+ *   protected viewBuilder() {
  *     return FormView();
  *   }
  *

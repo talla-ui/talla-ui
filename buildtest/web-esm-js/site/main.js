@@ -5,7 +5,7 @@ function Page() {
 }
 
 export class MainActivity extends Activity {
-	defineView() {
+	viewBuilder() {
 		return Page();
 	}
 }

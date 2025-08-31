@@ -32,14 +32,14 @@ function emitRendered(source: View, name: string) {
 /**
  * Base class for built-in UI view elements
  *
- * This class provides common infrastructure for UI controls and containers such as {@link UIButton} and {@link UIColumn}. The UIViewElement class is an abstract class and can't be instantiated or rendered on its own.
+ * This class provides common infrastructure for UI controls and containers such as {@link UIButton} and {@link UIColumn}. The `UIElement` class is an abstract class and can't be instantiated or rendered on its own.
  *
  * @online_docs Refer to the online documentation for more information on using UI elements.
  * @docgen {hideconstructor}
  */
-export abstract class UIViewElement extends View {
+export abstract class UIElement extends View {
 	/**
-	 * An identifier for this view element
+	 * An identifier for this UI element
 	 * - Identifiers don't have to be unique, but can be used to identify elements in a part of the view hierarchy.
 	 * - Depending on the platform, this identifier may be exposed in the rendered output (e.g. HTML attribute).
 	 */
@@ -62,7 +62,7 @@ export abstract class UIViewElement extends View {
 	 * Options related to the position of this element
 	 * - If set, these options replace the defaults for the type of element.
 	 */
-	position?: Readonly<UIViewElement.Position> = undefined;
+	position?: Readonly<UIElement.Position> = undefined;
 
 	/** WAI-ARIA role for this element, if applicable */
 	accessibleRole?: StringConvertible;
@@ -133,10 +133,10 @@ export abstract class UIViewElement extends View {
 	private _renderer?: any;
 }
 
-export namespace UIViewElement {
+export namespace UIElement {
 	/**
 	 * Options for positioning within parent element(s)
-	 * @see {@link UIViewElement.position}
+	 * @see {@link UIElement.position}
 	 */
 	export type Position = {
 		/** Position of the element in the direction perpendicular to the distribution axis of the parent element, or `overlay` if the element should be placed on top of other elements (i.e. CSS absolute positioning) */
@@ -165,14 +165,14 @@ export namespace UIViewElement {
 	};
 
 	/**
-	 * Abstract base class for UI view element builders
+	 * Abstract base class for UI element builders
 	 *
 	 * @description
-	 * This class provides a fluent interface for creating and configuring {@link UIViewElement} instances: all built-in containers and controls. It includes a range of methods for setting properties, styles, and behaviors, which are applied to an 'initializer', and eventually to all instances created using the same builder. The builder is typically returned by a function that returns a view builder for a specific type of UI element, such as `UI.Column()`, `UI.Button()`, or `UI.ShowWhen()`.
+	 * This class provides a fluent interface for creating and configuring {@link UIElement} instances: all built-in containers and controls. It includes a range of methods for setting properties, styles, and behaviors, which are applied to an 'initializer', and eventually to all instances created using the same builder. The builder is typically returned by a function that returns a view builder for a specific type of UI element, such as `UI.Column()`, `UI.Button()`, or `UI.ShowWhen()`.
 	 *
 	 * Objects of this type are returned by functions such as `UI.Button()`, `UI.Label()`, and `UI.Column()`, with additional methods as included in their specific return type (e.g. {@link UIButton.ButtonBuilder}).
 	 */
-	export abstract class ElementBuilder<TView extends UIViewElement>
+	export abstract class ElementBuilder<TView extends UIElement>
 		implements ViewBuilder<TView>
 	{
 		/** The initializer instance that handles the actual view configuration */
@@ -235,7 +235,7 @@ export namespace UIViewElement {
 		}
 
 		/**
-		 * Sets the WAI-ARIA role for accessibility, using {@link UIViewElement.accessibleRole}
+		 * Sets the WAI-ARIA role for accessibility, using {@link UIElement.accessibleRole}
 		 * @param value The role name (e.g., "button", "navigation").
 		 * @returns The builder instance for chaining.
 		 */
@@ -244,7 +244,7 @@ export namespace UIViewElement {
 		}
 
 		/**
-		 * Sets the WAI-ARIA label for accessibility, using {@link UIViewElement.accessibleLabel}
+		 * Sets the WAI-ARIA label for accessibility, using {@link UIElement.accessibleLabel}
 		 * @param value The accessible label text.
 		 * @returns The builder instance for chaining.
 		 */
@@ -253,7 +253,7 @@ export namespace UIViewElement {
 		}
 
 		/**
-		 * Hides the element when a specified condition is true, using {@link UIViewElement.hidden}
+		 * Hides the element when a specified condition is true, using {@link UIElement.hidden}
 		 * @note Elements are still rendered even when they're hidden. Alternatively, use `UI.ShowWhen()` or `UI.ShowUnless()` to render views conditionally.
 		 * @param condition A value or binding. If the value is truthy, the element will be hidden.
 		 * @returns The builder instance for chaining.
@@ -266,8 +266,8 @@ export namespace UIViewElement {
 		}
 
 		/**
-		 * Sets the position of the element within its parent, using {@link UIViewElement.position}
-		 * @param position A `UIViewElement.Position` object, or a gravity string (`start`, `center`, `end`, etc.).
+		 * Sets the position of the element within its parent, using {@link UIElement.position}
+		 * @param position A `UIElement.Position` object, or a gravity string (`start`, `center`, `end`, etc.).
 		 * @param top The top offset (used if `position` is a gravity string).
 		 * @param end The end offset (used if `position` is a gravity string).
 		 * @param bottom The bottom offset (used if `position` is a gravity string).
@@ -276,7 +276,7 @@ export namespace UIViewElement {
 		 */
 		position(
 			position?: BindingOrValue<
-				UIViewElement.Position | UIViewElement.Position["gravity"] | undefined
+				UIElement.Position | UIElement.Position["gravity"] | undefined
 			>,
 			top?: string | number,
 			end?: string | number,

@@ -5,7 +5,7 @@ import {
 	ObservableEvent,
 	RenderContext,
 	UIColor,
-	UIViewElement,
+	UIElement,
 	View,
 	app,
 } from "@talla-ui/core";
@@ -273,25 +273,25 @@ export namespace WebRenderer {
 
 	/**
 	 * Applies a drag effect to the specified builder to allow dragging of the containing modal element
-	 * @note This function can be passed as an argument to {@link UIViewElement.ElementBuilder.apply apply()} on any UI element builder to make it draggable.
+	 * @note This function can be passed as an argument to {@link UIElement.ElementBuilder.apply apply()} on any UI element builder to make it draggable.
 	 * @param builder The builder to apply the effect to
 	 * @returns The builder with the effect applied
 	 */
 	export function dragModal<
-		TBuilder extends UIViewElement.ElementBuilder<UIViewElement>,
+		TBuilder extends UIElement.ElementBuilder<UIElement>,
 	>(builder: TBuilder): TBuilder {
 		return applyDragModal(builder) as TBuilder;
 	}
 
 	/**
 	 * Applies a drag effect to the specified builder to allow dragging of the element, emitting relative change events
-	 * @note This function can be passed as an argument to {@link UIViewElement.ElementBuilder.apply apply()} on any UI element builder to make it draggable.
+	 * @note This function can be passed as an argument to {@link UIElement.ElementBuilder.apply apply()} on any UI element builder to make it draggable.
 	 * @param builder The builder to apply the effect to
 	 * @returns The builder with the effect applied
 	 * @see {@link DragRelativeEvent}
 	 */
 	export function dragRelative<
-		TBuilder extends UIViewElement.ElementBuilder<UIViewElement>,
+		TBuilder extends UIElement.ElementBuilder<UIElement>,
 	>(builder: TBuilder): TBuilder {
 		return applyDragRelative(builder) as TBuilder;
 	}
@@ -300,7 +300,7 @@ export namespace WebRenderer {
 	 * Event emitted when an element that was built using {@link WebRenderer.dragRelative} is dragged relative to its parent element
 	 * @see {@link WebRenderer.dragRelative}
 	 */
-	export type DragRelativeEvent<TView extends UIViewElement = UIViewElement> =
+	export type DragRelativeEvent<TView extends UIElement = UIElement> =
 		ObservableEvent<
 			TView,
 			{

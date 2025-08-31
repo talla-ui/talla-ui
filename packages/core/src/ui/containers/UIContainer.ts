@@ -1,14 +1,14 @@
 import { View, ViewBuilder } from "../../app/index.js";
 import { BindingOrValue, ObservableList } from "../../object/index.js";
 import { UIColor, UIStyle } from "../style/index.js";
-import { UIViewElement } from "../UIViewElement.js";
+import { UIElement } from "../UIElement.js";
 
 /**
  * A base view class that represents a container element with no specific layout or styling
  *
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
-export abstract class UIContainer extends UIViewElement {
+export abstract class UIContainer extends UIElement {
 	/**
 	 * Options related to layout of content UI elements within this container
 	 * - These options _override_ the defaults for the type of container.
@@ -86,7 +86,7 @@ export namespace UIContainer {
 	 */
 	export abstract class ContainerBuilder<
 		T extends UIContainer,
-	> extends UIViewElement.ElementBuilder<T> {
+	> extends UIElement.ElementBuilder<T> {
 		/**
 		 * Adds content to the container.
 		 * @param builders An array of view builders for the content elements.

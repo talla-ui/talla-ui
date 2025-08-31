@@ -3,8 +3,8 @@ import {
 	app,
 	bind,
 	BindingOrValue,
-	CustomView,
-	CustomViewBuilder,
+	ComponentView,
+	ComponentViewBuilder,
 	DeferredViewBuilder,
 	fmt,
 	ObservableObject,
@@ -17,7 +17,7 @@ import {
 } from "talla-ui";
 
 function Collapsible(label: StringConvertible, ...content: ViewBuilder[]) {
-	class CollapsibleView extends CustomView {
+	class CollapsibleView extends ComponentView {
 		width? = 300;
 		expanded = false;
 		onToggle() {
@@ -25,7 +25,7 @@ function Collapsible(label: StringConvertible, ...content: ViewBuilder[]) {
 		}
 	}
 	return {
-		...CustomViewBuilder(CollapsibleView, () =>
+		...ComponentViewBuilder(CollapsibleView, () =>
 			UI.Column()
 				.width(bind("width"))
 				.with(
@@ -169,7 +169,7 @@ export class MainActivity extends Activity {
 
 	countService = new CountService();
 
-	protected override defineView() {
+	protected override viewBuilder() {
 		this.viewDefined = new Date();
 		return MainView();
 	}
@@ -264,8 +264,8 @@ export class SubActivity extends Activity {
 	});
 	foo = "bar";
 
-	protected override defineView() {
-		console.log("SubActivity defineView", this.activeCount);
+	protected override viewBuilder() {
+		console.log("SubActivity viewBuilder", this.activeCount);
 		return SubView();
 	}
 
@@ -300,7 +300,7 @@ function OtherView() {
 export class OtherActivity extends Activity {
 	created = new Date();
 
-	protected override defineView() {
+	protected override viewBuilder() {
 		return OtherView();
 	}
 
@@ -327,7 +327,7 @@ function DialogView() {
 }
 
 export class DialogActivity extends Activity {
-	protected override defineView() {
+	protected override viewBuilder() {
 		this.setRenderMode("dialog");
 		return DialogView();
 	}

@@ -15,6 +15,7 @@ const TextFieldStyle = UI.styles.textfield.default.extend(
 		borderColor: new UIColor("var(--primary-boldest)"),
 	},
 );
+
 const CloseButtonStyle = UI.styles.button.icon.extend(
 	{
 		background: UI.colors.transparent,
@@ -26,6 +27,7 @@ const CloseButtonStyle = UI.styles.button.icon.extend(
 		textColor: new UIColor("inherit"),
 	},
 );
+
 const ResultCellStyle = new UIStyle(
 	{
 		padding: { x: 6, y: 4 },
@@ -42,72 +44,6 @@ const ResultCellStyle = new UIStyle(
 		borderWidth: 2,
 	},
 );
-
-// export default (
-// 	<cell padding={{ start: 16 }}>
-// 		<cell
-// 			style={{
-// 				height: 72,
-// 				grow: 0,
-// 				shrink: 0,
-// 				padding: { start: 8, end: 12 },
-// 			}}
-// 		>
-// 			<row>
-// 				<textfield
-// 					style={TextFieldStyle}
-// 					requestFocus
-// 					disableSpellCheck
-// 					onInput="SearchInput"
-// 					onArrowDownKeyPress="ArrowDownOnInput"
-// 					onEnterKeyPress="GoToFirstResult"
-// 				>
-// 					Search...
-// 				</textfield>
-// 				<button
-// 					style={CloseButtonStyle}
-// 					icon={ui.icon.CLOSE}
-// 					iconColor={ui.color("inherit")}
-// 					onClick="Close"
-// 				/>
-// 			</row>
-// 		</cell>
-// 		<cell
-// 			hidden={$activity("hasInput").and("loading").not()}
-// 			padding={{ y: 32 }}
-// 		>
-// 			<label>Loading...</label>
-// 		</cell>
-// 		<cell>
-// 			<scroll position={{ gravity: "cover" }}>
-// 				<list items={$activity("results")} maxItems={50}>
-// 					<cell
-// 						allowFocus
-// 						style={ResultCellStyle}
-// 						onClick="GoToResult"
-// 						onEnterKeyPress="GoToResult"
-// 						onArrowUpKeyPress="FocusPrevious"
-// 						onArrowDownKeyPress="FocusNext"
-// 						accessibleRole="listitem"
-// 					>
-// 						<column align="start">
-// 							<row>
-// 								<label style={{ fontWeight: "var(--bold-weight)", shrink: 0 }}>
-// 									{$list("item.title")}
-// 								</label>
-// 								<label dim>{$list("item.showId")}</label>
-// 							</row>
-// 							<label style={{ padding: 0, fontSize: 14 }} htmlFormat>
-// 								{$list("item.abstract")}
-// 							</label>
-// 						</column>
-// 					</cell>
-// 					<cell style={{ grow: 0 }} allowKeyboardFocus accessibleRole="list" />
-// 				</list>
-// 			</scroll>
-// 		</cell>
-// 	</cell>
-// );
 
 export function SearchView() {
 	return UI.Cell()

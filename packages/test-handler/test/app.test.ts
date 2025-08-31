@@ -2,8 +2,8 @@ import {
 	Activity,
 	app,
 	bind,
-	CustomView,
-	CustomViewBuilder,
+	ComponentView,
+	ComponentViewBuilder,
 	UI,
 	UILabel,
 	UITextField,
@@ -24,7 +24,7 @@ import {
 
 class CountActivity extends Activity {
 	override navigationPath = "count";
-	protected override defineView() {
+	protected override viewBuilder() {
 		return UI.Cell(
 			UI.TextField().value(bind("count")).emit("SetCount").name("count-input"),
 			UI.Button("+").emit("CountUp"),
@@ -54,11 +54,11 @@ test("Single control is rendered", async () => {
 	await expectOutputAsync({ text: "FOO" });
 });
 
-test("Single custom view with binding is rendered", async () => {
+test("Single component view with binding is rendered", async () => {
 	function MyView() {
 		return {
-			...CustomViewBuilder(
-				class extends CustomView {
+			...ComponentViewBuilder(
+				class extends ComponentView {
 					title = StringConvertible.EMPTY;
 				},
 				() => UI.Label(bind("title")),

@@ -5,8 +5,8 @@ import {
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
 import {
-	CustomView,
-	CustomViewBuilder,
+	ComponentView,
+	ComponentViewBuilder,
 	UI,
 	UICell,
 	UILabel,
@@ -72,8 +72,8 @@ test("Rendered with text", async () => {
 
 test("Rendered with fmt", async () => {
 	function MyLabel() {
-		return CustomViewBuilder(
-			class extends CustomView {
+		return ComponentViewBuilder(
+			class extends ComponentView {
 				bar = "bar";
 			},
 			() => UI.Label.fmt("foo {}", bind("bar")),
@@ -183,11 +183,11 @@ test("Rendered, hidden and shown", async () => {
 
 test("Rendered with bound named color", async () => {
 	function MyLabel() {
-		class MyLabelView extends CustomView {
+		class MyLabelView extends ComponentView {
 			text = "Foo";
 			color = "blue";
 		}
-		return CustomViewBuilder(MyLabelView, () =>
+		return ComponentViewBuilder(MyLabelView, () =>
 			UI.Label(bind("text")).fg(bind("color")),
 		);
 	}

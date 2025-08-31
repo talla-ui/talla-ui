@@ -9,7 +9,7 @@
 	}
 
 	class MainActivity extends tallaUI.Activity {
-		defineView() {
+		viewBuilder() {
 			return Page();
 		}
 	}

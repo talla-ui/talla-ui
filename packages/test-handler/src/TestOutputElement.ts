@@ -74,7 +74,7 @@ export class TestOutputElement {
 
 	/**
 	 * A combination of all styles applied to this element, including position and layout
-	 * - Styles are copied as specified from {@link UIStyle} objects and overrides from {@link UIViewElement.style} and {@link UIViewElement.position}.
+	 * - Styles are copied as specified from {@link UIStyle} objects and overrides from {@link UIElement.style} and {@link UIElement.position}.
 	 * - While styles are usually applied to the rendered element in a platform-dependent way, the test renderer simply stores all properties in this object, which therefore has no specific type.
 	 */
 	styles: Record<string, any> = {};

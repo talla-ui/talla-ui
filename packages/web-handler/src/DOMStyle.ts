@@ -1,4 +1,4 @@
-import { UIColor, UIContainer, UIStyle, UIViewElement } from "@talla-ui/core";
+import { UIColor, UIContainer, UIStyle, UIElement } from "@talla-ui/core";
 import {
 	CLASS_CONTAINER,
 	CLASS_TEXTCONTROL,
@@ -256,7 +256,7 @@ export function applyStyles(
 	systemName?: string,
 	isTextControl?: boolean,
 	isContainer?: boolean,
-	position?: UIViewElement.Position,
+	position?: UIElement.Position,
 	layout?: UIContainer.Layout,
 ) {
 	// if element is hidden, stop early
@@ -326,7 +326,7 @@ function addInlineCSS(
 /** Helper function to append CSS styles to given object for a given `Position` object */
 function addPositionCSS(
 	result: Partial<CSSStyleDeclaration>,
-	position: UIViewElement.Position,
+	position: UIElement.Position,
 ) {
 	let alignSelf = position.gravity;
 	let hasHorizontalPosition: boolean | undefined;

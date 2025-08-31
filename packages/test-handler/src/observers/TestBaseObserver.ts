@@ -1,7 +1,7 @@
 import {
 	ObservableEvent,
 	RenderContext,
-	UIViewElement,
+	UIElement,
 	UIStyle,
 	app,
 } from "@talla-ui/core";
@@ -79,8 +79,8 @@ export function applyElementStyle(element: TestOutputElement, styles: any[]) {
 	element.styles = result || {};
 }
 
-/** @internal Abstract observer class for all `UIViewElement` instances, to create output and call render callback; implemented for all types of UI elements, created upon rendering, and attached to enable property bindings */
-export abstract class TestBaseObserver<TUIViewElement extends UIViewElement> {
+/** @internal Abstract observer class for all `UIElement` instances, to create output and call render callback; implemented for all types of UI elements, created upon rendering, and attached to enable property bindings */
+export abstract class TestBaseObserver<TUIViewElement extends UIElement> {
 	constructor(public observed: TUIViewElement) {
 		this._thisRenderedEvent = new ObservableEvent(
 			"Rendered",
@@ -206,10 +206,7 @@ export abstract class TestBaseObserver<TUIViewElement extends UIViewElement> {
 
 	/** Render event handler, calls encapsulated render callback with existing or new output */
 	onRender(
-		event: ObservableEvent<
-			UIViewElement,
-			{ render: RenderContext.RenderCallback }
-		>,
+		event: ObservableEvent<UIElement, { render: RenderContext.RenderCallback }>,
 	) {
 		if (
 			typeof event.data.render === "function" &&

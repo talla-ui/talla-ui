@@ -2,7 +2,7 @@ import {
 	app,
 	AppContext,
 	bind,
-	CustomView,
+	ComponentView,
 	RenderContext,
 	UI,
 	UICell,
@@ -34,7 +34,10 @@ export class WebDialogStyles extends ConfigOptions {
 }
 
 /** @internal Default modal dialog view; shown synchronously, removed when view is unlinked */
-export class Dialog extends CustomView implements AppContext.DialogController {
+export class Dialog
+	extends ComponentView
+	implements AppContext.DialogController
+{
 	static styles = new WebDialogStyles();
 
 	constructor(public dialogView: View) {
@@ -44,7 +47,7 @@ export class Dialog extends CustomView implements AppContext.DialogController {
 		});
 	}
 
-	protected override defineView() {
+	protected override viewBuilder() {
 		return UI.Cell(UI.Show(bind("dialogView"))).apply(
 			Dialog.styles.containerModifier,
 		);

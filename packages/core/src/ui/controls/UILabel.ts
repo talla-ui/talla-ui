@@ -8,7 +8,7 @@ import {
 } from "../../object/index.js";
 import { UIColor, UIIconResource, UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
-import { UIViewElement } from "../UIViewElement.js";
+import { UIElement } from "../UIElement.js";
 
 /**
  * A view class that represents a label control
@@ -17,7 +17,7 @@ import { UIViewElement } from "../UIViewElement.js";
  *
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
-export class UILabel extends UIViewElement {
+export class UILabel extends UIElement {
 	/** Creates a new label view object with the specified text */
 	constructor(text?: StringConvertible) {
 		super();
@@ -104,7 +104,7 @@ export namespace UILabel {
 	 * A builder class for creating `UILabel` instances.
 	 * - Objects of this type are returned by the `UI.Label()` function.
 	 */
-	export class LabelBuilder extends UIViewElement.ElementBuilder<UILabel> {
+	export class LabelBuilder extends UIElement.ElementBuilder<UILabel> {
 		/** The initializer that is used to create each label instance */
 		readonly initializer = new ViewBuilder.Initializer(UILabel);
 

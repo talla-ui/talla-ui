@@ -1,5 +1,5 @@
 import {
-	CustomView,
+	ComponentView,
 	ModalFactory,
 	ModalMenuOptions,
 	ObservableEvent,
@@ -97,7 +97,7 @@ export class WebModalMenuStyles extends ConfigOptions {
 
 /** @internal Default modal menu view; shown asynchronously and resolves a promise */
 export class ModalMenu
-	extends CustomView
+	extends ComponentView
 	implements ModalFactory.MenuController
 {
 	static styles = new WebModalMenuStyles();
@@ -126,7 +126,7 @@ export class ModalMenu
 		});
 	}
 
-	protected override defineView() {
+	protected override viewBuilder() {
 		let shown = Date.now();
 		const onMenuRendered = () => {
 			shown = Date.now();

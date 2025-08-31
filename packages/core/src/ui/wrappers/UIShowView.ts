@@ -182,7 +182,7 @@ export class UIShowView extends View {
 			: [];
 	}
 
-	/** Requests input focus on the current view element */
+	/** Requests input focus on the body view */
 	requestFocus() {
 		this.body?.requestFocus();
 	}

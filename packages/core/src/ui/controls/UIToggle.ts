@@ -3,7 +3,7 @@ import { FormContext, ViewBuilder } from "../../app/index.js";
 import { bind, Binding, BindingOrValue } from "../../object/index.js";
 import { UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
-import { UIViewElement } from "../UIViewElement.js";
+import { UIElement } from "../UIElement.js";
 
 /**
  * A view control that represents a checkbox or toggle input
@@ -12,7 +12,7 @@ import { UIViewElement } from "../UIViewElement.js";
  *
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
-export class UIToggle extends UIViewElement {
+export class UIToggle extends UIElement {
 	/** Creates a new toggle view object with the specified label */
 	constructor(label?: StringConvertible, state?: boolean) {
 		super();
@@ -63,7 +63,7 @@ export namespace UIToggle {
 	 * A builder class for creating `UIToggle` instances.
 	 * - Objects of this type are returned by the `UI.Toggle()` function.
 	 */
-	export class ToggleBuilder extends UIViewElement.ElementBuilder<UIToggle> {
+	export class ToggleBuilder extends UIElement.ElementBuilder<UIToggle> {
 		/** The initializer that is used to create each toggle instance */
 		readonly initializer = new ViewBuilder.Initializer(UIToggle);
 

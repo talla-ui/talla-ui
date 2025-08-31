@@ -229,7 +229,7 @@ export class AppContext extends ObservableObject {
 	/**
 	 * Renders the provided view using specified placement options
 	 *
-	 * @summary This method can be used to render any view object to the screen (or in-memory test output, when called from a test function), such as a {@link UICell} or {@link CustomView} instance.
+	 * @summary This method can be used to render any view object to the screen (or in-memory test output, when called from a test function), such as a {@link UICell} or {@link ComponentView} instance.
 	 *
 	 * @param view The view object to be rendered
 	 * @param place View placement options, as an object of type {@link RenderContext.PlacementOptions}; defaults to page placement
@@ -303,7 +303,7 @@ export class AppContext extends ObservableObject {
 	/** Displays a context/dropdown menu with the provided list of items
 	 *
 	 * @summary
-	 * This method displays a modal menu, using the specified options (or options that are set in a configuration function). The menu is positioned near a particular UI element, an instance of {@link UIViewElement}, e.g. a button that was clicked by the user.
+	 * This method displays a modal menu, using the specified options (or options that are set in a configuration function). The menu is positioned near a particular UI element, an instance of {@link UIElement}, e.g. a button that was clicked by the user.
 	 *
 	 * The `key` value of the chosen menu item, if any, is returned asynchronously. If the menu was dismissed, the returned promise is resolved to `undefined`.
 	 *

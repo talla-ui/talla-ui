@@ -268,7 +268,7 @@ describe("View rendering", () => {
 
 	test("Rendered page view", async () => {
 		class MyActivity extends Activity {
-			protected override defineView() {
+			protected override viewBuilder() {
 				return UI.Cell(UI.Label("Hello, world!"));
 			}
 		}
@@ -279,7 +279,7 @@ describe("View rendering", () => {
 
 	test("Find views", async () => {
 		class MyActivity extends Activity {
-			protected override defineView() {
+			protected override viewBuilder() {
 				return UI.Cell(UI.Label("foo"), UI.Label("bar"));
 			}
 		}

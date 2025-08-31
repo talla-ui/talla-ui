@@ -1,6 +1,6 @@
 import {
 	app,
-	CustomView,
+	ComponentView,
 	MessageDialogOptions,
 	ModalFactory,
 	RenderContext,
@@ -115,7 +115,7 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 
 /** @internal Default modal message dialog view; shown asynchronously and resolves a promise */
 export class MessageDialog
-	extends CustomView
+	extends ComponentView
 	implements
 		ModalFactory.AlertDialogController,
 		ModalFactory.ConfirmDialogController
@@ -164,7 +164,7 @@ export class MessageDialog
 		return { confirmed, other };
 	}
 
-	protected override defineView() {
+	protected override viewBuilder() {
 		let narrow = app.viewport?.cols! < 2;
 		let styles = MessageDialog.styles;
 		let messageLabels = this.options.messages.map((text, i) =>

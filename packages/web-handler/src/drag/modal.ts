@@ -1,4 +1,4 @@
-import { app, ObservableEvent, UIViewElement } from "@talla-ui/core";
+import { app, ObservableEvent, UIElement } from "@talla-ui/core";
 import { CLASS_OVERLAY_WRAPPER } from "../defaults/css.js";
 
 // Debounce drag start by keeping track of the last start time
@@ -11,9 +11,7 @@ let _draggedElements = new WeakMap<HTMLElement, { x: number; y: number }>();
  * @internal Adds a listener to the specified builder to allow dragging of the containing modal element
  * @note This function is exported by {@link WebRenderer}.
  */
-export function applyDragModal(
-	builder: UIViewElement.ElementBuilder<UIViewElement>,
-) {
+export function applyDragModal(builder: UIElement.ElementBuilder<UIElement>) {
 	builder.initializer.finalize((view) => {
 		view.listen((e: ObservableEvent) => {
 			if (e.name !== "Rendered") return;

@@ -5,7 +5,7 @@ function Page() {
 }
 
 export class MainActivity extends Activity {
-	protected override defineView() {
+	protected override viewBuilder() {
 		return Page();
 	}
 }

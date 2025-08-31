@@ -128,7 +128,7 @@ export class TestRenderer extends RenderContext {
 
 	/**
 	 * Attempts to set input focus to the specified element in the background
-	 * - This method is used by the UI element renderer. To acquire input focus, use the {@link UIViewElement.requestFocus()} method instead of calling this method directly.
+	 * - This method is used by the UI element renderer. To acquire input focus, use the {@link UIElement.requestFocus()} method instead of calling this method directly.
 	 * - Use a poll function or {@link expectOutputAsync()} to wait until the element has received input focus.
 	 * @param element The output element to focus
 	 */

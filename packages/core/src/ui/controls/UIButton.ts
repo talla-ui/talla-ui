@@ -8,7 +8,7 @@ import {
 } from "../../object/index.js";
 import { UIIconResource, UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
-import { UIViewElement } from "../UIViewElement.js";
+import { UIElement } from "../UIElement.js";
 import { UILabel } from "./UILabel.js";
 
 /**
@@ -18,7 +18,7 @@ import { UILabel } from "./UILabel.js";
  *
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
-export class UIButton extends UIViewElement {
+export class UIButton extends UIElement {
 	/** Creates a new button view object with the specified label */
 	constructor(text?: StringConvertible) {
 		super();
@@ -100,7 +100,7 @@ export namespace UIButton {
 	 * A builder class for creating `UIButton` instances.
 	 * - Objects of this type are returned by the `UI.Button()` function.
 	 */
-	export class ButtonBuilder extends UIViewElement.ElementBuilder<UIButton> {
+	export class ButtonBuilder extends UIElement.ElementBuilder<UIButton> {
 		/** The initializer that is used to create each button instance */
 		readonly initializer = new ViewBuilder.Initializer(UIButton);
 

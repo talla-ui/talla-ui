@@ -1,6 +1,6 @@
 import { ViewBuilder } from "../../app/index.js";
 import { BindingOrValue } from "../../object/index.js";
-import { UIViewElement } from "../UIViewElement.js";
+import { UIElement } from "../UIElement.js";
 
 /**
  * A view class that represents an empty control without any content
@@ -9,7 +9,7 @@ import { UIViewElement } from "../UIViewElement.js";
  *
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
-export class UISpacer extends UIViewElement {
+export class UISpacer extends UIElement {
 	// ...nothing here but space...
 }
 
@@ -37,7 +37,7 @@ export namespace UISpacer {
 	 * A builder class for creating `UISpacer` instances.
 	 * - Objects of this type are returned by the `UI.Spacer()` function.
 	 */
-	export class SpacerBuilder extends UIViewElement.ElementBuilder<UISpacer> {
+	export class SpacerBuilder extends UIElement.ElementBuilder<UISpacer> {
 		/** The initializer that is used to create each spacer instance */
 		readonly initializer = new ViewBuilder.Initializer(UISpacer);
 	}

@@ -1,9 +1,4 @@
-import {
-	ObservableEvent,
-	UICell,
-	UIViewElement,
-	ViewEvent,
-} from "@talla-ui/core";
+import { ObservableEvent, UICell, UIElement, ViewEvent } from "@talla-ui/core";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
 /** @internal */
@@ -59,7 +54,7 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 	}
 
 	/** Switch tabindex on focus */
-	onFocusIn(e: ViewEvent<UIViewElement>) {
+	onFocusIn(e: ViewEvent<UIElement>) {
 		if (!this.element) return;
 		if (e.source !== this.observed && this.observed.allowKeyboardFocus) {
 			// temporarily disable keyboard focus on this parent
@@ -80,5 +75,5 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 	}
 
 	/** Last focused UI element, if this cell is keyboard-focusable */
-	lastFocused?: UIViewElement;
+	lastFocused?: UIElement;
 }

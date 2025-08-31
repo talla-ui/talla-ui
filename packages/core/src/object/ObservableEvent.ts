@@ -17,7 +17,7 @@ const NO_DATA = Object.freeze({});
  *
  * **Delegation** — An object may handle an event by emitting a new event with the same name, referencing itself as the delegate object. This is useful for forwarding events from one object to another, or for handling events in a different context, and is implemented automatically using the `delegate` option in the {@link ObservableObject.attach()} method. The delegate object can be accessed on any event using the {@link findDelegate()} method.
  *
- * **Event aliases** — Using the `intercept()` method of a view builder (i.e. the result of functions such as `UI.Image()`, `UI.Button()`, etc.), or the `emit()` method on button and text field view builders, event names can be aliased to other event names. In the corresponding activity or custom view, the event can be handled using the aliased name. Refer to the example below.
+ * **Event aliases** — Using the `intercept()` method of a view builder (i.e. the result of functions such as `UI.Image()`, `UI.Button()`, etc.), or the `emit()` method on button and text field view builders, event names can be aliased to other event names. In the corresponding activity or component, the event can be handled using the aliased name. Refer to the example below.
  *
  * @example
  * // Emitting an event from an observable object

@@ -1,6 +1,6 @@
 import {
 	AppContext,
-	CustomView,
+	ComponentView,
 	RenderContext,
 	UI,
 	View,
@@ -10,7 +10,7 @@ import {
 
 /** @internal Limited implementation of a dialog controller */
 export class TestDialog
-	extends CustomView
+	extends ComponentView
 	implements AppContext.DialogController
 {
 	constructor(public dialogView: View) {
@@ -20,7 +20,7 @@ export class TestDialog
 		});
 	}
 
-	protected override defineView() {
+	protected override viewBuilder() {
 		return UI.Cell(UI.Show(bind("dialogView")));
 	}
 

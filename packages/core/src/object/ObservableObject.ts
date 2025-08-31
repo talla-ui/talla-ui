@@ -156,7 +156,7 @@ export class ObservableObject {
 	/**
 	 * Enables bindings on all instances of this class
 	 * @summary If this method is called on a class, bindings created using the global `bind()` function will bind on properties of instances of this class (when bound to an attached child object).
-	 * @note This method is called automatically on {@link AppContext}, {@link Activity} and {@link CustomView} instances. You cannot call this method on the {@link ObservableObject} class itself.
+	 * @note This method is called automatically on {@link AppContext}, {@link Activity} and {@link ComponentView} instances. You cannot call this method on the {@link ObservableObject} class itself.
 	 */
 	static enableBindings() {
 		if (this === ObservableObject) throw invalidArgErr("limitOn");
@@ -358,7 +358,7 @@ export class ObservableObject {
 	 * @returns The target parameter
 	 *
 	 * @example
-	 * class SomeView extends CustomView {
+	 * class SomeView extends ComponentView {
 	 *   constructor() {
 	 *     super();
 	 *

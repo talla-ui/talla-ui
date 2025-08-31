@@ -10,8 +10,8 @@ import {
 	Activity,
 	app,
 	bind,
-	CustomView,
-	CustomViewBuilder,
+	ComponentView,
+	ComponentViewBuilder,
 	ObservableObject,
 	UI,
 	UICell,
@@ -103,10 +103,10 @@ test("Body view events are propagated", async () => {
 test("Rendering content using bound state", async () => {
 	// Create a simple object with observable state
 	function TestView() {
-		class TestView extends CustomView {
+		class TestView extends ComponentView {
 			condition = false;
 		}
-		return CustomViewBuilder(TestView, () =>
+		return ComponentViewBuilder(TestView, () =>
 			UI.Cell(UI.ShowWhen(bind("condition"), UI.Label("foo"))),
 		);
 	}
@@ -183,14 +183,14 @@ test("Rendering parent as inserted view fails silently", async () => {
 	await expectOutputAsync({ text: "foo" }); // label rendered, no errors
 });
 
-test("Set inserted view using custom view, and render", async () => {
-	// Create a custom view builder function
+test("Set inserted view using component view, and render", async () => {
+	// Create a component view builder function
 	function MyContent() {
-		class MyContentView extends CustomView {
+		class MyContentView extends ComponentView {
 			text = StringConvertible.EMPTY;
 		}
 		return {
-			...CustomViewBuilder(MyContentView, () => UI.Label(bind("text"))),
+			...ComponentViewBuilder(MyContentView, () => UI.Label(bind("text"))),
 			text(text: StringConvertible) {
 				this.initializer.set("text", text);
 				return this;
@@ -199,7 +199,7 @@ test("Set inserted view using custom view, and render", async () => {
 	}
 
 	class MyActivity extends Activity {
-		protected override defineView() {
+		protected override viewBuilder() {
 			return UI.Show(bind("vc"));
 		}
 		vc = this.attach(MyContent().text("foo").create());
@@ -225,7 +225,7 @@ test("Use activity view as inserted view and render", async () => {
 
 	// activity that will be rendered as nested view
 	class MySecondActivity extends Activity {
-		protected override defineView() {
+		protected override viewBuilder() {
 			this.setRenderMode("none");
 			return UI.Cell(UI.Button("foo").emit("ButtonPress"));
 		}
@@ -236,7 +236,7 @@ test("Use activity view as inserted view and render", async () => {
 
 	// containing activity
 	class MyActivity extends Activity {
-		protected override defineView() {
+		protected override viewBuilder() {
 			return UI.Cell()
 				.accessibleLabel("outer")
 				.with(UI.Show(bind("second.view"), true));

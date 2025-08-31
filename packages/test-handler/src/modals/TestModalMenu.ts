@@ -1,6 +1,6 @@
 import {
 	app,
-	CustomView,
+	ComponentView,
 	ModalFactory,
 	ModalMenuOptions,
 	RenderContext,
@@ -9,7 +9,7 @@ import {
 
 /** @internal Limited implementation of a menu controller, that can be used to test menu selection using label clicks */
 export class TestModalMenu
-	extends CustomView
+	extends ComponentView
 	implements ModalFactory.MenuController
 {
 	constructor(public options: ModalMenuOptions) {
@@ -31,7 +31,7 @@ export class TestModalMenu
 		});
 	}
 
-	protected override defineView() {
+	protected override viewBuilder() {
 		return UI.Cell()
 			.accessibleRole("menu")
 			.intercept("Select", (e) => this._resolve?.(e.data.key as string))

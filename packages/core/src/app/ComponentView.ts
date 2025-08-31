@@ -5,20 +5,20 @@ import { View } from "./View.js";
 import type { ViewBuilder } from "./ViewBuilder.js";
 
 /**
- * A class that encapsulates custom view content
+ * A class that encapsulates a view component
  *
  * @description
- * Custom views are view objects that may include their own state (properties) and event handlers, to render their own content.
+ * Component views are view objects that may include their own state (properties) and event handlers, to render their own content.
  *
- * To be able to use custom views in the view hierarchy, you should also export a builder function that uses {@link CustomViewBuilder} to create a builder object.
+ * To be able to use component views in the view hierarchy, you should also export a builder function that uses {@link ComponentViewBuilder} to create a builder object.
  *
- * For views that require a custom renderer (e.g. a platform-dependent graphic), define a view class that extends {@link CustomView}, and overrides the {@link CustomView.render} method altogether. In this case, the view builder should not include any content.
+ * For views that require a custom renderer (e.g. a platform-dependent graphic), define a view class that extends {@link ComponentView}, and overrides the {@link ComponentView.render} method altogether. In this case, the view builder should not include any content.
  *
- * @note Custom views are very similar to {@link Activity} objects, but they don't have an active/inactive lifecycle and typically don't include any application logic (especially not for loading or saving data).
+ * @note Component views are very similar to {@link Activity} objects, but they don't have an active/inactive lifecycle and typically don't include any application logic (especially not for loading or saving data).
  *
  * @example
- * // Define a custom view to store view state
- * export class CollapsibleView extends CustomView {
+ * // Define a component view class to store view state
+ * export class CollapsibleView extends ComponentView {
  *   expanded = false;
  *   onToggle() {
  *     this.expanded = !this.expanded;
@@ -28,7 +28,7 @@ import type { ViewBuilder } from "./ViewBuilder.js";
  * // Export a builder function that uses the class
  * export function Collapsible(title: StringConvertible, ...content: ViewBuilder[]) {
  *   return {
- *     ...CustomViewBuilder(CollapsibleView, () =>
+ *     ...ComponentViewBuilder(CollapsibleView, () =>
  *        UI.Column(
  *          UI.Label(title)
  *            .icon(bind("expanded").then("chevronDown", "chevronNext"))
@@ -44,15 +44,15 @@ import type { ViewBuilder } from "./ViewBuilder.js";
  *   };
  * }
  */
-export class CustomView extends View {
+export class ComponentView extends View {
 	static {
 		// Enable bindings for all instances, using bind(...) without a type parameter
-		CustomView.enableBindings();
+		ComponentView.enableBindings();
 	}
 
 	/**
 	 * The encapsulated view object, an attached view
-	 * - Initially, this property is undefined. The view body is only created (using the result of {@link defineView()}) when the CustomView instance is first rendered.
+	 * - Initially, this property is undefined. The view body is only created (using the result of {@link viewBuilder()}) when the ComponentView instance is first rendered.
 	 * - Alternatively, you can set it yourself, e.g. in the constructor. In this case, ensure that the object is a {@link View} instance that's attached directly to this view (for event handling and bindings), delegating events using {@link delegate()}.
 	 */
 	protected body?: View;
@@ -60,11 +60,11 @@ export class CustomView extends View {
 	/**
 	 * Returns a view builder for the encapsulated view object, to be overridden if needed
 	 *
-	 * This method is called automatically when rendering a custom view. A view instance is created, attached, and assigned to {@link CustomView.body}.
+	 * This method is called automatically when rendering a component view. A view instance is created, attached, and assigned to {@link ComponentView.body}.
 	 *
-	 * @note This method is overridden automatically by {@link CustomViewBuilder} to return the content builder function.
+	 * @note This method is overridden automatically by {@link ComponentViewBuilder} to return the content builder function.
 	 */
-	protected defineView(): ViewBuilder | undefined | void {
+	protected viewBuilder(): ViewBuilder | undefined | void {
 		// Nothing here...
 	}
 
@@ -127,7 +127,7 @@ export class CustomView extends View {
 	 */
 	render(callback: RenderContext.RenderCallback) {
 		if (!this.body) {
-			let body = this.defineView()?.create();
+			let body = this.viewBuilder()?.create();
 			if (body) {
 				if (!(body instanceof View)) throw err(ERROR.View_Invalid);
 				this.body = this.attach(body, {

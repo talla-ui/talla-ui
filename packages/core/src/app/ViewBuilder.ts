@@ -4,7 +4,7 @@ import {
 	ObservableEvent,
 	ObservableObject,
 } from "../object/index.js";
-import type { CustomView } from "./CustomView.js";
+import type { ComponentView } from "./ComponentView.js";
 import type { View } from "./View.js";
 
 /** Cache of created view builders */
@@ -17,7 +17,7 @@ const _deferredBuilders = new WeakMap<Function, ViewBuilder>();
  * Classes that extend this type (such as {@link UIButton.ButtonBuilder}) typically provide a fluent interface for creating and configuring views. They use a {@link ViewBuilder.Initializer} to configure the initialization logic, including property setting, binding, event interception, and initialization callbacks (e.g. for adding content to container views), and expose this functionality using methods on the builder class.
  *
  * @see {@link DeferredViewBuilder}
- * @see {@link CustomViewBuilder}
+ * @see {@link ComponentViewBuilder}
  */
 export interface ViewBuilder<TView extends View = View> {
 	/**
@@ -32,7 +32,7 @@ export namespace ViewBuilder {
 	 * A class that handles the initialization and configuration of views, as part of a view builder
 	 *
 	 * @description
-	 * The Initializer class provides methods to configure view properties, bindings, event handlers, and initialization callbacks. It provides the implementation for fluent configuration methods on {@link ViewBuilder} interfaces, for many types of built-in view builders as well as custom view classes.
+	 * The Initializer class provides methods to configure view properties, bindings, event handlers, and initialization callbacks. It provides the implementation for fluent configuration methods on {@link ViewBuilder} interfaces, for many types of built-in view builders as well as component view classes.
 	 */
 	export class Initializer<TView extends View> {
 		/**
@@ -105,7 +105,7 @@ export namespace ViewBuilder {
 		 * Registers an update handler for a value or binding
 		 *
 		 * @description
-		 * This method allows you to specify a custom handler that will be called immediately for a view instance (for a static value), or whenever a bound value changes (for a binding). This is useful for implementing a fluent interface that isn't mapped directly to a single view property.
+		 * This method allows you to specify a handler that will be called immediately for a view instance (for a static value), or whenever a bound value changes (for a binding). This is useful for implementing a fluent interface that isn't mapped directly to a single view property.
 		 * @param valueOrBinding The value or binding to use
 		 * @param handle The handler function to call when the value changes
 		 */
@@ -211,18 +211,18 @@ export declare namespace DeferredViewBuilder {
 }
 
 /**
- * A view builder that encapsulates a custom view class and a function to define its body
+ * A view builder for a component view class with a function to define its body
  * - The view class is used to create each view instance.
  * - The encapsulated function is called only once, before the first view is created, to define the body of the view.
  *
  * @example
- * class MyWrapper extends CustomView {
+ * class MyWrapper extends ComponentView {
  *   label = "";
  * }
  *
  * function MyWrapper() {
  *   return {
- *     ...CustomViewBuilder(MyWrapper, () => UI.Button(bind("label"))),
+ *     ...ComponentViewBuilder(MyWrapper, () => UI.Button(bind("label"))),
  *     label(label: BindingOrValue<StringConvertible>) {
  *       this.initializer.set("label", label);
  *       return this;
@@ -230,7 +230,7 @@ export declare namespace DeferredViewBuilder {
  *   }
  * }
  */
-export const CustomViewBuilder = function (
+export const ComponentViewBuilder = function (
 	ViewClass: new () => View,
 	defineBody: () => ViewBuilder,
 ) {
@@ -238,7 +238,7 @@ export const CustomViewBuilder = function (
 	initializer.initialize((view) => {
 		let builder = _deferredBuilders.get(defineBody);
 		if (!builder) _deferredBuilders.set(defineBody, (builder = defineBody()));
-		(view as any).defineView = () => builder;
+		(view as any).viewBuilder = () => builder;
 	});
 	return {
 		initializer,
@@ -248,15 +248,17 @@ export const CustomViewBuilder = function (
 			return this;
 		},
 	};
-} as CustomViewBuilder.Type;
+} as ComponentViewBuilder.Type;
 
-export interface CustomViewBuilder<TView extends CustomView = CustomView> {
+export interface ComponentViewBuilder<
+	TView extends ComponentView = ComponentView,
+> {
 	/** An initializer for each view to be created */
 	initializer: ViewBuilder.Initializer<TView>;
 
 	/**
-	 * Creates a new instance of the custom view along with its body
-	 * @returns A newly created and initialized custom view instance
+	 * Creates a new instance of the component view along with its body
+	 * @returns A newly created and initialized component view instance
 	 */
 	create: () => TView;
 
@@ -282,16 +284,16 @@ export interface CustomViewBuilder<TView extends CustomView = CustomView> {
 	) => T;
 }
 
-export declare namespace CustomViewBuilder {
-	/** The type of the CustomViewBuilder function, usable both as a function and constructor */
+export declare namespace ComponentViewBuilder {
+	/** The type of the ComponentViewBuilder function, usable both as a function and constructor */
 	export interface Type {
-		new <TView extends CustomView = CustomView>(
+		new <TView extends ComponentView = ComponentView>(
 			ViewClass: new () => TView,
 			defineBody: () => ViewBuilder,
-		): CustomViewBuilder<TView>;
-		<TView extends CustomView = CustomView>(
+		): ComponentViewBuilder<TView>;
+		<TView extends ComponentView = ComponentView>(
 			ViewClass: new () => TView,
 			defineBody: () => ViewBuilder,
-		): CustomViewBuilder<TView>;
+		): ComponentViewBuilder<TView>;
 	}
 }

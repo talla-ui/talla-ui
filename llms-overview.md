@@ -44,7 +44,7 @@ export class FooActivity extends Activity {
 	count = 0;
 
 	// Create the view when activated, or on hot reload
-	protected defineView() {
+	protected viewBuilder() {
 		return FooView(); // see below
 	}
 
@@ -93,8 +93,8 @@ Example file structure:
 - `activities/settings/SettingsActivity.ts` - activity (`export class SettingsActivity`...)
 - `activities/settings/view.ts` - main view (`export default function`... returning a view builder)
 - `activities/settings/view.profile.ts` - partial view (`export default function`...)
-- `shared/widgets/SectionCard.ts` - reusable custom view (`export function SectionCard`...)
-- `shared/layouts/MainPage.ts` - reusable custom layout view (`export function MainPage`...)
+- `shared/widgets/SectionCard.ts` - reusable view (`export function SectionCard`...)
+- `shared/layouts/MainPage.ts` - reusable layout view (`export function MainPage`...)
 - `resources/icons.ts` - icon resources (e.g. re-export from package)
 - Other folders for models, services, infrastructure layer, etc.
 
@@ -223,7 +223,7 @@ Normally, all activities are rendered as scrollable 'pages'. However, the 'none'
 export class BooksListActivity extends Activity {
 	navigationPath = "books";
 
-	protected defineView() {
+	protected viewBuilder() {
 		return BooksListView(); // list/master view
 	}
 
@@ -266,7 +266,7 @@ export class MyActivity extends Activity {
 }
 
 class DialogActivity extends Activity {
-	protected defineView() {
+	protected viewBuilder() {
 		this.setRenderMode("dialog");
 		return DialogView(); // inner dialog view (with min/max width)
 	}
@@ -453,7 +453,7 @@ The `getText`, `getPlural`, `format`, and `isRTL` methods are exposed by the `ap
 
 ## Bindings
 
-Bindings can be used to update views dynamically, using the value of a public property in the activity or custom view object.
+Bindings can be used to update views dynamically, using the value of a public property in the activity or component.
 
 Nested properties are resolved using dot notation, e.g. `customer.name`. If the object containing the nested property is an `ObservableObject` (i.e. `customer` is an instance of a class that extends `ObservableObject`), the binding updates when the property changes, or when a change event is emitted by the object. Otherwise, the binding only updates when the last non-observable object property (`customer`) is changed.
 
@@ -504,7 +504,7 @@ UI.Label.fmt("Customer {:?/active/inactive}", bind("customer.isActive"));
 UI.Label.fmt("{:Ldate}", bind("date"));
 ```
 
-Avoid leaking business logic into the view layer. Where needed, add another property to the activity or custom view object rather than using complex bindings.
+Avoid leaking business logic into the view layer. Where needed, add another property to the activity or component rather than using complex bindings.
 
 ## Observable Objects
 
@@ -599,7 +599,7 @@ Use these methods to work with observable lists:
 
 ## Config options
 
-A utility class `ConfigOptions` is used by `useWebContext` and `useTestContext`, and can be used elsewhere too, e.g. for configuring services on startup, or options for a custom view.
+A utility class `ConfigOptions` is used by `useWebContext` and `useTestContext`, and can be used elsewhere too, e.g. for configuring services on startup, or options for a component view.
 
 ```typescript
 import { ConfigOptions } from "talla-ui";
@@ -802,7 +802,7 @@ export class MyActivity extends Activity {
 }
 ```
 
-## Custom Views
+## Component views
 
 Regular views may be expressed as functions that return a view builder object. The `DeferredViewBuilder` class can be used to create a builder object that's extended with custom methods.
 
@@ -844,13 +844,13 @@ export default UI.Column(
 );
 ```
 
-More complex views may use a 'custom view' class. The `CustomView` class manages a view body, providing state and event handlers to it.
+More complex views may use a `ComponentView` class, which manages a view body, providing state and event handlers to it.
 
-Unlike activities, custom views don't have active/inactive states, and should **not** include any business logic. Custom views provide a way to implement reusable UI components (e.g. button toggles, tab bars, grouped controls, cards, and layouts). Custom views are not required to simply break up a view into smaller parts — use regular view builder functions instead.
+Unlike activities, component views don't have active/inactive states, and should **not** include any business logic. Component views provide a way to implement reusable UI components (e.g. button toggles, tab bars, grouped controls, cards, and layouts). Component views are not required to simply break up a view into smaller parts — use regular view builder functions instead.
 
 ```typescript
-// Define a custom view to store view state
-export class CollapsibleView extends CustomView {
+// Define a view class to store view state
+export class CollapsibleView extends ComponentView {
 	expanded = false;
 	onToggle() {
 		this.expanded = !this.expanded;
@@ -863,7 +863,7 @@ export function Collapsible(
 	...content: ViewBuilder[]
 ) {
 	return {
-		...CustomViewBuilder(CollapsibleView, () =>
+		...ComponentViewBuilder(CollapsibleView, () =>
 			UI.Column(
 				UI.Label(title)
 					.icon(bind("expanded").then("chevronDown", "chevronNext"))
@@ -880,13 +880,13 @@ export function Collapsible(
 }
 ```
 
-Custom views can provide a fluent interface to bind to form fields, similar to `UI.TextField` and `UI.Toggle`, using the `FormContext.listen` method. The form context value may be calculated from the view's value, or vice versa.
+Components can provide a fluent interface to bind to form fields, similar to `UI.TextField` and `UI.Toggle`, using the `FormContext.listen` method. The form context value may be calculated from the view's value, or vice versa.
 
 ```typescript
 export function BoundInput() {
 	return {
-		...CustomViewBuilder(
-			CustomInputView, // with `value` property
+		...ComponentViewBuilder(
+			InputViewComponent, // with `value` property
 			() => UI.Column(/* ... */), // a complex view
 		),
 		bindFormField(name: string) {
@@ -938,10 +938,10 @@ useWebContext((options) => {
 
 ## Custom Rendering (Advanced)
 
-Create custom UI elements ONLY if a custom view with standard UI element content doesn't suffice.
+Create custom UI elements ONLY if a component with standard UI element content doesn't suffice.
 
 ```typescript
-export class CustomElementView extends CustomView {
+export class CustomComponentView extends ComponentView {
 	scene: Shape[] = [];
 
 	render(callback: RenderContext.RenderCallback) {
@@ -951,20 +951,21 @@ export class CustomElementView extends CustomView {
 }
 
 // Export a function that returns a builder, similar to UI.* functions
-export function CustomElement() {
-	return CustomElementView.builder(undefined, {
+export function CustomView() {
+	return {
+		...ComponentViewBuilder(CustomComponent),
 		shape(shape: Shape) {
 			this.initializer.finalize((view) => {
 				view.scene.push(shape);
 			});
 		},
-	});
+	};
 }
 ```
 
 ## Development and Testing
 
-Tälla UI supports hot reload at the activity level, copying updated activity prototypes (methods) to running instances. Afterwards, the view is updated using the new view builder returned by `defineView()`.
+Tälla UI supports hot reload at the activity level, copying updated activity prototypes (methods) to running instances. Afterwards, the view is updated using the new view builder returned by `viewBuilder()`.
 
 ```typescript
 class MyActivity extends Activity {
@@ -979,7 +980,7 @@ class MyActivity extends Activity {
 	// (i.e. state is preserved after hot reload)
 	foo = "bar";
 
-	protected defineView() {
+	protected viewBuilder() {
 		// This is called, to update the newly imported view if any
 		return MyView();
 	}
@@ -1237,7 +1238,7 @@ UI.Label("...")
 
 ## UI Elements
 
-Primary building blocks for UIs are provided by the following classes: `UIViewElement` (abstract), `UIContainer` (abstract), `UIColumn`, `UIRow`, `UICell`, `UIScrollView`, `UIButton`, `UILabel`, `UITextField`, `UIToggle`, `UIImage`, `UIDivider`, and `UISpacer`. That's all, there are no other UI elements that are rendered directly.
+Primary building blocks for UIs are provided by the following classes: `UIElement` (abstract), `UIContainer` (abstract), `UIColumn`, `UIRow`, `UICell`, `UIScrollView`, `UIButton`, `UILabel`, `UITextField`, `UIToggle`, `UIImage`, `UIDivider`, and `UISpacer`. That's all, there are no other UI elements that are rendered directly.
 
 In addition, the `UIShowView` and `UIListView` classes control embedded views.
 
@@ -1287,7 +1288,7 @@ UI.Label() // ... or UI.Button, UI.TextField, UI.Row, etc.
 	.intercept("Click", "Close") // intercept Click event, emit Close
 	.intercept("Click", "SelectTab", { tab: "settings" }) // ... emit event with data
 	.intercept("Press", "Go", {}, true); // intercept Press, _also_ emit original
-//  .onClick(() => { ... }) ❌ NO -- event handlers go in activity or custom view classes
+//  .onClick(() => { ... }) ❌ NO -- event handlers go in activity or component view classes
 //  .onKeyDown(() => { ... }) ❌ NO -- use .intercept("KeyDown", "EventName")
 //  .intercept("Click", "SelectItem", { item: bind("item") }) ❌ NO -- use data.listViewItem
 ```

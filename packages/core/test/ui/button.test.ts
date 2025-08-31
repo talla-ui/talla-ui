@@ -10,8 +10,8 @@ import {
 	Activity,
 	app,
 	bind,
-	CustomView,
-	CustomViewBuilder,
+	ComponentView,
+	ComponentViewBuilder,
 	UI,
 	UIButton,
 	UIColor,
@@ -79,10 +79,10 @@ test("Rendered with text", async () => {
 
 test("Rendered with fmt", async () => {
 	function MyButton() {
-		class MyButtonView extends CustomView {
+		class MyButtonView extends ComponentView {
 			bar = "bar";
 		}
-		return CustomViewBuilder(MyButtonView, () =>
+		return ComponentViewBuilder(MyButtonView, () =>
 			UI.Button.fmt("foo {}", bind("bar")),
 		);
 	}
@@ -174,7 +174,7 @@ test("Click event propagation", async () => {
 	let clicked = 0;
 	const view = UI.Cell(UI.Button("Button").emit("ButtonClicked"));
 	class MyActivity extends Activity {
-		protected override defineView() {
+		protected override viewBuilder() {
 			return view;
 		}
 		onButtonClicked() {
@@ -188,7 +188,7 @@ test("Click event propagation", async () => {
 
 test("Button navigation with navigateTo", async () => {
 	class MyActivity extends Activity {
-		protected override defineView() {
+		protected override viewBuilder() {
 			return UI.Button("foo").navigateTo("/foo");
 		}
 	}
@@ -201,7 +201,7 @@ test("Button navigation with navigateTo", async () => {
 test("Button navigation with navigateTo, relative path", async () => {
 	class MyActivity extends Activity {
 		override navigationPath = "foo";
-		protected override defineView() {
+		protected override viewBuilder() {
 			return UI.Button("bar").navigateTo("./bar");
 		}
 	}
@@ -213,7 +213,7 @@ test("Button navigation with navigateTo, relative path", async () => {
 
 test("Back button navigation", async () => {
 	class MyActivity extends Activity {
-		protected override defineView() {
+		protected override viewBuilder() {
 			return UI.Button("back").emit("NavigateBack");
 		}
 	}

@@ -1,4 +1,9 @@
-import { View, ViewBuilder, CustomView, ViewEvent } from "../../app/index.js";
+import {
+	View,
+	ViewBuilder,
+	ComponentView,
+	ViewEvent,
+} from "../../app/index.js";
 import {
 	BindingOrValue,
 	ObservableEvent,
@@ -53,7 +58,7 @@ export type UIListViewEvent<T = unknown> = ObservableEvent<
  */
 export class UIListView<
 	TItem extends ObservableObject = ObservableObject,
-> extends CustomView {
+> extends ComponentView {
 	/** @internal Attaches a list observer instance to the list, updating its content when the list changes */
 	static initializeBuild(
 		instance: UIListView,
@@ -72,7 +77,7 @@ export class UIListView<
 			running = { abort: false };
 			instance._updateItems(itemBuilder, emptyStateBuilder, running);
 		}
-		instance.defineView = () => contentBuilder;
+		instance.viewBuilder = () => contentBuilder;
 		instance.observe("items", doUpdateAsync);
 		instance.observe("firstIndex", doUpdateAsync);
 		instance.observe("maxItems", doUpdateAsync);
@@ -411,7 +416,7 @@ export namespace UIListView {
 	 * - The {@link getListItemView()} method returns the current view, i.e. the view body.
 	 * @see {@link UIListView}
 	 */
-	export class ItemControllerView<TItem> extends CustomView {
+	export class ItemControllerView<TItem> extends ComponentView {
 		static {
 			// Enable bindings on the `item` property, using bind("item") without a type parameter
 			ItemControllerView.enableBindings();
@@ -425,7 +430,7 @@ export namespace UIListView {
 		constructor(item: any, body: ViewBuilder<View>) {
 			super();
 			this.item = item instanceof ItemValueWrapper ? item.value : item;
-			this.defineView = () => body;
+			this.viewBuilder = () => body;
 		}
 
 		override delegate(event: ObservableEvent): true {

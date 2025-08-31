@@ -10,7 +10,7 @@ import { SearchView } from "./SearchView";
 import { swapPageAsync } from "./swap";
 
 export class SearchActivity extends Activity {
-	protected override defineView() {
+	protected override viewBuilder() {
 		this.setRenderMode("mount", { mountId: "docpage-search" });
 		return SearchView();
 	}

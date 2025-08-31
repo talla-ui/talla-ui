@@ -8,8 +8,8 @@ import {
 	AppContext,
 	bind,
 	BindingOrValue,
-	CustomView,
-	CustomViewBuilder,
+	ComponentView,
+	ComponentViewBuilder,
 	FormContext,
 	ObservableEvent,
 	UI,
@@ -129,7 +129,7 @@ test("Validation using existing InputValidator", () => {
 	expect(ctx.valid).toBe(true);
 });
 
-test("Custom view, binding to value and error", () => {
+test("Component view, binding to value and error", () => {
 	useTestContext();
 	let ERR = "Foo must have at least 3 characters";
 	let ctx = new FormContext(
@@ -150,11 +150,11 @@ test("Custom view, binding to value and error", () => {
 		.accessibleLabel("Foo")
 		.bold();
 
-	class FormView extends CustomView {
+	class FormView extends ComponentView {
 		form = undefined as FormContext | undefined;
 	}
 	const MyComp = () =>
-		CustomViewBuilder(FormView, () =>
+		ComponentViewBuilder(FormView, () =>
 			UI.Row(
 				UI.Label(bind("form.errors.foo")),
 				UI.TextField().bindFormField("foo"),
@@ -189,8 +189,8 @@ test("Custom form container, rendered", async () => {
 		formContext: BindingOrValue<FormContext>,
 		...content: ViewBuilder[]
 	) {
-		let b = CustomViewBuilder(
-			class extends CustomView {
+		let b = ComponentViewBuilder(
+			class extends ComponentView {
 				form?: FormContext;
 			},
 			() => UI.Column(...content),
@@ -204,7 +204,7 @@ test("Custom form container, rendered", async () => {
 		FormContainer(bind("form2"), UI.TextField().bindFormField("text")),
 	);
 	class MyActivity extends Activity {
-		protected override defineView() {
+		protected override viewBuilder() {
 			return view;
 		}
 		form1 = new FormContext().set("text", "foo");

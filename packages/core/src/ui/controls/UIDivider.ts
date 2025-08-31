@@ -2,7 +2,7 @@ import { ViewBuilder } from "../../app/index.js";
 import { BindingOrValue, isBinding } from "../../object/index.js";
 import { UIColor, UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
-import { UIViewElement } from "../UIViewElement.js";
+import { UIElement } from "../UIElement.js";
 
 /**
  * A view class that represents a horizontal or vertical divider line
@@ -11,7 +11,7 @@ import { UIViewElement } from "../UIViewElement.js";
  *
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
-export class UIDivider extends UIViewElement {
+export class UIDivider extends UIElement {
 	/** Divider line width, in pixels or CSS length with unit */
 	lineWidth: string | number = 1;
 
@@ -54,7 +54,7 @@ export namespace UIDivider {
 	 * A builder class for creating `UIDivider` instances.
 	 * - Objects of this type are returned by the `UI.Divider()` function.
 	 */
-	export class DividerBuilder extends UIViewElement.ElementBuilder<UIDivider> {
+	export class DividerBuilder extends UIElement.ElementBuilder<UIDivider> {
 		/** The initializer that is used to create each divider instance */
 		readonly initializer = new ViewBuilder.Initializer(UIDivider);
 

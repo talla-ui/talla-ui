@@ -1,6 +1,6 @@
 import {
 	app,
-	CustomView,
+	ComponentView,
 	MessageDialogOptions,
 	ModalFactory,
 	RenderContext,
@@ -10,7 +10,7 @@ import { fmt, StringConvertible } from "@talla-ui/util";
 
 /** @internal Limited implementation of a message dialog controller, that can be used to test for message display and button presses */
 export class TestMessageDialog
-	extends CustomView
+	extends ComponentView
 	implements
 		ModalFactory.AlertDialogController,
 		ModalFactory.ConfirmDialogController
@@ -49,7 +49,7 @@ export class TestMessageDialog
 		return { confirmed, other };
 	}
 
-	protected override defineView() {
+	protected override viewBuilder() {
 		return UI.Column()
 			.accessibleRole("alertdialog")
 			.with(

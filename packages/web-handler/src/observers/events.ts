@@ -1,4 +1,4 @@
-import { UIViewElement } from "@talla-ui/core";
+import { UIElement } from "@talla-ui/core";
 import type { BaseObserver } from "./BaseObserver.js";
 
 /** @internal Unique ID that's used as a property name for output references on DOM elements */
@@ -154,7 +154,7 @@ function detractFocus(this: HTMLElement, e: Event) {
 }
 
 /** Helper function that emits one or more events on a UI element */
-function handleObserverEvent(observer: BaseObserver<UIViewElement>, e: Event) {
+function handleObserverEvent(observer: BaseObserver<UIElement>, e: Event) {
 	if (e.type === "click" || e.type === "mousedown" || e.type === "mouseup") {
 		if (_lastTouchT > Date.now() - 1000) return;
 	}

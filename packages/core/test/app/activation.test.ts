@@ -191,7 +191,7 @@ describe("attachActivityAsync method", () => {
 		createAttached() {
 			return (this.toAttach = this.attach(new MyActivity()));
 		}
-		protected override defineView() {
+		protected override viewBuilder() {
 			return UI.Label(this.label);
 		}
 		async onClick() {

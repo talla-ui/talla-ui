@@ -5,7 +5,7 @@ import {
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
 import {
-	CustomView,
+	ComponentView,
 	UI,
 	UIButton,
 	UICell,
@@ -33,9 +33,9 @@ test("Single element, request focus", async () => {
 	await expectOutputAsync({ type: "cell", focused: true });
 });
 
-test("Single custom view, request focus", async () => {
-	class MyView extends CustomView {
-		protected override defineView() {
+test("Single component view, request focus", async () => {
+	class MyView extends ComponentView {
+		protected override viewBuilder() {
 			return UI.Cell().allowFocus();
 		}
 	}
@@ -65,10 +65,10 @@ test("Focus requests", async () => {
 test("Focusing one element blurs another", async () => {
 	let events: string[] = [];
 	let done = false;
-	class MyView extends CustomView {
+	class MyView extends ComponentView {
 		cell2?: UICell;
 
-		protected override defineView() {
+		protected override viewBuilder() {
 			return UI.Cell(
 				UI.Cell()
 					.allowFocus()

@@ -3,7 +3,7 @@ import { ViewBuilder } from "../../app/index.js";
 import { BindingOrValue } from "../../object/Binding.js";
 import { UIIconResource, UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
-import { UIViewElement } from "../UIViewElement.js";
+import { UIElement } from "../UIElement.js";
 
 /**
  * A view class that represents an image or icon control
@@ -12,7 +12,7 @@ import { UIViewElement } from "../UIViewElement.js";
  *
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
-export class UIImage extends UIViewElement {
+export class UIImage extends UIElement {
 	/** Creates a new image view object with the specified URL */
 	constructor(source?: StringConvertible | UIIconResource) {
 		super();
@@ -53,7 +53,7 @@ export namespace UIImage {
 	 * A builder class for creating `UIImage` instances.
 	 * - Objects of this type are returned by the `UI.Image()` function.
 	 */
-	export class ImageBuilder extends UIViewElement.ElementBuilder<UIImage> {
+	export class ImageBuilder extends UIElement.ElementBuilder<UIImage> {
 		/** The initializer that is used to create each image instance */
 		readonly initializer = new ViewBuilder.Initializer(UIImage);
 

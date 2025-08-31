@@ -3,7 +3,7 @@ import { FormContext, ViewBuilder } from "../../app/index.js";
 import { BindingOrValue } from "../../object/index.js";
 import { UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
-import { UIViewElement } from "../UIViewElement.js";
+import { UIElement } from "../UIElement.js";
 
 /**
  * A view class that represents a text field control
@@ -12,7 +12,7 @@ import { UIViewElement } from "../UIViewElement.js";
  *
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
-export class UITextField extends UIViewElement {
+export class UITextField extends UIElement {
 	/** Creates a new text field view instance */
 	constructor(placeholder?: StringConvertible, value?: string) {
 		super();
@@ -95,7 +95,7 @@ export namespace UITextField {
 	 * A builder class for creating `UITextField` instances.
 	 * - Objects of this type are returned by the `UI.TextField()` function.
 	 */
-	export class TextFieldBuilder extends UIViewElement.ElementBuilder<UITextField> {
+	export class TextFieldBuilder extends UIElement.ElementBuilder<UITextField> {
 		/** The initializer that is used to create each text field instance */
 		readonly initializer = new ViewBuilder.Initializer(UITextField);
 

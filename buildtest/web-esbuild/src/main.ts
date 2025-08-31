@@ -8,7 +8,7 @@ function Page() {
 }
 
 export class MainActivity extends Activity {
-	protected defineView() {
+	protected viewBuilder() {
 		return Page();
 	}
 }

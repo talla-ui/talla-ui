@@ -14,9 +14,9 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link Binding} +
 - {@link BindingOrValue} +
 - {@link clickOutputAsync} +
+- {@link ComponentView} +
+- {@link ComponentViewBuilder} +
 - {@link ConfigOptions} +
-- {@link CustomView} +
-- {@link CustomViewBuilder} +
 - {@link DeferredString} +
 - {@link DeferredViewBuilder} +
 - {@link enterTextOutputAsync} +
@@ -59,6 +59,7 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link UIColumn} +
 - {@link UIContainer} +
 - {@link UIDivider} +
+- {@link UIElement} +
 - {@link UIIconResource} +
 - {@link UIImage} +
 - {@link UILabel} +
@@ -71,7 +72,6 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link UIStyle} +
 - {@link UITextField} +
 - {@link UIToggle} +
-- {@link UIViewElement} +
 - {@link useTestContext} +
 - {@link useWebContext} +
 - {@link View} +
