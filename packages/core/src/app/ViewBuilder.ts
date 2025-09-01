@@ -253,6 +253,20 @@ export const ComponentViewBuilder = function (
 	};
 } as ComponentViewBuilder.Type;
 
+export declare namespace ComponentViewBuilder {
+	/** The type of the ComponentViewBuilder function, usable both as a function and constructor */
+	export interface Type {
+		new <TView extends ComponentView = ComponentView>(
+			ViewClass: new () => TView,
+			viewBuilder?: () => ViewBuilder,
+		): ComponentViewBuilder<TView>;
+		<TView extends ComponentView = ComponentView>(
+			ViewClass: new () => TView,
+			viewBuilder?: () => ViewBuilder,
+		): ComponentViewBuilder<TView>;
+	}
+}
+
 export interface ComponentViewBuilder<
 	TView extends ComponentView = ComponentView,
 > {
@@ -285,18 +299,4 @@ export interface ComponentViewBuilder<
 		data?: Record<string, unknown>,
 		forward?: boolean,
 	) => T;
-}
-
-export declare namespace ComponentViewBuilder {
-	/** The type of the ComponentViewBuilder function, usable both as a function and constructor */
-	export interface Type {
-		new <TView extends ComponentView = ComponentView>(
-			ViewClass: new () => TView,
-			viewBuilder: () => ViewBuilder,
-		): ComponentViewBuilder<TView>;
-		<TView extends ComponentView = ComponentView>(
-			ViewClass: new () => TView,
-			viewBuilder: () => ViewBuilder,
-		): ComponentViewBuilder<TView>;
-	}
 }
