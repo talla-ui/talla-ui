@@ -64,7 +64,7 @@ test("List of labels from ObservableList, rendered", async () => {
 	let list = new ObservableList(...getObjects());
 
 	console.log("Creating instance");
-	let myList = UI.List(list, UI.Label(bind("item.name")));
+	let myList = UI.List(list, (item) => UI.Label(item.bind("name")));
 	let instance = myList.create();
 
 	console.log("Rendering");
@@ -83,7 +83,7 @@ test("List of labels from ObservableList, rendered", async () => {
 
 test("List of labels from bound array, rendered", async () => {
 	console.log("Creating instance");
-	let myList = UI.List(bind("array"), UI.Label(bind("item"))).outer(UI.Row());
+	let myList = UI.List(bind("array"), (item) => UI.Label(item)).outer(UI.Row());
 	class ArrayProvider extends ObservableObject {
 		array = ["a", "b", "c"];
 		readonly view = this.attach(myList.create());
@@ -102,7 +102,9 @@ test("List of labels, rendered, then updated", async () => {
 	let list = new ObservableList(a, b, c);
 
 	console.log("Creating instance");
-	let myList = UI.List(list, UI.Label(bind("item.name"))).outer(UI.Row());
+	let myList = UI.List(list, (item) => UI.Label(item.bind("name"))).outer(
+		UI.Row(),
+	);
 	let instance = myList.create();
 
 	console.log("Rendering");
@@ -178,6 +180,45 @@ test("Event propagation through list", async () => {
 	console.log("Clicking");
 	out.getSingle().click();
 	expect(count).toBe(1);
+});
+
+test("Nested list", async () => {
+	console.log("Creating instance");
+	class NestedArrayProvider extends ObservableObject {
+		array = [
+			{ name: "a", numbers: [1, 2, 3] },
+			{ name: "b", numbers: [4, 5, 6] },
+			{ name: "c", numbers: [7, 8, 9] },
+		];
+		readonly view = this.attach(
+			UI.List(this.bind("array"), (item) =>
+				UI.List(item.bind("numbers"), (number) =>
+					UI.Label.fmt("{}{}", item.bind("name"), number),
+				),
+			).create(),
+		);
+	}
+	let parent = new NestedArrayProvider();
+	let instance = parent.view;
+
+	console.log("Rendering");
+	renderTestView(instance);
+	await expectOutputAsync({ type: "label" });
+	let labels = instance
+		.findViewContent(UILabel)
+		.map((label) => String(label.text));
+	console.log(`Rendered ${labels.length} labels`);
+	expect(labels).toEqual([
+		"a1",
+		"a2",
+		"a3",
+		"b4",
+		"b5",
+		"b6",
+		"c7",
+		"c8",
+		"c9",
+	]);
 });
 
 test("Empty state", async () => {

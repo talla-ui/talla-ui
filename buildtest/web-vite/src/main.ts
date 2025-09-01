@@ -2,6 +2,7 @@ import {
 	Activity,
 	app,
 	bind,
+	Binding,
 	BindingOrValue,
 	ComponentView,
 	ComponentViewBuilder,
@@ -99,7 +100,7 @@ class CountService extends ObservableObject {
 	}
 }
 
-function MainView() {
+function MainView(numbers: Binding<{ id: number; factors: number[] }[]>) {
 	return UI.Column()
 		.align("center")
 		.with(
@@ -140,6 +141,23 @@ function MainView() {
 				UI.Button("Remount").emit("Remount").buttonStyle("primary"),
 				UI.Button("Change").emit("ChangeEvent"),
 			),
+			UI.Spacer(32),
+
+			// Test: table
+			UI.Column(
+				UI.Row(
+					UI.Label("Numbers").align("end").width(100),
+					UI.Label("Factors"),
+				),
+				UI.List(numbers, (item) =>
+					UI.List(item.bind("factors"), (factor) =>
+						UI.Row(
+							UI.Label(item.bind("id")).align("end").width(100),
+							UI.Label(factor),
+						),
+					).outer(UI.Column().border({ top: 1 })),
+				),
+			),
 		);
 }
 
@@ -151,6 +169,11 @@ export class MainActivity extends Activity {
 
 	navigationPath = "";
 	viewDefined = new Date();
+
+	numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => ({
+		id: i,
+		factors: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].filter((f) => i % f === 0),
+	}));
 
 	get currentDate() {
 		return new Date();
@@ -173,7 +196,7 @@ export class MainActivity extends Activity {
 
 	protected override viewBuilder() {
 		this.viewDefined = new Date();
-		return MainView();
+		return MainView(this.bind("numbers"));
 	}
 
 	protected onCount() {

@@ -114,13 +114,14 @@ export class Binding<T = any> {
 
 	/**
 	 * Creates a new binding to observe the specified source from any (currently bound) object
-	 * - This method creates a binding that observes both the original value, and (if the value is an object) a property or nested property. If the value is undefined or not an object, the bound value is undefined or the provided default value.
+	 * - This method creates a binding that observes both the original value, and (if the value is an object) a property or nested property. If the value is undefined or not an object, the bound value becomes undefined.
 	 * @param sourcePath The source property path, as a string
-	 * @param defaultValue An optional default value that's used when the bound value is undefined
 	 * @returns A new binding, typed as the new value or undefined
 	 */
-	bind<U = any>(sourcePath: string, defaultValue?: any) {
-		let result: Binding<U> = this.clone();
+	bind<K extends keyof T>(sourcePath: K): Binding<T[K]>;
+	bind<U = any>(sourcePath: string): Binding<U>;
+	bind(sourcePath: string) {
+		let result: Binding = this.clone();
 		let path = sourcePath.split(".");
 		let _apply = this[$_bind_apply];
 		result[$_bind_apply] = function (target, update) {
