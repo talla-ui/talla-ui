@@ -1,5 +1,5 @@
-import { UIListView } from "./wrappers/UIListView.js";
-import { UIShowView } from "./wrappers/UIShowView.js";
+import { UIListView } from "./components/UIListView.js";
+import { UIShowView } from "./components/UIShowView.js";
 import { UICell } from "./containers/UICell.js";
 import { UIColumn } from "./containers/UIColumn.js";
 import { UIRow } from "./containers/UIRow.js";

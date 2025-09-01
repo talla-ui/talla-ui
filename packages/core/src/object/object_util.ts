@@ -13,14 +13,11 @@ export const $_origin = Symbol("origin");
 /** @internal Property that is set only on root objects (cannot be attached) */
 export const $_root = Symbol("root");
 
-/** @internal Property that is set to true (on the object prototype) if the object is observable for bindings */
-export const $_bind = Symbol("bind");
+/** @internal Property that is set to true (on the object prototype) if properties of this object should not be bound */
+export const $_nobind = Symbol("nobind");
 
 /** @internal Property that refers to a list of event interceptors */
 export const $_intercept = Symbol("intercept");
-
-/** @internal Getter for non-observable properties (used for e.g. list length) */
-export const $_get = Symbol("get");
 
 /** @internal Non-existent property, trap is invoked when an event is emitted */
 export const $_traps_event = Symbol("event");
@@ -421,6 +418,9 @@ function detachObject(origin: ObservableObject, target: ObservableObject) {
 
 // -- Binding functions ----------------------------------------------
 
+/** @internal Representation of a bound binding, can be rebound */
+export type BoundResult = { a: ObservableObject; r: boolean };
+
 /** @internal Add a watched binding path on specified origin, or origin(s) of given observable object */
 export function watchBinding(
 	observedObject: ObservableObject,
@@ -438,7 +438,18 @@ export function watchBinding(
 
 	// if origin already set/attached, try to start watching already
 	let o = origin || observedObject[$_origin];
-	if (o) bound.start(o);
+	if (o) bound.start(o, 0);
+	return bound as BoundResult;
+}
+
+/** @internal Rebind given (bound) binding to a new origin */
+export function rebind(
+	bound: BoundResult,
+	origin: ObservableObject | undefined,
+) {
+	if (bound.r) throw TypeError();
+	(bound as Bound).clear(-1);
+	if (origin) (bound as Bound).start(origin, 0);
 }
 
 /** @internal Object that encapsulates a watched binding path on an observable object instance */
@@ -450,7 +461,7 @@ class Bound {
 		public p: ReadonlyArray<string>,
 		/** Function that's called when value is updated */
 		public f: (value: any, bound: boolean) => void,
-		/** True if origin is not fixed (re-bind when object is attached/moved) */
+		/** True if origin is not fixed (automatically rebind when object is attached/moved) */
 		public r: boolean,
 	) {}
 
@@ -464,9 +475,8 @@ class Bound {
 	private _v = NO_VALUE;
 
 	/** Try to start watching from the provided (or original) origin, if not already bound */
-	start(origin?: ObservableObject, nestingLevel = 0) {
+	start(origin: ObservableObject | undefined, nestingLevel: number) {
 		if (this.t || !this.a || this.a[$_unlinked]) return;
-		if (!origin && this.r) origin = this.a[$_origin];
 		while (!this._check(origin, nestingLevel)) {
 			origin = origin![$_origin];
 			nestingLevel++;
@@ -496,8 +506,9 @@ class Bound {
 		}
 
 		// check source binding type and check if property is observable
-		if (origin[$_bind]) {
-			let firstProp = this.p[0]!;
+		let firstProp: string | undefined;
+		if (!origin[$_nobind]) {
+			firstProp = this.p[0]!;
 			if (canTrap(origin, firstProp)) {
 				// watch all properties along path
 				this.i = nestingLevel;
@@ -515,9 +526,14 @@ class Bound {
 			}
 		}
 
-		// error if already at root
-		if (origin[$_root]) {
-			errorHandler(err(ERROR.Object_NoObserve, this.p[0]!));
+		// error if already at root, or not going to rebind
+		if (origin[$_root] || !this.r) {
+			this.t = []; // prevent restart on attachment
+			errorHandler(
+				firstProp == null
+					? err(ERROR.Object_NoBind, this.p.join("."))
+					: err(ERROR.Object_NoObserve, firstProp),
+			);
 			return true;
 		}
 	}
@@ -538,7 +554,7 @@ class Bound {
 						for (let t of traps) removeTrap(t);
 						self.t = undefined;
 						self.i = -1;
-						self.start();
+						if (self.r) self.start(self.a[$_origin]!, 0);
 					} else {
 						// otherwise, just remove traps from here
 						for (let j = traps.length - 1; j >= i; j--) {
@@ -626,13 +642,10 @@ class Bound {
 
 	/** Helper method to get a property of given source (may be an object), for link `i` onwards */
 	private _get(source: any, i: number) {
-		let pathLen = this.p.length;
-		for (let j = i + 1; j < pathLen; j++) {
-			let nextP = this.p[j]!;
+		let len = this.p.length;
+		for (let j = i + 1; j < len; j++) {
 			if (source == null) break;
-			if (typeof source === "object" && $_get in source)
-				source = source[$_get](nextP);
-			else source = source[nextP];
+			source = source[this.p[j]!];
 		}
 		return source;
 	}

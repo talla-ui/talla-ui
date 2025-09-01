@@ -59,6 +59,11 @@ export type UIListViewEvent<T = unknown> = ObservableEvent<
 export class UIListView<
 	TItem extends ObservableObject = ObservableObject,
 > extends ComponentView {
+	static {
+		// Disable bindings on UIListView itself
+		UIListView.disableBindings();
+	}
+
 	/** @internal Attaches a list observer instance to the list, updating its content when the list changes */
 	static initializeBuild(
 		instance: UIListView,
@@ -417,11 +422,6 @@ export namespace UIListView {
 	 * @see {@link UIListView}
 	 */
 	export class ItemControllerView<TItem> extends ComponentView {
-		static {
-			// Enable bindings on the `item` property, using bind("item") without a type parameter
-			ItemControllerView.enableBindings();
-		}
-
 		/**
 		 * Creates a new item controller view object
 		 * - This constructor is used by {@link UIListView} and should not be used directly by an application.

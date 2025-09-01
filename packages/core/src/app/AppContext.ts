@@ -36,11 +36,6 @@ let instance: AppContext | undefined;
  * @docgen {hideconstructor}
  */
 export class AppContext extends ObservableObject {
-	static {
-		// Enable bindings on `app` itself
-		AppContext.enableBindings();
-	}
-
 	/**
 	 * Returns the current application context
 	 * - The application context is also exported as `app`, which should be used from application code instead of calling this method.

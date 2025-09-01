@@ -46,7 +46,6 @@ test("Locale format binding", () => {
 	class MyParent extends ObservableObject {
 		value = 123;
 	}
-	MyParent.enableBindings();
 	app.i18n.configure("test", {
 		format(value: any, ...type: string[]) {
 			return "{" + String(value) + ":" + type.join() + "}";

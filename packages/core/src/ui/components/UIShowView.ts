@@ -23,6 +23,11 @@ const MIN_ANIM_REPEAT_MS = 8;
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
 export class UIShowView extends View {
+	static {
+		// Disable bindings on UIShowView itself
+		UIShowView.disableBindings();
+	}
+
 	constructor() {
 		super();
 

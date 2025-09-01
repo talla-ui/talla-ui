@@ -4,7 +4,6 @@ import {
 	Binding,
 	ObservableList,
 	ObservableObject,
-	app,
 	bind,
 } from "../../dist/index.js";
 
@@ -45,7 +44,7 @@ test("Constructor with path", () => {
 describe("Basic bindings", () => {
 	function setup() {
 		class ObjectWithBind extends ObservableObject {
-			getBinding(property: keyof this) {
+			getBinding(property: string & keyof this) {
 				return this.bind(property);
 			}
 			applyBind(property: keyof this, source: Binding | string) {
@@ -112,10 +111,17 @@ describe("Basic bindings", () => {
 			}
 			private _object?: ChildObject;
 		}
-		TestObject.enableBindings();
-		ChildObject.enableBindings();
 		return { TestObject, ChildObject };
 	}
+
+	test("Value binding", () => {
+		let { TestObject } = setup();
+		let c = new TestObject();
+		c.child.applyBind("aa", bind.value(123));
+		expect(c.child).toHaveProperty("aa", 123);
+		c.unlink();
+		expect(c.child).toHaveProperty("aa", 123);
+	});
 
 	test("Single binding", () => {
 		let { TestObject } = setup();
@@ -353,7 +359,6 @@ describe("Basic bindings", () => {
 			declare changeable: ChangedObject;
 			readonly bound = this.attach(new BoundObject());
 		}
-		Parent.enableBindings();
 		let p = new Parent();
 		p.bound.bindnonObserved();
 		expect(p.bound).toHaveProperty("a", 1);
@@ -361,56 +366,6 @@ describe("Basic bindings", () => {
 		expect(p.bound).toHaveProperty("a", 1);
 		p.changeable.emitChange("Update");
 		expect(p.bound).toHaveProperty("a", 2);
-	});
-
-	test("Bind to property of observed list item: indexed, first, last", () => {
-		class ListItem extends ObservableObject {
-			constructor(n: number) {
-				super();
-				this.n = n;
-			}
-			n: number;
-		}
-		class BoundObject extends ObservableObject {
-			a?: number;
-			bindNumber(b: string) {
-				this.observe(bind(b), (v: any) => {
-					this.a = v;
-				});
-				return this;
-			}
-		}
-		class Parent extends ObservableObject {
-			list = new ObservableList().restrict(ListItem);
-			readonly boundIndex = this.attach(
-				new BoundObject().bindNumber("list.0.n"),
-			);
-			readonly boundFirst = this.attach(
-				new BoundObject().bindNumber("list.#first.n"),
-			);
-			readonly boundLast = this.attach(
-				new BoundObject().bindNumber("list.#last.n"),
-			);
-		}
-		Parent.enableBindings();
-		let p = new Parent();
-
-		console.log("Testing list with zero items");
-		expect(p.boundIndex.a).toBeUndefined();
-		expect(p.boundFirst.a).toBeUndefined();
-		expect(p.boundLast.a).toBeUndefined();
-
-		console.log("Testing list with 1 item");
-		p.list.add(new ListItem(1));
-		expect(p.boundIndex.a).toBe(1);
-		expect(p.boundFirst.a).toBe(1);
-		expect(p.boundLast.a).toBe(1);
-
-		console.log("Testing list with 2 items");
-		p.list.insert(new ListItem(2), p.list.first());
-		expect(p.boundIndex.a).toBe(2);
-		expect(p.boundFirst.a).toBe(2);
-		expect(p.boundLast.a).toBe(1);
 	});
 
 	test("Binding to observable object, emit change event", () => {
@@ -478,7 +433,6 @@ describe("Basic bindings", () => {
 			}
 			child = this.attach(new Child());
 		}
-		Parent.enableBindings();
 		let p = new Parent();
 		expect(p.child).toHaveProperty("nonObserved", 1);
 		p.foo = 2;
@@ -500,6 +454,9 @@ describe("Basic bindings", () => {
 		}
 		class ParentOne extends ObservableObject {
 			// bindings not enabled here
+			static {
+				ParentOne.disableBindings();
+			}
 			parentId = "one";
 			child = this.attach(new Child());
 		}
@@ -507,7 +464,6 @@ describe("Basic bindings", () => {
 			parentId = "two";
 			child = this.attach(new ParentOne());
 		}
-		ParentTwo.enableBindings();
 		let p = new ParentTwo();
 		expect(p.child.child).toHaveProperty("parentId", "two");
 	});
@@ -517,7 +473,7 @@ describe("Basic bindings", () => {
 		let c = new TestObject();
 		let child = c.child;
 		child.applyBind("aa", "b");
-		for (let i = 0; i < 100; i++) {
+		for (let i = 0; i < 1000; i++) {
 			child = child.attachNested();
 			child.applyBind("aa", "b");
 			child.applyBind("bb", "child.a");
@@ -547,7 +503,6 @@ describe("Observed list / array bindings", () => {
 			child = this.attach(new Child());
 			value?: any;
 		}
-		Parent.enableBindings();
 		class Child extends ObservableObject {
 			list = new ObservableList();
 			bindList(b: string) {
@@ -593,7 +548,6 @@ describe("Observed list / array bindings", () => {
 			length = 123;
 			list = this.attach(new ObservableList(new Child())).attachItems(true);
 		}
-		Parent.enableBindings();
 		let p = new Parent();
 		expect(p.list.first()).toHaveProperty("length", 123);
 	});
@@ -608,8 +562,8 @@ describe("Mapped/boolean bindings", () => {
 			value3 = 3;
 			str?: string;
 			list?: any;
+			object?: any;
 		}
-		Parent.enableBindings();
 
 		class Child extends ObservableObject {
 			bindValue(b: Binding) {
@@ -640,6 +594,12 @@ describe("Mapped/boolean bindings", () => {
 		const defaultValue = {};
 		parent.child.bindValue(bind("noStateProperty", defaultValue));
 		parent.child.expectValue().toBe(defaultValue);
+	});
+
+	test("Value binding, not", () => {
+		let { parent } = setup();
+		parent.child.bindValue(bind.value(true).not());
+		parent.child.expectValue().toBe(false);
 	});
 
 	test("Mapped: not, using map()", () => {
@@ -851,6 +811,89 @@ describe("Mapped/boolean bindings", () => {
 		parent.value3 = 0;
 		expect(JSON.stringify(parent.child.updates)).toBe("[2,3,0]");
 	});
+
+	test("Property binding, plain object 1 step", () => {
+		let { parent } = setup();
+		parent.child.bindValue(bind("object").bind("foo"));
+		parent.child.expectValue().toBe(undefined);
+		parent.object = { foo: 1 };
+		parent.child.expectValue().toBe(1);
+	});
+
+	test("Property binding, plain object 1 step, initial value", () => {
+		let { parent } = setup();
+		parent.object = { foo: 1 };
+		parent.child.bindValue(bind("object").bind("foo"));
+		parent.child.expectValue().toBe(1);
+	});
+
+	test("Property binding, plain object 2 steps", () => {
+		let { parent } = setup();
+		parent.child.bindValue(bind("object").bind("foo.bar"));
+		parent.child.expectValue().toBe(undefined);
+		parent.object = { foo: { bar: 1 } };
+		parent.child.expectValue().toBe(1);
+	});
+
+	test("Property binding, observable object 1 step", () => {
+		let { parent } = setup();
+		parent.child.bindValue(bind("object").bind("foo"));
+		parent.object = Object.assign(new ObservableObject(), { foo: 1 });
+		parent.child.expectValue().toBe(1);
+		parent.object.foo = 2;
+		parent.child.expectValue().toBe(2);
+		let oldObject = parent.object;
+
+		parent.object = Object.assign(new ObservableObject(), { foo: 3 }); // new object
+		parent.child.expectValue().toBe(3);
+		oldObject.foo = 4;
+		parent.child.expectValue().toBe(3);
+		oldObject = parent.object;
+
+		parent.object = undefined; // stop observing
+		parent.child.expectValue().toBe(undefined);
+		oldObject.foo = 5;
+		parent.child.expectValue().toBe(undefined);
+	});
+
+	test("Property binding, observable object 2 steps", () => {
+		let { parent } = setup();
+		parent.child.bindValue(bind("object").bind("foo.bar"));
+		parent.object = Object.assign(new ObservableObject(), { foo: { bar: 1 } });
+		parent.child.expectValue().toBe(1);
+		parent.object.foo.bar = 2;
+		parent.child.expectValue().toBe(1); // foo not observable
+		parent.object.foo = Object.assign(new ObservableObject(), { bar: 2 });
+		parent.child.expectValue().toBe(2);
+		parent.object.foo.bar = 3;
+		parent.child.expectValue().toBe(3); // now observable
+		parent.object.foo.unlink();
+		parent.child.expectValue().toBe(undefined);
+		parent.object = Object.assign(new ObservableObject(), { foo: { bar: 1 } });
+		parent.child.expectValue().toBe(1); // pick binding back up
+	});
+
+	test("Property binding with nested property binding", () => {
+		let { parent } = setup();
+		parent.child.bindValue(bind("object").bind("foo").bind("bar"));
+		parent.object = Object.assign(new ObservableObject(), { foo: { bar: 1 } });
+		parent.child.expectValue().toBe(1);
+		parent.object.foo.bar = 2;
+		parent.child.expectValue().toBe(1); // foo not observable
+		parent.object.foo = Object.assign(new ObservableObject(), { bar: 2 });
+		parent.child.expectValue().toBe(2);
+		parent.object.foo.bar = 3;
+		parent.child.expectValue().toBe(3); // now observable
+		let oldObject = parent.object;
+		parent.object = undefined;
+		parent.child.expectValue().toBe(undefined);
+		parent.object = Object.assign(new ObservableObject(), { foo: { bar: 1 } });
+		parent.child.expectValue().toBe(1); // pick binding back up
+		oldObject.foo.bar = 4;
+		parent.child.expectValue().toBe(1);
+		oldObject.foo = { bar: 5 };
+		parent.child.expectValue().toBe(1);
+	});
 });
 
 describe("String format bindings", () => {
@@ -860,8 +903,6 @@ describe("String format bindings", () => {
 			value1 = 1;
 			str = "ABC";
 		}
-		Parent.enableBindings();
-
 		class Child extends ObservableObject {
 			value?: any;
 			bindValue(b: Binding) {
@@ -878,7 +919,6 @@ describe("String format bindings", () => {
 				return expect(String(this.value));
 			}
 		}
-
 		return { parent: new Parent() };
 	}
 

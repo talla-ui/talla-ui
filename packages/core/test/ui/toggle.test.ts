@@ -56,7 +56,6 @@ test("User input with form context", async () => {
 		readonly form = new FormContext().set("foo", true);
 		readonly toggle = this.attach(UI.Toggle().bindFormField("foo").create());
 	}
-	Host.enableBindings();
 	let host = new Host();
 	let toggle = host.toggle;
 

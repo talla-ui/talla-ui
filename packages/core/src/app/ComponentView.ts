@@ -45,11 +45,6 @@ import type { ViewBuilder } from "./ViewBuilder.js";
  * }
  */
 export class ComponentView extends View {
-	static {
-		// Enable bindings for all instances, using bind(...) without a type parameter
-		ComponentView.enableBindings();
-	}
-
 	/**
 	 * The encapsulated view object, an attached view
 	 * - Initially, this property is undefined. The view body is only created (using the result of {@link viewBuilder()}) when the ComponentView instance is first rendered.

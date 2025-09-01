@@ -861,7 +861,6 @@ describe("Events and observation", () => {
 			list = this.attach(new ObservableList().attachItems(true));
 			object = this.attach(new MyObject());
 		}
-		MyParent.enableBindings();
 		let p = new MyParent();
 		expect(p.object).toHaveProperty("boundCount", 0);
 		p.list.add(new ObservableObject());

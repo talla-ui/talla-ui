@@ -38,11 +38,6 @@ const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
  * app.addActivity(new MyActivity(), true);
  */
 export class Activity extends ObservableObject {
-	static {
-		// Enable bindings for all instances, using bind(...) without a type parameter
-		Activity.enableBindings();
-	}
-
 	/** @internal Update prototype for given class with newer prototype, and rebuild view */
 	static _$hotReload(
 		Old: undefined | typeof Activity,

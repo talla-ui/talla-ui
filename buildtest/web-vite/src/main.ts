@@ -18,12 +18,14 @@ import {
 
 function Collapsible(label: StringConvertible, ...content: ViewBuilder[]) {
 	class CollapsibleView extends ComponentView {
-		width? = 300;
+		width = width;
 		expanded = false;
 		onToggle() {
 			this.expanded = !this.expanded;
 		}
 	}
+
+	let width = 300;
 	return {
 		...ComponentViewBuilder(CollapsibleView, () =>
 			UI.Column()
@@ -44,8 +46,8 @@ function Collapsible(label: StringConvertible, ...content: ViewBuilder[]) {
 			this.initializer.set("expanded", expanded);
 			return this;
 		},
-		width(w: BindingOrValue<number | undefined>) {
-			this.initializer.set("width", w);
+		width(w: number) {
+			width = w;
 			return this;
 		},
 	};
@@ -102,7 +104,7 @@ function MainView() {
 		.align("center")
 		.with(
 			UI.Spacer(32),
-			MyTitle("Title").width(300),
+			MyTitle("Title").width(400),
 			Collapsible(
 				"Rendered",
 				UI.Column()
@@ -120,7 +122,7 @@ function MainView() {
 					),
 			)
 				.expand()
-				.width(300),
+				.width(400),
 
 			UI.Label(bind.fmt("Current: {:L}", bind("currentDate"))).padding(),
 			UI.Spacer(8),

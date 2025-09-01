@@ -92,7 +92,6 @@ test("User input with form context", async () => {
 		readonly form = new FormContext().set("foo", "bar");
 		readonly tf = this.attach(UI.TextField().bindFormField("foo").create());
 	}
-	Host.enableBindings();
 	let host = new Host();
 	let tf = host.tf;
 

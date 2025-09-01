@@ -1,5 +1,5 @@
 import { ObservableObject } from "./ObservableObject.js";
-import { $_origin, $_get, unlinkObject } from "./object_util.js";
+import { $_origin, unlinkObject } from "./object_util.js";
 import { ObservableEvent } from "./ObservableEvent.js";
 import { err, ERROR, invalidArgErr } from "../errors.js";
 
@@ -74,6 +74,11 @@ const $_list = Symbol("list");
 export class ObservableList<
 	T extends ObservableObject = ObservableObject,
 > extends ObservableObject {
+	static {
+		// Disable bindings on ObservableList itself
+		ObservableList.disableBindings();
+	}
+
 	/** Creates a new observable list containing the provided objects */
 	constructor(...objects: T[]) {
 		super();
@@ -84,22 +89,6 @@ export class ObservableList<
 	/** The number of objects in the list */
 	get length() {
 		return this[$_list].map.size;
-	}
-
-	/** @internal Property getter for non-observable property bindings */
-	override [$_get](propertyName: string) {
-		switch (propertyName) {
-			case "length":
-				return this.length;
-			case "#first":
-				return this.first();
-			case "#last":
-				return this.last();
-			case "*":
-				return this;
-		}
-		let idx = parseInt(propertyName);
-		return idx >= 0 && idx < this[$_list].map.size ? this.get(idx) : undefined;
 	}
 
 	/** Iterator symbol, alias of {@link objects()} method */

@@ -2,10 +2,9 @@ import { err, ERROR, invalidArgErr, safeCall } from "../errors.js";
 import { Binding } from "./Binding.js";
 import { ObservableEvent } from "./ObservableEvent.js";
 import {
-	$_bind,
 	$_bind_apply,
-	$_get,
 	$_intercept,
+	$_nobind,
 	$_origin,
 	$_root,
 	$_traps_event,
@@ -154,13 +153,13 @@ export class ObservableObject {
 	}
 
 	/**
-	 * Enables bindings on all instances of this class
-	 * @summary If this method is called on a class, bindings created using the global `bind()` function will bind on properties of instances of this class (when bound to an attached child object).
-	 * @note This method is called automatically on {@link AppContext}, {@link Activity} and {@link ComponentView} instances. You cannot call this method on the {@link ObservableObject} class itself.
+	 * Disables bindings on all instances of this class
+	 * @summary If this method is called on a class, bindings created using the global `bind()` function will not bind on properties of this class (i.e. all instances are 'skipped' in the hierarchy of observable objects). Use this method to hide properties of this class from bindings that may be applied on attached child objects.
+	 * @note Bindings are disabled on {@link ObservableList} and {@link UIElement} by default. You cannot call this method on {@link ObservableObject} itself.
 	 */
-	static enableBindings() {
-		if (this === ObservableObject) throw invalidArgErr("limitOn");
-		this.prototype[$_bind] = true;
+	static disableBindings() {
+		if (this === ObservableObject) throw TypeError();
+		this.prototype[$_nobind] = true;
 	}
 
 	/**
@@ -199,20 +198,14 @@ export class ObservableObject {
 	/** @internal Property that is set only on root objects (cannot be attached) */
 	declare [$_root]?: boolean;
 
-	/** @internal Property that is set to the constructor to which bindings should be limited; if not set, properties are not bound */
-	declare [$_bind]?: unknown;
+	/** @internal Property that is set to true (on the object prototype) if properties of this object should not be bound */
+	declare [$_nobind]?: unknown;
 
 	/** @internal Intercepted events, with event names as keys and handler functions as values */
 	declare [$_intercept]?: Record<
 		string,
 		ObservableObject.InterceptHandler<any>
 	>;
-
-	/** @internal Property getter for non-observable property bindings, overridden on observable lists */
-	[$_get](propertyName: string) {
-		if (propertyName === "*") return this;
-		return (this as any)[propertyName];
-	}
 
 	/**
 	 * Emits an event, immediately calling all event handlers
@@ -445,12 +438,16 @@ export class ObservableObject {
 	 * @param defaultValue The default value to use if the property is undefined
 	 * @returns A binding to the property
 	 */
-	protected bind<K extends string & keyof this>(
-		source: `${K}${"" | `.${string}`}`,
+	protected bind<K extends keyof this>(
+		source: K,
 		defaultValue?: unknown,
-	): Binding<this[K]> {
-		// TODO: typing not working
-		let path = source.split(".");
+	): Binding<this[K]>;
+	protected bind(
+		source: `${string & keyof this}.${string}`,
+		defaultValue?: unknown,
+	): Binding<unknown>;
+	protected bind(source: string, defaultValue?: unknown): Binding<any> {
+		let path = String(source).split(".");
 		let first = path[0] as keyof this;
 		if (!(first in this)) (this as any)[first] = undefined;
 		return new Binding({

@@ -38,6 +38,11 @@ function emitRendered(source: View, name: string) {
  * @docgen {hideconstructor}
  */
 export abstract class UIElement extends View {
+	static {
+		// Disable bindings on UIElement itself
+		UIElement.disableBindings();
+	}
+
 	/**
 	 * An identifier for this UI element
 	 * - Identifiers don't have to be unique, but can be used to identify elements in a part of the view hierarchy.

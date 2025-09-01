@@ -88,7 +88,6 @@ test("List of labels from bound array, rendered", async () => {
 		array = ["a", "b", "c"];
 		readonly view = this.attach(myList.create());
 	}
-	ArrayProvider.enableBindings();
 	let parent = new ArrayProvider();
 	let instance = parent.view;
 

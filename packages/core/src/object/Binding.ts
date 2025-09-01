@@ -1,7 +1,12 @@
 import { DeferredString, fmt, StringConvertible } from "@talla-ui/util";
 import { invalidArgErr } from "../errors.js";
-import type { ObservableObject } from "./ObservableObject.js";
-import { $_bind_apply, watchBinding } from "./object_util.js";
+import { ObservableObject } from "./ObservableObject.js";
+import {
+	$_bind_apply,
+	BoundResult,
+	rebind,
+	watchBinding,
+} from "./object_util.js";
 
 /** Constant used to check against (new) binding value */
 const NO_VALUE = {};
@@ -73,16 +78,15 @@ export class Binding<T = any> {
 			defaultValue = source.default;
 			this._origin = source.origin;
 			this._path = [...source.path];
-			if (source.prefix?.length) {
-				this._path.unshift(...(this._prefix = source.prefix));
-			}
 		} else {
 			this._path = source ? source.split(".") : [];
 		}
 
 		// set basic apply method (function bound to this instance)
 		this[$_bind_apply] = !source
-			? function () {}
+			? defaultValue !== undefined
+				? (_, update) => update(defaultValue, false)
+				: function () {}
 			: function (target, update) {
 					watchBinding(target, this._origin, this._path, (value, bound) =>
 						update(value ?? defaultValue, bound),
@@ -106,6 +110,47 @@ export class Binding<T = any> {
 	 */
 	protected clone() {
 		return new Binding(this);
+	}
+
+	/**
+	 * Creates a new binding to observe the specified source from any (currently bound) object
+	 * - This method creates a binding that observes both the original value, and (if the value is an object) a property or nested property. If the value is undefined or not an object, the bound value is undefined or the provided default value.
+	 * @param sourcePath The source property path, as a string
+	 * @param defaultValue An optional default value that's used when the bound value is undefined
+	 * @returns A new binding, typed as the new value or undefined
+	 */
+	bind<U = any>(sourcePath: string, defaultValue?: any) {
+		let result: Binding<U> = this.clone();
+		let path = sourcePath.split(".");
+		let _apply = this[$_bind_apply];
+		result[$_bind_apply] = function (target, update) {
+			// use a secondary binding to be rebound on the bound object value
+			let b: BoundResult | undefined;
+			_apply.call(this, target, (value, bound) => {
+				if (value instanceof ObservableObject) {
+					// rebind secondary binding now
+					if (b) rebind(b, value);
+					else b = watchBinding(target, value, path, update);
+				} else if (value != null) {
+					// clear secondary binding if needed
+					if (b) rebind(b, undefined);
+
+					// just update with current non-bound property value
+					let v = value;
+					let len = path.length;
+					for (let i = 0; i < len; i++) {
+						if (v == null) break;
+						v = v[path[i]!];
+					}
+					update(v, bound);
+				} else {
+					// clear and set to undefined
+					if (b) rebind(b, undefined);
+					update(undefined, bound);
+				}
+			});
+		};
+		return result;
 	}
 
 	/**
@@ -294,7 +339,6 @@ export class Binding<T = any> {
 			other = new Binding({
 				path: other.split("."),
 				origin: this._origin,
-				prefix: this._prefix,
 			});
 		}
 
@@ -464,8 +508,6 @@ export namespace Binding {
 		readonly default?: any;
 		/** The origin object to observe, if specified */
 		readonly origin?: ObservableObject;
-		/** An optional list of property names that are prepended before all binding paths */
-		readonly prefix?: ReadonlyArray<string>;
 	};
 }
 
@@ -535,5 +577,14 @@ export namespace bind {
 		...args: Binding[] | [{ [K: string]: Binding }]
 	) {
 		return new StringFormatBinding(format, ...args);
+	}
+
+	/**
+	 * Creates a new binding that always returns the specified value
+	 * @param value The value to return
+	 * @returns A new {@link Binding} object
+	 */
+	export function value<T>(value: T) {
+		return new Binding<T>(undefined, value);
 	}
 }
