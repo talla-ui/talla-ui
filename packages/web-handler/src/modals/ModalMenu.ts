@@ -126,7 +126,7 @@ export class ModalMenu
 		});
 	}
 
-	protected override viewBuilder() {
+	protected override get body() {
 		let shown = Date.now();
 		const onMenuRendered = () => {
 			shown = Date.now();
@@ -193,12 +193,14 @@ export class ModalMenu
 						.intercept("SpacebarPress", "Select", item)
 						.with(content);
 				}),
-			);
+			)
+			.create();
 	}
 
 	onArrowDownKeyPress(e: ViewEvent) {
-		if (e.source !== this.body) return;
-		let content = (e.source as UICell).content;
+		let cell = this.findViewContent(UICell)[0];
+		if (e.source !== cell) return;
+		let content = cell!.content;
 		for (let item of content) {
 			if (item instanceof UICell) {
 				item.requestFocus();
@@ -209,8 +211,9 @@ export class ModalMenu
 	}
 
 	onArrowUpKeyPress(e: ViewEvent) {
-		if (e.source !== this.body) return;
-		let content = (e.source as UICell).content;
+		let cell = this.findViewContent(UICell)[0];
+		if (e.source !== cell) return;
+		let content = cell!.content;
 		let lastItem = content.last();
 		if (lastItem instanceof UICell) {
 			lastItem.requestFocus();
@@ -229,12 +232,13 @@ export class ModalMenu
 	}
 
 	private _fixPosition() {
-		let container = this.body as UICell;
+		let cell = this.findViewContent(UICell)[0];
+		let elt = cell?.lastRenderOutput?.element as HTMLElement;
+		if (!elt) return;
 
 		// make sure the menu appears within the screen bounds,
 		// even if the modal wrapper bounds are at the bottom or
 		// on the opposite side (place menu above, or align right/left in LTR/RTL)
-		let elt = container.lastRenderOutput?.element as HTMLElement;
 		let modalWrapper = elt.parentElement!;
 		let modalShader = modalWrapper.parentElement!;
 		modalShader.style.overflow = "hidden";

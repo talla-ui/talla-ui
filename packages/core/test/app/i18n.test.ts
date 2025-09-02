@@ -54,8 +54,8 @@ test("Locale format binding", () => {
 	let parent: any = new MyParent();
 	parent.child = parent.attach(new ObservableObject());
 	parent.child.observe(
-		bind.fmt("{:Ltest/format}", bind("value")).asString(),
-		(v: any) => (parent.child.value = v),
+		bind.fmt("{:Ltest/format}", bind("value")),
+		(v: any) => (parent.child.value = String(v)),
 	);
 	expect(parent.child).toHaveProperty("value", "{123:test,format}");
 	app.i18n.clear();

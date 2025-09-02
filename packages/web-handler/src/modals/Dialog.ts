@@ -47,10 +47,10 @@ export class Dialog
 		});
 	}
 
-	protected override viewBuilder() {
-		return UI.Cell(UI.Show(bind("dialogView"))).apply(
-			Dialog.styles.containerModifier,
-		);
+	protected override get body() {
+		return UI.Cell(UI.Show(bind("dialogView")))
+			.apply(Dialog.styles.containerModifier)
+			.create();
 	}
 
 	onEscapeKeyPress(e: ViewEvent) {

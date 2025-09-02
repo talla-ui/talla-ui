@@ -10,8 +10,8 @@ import {
 	AppContext,
 	ObservableObject,
 	NavigationContext,
-	UILabel,
 	UI,
+	Binding,
 } from "../../dist/index.js";
 
 describe("NavigationContext standalone", () => {
@@ -185,14 +185,14 @@ describe("attachActivityAsync method", () => {
 	});
 
 	class MyActivity extends Activity {
+		static override View(v: Binding<MyActivity>) {
+			return UI.Label(v.bind("label"));
+		}
 		label?: string;
 		toAttach?: Activity;
 		attachedClicked?: boolean;
 		createAttached() {
 			return (this.toAttach = this.attach(new MyActivity()));
-		}
-		protected override viewBuilder() {
-			return UI.Label(this.label);
 		}
 		async onClick() {
 			console.log("showing activity", this.toAttach?.isUnlinked());

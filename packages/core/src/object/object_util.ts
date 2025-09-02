@@ -425,7 +425,7 @@ export type BoundResult = { a: ObservableObject; r: boolean };
 export function watchBinding(
 	observedObject: ObservableObject,
 	origin: ObservableObject | undefined,
-	path: ReadonlyArray<string>,
+	path: ReadonlyArray<string | number | symbol>,
 	f: (value: any, bound: boolean) => void,
 ) {
 	if (!observedObject || !path.length) throw TypeError();
@@ -458,7 +458,7 @@ class Bound {
 		/** Object to which the binding is applied (binding target) */
 		public a: ObservableObject,
 		/** Property path to watch */
-		public p: ReadonlyArray<string>,
+		public p: ReadonlyArray<string | number | symbol>,
 		/** Function that's called when value is updated */
 		public f: (value: any, bound: boolean) => void,
 		/** True if origin is not fixed (automatically rebind when object is attached/moved) */
@@ -506,7 +506,7 @@ class Bound {
 		}
 
 		// check source binding type and check if property is observable
-		let firstProp: string | undefined;
+		let firstProp: string | number | symbol | undefined;
 		if (!origin[$_nobind]) {
 			firstProp = this.p[0]!;
 			if (canTrap(origin, firstProp)) {

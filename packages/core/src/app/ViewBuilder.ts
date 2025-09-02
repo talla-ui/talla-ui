@@ -1,4 +1,5 @@
 import {
+	Binding,
 	BindingOrValue,
 	isBinding,
 	ObservableEvent,
@@ -222,7 +223,7 @@ export declare namespace DeferredViewBuilder {
  *
  * function MyWrapper() {
  *   return {
- *     ...ComponentViewBuilder(MyWrapper, () => UI.Button(bind("label"))),
+ *     ...ComponentViewBuilder(MyWrapper, (v) => UI.Button(v.bind("label"))),
  *     label(label: BindingOrValue<StringConvertible>) {
  *       this.initializer.set("label", label);
  *       return this;
@@ -232,15 +233,27 @@ export declare namespace DeferredViewBuilder {
  */
 export const ComponentViewBuilder = function (
 	ViewClass: new () => View,
-	viewBuilder?: () => ViewBuilder,
+	viewBuilder?: (binding: Binding) => ViewBuilder,
 ) {
-	let initializer = new ViewBuilder.Initializer(ViewClass);
+	let symbol = Symbol("ComponentView");
+	let initializer = new ViewBuilder.Initializer(ViewClass, (view) => {
+		// add a symbol property to the view for binding to the view instance
+		Object.defineProperty(view, symbol, { value: view });
+	});
 	if (viewBuilder) {
 		initializer.initialize((view) => {
-			let builder = _deferredBuilders.get(viewBuilder);
-			if (!builder)
-				_deferredBuilders.set(viewBuilder, (builder = viewBuilder()));
-			(view as any).viewBuilder = () => builder;
+			let body: View | undefined;
+			Object.defineProperty(view, "body", {
+				get() {
+					if (body) return body;
+					let builder = _deferredBuilders.get(viewBuilder);
+					if (!builder) {
+						builder = viewBuilder(new Binding(symbol));
+						_deferredBuilders.set(viewBuilder, builder);
+					}
+					return (body = builder.create());
+				},
+			});
 		});
 	}
 	return {
@@ -258,11 +271,11 @@ export declare namespace ComponentViewBuilder {
 	export interface Type {
 		new <TView extends ComponentView = ComponentView>(
 			ViewClass: new () => TView,
-			viewBuilder?: () => ViewBuilder,
+			viewBuilder?: (binding: Binding<TView>) => ViewBuilder,
 		): ComponentViewBuilder<TView>;
 		<TView extends ComponentView = ComponentView>(
 			ViewClass: new () => TView,
-			viewBuilder?: () => ViewBuilder,
+			viewBuilder?: (binding: Binding<TView>) => ViewBuilder,
 		): ComponentViewBuilder<TView>;
 	}
 }

@@ -31,7 +31,7 @@ export class TestModalMenu
 		});
 	}
 
-	protected override viewBuilder() {
+	protected override get body() {
 		return UI.Cell()
 			.accessibleRole("menu")
 			.intercept("Select", (e) => this._resolve?.(e.data.key as string))
@@ -60,7 +60,8 @@ export class TestModalMenu
 						.intercept("Click", "Select", item)
 						.with(content);
 				}),
-			);
+			)
+			.create();
 	}
 
 	onEscapeKeyPress() {

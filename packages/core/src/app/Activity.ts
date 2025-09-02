@@ -13,6 +13,12 @@ import type { ViewBuilder } from "./ViewBuilder.js";
 /** Global list of activity instances for (old) activity class, for HMR */
 const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
 
+/** A cache of activity view builders, by function */
+const _viewBuilders = new WeakMap<Function, ViewBuilder>();
+
+/** A symbol that's used to bind to the activity instance */
+const $_activity = Symbol("activity");
+
 /**
  * A class that represents a part of the application that can be activated when the user navigates to it
  *
@@ -23,16 +29,16 @@ const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
  *
  * Activities emit `Active` and `Inactive` change events when state transitions occur. Several methods can be overridden to add custom behavior when the activity is activated or deactivated – i.e. {@link beforeActiveAsync}, {@link afterActiveAsync}, {@link beforeInactiveAsync}, and {@link afterInactiveAsync}.
  *
- * The {@link viewBuilder()} method must be overridden to return a view builder, which is used to create the view object when the activity becomes active. This method is called only once for each activity, as well as when the activity is reloaded using Hot Module Replacement (HMR).
+ * The static {@link Activity.View} property must be set to a function that returns a view builder, which is used to create the view object when the activity becomes active. This function is called only once for each activity, as well as when the activity is reloaded using Hot Module Replacement (HMR).
  *
- * As soon as the activity is activated and a view is created, the view is rendered. The view is unlinked when the activity is deactivated, and the {@link view} property is set to undefined. To change rendering options or disable automatic rendering, use the {@link setRenderMode()} method.
+ * As soon as the activity is activated and a view is created, the view is rendered. The view is unlinked when the activity is deactivated, and the {@link View} property is set to undefined. To change rendering options or disable automatic rendering, use the {@link setRenderMode()} method.
  *
  * @example
  * // Create an activity and activate it:
  * class MyActivity extends Activity {
- *   protected viewBuilder() {
- *     return view; // imported from a view file
- *   }
+ *   static View = MyView; // typically imported from a view file
+ *
+ *   // ... state, event handlers, etc.
  * }
  *
  * app.addActivity(new MyActivity(), true);
@@ -43,27 +49,46 @@ export class Activity extends ObservableObject {
 		Old: undefined | typeof Activity,
 		Updated: typeof Activity,
 	) {
+		// add new set of instances for the (updated) activity
+		_hotInstances.set(Updated, (Updated.prototype._hotInstances = new Set()));
+
+		// update old class, if any
 		if (Old) {
 			// check if need to recurse for previous versions
 			if (Object.prototype.hasOwnProperty.call(Old.prototype, "_OrigClass")) {
 				this._$hotReload(Old.prototype._OrigClass, Updated);
 			}
 
-			// update prototype with new properties (methods)
-			let desc = Object.getOwnPropertyDescriptors(Updated.prototype) as any;
-			for (let p in desc) Object.defineProperty(Old.prototype, p, desc[p]);
+			// run async to allow module to complete if needed
+			safeCall(async () => {
+				await Promise.resolve();
 
-			// keep a reference to the old class to be able to recurse next time
-			Updated.prototype._OrigClass = Old;
-		}
-		_hotInstances.set(Updated, (Updated.prototype._hotInstances = new Set()));
-		if (Old && Updated.prototype instanceof Activity) {
-			let instances = _hotInstances.get(Old);
-			if (instances) {
-				for (let activity of instances) activity._showView(true);
-			}
+				// update prototype with new properties (methods)
+				let desc = Object.getOwnPropertyDescriptors(Updated.prototype) as any;
+				for (let p in desc) Object.defineProperty(Old.prototype, p, desc[p]);
+
+				// update view function on old class to create new views
+				Old.View = Updated.View;
+
+				// keep a reference to the old class to be able to recurse next time
+				Updated.prototype._OrigClass = Old;
+				if (Updated.prototype instanceof Activity) {
+					let instances = _hotInstances.get(Old);
+					if (instances) {
+						for (let activity of instances) activity._showView(true);
+					}
+				}
+			});
 		}
 	}
+
+	/**
+	 * Returns a view builder for the activity's view, to be set for each activity class
+	 * - The function is called with a binding that refers to the activity instance, when the view is created.
+	 * - The base implementation of this method in the Activity class does nothing. This method must be set for each activity class, typically referring to a function from a dedicated view file.
+	 * - The referenced function is called only once for each activity class. Using Hot Module Replacement (HMR), the function is replaced with a new one, and the view is updated accordingly.
+	 */
+	protected static View?: (v: Binding) => ViewBuilder;
 
 	/**
 	 * Creates a new activity instance
@@ -72,7 +97,7 @@ export class Activity extends ObservableObject {
 	 */
 	constructor() {
 		super();
-		// ...nothing else here
+		Object.defineProperty(this, $_activity, { value: this, enumerable: false });
 	}
 
 	/**
@@ -92,8 +117,9 @@ export class Activity extends ObservableObject {
 
 	/**
 	 * The current view, if any (attached automatically)
-	 * - This property is set automatically when active, using the view builder returned by the {@link Activity.viewBuilder()} method. By default, the view is rendered as a scrollable page. This can be changed using the {@link setRenderMode()} method.
-	 * - The view is automatically unlinked when the activity is deactivated or unlinked.
+	 * - This property is set automatically when active, using the view builder returned by the function set on the static {@link Activity.View} property.
+	 * - By default, the view is rendered as a scrollable page. This can be changed using the {@link setRenderMode()} method, typically in the constructor.
+	 * - The view is automatically unlinked when the activity is deactivated or unlinked itself.
 	 * - Events emitted by the view are automatically delegated to the activity, see {@link delegate()}.
 	 */
 	view?: View = undefined;
@@ -174,7 +200,7 @@ export class Activity extends ObservableObject {
 	/**
 	 * Deactivates the activity asynchronously
 	 * - If the activity is currently transitioning between active and inactive states, the transition will be allowed to finish before the activity is deactivated.
-	 * - Before deactivation, the activity's {@link Activity.view view} property is set to undefined, unlinking the current view object, if any.
+	 * - Before deactivation, the activity's {@link Activity.View view} property is set to undefined, unlinking the current view object, if any.
 	 * @error This method throws an error if the activity has been unlinked.
 	 */
 	async deactivateAsync() {
@@ -212,15 +238,6 @@ export class Activity extends ObservableObject {
 	protected async afterInactiveAsync() {}
 
 	/**
-	 * Returns a view builder for the activity's view, to be overridden
-	 * - The base implementation of this method in the Activity class does nothing. This method must be overridden to return a view builder, which is used to create the view object when the activity becomes active.
-	 * - This method is called only once for each activity, as well as when the activity is reloaded using Hot Module Replacement (HMR).
-	 */
-	protected viewBuilder(): ViewBuilder | undefined | void {
-		// nothing here
-	}
-
-	/**
 	 * Set rendering mode and additional options
 	 * - By default, the activity view is rendered using the `page` rendering mode, as soon as the activity is activated. The mode can be changed using this method, or rendering can be disabled by specifying the `none` mode.
 	 * - Use the special `dialog` mode to render the view within a dialog as defined by the current modal factory.
@@ -249,12 +266,15 @@ export class Activity extends ObservableObject {
 
 		// create view and attach it
 		if (!view || force) {
-			let builder =
-				(!force && this._viewBuilder) || this.viewBuilder() || undefined;
-			let newView = builder?.create();
-			if (!newView) return;
-			if (!(newView instanceof View)) throw err(ERROR.View_Invalid);
-			this._viewBuilder = builder;
+			let viewFunction = (this.constructor as typeof Activity).View;
+			if (!viewFunction) return;
+			let viewBuilder = _viewBuilders.get(viewFunction);
+			if (!viewBuilder || force) {
+				viewBuilder = viewFunction(new Binding($_activity));
+				_viewBuilders.set(viewFunction, viewBuilder);
+			}
+			let newView = viewBuilder?.create();
+			if (!newView || !(newView instanceof View)) throw err(ERROR.View_Invalid);
 			this.view = this.attach(newView, {
 				delegate: this,
 				detached: (view) => {
@@ -516,9 +536,6 @@ export class Activity extends ObservableObject {
 
 	/** @internal Activation queue for this activity */
 	private readonly _activation = new ActivationQueue();
-
-	/** @internal View builder, if already set */
-	declare private _viewBuilder?: ViewBuilder;
 
 	/** @internal Original class that's been updated using hot reload (set on prototype) */
 	declare private _OrigClass?: typeof Activity;

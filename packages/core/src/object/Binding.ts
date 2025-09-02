@@ -63,23 +63,27 @@ export class Binding<T = any> {
 	 * @param source The source path that's used for obtaining the bound value, another {@link Binding} to clone from, or an object with advanced options
 	 * @param defaultValue An optional default value that's used when the bound value is undefined
 	 */
-	constructor(source?: string | Binding | Binding.Options, defaultValue?: T) {
+	constructor(
+		source?: string | symbol | Binding | Binding.Options,
+		defaultValue?: T,
+	) {
 		if (isBinding(source)) {
 			this._path = source._path;
-			this._prefix = source._prefix;
 			this._origin = source._origin;
 			this[$_bind_apply] = source[$_bind_apply];
 			return;
 		}
 
 		// initialize path and other properties
-		if (source && typeof source !== "string") {
+		if (!source || typeof source === "string") {
+			this._path = source ? source.split(".") : [];
+		} else if (typeof source === "symbol") {
+			this._path = [source];
+		} else {
 			if (!Array.isArray(source.path)) throw invalidArgErr("source");
 			defaultValue = source.default;
 			this._origin = source.origin;
 			this._path = [...source.path];
-		} else {
-			this._path = source ? source.split(".") : [];
 		}
 
 		// set basic apply method (function bound to this instance)
@@ -95,10 +99,7 @@ export class Binding<T = any> {
 	}
 
 	/** Binding source path */
-	private readonly _path: string[];
-
-	/** A list of properties that were prepended before the binding path (used when creating associated bindings from another path) */
-	private readonly _prefix?: ReadonlyArray<string>;
+	private readonly _path: (string | number | symbol)[];
 
 	/** Binding origin object, if any */
 	private _origin?: ObservableObject;
@@ -118,10 +119,10 @@ export class Binding<T = any> {
 	 * @param sourcePath The source property path, as a string
 	 * @returns A new binding, typed as the new value or undefined
 	 */
-	bind<K extends keyof T>(sourcePath: K): Binding<T[K]>;
-	bind<U = any>(sourcePath: string): Binding<U>;
-	bind(sourcePath: string) {
-		let result: Binding = this.clone();
+	bind<K extends Binding.BoundPath<NonNullable<T>>>(
+		sourcePath: K,
+	): Binding<Binding.BoundPathValue<T, K>> {
+		let result = this.clone();
 		let path = sourcePath.split(".");
 		let _apply = this[$_bind_apply];
 		result[$_bind_apply] = function (target, update) {
@@ -155,14 +156,12 @@ export class Binding<T = any> {
 	}
 
 	/**
-	 * Transforms the bound value to a string
+	 * Transforms the bound value to a string using the specified format
 	 * @param format A {@link fmt} format string to format the value, e.g. `Value: {}`, `{:.2f}`
 	 * @returns A new binding, typed as a string
 	 */
-	asString(format?: string): Binding<string> {
-		return this.map((value) =>
-			format ? fmt(format, value).toString() : String(value ?? ""),
-		);
+	fmt(format: string): Binding<string> {
+		return this.map((value) => fmt(format, value).toString());
 	}
 
 	/**
@@ -211,17 +210,21 @@ export class Binding<T = any> {
 	}
 
 	/**
-	 * Transforms to a boolean, true if the bound value exactly equals a literal value
-	 * @param value The literal value to compare with
+	 * Transforms to a boolean, true if the bound value exactly equals one of the specified values
+	 * @param values The literal value(s) to compare with
 	 * @returns A new binding, typed as a boolean
 	 */
-	equals(value: T): Binding<boolean> {
-		return this.map((v) => v === value);
+	equals(...values: T[]): Binding<boolean> {
+		if (values.length === 1) {
+			let value = values[0];
+			return this.map((v) => v === value);
+		}
+		return this.map((v) => values.includes(v));
 	}
 
 	/** @internal Typo/hallucination alias */
-	eq(v: any) {
-		return this.equals(v);
+	eq(...values: any[]) {
+		return this.equals(...values);
 	}
 
 	/**
@@ -234,12 +237,30 @@ export class Binding<T = any> {
 	}
 
 	/**
+	 * Transforms to a boolean, true if the bound value is less than or equal to a literal value
+	 * @param value The literal value to compare with
+	 * @returns A new binding, typed as a boolean
+	 */
+	lte(value: number): Binding<boolean> {
+		return this.map((v) => +v <= value);
+	}
+
+	/**
 	 * Transforms to a boolean, true if the bound value is greater than a literal value
 	 * @param value The literal value to compare with
 	 * @returns A new binding, typed as a boolean
 	 */
 	gt(value: number): Binding<boolean> {
 		return this.map((v) => +v > value);
+	}
+
+	/**
+	 * Transforms to a boolean, true if the bound value is greater than or equal to a literal value
+	 * @param value The literal value to compare with
+	 * @returns A new binding, typed as a boolean
+	 */
+	gte(value: number): Binding<boolean> {
+		return this.map((v) => +v >= value);
 	}
 
 	/**
@@ -376,6 +397,46 @@ export class Binding<T = any> {
 
 Binding.prototype.isBinding = _isBinding;
 
+export namespace Binding {
+	/**
+	 * Options that can be passed to the {@link Binding} constructor
+	 * - This type is used internally by {@link bind()} and other binding factories
+	 */
+	export type Options = {
+		/** The source property path, as an array */
+		readonly path: (string | number | symbol)[];
+		/** Default value, used when the bound value itself is undefined */
+		readonly default?: any;
+		/** The origin object to observe, if specified */
+		readonly origin?: ObservableObject;
+	};
+
+	/** Type definition for a property path */
+	export type BoundPath<T> = T extends object
+		? {
+				[K in Extract<keyof T, string>]: T[K] extends object | undefined
+					? K | `${K}.${BoundPath<T[K]>}`
+					: K;
+			}[Extract<keyof T, string>]
+		: never;
+
+	/** Type definition for a property value, based on a property path */
+	export type BoundPathValue<
+		T,
+		P extends string,
+	> = P extends `${infer K}.${infer Rest}`
+		? K extends keyof T
+			? undefined extends T[K]
+				? BoundPathValue<NonNullable<T[K]>, Rest & string> | undefined
+				: BoundPathValue<NonNullable<T[K]>, Rest & string>
+			: never
+		: P extends keyof NonNullable<T>
+			? undefined extends T
+				? NonNullable<T>[P] | undefined
+				: NonNullable<T>[P]
+			: never;
+}
+
 /**
  * A class that represents a string-formatted binding with nested property bindings
  *
@@ -497,21 +558,6 @@ export class StringFormatBinding extends Binding<DeferredString> {
 	private _format: StringConvertible;
 }
 
-export namespace Binding {
-	/**
-	 * Options that can be passed to the {@link Binding} constructor
-	 * - This type is used internally by {@link bind()} and other binding factories
-	 */
-	export type Options = {
-		/** The source property path, as an array */
-		readonly path: string[];
-		/** Default value, used when the bound value itself is undefined */
-		readonly default?: any;
-		/** The origin object to observe, if specified */
-		readonly origin?: ObservableObject;
-	};
-}
-
 /**
  * Creates a new binding for a specific property or source path
  * @summary This function is used to create a new binding for a specific source path, with an optional default value.
@@ -520,24 +566,42 @@ export namespace Binding {
  * @returns A {@link Binding} object
  * @see {@link Binding}
  */
-export function bind<T = any>(sourcePath: string, defaultValue?: any) {
+export function bind<T = any>(
+	sourcePath: string | symbol,
+	defaultValue?: any,
+): Binding<T> {
 	if (defaultValue === undefined && _cache.has(sourcePath)) {
 		return _cache.get(sourcePath)!;
 	}
-	return new Binding<T>(sourcePath, defaultValue);
+	return new Binding(sourcePath, defaultValue);
 }
 
 /** @internal Cache of bindings, to avoid creating new instances for the same source path */
-const _cache = new Map<string, Binding>();
+const _cache = new Map<string | symbol, Binding>();
 
 export namespace bind {
+	/**
+	 * Creates a new binding that references a property of the provided object
+	 * - If the property doesn't exist yet, it will be initialized as undefined.
+	 * @param object The object to bind to
+	 * @param propertyName The name of the property to bind to
+	 * @returns A new {@link Binding} object
+	 */
+	export function from<
+		TObject extends ObservableObject,
+		K extends keyof TObject,
+	>(object: TObject, propertyName: K): Binding<TObject[K]> {
+		if (!(propertyName in object)) (object as any)[propertyName] = undefined;
+		return new Binding({ path: [propertyName], origin: object });
+	}
+
 	/**
 	 * Creates a new binding, negating the original binding
 	 * @summary This function is used to create a new binding that is the boolean opposite (i.e. `!`) of the original binding.
 	 * @param source The source (property) path that's used for obtaining the bound value
 	 * @returns A new {@link Binding} object
 	 */
-	export function not(source: string) {
+	export function not(source: string | symbol) {
 		return bind(source).not();
 	}
 

@@ -172,10 +172,9 @@ test("Rendered and clicked, event has emit data parameter", async () => {
 
 test("Click event propagation", async () => {
 	let clicked = 0;
-	const view = UI.Cell(UI.Button("Button").emit("ButtonClicked"));
 	class MyActivity extends Activity {
-		protected override viewBuilder() {
-			return view;
+		static override View() {
+			return UI.Cell(UI.Button("Button").emit("ButtonClicked"));
 		}
 		onButtonClicked() {
 			clicked++;
@@ -188,7 +187,7 @@ test("Click event propagation", async () => {
 
 test("Button navigation with navigateTo", async () => {
 	class MyActivity extends Activity {
-		protected override viewBuilder() {
+		static override View() {
 			return UI.Button("foo").navigateTo("/foo");
 		}
 	}
@@ -201,7 +200,7 @@ test("Button navigation with navigateTo", async () => {
 test("Button navigation with navigateTo, relative path", async () => {
 	class MyActivity extends Activity {
 		override navigationPath = "foo";
-		protected override viewBuilder() {
+		static override View() {
 			return UI.Button("bar").navigateTo("./bar");
 		}
 	}
@@ -213,7 +212,7 @@ test("Button navigation with navigateTo, relative path", async () => {
 
 test("Back button navigation", async () => {
 	class MyActivity extends Activity {
-		protected override viewBuilder() {
+		static override View() {
 			return UI.Button("back").emit("NavigateBack");
 		}
 	}

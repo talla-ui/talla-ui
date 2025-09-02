@@ -8,6 +8,10 @@ import {
 	UI,
 	ObservableObject,
 	UILabel,
+	ComponentView,
+	ComponentViewBuilder,
+	Binding,
+	ViewBuilder,
 } from "../../dist/index.js";
 
 beforeEach(() => {
@@ -268,7 +272,7 @@ describe("View rendering", () => {
 
 	test("Rendered page view", async () => {
 		class MyActivity extends Activity {
-			protected override viewBuilder() {
+			static override View() {
 				return UI.Cell(UI.Label("Hello, world!"));
 			}
 		}
@@ -279,7 +283,7 @@ describe("View rendering", () => {
 
 	test("Find views", async () => {
 		class MyActivity extends Activity {
-			protected override viewBuilder() {
+			static override View() {
 				return UI.Cell(UI.Label("foo"), UI.Label("bar"));
 			}
 		}
@@ -287,5 +291,34 @@ describe("View rendering", () => {
 		app.addActivity(activity, true);
 		await expectOutputAsync({ timeout: 50, type: "cell" });
 		expect(activity.findViewContent(UILabel)).toHaveLength(2);
+	});
+
+	test("Nested views with bindings", async () => {
+		class MyComponentView extends ComponentView {
+			foo = 2;
+		}
+		function MyComponent(foo: number, ...content: ViewBuilder[]) {
+			let builder = ComponentViewBuilder(MyComponentView, (v) =>
+				UI.Column(UI.Label(v.bind("foo")), ...content),
+			);
+			builder.initializer.set("foo", foo);
+			return builder;
+		}
+		class MyActivity extends Activity {
+			static override View(v: Binding<MyActivity>) {
+				return UI.Cell(
+					UI.Label(v.bind("foo")),
+					MyComponent(2, UI.Label(v.bind("foo")), UI.Label(v.bind("bar"))),
+				);
+			}
+
+			foo = 1;
+			bar = 3;
+		}
+		let activity = new MyActivity();
+		app.addActivity(activity, true);
+		await expectOutputAsync({ timeout: 50, type: "cell" });
+		let labels = activity.findViewContent(UILabel);
+		expect(labels.map((l) => l.text)).toEqual([1, 2, 1, 3]);
 	});
 });

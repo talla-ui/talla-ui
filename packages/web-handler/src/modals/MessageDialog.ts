@@ -164,7 +164,7 @@ export class MessageDialog
 		return { confirmed, other };
 	}
 
-	protected override viewBuilder() {
+	protected override get body() {
 		let narrow = app.viewport?.cols! < 2;
 		let styles = MessageDialog.styles;
 		let messageLabels = this.options.messages.map((text, i) =>
@@ -205,6 +205,7 @@ export class MessageDialog
 							narrow ? styles.narrowButtonRowLayout : styles.buttonRowLayout,
 						),
 					),
-			);
+			)
+			.create();
 	}
 }

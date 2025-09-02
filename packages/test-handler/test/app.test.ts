@@ -2,6 +2,7 @@ import {
 	Activity,
 	app,
 	bind,
+	Binding,
 	ComponentView,
 	ComponentViewBuilder,
 	UI,
@@ -24,9 +25,12 @@ import {
 
 class CountActivity extends Activity {
 	override navigationPath = "count";
-	protected override viewBuilder() {
+	static override View(v: Binding<CountActivity>) {
 		return UI.Cell(
-			UI.TextField().value(bind("count")).emit("SetCount").name("count-input"),
+			UI.TextField()
+				.value(v.bind("count").fmt("{}"))
+				.emit("SetCount")
+				.name("count-input"),
 			UI.Button("+").emit("CountUp"),
 		);
 	}

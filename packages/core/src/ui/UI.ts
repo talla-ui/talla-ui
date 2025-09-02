@@ -1,3 +1,5 @@
+import { bind } from "../object/index.js";
+import { Viewport } from "../app/index.js";
 import { UIListView } from "./components/UIListView.js";
 import { UIShowView } from "./components/UIShowView.js";
 import { UICell } from "./containers/UICell.js";
@@ -115,4 +117,7 @@ export namespace UI {
 		/** Type definition for theme divider style names */
 		export type DividerStyleName = keyof typeof divider;
 	}
+
+	/** A binding that refers to the current viewport object */
+	export const viewport = bind<Viewport>("appContext.viewport");
 }

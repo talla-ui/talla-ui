@@ -22,7 +22,7 @@ Start and configure the application in `main.ts`.
 
 ```typescript
 import { useWebContext } from "@talla-ui/web-handler";
-import { FooActivity } from "./foo.js";
+import { FooActivity } from "./activities/foo/FooActivity.js";
 
 // Create and configure the app
 const app = useWebContext((options) => {
@@ -37,16 +37,14 @@ Create a first activity to contain application logic.
 
 ```typescript
 import { Activity } from "talla-ui";
-import { FooView } from "./foo.view.js";
+import { FooView } from "./FooView.js";
 
 export class FooActivity extends Activity {
+	// A view for displaying the activity's screen
+	static View = FooView;
+
 	// State goes here, using public properties
 	count = 0;
-
-	// Create the view when activated, or on hot reload
-	protected viewBuilder() {
-		return FooView(); // see below
-	}
 
 	// Event handlers go here, as protected 'on...' methods
 	protected onCountUp() {
@@ -58,22 +56,25 @@ export class FooActivity extends Activity {
 }
 ```
 
-The view is written declaratively, using a fluent API, and loosely coupled to the activity using _bindings_ that refer to properties by name. The result is a _view builder_, not a view itself.
+The view is written declaratively, using a fluent API, and coupled to the activity using _bindings_ that refer to properties by name. The result is a _view builder_, not a view itself. Because of their static nature and special status, functions returning view builders are named with a capital letter, even if they're not classes/constructors.
 
 Since this code runs only once, it _does not_ include any runtime logic, including event handlers. The application state is reflected using bindings, and user events are emitted to the activity to invoke the appropriately named method.
 
 ```typescript
-import { bind, UI } from "talla-ui";
+import { Binding, UI } from "talla-ui";
+import type { FooActivity } from "./FooActivity.js";
 
-export default UI.Column.align("center").with(
-	UI.Label("Counter").labelStyle("title"),
-	UI.Label(bind("count")).fontSize(24),
-	UI.Row(
-		// NEVER include event handler functions here, always emit named events
-		UI.Button("Up").icon("plus").emit("CountUp"),
-		UI.Button("Down").icon("minus").emit("CountDown"),
-	),
-);
+export function FooView(v: Binding<FooActivity>) {
+	return UI.Column.align("center").with(
+		UI.Label("Counter").labelStyle("title"),
+		UI.Label(v.bind("count")).fontSize(24),
+		UI.Row(
+			// NEVER include event handler functions here, always emit named events
+			UI.Button("Up").icon("plus").emit("CountUp"),
+			UI.Button("Down").icon("minus").emit("CountDown"),
+		),
+	);
+}
 ```
 
 ## Application Architecture
@@ -91,10 +92,10 @@ Example file structure:
 
 - `main.ts` - entry point
 - `activities/settings/SettingsActivity.ts` - activity (`export class SettingsActivity`...)
-- `activities/settings/view.ts` - main view (`export default function`... returning a view builder)
-- `activities/settings/view.profile.ts` - partial view (`export default function`...)
-- `shared/widgets/SectionCard.ts` - reusable view (`export function SectionCard`...)
-- `shared/layouts/MainPage.ts` - reusable layout view (`export function MainPage`...)
+- `activities/settings/SettingsView.ts` - main view (`export function`... returning a view builder)
+- `activities/settings/SettingsView_Profile.ts` - partial view (`export function`...)
+- `shared/widgets/SectionCard.ts` - reusable view (`export function`...)
+- `shared/layouts/MainPage.ts` - reusable layout view (`export function`...)
 - `resources/icons.ts` - icon resources (e.g. re-export from package)
 - Other folders for models, services, infrastructure layer, etc.
 
@@ -104,7 +105,7 @@ Activities represent a single screen, dialog, or other 'place' in the applicatio
 
 ```typescript
 export class MyActivity extends Activity {
-	// ... state, event handlers, view, etc.
+	// ... View, state, event handlers, etc.
 
 	// lifecycle methods, if needed:
 	protected async beforeActiveAsync() {}
@@ -140,13 +141,16 @@ export class MyActivity extends Activity {
 
 ## State Management
 
-Application state belongs in activities, not views. The activity exposes its state using public properties, observed through bindings.
+Application state is managed by activities, similar to a view model in MVVM architectures. The activity exposes its state using public properties, observed through bindings.
 
 ```typescript
 class MyActivity extends Activity {
 	constructor(public readonly messageService: MessageService) {
 		super();
 	}
+
+	// Properties are observable (but not getters)
+	count = 0;
 
 	// Computed state (object with the returned properties)
 	messages = this.createActiveState(
@@ -164,9 +168,6 @@ class MyActivity extends Activity {
 			};
 		},
 	);
-
-	// Or use simply properties, which are also observable (but not getters)
-	count = 0;
 
 	// ...
 }
@@ -205,6 +206,8 @@ Activities don't always need to be added to the application context directly. Ne
 export class BooksActivity extends Activity {
 	navigationPath = "books";
 
+	// ...
+
 	// Called when the navigation path matches, with remainder of path if any
 	matchNavigationPath(remainder: string) {
 		// return true to activate this activity
@@ -221,11 +224,9 @@ Normally, all activities are rendered as scrollable 'pages'. However, the 'none'
 
 ```typescript
 export class BooksListActivity extends Activity {
-	navigationPath = "books";
+	static View = BooksListView;
 
-	protected viewBuilder() {
-		return BooksListView(); // list/master view
-	}
+	navigationPath = "books";
 
 	// The nested activity is rendered by the parent view
 	// i.e. UI.Show(bind("detail.view"))
@@ -266,9 +267,11 @@ export class MyActivity extends Activity {
 }
 
 class DialogActivity extends Activity {
-	protected viewBuilder() {
+	static View = DialogView; // inner dialog view (with min/max width)
+
+	constructor() {
+		super();
 		this.setRenderMode("dialog");
-		return DialogView(); // inner dialog view (with min/max width)
 	}
 
 	protected onCancel() {
@@ -305,6 +308,8 @@ Typically, background tasks need to run in the context of the current activity, 
 
 ```typescript
 export class MyActivity extends Activity {
+	// ...
+
 	backgroundLoadQueue = this.createActiveTaskQueue({ parallel: 5 });
 	throttleQueue = this.createActiveTaskQueue();
 	debounceQueue = this.createActiveTaskQueue();
@@ -457,6 +462,8 @@ Bindings can be used to update views dynamically, using the value of a public pr
 
 Nested properties are resolved using dot notation, e.g. `customer.name`. If the object containing the nested property is an `ObservableObject` (i.e. `customer` is an instance of a class that extends `ObservableObject`), the binding updates when the property changes, or when a change event is emitted by the object. Otherwise, the binding only updates when the last non-observable object property (`customer`) is changed.
 
+Bindings can be created using the `bind` function, which look for properties within the view/activity hierarchy. Bindings are also provided as parameters to main activity view functions, and to the callback to `ComponentViewBuilder`, which can be used to bind to (nested) properties using the `.bind()` method.
+
 ```typescript
 import { bind, UI } from "talla-ui";
 
@@ -465,6 +472,24 @@ UI.Label(bind("count")); // binds the label text
 UI.Label(bind("customer.contracts.length")); // nested property
 UI.Label("Active").hideWhen(bind("isActive"));
 UI.Label("Inactive").hideWhen(bind("isActive").not());
+
+// Binding provided to activity view function
+class MyActivity extends Activity {
+	static override View(v: Binding<MyActivity>) {
+		return UI.Label(v.bind("count"));
+	}
+	// ...
+}
+
+// Binding provided to component view builder
+function SomeComponent() {
+	class SomeComponentView extends ComponentView {
+		// ...
+	}
+	return ComponentViewBuilder(SomeComponentView, (v) =>
+		UI.Label(v.bind("count")),
+	);
+}
 
 // not, neither, either shortcuts
 UI.Label("Inactive").hideWhen(bind.not("isActive"));
@@ -497,14 +522,16 @@ UI.Label("...").fontSize(bind("isActive").then(24)); // .isActive ? 24 : undefin
 UI.Label("...").labelStyle(bind("isActive").then(undefined, { bold: true }));
 UI.Label(bind("title").else(fmt("Untitled"))); // .title || fmt("Untitled")
 
+// string formatting
+UI.Label(bind("total").fmt("{:.2f}"));
+UI.Label(bind("date").fmt("{:Ldate}"));
+
 // Localizable/dynamically formatted text bindings
 UI.Label.fmt("foo {} {}", bind("bar"), bind("baz"));
 // ^^ same as UI.Label(bind.fmt("foo {}", bind("bar"), bind("baz")))
 UI.Label.fmt("Customer {:?/active/inactive}", bind("customer.isActive"));
 UI.Label.fmt("{:Ldate}", bind("date"));
 ```
-
-Avoid leaking business logic into the view layer. Where needed, add another property to the activity or component rather than using complex bindings.
 
 ## Observable Objects
 
@@ -575,6 +602,11 @@ export class MyActivity extends Activity {
 		let filtered = this.items.filter((item) => item.isActive); // array
 		let mapped = this.items.map((item) => item.name); // array
 		let allActive = this.items.every((item) => item.isActive); // boolean
+
+		// Iterators work automatically
+		for (let item of this.items) {
+			// ...
+		}
 	}
 }
 ```
@@ -584,7 +616,6 @@ The `.length` property contains the number of items in the list, and is also obs
 Use these methods to work with observable lists:
 
 - `.toArray()` returns an array (also `.toJSON()`)
-- `.objects()` returns an iterable
 - `.first()`, `.last()`, `.get(index)` return items, or undefined
 - `.take(n, startingFrom?)`, `.takeLast(n, endingAt?)` return a slice (array)
 - `.indexOf(item)`, `.includes(item)`, `.find(predicate)`, `.some(predicate)`, `.every(predicate)`, `.filter(predicate)`, `.forEach(f)`, `.map(f)`, `.sort(f)` are like Array methods
@@ -735,7 +766,7 @@ The `form` property is defined on activities, as an instance of `FormContext`. U
 
 ```typescript
 // ... in a view:
-export default UI.Column(
+UI.Column(
 	UI.Label.fmt("User name")
 		.labelStyle("secondary")
 		.padding({ y: 4 })
@@ -775,6 +806,8 @@ The `FormContext` class also includes:
 import { Activity, FormContext } from "talla-ui";
 
 export class MyActivity extends Activity {
+	// ...
+
 	form = new FormContext((f) =>
 		f.object({
 			userName: f.string().required("User name is required"),
@@ -863,13 +896,13 @@ export function Collapsible(
 	...content: ViewBuilder[]
 ) {
 	return {
-		...ComponentViewBuilder(CollapsibleView, () =>
+		...ComponentViewBuilder(CollapsibleView, (v) =>
 			UI.Column(
 				UI.Label(title)
-					.icon(bind("expanded").then("chevronDown", "chevronNext"))
+					.icon(v.bind("expanded").then("chevronDown", "chevronNext"))
 					.cursor("pointer")
 					.intercept("Click", "Toggle"),
-				UI.ShowWhen(bind("expanded"), UI.Column(...content)),
+				UI.ShowWhen(v.bind("expanded"), UI.Column(...content)),
 			),
 		),
 		expand(expanded = true) {
@@ -965,10 +998,12 @@ export function CustomView() {
 
 ## Development and Testing
 
-Tälla UI supports hot reload at the activity level, copying updated activity prototypes (methods) to running instances. Afterwards, the view is updated using the new view builder returned by `viewBuilder()`.
+Tälla UI supports hot reload at the activity level, copying updated activity prototypes (methods) to running instances. Afterwards, the view is updated using the new view builder returned by the static `View` property.
 
 ```typescript
 class MyActivity extends Activity {
+	static View = MyView; // copied on hot reload
+
 	static {
 		import.meta.hot?.accept(); // for Vite
 		app.hotReload(import.meta, this);
@@ -979,11 +1014,6 @@ class MyActivity extends Activity {
 	// Properties are not changed on update, because constructor is not called
 	// (i.e. state is preserved after hot reload)
 	foo = "bar";
-
-	protected viewBuilder() {
-		// This is called, to update the newly imported view if any
-		return MyView();
-	}
 
 	onSomeEvent() {
 		// (updated on hot reload)
@@ -1480,24 +1510,24 @@ The `UIListView` class manages a container, and creates views for each item in a
 The outer container defaults to a simple column, but can be changed using `outer()`, e.g. to add items to a row container instead. If the container is a scroll view, the list items are automatically rendered _within_ the embedded container.
 
 ```typescript
-UI.List(bind("customers"))
+UI.List(v.bind("customers"))
 	.bounds(0, 10) // only show 10 items
 	.bounds(bind("firstIndex"), 10) // pagination (can bind both, too)
 	.outer(UI.Column().divider().scroll().border(1, "divider").height(240))
 	.addSpacer() // this also adds a divider below the last item
 	.renderOptions({ async: true, delayEach: 100 }) // animate rendering
 	.emptyState(UI.Label("No people").center().padding({ y: 64 }))
-	.with(
-		// Repeated for each item
+	.with((item) =>
+		// Evaluated only once, views built for all items
 		UI.Row()
 			.cursor("pointer")
 			.intercept("Click", "SelectItem")
 			.with(
-				UI.Label(bind("item.name")).padding(),
+				UI.Label(item.bind("name")).padding(),
 				UI.Label("Inactive")
 					.labelStyle("dangerBadge")
 					.shrink(false),
-					.hideWhen(bind.not("item.inactive")),
+					.hideWhen(item.bind("inactive").not()),
 				UI.Spacer(),
 				UI.Button().icon("chevronNext").buttonStyle("text").minWidth(24),
 			),
@@ -1510,6 +1540,8 @@ List views handle events from embedded views, and add a data property `listViewI
 
 ```typescript
 class CustomersActivity extends Activity {
+	static View = CustomersView;
+
 	// List views can bind to arrays or ObservableList instances
 	customers = new ObservableList<Customer>();
 

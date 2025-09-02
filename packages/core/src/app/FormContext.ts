@@ -25,9 +25,7 @@ import { View } from "./index.js";
  * }
  *
  * class MyActivity extends Activity {
- *   protected viewBuilder() {
- *     return FormView();
- *   }
+ *   static View = FormView;
  *
  *   form = new FormContext((f) => f.object({
  *     foo: f.string().required("Foo is required")

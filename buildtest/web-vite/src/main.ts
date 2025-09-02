@@ -28,18 +28,18 @@ function Collapsible(label: StringConvertible, ...content: ViewBuilder[]) {
 
 	let width = 300;
 	return {
-		...ComponentViewBuilder(CollapsibleView, () =>
+		...ComponentViewBuilder(CollapsibleView, (v) =>
 			UI.Column()
-				.width(bind("width"))
+				.width(v.bind("width"))
 				.with(
 					UI.Label(label)
-						.icon(bind("expanded").then("chevronDown", "chevronNext"))
+						.icon(v.bind("expanded").then("chevronDown", "chevronNext"))
 						.cursor("pointer")
 						.background("text")
 						.fg("background")
 						.padding()
 						.intercept("Click", "Toggle"),
-					UI.ShowWhen(bind("expanded"), UI.Column(...content)),
+					UI.ShowWhen(v.bind("expanded"), UI.Column(...content)),
 				),
 		),
 		/** Set the expanded state of the view */
@@ -100,7 +100,7 @@ class CountService extends ObservableObject {
 	}
 }
 
-function MainView(numbers: Binding<{ id: number; factors: number[] }[]>) {
+function MainView(v: Binding<MainActivity>) {
 	return UI.Column()
 		.align("center")
 		.with(
@@ -114,21 +114,21 @@ function MainView(numbers: Binding<{ id: number; factors: number[] }[]>) {
 					.with(
 						UI.Label(fmt("Built: {}", new Date().toLocaleString())).padding(),
 						UI.Label(
-							bind.fmt("View defined: {}", bind("viewDefined")),
+							bind.fmt("View defined: {}", v.bind("viewDefined")),
 						).padding(),
-						UI.Label(bind.fmt("Current: {}", bind("currentDate"))).padding(),
+						UI.Label(bind.fmt("Current: {}", v.bind("currentDate"))).padding(),
 						UI.Label(
-							bind.fmt("Count: {}", bind("countService.count")),
+							bind.fmt("Count: {}", v.bind("countService.count")),
 						).padding(),
 					),
 			)
 				.expand()
 				.width(400),
 
-			UI.Label(bind.fmt("Current: {:L}", bind("currentDate"))).padding(),
+			UI.Label(bind.fmt("Current: {:L}", v.bind("currentDate"))).padding(),
 			UI.Spacer(8),
-			UI.Label(bind.fmt("Count: {}", bind("countService.count"))).dim(
-				bind.not("countService.count"),
+			UI.Label(bind.fmt("Count: {}", v.bind("countService.count"))).dim(
+				v.bind("countService.count").not(),
 			),
 			UI.Spacer(8),
 			UI.Row(UI.Button("Up").icon("chevronUp").emit("Count")),
@@ -149,7 +149,7 @@ function MainView(numbers: Binding<{ id: number; factors: number[] }[]>) {
 					UI.Label("Numbers").align("end").width(100),
 					UI.Label("Factors"),
 				),
-				UI.List(numbers, (item) =>
+				UI.List(v.bind("numbers"), (item) =>
 					UI.List(item.bind("factors"), (factor) =>
 						UI.Row(
 							UI.Label(item.bind("id")).align("end").width(100),
@@ -167,8 +167,10 @@ export class MainActivity extends Activity {
 		app.hotReload(import.meta, this);
 	}
 
-	navigationPath = "";
+	static View = MainView;
 	viewDefined = new Date();
+
+	navigationPath = "";
 
 	numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => ({
 		id: i,
@@ -194,11 +196,6 @@ export class MainActivity extends Activity {
 
 	countService = new CountService();
 
-	protected override viewBuilder() {
-		this.viewDefined = new Date();
-		return MainView(this.bind("numbers"));
-	}
-
 	protected onCount() {
 		this.countService.increment();
 	}
@@ -215,35 +212,35 @@ export class RouterActivity extends Activity {
 	}
 }
 
-function SubView() {
+function SubView(v: Binding<SubActivity>) {
 	return UI.Column()
 		.align("center")
 		.with(
 			UI.Spacer(32),
-			UI.Label(bind.fmt("Sub activity created {}", bind("created"))),
-			UI.Label(bind.fmt("Changes: {}", bind("activeCount.changes"))),
-			UI.Label(bind.fmt("Count: {}", bind("activeCount.state.count"))),
+			UI.Label(bind.fmt("Sub activity created {}", v.bind("created"))),
+			UI.Label(bind.fmt("Changes: {}", v.bind("activeCount.changes"))),
+			UI.Label(bind.fmt("Count: {}", v.bind("activeCount.state.count"))),
 			UI.Label(
-				bind.fmt("Count * 2: {}", bind("activeCount.state.countTimesTwo")),
+				bind.fmt("Count * 2: {}", v.bind("activeCount.state.countTimesTwo")),
 			),
 			UI.Label(
 				bind.fmt(
 					"Count is non-zero? {}",
-					bind("activeCount.state.countIsNonZero"),
+					v.bind("activeCount.state.countIsNonZero"),
 				),
 			),
 			UI.Spacer(8),
 			UI.Label(
 				bind.fmt(
 					"Viewport: {:i}×{:i}",
-					bind("viewport.width"),
-					bind("viewport.height"),
+					UI.viewport.bind("width"),
+					UI.viewport.bind("height"),
 				),
 			),
 			UI.Spacer(8),
 			UI.Row(
 				UI.TextField()
-					.value(bind("activeCount.state.count"))
+					.value(v.bind("activeCount.state.count").fmt("{}"))
 					.emit("SetCount")
 					.trim(),
 				UI.Button("Reset").emit("ResetCount"),
@@ -251,11 +248,13 @@ function SubView() {
 			UI.Row(
 				UI.Button("Back").icon("chevronBack").emit("NavigateBack"),
 				UI.Row(UI.Button("Other").navigateTo("/other").icon("chevronNext")),
-			).layout(bind("viewport.cols").lt(2).then({ axis: "vertical" })),
+			).layout(UI.viewport.bind("cols").lt(2).then({ axis: "vertical" })),
 		);
 }
 
 export class SubActivity extends Activity {
+	static View = SubView;
+
 	constructor(public readonly countService: CountService) {
 		super();
 	}
@@ -263,14 +262,26 @@ export class SubActivity extends Activity {
 	created = new Date();
 
 	activeCount = this.createActiveState(
-		[this.bind("countService")],
-		async () => {
+		[bind.from(this, "countService")],
+		async (): Promise<{
+			service: CountService;
+			changes: number;
+			state: {
+				count?: number;
+				countTimesTwo?: number;
+				countIsNonZero?: boolean;
+			};
+		}> => {
 			let changes: number = this.activeCount.changes || 0;
 			return {
 				service: this.countService,
 				changes: changes + 1,
 				state: this.createActiveState(
-					[this.bind("activeCount.service.count")],
+					[
+						bind
+							.from<SubActivity, "activeCount">(this, "activeCount")
+							.bind("service.count"),
+					],
 					(count) => {
 						console.log("activeCount.state updated", count);
 						return {
@@ -289,11 +300,6 @@ export class SubActivity extends Activity {
 	});
 	foo = "bar";
 
-	protected override viewBuilder() {
-		console.log("SubActivity viewBuilder", this.activeCount);
-		return SubView();
-	}
-
 	protected onSetCount(e: ViewEvent<UITextField>) {
 		console.log("onSetCount", e.source.value);
 		this.countService.count = +e.source.value! || 0;
@@ -310,12 +316,12 @@ export class SubActivity extends Activity {
 	}
 }
 
-function OtherView() {
+function OtherView(v: Binding<OtherActivity>) {
 	return UI.Column()
 		.align("center")
 		.with(
 			UI.Spacer(32),
-			UI.Label(bind.fmt("Other activity created {}", bind("created"))),
+			UI.Label(bind.fmt("Other activity created {}", v.bind("created"))),
 			UI.Spacer(8),
 			UI.Row(UI.Button("Back").icon("chevronBack").emit("NavigateBack")),
 			UI.Row(UI.Button("Dialog").emit("ShowDialog")),
@@ -323,11 +329,9 @@ function OtherView() {
 }
 
 export class OtherActivity extends Activity {
-	created = new Date();
+	static View = OtherView;
 
-	protected override viewBuilder() {
-		return OtherView();
-	}
+	created = new Date();
 
 	beforeUnlink() {
 		console.log("Other activity unlinking");
@@ -352,9 +356,11 @@ function DialogView() {
 }
 
 export class DialogActivity extends Activity {
-	protected override viewBuilder() {
+	static View = DialogView;
+
+	constructor() {
+		super();
 		this.setRenderMode("dialog");
-		return DialogView();
 	}
 
 	protected onClose() {

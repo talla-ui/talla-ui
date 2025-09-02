@@ -432,32 +432,6 @@ export class ObservableObject {
 	}
 
 	/**
-	 * Create a binding to a property of this object
-	 * - If the (first) source property doesn't exist yet, it will be initialized as undefined.
-	 * @param source The name of the property to bind to, or a path of properties separated by dots
-	 * @param defaultValue The default value to use if the property is undefined
-	 * @returns A binding to the property
-	 */
-	protected bind<K extends keyof this>(
-		source: K,
-		defaultValue?: unknown,
-	): Binding<this[K]>;
-	protected bind(
-		source: `${string & keyof this}.${string}`,
-		defaultValue?: unknown,
-	): Binding<unknown>;
-	protected bind(source: string, defaultValue?: unknown): Binding<any> {
-		let path = String(source).split(".");
-		let first = path[0] as keyof this;
-		if (!(first in this)) (this as any)[first] = undefined;
-		return new Binding({
-			path,
-			origin: this,
-			default: defaultValue,
-		});
-	}
-
-	/**
 	 * Attaches the specified observable object to this object
 	 * - This method makes the _current_ object the 'parent', or containing object for the target object. If the target object is already attached to another object, it's detached from that object first.
 	 *

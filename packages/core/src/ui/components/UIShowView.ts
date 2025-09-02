@@ -86,14 +86,14 @@ export class UIShowView extends View {
 	 * - The content view is (created and) rendered only if this property is set to true, and the {@link unless} property is set to false.
 	 * - If preset content is used (instead of a bound `insert` property), the content view is _unlinked_, not just hidden, when this property is set to false.
 	 */
-	declare when: boolean;
+	declare when: any;
 
 	/**
 	 * True if the view content should not be rendered, defaults to false
 	 * - The content view is (created and) rendered only if this property is set to false, and the {@link when} property is set to true.
 	 * - If preset content is used (instead of a bound `insert` property), the content view is _unlinked_, not just hidden, when this property is set to true.
 	 */
-	declare unless: boolean;
+	declare unless: any;
 
 	/** The current (attached) view content to be rendered */
 	body?: View;
@@ -251,7 +251,7 @@ export namespace UIShowView {
 	 * @see {@link UIShowView}
 	 */
 	export function showWhenBuilder(
-		condition: BindingOrValue<boolean>,
+		condition: BindingOrValue<any>,
 		content?: ViewBuilder<View>,
 		elseContent?: ViewBuilder<View>,
 	) {
@@ -269,7 +269,7 @@ export namespace UIShowView {
 	 * @see {@link UIShowView}
 	 */
 	export function showUnlessBuilder(
-		condition: BindingOrValue<boolean>,
+		condition: BindingOrValue<any>,
 		content?: ViewBuilder<View>,
 		elseContent?: ViewBuilder<View>,
 	) {
@@ -310,7 +310,7 @@ export namespace UIShowView {
 					this.body?.unlink();
 					this.body = body && this.attach(body, { delegate: this });
 				};
-				view.setBody(view.when && !view.unless);
+				view.setBody(!!view.when && !view.unless);
 			}
 		});
 
@@ -352,7 +352,7 @@ export namespace UIShowView {
 		 * @param when A boolean value or binding. The content is shown when this is truthy.
 		 * @returns The builder instance for chaining.
 		 */
-		when(when: BindingOrValue<boolean>) {
+		when(when: BindingOrValue<any>) {
 			this.initializer.set("when", when);
 			return this;
 		}
@@ -362,7 +362,7 @@ export namespace UIShowView {
 		 * @param unless A boolean value or binding. The content is hidden when this is truthy.
 		 * @returns The builder instance for chaining.
 		 */
-		unless(unless: BindingOrValue<boolean>) {
+		unless(unless: BindingOrValue<any>) {
 			this.initializer.set("unless", unless);
 			return this;
 		}

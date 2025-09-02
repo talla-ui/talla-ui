@@ -44,9 +44,6 @@ test("Constructor with path", () => {
 describe("Basic bindings", () => {
 	function setup() {
 		class ObjectWithBind extends ObservableObject {
-			getBinding(property: string & keyof this) {
-				return this.bind(property);
-			}
 			applyBind(property: keyof this, source: Binding | string) {
 				if (typeof source === "string") {
 					source = bind(source);
@@ -410,7 +407,7 @@ describe("Basic bindings", () => {
 		let a = new TestObject();
 		a.a = 123;
 		let c = new TestObject();
-		c.applyBind("a", a.getBinding("a"));
+		c.applyBind("a", bind.from(a, "a"));
 		expect(c).toHaveProperty("a", 123);
 		a.a = 234;
 		expect(c).toHaveProperty("a", 234);
@@ -660,9 +657,9 @@ describe("Mapped/boolean bindings", () => {
 		parent.child.expectValue().toBe(1);
 	});
 
-	test("Convert: asString", () => {
+	test("Convert: fmt {}", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").asString());
+		parent.child.bindValue(bind("value1").fmt("{}"));
 		parent.child.expectValue().toBe("1");
 		parent.value1 = 0;
 		parent.child.expectValue().toBe("0");
@@ -670,9 +667,9 @@ describe("Mapped/boolean bindings", () => {
 		parent.child.expectValue().toBe("");
 	});
 
-	test("Convert and format: asString(format) with number", () => {
+	test("Convert and format: fmt(format) with number", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("value1").asString("{:.2f}"));
+		parent.child.bindValue(bind("value1").fmt("{:.2f}"));
 		parent.child.expectValue().toBe("1.00");
 		parent.value1 = 0;
 		parent.child.expectValue().toBe("0.00");
@@ -680,22 +677,12 @@ describe("Mapped/boolean bindings", () => {
 		parent.child.expectValue().toBe("0.00");
 	});
 
-	test("Convert and format: asString(format) with string", () => {
+	test("Convert and format: fmt(format) with string", () => {
 		let { parent } = setup();
-		parent.child.bindValue(bind("str").asString("{:?/a/b}"));
+		parent.child.bindValue(bind("str").fmt("{:?/a/b}"));
 		parent.child.expectValue().toBe("b");
 		parent.str = "X";
 		parent.child.expectValue().toBe("a");
-	});
-
-	test("Convert: asString", () => {
-		let { parent } = setup();
-		parent.child.bindValue(bind("value1").asString());
-		parent.child.expectValue().toBe("1");
-		parent.value1 = 0;
-		parent.child.expectValue().toBe("0");
-		parent.value1 = undefined as any;
-		parent.child.expectValue().toBe("");
 	});
 
 	test("Convert: equals", () => {
@@ -945,16 +932,14 @@ describe("String format bindings", () => {
 	test("Multiple value string binding", () => {
 		let { parent } = setup();
 		parent.child.bindValue(
-			bind
-				.fmt(
-					"Value: {:.2f} {}: {:i}",
-					bind("value1"),
-					bind("str"),
-					bind("value1"),
-				)
-				.asString(),
+			bind.fmt(
+				"Value: {:.2f} {}: {:i}",
+				bind("value1"),
+				bind("str"),
+				bind("value1"),
+			),
 		);
-		parent.child.expectValue().toBe("Value: 1.00 ABC: 1");
+		parent.child.expectStringValue().toBe("Value: 1.00 ABC: 1");
 	});
 
 	test("Named string binding using {...}", () => {

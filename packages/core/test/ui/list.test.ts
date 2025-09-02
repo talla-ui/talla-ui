@@ -78,7 +78,7 @@ test("List of labels from ObservableList, rendered", async () => {
 
 	console.log("Unlinking");
 	instance.unlink();
-	expect(instance).toHaveProperty("body", undefined);
+	expect((instance as any).body.isUnlinked()).toBeTruthy();
 });
 
 test("List of labels from bound array, rendered", async () => {
@@ -191,7 +191,7 @@ test("Nested list", async () => {
 			{ name: "c", numbers: [7, 8, 9] },
 		];
 		readonly view = this.attach(
-			UI.List(this.bind("array"), (item) =>
+			UI.List(bind<{ name: string; numbers: number[] }[]>("array"), (item) =>
 				UI.List(item.bind("numbers"), (number) =>
 					UI.Label.fmt("{}{}", item.bind("name"), number),
 				),

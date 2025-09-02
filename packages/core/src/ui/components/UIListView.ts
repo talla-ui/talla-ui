@@ -26,9 +26,6 @@ const DEFAULT_MAX_DELAY_COUNT = 100;
 // use this property for duck typing ObservableList instances
 const ObservableList_take = ObservableList.prototype.take;
 
-// an ID counter for list view builders
-let listId = 1;
-
 /**
  * Type definition for an event that's emitted by a view within a {@link UIListView}
  * - This event type includes the list item value that's associated with the event source view, in the event data object.
@@ -71,7 +68,7 @@ export class UIListView<
 	/** @internal Attaches a list observer instance to the list, updating its content when the list changes */
 	static initializeBuild(
 		instance: UIListView,
-		id: number,
+		itemProp: symbol,
 		containerBuilder: ViewBuilder,
 		itemBuilder: ViewBuilder,
 		emptyStateBuilder?: ViewBuilder,
@@ -85,12 +82,14 @@ export class UIListView<
 			sync = false;
 			if (running) running.abort = true;
 			running = { abort: false };
-			instance._updateItems(id, itemBuilder, emptyStateBuilder, running);
+			instance._updateItems(itemProp, itemBuilder, emptyStateBuilder, running);
 		}
-		instance.viewBuilder = () => containerBuilder;
 		instance.observe("items", doUpdateAsync);
 		instance.observe("firstIndex", doUpdateAsync);
 		instance.observe("maxItems", doUpdateAsync);
+		Object.defineProperty(instance, "body", {
+			value: containerBuilder.create(),
+		});
 		safeCall(doUpdateAsync);
 	}
 
@@ -274,7 +273,7 @@ export class UIListView<
 
 	/** Update the container with (existing or new) views, one for each list item; only called from list observer */
 	private async _updateItems(
-		id: number,
+		itemProp: symbol,
 		itemBuilder: ViewBuilder<View>,
 		emptyStateBuilder?: ViewBuilder<View>,
 		cancel?: { abort?: boolean },
@@ -321,7 +320,7 @@ export class UIListView<
 		for (let item of items) {
 			let v =
 				existing?.get(item) ||
-				new UIListView.ItemControllerView(id, item, itemBuilder);
+				new UIListView.ItemControllerView(itemProp, item, itemBuilder);
 			views.push(v);
 			map.set(item, v);
 			if (async) {
@@ -433,30 +432,31 @@ export namespace UIListView {
 		 * - This constructor is used by {@link UIListView} and should not be used directly by an application.
 		 * @hideconstructor
 		 */
-		constructor(id: number, item: any, body: ViewBuilder<View>) {
+		constructor(itemProp: symbol, item: any, body: ViewBuilder<View>) {
 			super();
-			this.viewBuilder = () => body;
 			item = item instanceof ItemValueWrapper ? item.value : item;
 			this.item = item;
 
 			// define a private bindable property for the item
-			Object.defineProperty(this, "item__L" + id, {
+			Object.defineProperty(this, itemProp, {
 				enumerable: false,
 				value: item,
 			});
-		}
 
-		override delegate(event: ObservableEvent): true {
-			this.emit(
-				new ObservableEvent(
-					event.name,
-					event.source,
-					{ ...event.data, listViewItem: this.item },
-					this,
-					event,
-				),
-			);
-			return true;
+			// instantiate the body view (and shortcut event handling here)
+			Object.defineProperty(this, "body", {
+				value: this.attach(body.create(), (event) => {
+					this.emit(
+						new ObservableEvent(
+							event.name,
+							event.source,
+							{ ...event.data, listViewItem: item },
+							this,
+							event,
+						),
+					);
+				}),
+			});
 		}
 
 		/** Returns the current view, i.e. the view body */
@@ -493,7 +493,7 @@ export namespace UIListView {
 			if (!this._itemBuilder) {
 				if (this._buildItem) {
 					// Create a view builder on first initialization
-					let binding = new Binding("item__L" + this._id);
+					let binding = new Binding(this._itemProp);
 					this._itemBuilder = this._buildItem(binding);
 				} else {
 					// Use an empty row builder by default
@@ -502,7 +502,7 @@ export namespace UIListView {
 			}
 			UIListView.initializeBuild(
 				view,
-				this._id,
+				this._itemProp,
 				containerBuilder,
 				this._itemBuilder,
 				this._emptyState,
@@ -616,7 +616,7 @@ export namespace UIListView {
 			return this;
 		}
 
-		private _id = listId++;
+		private _itemProp = Symbol("UIListView");
 		private _buildItem?: (item: Binding) => ViewBuilder<View>;
 		private _itemBuilder?: ViewBuilder<View>;
 		private _container?: ViewBuilder<View>;

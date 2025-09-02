@@ -68,6 +68,9 @@ export class AppContext extends ObservableObject {
 		ObservableObject.makeRoot(this);
 	}
 
+	/** @internal A reference to the application context itself */
+	appContext = this;
+
 	/**
 	 * A list of activities managed by the application
 	 * - To add an activity, use the {@link AppContext.addActivity app.addActivity()} method.

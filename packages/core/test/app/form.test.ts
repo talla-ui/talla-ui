@@ -199,13 +199,12 @@ test("Custom form container, rendered", async () => {
 		return b;
 	}
 
-	const view = UI.Row(
-		FormContainer(bind("form1"), UI.TextField().bindFormField("text")),
-		FormContainer(bind("form2"), UI.TextField().bindFormField("text")),
-	);
 	class MyActivity extends Activity {
-		protected override viewBuilder() {
-			return view;
+		static override View() {
+			return UI.Row(
+				FormContainer(bind("form1"), UI.TextField().bindFormField("text")),
+				FormContainer(bind("form2"), UI.TextField().bindFormField("text")),
+			);
 		}
 		form1 = new FormContext().set("text", "foo");
 		form2 = new FormContext().set("text", "bar");

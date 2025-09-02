@@ -2,17 +2,16 @@ import { ERROR, err } from "../errors.js";
 import { ObservableEvent, ObservableObject } from "../object/index.js";
 import { RenderContext } from "./RenderContext.js";
 import { View } from "./View.js";
-import type { ViewBuilder } from "./ViewBuilder.js";
 
 /**
- * A class that encapsulates a view component
+ * A base class that represents a view which controls an attached body view
  *
  * @description
- * Component views are view objects that may include their own state (properties) and event handlers, to render their own content.
+ * Component views are view objects that may include their own state (properties) and event handlers, to render their own view body content.
  *
  * To be able to use component views in the view hierarchy, you should also export a builder function that uses {@link ComponentViewBuilder} to create a builder object.
  *
- * For views that require a custom renderer (e.g. a platform-dependent graphic), define a view class that extends {@link ComponentView}, and overrides the {@link ComponentView.render} method altogether. In this case, the view builder should not include any content.
+ * For views that require a custom renderer (e.g. a platform-dependent graphic), define a view class that extends {@link ComponentView}, and overrides the {@link ComponentView.render} method altogether.
  *
  * @note Component views are very similar to {@link Activity} objects, but they don't have an active/inactive lifecycle and typically don't include any application logic (especially not for loading or saving data).
  *
@@ -28,13 +27,13 @@ import type { ViewBuilder } from "./ViewBuilder.js";
  * // Export a builder function that uses the class
  * export function Collapsible(title: StringConvertible, ...content: ViewBuilder[]) {
  *   return {
- *     ...ComponentViewBuilder(CollapsibleView, () =>
+ *     ...ComponentViewBuilder(CollapsibleView, (v) =>
  *        UI.Column(
  *          UI.Label(title)
- *            .icon(bind("expanded").then("chevronDown", "chevronNext"))
+ *            .icon(v.bind("expanded").then("chevronDown", "chevronNext"))
  *            .cursor("pointer")
  *            .intercept("Click", "Toggle"),
- *          UI.ShowWhen(bind("expanded"), UI.Column(...content)),
+ *          UI.ShowWhen(v.bind("expanded"), UI.Column(...content)),
  *        ),
  *     ),
  *     expand(expanded = true) {
@@ -47,20 +46,11 @@ import type { ViewBuilder } from "./ViewBuilder.js";
 export class ComponentView extends View {
 	/**
 	 * The encapsulated view object, an attached view
-	 * - Initially, this property is undefined. The view body is only created (using the result of {@link viewBuilder()}) when the ComponentView instance is first rendered.
-	 * - Alternatively, you can set it yourself, e.g. in the constructor. In this case, ensure that the object is a {@link View} instance that's attached directly to this view (for event handling and bindings), delegating events using {@link delegate()}.
+	 * - By default, this getter property always returns `undefined`. When using {@link ComponentViewBuilder}, this property is overridden to expose a view object created from the provided view builder.
+	 * - Alternatively, you can implement this property using a getter that returns a View. Typically, the view is created using a view builder which is cached for all instances of the component view.
 	 */
-	protected body?: View;
-
-	/**
-	 * Returns a view builder for the encapsulated view object, to be overridden if needed
-	 *
-	 * This method is called automatically when rendering a component view. A view instance is created, attached, and assigned to {@link ComponentView.body}.
-	 *
-	 * @note This method is overridden automatically by {@link ComponentViewBuilder} to return the content builder function.
-	 */
-	protected viewBuilder(): ViewBuilder | undefined | void {
-		// Nothing here...
+	protected get body(): View | undefined {
+		return undefined;
 	}
 
 	/**
@@ -70,10 +60,10 @@ export class ComponentView extends View {
 	 * @returns An array with instances of the provided view class; may be empty but never undefined.
 	 */
 	findViewContent<T extends View>(type: new (...args: any[]) => T): T[] {
-		return this.body
-			? this.body instanceof type
-				? [this.body]
-				: this.body.findViewContent(type)
+		return this._rendered
+			? this._rendered instanceof type
+				? [this._rendered]
+				: this._rendered.findViewContent(type)
 			: [];
 	}
 
@@ -82,7 +72,7 @@ export class ComponentView extends View {
 	 * - This method should be overridden if input focus should be requested on another element than the view body itself.
 	 */
 	requestFocus() {
-		this.body?.requestFocus();
+		this._rendered?.requestFocus();
 	}
 
 	/**
@@ -121,27 +111,19 @@ export class ComponentView extends View {
 	 * - This method may be overridden to render custom platform-dependent content.
 	 */
 	render(callback: RenderContext.RenderCallback) {
-		if (!this.body) {
-			let body = this.viewBuilder()?.create();
-			if (body) {
-				if (!(body instanceof View)) throw err(ERROR.View_Invalid);
-				this.body = this.attach(body, {
-					delegate: this,
-					detached: (body) => {
-						if (this.body === body) this.body = undefined;
-					},
-				});
-			}
-		}
-		if (this.body && ObservableObject.whence(this.body) !== this) {
-			throw err(ERROR.View_NotAttached);
-		}
-		if (!this._rendered) {
-			this._rendered = true;
-			this.beforeRender();
-		}
-		this.body?.render(callback);
+		let view = this.body;
+		if (!view || !(view instanceof View)) throw err(ERROR.View_Invalid);
+
+		// attach view body if needed
+		let origin = ObservableObject.whence(view);
+		if (!origin) this.attach(view, { delegate: this });
+		else if (origin !== this) throw err(ERROR.View_NotAttached);
+
+		// invoke beforeRender if needed and render body
+		if (!this._rendered) this.beforeRender();
+		this._rendered = view;
+		view.render(callback);
 	}
 
-	private _rendered = false;
+	private _rendered?: View;
 }

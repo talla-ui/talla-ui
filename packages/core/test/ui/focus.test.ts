@@ -35,8 +35,8 @@ test("Single element, request focus", async () => {
 
 test("Single component view, request focus", async () => {
 	class MyView extends ComponentView {
-		protected override viewBuilder() {
-			return UI.Cell().allowFocus();
+		protected override get body() {
+			return UI.Cell().allowFocus().create();
 		}
 	}
 	let view = new MyView();
@@ -68,7 +68,7 @@ test("Focusing one element blurs another", async () => {
 	class MyView extends ComponentView {
 		cell2?: UICell;
 
-		protected override viewBuilder() {
+		protected override get body() {
 			return UI.Cell(
 				UI.Cell()
 					.allowFocus()
@@ -79,7 +79,7 @@ test("Focusing one element blurs another", async () => {
 					.allowFocus()
 					.intercept("BeforeRender", "Cell2Ref")
 					.intercept("FocusIn", "Done"),
-			);
+			).create();
 		}
 
 		onCell1Ref(e: ViewEvent<UICell>) {
