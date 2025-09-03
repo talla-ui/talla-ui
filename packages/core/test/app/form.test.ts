@@ -7,10 +7,11 @@ import {
 	app,
 	AppContext,
 	bind,
+	Binding,
 	BindingOrValue,
 	ComponentView,
 	ComponentViewBuilder,
-	FormContext,
+	FormState,
 	ObservableEvent,
 	UI,
 	UILabel,
@@ -25,31 +26,31 @@ beforeEach(() => {
 	});
 });
 
-// helper class to observe a form context and count events
+// helper class to observe a form state and count events
 class ChangeCounter {
-	constructor(formContext: FormContext) {
+	constructor(formContext: FormState) {
 		formContext.listen(this);
 	}
-	handler(_: FormContext, event: ObservableEvent) {
+	handler(_: FormState, event: ObservableEvent) {
 		if (event.name === "FormChange") this.changes++;
 	}
 	changes = 0;
 }
 
 test("Constructor", () => {
-	let ctx = new FormContext();
+	let ctx = new FormState();
 	expect(ctx.values).toBeDefined();
 	expect(ctx.errors).toBeDefined();
 	expect(ctx.valid).toBe(true);
 });
 
 test("Constructor with values", () => {
-	let ctx = new FormContext(undefined, { foo: "bar" });
+	let ctx = new FormState(undefined, { foo: "bar" });
 	expect(ctx.values).toEqual({ foo: "bar" });
 });
 
 test("Set, no validation", () => {
-	let ctx = new FormContext();
+	let ctx = new FormState();
 	let counter = new ChangeCounter(ctx);
 	ctx.set("foo", "bar");
 	expect(ctx.values).toHaveProperty("foo", "bar");
@@ -59,7 +60,7 @@ test("Set, no validation", () => {
 });
 
 test("Clear values", () => {
-	let ctx = new FormContext(undefined, { foo: "bar" });
+	let ctx = new FormState(undefined, { foo: "bar" });
 	expect(ctx.values).toHaveProperty("foo");
 	ctx.clear();
 	expect(ctx.values).toBeDefined();
@@ -69,7 +70,7 @@ test("Clear values", () => {
 });
 
 test("Validation", () => {
-	let ctx = new FormContext((b) =>
+	let ctx = new FormState((b) =>
 		b.object({
 			foo: b
 				.string()
@@ -119,7 +120,7 @@ test("Validation using existing InputValidator", () => {
 			foo: b.string(),
 		}),
 	);
-	let ctx = new FormContext(validator, { foo: 123 });
+	let ctx = new FormState(validator, { foo: 123 });
 	ctx.validate();
 	expect(ctx.errors).toHaveProperty("foo");
 	expect(ctx.valid).toBe(false);
@@ -132,7 +133,7 @@ test("Validation using existing InputValidator", () => {
 test("Component view, binding to value and error", () => {
 	useTestContext();
 	let ERR = "Foo must have at least 3 characters";
-	let ctx = new FormContext(
+	let ctx = new FormState(
 		(b) =>
 			b.object({
 				foo: b
@@ -151,13 +152,13 @@ test("Component view, binding to value and error", () => {
 		.bold();
 
 	class FormView extends ComponentView {
-		form = undefined as FormContext | undefined;
+		form = undefined as FormState | undefined;
 	}
 	const MyComp = () =>
-		ComponentViewBuilder(FormView, () =>
+		ComponentViewBuilder(FormView, (v) =>
 			UI.Row(
 				UI.Label(bind("form.errors.foo")),
-				UI.TextField().bindFormField("foo"),
+				UI.TextField().bindFormState(v.bind("form"), "foo"),
 			),
 		);
 
@@ -186,28 +187,32 @@ test("Custom form container, rendered", async () => {
 	useTestContext();
 
 	function FormContainer(
-		formContext: BindingOrValue<FormContext>,
-		...content: ViewBuilder[]
+		formContext: BindingOrValue<FormState | undefined>,
+		content: (v: Binding<{ form?: FormState }>) => ViewBuilder[],
 	) {
 		let b = ComponentViewBuilder(
 			class extends ComponentView {
-				form?: FormContext;
+				form?: FormState;
 			},
-			() => UI.Column(...content),
+			(v) => UI.Column(...content(v)),
 		);
 		b.initializer.set("form", formContext);
 		return b;
 	}
 
 	class MyActivity extends Activity {
-		static override View() {
+		static override View(v: Binding<MyActivity>) {
 			return UI.Row(
-				FormContainer(bind("form1"), UI.TextField().bindFormField("text")),
-				FormContainer(bind("form2"), UI.TextField().bindFormField("text")),
+				FormContainer(v.bind("form1"), (v) => [
+					UI.TextField().bindFormState(v.bind("form"), "text"),
+				]),
+				FormContainer(v.bind("form2"), (v) => [
+					UI.TextField().bindFormState(v.bind("form"), "text"),
+				]),
 			);
 		}
-		form1 = new FormContext().set("text", "foo");
-		form2 = new FormContext().set("text", "bar");
+		form1 = new FormState().set("text", "foo");
+		form2 = new FormState().set("text", "bar");
 	}
 	let activity = new MyActivity();
 	app.addActivity(activity, true);

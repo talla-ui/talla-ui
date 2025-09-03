@@ -8,6 +8,7 @@ import {
 	ComponentViewBuilder,
 	DeferredViewBuilder,
 	fmt,
+	FormState,
 	ObservableObject,
 	StringConvertible,
 	UI,
@@ -16,6 +17,26 @@ import {
 	ViewBuilder,
 	ViewEvent,
 } from "talla-ui";
+
+export function CardLayout(title: StringConvertible) {
+	let content: ViewBuilder[] = [];
+	return {
+		...new DeferredViewBuilder(() =>
+			// This runs only once, before the first view is created
+			UI.Column()
+				.dropShadow()
+				.border(1)
+				.borderRadius(16)
+				.padding(16)
+				.gap()
+				.with(UI.Label(title).labelStyle("title"), ...content),
+		),
+		with(...cardContent: ViewBuilder[]) {
+			content = cardContent;
+			return this;
+		},
+	};
+}
 
 function Collapsible(label: StringConvertible, ...content: ViewBuilder[]) {
 	class CollapsibleView extends ComponentView {
@@ -106,24 +127,28 @@ function MainView(v: Binding<MainActivity>) {
 		.with(
 			UI.Spacer(32),
 			MyTitle("Title").width(400),
-			Collapsible(
-				"Rendered",
-				UI.Column()
-					.divider()
-					.border()
-					.with(
-						UI.Label(fmt("Built: {}", new Date().toLocaleString())).padding(),
-						UI.Label(
-							bind.fmt("View defined: {}", v.bind("viewDefined")),
-						).padding(),
-						UI.Label(bind.fmt("Current: {}", v.bind("currentDate"))).padding(),
-						UI.Label(
-							bind.fmt("Count: {}", v.bind("countService.count")),
-						).padding(),
-					),
-			)
-				.expand()
-				.width(400),
+			CardLayout("Card").with(
+				Collapsible(
+					"Rendered",
+					UI.Column()
+						.divider()
+						.border()
+						.with(
+							UI.Label(fmt("Built: {}", new Date().toLocaleString())).padding(),
+							UI.Label(
+								bind.fmt("View defined: {}", v.bind("viewDefined")),
+							).padding(),
+							UI.Label(
+								bind.fmt("Current: {}", v.bind("currentDate")),
+							).padding(),
+							UI.Label(
+								bind.fmt("Count: {}", v.bind("countService.count")),
+							).padding(),
+						),
+				)
+					.expand()
+					.width(400),
+			),
 
 			UI.Label(bind.fmt("Current: {:L}", v.bind("currentDate"))).padding(),
 			UI.Spacer(8),
@@ -240,7 +265,7 @@ function SubView(v: Binding<SubActivity>) {
 			UI.Spacer(8),
 			UI.Row(
 				UI.TextField()
-					.value(v.bind("activeCount.state.count").fmt("{}"))
+					.value(v.bind("activeCount.state.count"))
 					.emit("SetCount")
 					.trim(),
 				UI.Button("Reset").emit("ResetCount"),
@@ -316,12 +341,65 @@ export class SubActivity extends Activity {
 	}
 }
 
+function TextFieldGroup(
+	label: StringConvertible,
+	type: "text" | "password" = "text",
+) {
+	class TextFieldGroupView extends ComponentView {
+		text?: string = undefined;
+		error?: any;
+		onInput(e: ViewEvent<UITextField>) {
+			this.text = e.source.value;
+		}
+		bindForm(
+			formState: BindingOrValue<FormState | undefined>,
+			formField: string,
+		) {
+			this.bindFormState(formState, formField, "text");
+		}
+	}
+
+	return {
+		...ComponentViewBuilder(TextFieldGroupView, (v) =>
+			UI.Column()
+				.gap()
+				.with(
+					UI.Label(label).labelStyle("secondary"),
+					UI.TextField().value(v.bind("text")).type(type),
+					UI.Label(v.bind("error"))
+						.hideWhen(v.bind("error").not())
+						.fg("danger"),
+				),
+		),
+		bindFormState(formState: Binding<FormState>, formField: string) {
+			this.initializer.finalize((view) => {
+				view.bindForm(formState, formField);
+			});
+			this.initializer.set("error", formState.bind("errors").bind(formField));
+			return this;
+		},
+	};
+}
+
 function OtherView(v: Binding<OtherActivity>) {
 	return UI.Column()
 		.align("center")
 		.with(
 			UI.Spacer(32),
 			UI.Label(bind.fmt("Other activity created {}", v.bind("created"))),
+
+			UI.Divider(),
+			UI.Column()
+				.gap()
+				.with(
+					TextFieldGroup("User name").bindFormState(v.bind("form"), "userName"),
+					TextFieldGroup("Password", "password").bindFormState(
+						v.bind("form"),
+						"password",
+					),
+					UI.Button("Submit").emit("Submit"),
+				),
+
 			UI.Spacer(8),
 			UI.Row(UI.Button("Back").icon("chevronBack").emit("NavigateBack")),
 			UI.Row(UI.Button("Dialog").emit("ShowDialog")),
@@ -332,6 +410,18 @@ export class OtherActivity extends Activity {
 	static View = OtherView;
 
 	created = new Date();
+
+	form = new FormState((f) =>
+		f.object({
+			userName: f.string().required("User name is required"),
+			password: f.string().required("Password is required"),
+		}),
+	);
+
+	protected onSubmit() {
+		let values = this.form.validate();
+		console.log("onSubmit", values);
+	}
 
 	beforeUnlink() {
 		console.log("Other activity unlinking");

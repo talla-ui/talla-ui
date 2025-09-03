@@ -1,6 +1,6 @@
-import type { StringConvertible } from "@talla-ui/util";
-import { FormContext, ViewBuilder } from "../../app/index.js";
-import { BindingOrValue } from "../../object/index.js";
+import { fmt, type StringConvertible } from "@talla-ui/util";
+import { FormState, ViewBuilder } from "../../app/index.js";
+import { Binding, BindingOrValue } from "../../object/index.js";
 import { UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
 import { UIElement } from "../UIElement.js";
@@ -61,6 +61,25 @@ export class UITextField extends UIElement {
 
 	/** True if the text field should appear like a label */
 	readOnly = false;
+
+	/**
+	 * Add a two-way binding to a form state field.
+	 * @param formState A form state object, or a binding to one (e.g. on an activity).
+	 * @param formField The name of the form field to which the text field value should be bound.
+	 */
+	bindFormState(
+		formState: BindingOrValue<FormState | undefined>,
+		formField: string,
+	) {
+		let current: FormState | undefined;
+		this.observe(formState as any, (formState) => {
+			current = formState;
+			if (formState) this.value = String(formState.values[formField] ?? "");
+		});
+		this.observe("value", (value) => {
+			current?.set(formField, value);
+		});
+	}
 }
 
 export namespace UITextField {
@@ -104,25 +123,29 @@ export namespace UITextField {
 		 * @param value The text value or a binding to a string value.
 		 * @returns The builder instance for chaining.
 		 */
-		value(value: BindingOrValue<string>) {
-			return this.setProperty("value", value);
+		value(value: BindingOrValue<StringConvertible | undefined>) {
+			return this.setProperty(
+				"value",
+				value instanceof Binding
+					? value.map((v) =>
+							v == null ? "" : typeof v === "string" ? v : fmt("{}", v),
+						)
+					: (value ?? ""),
+			);
 		}
 
 		/**
-		 * Binds the text field to a form context field, using {@link FormContext.listen}.
-		 * @param formField The name of the form field.
+		 * Adds a two-way binding to a form state field.
+		 * @param formState A form state object, or a binding to one (e.g. on an activity).
+		 * @param formField The name of the form field to which the text field value should be bound.
 		 * @returns The builder instance for chaining.
 		 */
-		bindFormField(formField: string) {
-			this.initializer.initialize(function (view) {
-				FormContext.listen(
-					view,
-					formField,
-					(value) => {
-						view.value = String(value ?? "");
-					},
-					() => (view.trim ? view.value.trim() : view.value),
-				);
+		bindFormState(
+			formState: BindingOrValue<FormState | undefined>,
+			formField: string,
+		) {
+			this.initializer.finalize((view) => {
+				view.bindFormState(formState, formField);
 			});
 			return this;
 		}

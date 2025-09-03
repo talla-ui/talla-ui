@@ -4,12 +4,7 @@ import {
 	useTestContext,
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
-import {
-	FormContext,
-	ObservableObject,
-	UI,
-	UIToggle,
-} from "../../dist/index.js";
+import { FormState, ObservableObject, UI, UIToggle } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
@@ -50,16 +45,18 @@ test("User input, directly setting checked value", async () => {
 	expect(toggle.state).toBe(true);
 });
 
-test("User input with form context", async () => {
+test("User input with form state", async () => {
 	class Host extends ObservableObject {
 		// note that form must exist before it can be bound
-		readonly form = new FormContext().set("foo", true);
-		readonly toggle = this.attach(UI.Toggle().bindFormField("foo").create());
+		readonly form = new FormState().set("foo", true);
+		readonly toggle = this.attach(
+			UI.Toggle().bindFormState(this.form, "foo").create(),
+		);
 	}
 	let host = new Host();
 	let toggle = host.toggle;
 
-	// use form context to check toggle
+	// use form state to check toggle
 	expect(toggle.state).toBe(true);
 
 	// render field, check that checkbox is checked
@@ -68,8 +65,8 @@ test("User input with form context", async () => {
 	let toggleElt = (await expectOutputAsync({ type: "toggle" })).getSingle();
 	expect(toggleElt.checked).toBe(true);
 
-	// simulate input, check value in form context
-	console.log("Updating element to set form context");
+	// simulate input, check value in form state
+	console.log("Updating element to set form state");
 	toggleElt.checked = false;
 	toggleElt.sendPlatformEvent("change");
 	expect(host.form.values.foo).toBe(false);

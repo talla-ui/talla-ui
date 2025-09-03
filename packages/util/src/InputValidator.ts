@@ -20,7 +20,7 @@ const SYM_PARSE = Symbol("parse");
  *
  * Input validators are reusable, and can be used to specify the schema for nested objects and arrays.
  *
- * This class is also used for form validation by the {@link FormContext} class. That class creates (or reuses) a {@link InputValidator} instance to validate the form data and update field errors.
+ * This class is also used for form validation by the {@link FormState} class. That class creates (or reuses) a {@link InputValidator} instance to validate the form data and update field errors.
  *
  * @example
  * const userSchema = new InputValidator((f) =>

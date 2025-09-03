@@ -758,11 +758,11 @@ let { data, errors } = await app.localData.readAsync("key", (v) =>
 if (data) console.log(data.foo);
 ```
 
-## Form Context and Validation
+## Form State and Validation
 
-Since bindings always update the view one-way _only_, a separate construct is used to update the application state in response to user input.
+Since bindings always update the view one-way _only_, a separate construct is used for two-way binding.
 
-The `form` property is defined on activities, as an instance of `FormContext`. UI input elements (text fields and toggles) can be bound to the form using the `.bindFormField()` method. This updates the form context when the input value changes.
+The `FormState` class is used to store form data and validation errors. UI input elements (text fields and toggles) can be bound to fields of form state objects using the `.bindFormState()` method.
 
 ```typescript
 // ... in a view:
@@ -771,7 +771,7 @@ UI.Column(
 		.labelStyle("secondary")
 		.padding({ y: 4 })
 		.intercept("Click", "RequestFocusNext"),
-	UI.TextField().bindFormField("userName"),
+	UI.TextField().bindFormState(v.bind("form"), "userName"),
 	UI.Label(bind("form.errors.userName"))
 		.hideWhen(bind.not("form.errors.userName"))
 		.fg("danger"),
@@ -781,13 +781,13 @@ UI.Column(
 		.labelStyle("secondary")
 		.padding({ y: 4 })
 		.intercept("Click", "RequestFocusNext"),
-	UI.TextField().type("password").bindFormField("password"),
+	UI.TextField().type("password").bindFormState(v.bind("form"), "password"),
 	UI.Label(bind("form.errors.password"))
 		.hideWhen(bind.not("form.errors.password"))
 		.fg("danger"),
 
 	UI.Spacer(8),
-	UI.Toggle.fmt("Remember me").bindFormField("rememberMe"),
+	UI.Toggle.fmt("Remember me").bindFormState(v.bind("form"), "rememberMe"),
 
 	UI.Spacer(8),
 	UI.Button("Submit").emit("Submit"),
@@ -796,19 +796,19 @@ UI.Column(
 
 The form data can be validated using an `InputValidator` object schema, provided to the constructor. The `validate()` method returns the validated form data, or undefined otherwise.
 
-The `FormContext` class also includes:
+The `FormState` class also includes:
 
 - `valid`: true if there are no validation errors, _after_ validation
 - `values`: object with current form data
 - `errors`: object with validation errors messages, updated when the form data changes, but only _after_ validating at least once
 
 ```typescript
-import { Activity, FormContext } from "talla-ui";
+import { Activity, FormState } from "talla-ui";
 
 export class MyActivity extends Activity {
 	// ...
 
-	form = new FormContext((f) =>
+	form = new FormState((f) =>
 		f.object({
 			userName: f.string().required("User name is required"),
 			rememberMe: f.boolean(),
@@ -840,40 +840,30 @@ export class MyActivity extends Activity {
 Regular views may be expressed as functions that return a view builder object. The `DeferredViewBuilder` class can be used to create a builder object that's extended with custom methods.
 
 ```typescript
-import {
-	BindingOrValue,
-	DeferredViewBuilder,
-	StringConvertible,
-	UI,
-	bind,
-} from "talla-ui";
-
-export function TextFieldGroup(label: StringConvertible, formField: string) {
-	let inputType = "text";
+export function CardLayout(title: StringConvertible) {
+	let content: ViewBuilder[] = [];
 	return {
 		...new DeferredViewBuilder(() =>
-			UI.Column(
-				UI.Label(label)
-					.labelStyle("secondary")
-					.padding({ y: 4 })
-					.intercept("Click", "RequestFocusNext"),
-				UI.TextField().type(inputType).bindFormField(formField),
-				UI.Label(bind("form.errors." + formField))
-					.hideWhen(bind.not("form.errors." + formField))
-					.fg("danger"),
-			),
+			// This runs only once, before the first view is created
+			UI.Column()
+				.dropShadow()
+				.border(1)
+				.borderRadius(16)
+				.padding(16)
+				.gap()
+				.with(UI.Label(title).labelStyle("title"), ...content),
 		),
-		type(type: string) {
-			inputType = type;
+		with(...cardContent: ViewBuilder[]) {
+			content = cardContent;
 			return this;
 		},
 	};
 }
 
 // Use within a view
-export default UI.Column(
-	TextFieldGroup("User name", "userName"),
-	TextFieldGroup("Password", "password").type("password"),
+CardLayout("Options").with(
+	UI.Label("Option 1"),
+	// ...
 );
 ```
 
@@ -913,7 +903,7 @@ export function Collapsible(
 }
 ```
 
-Components can provide a fluent interface to bind to form fields, similar to `UI.TextField` and `UI.Toggle`, using the `FormContext.listen` method. The form context value may be calculated from the view's value, or vice versa.
+Components that encapsulate input values may provide a fluent interface to bind to form state fields.
 
 ```typescript
 export function BoundInput() {
@@ -922,15 +912,12 @@ export function BoundInput() {
 			InputViewComponent, // with `value` property
 			() => UI.Column(/* ... */), // a complex view
 		),
-		bindFormField(name: string) {
-			this.initializer.initialize((view) => {
-				function setValue(value: number) {
-					view.value = value;
-				}
-				function getValue() {
-					return view.value;
-				}
-				FormContext.listen(view, name, setValue, getValue);
+		bindFormState(
+			formState: BindingOrValue<FormState | undefined>,
+			formField: string,
+		) {
+			this.initializer.finalize((view) => {
+				view.bindFormState(formState, formField, "value");
 			});
 			return this;
 		},
@@ -1422,7 +1409,7 @@ UI.Label("...") // or UI.Label.fmt("..." [, bindings])
 
 UI.TextField("Placeholder") // or UI.TextField.fmt("..." [, bindings])
 	.value(bind("text"))
-	.bindFormField("text")
+	.bindFormState(v.bind("form"), "text")
 	.multiline(true, 100) // or .multiline().height(100)
 	.type("password") // e.g. "email", "url", "search", "numeric" (special), "decimal"
 	.enterKeyHint("done") // or "enter", "go", etc.
@@ -1437,7 +1424,7 @@ UI.TextField("Placeholder") // or UI.TextField.fmt("..." [, bindings])
 UI.Toggle("Label text") // or UI.Toggle.fmt("..." [, bindings])
 	.type("checkbox") // or "switch", or "none"
 	.state(true) // or binding
-	.bindFormField("isActive")
+	.bindFormState(v.bind("form"), "isActive")
 	.disabled() // or .disabled(binding)
 	.toggleStyle("danger") // or UIStyle instance, overrides, or binding
 	.labelStyle({ bold: true }) // or binding

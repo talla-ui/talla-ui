@@ -5,7 +5,7 @@ import {
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
 import {
-	FormContext,
+	FormState,
 	ObservableObject,
 	UI,
 	UITextField,
@@ -86,16 +86,18 @@ test("User input with trim", async () => {
 	expect(eventValue).toBe("foo");
 });
 
-test("User input with form context", async () => {
+test("User input with form state", async () => {
 	class Host extends ObservableObject {
 		// note that form must exist before it can be bound
-		readonly form = new FormContext().set("foo", "bar");
-		readonly tf = this.attach(UI.TextField().bindFormField("foo").create());
+		readonly form = new FormState().set("foo", "bar");
+		readonly tf = this.attach(
+			UI.TextField().bindFormState(this.form, "foo").create(),
+		);
 	}
 	let host = new Host();
 	let tf = host.tf;
 
-	// use form context to set value to 'bar'
+	// use form state to set value to 'bar'
 	expect(tf.value).toBe("bar");
 
 	// render field, check that value is 'bar'
@@ -104,8 +106,8 @@ test("User input with form context", async () => {
 	let tfElt = (await expectOutputAsync({ type: "textfield" })).getSingle();
 	expect(tfElt.value).toBe("bar");
 
-	// simulate input, check value in form context
-	console.log("Updating element to set form context");
+	// simulate input, check value in form state
+	console.log("Updating element to set form state");
 	tfElt.value = "baz";
 	tfElt.sendPlatformEvent("input");
 	expect(host.form.values.foo).toBe("baz");

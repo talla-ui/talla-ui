@@ -1,25 +1,24 @@
 import { InputValidator, StringConvertible } from "@talla-ui/util";
-import { bind, ObservableObject } from "../object/index.js";
-import { View } from "./index.js";
+import { ObservableObject } from "../object/index.js";
 
 /**
- * An object that contains form field data and validation rules
+ * An object that contains form field data, with validation rules
  *
  * @description
- * The FormContext class provides a data model for user input, allowing UI elements to read and write data from/to a single form context object — instead of having to use individual bindings and event handlers for each field.
+ * The FormState class provides a data model for user input, allowing UI elements to read and write data from/to a single form state object — instead of having to use individual bindings and event handlers for each field.
  *
- * The form context object provides methods to get, set, and clear field values, as well as a way to validate current values according to a schema or custom validation functions. Form values and validation errors can be bound to any other view properties to be displayed in the UI.
+ * The form state object provides methods to get, set, and clear field values, as well as a way to validate current values according to a schema or custom validation functions. Form values and validation errors can be bound to any other view properties to be displayed in the UI.
  *
  * Validation is performed using an {@link InputValidator} instance. Errors must be added as strings or {@link StringConvertible} values (e.g. the result of {@link fmt()}) using the `required()` or `error()` methods of each field in the schema.
  *
- * To use a FormContext object with {@link UITextField} or {@link UIToggle} input elements (or e.g. a component view), use their `.bindFormField()` builder method. The builder automatically binds to a `form` property from the current activity or component view, and gets/sets the input value when needed.
+ * To use a FormState object with {@link UITextField} or {@link UIToggle} input elements, use their `.bindFormState()` builder method.
  *
  * @example
- * function FormView() {
+ * function FormView(v: Binding<MyActivity>) {
  *   return UI.Column(
- *     UI.TextField().bindFormField("foo"),
- *     UI.Label(bind("form.errors.foo.message"))
- *       .hideWhen(bind.not("form.errors.foo")),
+ *     UI.TextField().bindFormState(v.bind("form"), "foo"),
+ *     UI.Label(v.bind("form.errors.foo.message"))
+ *       .hideWhen(v.bind("form.errors.foo").not()),
  *     UI.Button("Go").emit("Submit")
  *   );
  * }
@@ -27,7 +26,7 @@ import { View } from "./index.js";
  * class MyActivity extends Activity {
  *   static View = FormView;
  *
- *   form = new FormContext((f) => f.object({
+ *   form = new FormState((f) => f.object({
  *     foo: f.string().required("Foo is required")
  *   }));
  *
@@ -41,7 +40,7 @@ import { View } from "./index.js";
  *   }
  * }
  */
-export class FormContext<
+export class FormState<
 	TSchema extends Record<string, unknown> = Record<string, unknown>,
 > extends ObservableObject {
 	/** Creates a new instance with the provided validation schema and/or values */
@@ -56,7 +55,7 @@ export class FormContext<
 
 	/**
 	 * An object that contains current form field values
-	 * - Do not set field values here. Instead, use the {@link FormContext.set()} method to update field values.
+	 * - Do not set field values here. Instead, use the {@link FormState.set()} method to update field values.
 	 * - These values are not (necessarily) valid, and are typed as `unknown`. To validate form fields and get the result, use the {@link validate()} method.
 	 * - Properties of this object can be bound, e.g. to display form fields elsewhere in the view.
 	 * @readonly
@@ -91,7 +90,7 @@ export class FormContext<
 
 	/**
 	 * Sets the value of the specified form field
-	 * @summary This method sets a form field to the provided value. If the {@link validate()} method has been called at least once (and {@link clear()} hasn't been called after that), the new field value is also checked against the validation schema, updating the {@link errors} and {@link valid} properties. If the new value is different from the current value, a change event will also be emitted on the form context itself, updating all bindings for values and errors.
+	 * @summary This method sets a form field to the provided value. If the {@link validate()} method has been called at least once (and {@link clear()} hasn't been called after that), the new field value is also checked against the validation schema, updating the {@link errors} and {@link valid} properties. If the new value is different from the current value, a change event will also be emitted on the form state itself, updating all bindings for values and errors.
 	 * @param name The name of the field to set
 	 * @param value The new field value
 	 */
@@ -116,7 +115,7 @@ export class FormContext<
 
 	/**
 	 * Removes all field values and errors
-	 * - After removing all fields, a change event is emitted on the form context object itself.
+	 * - After removing all fields, a change event is emitted on the form state object itself.
 	 */
 	clear() {
 		this._values = Object.create(null);
@@ -154,36 +153,4 @@ export class FormContext<
 
 	private _validator?: InputValidator<any>;
 	private _validated = false;
-}
-
-export namespace FormContext {
-	/**
-	 * Maintain the intrinsic value of a view based on the closest bound form context
-	 *
-	 * @summary This function uses two functions to keep a view's intrinsic value in sync with a form context value property. The closest form context is found using a binding on the `form` property. Whenever the form context value is updated, the `setValue` function is called with the new value. Whenever the view itself emits a 'Change' or 'Input' event, the `getValue` function is called to get the current value, and the form context is updated with the new value.
-	 *
-	 * @note Do not call this function more than once for the same view instance. In most cases, it should be called only from a single view builder method.
-	 *
-	 * @param host The view instance that should be listened to
-	 * @param formField The name of the form field to bind to
-	 * @param setValue A function that's used to update the view's intrinsic value, called with the new value as a single parameter
-	 * @param getValue A function that's used to get the view's intrinsic value, to update the form context after a 'Change' or 'Input' event has been emitted by the view.
-	 */
-	export function listen<THost extends View & { formField?: string }>(
-		host: THost,
-		formField: string,
-		setValue: (this: THost, value: any) => void,
-		getValue: (this: THost) => any,
-	) {
-		let formContext: FormContext<any> | undefined;
-		host.observe(bind("form"), (ctx: any) => {
-			if (!(ctx instanceof FormContext)) ctx = undefined;
-			formContext = ctx;
-			if (ctx) setValue.call(host, ctx.values[formField]);
-		});
-		host.listen((event) => {
-			if (event.name !== "Change" && event.name !== "Input") return;
-			if (formContext) formContext.set(formField, getValue.call(host));
-		});
-	}
 }

@@ -1,5 +1,5 @@
 import { fmt, StringConvertible } from "@talla-ui/util";
-import { FormContext, ViewBuilder } from "../../app/index.js";
+import { FormState, ViewBuilder } from "../../app/index.js";
 import { bind, Binding, BindingOrValue } from "../../object/index.js";
 import { UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
@@ -34,6 +34,25 @@ export class UIToggle extends UIElement {
 
 	/** Label style definition (overrides), if any */
 	labelStyle?: UIStyle.StyleOptions = undefined;
+
+	/**
+	 * Add a two-way binding to a form state field.
+	 * @param formState A form state object, or a binding to one (e.g. on an activity).
+	 * @param formField The name of the form field to which the toggle should be bound.
+	 */
+	bindFormState(
+		formState: BindingOrValue<FormState | undefined>,
+		formField: string,
+	) {
+		let current: FormState | undefined;
+		this.observe(formState as any, (formState) => {
+			current = formState;
+			if (formState) this.state = !!formState.values[formField];
+		});
+		this.observe("state", (state) => {
+			current?.set(formField, !!state);
+		});
+	}
 }
 
 export namespace UIToggle {
@@ -97,20 +116,17 @@ export namespace UIToggle {
 		}
 
 		/**
-		 * Binds the text field to a form context field, using {@link FormContext.listen}.
-		 * @param formField The name of the form field.
+		 * Adds a two-way binding to a form state field.
+		 * @param formState A form state object, or a binding to one (e.g. on an activity).
+		 * @param formField The name of the form field to which the toggle should be bound.
 		 * @returns The builder instance for chaining.
 		 */
-		bindFormField(formField: string) {
-			this.initializer.initialize(function (view) {
-				FormContext.listen(
-					view,
-					formField,
-					(value) => {
-						view.state = !!value;
-					},
-					() => view.state,
-				);
+		bindFormState(
+			formState: BindingOrValue<FormState | undefined>,
+			formField: string,
+		) {
+			this.initializer.finalize((view) => {
+				view.bindFormState(formState, formField);
 			});
 			return this;
 		}
@@ -126,11 +142,14 @@ export namespace UIToggle {
 
 		/**
 		 * Sets the state of the toggle, using {@link UIToggle.state}.
-		 * @param state The state (on/off) or a binding to a boolean value.
+		 * @param state The state (on/off) or a binding, converted dynamically to a boolean value.
 		 * @returns The builder instance for chaining.
 		 */
-		state(state: BindingOrValue<boolean>) {
-			return this.setProperty("state", state);
+		state(state: BindingOrValue<any>) {
+			return this.setProperty(
+				"state",
+				state instanceof Binding ? state.map((v) => !!v) : !!state,
+			);
 		}
 
 		/**

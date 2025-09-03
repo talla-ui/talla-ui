@@ -1,5 +1,10 @@
 import { ERROR, err } from "../errors.js";
-import { ObservableEvent, ObservableObject } from "../object/index.js";
+import {
+	BindingOrValue,
+	ObservableEvent,
+	ObservableObject,
+} from "../object/index.js";
+import { FormState } from "./FormState.js";
 import { RenderContext } from "./RenderContext.js";
 import { View } from "./View.js";
 
@@ -73,6 +78,28 @@ export class ComponentView extends View {
 	 */
 	requestFocus() {
 		this._rendered?.requestFocus();
+	}
+
+	/**
+	 * Adds a two-way binding between a property and a form state field.
+	 * @param formState A form state object, or a binding to one (e.g. on an activity).
+	 * @param formField The name of the form field to which the text field value should be bound.
+	 * @param property The component view property to bind to.
+	 */
+	protected bindFormState(
+		formState: BindingOrValue<FormState | undefined>,
+		formField: string,
+		property: string & keyof this,
+	) {
+		let current: FormState | undefined;
+		this.observe(formState as any, (formState) => {
+			current = formState;
+			if (formState)
+				(this as any)[property] = String(formState.values[formField] ?? "");
+		});
+		this.observe(property, (value) => {
+			current?.set(formField, value);
+		});
 	}
 
 	/**
