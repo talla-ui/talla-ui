@@ -448,7 +448,7 @@ export function rebind(
 	origin: ObservableObject | undefined,
 ) {
 	if (bound.r) throw TypeError();
-	(bound as Bound).clear(-1);
+	(bound as Bound).clear(0);
 	if (origin) (bound as Bound).start(origin, 0);
 }
 
