@@ -100,15 +100,8 @@ export class FormState<
 		// set and validate if needed
 		if (this._values[name] !== value) {
 			this._values[name] = value;
-			let v = this._validator?.schema?.shape?.[name];
-			if (v && this._validated) {
-				let validator = new InputValidator(() => v);
-				let result = validator.safeParse(value);
-				if (result.success) delete this._errors[name];
-				else this._errors[name] = result.error;
-				this._valid = !Object.keys(this._errors).length;
-			}
-			this.emitFormChange();
+			if (this._validated) this.validateField(name);
+			this.emitChange();
 		}
 		return this;
 	}
@@ -122,16 +115,8 @@ export class FormState<
 		this._errors = Object.create(null);
 		this._valid = true;
 		this._validated = false;
-		this.emitFormChange();
+		this.emitChange();
 		return this;
-	}
-
-	/**
-	 * Emits a `FormChange` change event on this object
-	 * - This method is called automatically when setting form fields. Emitting a change event causes bindings for values and errors to be updated automatically.
-	 */
-	emitFormChange() {
-		return this.emitChange("FormChange");
 	}
 
 	/**
@@ -147,8 +132,29 @@ export class FormState<
 		this._errors = errors || Object.create(null);
 		this._valid = !errors;
 		this._validated = true;
-		if (wasValid && errors) this.emitFormChange();
+		if (!wasValid || errors) this.emitChange();
 		if (data) return data;
+	}
+
+	/**
+	 * Validates a single form field
+	 * - This method updates the {@link errors} property for the specified field, and also updates the {@link valid} property based on all (remaining) validation errors.
+	 * - If the field has no validation schema, the method returns the field value unchanged.
+	 * - This method does not emit a change event on the form state object. To update bindings for errors after calling this method on its own, call `emitChange()` yourself afterwards.
+	 * @param name The name of the field to validate
+	 * @returns The validated field value, or undefined if the field is not valid
+	 */
+	validateField(name: string & keyof TSchema): unknown {
+		let value = this._values[name];
+		let fieldSchema = this._validator?.schema?.shape?.[name];
+		if (!fieldSchema) return value;
+
+		let validator = new InputValidator(() => fieldSchema);
+		let result = validator.safeParse(value);
+		if (result.success) delete this._errors[name];
+		else this._errors[name] = result.error;
+		this._valid = !Object.keys(this._errors).length;
+		return result.data;
 	}
 
 	private _validator?: InputValidator<any>;

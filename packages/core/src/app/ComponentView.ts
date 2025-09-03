@@ -85,17 +85,22 @@ export class ComponentView extends View {
 	 * @param formState A form state object, or a binding to one (e.g. on an activity).
 	 * @param formField The name of the form field to which the text field value should be bound.
 	 * @param property The component view property to bind to.
+	 * @param formChanged A function that will be called when the form state is updated, which should return the value to be set on the component view property; if not provided, the value will be set directly.
 	 */
 	protected bindFormState(
 		formState: BindingOrValue<FormState | undefined>,
 		formField: string,
 		property: string & keyof this,
+		formChanged?: (formState: FormState) => unknown,
 	) {
 		let current: FormState | undefined;
 		this.observe(formState as any, (formState) => {
 			current = formState;
-			if (formState)
-				(this as any)[property] = String(formState.values[formField] ?? "");
+			if (formState) {
+				(this as any)[property] = formChanged
+					? formChanged(formState)
+					: formState.values[formField];
+			}
 		});
 		this.observe(property, (value) => {
 			current?.set(formField, value);

@@ -32,7 +32,7 @@ class ChangeCounter {
 		formContext.listen(this);
 	}
 	handler(_: FormState, event: ObservableEvent) {
-		if (event.name === "FormChange") this.changes++;
+		if (event.name === "Change") this.changes++;
 	}
 	changes = 0;
 }

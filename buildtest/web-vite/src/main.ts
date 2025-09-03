@@ -355,7 +355,17 @@ function TextFieldGroup(
 			formState: BindingOrValue<FormState | undefined>,
 			formField: string,
 		) {
-			this.bindFormState(formState, formField, "text");
+			let current: FormState | undefined;
+			this.bindFormState(formState, formField, "text", (form) => {
+				current = form;
+				return form.values[formField] ?? "";
+			});
+			this.listen((e) => {
+				if (e.name === "Change" && current) {
+					current.validateField(formField);
+					current.emitChange();
+				}
+			});
 		}
 	}
 
