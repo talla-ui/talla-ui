@@ -51,28 +51,24 @@ export class WebModalMenuStyles extends ConfigOptions {
 	 * The cell style used for each menu item
 	 * - The default style includes properties for padding, cursor, and (hover/focus) background color
 	 */
-	itemCellStyle = new UIStyle(
-		{
-			margin: { x: 4 },
-			padding: { x: 16, y: 6 },
-			borderRadius: 6,
-			cursor: "pointer",
-		},
-		{
-			[UIStyle.STATE_HOVERED]: true,
+	itemCellStyle = new UIStyle({
+		margin: { x: 4 },
+		padding: { x: 16, y: 6 },
+		borderRadius: 6,
+		cursor: "pointer",
+	})
+		.setHovered({
 			background: UI.colors.background.fg(
 				UI.colors.background.contrast(-0.1),
 				UI.colors.background.contrast(-0.3),
 			),
-		},
-		{
-			[UIStyle.STATE_FOCUSED]: true,
+		})
+		.setFocused({
 			background: UI.colors.background.fg(
 				UI.colors.background.contrast(-0.1),
 				UI.colors.background.contrast(-0.3),
 			),
-		},
-	);
+		});
 
 	/**
 	 * The label style used for each menu item label

@@ -54,16 +54,21 @@ export class TestMessageDialog
 	}
 
 	protected override get body() {
+		let messageLabels = this.options.messages.map((text) =>
+			UI.Label(String(text)),
+		);
+		let buttons = [
+			UI.Button(this.confirmLabel).onClick("Confirm").requestFocus(),
+		];
+		if (this.otherLabel) {
+			buttons.push(UI.Button(this.otherLabel).onClick("Other"));
+		}
+		if (this.cancelLabel) {
+			buttons.push(UI.Button(this.cancelLabel).onClick("Cancel"));
+		}
 		return UI.Column()
 			.accessibleRole("alertdialog")
-			.with(
-				...this.options.messages.map((text) => UI.Label(String(text))),
-				UI.Button(this.confirmLabel).onClick("Confirm").requestFocus(),
-				UI.Button(this.otherLabel).onClick("Other").hideWhen(!this.otherLabel),
-				UI.Button(this.cancelLabel)
-					.onClick("Cancel")
-					.hideWhen(!this.cancelLabel),
-			)
+			.with(...messageLabels, ...buttons)
 			.build();
 	}
 }

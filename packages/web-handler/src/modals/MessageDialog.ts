@@ -181,15 +181,22 @@ export class MessageDialog
 				.onClick("Confirm")
 				.buttonStyle(styles.confirmButtonStyle)
 				.requestFocus(),
-			UI.Button(this.otherLabel)
-				.onClick("Other")
-				.buttonStyle(styles.buttonStyle)
-				.hideWhen(!this.otherLabel),
-			UI.Button(this.cancelLabel)
-				.onClick("Cancel")
-				.buttonStyle(styles.buttonStyle)
-				.hideWhen(!this.cancelLabel),
 		];
+		if (this.otherLabel) {
+			buttons.push(
+				UI.Button(this.otherLabel)
+					.onClick("Other")
+					.buttonStyle(styles.buttonStyle),
+			);
+		}
+		if (this.cancelLabel) {
+			buttons.push(
+				UI.Button(this.cancelLabel)
+					.onClick("Cancel")
+					.buttonStyle(styles.buttonStyle),
+			);
+		}
+
 		let reverse = narrow ? styles.narrowReverseButtons : styles.reverseButtons;
 		if (reverse) buttons.reverse();
 		return UI.Cell()

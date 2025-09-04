@@ -1104,11 +1104,29 @@ let symbol = new UIIconResource("🔥");
 // Reusable styles include CSS-like properties
 let style = new UIStyle({ textColor: myColor });
 let bolder = style.extend({ bold: true });
-let italicOnHover = style.extend({
-	[UIStyle.STATE_HOVERED]: true,
-	// ...or PRESSED, FOCUSED, READONLY, DISABLED
+
+// Hovered, focused, disabled states:
+let italicOnHover = bolder.extend().setHovered({
 	italic: true,
 });
+
+// Pressed, pressed + hovered, pressed + focused states:
+let btnStyle = new UIStyle({
+	/* ... */
+}).setPressed(
+	{ background: UI.colors.text, textColor: UI.colors.background },
+	{ background: UI.colors.text.contrast(-0.1) },
+);
+
+// Readonly, readonly + hovered, readonly + focused states:
+let textfieldStyle = new UIStyle({
+	/* ... */
+})
+	.setDisabled({ opacity: 0.5 })
+	.setReadonly(
+		{ background: UI.colors.text.alpha(0.1) },
+		{ borderColor: UI.colors.text.alpha(0.3) },
+	);
 
 // Overrides are applied directly to a UI element
 let boldOverride = italicOnHover.override({ bold: true });
@@ -1195,8 +1213,8 @@ UI.Label("Title").labelStyle(UI.styles.label.title);
 UI.Label("Title").labelStyle("title");
 
 // ### Button styles:
-// default, primary, success, danger, plain, text, link, small,
-// Fixed size: icon, primaryIcon, successIcon, dangerIcon,
+// default, primary, success, danger, plain, toggle, text, link, small,
+// Fixed size: icon, toggleIcon, primaryIcon, successIcon, dangerIcon,
 // Icon placed above label: iconTop, iconTopStart, iconTopEnd
 UI.Button("Click").buttonStyle("primary");
 UI.Button("Click").buttonStyle(UI.styles.button.primary);

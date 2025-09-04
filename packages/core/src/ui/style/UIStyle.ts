@@ -37,7 +37,7 @@ export class UIStyle {
 	 * Creates a new style instance with the specified style definitions
 	 * @param styles Style definition(s) to apply
 	 */
-	constructor(...styles: Readonly<UIStyle.StyleDefinitionOptions>) {
+	constructor(...styles: Readonly<UIStyle.StyleOptions>[]) {
 		this._id = "S_" + _nextStyleId++;
 		this._styles = styles;
 	}
@@ -51,12 +51,124 @@ export class UIStyle {
 	}
 
 	/**
-	 * Creates a new style that copies from this style, with additional style definitions
-	 * @param styles Additional style definitions to apply on top of the current style
+	 * Adds conditional styles for disabled elements
+	 * - Disabled styles are applied to all disabled elements, regardless of other states (hovered, pressed, focused, readonly).
+	 * @note This method modifies the current style instance, and returns it for chaining. To create a new style with disabled styles, use {@link extend()} first.
+	 * @param styles Style properties to apply to disabled elements
+	 * @returns The current style instance, for chaining
+	 */
+	setDisabled(styles: Readonly<UIStyle.StyleOptions>): UIStyle {
+		return this._setConditional({ state: { disabled: true } }, styles);
+	}
+
+	/**
+	 * Adds conditional styles for hovered elements
+	 * - Hovered styles are not applied to disabled or focused elements.
+	 * @note This method modifies the current style instance, and returns it for chaining. To create a new style with disabled styles, use {@link extend()} first.
+	 * @param styles Style properties to apply to disabled elements
+	 * @returns The current style instance, for chaining
+	 */
+	setHovered(styles: Readonly<UIStyle.StyleOptions>): UIStyle {
+		return this._setConditional(
+			{ state: { hovered: true, disabled: false, focused: false } },
+			styles,
+		);
+	}
+
+	/**
+	 * Adds conditional styles for focused elements
+	 * - Focused styles are not applied to disabled elements.
+	 * @note This method modifies the current style instance, and returns it for chaining. To create a new style with focused styles, use {@link extend()} first.
+	 * @param styles Style properties to apply to focused elements
+	 * @returns The current style instance, for chaining
+	 */
+	setFocused(styles: Readonly<UIStyle.StyleOptions>): UIStyle {
+		return this._setConditional(
+			{ state: { focused: true, disabled: false } },
+			styles,
+		);
+	}
+
+	/**
+	 * Adds conditional styles for pressed (button) elements
+	 * - Pressed styles are not applied to disabled elements.
+	 * - Hovered styles are not applied to focused elements.
+	 * @note This method modifies the current style instance, and returns it for chaining. To create a new style with pressed styles, use {@link extend()} first.
+	 * @param styles Style properties to apply to pressed elements
+	 * @param pressedHovered Style properties to apply to pressed and hovered (unfocused) elements
+	 * @param pressedFocused Style properties to apply to pressed and focused elements; defaults to hovered styles
+	 * @returns The current style instance, for chaining
+	 */
+	setPressed(
+		styles: Readonly<UIStyle.StyleOptions>,
+		pressedHovered: Readonly<UIStyle.StyleOptions> = {},
+		pressedFocused: Readonly<UIStyle.StyleOptions> = pressedHovered,
+	): UIStyle {
+		return this._setConditional(
+			{ state: { pressed: true, disabled: false } },
+			styles,
+		)
+			._setConditional(
+				{
+					state: {
+						pressed: true,
+						hovered: true,
+						disabled: false,
+						focused: false,
+					},
+				},
+				pressedHovered,
+			)
+			._setConditional(
+				{ state: { pressed: true, focused: true, disabled: false } },
+				pressedFocused,
+			);
+	}
+
+	/**
+	 * Adds conditional styles for readonly elements
+	 * - Readonly styles are not applied to disabled elements.
+	 * - Hovered styles are not applied to focused elements.
+	 * @note This method modifies the current style instance, and returns it for chaining. To create a new style with pressed styles, use {@link extend()} first.
+	 * @param styles Style properties to apply to readonly elements
+	 * @param readonlyHovered Style properties to apply to readonly and hovered (unfocused) elements
+	 * @param readonlyFocused Style properties to apply to readonly and focused elements; defaults to hovered styles
+	 * @returns The current style instance, for chaining
+	 */
+	setReadonly(
+		styles: Readonly<UIStyle.StyleOptions>,
+		readonlyHovered: Readonly<UIStyle.StyleOptions> = {},
+		readonlyFocused: Readonly<UIStyle.StyleOptions> = readonlyHovered,
+	): UIStyle {
+		return this._setConditional(
+			{ state: { readonly: true, disabled: false } },
+			styles,
+		)
+			._setConditional(
+				{
+					state: {
+						readonly: true,
+						hovered: true,
+						disabled: false,
+						focused: false,
+					},
+				},
+				readonlyHovered,
+			)
+			._setConditional(
+				{ state: { readonly: true, focused: true, disabled: false } },
+				readonlyFocused,
+			);
+	}
+
+	/**
+	 * Creates a new style that extends the current style
+	 * @param styles Additional style properties to apply on top of the current style
 	 * @returns A new {@link UIStyle} instance
 	 */
-	extend(...styles: Readonly<UIStyle.StyleDefinitionOptions>): UIStyle {
-		let result = new UIStyle(...this._styles, ...styles);
+	extend(...styles: Readonly<UIStyle.StyleOptions>[]): UIStyle {
+		let result = new UIStyle();
+		result._styles = this._styles.concat(styles);
 		result._id = this._id + "_" + result.id.slice(2);
 		result._resolve = this._resolve;
 		return result;
@@ -69,7 +181,8 @@ export class UIStyle {
 	 * @returns A new {@link UIStyle} instance
 	 */
 	override(...styles: Readonly<UIStyle.StyleOptions | undefined>[]): UIStyle {
-		let result = new UIStyle(...this._styles);
+		let result = new UIStyle();
+		result._styles = this._styles;
 		result._id = this._id;
 		result._resolve = this._resolve;
 		result._overrides = Object.assign({ ...this._overrides }, ...styles);
@@ -80,7 +193,7 @@ export class UIStyle {
 	 * Returns the complete list of style definitions for this style (but not overrides)
 	 * @returns A read-only array of style definitions
 	 */
-	getStyles(): Readonly<UIStyle.StyleDefinitionOptions> {
+	getStyles(): ReadonlyArray<UIStyle.StyleDefinition> {
 		let baseStyle = this._resolve?.();
 		if (baseStyle) {
 			return [...baseStyle.getStyles(), ...this._styles];
@@ -96,6 +209,15 @@ export class UIStyle {
 		return this._overrides;
 	}
 
+	/** Implementation of methods to apply conditional styles */
+	private _setConditional(
+		state: UIStyle.StyleDefinition,
+		styles: Readonly<UIStyle.StyleOptions>,
+	): UIStyle {
+		this._styles = [...this._styles, { ...state, ...styles }];
+		return this;
+	}
+
 	/** Style definition ID with serial number */
 	private _id = "S_";
 
@@ -103,48 +225,29 @@ export class UIStyle {
 	private _resolve?: () => UIStyle | undefined;
 
 	/** List of style definitions, if any */
-	private _styles: Readonly<UIStyle.StyleDefinitionOptions>;
+	private _styles: ReadonlyArray<UIStyle.StyleDefinition>;
 
 	/** Element overrides, if any */
 	private _overrides?: Readonly<UIStyle.StyleOptions>;
 }
 
 export namespace UIStyle {
-	/** A property that is used on {@link StyleStateOptions} to apply styles to hovered elements (and not disabled, pressed, or focused) */
-	export const STATE_HOVERED = Symbol("hovered");
-
-	/** A property that is used on {@link StyleStateOptions} to apply styles to pressed elements */
-	export const STATE_PRESSED = Symbol("pressed");
-
-	/** A property that is used on {@link StyleStateOptions} to apply styles to focused elements */
-	export const STATE_FOCUSED = Symbol("focused");
-
-	/** A property that is used on {@link StyleStateOptions} to apply styles to readonly elements */
-	export const STATE_READONLY = Symbol("readonly");
-
-	/** A property that is used on {@link StyleStateOptions} to apply styles to disabled elements */
-	export const STATE_DISABLED = Symbol("disabled");
-
 	/**
-	 * Type definition for an object that includes style state options
-	 * - These options determine when styles should be applied based on element state
-	 * @see {@link UIStyle.StyleDefinitionOptions}
+	 * Type definition for styles, including flags for state conditions
+	 * - This type of object is returned by the {@link UIStyle.getStyles()} method, and is used to create new style instances with various state conditions.
+	 * @see {@link UIStyle.getStyles()}
 	 */
-	export type StyleStateOptions = {
-		[STATE_HOVERED]?: boolean;
-		[STATE_PRESSED]?: boolean;
-		[STATE_FOCUSED]?: boolean;
-		[STATE_READONLY]?: boolean;
-		[STATE_DISABLED]?: boolean;
-	};
-
-	/**
-	 * Type definition for a list of style definitions
-	 * - Each definition can include both style values and state options
-	 */
-	export type StyleDefinitionOptions = Readonly<
-		UIStyle.StyleOptions & StyleStateOptions
-	>[];
+	export type StyleDefinition = Readonly<
+		UIStyle.StyleOptions & {
+			state?: {
+				hovered?: boolean;
+				pressed?: boolean;
+				focused?: boolean;
+				readonly?: boolean;
+				disabled?: boolean;
+			};
+		}
+	>;
 
 	/** Type definition for a measurement applied to padding, margin, or border width */
 	export type Offsets =
@@ -375,13 +478,15 @@ export namespace UIStyle {
 				"success",
 				"danger",
 				"plain",
+				"toggle",
 				"text",
 				"link",
 				"small",
+				"icon",
+				"toggleIcon",
 				"primaryIcon",
 				"successIcon",
 				"dangerIcon",
-				"icon",
 				"iconTop",
 				"iconTopStart",
 				"iconTopEnd",

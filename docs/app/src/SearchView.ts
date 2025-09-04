@@ -1,7 +1,7 @@
 import { bind, UI, UIColor, UIStyle } from "talla-ui";
 
-const TextFieldStyle = UI.styles.textfield.default.extend(
-	{
+const TextFieldStyle = UI.styles.textfield.default
+	.extend({
 		background: UI.colors.transparent,
 		textColor: new UIColor("inherit"),
 		padding: { y: 4 },
@@ -9,41 +9,33 @@ const TextFieldStyle = UI.styles.textfield.default.extend(
 		borderWidth: { bottom: 1 },
 		borderRadius: 0,
 		width: "100%",
-	},
-	{
-		[UIStyle.STATE_FOCUSED]: true,
+	})
+	.setFocused({
 		borderColor: new UIColor("var(--primary-boldest)"),
-	},
-);
+	});
 
-const CloseButtonStyle = UI.styles.button.icon.extend(
-	{
+const CloseButtonStyle = UI.styles.button.icon
+	.extend({
 		background: UI.colors.transparent,
 		textColor: new UIColor("inherit"),
-	},
-	{
-		[UIStyle.STATE_HOVERED]: true,
+	})
+	.setHovered({
 		background: UI.colors.transparent,
 		textColor: new UIColor("inherit"),
-	},
-);
+	});
 
-const ResultCellStyle = new UIStyle(
-	{
-		padding: { x: 6, y: 4 },
-		borderWidth: 2,
-		css: { cursor: "pointer" },
-	},
-	{
-		[UIStyle.STATE_HOVERED]: true,
+const ResultCellStyle = new UIStyle({
+	padding: { x: 6, y: 4 },
+	borderWidth: 2,
+	css: { cursor: "pointer" },
+})
+	.setHovered({
 		background: new UIColor("var(--nav-hover-background)"),
-	},
-	{
-		[UIStyle.STATE_FOCUSED]: true,
+	})
+	.setFocused({
 		borderColor: new UIColor("var(--primary-boldest)"),
 		borderWidth: 2,
-	},
-);
+	});
 
 export function SearchView() {
 	return UI.Cell()

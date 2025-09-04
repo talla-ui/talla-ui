@@ -146,8 +146,7 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 					// try to focus if requested
 					if (this._requestedFocus && this.element && !this._hidden) {
 						this._requestedFocus = false;
-						let elt = this._getFocusElement();
-						if (elt) (app.renderer as WebRenderer).tryFocusElement(elt);
+						_tryFocusElement(this._getFocusElement());
 					}
 
 					// emit Rendered event
@@ -166,7 +165,7 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 	onRequestFocus(event: ObservableEvent) {
 		if (event.source === this.observed) {
 			let elt = this._getFocusElement();
-			if (elt) (app.renderer as WebRenderer).tryFocusElement(elt);
+			if (elt) _tryFocusElement(elt);
 			else this._requestedFocus = true;
 		}
 	}
@@ -185,7 +184,7 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 					pos & Node.DOCUMENT_POSITION_FOLLOWING &&
 					!(pos & Node.DOCUMENT_POSITION_CONTAINED_BY)
 				) {
-					(app.renderer as WebRenderer).tryFocusElement(sib);
+					_tryFocusElement(sib);
 					return;
 				}
 			}
@@ -207,7 +206,7 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 						if (pos & Node.DOCUMENT_POSITION_CONTAINED_BY) break;
 						j++;
 					}
-					(app.renderer as WebRenderer).tryFocusElement(siblings[j]!);
+					_tryFocusElement(siblings[j]);
 					return;
 				}
 			}
@@ -243,3 +242,25 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 	private _updateCallback?: RenderContext.RenderCallback;
 	private _thisRenderedEvent?: ObservableEvent;
 }
+
+/** Helper function to focus an element asynchronously, waiting for rendering to catch up */
+function _tryFocusElement(element?: HTMLElement | null) {
+	if (!element) return;
+	_elementToFocus = element;
+	let loop = 0;
+	const tryFocus = () => {
+		let focused = document.activeElement;
+		if (focused !== element && element === _elementToFocus) {
+			element.focus();
+			if (loop++ < 3) {
+				setTimeout(
+					() => app.renderer?.schedule(tryFocus, true),
+					Math.pow(10, loop),
+				);
+			}
+		}
+	};
+	app.renderer?.schedule(tryFocus, true);
+}
+
+let _elementToFocus: HTMLElement | undefined;

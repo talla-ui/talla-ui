@@ -204,36 +204,24 @@ export function defineStyleClass(style: UIStyle, isTextStyle?: boolean) {
 	let selector = "*." + CLASS_UI + "." + id;
 	function addStateStyle(object: any) {
 		let stateSelector = selector;
+		let state = (object as UIStyle.StyleDefinition).state;
+		if (state) {
+			// add suffixes for disabled, readonly, hovered, focused
+			if (state.disabled) stateSelector += "[disabled]";
+			else if (state.disabled === false) stateSelector += ":not([disabled])";
+			if (state.readonly) stateSelector += "[readonly]";
+			else if (state.readonly === false) stateSelector += ":not([readonly])";
+			if (state.focused) stateSelector += ":focus";
+			else if (state.focused === false) stateSelector += ":not(:focus)";
+			if (state.hovered) stateSelector += ":hover";
+			else if (state.hovered === false) stateSelector += ":not(:hover)";
 
-		// add suffixes for disabled, readonly, hovered, focused
-		if (object[UIStyle.STATE_DISABLED]) stateSelector += "[disabled]";
-		else if (object[UIStyle.STATE_DISABLED] === false)
-			stateSelector += ":not([disabled])";
-		if (object[UIStyle.STATE_READONLY]) stateSelector += "[readonly]";
-		else if (object[UIStyle.STATE_READONLY] === false)
-			stateSelector += ":not([readonly])";
-		if (object[UIStyle.STATE_FOCUSED]) stateSelector += ":focus";
-		else if (object[UIStyle.STATE_FOCUSED] === false)
-			stateSelector += ":not(:focus)";
-
-		// hover state is only applied if not pressed or focused
-		// (unless explicitly set to true; note that disabled elements have
-		// pointer events disabled, so we don't need to check for that)
-		if (object[UIStyle.STATE_HOVERED])
-			stateSelector +=
-				(object[UIStyle.STATE_PRESSED]
-					? ""
-					: ":not(:active):not([aria-pressed=true])") +
-				(object[UIStyle.STATE_FOCUSED] ? "" : ":not(:focus-visible)") +
-				":hover";
-		else if (object[UIStyle.STATE_HOVERED] === false)
-			stateSelector += ":not(:hover)";
-
-		// pressed state is controlled by two selectors
-		if (object[UIStyle.STATE_PRESSED])
-			stateSelector += ":active," + stateSelector + "[aria-pressed=true]";
-		else if (object[UIStyle.STATE_PRESSED] === false)
-			stateSelector += ":not(:active):not([aria-pressed=true])";
+			// pressed state is controlled by two selectors
+			if (state.pressed)
+				stateSelector += ":active," + stateSelector + "[aria-pressed=true]";
+			else if (state.pressed === false)
+				stateSelector += ":not(:active):not([aria-pressed=true])";
+		}
 
 		let css = combined[stateSelector] || {};
 		addDimensionsCSS(css, object);

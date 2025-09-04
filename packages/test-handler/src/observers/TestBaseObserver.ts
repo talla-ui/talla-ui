@@ -50,19 +50,15 @@ export function applyElementStyle(element: TestOutputElement, styles: any[]) {
 					if (overrides[p] !== undefined) result[p] = overrides[p];
 				}
 			} else {
-				// ignore hover state in test handler
-				if (style[UIStyle.STATE_HOVERED]) continue;
+				let state = (style as UIStyle.StyleDefinition).state || {};
 
-				// check other matching states
+				// ignore hover state in test handler, check other states
 				if (
-					(UIStyle.STATE_DISABLED in style &&
-						style[UIStyle.STATE_DISABLED] !== !!element.disabled) ||
-					(UIStyle.STATE_FOCUSED in style &&
-						style[UIStyle.STATE_FOCUSED] !== element.hasFocus()) ||
-					(UIStyle.STATE_PRESSED in style &&
-						style[UIStyle.STATE_PRESSED] !== !!element.pressed) ||
-					(UIStyle.STATE_READONLY in style &&
-						style[UIStyle.STATE_READONLY] !== !!element.readOnly)
+					state.hovered ||
+					("disabled" in state && state.disabled !== !!element.disabled) ||
+					("focused" in state && state.focused !== element.hasFocus()) ||
+					("pressed" in state && state.pressed !== !!element.pressed) ||
+					("readonly" in state && state.readonly !== !!element.readOnly)
 				)
 					continue;
 

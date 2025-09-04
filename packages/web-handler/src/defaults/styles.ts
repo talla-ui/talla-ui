@@ -78,8 +78,7 @@ const baseToggleStyle: UIStyle.StyleOptions = {
 	cursor: "pointer",
 };
 
-const disabledStyle: UIStyle.StyleStateOptions & UIStyle.StyleOptions = {
-	[UIStyle.STATE_DISABLED]: true,
+const disabledStyle: UIStyle.StyleOptions = {
 	opacity: 0.5,
 	cursor: "default",
 };
@@ -91,25 +90,21 @@ function makeButtonStyle(
 	baseBg?: UIColor,
 	baseFg?: UIColor,
 ) {
-	return new UIStyle(
-		{
-			...baseButtonStyle,
-			background: baseBg || bg,
-			textColor: baseFg || fg,
-			...styles,
-		},
-		{
-			[UIStyle.STATE_HOVERED]: true,
+	return new UIStyle({
+		...baseButtonStyle,
+		background: baseBg || bg,
+		textColor: baseFg || fg,
+		...styles,
+	})
+		.setHovered({
 			background: baseBg ? bg : bg.contrast(-0.1),
 			textColor: fg,
-		},
-		{
-			[UIStyle.STATE_PRESSED]: true,
-			background: bg.contrast(-0.1),
+		})
+		.setFocused({
+			background: baseBg ? bg : bg.contrast(-0.1),
 			textColor: fg,
-		},
-		disabledStyle,
-	);
+		})
+		.setDisabled(disabledStyle);
 }
 
 /** @internal Default preset styles */
@@ -135,6 +130,21 @@ export default {
 			color_text.alpha(0.1),
 			color_inherit,
 			color_transparent,
+		),
+		toggle: makeButtonStyle(
+			{ minWidth: 32 },
+			color_text.alpha(0.15),
+			color_text,
+			color_text.alpha(0.1),
+		).setPressed(
+			{
+				background: color_text,
+				textColor: color_background,
+			},
+			{
+				background: color_text.contrast(-0.1),
+				textColor: color_background,
+			},
 		),
 		text: makeButtonStyle(
 			{
@@ -174,6 +184,21 @@ export default {
 			color_text.alpha(0.1),
 			color_inherit,
 			color_transparent,
+		),
+		toggleIcon: makeButtonStyle(
+			iconButtonStyle,
+			color_text.alpha(0.1),
+			color_inherit,
+			color_transparent,
+		).setPressed(
+			{
+				background: color_text,
+				textColor: color_background,
+			},
+			{
+				background: color_text.contrast(-0.1),
+				textColor: color_background,
+			},
 		),
 		primaryIcon: makeButtonStyle(iconButtonStyle, color_primaryBackground),
 		successIcon: makeButtonStyle(iconButtonStyle, color_successBackground),
@@ -273,69 +298,40 @@ export default {
 		}),
 	},
 	textfield: {
-		default: new UIStyle(
-			baseTextfieldStyle,
-			{
-				background: color_background,
-				borderColor: color_text.alpha(0.2),
-			},
-			{
-				[UIStyle.STATE_HOVERED]: true,
-				[UIStyle.STATE_READONLY]: false,
-				borderColor: color_text.alpha(0.3),
-			},
-			{
-				[UIStyle.STATE_READONLY]: true,
-				background: color_text.alpha(0.1),
-				borderColor: color_transparent,
-			},
-			disabledStyle,
-		),
-		transparent: new UIStyle(
-			baseTextfieldStyle,
-			{ background: color_transparent },
-			{
-				[UIStyle.STATE_READONLY]: true,
-				background: color_text.alpha(0.1),
-			},
-			disabledStyle,
-		),
+		default: new UIStyle(baseTextfieldStyle, {
+			background: color_background,
+			borderColor: color_text.alpha(0.2),
+		})
+			.setHovered({ borderColor: color_text.alpha(0.3) })
+			.setReadonly(
+				{
+					background: color_text.alpha(0.1),
+					borderColor: color_transparent,
+				},
+				{ borderColor: color_text.alpha(0.3) },
+			)
+			.setDisabled(disabledStyle),
+		transparent: new UIStyle(baseTextfieldStyle, {
+			background: color_transparent,
+		})
+			.setReadonly({ background: color_text.alpha(0.1) })
+			.setDisabled(disabledStyle),
 	},
 	toggle: {
-		default: new UIStyle(
-			baseToggleStyle,
-			{
-				borderColor: color_text.alpha(0.2),
-				textColor: color_primaryBackground, // :checked fill
-			},
-			{
-				[UIStyle.STATE_HOVERED]: true,
-				borderColor: color_text.alpha(0.3),
-			},
-			disabledStyle,
-		),
-		danger: new UIStyle(
-			baseToggleStyle,
-			{
-				borderColor: color_dangerBackground,
-				textColor: color_danger,
-			},
-			{
-				[UIStyle.STATE_HOVERED]: true,
-				borderColor: color_dangerBackground,
-			},
-		),
-		success: new UIStyle(
-			baseToggleStyle,
-			{
-				borderColor: color_successBackground,
-				textColor: color_success,
-			},
-			{
-				[UIStyle.STATE_HOVERED]: true,
-				borderColor: color_successBackground,
-			},
-		),
+		default: new UIStyle(baseToggleStyle, {
+			borderColor: color_text.alpha(0.2),
+			textColor: color_primaryBackground, // :checked fill
+		})
+			.setHovered({ borderColor: color_text.alpha(0.3) })
+			.setDisabled(disabledStyle),
+		danger: new UIStyle(baseToggleStyle, {
+			borderColor: color_dangerBackground,
+			textColor: color_danger,
+		}).setDisabled(disabledStyle),
+		success: new UIStyle(baseToggleStyle, {
+			borderColor: color_successBackground,
+			textColor: color_success,
+		}).setDisabled(disabledStyle),
 	},
 	divider: {
 		default: new UIStyle(),

@@ -77,12 +77,14 @@ export class WebRenderer extends RenderContext {
 
 					// restore previously focused element, if possible
 					if (prevFocus) {
+						let restoreFocus = prevFocus;
 						setTimeout(() => {
 							if (
-								document.body.compareDocumentPosition(prevFocus!) &
-								Node.DOCUMENT_POSITION_CONTAINED_BY
+								!document.activeElement &&
+								document.body.compareDocumentPosition(restoreFocus!) &
+									Node.DOCUMENT_POSITION_CONTAINED_BY
 							) {
-								this.tryFocusElement(prevFocus!);
+								restoreFocus.focus();
 							}
 						}, 210);
 					}
@@ -106,23 +108,6 @@ export class WebRenderer extends RenderContext {
 		};
 		return callback;
 	}
-
-	/** Focuses given element asynchronously, waiting for rendering to catch up */
-	tryFocusElement(element: HTMLElement) {
-		this._elementToFocus = element;
-		let loop = 0;
-		const tryFocus = () => {
-			let focused = document.activeElement;
-			if (focused !== element && element === this._elementToFocus) {
-				element.focus();
-				if (loop++ < 2) {
-					setTimeout(() => this.schedule(tryFocus, true), 1);
-				}
-			}
-		};
-		this.schedule(tryFocus, true);
-	}
-	private _elementToFocus?: HTMLElement;
 
 	/** Attaches a renderer observer to the specified target element */
 	createObserver(target: View): unknown {
