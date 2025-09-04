@@ -1213,8 +1213,8 @@ UI.Label("Title").labelStyle(UI.styles.label.title);
 UI.Label("Title").labelStyle("title");
 
 // ### Button styles:
-// default, primary, success, danger, plain, toggle, text, link, small,
-// Fixed size: icon, toggleIcon, primaryIcon, successIcon, dangerIcon,
+// default, primary, success, danger, plain, text, link, small,
+// Fixed size: icon, primaryIcon, successIcon, dangerIcon,
 // Icon placed above label: iconTop, iconTopStart, iconTopEnd
 UI.Button("Click").buttonStyle("primary");
 UI.Button("Click").buttonStyle(UI.styles.button.primary);

@@ -104,6 +104,10 @@ function makeButtonStyle(
 			background: baseBg ? bg : bg.contrast(-0.1),
 			textColor: fg,
 		})
+		.setPressed({
+			background: bg.contrast(-0.2),
+			textColor: fg,
+		})
 		.setDisabled(disabledStyle);
 }
 
@@ -130,21 +134,6 @@ export default {
 			color_text.alpha(0.1),
 			color_inherit,
 			color_transparent,
-		),
-		toggle: makeButtonStyle(
-			{ minWidth: 32 },
-			color_text.alpha(0.15),
-			color_text,
-			color_text.alpha(0.1),
-		).setPressed(
-			{
-				background: color_text,
-				textColor: color_background,
-			},
-			{
-				background: color_text.contrast(-0.1),
-				textColor: color_background,
-			},
 		),
 		text: makeButtonStyle(
 			{
@@ -184,21 +173,6 @@ export default {
 			color_text.alpha(0.1),
 			color_inherit,
 			color_transparent,
-		),
-		toggleIcon: makeButtonStyle(
-			iconButtonStyle,
-			color_text.alpha(0.1),
-			color_inherit,
-			color_transparent,
-		).setPressed(
-			{
-				background: color_text,
-				textColor: color_background,
-			},
-			{
-				background: color_text.contrast(-0.1),
-				textColor: color_background,
-			},
 		),
 		primaryIcon: makeButtonStyle(iconButtonStyle, color_primaryBackground),
 		successIcon: makeButtonStyle(iconButtonStyle, color_successBackground),
