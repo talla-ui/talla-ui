@@ -47,8 +47,6 @@ export namespace BindingOrValue {
  *
  * **Creating bindings** — To create a binding, use the {@link bind()} function to bind a single property (number, string, (negated) boolean, list), or use the {@link bind.fmt()} function to bind a string composed using a format string and one or more embedded bindings.
  *
- * **Binding to observable lists** — {@link ObservableList} instances include special properties that may be referenced by a binding path. Use `.length` to bind to the list length, `.#first` and `.#last` to bind to the first and last item in the list, respectively.
- *
  * **Applying bindings** — To use a binding, pass it to a UI view builder function, e.g. `UI.Label(bind("labelText"))`. To apply a binding to any other observable object directly, use the {@link ObservableObject.observe()} method.
  *
  * **Adding transformations** — To convert the value of the original property, or to combine multiple bindings using boolean operations (and/or), use one of the Binding methods such as {@link Binding.map map()} and {@link Binding.or or()}.
