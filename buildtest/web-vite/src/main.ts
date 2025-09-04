@@ -59,7 +59,7 @@ function Collapsible(label: StringConvertible, ...content: ViewBuilder[]) {
 						.background("text")
 						.fg("background")
 						.padding()
-						.intercept("Click", "Toggle"),
+						.onClick("Toggle"),
 					UI.ShowWhen(v.bind("expanded"), UI.Column(...content)),
 				),
 		),
@@ -84,10 +84,10 @@ function MyTitle(label?: StringConvertible) {
 				.padding({ bottom: 8 })
 				.width(width)
 				.allowKeyboardFocus()
-				.intercept("Click", "Select")
-				.intercept("EnterKeyPress", "Select")
-				.intercept("Select", async function () {
-					this.text = "Confirming...";
+				.onClick("Select")
+				.handleKey("Enter", "Select")
+				.handle("Select", async function (_, label) {
+					label.text = "Confirming...";
 					let choice = await app.showConfirmDialogAsync([
 						"Are you sure you want to click this button?",
 					]);
@@ -156,15 +156,15 @@ function MainView(v: Binding<MainActivity>) {
 				v.bind("countService.count").not(),
 			),
 			UI.Spacer(8),
-			UI.Row(UI.Button("Up").icon("chevronUp").emit("Count")),
+			UI.Row(UI.Button("Up").icon("chevronUp").onClick("Count")),
 			UI.Spacer(8),
 			UI.Row(
 				UI.Button("Sub")
 					.navigateTo("./sub")
 					.icon("chevronNext")
 					.buttonStyle("iconTopEnd"),
-				UI.Button("Remount").emit("Remount").buttonStyle("primary"),
-				UI.Button("Change").emit("ChangeEvent"),
+				UI.Button("Remount").onClick("Remount").buttonStyle("primary"),
+				UI.Button("Change").onClick("ChangeEvent"),
 			),
 			UI.Spacer(32),
 
@@ -266,12 +266,12 @@ function SubView(v: Binding<SubActivity>) {
 			UI.Row(
 				UI.TextField()
 					.value(v.bind("activeCount.state.count"))
-					.emit("SetCount")
+					.onInput("SetCount")
 					.trim(),
-				UI.Button("Reset").emit("ResetCount"),
+				UI.Button("Reset").onClick("ResetCount"),
 			).padding(8),
 			UI.Row(
-				UI.Button("Back").icon("chevronBack").emit("NavigateBack"),
+				UI.Button("Back").icon("chevronBack").onClick("NavigateBack"),
 				UI.Row(UI.Button("Other").navigateTo("/other").icon("chevronNext")),
 			).layout(UI.viewport.bind("cols").lt(2).then({ axis: "vertical" })),
 		);
@@ -407,12 +407,12 @@ function OtherView(v: Binding<OtherActivity>) {
 						v.bind("form"),
 						"password",
 					),
-					UI.Button("Submit").emit("Submit"),
+					UI.Button("Submit").onClick("Submit"),
 				),
 
 			UI.Spacer(8),
-			UI.Row(UI.Button("Back").icon("chevronBack").emit("NavigateBack")),
-			UI.Row(UI.Button("Dialog").emit("ShowDialog")),
+			UI.Row(UI.Button("Back").icon("chevronBack").onClick("NavigateBack")),
+			UI.Row(UI.Button("Dialog").onClick("ShowDialog")),
 		);
 }
 
@@ -450,8 +450,8 @@ function DialogView() {
 		.with(
 			UI.Spacer(32),
 			UI.Label("Dialog"),
-			UI.Button("Dropdown").chevron("down").emit("Drop"),
-			UI.Row(UI.Button("Close").icon("close").emit("Close")),
+			UI.Button("Dropdown").chevron("down").onClick("Drop"),
+			UI.Row(UI.Button("Close").icon("close").onClick("Close")),
 		);
 }
 

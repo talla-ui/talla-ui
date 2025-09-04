@@ -21,20 +21,20 @@ test("Constructor with content", () => {
 
 test("View builder with properties", () => {
 	let myCell = UI.Cell().hideWhen(true);
-	let cell = myCell.create();
+	let cell = myCell.build();
 	expect(cell.hidden).toBe(true);
 });
 
 test("View builder with allowKeyboardFocus", () => {
 	let myCell = UI.Cell().allowKeyboardFocus();
-	let cell = myCell.create();
+	let cell = myCell.build();
 	expect(cell.allowFocus).toBe(true);
 	expect(cell.allowKeyboardFocus).toBe(true);
 });
 
 test("View builder with content", () => {
 	let myCell = UI.Cell(UI.Label("foo")).hideWhen(true);
-	let cell = myCell.create();
+	let cell = myCell.build();
 	expect(cell.hidden).toBe(true);
 	expect(cell.content.toArray()).toHaveLength(1);
 	let label = cell.content.first() as UILabel;
@@ -49,7 +49,7 @@ test("Rendered as cell", async () => {
 
 test("Rendered with content and layout", async () => {
 	let myCell = UI.Cell(UI.Label("foo")).layout({ gravity: "end" });
-	renderTestView(myCell.create());
+	renderTestView(myCell.build());
 	let out = await expectOutputAsync({
 		type: "cell",
 		styles: { gravity: "end" },
@@ -62,7 +62,7 @@ test("Rendered with style", async () => {
 		.padding(16)
 		.border(1, "green")
 		.layout({ distribution: "start" });
-	renderTestView(myCell.create());
+	renderTestView(myCell.build());
 	await expectOutputAsync({
 		type: "cell",
 		styles: {

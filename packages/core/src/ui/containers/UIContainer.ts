@@ -95,7 +95,7 @@ export namespace UIContainer {
 		with(...builders: ViewBuilder[]) {
 			if (builders.length) {
 				this.initializer.finalize((view) => {
-					view.content.add(...builders.map((b) => b.create()));
+					view.content.add(...builders.map((b) => b.build()));
 				});
 			}
 			return this;

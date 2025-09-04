@@ -62,12 +62,13 @@ describe("Emitting events", () => {
 	test("Event intercept", () => {
 		let count = 0;
 		let c = new TestObject();
-		ObservableObject.intercept(c, "Testing", (event, emit) => {
+		ObservableObject.intercept(c, "Testing", (event, self) => {
 			try {
 				count++;
 				expect(event).toBeInstanceOf(ObservableEvent);
+				expect(self).toBe(c);
 				let newEvent = new ObservableEvent("Intercepted", c);
-				emit(newEvent);
+				self.emit(newEvent);
 			} catch (err) {
 				expect.fail(String(err));
 			}
@@ -88,16 +89,22 @@ describe("Emitting events", () => {
 	test("Intercept accepts only one handler", () => {
 		let c = new TestObject();
 		let handled = 0;
-		ObservableObject.intercept(c, "Testing", (event, emit) => {
+		let listened = 0;
+		ObservableObject.intercept(c, "Testing", (event) => {
 			handled = 1;
-			emit(event);
+			c.emit(event, true);
 		});
-		ObservableObject.intercept(c, "Testing", (event, emit) => {
+		ObservableObject.intercept(c, "Testing", (event) => {
 			handled = 2;
-			emit(event);
+			c.emit(event, true);
+		});
+		c.listen((event) => {
+			expect(event).toHaveProperty("name", "Testing");
+			expect(handled).toBe(2);
+			listened++;
 		});
 		c.emit("Testing");
-		expect(handled).toBe(1);
+		expect(listened).toBe(1);
 	});
 
 	test("Error handling", () => {

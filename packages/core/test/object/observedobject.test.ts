@@ -233,7 +233,6 @@ describe("Basic attached observable objects", () => {
 		parent.child.emit("Foo");
 		parent.listen((e) => {
 			events.push(e.name);
-			if (e.delegate !== parent) throw new Error("Invalid delegate");
 		});
 		parent.child.emit("Foo");
 		parent.child.unlink();

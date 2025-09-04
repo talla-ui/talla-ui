@@ -15,10 +15,6 @@ const NO_DATA = Object.freeze({});
  *
  * **Change events** — The {@link ObservableObject.emitChange()} method can be used to emit events with a `change` property in the data object. This is a common pattern for notifying listeners about changes in the object's state, and will also trigger bindings to update the value of any bound properties.
  *
- * **Delegation** — An object may handle an event by emitting a new event with the same name, referencing itself as the delegate object. This is useful for forwarding events from one object to another, or for handling events in a different context, and is implemented automatically using the `delegate` option in the {@link ObservableObject.attach()} method. The delegate object can be accessed on any event using the {@link findDelegate()} method.
- *
- * **Event aliases** — Using the `intercept()` method of a view builder (i.e. the result of functions such as `UI.Image()`, `UI.Button()`, etc.), or the `emit()` method on button and text field view builders, event names can be aliased to other event names. In the corresponding activity or component, the event can be handled using the aliased name. Refer to the example below.
- *
  * @example
  * // Emitting an event from an observable object
  * let obj = Object.assign(new ObservableObject(), { foo: "bar" });
@@ -43,7 +39,7 @@ const NO_DATA = Object.freeze({});
  *   bind("items"),
  *   row(
  *     // ...
- *     button("Remove").emit("RemoveItem")
+ *     button("Remove").onClick("RemoveItem")
  *   )
  * )
  * class MyActivity extends Activity {
@@ -66,51 +62,35 @@ export class ObservableEvent<
 	 * @param name The name of the event
 	 * @param source Observable object that will emit the event
 	 * @param data Object that contains further details about the specific event
-	 * @param delegate Observable object that delegated the event, if any
-	 * @param inner Encapsulated event, if any (intercepted or forwarded)
+	 * @param inner Encapsulated event, if any (propagated)
 	 * @param noPropagation True if the event should not be propagated
 	 */
 	constructor(
 		name: string,
 		source: TSource,
 		data?: TData,
-		delegate?: ObservableObject,
 		inner?: ObservableEvent,
 		noPropagation?: boolean,
 	) {
 		this.name = name;
 		this.source = source;
 		this.data = data || (NO_DATA as TData);
-		this.delegate = delegate;
 		this.inner = inner;
 		this.noPropagation = noPropagation;
 		Object.freeze(this);
-	}
-
-	/**
-	 * Returns the delegate object of the specified type
-	 * @summary This method returns either the {@link delegate} property of this event, or the delegate object of any of the referenced {@link inner} events, where it matches the specified type. If none of the delegates match the type, this method returns undefined.
-	 * @param type An {@link ObservableObject} class that determines the return type
-	 * @returns The matched delegate, or undefined
-	 */
-	findDelegate<T extends ObservableObject>(
-		type: new (...args: any[]) => T,
-	): T | undefined {
-		for (let e: ObservableEvent | undefined = this; e; e = e.inner) {
-			if (e.delegate instanceof type) return e.delegate;
-		}
 	}
 
 	/** The name of the event, should start with a capital letter */
 	readonly name: string;
 	/** The object that's emitted (or will emit) the event */
 	readonly source: TSource;
-	/** Object that contains arbitrary event data */
+	/**
+	 * Object that contains arbitrary event data
+	 * @note This object should be read-only and immutable. When propagating events, always create a new object that includes the original data and any additional data.
+	 */
 	readonly data: Readonly<TData>;
-	/** An object that delegated the event, if any */
-	readonly delegate?: ObservableObject;
 	/** The original event, if the event was propagated */
 	readonly inner?: ObservableEvent;
-	/** True if the event should not be propagated or delegated (by observable lists, activities, views, etc.) */
+	/** True if the event should not be propagated (by observable lists, activities, views, etc.) */
 	readonly noPropagation?: boolean;
 }

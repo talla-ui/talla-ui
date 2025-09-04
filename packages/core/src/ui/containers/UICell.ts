@@ -1,4 +1,5 @@
 import { ViewBuilder } from "../../app/index.js";
+import { ObservableEvent } from "../../object/index.js";
 import { UIContainer } from "./UIContainer.js";
 import { UIScrollView } from "./UIScrollView.js";
 
@@ -61,6 +62,28 @@ export namespace UICell {
 		allowKeyboardFocus(allow = true) {
 			if (allow) this.allowFocus(true);
 			return this.setProperty("allowKeyboardFocus", allow);
+		}
+
+		/**
+		 * Handles the `MouseEnter` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onMouseEnter(
+			handle: string | ((event: ObservableEvent, cell: UICell) => void),
+		) {
+			return this.handle("MouseEnter", handle);
+		}
+
+		/**
+		 * Handles the `MouseLeave` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onMouseLeave(
+			handle: string | ((event: ObservableEvent, cell: UICell) => void),
+		) {
+			return this.handle("MouseLeave", handle);
 		}
 
 		/**

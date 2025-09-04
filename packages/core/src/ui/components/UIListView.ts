@@ -88,7 +88,7 @@ export class UIListView<
 		instance.observe("firstIndex", doUpdateAsync);
 		instance.observe("maxItems", doUpdateAsync);
 		Object.defineProperty(instance, "body", {
-			value: containerBuilder.create(),
+			value: containerBuilder.build(),
 		});
 		safeCall(doUpdateAsync);
 	}
@@ -303,7 +303,7 @@ export class UIListView<
 			this._contentMap = undefined;
 			content?.replaceAll(
 				emptyStateBuilder
-					? [(this._lastEmptyState ||= emptyStateBuilder.create())]
+					? [(this._lastEmptyState ||= emptyStateBuilder.build())]
 					: [],
 			);
 			return;
@@ -345,7 +345,7 @@ export class UIListView<
 			views.push(spacer);
 		}
 		if (!n && emptyStateBuilder) {
-			views.push((this._lastEmptyState ||= emptyStateBuilder.create()));
+			views.push((this._lastEmptyState ||= emptyStateBuilder.build()));
 		}
 		this._contentMap = map;
 		if (cancel?.abort) return;
@@ -445,13 +445,12 @@ export namespace UIListView {
 
 			// instantiate the body view (and shortcut event handling here)
 			Object.defineProperty(this, "body", {
-				value: this.attach(body.create(), (event) => {
+				value: this.attach(body.build(), (event) => {
 					this.emit(
 						new ObservableEvent(
 							event.name,
 							event.source,
 							{ ...event.data, listViewItem: item },
-							this,
 							event,
 						),
 					);
@@ -513,25 +512,22 @@ export namespace UIListView {
 		 * Creates a new instance of the UI list view.
 		 * @returns A newly created and initialized `UIListView` instance.
 		 */
-		create() {
-			return this.initializer.create();
+		build() {
+			return this.initializer.build();
 		}
 
 		/**
-		 * Intercepts an event from the list view and re-emits it with a different name.
-		 * @param origEvent The name of the event to intercept.
-		 * @param emit The new event name to emit, or a function to call.
-		 * @param data The data properties to add to the alias event, if any
-		 * @param forward Whether to forward the original event as well (defaults to false)
+		 * Handles events from all list item views
+		 * - This method can be used to handle events before they're propagated from list item views to the list view itself.
+		 * @param eventName The name of the event to handle
+		 * @param handle The function to call, or name of the event to emit instead
 		 * @returns The builder instance for chaining.
 		 */
-		intercept(
-			origEvent: string,
-			emit: string | ObservableObject.InterceptHandler<UIListView>,
-			data?: Record<string, unknown>,
-			forward?: boolean,
+		handle(
+			eventName: string,
+			handle: string | ((event: ObservableEvent, view: UIListView) => void),
 		) {
-			this.initializer.intercept(origEvent, emit, data, forward);
+			this.initializer.handle(eventName, handle);
 			return this;
 		}
 
@@ -614,6 +610,17 @@ export namespace UIListView {
 		renderOptions(options?: UIListView.RenderOptions) {
 			this.initializer.set("renderOptions", options);
 			return this;
+		}
+
+		/**
+		 * Handles the `ListItemsChange` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onListItemsChange(
+			handle: string | ((event: ObservableEvent, list: UIListView) => void),
+		) {
+			return this.handle("ListItemsChange", handle);
 		}
 
 		private _itemProp = Symbol("UIListView");

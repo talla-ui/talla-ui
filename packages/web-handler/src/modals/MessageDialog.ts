@@ -155,7 +155,11 @@ export class MessageDialog
 		let confirmed = false;
 		let other = false;
 		for await (let e of this.listenAsync()) {
-			if (e.name === "Cancel" || e.name === "EscapeKeyPress") confirmed = false;
+			if (
+				e.name === "Cancel" ||
+				(e.name === "KeyDown" && e.data.key === "Escape")
+			)
+				confirmed = false;
 			else if (e.name === "Confirm") confirmed = true;
 			else if (e.name === "Other") other = true;
 			else continue;
@@ -174,15 +178,15 @@ export class MessageDialog
 		);
 		let buttons = [
 			UI.Button(this.confirmLabel)
-				.emit("Confirm")
+				.onClick("Confirm")
 				.buttonStyle(styles.confirmButtonStyle)
 				.requestFocus(),
 			UI.Button(this.otherLabel)
-				.emit("Other")
+				.onClick("Other")
 				.buttonStyle(styles.buttonStyle)
 				.hideWhen(!this.otherLabel),
 			UI.Button(this.cancelLabel)
-				.emit("Cancel")
+				.onClick("Cancel")
 				.buttonStyle(styles.buttonStyle)
 				.hideWhen(!this.cancelLabel),
 		];
@@ -206,6 +210,6 @@ export class MessageDialog
 						),
 					),
 			)
-			.create();
+			.build();
 	}
 }

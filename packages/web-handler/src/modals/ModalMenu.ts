@@ -2,7 +2,6 @@ import {
 	ComponentView,
 	ModalFactory,
 	ModalMenuOptions,
-	ObservableEvent,
 	RenderContext,
 	UI,
 	UICell,
@@ -128,21 +127,17 @@ export class ModalMenu
 
 	protected override get body() {
 		let shown = Date.now();
-		const onMenuRendered = () => {
-			shown = Date.now();
-			this._fixPosition();
-		};
-		const onItemSelected = (e: ObservableEvent) => {
-			this._resolve?.(e.data.key as string);
-		};
 		return UI.Cell()
 			.style(ModalMenu.styles.containerStyle)
 			.width(this.options.width || ModalMenu.styles.defaultWidth)
 			.minWidth(this.options.minWidth)
 			.position(_containerPosition)
 			.accessibleRole("menu")
-			.intercept("Rendered", onMenuRendered)
-			.intercept("Select", onItemSelected)
+			.onRendered(() => {
+				shown = Date.now();
+				this._fixPosition();
+			})
+			.handle("Select", (e) => this._resolve?.(e.data.key as string))
 			.with(
 				...this.options.items.map((item) => {
 					if (item.divider) {
@@ -180,50 +175,45 @@ export class ModalMenu
 						.style(ModalMenu.styles.itemCellStyle)
 						.accessibleRole("menuitem")
 						.allowKeyboardFocus()
-						.intercept("ArrowDownKeyPress", (e) => e.source.requestFocusNext())
-						.intercept("ArrowUpKeyPress", (e) =>
-							e.source.requestFocusPrevious(),
-						)
-						.intercept("Release", (e, emit) => {
+						.handleKey("ArrowDown", (_, self) => self.requestFocusNext())
+						.handleKey("ArrowUp", (_, self) => self.requestFocusPrevious())
+						.handleKey("Enter", "Click")
+						.handleKey("Spacebar", "Click")
+						.onRelease((_, self) => {
 							if (Date.now() - shown < 200) return;
-							emit(new ObservableEvent("Select", e.source, item));
+							self.emit("Select", item);
 						})
-						.intercept("Click", "Select", item)
-						.intercept("EnterKeyPress", "Select", item)
-						.intercept("SpacebarPress", "Select", item)
+						.onClick((_, self) => self.emit("Select", item))
 						.with(content);
 				}),
 			)
-			.create();
+			.build();
 	}
 
-	onArrowDownKeyPress(e: ViewEvent) {
+	onKeyDown(e: ViewEvent) {
 		let cell = this.findViewContent(UICell)[0];
-		if (e.source !== cell) return;
 		let content = cell!.content;
-		for (let item of content) {
-			if (item instanceof UICell) {
-				item.requestFocus();
-				return;
-			}
+		switch (e.data.key) {
+			case "ArrowDown":
+				if (e.source !== cell) return;
+				for (let item of content) {
+					if (item instanceof UICell) {
+						item.requestFocus();
+						return;
+					}
+				}
+				return true;
+			case "ArrowUp":
+				if (e.source !== cell) return;
+				let lastItem = content.last();
+				if (lastItem instanceof UICell) {
+					lastItem.requestFocus();
+				}
+				return true;
+			case "Escape":
+				this._resolve?.();
+				return true;
 		}
-		return true;
-	}
-
-	onArrowUpKeyPress(e: ViewEvent) {
-		let cell = this.findViewContent(UICell)[0];
-		if (e.source !== cell) return;
-		let content = cell!.content;
-		let lastItem = content.last();
-		if (lastItem instanceof UICell) {
-			lastItem.requestFocus();
-		}
-		return true;
-	}
-
-	onEscapeKeyPress() {
-		this._resolve?.();
-		return true;
 	}
 
 	onCloseModal() {

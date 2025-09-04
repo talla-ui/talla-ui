@@ -37,7 +37,7 @@ import { View } from "./View.js";
  *          UI.Label(title)
  *            .icon(v.bind("expanded").then("chevronDown", "chevronNext"))
  *            .cursor("pointer")
- *            .intercept("Click", "Toggle"),
+ *            .onClick("Toggle"),
  *          UI.ShowWhen(v.bind("expanded"), UI.Column(...content)),
  *        ),
  *     ),
@@ -126,14 +126,7 @@ export class ComponentView extends View {
 	 */
 	protected beforeRender() {
 		this.emit(
-			new ObservableEvent(
-				"BeforeRender",
-				this,
-				undefined,
-				undefined,
-				undefined,
-				true,
-			),
+			new ObservableEvent("BeforeRender", this, undefined, undefined, true),
 		);
 	}
 

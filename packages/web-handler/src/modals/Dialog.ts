@@ -50,13 +50,13 @@ export class Dialog
 	protected override get body() {
 		return UI.Cell(UI.Show(bind("dialogView")))
 			.apply(Dialog.styles.containerModifier)
-			.create();
+			.build();
 	}
 
-	onEscapeKeyPress(e: ViewEvent) {
-		if (e.source === this.body) {
+	onKeyDown(e: ViewEvent) {
+		if (e.data.key === "Escape" && e.source === this.body) {
 			// redirect escape key press on modal shader to inner view
-			this.dialogView?.emit("EscapeKeyPress", e.data);
+			this.dialogView?.emit("KeyDown", e.data);
 		}
 	}
 

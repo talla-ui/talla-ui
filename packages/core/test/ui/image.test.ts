@@ -17,7 +17,7 @@ test("Constructor with source", () => {
 
 test("View builder with properties", () => {
 	let myImage = UI.Image("foo.png");
-	let image = myImage.create();
+	let image = myImage.build();
 	expect(image).toHaveProperty("source", "foo.png");
 });
 
@@ -25,14 +25,14 @@ test("Focusable follows keyboard focusable", () => {
 	let plainImage = new UIImage();
 	expect(plainImage.allowFocus).toBeFalsy();
 	expect(plainImage.allowKeyboardFocus).toBeFalsy();
-	let focusableImage = UI.Image().allowKeyboardFocus().create();
+	let focusableImage = UI.Image().allowKeyboardFocus().build();
 	expect(focusableImage.allowFocus).toBeTruthy();
 	expect(focusableImage.allowKeyboardFocus).toBeTruthy();
 });
 
 test("Rendered with image source", async () => {
 	let myImage = UI.Image("foo.png").accessibleLabel("My image");
-	let image = myImage.create();
+	let image = myImage.build();
 	renderTestView(image);
 	await expectOutputAsync({
 		type: "image",
@@ -51,7 +51,7 @@ test("Constructor with UIIconResource", () => {
 test("View builder with custom icon", async () => {
 	let customIcon = new UIIconResource("<svg>custom icon</svg>");
 	let myImage = UI.Image(customIcon).accessibleLabel("Custom icon");
-	let image = myImage.create();
+	let image = myImage.build();
 	renderTestView(image);
 	await expectOutputAsync({
 		type: "image",
@@ -62,7 +62,7 @@ test("View builder with custom icon", async () => {
 
 test("View builder with theme icon", async () => {
 	let myImage = UI.Image(UI.icons.check).accessibleLabel("Check icon");
-	let image = myImage.create();
+	let image = myImage.build();
 	renderTestView(image);
 	await expectOutputAsync({
 		type: "image",
@@ -73,7 +73,7 @@ test("View builder with theme icon", async () => {
 test("Image load event with URL source", async () => {
 	let loadFired = false;
 	let myImage = UI.Image("test.png");
-	let image = myImage.create();
+	let image = myImage.build();
 	image.listen((e) => {
 		if (e.name === "Load") loadFired = true;
 	});
@@ -88,7 +88,7 @@ test("Image load event with icon source", async () => {
 	let loadFired = false;
 	let customIcon = new UIIconResource("<svg>icon</svg>");
 	let myImage = UI.Image(customIcon);
-	let image = myImage.create();
+	let image = myImage.build();
 	image.listen((e) => {
 		if (e.name === "Load") loadFired = true;
 	});

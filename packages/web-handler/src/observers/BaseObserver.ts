@@ -10,7 +10,6 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 			observed,
 			undefined,
 			undefined,
-			undefined,
 			true,
 		);
 		this.observeProperties("hidden", "position", "style");

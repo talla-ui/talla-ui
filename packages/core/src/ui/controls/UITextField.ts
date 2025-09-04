@@ -32,7 +32,6 @@ export class UITextField extends UIElement {
 
 	/**
 	 * True if multiline input mode should be enabled
-	 * - Setting this property to true also suppresses the EnterKeyPress event.
 	 * - This property can't be changed after rendering.
 	 */
 	multiline?: boolean;
@@ -248,17 +247,6 @@ export namespace UITextField {
 			>,
 		) {
 			return this.setStyleProperty(style, UIStyle.theme.textfield);
-		}
-
-		/**
-		 * Intercepts the `Input` event and re-emits it with a different name.
-		 * @param alias The new event name to emit.
-		 * @param data The data properties to add to the alias event, if any
-		 * @returns The builder instance for chaining.
-		 */
-		emit(alias: string, data?: Record<string, unknown>) {
-			this.initializer.intercept("Input", alias, data);
-			return this;
 		}
 	}
 }

@@ -50,7 +50,7 @@
 	handle("navbar-searchbutton", showSearch);
 
 	// use keyboard shortcut to do the same
-	window.addEventListener("keypress", (e) => {
+	window.addEventListener("keydown", (e) => {
 		if (
 			e.key === "/" &&
 			(!document.activeElement || document.activeElement === document.body)

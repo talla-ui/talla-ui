@@ -28,7 +28,7 @@ beforeEach(() => {
 
 test("Set state directly with when", () => {
 	let myShow = UI.Show(UI.Cell());
-	let show = myShow.create();
+	let show = myShow.build();
 	expect(show.body).toBeInstanceOf(UICell);
 	expect(ObservableObject.whence(show.body)).toBe(show);
 	show.when = false;
@@ -37,7 +37,7 @@ test("Set state directly with when", () => {
 
 test("Set state directly with unless", () => {
 	let myShow = UI.ShowUnless(true, UI.Cell());
-	let show = myShow.create();
+	let show = myShow.build();
 	expect(show.body).toBeUndefined();
 
 	show.unless = false;
@@ -50,7 +50,7 @@ test("Set state directly with unless", () => {
 
 test("When both when and unless are set, unless takes precedence", () => {
 	let myShow = UI.Show(UI.Cell()).when(true).unless(true);
-	let show = myShow.create();
+	let show = myShow.build();
 	expect(show.body).toBeUndefined();
 
 	show.when = false;
@@ -65,7 +65,7 @@ test("When both when and unless are set, unless takes precedence", () => {
 
 test("When and else", () => {
 	let myShow = UI.ShowWhen(true, UI.Column(), UI.Row());
-	let show = myShow.create();
+	let show = myShow.build();
 	expect(show.body).toBeInstanceOf(UIColumn);
 	show.when = false;
 	expect(show.body).toBeInstanceOf(UIRow);
@@ -75,7 +75,7 @@ test("When and else", () => {
 
 test("Unless and else", () => {
 	let myShow = UI.ShowUnless(false, UI.Column(), UI.Row());
-	let show = myShow.create();
+	let show = myShow.build();
 	expect(show.body).toBeInstanceOf(UIColumn);
 	show.unless = true;
 	expect(show.body).toBeInstanceOf(UIRow);
@@ -84,11 +84,11 @@ test("Unless and else", () => {
 });
 
 test("Body view events are propagated", async () => {
-	let myCell = UI.Cell(UI.Show(UI.Button("Click me").emit("ButtonClick")));
+	let myCell = UI.Cell(UI.Show(UI.Button("Click me").onClick("ButtonClick")));
 
 	// create instance and listen for events on cell
 	let count = 0;
-	let cell = myCell.create();
+	let cell = myCell.build();
 	cell.listen((e) => {
 		if (e.name === "ButtonClick") count++;
 	});
@@ -113,7 +113,7 @@ test("Rendering content using bound state", async () => {
 
 	console.log("Creating view");
 	useTestContext();
-	let testView = TestView().create();
+	let testView = TestView().build();
 
 	console.log("Rendering view");
 	renderTestView(testView);
@@ -138,7 +138,7 @@ test("Rendering content using bound state", async () => {
 test("Set inserted view and render", async () => {
 	let myCell = UI.Cell(UI.Label("foo"));
 	let viewRenderer = new UIShowView();
-	viewRenderer.insert = myCell.create();
+	viewRenderer.insert = myCell.build();
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ text: "foo" });
 	expect(viewRenderer.findViewContent(UILabel)).toHaveLength(1);
@@ -148,17 +148,17 @@ test("Change inserted view after rendering", async () => {
 	let myCell1 = UI.Cell(UI.Label("foo"));
 	let myCell2 = UI.Cell(UI.Label("bar"));
 	let viewRenderer = new UIShowView();
-	viewRenderer.insert = myCell1.create();
+	viewRenderer.insert = myCell1.build();
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ text: "foo" });
-	viewRenderer.insert = myCell2.create();
+	viewRenderer.insert = myCell2.build();
 	await expectOutputAsync({ text: "bar" });
 });
 
 test("Unlink inserted view after rendering", async () => {
 	let myCell = UI.Cell(UI.Label("foo"));
 	let viewRenderer = new UIShowView();
-	viewRenderer.insert = myCell.create();
+	viewRenderer.insert = myCell.build();
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ text: "foo" });
 	viewRenderer.insert!.unlink();
@@ -175,7 +175,7 @@ test("Rendering self as inserted view fails silently", async () => {
 });
 
 test("Rendering parent as inserted view fails silently", async () => {
-	let parent = UI.Cell(UI.Label("foo")).create();
+	let parent = UI.Cell(UI.Label("foo")).build();
 	let viewRenderer = new UIShowView();
 	parent.content.add(viewRenderer);
 	viewRenderer.insert = parent;
@@ -202,7 +202,7 @@ test("Set inserted view using component view, and render", async () => {
 		static override View() {
 			return UI.Show(bind("vc"));
 		}
-		vc = this.attach(MyContent().text("foo").create());
+		vc = this.attach(MyContent().text("foo").build());
 	}
 
 	let activity = new MyActivity();
@@ -226,7 +226,7 @@ test("Use activity view as inserted view and render", async () => {
 	// activity that will be rendered as nested view
 	class MySecondActivity extends Activity {
 		static override View() {
-			return UI.Cell(UI.Button("foo").emit("ButtonPress"));
+			return UI.Cell(UI.Button("foo").onClick("ButtonPress"));
 		}
 		constructor() {
 			super();

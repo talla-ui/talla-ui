@@ -19,7 +19,7 @@ import { ObservableObject } from "../object/index.js";
  *     UI.TextField().bindFormState(v.bind("form"), "foo"),
  *     UI.Label(v.bind("form.errors.foo.message"))
  *       .hideWhen(v.bind("form.errors.foo").not()),
- *     UI.Button("Go").emit("Submit")
+ *     UI.Button("Go").onClick("Submit")
  *   );
  * }
  *

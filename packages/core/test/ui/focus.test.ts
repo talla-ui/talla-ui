@@ -18,7 +18,7 @@ beforeEach(() => {
 
 test("Single element, initial focus", async () => {
 	let myCell = UI.Cell().allowFocus().requestFocus();
-	let cell = myCell.create();
+	let cell = myCell.build();
 	renderTestView(cell);
 	let elt = (await expectOutputAsync({ type: "cell" })).getSingle();
 	expect(elt.hasFocus()).toBeTruthy();
@@ -26,7 +26,7 @@ test("Single element, initial focus", async () => {
 
 test("Single element, request focus", async () => {
 	let myCell = UI.Cell().allowFocus();
-	let cell = myCell.create();
+	let cell = myCell.build();
 	renderTestView(cell);
 	await expectOutputAsync({ type: "cell" });
 	cell.requestFocus();
@@ -36,7 +36,7 @@ test("Single element, request focus", async () => {
 test("Single component view, request focus", async () => {
 	class MyView extends ComponentView {
 		protected override get body() {
-			return UI.Cell().allowFocus().create();
+			return UI.Cell().allowFocus().build();
 		}
 	}
 	let view = new MyView();
@@ -50,7 +50,7 @@ test("Focus requests", async () => {
 	let myCell = UI.Cell(UI.Button("first").requestFocus(), UI.Button("second"));
 
 	console.log("Focusing first");
-	renderTestView(myCell.create());
+	renderTestView(myCell.build());
 	let out = await expectOutputAsync({ text: "first", focused: true });
 
 	console.log("Focusing next");
@@ -72,14 +72,11 @@ test("Focusing one element blurs another", async () => {
 			return UI.Cell(
 				UI.Cell()
 					.allowFocus()
-					.intercept("BeforeRender", "Cell1Ref")
-					.intercept("FocusIn", "Cell1Focus")
-					.intercept("FocusOut", "Cell1Focus"),
-				UI.Cell()
-					.allowFocus()
-					.intercept("BeforeRender", "Cell2Ref")
-					.intercept("FocusIn", "Done"),
-			).create();
+					.onBeforeRender("Cell1Ref")
+					.onFocusIn("Cell1Focus")
+					.onFocusOut("Cell1Focus"),
+				UI.Cell().allowFocus().onBeforeRender("Cell2Ref").onFocusIn("Done"),
+			).build();
 		}
 
 		onCell1Ref(e: ViewEvent<UICell>) {

@@ -77,6 +77,7 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link View} +
 - {@link ViewBuilder} +
 - {@link ViewEvent} +
+- {@link ViewEventHandler} +
 - {@link Viewport} +
 - {@link WebContextOptions} +
 - {@link WebDialogStyles} +

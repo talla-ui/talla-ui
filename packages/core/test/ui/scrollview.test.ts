@@ -51,7 +51,7 @@ test("View builder with properties", () => {
 		.topThreshold(10)
 		.bottomThreshold(20)
 		.horizontalThreshold(5);
-	let scrollView = myScrollView.create();
+	let scrollView = myScrollView.build();
 	expect(scrollView.content).toHaveProperty("length", 1);
 	expect(scrollView).toHaveProperty("horizontalScroll", false);
 	expect(scrollView).toHaveProperty("verticalScroll", true);
@@ -62,7 +62,7 @@ test("View builder with properties", () => {
 
 test("Scrollable row with content", () => {
 	let myScrollView = UI.Row(UI.Label("A"), UI.Label("B")).scroll();
-	let scrollView = myScrollView.create();
+	let scrollView = myScrollView.build();
 	expect(scrollView.content).toHaveProperty("length", 1);
 	let row = scrollView.content.first() as UIRow;
 	expect(row).toBeInstanceOf(UIRow);
@@ -71,7 +71,7 @@ test("Scrollable row with content", () => {
 
 test("Adding content to container using scroll builder with()", () => {
 	let myScrollView = UI.Column().scroll().with(UI.Label("Added content"));
-	let scrollView = myScrollView.create();
+	let scrollView = myScrollView.build();
 	expect(scrollView.content).toHaveProperty("length", 1);
 	let column = scrollView.content.first() as UIColumn;
 	expect(column.content.first()).toBeInstanceOf(UILabel);
@@ -79,7 +79,7 @@ test("Adding content to container using scroll builder with()", () => {
 
 test("Rendered scrollable column", async () => {
 	let myScrollView = UI.Column(UI.Label("Scrollable content")).scroll();
-	renderTestView(myScrollView.create());
+	renderTestView(myScrollView.build());
 	await expectOutputAsync(
 		{ type: "container" },
 		{ type: "column" },
@@ -89,7 +89,7 @@ test("Rendered scrollable column", async () => {
 
 test("Rendered scrollable row", async () => {
 	let myScrollView = UI.Row(UI.Label("A"), UI.Label("B")).scroll();
-	renderTestView(myScrollView.create());
+	renderTestView(myScrollView.build());
 	await expectOutputAsync(
 		{ type: "container" },
 		{ type: "row" },

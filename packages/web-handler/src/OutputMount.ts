@@ -142,7 +142,7 @@ export class OutputMount {
 			) {
 				view.emit("CloseModal");
 				if (e.type === "keydown" && !view.isUnlinked()) {
-					view.emit("EscapeKeyPress", { event: e });
+					view.emit("KeyDown", { event: e, key: "Escape" });
 				}
 			}
 		};

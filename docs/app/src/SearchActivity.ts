@@ -10,9 +10,11 @@ import { SearchView } from "./SearchView";
 import { swapPageAsync } from "./swap";
 
 export class SearchActivity extends Activity {
-	protected override viewBuilder() {
+	static override View = SearchView;
+
+	constructor() {
+		super();
 		this.setRenderMode("mount", { mountId: "docpage-search" });
-		return SearchView();
 	}
 
 	search = new Search();
@@ -52,10 +54,6 @@ export class SearchActivity extends Activity {
 	protected async onClose() {
 		document.body.className = "docpage";
 		(document.activeElement as HTMLInputElement)?.blur();
-	}
-
-	protected async onEscapeKeyPress() {
-		return this.onClose();
 	}
 
 	protected onArrowDownOnInput() {

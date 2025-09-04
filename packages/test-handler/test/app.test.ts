@@ -29,9 +29,9 @@ class CountActivity extends Activity {
 		return UI.Cell(
 			UI.TextField()
 				.value(v.bind("count").fmt("{}"))
-				.emit("SetCount")
+				.onInput("SetCount")
 				.name("count-input"),
-			UI.Button("+").emit("CountUp"),
+			UI.Button("+").onClick("CountUp"),
 		);
 	}
 	count = 0;
@@ -54,7 +54,7 @@ beforeEach(() => {
 
 test("Single control is rendered", async () => {
 	const view = UI.Label("FOO");
-	renderTestView(view.create());
+	renderTestView(view.build());
 	await expectOutputAsync({ text: "FOO" });
 });
 
@@ -69,7 +69,7 @@ test("Single component view with binding is rendered", async () => {
 			),
 		};
 	}
-	let myView = MyView().create();
+	let myView = MyView().build();
 	myView.title = "TEST";
 	renderTestView(myView);
 	await expectOutputAsync({ text: "TEST" });

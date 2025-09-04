@@ -296,7 +296,6 @@ export namespace TestOutputElement {
 		| "mouseup"
 		| "mousedown"
 		| "keydown"
-		| "keypress"
 		| "keyup"
 		| "focusin"
 		| "focusout"

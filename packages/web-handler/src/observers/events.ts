@@ -20,40 +20,14 @@ const _eventNames: { [domEventName: string]: string } = {
 	mouseup: "Release",
 	keydown: "KeyDown",
 	keyup: "KeyUp",
-	keypress: "KeyPress",
 	focusin: "FocusIn",
 	focusout: "FocusOut",
 	change: "Change",
 	input: "Input",
-	copy: "Copy",
-	cut: "Cut",
-	paste: "Paste",
-};
-
-/** Key names for `keydown` events */
-const _keyNames: { [keyName: string]: string } = {
-	Enter: "EnterKey",
-	Spacebar: "Spacebar",
-	" ": "Spacebar",
-	Backspace: "BackspaceKey",
-	Delete: "DeleteKey",
-	Del: "DeleteKey",
-	Escape: "EscapeKey",
-	Esc: "EscapeKey",
-	Tab: "TabKey",
-	ArrowLeft: "ArrowLeftKey",
-	Left: "ArrowLeftKey",
-	ArrowUp: "ArrowUpKey",
-	Up: "ArrowUpKey",
-	ArrowRight: "ArrowRightKey",
-	Right: "ArrowRightKey",
-	ArrowDown: "ArrowDownKey",
-	Down: "ArrowDownKey",
 };
 
 /** Keys for which OS actions should be prevented if used on lists and list items */
 const _listKeysPreventDefault: { [keyName: string]: boolean } = {
-	Spacebar: true,
 	" ": true,
 	ArrowLeft: true,
 	ArrowRight: true,
@@ -112,7 +86,7 @@ function eventHandler(this: HTMLElement, e: Event) {
 	}
 
 	// handle key events on first observer within, e.g. main modal/page content
-	if (e.type === "keydown" || e.type === "keypress") {
+	if (e.type === "keydown" || e.type === "keyup") {
 		let inner = this.firstChild;
 		if (inner) {
 			let key = (e as KeyboardEvent).key;
@@ -159,11 +133,15 @@ function handleObserverEvent(observer: BaseObserver<UIElement>, e: Event) {
 		if (_lastTouchT > Date.now() - 1000) return;
 	}
 
-	// find event name and propagate event to view itself
+	// find event name and data for the event
 	let uiEventName = _eventNames[e.type];
 	let view = observer.observed;
 	if (!uiEventName || !view) return;
-	let data = { event: e };
+	let data: any = { event: e };
+	if ("key" in e) data.key = e.key;
+	if ("button" in e) data.button = e.button;
+
+	// emit event
 	if (observer.onDOMEvent(e, data) === false) return;
 	view.emit(uiEventName, data);
 
@@ -184,7 +162,7 @@ function handleObserverEvent(observer: BaseObserver<UIElement>, e: Event) {
 		view.emit("Press", { event: e });
 	}
 
-	// simulate mouse up and click on touch (if not moved)
+	// also simulate mouse up and click on touch (if not moved)
 	if (e.type === "touchend") {
 		_lastTouchT = Date.now();
 		if (_lastTouchObserver === observer) {
@@ -193,17 +171,11 @@ function handleObserverEvent(observer: BaseObserver<UIElement>, e: Event) {
 		}
 	}
 
-	// handle various key press aliases
+	// prevent default on keydown events where needed
 	if (uiEventName === "KeyDown") {
 		let key = (e as KeyboardEvent).key;
-		let keyName = key ? _keyNames[key] : "";
-		let ignore = false;
-		let target: HTMLElement = e.target as any;
-		if (keyName === "EnterKey") {
-			let nodeName = target && String(target.nodeName).toLowerCase();
-			ignore = nodeName === "button" || nodeName === "textarea";
-		}
 		if (_listKeysPreventDefault[key]) {
+			let target: HTMLElement = e.target as any;
 			let role = target && target.getAttribute("role");
 			if (!role) {
 				let parentElt = target.parentElement;
@@ -213,11 +185,7 @@ function handleObserverEvent(observer: BaseObserver<UIElement>, e: Event) {
 				e.preventDefault();
 			}
 		}
-		if (!ignore && keyName) {
-			setTimeout(() => {
-				view!.emit(keyName + "Press", { event: e });
-			}, 0);
-		}
 	}
+
 	e.stopPropagation();
 }

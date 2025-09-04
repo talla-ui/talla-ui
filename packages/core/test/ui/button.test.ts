@@ -30,47 +30,47 @@ test("Constructor with text", () => {
 
 test("View builder with properties", () => {
 	let myButton = UI.Button("foo");
-	let button = myButton.create();
+	let button = myButton.build();
 	expect(button.text).toBe("foo");
 	expect(button.disableKeyboardFocus).toBeFalsy();
 });
 
 test("View builder using text", () => {
 	let myButton = UI.Button("foo");
-	let button = myButton.create();
+	let button = myButton.build();
 	expect(button.text).toBe("foo");
 });
 
 test("View builder using text and accessible label", () => {
 	let myButton = UI.Button("foo").accessibleLabel("test");
-	let button = myButton.create();
+	let button = myButton.build();
 	expect(button.accessibleLabel).toBe("test");
 	expect(button.text).toBe("foo");
 });
 
 test("Button with chevron", async () => {
 	let myButton = UI.Button("More").chevron("down", 12);
-	let button = myButton.create();
+	let button = myButton.build();
 	expect(button.chevron).toBe("down");
 	expect(button.chevronStyle).toEqual({ size: 12 });
 });
 
 test("Button with both icon and chevron", async () => {
 	let myButton = UI.Button("Settings").icon("menu").chevron("next");
-	let button = myButton.create();
+	let button = myButton.build();
 	expect(button.icon).toBeDefined();
 	expect(button.chevron).toBe("next");
 });
 
 test("Navigation button sets accessible role to link", async () => {
 	let myButton = UI.Button("Link").navigateTo("/test");
-	let button = myButton.create();
+	let button = myButton.build();
 	expect(button.accessibleRole).toBe("link");
 });
 
 test("Rendered with text", async () => {
 	let myButton = UI.Button("foo").accessibleLabel("My button");
-	renderTestView(myButton.create());
+	renderTestView(myButton.build());
 	await expectOutputAsync({
 		text: "foo",
 		accessibleLabel: "My button",
@@ -86,7 +86,7 @@ test("Rendered with fmt", async () => {
 			UI.Button.fmt("foo {}", bind("bar")),
 		);
 	}
-	let myButton = MyButton().create();
+	let myButton = MyButton().build();
 	renderTestView(myButton);
 	await expectOutputAsync({
 		text: "foo bar",
@@ -99,7 +99,7 @@ test("Rendered with fmt", async () => {
 
 test("Disabled button rendered", async () => {
 	let myButton = UI.Button("Disabled").disabled();
-	let button = myButton.create();
+	let button = myButton.build();
 	expect(button.disabled).toBe(true);
 
 	renderTestView(button);
@@ -111,7 +111,7 @@ test("Disabled button rendered", async () => {
 
 test("Button pressed state rendered", async () => {
 	let myButton = UI.Button("Toggle").pressed();
-	let button = myButton.create();
+	let button = myButton.build();
 	expect(button.pressed).toBe(true);
 
 	renderTestView(button);
@@ -123,7 +123,7 @@ test("Button pressed state rendered", async () => {
 
 test("Rendered with styles", async () => {
 	let myButton = UI.Button("foo").border(1, "orange").bold();
-	renderTestView(myButton.create());
+	renderTestView(myButton.build());
 	await expectOutputAsync({
 		text: "foo",
 		styles: {
@@ -135,7 +135,7 @@ test("Rendered with styles", async () => {
 
 test("Disabled button does not emit click event", async () => {
 	let myButton = UI.Button("Foo button").disabled();
-	let btn = myButton.create();
+	let btn = myButton.build();
 	let hasEmitted = false;
 	btn.listen((e) => {
 		if (e.name === "Click") hasEmitted = true;
@@ -148,7 +148,7 @@ test("Disabled button does not emit click event", async () => {
 
 test("Rendered and clicked, event has value", async () => {
 	let myButton = UI.Button("Foo button").value("foo");
-	let btn = myButton.create();
+	let btn = myButton.build();
 	let clickValue: any;
 	btn.listen((e) => {
 		if (e.name === "Click") clickValue = e.data.value;
@@ -158,23 +158,29 @@ test("Rendered and clicked, event has value", async () => {
 	expect(clickValue).toBe("foo");
 });
 
-test("Rendered and clicked, event has emit data parameter", async () => {
-	let myButton = UI.Button("Foo button").emit("Foo", { value: "foo" });
-	let btn = myButton.create();
+test("Rendered and clicked, using callback function", async () => {
+	let myButton = UI.Button("Foo button").onClick((e, button) => {
+		button.emit(e, true);
+		button.emit("Foo", { value: "foo" });
+	});
+	let btn = myButton.build();
 	let clickValue: any;
+	let clickEmitted = false;
 	btn.listen((e) => {
+		if (e.name === "Click") clickEmitted = true;
 		if (e.name === "Foo") clickValue = e.data.value;
 	});
 	renderTestView(btn);
 	await clickOutputAsync({ type: "button" });
 	expect(clickValue).toBe("foo");
+	expect(clickEmitted).toBe(true);
 });
 
 test("Click event propagation", async () => {
 	let clicked = 0;
 	class MyActivity extends Activity {
 		static override View() {
-			return UI.Cell(UI.Button("Button").emit("ButtonClicked"));
+			return UI.Cell(UI.Button("Button").onClick("ButtonClicked"));
 		}
 		onButtonClicked() {
 			clicked++;
@@ -213,7 +219,7 @@ test("Button navigation with navigateTo, relative path", async () => {
 test("Back button navigation", async () => {
 	class MyActivity extends Activity {
 		static override View() {
-			return UI.Button("back").emit("NavigateBack");
+			return UI.Button("back").onClick("NavigateBack");
 		}
 	}
 	app.addActivity(new MyActivity(), true);
@@ -227,7 +233,7 @@ test("Back button navigation", async () => {
 
 test("Request button focus", async () => {
 	let myButton = UI.Button("Focus me");
-	let button = myButton.create();
+	let button = myButton.build();
 
 	renderTestView(button);
 	button.requestFocus();

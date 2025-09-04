@@ -28,7 +28,7 @@ test("Constructor with placeholder and value", () => {
 
 test("View builder with properties", () => {
 	let myTF = UI.TextField("foo").name("bar");
-	let tf = myTF.create();
+	let tf = myTF.build();
 	expect(tf).toHaveProperty("placeholder", "foo");
 	expect(tf).toHaveProperty("name", "bar");
 });
@@ -40,7 +40,7 @@ test("Rendered with placeholder", async () => {
 
 test("Multiline text field with height", async () => {
 	let myTF = UI.TextField("Enter long text").multiline(true, 100);
-	let tf = myTF.create();
+	let tf = myTF.build();
 	expect(tf.multiline).toBe(true);
 	renderTestView(tf);
 	await expectOutputAsync({
@@ -91,7 +91,7 @@ test("User input with form state", async () => {
 		// note that form must exist before it can be bound
 		readonly form = new FormState().set("foo", "bar");
 		readonly tf = this.attach(
-			UI.TextField().bindFormState(this.form, "foo").create(),
+			UI.TextField().bindFormState(this.form, "foo").build(),
 		);
 	}
 	let host = new Host();

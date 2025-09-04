@@ -12,14 +12,14 @@ beforeEach(() => {
 
 test("Row view builder with height and content", () => {
 	let myRow = UI.Row(UI.Label("foo")).height(123);
-	let row = myRow.create();
+	let row = myRow.build();
 	expect((row.style as any).height).toBe(123);
 	expect(row.content.toArray()).toHaveLength(1);
 });
 
 test("Column view builder with width", () => {
 	let myCol = UI.Column(UI.Label("foo")).width(123);
-	let col = myCol.create();
+	let col = myCol.build();
 	expect((col.style as any).width).toBe(123);
 	expect(col.content.toArray()).toHaveLength(1);
 });

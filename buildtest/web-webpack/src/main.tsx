@@ -1,13 +1,7 @@
-import { Activity, ui } from "talla-ui";
-
-const page = (
-	<cell>
-		<label align="center">Hello, world!</label>
-	</cell>
-);
+import { Activity, UI } from "talla-ui";
 
 export class MainActivity extends Activity {
-	createView() {
-		return page.create();
+	static override View() {
+		return UI.Cell(UI.Label("Hello, world!").center());
 	}
 }

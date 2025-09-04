@@ -162,7 +162,7 @@ test("Component view, binding to value and error", () => {
 			),
 		);
 
-	let view = MyComp().create();
+	let view = MyComp().build();
 	expect(view).toHaveProperty("form");
 	view.render((() => {}) as any); // force render to get reference to body
 	let row = (view as any).body as UIRow;

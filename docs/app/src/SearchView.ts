@@ -51,6 +51,7 @@ export function SearchView() {
 		.width("100%")
 		.grow(false)
 		.shrink(true)
+		.handleKey("Escape", "Close")
 		.with(
 			UI.Row()
 				.height(72)
@@ -60,13 +61,13 @@ export function SearchView() {
 						.textfieldStyle(TextFieldStyle)
 						.requestFocus()
 						.disableSpellCheck()
-						.emit("SearchInput")
-						.intercept("ArrowDownKeyPress", "ArrowDownOnInput")
-						.intercept("EnterKeyPress", "GoToFirstResult"),
+						.onInput("SearchInput")
+						.handleKey("ArrowDown", "ArrowDownOnInput")
+						.handleKey("Enter", "GoToFirstResult"),
 					UI.Button()
 						.icon(UI.icons.close)
 						.buttonStyle(CloseButtonStyle)
-						.emit("Close"),
+						.onClick("Close"),
 				),
 			UI.Cell()
 				.hideWhen(bind("hasInput").and("loading").not())
@@ -79,10 +80,10 @@ export function SearchView() {
 					UI.Cell()
 						.allowFocus()
 						.style(ResultCellStyle)
-						.intercept("Click", "GoToResult")
-						.intercept("EnterKeyPress", "GoToResult")
-						.intercept("ArrowUpKeyPress", "FocusPrevious")
-						.intercept("ArrowDownKeyPress", "FocusNext")
+						.onClick("GoToResult")
+						.handleKey("Enter", "GoToResult")
+						.handleKey("ArrowUp", "FocusPrevious")
+						.handleKey("ArrowDown", "FocusNext")
 						.with(
 							UI.Column().with(
 								UI.Row(

@@ -56,7 +56,7 @@ test("Constructor", () => {
 
 test("Empty list, rendered", async () => {
 	let myList = UI.List([], UI.Label("foo"));
-	renderTestView(myList.create());
+	renderTestView(myList.build());
 	await expectOutputAsync({ type: "column" });
 });
 
@@ -65,7 +65,7 @@ test("List of labels from ObservableList, rendered", async () => {
 
 	console.log("Creating instance");
 	let myList = UI.List(list, (item) => UI.Label(item.bind("name")));
-	let instance = myList.create();
+	let instance = myList.build();
 
 	console.log("Rendering");
 	renderTestView(instance);
@@ -86,7 +86,7 @@ test("List of labels from bound array, rendered", async () => {
 	let myList = UI.List(bind("array"), (item) => UI.Label(item)).outer(UI.Row());
 	class ArrayProvider extends ObservableObject {
 		array = ["a", "b", "c"];
-		readonly view = this.attach(myList.create());
+		readonly view = this.attach(myList.build());
 	}
 	let parent = new ArrayProvider();
 	let instance = parent.view;
@@ -105,7 +105,7 @@ test("List of labels, rendered, then updated", async () => {
 	let myList = UI.List(list, (item) => UI.Label(item.bind("name"))).outer(
 		UI.Row(),
 	);
-	let instance = myList.create();
+	let instance = myList.build();
 
 	console.log("Rendering");
 	renderTestView(instance);
@@ -128,7 +128,7 @@ test("List of labels, rendered, then updated, with scroll view", async () => {
 	let myList = UI.List(list, UI.Label(bind("item.name"))).outer(
 		UI.Row().scroll(),
 	);
-	let instance = myList.create();
+	let instance = myList.build();
 
 	console.log("Rendering");
 	renderTestView(instance);
@@ -148,25 +148,20 @@ test("Event propagation through list", async () => {
 	let view = UI.Row(
 		UI.List(
 			new ObservableList(...getObjects()),
-			UI.Label(bind("item.name")).intercept("Click", "Foo"),
+			UI.Label(bind("item.name")).onClick("Foo"),
 		),
-	).create();
+	).build();
 	let count = 0;
 	view.listen((event) => {
 		if (event.name === "Foo") {
 			count++;
-			let delegate = event.findDelegate(
-				UIListView.ItemControllerView<NamedObject>,
-			);
-			if (!delegate || !(delegate instanceof UIListView.ItemControllerView)) {
-				return expect.fail("Invalid event delegate");
-			}
 			let data = (event as UIListViewEvent).data;
 			let item = data.listViewItem;
 			if (!item || !(item instanceof NamedObject)) {
 				return expect.fail("Invalid item object");
 			}
-			if (item !== delegate.item) {
+			let itemView = UIListView.ItemControllerView.whence(event.source);
+			if (item !== itemView!.item) {
 				return expect.fail("Not the same item object");
 			}
 			expect(item.name).toBe("d");
@@ -195,7 +190,7 @@ test("Nested list", async () => {
 				UI.List(item.bind("numbers"), (number) =>
 					UI.Label.fmt("{}{}", item.bind("name"), number),
 				),
-			).create(),
+			).build(),
 		);
 	}
 	let parent = new NestedArrayProvider();
@@ -226,7 +221,7 @@ test("Empty state", async () => {
 	let myList = UI.List(new ObservableList(...getObjects()))
 		.with(UI.Label(bind("item.name")))
 		.emptyState(UI.Label("empty"));
-	let instance = myList.create();
+	let instance = myList.build();
 
 	console.log("Rendering");
 	renderTestView(instance);
@@ -248,7 +243,7 @@ test("Pagination", async () => {
 		.with(UI.Label(bind("item.name")))
 		.outer(UI.Row())
 		.bounds(0, 2);
-	let instance = myList.create();
+	let instance = myList.build();
 
 	console.log("Rendering 0-1");
 	renderTestView(instance);
@@ -282,7 +277,7 @@ test("Get indices for elements", async () => {
 		new ObservableList(...getObjects()),
 		UI.Label(bind("item.name")).allowFocus(true),
 	);
-	let list = myList.create();
+	let list = myList.build();
 	renderTestView(list);
 	let out = await expectOutputAsync({ text: "a" });
 	expect(list.getIndexOfView(out.getSingle().output!.source)).toBe(0);
@@ -298,7 +293,7 @@ test("Request focus on list focuses previous item", async () => {
 			.with(UI.Label(bind("item.name")).allowFocus(true))
 			.outer(UI.Cell().allowKeyboardFocus()),
 	);
-	renderTestView(myList.create());
+	renderTestView(myList.build());
 	let out = await expectOutputAsync({ text: "a" });
 
 	console.log("Focus first item");
@@ -320,10 +315,10 @@ test("Arrow key focus, single list", async () => {
 		new ObservableList(...getObjects()),
 		UI.Label(bind("item.name"))
 			.allowFocus()
-			.intercept("ArrowDownKeyPress", "FocusNext")
-			.intercept("ArrowUpKeyPress", "FocusPrevious"),
+			.handleKey("ArrowDown", "FocusNext")
+			.handleKey("ArrowUp", "FocusPrevious"),
 	);
-	let list = myList.create();
+	let list = myList.build();
 	renderTestView(list);
 	let firstOut = await expectOutputAsync({ text: "a" });
 
@@ -334,13 +329,13 @@ test("Arrow key focus, single list", async () => {
 	expect(list.focusPreviousItem()).toBeFalsy();
 
 	console.log("Move focus down by 2");
-	firstOut.getSingleView(UILabel).emit("ArrowDownKeyPress");
+	firstOut.getSingle().sendPlatformEvent("keydown", { key: "ArrowDown" });
 	await expectOutputAsync({ text: "b", focused: true });
 	list.focusNextItem();
 	let thirdOut = await expectOutputAsync({ text: "c", focused: true });
 
 	console.log("Move focus up again");
-	thirdOut.getSingleView(UILabel).emit("ArrowUpKeyPress");
+	thirdOut.getSingle().sendPlatformEvent("keydown", { key: "ArrowUp" });
 	await expectOutputAsync({ text: "b", focused: true });
 });
 

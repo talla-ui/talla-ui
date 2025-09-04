@@ -18,7 +18,7 @@ test("Constructor with defaults", () => {
 
 test("View builder with properties", () => {
 	let myDivider = UI.Divider(2, "green", 8).vertical();
-	let divider = myDivider.create();
+	let divider = myDivider.build();
 	expect(divider).toHaveProperty("lineWidth", 2);
 	expect(divider).toHaveProperty("lineMargin", 8);
 	expect(divider.lineColor).toBe(UI.colors.green);

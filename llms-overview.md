@@ -46,8 +46,8 @@ export class FooActivity extends Activity {
 	// State goes here, using public properties
 	count = 0;
 
-	// Event handlers go here, as protected 'on...' methods
-	protected onCountUp() {
+	// Event handlers go here, as protected 'on...' methods (optional argument)
+	protected onCountUp(e: ViewEvent) {
 		// ... update state, which automatically updates view bindings
 		this.count++;
 	}
@@ -69,9 +69,9 @@ export function FooView(v: Binding<FooActivity>) {
 		UI.Label("Counter").labelStyle("title"),
 		UI.Label(v.bind("count")).fontSize(24),
 		UI.Row(
-			// NEVER include event handler functions here, always emit named events
-			UI.Button("Up").icon("plus").emit("CountUp"),
-			UI.Button("Down").icon("minus").emit("CountDown"),
+			// Don't include complex event handling in the view, emit named events instead
+			UI.Button("Up").icon("plus").onClick("CountUp"),
+			UI.Button("Down").icon("minus").onClick("CountDown"),
 		),
 	);
 }
@@ -177,7 +177,7 @@ class MyActivity extends Activity {
 
 Activities receive all events from views. This way, the activity typically updates the state, which automatically updates view bindings.
 
-Views listen for events and emit then using a specific name (and optionally data), e.g. `UI.Button("Home").emit("SelectTab", { tab: "home" })` or `UI.Cell().allowFocus().intercept("FocusIn", "SelectItem")`.
+Views listen for events and emit then using a specific name (and optionally data), e.g. `UI.Button("Up").onClick("CountUp")`, `UI.Button("Home").onClick((_, button) => button.onClick("SelectTab", { tab: "home" }))` or `UI.Cell().allowFocus().onFocusIn("SelectItem")`.
 
 ```typescript
 import { Activity, UITextField, ViewEvent } from "talla-ui";
@@ -770,7 +770,7 @@ UI.Column(
 	UI.Label.fmt("User name")
 		.labelStyle("secondary")
 		.padding({ y: 4 })
-		.intercept("Click", "RequestFocusNext"),
+		.onClick("RequestFocusNext"),
 	UI.TextField().bindFormState(v.bind("form"), "userName"),
 	UI.Label(bind("form.errors.userName"))
 		.hideWhen(bind.not("form.errors.userName"))
@@ -780,7 +780,7 @@ UI.Column(
 	UI.Label.fmt("Password")
 		.labelStyle("secondary")
 		.padding({ y: 4 })
-		.intercept("Click", "RequestFocusNext"),
+		.onClick("RequestFocusNext"),
 	UI.TextField().type("password").bindFormState(v.bind("form"), "password"),
 	UI.Label(bind("form.errors.password"))
 		.hideWhen(bind.not("form.errors.password"))
@@ -790,7 +790,7 @@ UI.Column(
 	UI.Toggle.fmt("Remember me").bindFormState(v.bind("form"), "rememberMe"),
 
 	UI.Spacer(8),
-	UI.Button("Submit").emit("Submit"),
+	UI.Button("Submit").onClick("Submit"),
 );
 ```
 
@@ -891,7 +891,7 @@ export function Collapsible(
 				UI.Label(title)
 					.icon(v.bind("expanded").then("chevronDown", "chevronNext"))
 					.cursor("pointer")
-					.intercept("Click", "Toggle"),
+					.onClick("Toggle"),
 				UI.ShowWhen(v.bind("expanded"), UI.Column(...content)),
 			),
 		),
@@ -1302,15 +1302,13 @@ UI.Label() // ... or UI.Button, UI.TextField, UI.Row, etc.
 	.lineHeight(1.5) // relative to font size
 	.textAlign("center")
 	.requestFocus() // request focus after render
-	.intercept("Click", "Close") // intercept Click event, emit Close
-	.intercept("Click", "SelectTab", { tab: "settings" }) // ... emit event with data
-	.intercept("Press", "Go", {}, true); // intercept Press, _also_ emit original
-//  .onClick(() => { ... }) ❌ NO -- event handlers go in activity or component view classes
-//  .onKeyDown(() => { ... }) ❌ NO -- use .intercept("KeyDown", "EventName")
-//  .intercept("Click", "SelectItem", { item: bind("item") }) ❌ NO -- use data.listViewItem
+	.onClick("Close") // intercept Click event, emit Close with same data (including listViewItem)
+	.onClick((_, view) => view.emit("SelectTab", { tab: "settings" })) // ... emit event with data
+	.handle("SelectTab", "SelectSettingsTab") // handle custom events
+	.handleKey("Escape", "CloseTab"); // handle keyboard events
 ```
 
-Events on UI elements that can be intercepted are `Click`, `DoubleClick`, `ContextMenu`, `Press`, `Release`, `KeyDown`, `KeyUp`, `KeyPress`, `FocusIn`, `FocusOut`, `Change`, `Input`, `Copy`, `Cut`, `Paste`, and specific keydown events `EnterKeyPress`, `SpacebarPress`, `BackspaceKeyPress`, `DeleteKeyPress`, `EscapeKeyPress`, `TabKeyPress`, `ArrowLeftKeyPress`, `ArrowUpKeyPress`, `ArrowRightKeyPress`, `ArrowDownKeyPress`.
+Events on UI elements that can be intercepted are `Click`, `DoubleClick`, `ContextMenu`, `Press`, `Release`, `KeyDown`, `KeyUp`, `FocusIn`, `FocusOut`, `Change`, and `Input`.
 
 ## Containers
 
@@ -1340,7 +1338,7 @@ UI.Cell()
 	.style(myStyle) // but not align, reverse, wrap, etc.
 	.allowFocus() // enable input focus (click)
 	.allowKeyboardFocus() // enable focus via keyboard
-	.intercept("EscapeKeyPress", "Close"); // respond to interaction
+	.handleKey("Escape", "Close"); // respond to interaction
 
 // Use .with() to turn around method chaining (preferred style)
 UI.Row().gap(0).minHeight(64).with(
@@ -1360,7 +1358,7 @@ UI.Column()
 
 To wrap a row or column in a `UIScrollView`, use the `scroll()` method _on the embedded container_.
 
-Scroll views emit `Scroll` events, with data properties including `yOffset`, `xOffset`, `scrolledDown`, `scrolledUp`, `atTop`, `atBottom`.
+Scroll views emit `Scroll` and `ScrollEnd` events, with data properties including `yOffset`, `xOffset`, `scrolledDown`, `scrolledUp`, `atTop`, `atBottom`.
 
 ```typescript
 UI.Row().scroll();
@@ -1369,7 +1367,8 @@ UI.Column()
 	.topThreshold(100) // atTop true within 0-100px
 	.bottomThreshold(100); // atBottom true within 100px of bottom
 	.verticalScroll(false) // disable vertical scrolling
-	.horizontalScroll(false); // disable horizontal scrolling
+	.horizontalScroll(false) // disable horizontal scrolling
+	.onScroll("ItemListScroll"); // handle scroll events
 ```
 
 ## Controls
@@ -1394,7 +1393,7 @@ UI.Button()
 	.buttonStyle(myStyle) // UIStyle instance, or binding
 	.navigateTo("foo/bar") // or binding
 	.disableKeyboardFocus()
-	.emit("Close"); // intercept Click
+	.onClick("Close"); // intercept Click
 
 UI.Label("...") // or UI.Label.fmt("..." [, bindings])
 	.icon("plus") // same as UI.Button.icon()
@@ -1419,7 +1418,7 @@ UI.TextField("Placeholder") // or UI.TextField.fmt("..." [, bindings])
 	.disabled() // or .disabled(binding)
 	.readOnly() // same
 	.textfieldStyle("transparent") // or UIStyle instance, overrides, or binding
-	.emit("EmailInput"); // intercept Input
+	.onInput("EmailInput"); // intercept Input
 
 UI.Toggle("Label text") // or UI.Toggle.fmt("..." [, bindings])
 	.type("checkbox") // or "switch", or "none"
@@ -1428,7 +1427,7 @@ UI.Toggle("Label text") // or UI.Toggle.fmt("..." [, bindings])
 	.disabled() // or .disabled(binding)
 	.toggleStyle("danger") // or UIStyle instance, overrides, or binding
 	.labelStyle({ bold: true }) // or binding
-	.emit("Toggle"); // intercept Change
+	.onChange("Toggle"); // intercept Change
 
 UI.Image("...") // URL or UIIconResource, or binding
 	.imageStyle({ padding: 16 }) // or UIStyle instance, or binding
@@ -1454,7 +1453,7 @@ Typically, interactivitiy requires combining event handlers and bindings.
 UI.Button("Settings")
 	.value("settings")
 	.pressed(bind("selectedTab").equals("settings"))
-	.emit("SetTab");
+	.onClick("SetTab");
 
 // ... activity -- interaction logic:
 protected onSetTab(event: UIButtonEvent) {
@@ -1508,7 +1507,7 @@ UI.List(v.bind("customers"))
 		// Evaluated only once, views built for all items
 		UI.Row()
 			.cursor("pointer")
-			.intercept("Click", "SelectItem")
+			.onClick("SelectItem")
 			.with(
 				UI.Label(item.bind("name")).padding(),
 				UI.Label("Inactive")
@@ -1523,7 +1522,7 @@ UI.List(v.bind("customers"))
 
 Async rendering can be animated by wrap the content (here `UI.Row()`) with e.g. `UI.Show().showAnimation("fadeIn")`.
 
-List views handle events from embedded views, and add a data property `listViewItem` to the event before re-emitting. Such events can be typed as `UIListViewEvent<TItem>` for convenience.
+List views handle events from embedded views, and add a data property `listViewItem` to the event before propagating. Such events can be typed as `UIListViewEvent<TItem>` for convenience.
 
 ```typescript
 class CustomersActivity extends Activity {

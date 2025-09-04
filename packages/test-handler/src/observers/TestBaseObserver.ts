@@ -18,7 +18,6 @@ const _eventNames: { [p in TestOutputElement.PlatformEvent]?: string } = {
 	mouseleave: "MouseLeave",
 	keydown: "KeyDown",
 	keyup: "KeyUp",
-	keypress: "KeyPress",
 	focusin: "FocusIn",
 	focusout: "FocusOut",
 	change: "Change",
@@ -85,7 +84,6 @@ export abstract class TestBaseObserver<TUIViewElement extends UIElement> {
 		this._thisRenderedEvent = new ObservableEvent(
 			"Rendered",
 			observed,
-			undefined,
 			undefined,
 			undefined,
 			true,
@@ -196,7 +194,6 @@ export abstract class TestBaseObserver<TUIViewElement extends UIElement> {
 				baseEvent,
 				this.observed,
 				data,
-				undefined,
 				undefined,
 				baseEvent === "MouseEnter" || baseEvent === "MouseLeave",
 			);

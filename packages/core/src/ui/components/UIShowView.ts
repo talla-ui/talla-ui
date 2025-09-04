@@ -4,6 +4,7 @@ import {
 	Binding,
 	BindingOrValue,
 	isBinding,
+	ObservableEvent,
 	ObservableObject,
 } from "../../object/index.js";
 import { UIAnimation } from "../style/index.js";
@@ -306,7 +307,7 @@ export namespace UIShowView {
 			let elseContent = this._elseContent;
 			if (content || elseContent) {
 				view.setBody = function (state) {
-					let body = (state ? content : elseContent)?.create();
+					let body = (state ? content : elseContent)?.build();
 					this.body?.unlink();
 					this.body = body && this.attach(body, { delegate: this });
 				};
@@ -324,26 +325,22 @@ export namespace UIShowView {
 		 * Creates a new instance of the view renderer.
 		 * @returns A newly created and initialized `UIShowView` instance.
 		 */
-		create() {
-			return this.initializer.create();
+		build() {
+			return this.initializer.build();
 		}
 
 		/**
-		 * Intercepts an event from the view and re-emits it with a different name.
-		 * @note Events from list item views automatically have the `listViewItem` property added to the data object, before being propagated on the list view itself.
-		 * @param origEvent The name of the event to intercept.
-		 * @param emit The new event name to emit, or a function to call.
-		 * @param data The data properties to add to the alias event, if any
-		 * @param forward Whether to forward the original event as well (defaults to false)
+		 * Handles propagated events from the nested view
+		 * - This method can be used to handle events before they're propagated from the nested view to this view.
+		 * @param eventName The name of the event to handle
+		 * @param handle The function to call, or name of the event to emit instead
 		 * @returns The builder instance for chaining.
 		 */
-		intercept(
-			origEvent: string,
-			emit: string | ObservableObject.InterceptHandler<UIShowView>,
-			data?: Record<string, unknown>,
-			forward?: boolean,
+		handle(
+			eventName: string,
+			handle: string | ((event: ObservableEvent, view: UIShowView) => void),
 		) {
-			this.initializer.intercept(origEvent, emit, data, forward);
+			this.initializer.handle(eventName, handle);
 			return this;
 		}
 

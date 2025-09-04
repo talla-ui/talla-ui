@@ -266,7 +266,7 @@ export class Activity extends ObservableObject {
 				viewBuilder = viewFunction(new Binding($_activity));
 				_viewBuilders.set(viewFunction, viewBuilder);
 			}
-			let newView = viewBuilder?.create();
+			let newView = viewBuilder?.build();
 			if (!newView || !(newView instanceof View)) throw err(ERROR.View_Invalid);
 			this.view = this.attach(newView, {
 				delegate: this,

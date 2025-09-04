@@ -179,7 +179,7 @@ describe("Rendering views", () => {
 
 	test("Cell view from single component view", async () => {
 		const MyView = ComponentViewBuilder(ComponentView, () => UI.Cell());
-		let view = MyView.create();
+		let view = MyView.build();
 		let app = useTestContext();
 		renderTestView(view);
 		await app.renderer.expectOutputAsync({
@@ -197,7 +197,7 @@ describe("Rendering views", () => {
 			}
 		}
 		const MyView = ComponentViewBuilder(CellView, () => UI.Cell());
-		let view = MyView.create();
+		let view = MyView.build();
 		useTestContext({ throwUncaughtErrors: false });
 		let mockErrorHandler = vi.fn();
 		AppContext.setErrorHandler(mockErrorHandler);
@@ -210,7 +210,7 @@ describe("Rendering views", () => {
 
 	test("Remove view after rendering", async () => {
 		const MyView = ComponentViewBuilder(ComponentView, () => UI.Cell());
-		let view = MyView.create();
+		let view = MyView.build();
 		let app = useTestContext();
 		let rendered = app.render(view);
 		await app.renderer.expectOutputAsync({

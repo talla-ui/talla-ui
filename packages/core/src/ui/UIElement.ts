@@ -23,9 +23,7 @@ function isStyleInstance(
 
 /** @internal Helper function to emit a non-propagated event; returns true */
 function emitRendered(source: View, name: string) {
-	source.emit(
-		new ObservableEvent(name, source, undefined, undefined, undefined, true),
-	);
+	source.emit(new ObservableEvent(name, source, undefined, undefined, true));
 	return true;
 }
 
@@ -119,7 +117,6 @@ export abstract class UIElement extends View {
 			this,
 			{ render: callback },
 			undefined,
-			undefined,
 			true,
 		);
 		this.emit(event);
@@ -187,26 +184,8 @@ export namespace UIElement {
 		 * Creates a new instance of the UI element.
 		 * @returns A newly created and initialized UI element instance.
 		 */
-		create() {
-			return this.initializer.create();
-		}
-
-		/**
-		 * Intercepts an event and re-emits it with a different name or calls a function.
-		 * @param eventName The name of the event to intercept
-		 * @param alias The new event name to emit, or a function to call
-		 * @param data The data properties to add to the alias event, if any
-		 * @param forward Whether to forward the original event as well (defaults to false)
-		 * @returns The builder instance for chaining.
-		 */
-		intercept(
-			eventName: string,
-			alias: string | ObservableObject.InterceptHandler<TView>,
-			data?: Record<string, unknown>,
-			forward?: boolean,
-		) {
-			this.initializer.intercept(eventName, alias, data, forward);
-			return this;
+		build() {
+			return this.initializer.build();
 		}
 
 		/**
@@ -632,6 +611,184 @@ export namespace UIElement {
 			return this;
 		}
 
+		/**
+		 * Adds an event handler to all instances of the UI element
+		 * - This method can be used to handle events on the UI element, including events that were propagated from nested views, by intercepting any event that would be emitted and calling the provided function instead, or emitting a different event.
+		 * - This method uses {@link ObservableObject.intercept()} to intercept events on all instances of the UI element.
+		 * - If a handler function needs to re-emit the original event, it should do so with the `noIntercept` parameter set to true in the call to {@link ObservableObject.emit()}.
+		 * @param eventName The name of the event to handle
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @returns The builder instance for chaining.
+		 */
+		handle(
+			eventName: string,
+			handle: string | ((event: ObservableEvent, view: TView) => void),
+		) {
+			this.initializer.handle(eventName, handle);
+			return this;
+		}
+
+		/**
+		 * Adds an event handler for `KeyDown` events with the specified key name
+		 * - This method can be used to handle keyboard events on all instances of the UI element, by listening to the `KeyDown` event and calling the provided function or emitting another event with the provided name.
+		 * - Key names are case sensitive. Most common key names are `Enter`, `Escape`, `ArrowUp` (and other arrow keys), and `Backspace`.
+		 * - To avoid conflicts with other event handlers, this method doesn't intercept the `KeyDown` event but adds an event listener instead.
+		 * @param key The name of the key to handle
+		 * @param handle The function to call, or name of an event to emit
+		 * @returns The builder instance for chaining.
+		 */
+		handleKey(
+			key: string,
+			handle: string | ((event: ObservableEvent, view: TView) => void),
+		) {
+			if (!this._keyHandlers) {
+				this._keyHandlers = {};
+				this.initializer.finalize((view) => {
+					view.listen((e) => {
+						if (e.name !== "KeyDown") return;
+						let handler = this._keyHandlers![e.data.key as string];
+						if (typeof handler === "string") view.emit(handler, e.data);
+						else if (handler) handler(e, view);
+					});
+				});
+			}
+			this._keyHandlers![key] = handle;
+			return this;
+		}
+
+		/**
+		 * Handles the `Click` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onClick(handle: string | ((event: ObservableEvent, view: TView) => void)) {
+			return this.handle("Click", handle);
+		}
+
+		/**
+		 * Handles the `DoubleClick` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onDoubleClick(
+			handle: string | ((event: ObservableEvent, view: TView) => void),
+		) {
+			return this.handle("DoubleClick", handle);
+		}
+
+		/**
+		 * Handles the `ContextMenu` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onContextMenu(
+			handle: string | ((event: ObservableEvent, view: TView) => void),
+		) {
+			return this.handle("ContextMenu", handle);
+		}
+
+		/**
+		 * Handles the `Press` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onPress(handle: string | ((event: ObservableEvent, view: TView) => void)) {
+			return this.handle("Press", handle);
+		}
+
+		/**
+		 * Handles the `Release` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onRelease(
+			handle: string | ((event: ObservableEvent, view: TView) => void),
+		) {
+			return this.handle("Release", handle);
+		}
+
+		/**
+		 * Handles the `KeyDown` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onKeyDown(
+			handle: string | ((event: ObservableEvent, view: TView) => void),
+		) {
+			return this.handle("KeyDown", handle);
+		}
+
+		/**
+		 * Handles the `KeyUp` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onKeyUp(handle: string | ((event: ObservableEvent, view: TView) => void)) {
+			return this.handle("KeyUp", handle);
+		}
+
+		/**
+		 * Handles the `FocusIn` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onFocusIn(
+			handle: string | ((event: ObservableEvent, view: TView) => void),
+		) {
+			return this.handle("FocusIn", handle);
+		}
+
+		/**
+		 * Handles the `FocusOut` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onFocusOut(
+			handle: string | ((event: ObservableEvent, view: TView) => void),
+		) {
+			return this.handle("FocusOut", handle);
+		}
+
+		/**
+		 * Handles the `Change` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onChange(handle: string | ((event: ObservableEvent, view: TView) => void)) {
+			return this.handle("Change", handle);
+		}
+
+		/**
+		 * Handles the `Input` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onInput(handle: string | ((event: ObservableEvent, view: TView) => void)) {
+			return this.handle("Input", handle);
+		}
+
+		/**
+		 * Handles the `BeforeRender` event, emitted before the element is rendered for the first time
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onBeforeRender(
+			handle: string | ((event: ObservableEvent, view: TView) => void),
+		) {
+			return this.handle("BeforeRender", handle);
+		}
+
+		/**
+		 * Handles the `Rendered` event, emitted when the element has been rendered
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onRendered(
+			handle: string | ((event: ObservableEvent, view: TView) => void),
+		) {
+			return this.handle("Rendered", handle);
+		}
+
 		// --- helper functions
 
 		/** @internal Helper method to set a property on the view instance */
@@ -746,6 +903,11 @@ export namespace UIElement {
 		/** @internal Resolvers for bound style overrides */
 		private _boundRes?: {
 			[key: string]: UIStyle.ThemeResolver<any, string> | undefined;
+		};
+
+		/** @internal Key handlers, if interceptor has been added */
+		private _keyHandlers?: {
+			[key: string]: string | ((event: ObservableEvent, view: TView) => void);
 		};
 	}
 }

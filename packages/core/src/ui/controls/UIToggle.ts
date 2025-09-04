@@ -173,16 +173,5 @@ export namespace UIToggle {
 		labelStyle(labelStyle?: BindingOrValue<UIStyle.StyleOptions | undefined>) {
 			return this.setProperty("labelStyle", labelStyle);
 		}
-
-		/**
-		 * Intercepts the `Change` event and re-emits it with a different name.
-		 * @param alias The new event name to emit.
-		 * @param data The data properties to add to the alias event, if any
-		 * @returns The builder instance for chaining.
-		 */
-		emit(alias: string, data?: Record<string, unknown>) {
-			this.initializer.intercept("Change", alias, data);
-			return this;
-		}
 	}
 }

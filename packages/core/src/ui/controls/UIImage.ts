@@ -4,6 +4,7 @@ import { BindingOrValue } from "../../object/Binding.js";
 import { UIIconResource, UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
 import { UIElement } from "../UIElement.js";
+import { ObservableEvent } from "../../object/index.js";
 
 /**
  * A view class that represents an image or icon control
@@ -98,6 +99,28 @@ export namespace UIImage {
 		allowKeyboardFocus(allow = true) {
 			if (allow) this.allowFocus(true);
 			return this.setProperty("allowKeyboardFocus", allow);
+		}
+
+		/**
+		 * Handles the `Load` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onLoad(
+			handle: string | ((event: ObservableEvent, image: UIImage) => void),
+		) {
+			return this.handle("Load", handle);
+		}
+
+		/**
+		 * Handles the `LoadError` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onLoadError(
+			handle: string | ((event: ObservableEvent, image: UIImage) => void),
+		) {
+			return this.handle("LoadError", handle);
 		}
 	}
 }

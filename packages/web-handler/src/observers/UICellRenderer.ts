@@ -19,7 +19,6 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 				cell,
 				{ event: e },
 				undefined,
-				undefined,
 				true,
 			);
 			if (this.observed === cell) cell.emit(event);
@@ -29,7 +28,6 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 				"MouseLeave",
 				cell,
 				{ event: e },
-				undefined,
 				undefined,
 				true,
 			);

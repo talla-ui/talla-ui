@@ -25,7 +25,7 @@ export interface ViewBuilder<TView extends View = View> {
 	 * Creates a new instance of the view using the embedded initializer
 	 * @returns A newly created and initialized view instance
 	 */
-	create(): TView;
+	build(): TView;
 }
 
 export namespace ViewBuilder {
@@ -121,34 +121,26 @@ export namespace ViewBuilder {
 		}
 
 		/**
-		 * Configures event handling to emit an aliased event or call a function
+		 * Intercepts events with the specified name on all view instances
 		 *
 		 * @description
-		 * This method intercepts events with the specified name and re-emits them with an alias, or calls a function. If the `forward` parameter is true, the original event will also be forwarded.
+		 * This method intercepts events with the specified name on all view instances, and calls the provided function when the event would be emitted. The function is called with the event and the view instance itself as arguments.
 		 *
-		 * Typically, an aliased event is used to handle events at the parent level, e.g. in an activity. In some cases, a function can be used to handle the event.
+		 * If a string is provided instead, a new event with that name is emitted, replacing the original event. The new event may be intercepted by another handler on the same view, and retains the original event data.
+		 *
+		 * The handler function may re-emit the original event as well as any other events. To avoid an endless loop, the function should only emit events with the same name (including the original event) with the `noIntercept` parameter set to true in the call to {@link ObservableObject.emit()}.
 		 *
 		 * @param eventName The name of the event to intercept
-		 * @param alias The alias to emit instead, or a function to call
-		 * @param data The data properties to add to the alias event, if any
-		 * @param forward Whether to forward the original event as well (defaults to false)
+		 * @param handle The function to call, or name of the event to emit instead
+		 *
+		 * @see {@link ObservableObject.intercept}
 		 */
-		intercept(
+		handle(
 			eventName: string,
-			alias: string | ObservableObject.InterceptHandler<TView>,
-			data?: Record<string, unknown>,
-			forward?: boolean,
+			handle: string | ((event: ObservableEvent, view: TView) => void),
 		) {
-			if (typeof alias === "string") {
-				let a = alias;
-				alias = function (e, emit) {
-					if (forward) emit(e);
-					let eventData = data ? { ...e.data, ...data } : e.data;
-					this.emit(new ObservableEvent(a, this, eventData, undefined, e));
-				};
-			}
 			this._final.push((view) => {
-				ObservableObject.intercept(view, eventName, alias);
+				ObservableObject.intercept(view, eventName, handle);
 			});
 		}
 
@@ -159,7 +151,7 @@ export namespace ViewBuilder {
 		 * This method creates a new instance of the view class and runs all configuration callbacks.
 		 * @returns A fully initialized view instance
 		 */
-		create() {
+		build() {
 			let result = new this.ViewClass();
 			for (let f of this._init) f(result);
 			for (let f of this._final) f(result);
@@ -191,10 +183,10 @@ export namespace ViewBuilder {
  */
 export const DeferredViewBuilder = function (define: () => ViewBuilder) {
 	return {
-		create() {
+		build() {
 			let builder = _deferredBuilders.get(define);
 			if (!builder) _deferredBuilders.set(define, (builder = define()));
-			return builder.create();
+			return builder.build();
 		},
 	};
 } as DeferredViewBuilder.Type;
@@ -251,18 +243,14 @@ export const ComponentViewBuilder = function (
 						builder = viewBuilder(new Binding(symbol));
 						_deferredBuilders.set(viewBuilder, builder);
 					}
-					return (body = builder.create());
+					return (body = builder.build());
 				},
 			});
 		});
 	}
 	return {
 		initializer,
-		create: initializer.create.bind(initializer),
-		intercept(eventName, alias, data, forward) {
-			initializer.intercept(eventName, alias as any, data, forward);
-			return this;
-		},
+		build: initializer.build.bind(initializer),
 	};
 } as ComponentViewBuilder.Type;
 
@@ -290,26 +278,5 @@ export interface ComponentViewBuilder<
 	 * Creates a new instance of the component view along with its body
 	 * @returns A newly created and initialized component view instance
 	 */
-	create: () => TView;
-
-	/**
-	 * Configures event handling to emit an aliased event or call a function
-	 *
-	 * @description
-	 * This method intercepts events with the specified name and re-emits them with an alias, or calls a function. If the `forward` parameter is true, the original event will also be forwarded.
-	 *
-	 * Typically, an aliased event is used to handle events at the parent level, e.g. in an activity. In some cases, a function can be used to handle the event.
-	 *
-	 * @param eventName The name of the event to intercept
-	 * @param alias The alias to emit instead, or a function to call
-	 * @param data The data properties to add to the alias event, if any
-	 * @param forward Whether to forward the original event as well (defaults to false)
-	 */
-	intercept: <T>(
-		this: T,
-		eventName: string,
-		alias: string | ObservableObject.InterceptHandler<TView>,
-		data?: Record<string, unknown>,
-		forward?: boolean,
-	) => T;
+	build: () => TView;
 }

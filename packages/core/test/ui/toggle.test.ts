@@ -23,7 +23,7 @@ test("Constructor with label and state", () => {
 
 test("View builder with properties", () => {
 	let myToggle = UI.Toggle("foo").state(true);
-	let toggle = myToggle.create();
+	let toggle = myToggle.build();
 	expect(toggle).toHaveProperty("label", "foo");
 	expect(toggle).toHaveProperty("state", true);
 });
@@ -50,7 +50,7 @@ test("User input with form state", async () => {
 		// note that form must exist before it can be bound
 		readonly form = new FormState().set("foo", true);
 		readonly toggle = this.attach(
-			UI.Toggle().bindFormState(this.form, "foo").create(),
+			UI.Toggle().bindFormState(this.form, "foo").build(),
 		);
 	}
 	let host = new Host();

@@ -228,16 +228,5 @@ export namespace UIButton {
 		disableKeyboardFocus(disableKeyboardFocus = true) {
 			return this.setProperty("disableKeyboardFocus", disableKeyboardFocus);
 		}
-
-		/**
-		 * Intercepts the `Click` event and re-emits it with a different name.
-		 * @param alias The new event name to emit.
-		 * @param data The data properties to add to the alias event, if any
-		 * @returns The builder instance for chaining.
-		 */
-		emit(alias: string, data?: Record<string, unknown>) {
-			this.initializer.intercept("Click", alias, data);
-			return this;
-		}
 	}
 }

@@ -11,6 +11,7 @@ import {
 	$_unlinked,
 	addTrap,
 	attachObject,
+	guard,
 	invokeTrap,
 	removeTrap,
 	unlinkObject,
@@ -86,15 +87,7 @@ function makeAttachHandler(
 		return function (_object, event) {
 			if (source[$_unlinked] || event.noPropagation) return;
 			if (!safeCall(delegate.delegate, delegate, event)) {
-				source.emit(
-					new ObservableEvent(
-						event.name,
-						event.source,
-						event.data,
-						source,
-						event,
-					),
-				);
+				source.emit(event);
 			}
 		};
 	}
@@ -137,19 +130,21 @@ export class ObservableObject {
 
 	/**
 	 * Intercepts events on an observable object
-	 * @summary This method intercepts events on an observable object, calling a function when the specified event would be emitted. The function is called with the event, and a callback argument that can be used to emit an event without further interception (e.g. to emit the original event; otherwise the event is not emitted).
-	 * @note If the event is already intercepted, the new handler will be unused (i.e. only one handler is allowed for each event name).
+	 * @summary This method intercepts events on an observable object, calling a function when the specified event would be emitted. The function is called with the event and the object itself as arguments. If a string is provided instead, a new event is emitted with that name, with the original event data and the original event as `inner` event.
+	 * @note If the event is already intercepted, the new handler will replace the existing handler.
 	 * @param object The object to intercept events on
 	 * @param eventName The name of the event to intercept
-	 * @param f A function that will be called when the event would be emitted
+	 * @param handle A function that will be called when the event would be emitted, or the name of a new event to emit; to avoid an endless loop, the function should only re-emit the event (if needed) with the `noIntercept` parameter set to true in the call to {@link ObservableObject.emit}.
 	 */
 	static intercept<T extends ObservableObject>(
 		object: T,
 		eventName: string,
-		f: ObservableObject.InterceptHandler<T>,
+		handle: string | ((event: ObservableEvent, object: T) => void),
 	) {
+		if (eventName === handle) throw invalidArgErr("handle");
 		let intercept = (object[$_intercept] ||= Object.create(null));
-		intercept[eventName] ||= f;
+		intercept[eventName] =
+			typeof handle === "function" ? guard(handle) : handle;
 	}
 
 	/**
@@ -204,7 +199,7 @@ export class ObservableObject {
 	/** @internal Intercepted events, with event names as keys and handler functions as values */
 	declare [$_intercept]?: Record<
 		string,
-		ObservableObject.InterceptHandler<any>
+		string | ((event: ObservableEvent, object: ObservableObject) => void)
 	>;
 
 	/**
@@ -212,19 +207,33 @@ export class ObservableObject {
 	 * - Events can be handled using {@link ObservableObject.listen()} or {@link ObservableObject.attach()}.
 	 * - If the first argument is undefined, no event is emitted at all and this method returns quietly.
 	 * @param event An instance of ObservableEvent, or an event name; if a name is provided, an instance of ObservableEvent will be created by this method
-	 * @param data Additional data to be set on {@link ObservableEvent.data}, if `event` is a string
+	 * @param noIntercept True if the event should not be intercepted, if `event` is an event object
+	 * @param data Additional data to be set on {@link ObservableEvent.data}, if `event` is a string; the object is treated as immutable and may be reused between events.
 	 */
-	emit(event?: ObservableEvent): this;
+	emit(event?: ObservableEvent, noIntercept?: boolean): this;
 	emit(event: string, data?: Record<string, any>): this;
-	emit(event?: string | ObservableEvent, data?: any) {
+	emit(event?: string | ObservableEvent, param?: any) {
 		if (event === undefined) return this;
 		if (typeof event === "string")
-			event = new ObservableEvent(event, this, data);
+			event = new ObservableEvent(event, this, param);
+		else if (!event.source || !event.name) throw invalidArgErr("event");
+		else if (param) {
+			invokeTrap(this, $_traps_event, event);
+			return this;
+		}
 
 		// check for intercepted events
 		let handler = this[$_intercept]?.[event.name];
-		if (handler) {
-			handler.call(this, event, (e) => invokeTrap(this, $_traps_event, e));
+		if (typeof handler === "string") {
+			// emit a different event instead, allowing further interception unless same name
+			this.emit(
+				new ObservableEvent(handler, this, event.data, event),
+				handler === event.name,
+			);
+			return this;
+		} else if (typeof handler === "function") {
+			// call the handler function
+			handler.call(this, event, this);
 			return this;
 		}
 
@@ -498,18 +507,6 @@ export class ObservableObject {
 
 export namespace ObservableObject {
 	/**
-	 * Intercept handler function
-	 * - This type of function is accepted by {@link ObservableObject.intercept}, handling events that _would be_ emitted by the object.
-	 * - The `emit` parameter is a callback that can be used to emit an event without further interception (e.g. to emit the original event).
-	 * - The `this` parameter is the object that the event would be emitted on.
-	 */
-	export type InterceptHandler<T extends ObservableObject> = (
-		this: T,
-		event: ObservableEvent<T>,
-		emit: (event: ObservableEvent) => void,
-	) => void;
-
-	/**
 	 * Type definition for a callback, or set of callbacks that can be passed to the {@link ObservableObject.listen} method
 	 * - If a single function is provided, it will be called for all events emitted by the object.
 	 * - If an object is provided, the `handler` function will be called for all events, and the `unlinked` function will be called when the object is unlinked.
@@ -530,7 +527,7 @@ export namespace ObservableObject {
 	 * Type definition for a callback, or set of callbacks that can be passed to the {@link ObservableObject.attach} method
 	 * - If a single function is provided, it will be called for all events emitted by the object.
 	 * - If an object with `handler` property is provided, that function will be called for all events, and the `detached` function will be called when the object is detached **or** unlinked.
-	 * - If the object includes a `delegate` property instead of `handler`, the specified object (usually the attached parent itself) must contain a `delegate(event) { ... }` method, which will be called for all events that do **not** have their {@link ObservableEvent.noPropagation} property set. If the `delegate` method does not return `true` (or a promise that resolves to `true`) then the event will be emitted on the attached parent object, with the {@link ObservableEvent.delegate} property set to the attached parent — effectively 'bubbling up' or _propagating_ the event from an object (e.g. a view) to its parent(s).
+	 * - If the object includes a `delegate` property instead of `handler`, the specified object (usually the attached parent itself) must contain a `delegate(event) { ... }` method, which will be called for all events that do **not** have their {@link ObservableEvent.noPropagation} property set. If the `delegate` method does not return `true` (or a promise that resolves to `true`) then the event will be re-emitted on the attached parent object — effectively 'bubbling up' or _propagating_ the event from an object (e.g. a view) to its parent(s).
 	 */
 	export type AttachListener<T extends ObservableObject> =
 		| ((event: ObservableEvent) => Promise<void> | void)
@@ -547,7 +544,7 @@ export namespace ObservableObject {
 	 * A type of object that can be used to handle events from other (attached) objects
 	 * - This interface must be matched by the `delegate` object that's passed to {@link ObservableObject.attach()}, as part of the {@link ObservableObject.AttachListener} object argument.
 	 * - In practice, the required `delegate` method is often defined on the attached parent itself, to handle events from attached objects such as (nested) views. In that case, the parent object itself can be passed to {@link ObservableObject.attach()} as `{ delegate: this }`.
-	 * - The `delegate` method is expected to return undefined or false if the event should be propagated on the parent object, i.e. re-emitted with the {@link ObservableEvent.delegate} property set to the attached parent object. Otherwise, the method should return true, or a promise for asynchronous error handling.
+	 * - The `delegate` method is expected to return undefined or false if the event should be propagated on the parent object. Otherwise, the method should return true, or a promise for asynchronous error handling.
 	 * @see {@link ObservableObject.attach}
 	 */
 	export interface EventDelegate {

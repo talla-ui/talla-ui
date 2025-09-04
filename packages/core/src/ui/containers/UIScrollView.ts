@@ -1,13 +1,6 @@
-import { ViewBuilder, type View } from "../../app/index.js";
+import { ViewBuilder } from "../../app/index.js";
 import { BindingOrValue, ObservableEvent } from "../../object/index.js";
 import { UIContainer } from "./UIContainer.js";
-
-/** @internal Helper function to emit a scroll event */
-function emitScroll(source: View, name: string, data: any) {
-	source.emit(
-		new ObservableEvent(name, source, data, undefined, undefined, true),
-	);
-}
 
 /**
  * A view class that represents a container element that allows users to scroll, emitting asynchronous scroll events
@@ -37,7 +30,15 @@ export class UIScrollView extends UIContainer {
 	 * @note Positioning is platform dependent and may also change with text direction. Use only offset values taken from {@link UIScrollView.ScrollEventData}.
 	 */
 	scrollTo(yOffset?: number, xOffset?: number) {
-		emitScroll(this, "UIScrollTarget", { yOffset, xOffset });
+		this.emit(
+			new ObservableEvent(
+				"UIScrollTarget",
+				this,
+				{ yOffset, xOffset },
+				undefined,
+				true,
+			),
+		);
 	}
 
 	/**
@@ -45,7 +46,15 @@ export class UIScrollView extends UIContainer {
 	 * - This action may be handled asynchronously, and may not take effect immediately.
 	 */
 	scrollToTop() {
-		emitScroll(this, "UIScrollTarget", { target: "top" });
+		this.emit(
+			new ObservableEvent(
+				"UIScrollTarget",
+				this,
+				{ target: "top" },
+				undefined,
+				true,
+			),
+		);
 	}
 
 	/**
@@ -53,7 +62,15 @@ export class UIScrollView extends UIContainer {
 	 * - This action may be handled asynchronously, and may not take effect immediately.
 	 */
 	scrollToBottom() {
-		emitScroll(this, "UIScrollTarget", { target: "bottom" });
+		this.emit(
+			new ObservableEvent(
+				"UIScrollTarget",
+				this,
+				{ target: "bottom" },
+				undefined,
+				true,
+			),
+		);
 	}
 }
 
@@ -122,7 +139,7 @@ export namespace UIScrollView {
 		constructor() {
 			super();
 			this.initializer.finalize((scrollView) => {
-				let content = this.content?.create();
+				let content = this.content?.build();
 				if (content) scrollView.content.add(content);
 			});
 		}
@@ -205,6 +222,32 @@ export namespace UIScrollView {
 		 */
 		horizontalScroll(horizontalScroll: BindingOrValue<boolean> = true) {
 			return this.setProperty("horizontalScroll", horizontalScroll);
+		}
+
+		/**
+		 * Handles the `Scroll` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onScroll(
+			handle:
+				| string
+				| ((event: UIScrollView.ScrollEvent, object: UIScrollView) => void),
+		) {
+			return this.handle("Scroll", handle as any);
+		}
+
+		/**
+		 * Handles the `ScrollEnd` event
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onScrollEnd(
+			handle:
+				| string
+				| ((event: UIScrollView.ScrollEvent, object: UIScrollView) => void),
+		) {
+			return this.handle("ScrollEnd", handle as any);
 		}
 	}
 }

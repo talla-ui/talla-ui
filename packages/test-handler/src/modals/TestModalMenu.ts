@@ -5,6 +5,7 @@ import {
 	ModalMenuOptions,
 	RenderContext,
 	UI,
+	ViewEvent,
 } from "@talla-ui/core";
 
 /** @internal Limited implementation of a menu controller, that can be used to test menu selection using label clicks */
@@ -34,7 +35,6 @@ export class TestModalMenu
 	protected override get body() {
 		return UI.Cell()
 			.accessibleRole("menu")
-			.intercept("Select", (e) => this._resolve?.(e.data.key as string))
 			.with(
 				...this.options.items.map((item) => {
 					if (item.divider) return UI.Divider();
@@ -57,16 +57,20 @@ export class TestModalMenu
 					// else, add the menu item with event handlers
 					return UI.Cell()
 						.accessibleRole("menuitem")
-						.intercept("Click", "Select", item)
+						.onClick((_, self) => {
+							this._resolve?.(item.key);
+						})
 						.with(content);
 				}),
 			)
-			.create();
+			.build();
 	}
 
-	onEscapeKeyPress() {
-		this._resolve?.();
-		return true;
+	onKeyDown(e: ViewEvent) {
+		if (e.data.key === "Escape") {
+			this._resolve?.();
+			return true;
+		}
 	}
 
 	onCloseModal() {
