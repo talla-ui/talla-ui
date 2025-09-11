@@ -87,7 +87,7 @@ export class ComponentView extends View {
 	 * @param property The component view property to bind to.
 	 * @param formChanged A function that will be called when the form state is updated, which should return the value to be set on the component view property; if not provided, the value will be set directly.
 	 */
-	protected bindFormState(
+	protected observeFormState(
 		formState: BindingOrValue<FormState | undefined>,
 		formField: string,
 		property: string & keyof this,

@@ -12,14 +12,14 @@ const TOGGLE_LABEL_STYLE = UI.styles.label.toggleLabel;
 export class UIToggleRenderer extends BaseObserver<UIToggle> {
 	constructor(observed: UIToggle) {
 		super(observed);
-		this.observeProperties("label", "state", "disabled", "labelStyle");
+		this.observeProperties("label", "value", "disabled", "labelStyle");
 	}
 
 	protected override propertyChange(property: string, value: any) {
 		if (!this.element) return;
 		switch (property) {
 			case "label":
-			case "state":
+			case "value":
 				return this.scheduleUpdate(this.element);
 		}
 		super.propertyChange(property, value);
@@ -29,10 +29,10 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 		if (this.observed?.disabled) return false;
 		if (e.type !== "input" && e.type !== "change") return;
 		let checkbox = this.element!.firstChild as HTMLInputElement;
-		if (this.observed!.state !== checkbox.checked) {
-			this.observed!.state = checkbox.checked;
+		if (this.observed!.value !== checkbox.checked) {
+			this.observed!.value = checkbox.checked;
 		}
-		data.state = checkbox.checked;
+		data.value = checkbox.checked;
 	}
 
 	getOutput() {
@@ -40,7 +40,7 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 		let checkbox = document.createElement("input");
 		checkbox.tabIndex = 0;
 		checkbox.type = "checkbox";
-		checkbox.checked = !!this.observed.state;
+		checkbox.checked = !!this.observed.value;
 		checkbox.id = "UIToggle::" + _nextId;
 		let name = this.observed.name;
 		if (name) checkbox.name = name;
@@ -92,9 +92,9 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 		let toggle = this.observed;
 		let checkbox = element.firstChild as HTMLInputElement;
 		if (toggle.name) checkbox.name = toggle.name;
-		if (checkbox.checked && !toggle.state) {
+		if (checkbox.checked && !toggle.value) {
 			checkbox.checked = false;
-		} else if (!checkbox.checked && toggle.state) {
+		} else if (!checkbox.checked && toggle.value) {
 			checkbox.checked = true;
 		}
 

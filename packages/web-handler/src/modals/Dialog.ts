@@ -1,8 +1,8 @@
 import {
 	app,
-	AppContext,
 	bind,
 	ComponentView,
+	ModalFactory,
 	RenderContext,
 	UI,
 	UICell,
@@ -36,7 +36,7 @@ export class WebDialogStyles extends ConfigOptions {
 /** @internal Default modal dialog view; shown synchronously, removed when view is unlinked */
 export class Dialog
 	extends ComponentView
-	implements AppContext.DialogController
+	implements ModalFactory.DialogController
 {
 	static styles = new WebDialogStyles();
 

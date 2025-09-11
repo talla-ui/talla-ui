@@ -20,14 +20,14 @@ export class TestModalMenu
 	async showAsync(place?: Partial<RenderContext.PlacementOptions>) {
 		// return a promise that's resolved when one of the items is selected
 		// or when the menu is dismissed otherwise
-		return new Promise<{ key: string } | undefined>((r) => {
+		return new Promise<{ value: unknown } | undefined>((r) => {
 			app.render(this, {
 				mode: "modal",
 				...place,
 			});
-			this._resolve = (key) => {
+			this._resolve = (value) => {
 				this.unlink();
-				r(key ? { key } : undefined);
+				r(value != null ? { value } : undefined);
 			};
 		});
 	}
@@ -41,9 +41,9 @@ export class TestModalMenu
 
 					// use label builders for the label and hint, if any
 					const itemLabel = () =>
-						UI.Label(item.text).icon(item.icon, item.iconSize);
+						UI.Label(item.text).icon(item.icon, item.iconStyle);
 					const itemHint = () =>
-						UI.Label(item.hint).icon(item.hintIcon, item.hintIconSize);
+						UI.Label(item.hint).icon(item.hintIcon, item.hintIconStyle);
 					const content =
 						item.hint || item.hintIcon
 							? UI.Row(itemLabel(), UI.Spacer(), itemHint())
@@ -58,7 +58,7 @@ export class TestModalMenu
 					return UI.Cell()
 						.accessibleRole("menuitem")
 						.onClick((_, self) => {
-							this._resolve?.(item.key);
+							this._resolve?.(item.value);
 						})
 						.with(content);
 				}),
@@ -78,5 +78,5 @@ export class TestModalMenu
 		return true;
 	}
 
-	private _resolve?: (key?: string) => void;
+	private _resolve?: (value?: unknown) => void;
 }

@@ -60,25 +60,6 @@ export class UITextField extends UIElement {
 
 	/** True if the text field should appear like a label */
 	readOnly = false;
-
-	/**
-	 * Add a two-way binding to a form state field.
-	 * @param formState A form state object, or a binding to one (e.g. on an activity).
-	 * @param formField The name of the form field to which the text field value should be bound.
-	 */
-	bindFormState(
-		formState: BindingOrValue<FormState | undefined>,
-		formField: string,
-	) {
-		let current: FormState | undefined;
-		this.observe(formState as any, (formState) => {
-			current = formState;
-			if (formState) this.value = String(formState.values[formField] ?? "");
-		});
-		this.observe("value", (value) => {
-			current?.set(formField, value);
-		});
-	}
 }
 
 export namespace UITextField {
@@ -139,14 +120,13 @@ export namespace UITextField {
 		 * @param formField The name of the form field to which the text field value should be bound.
 		 * @returns The builder instance for chaining.
 		 */
-		bindFormState(
+		formStateValue(
 			formState: BindingOrValue<FormState | undefined>,
 			formField: string,
 		) {
-			this.initializer.finalize((view) => {
-				view.bindFormState(formState, formField);
-			});
-			return this;
+			return this.observeFormState(formState, formField, (value) =>
+				String(value ?? ""),
+			);
 		}
 
 		/**

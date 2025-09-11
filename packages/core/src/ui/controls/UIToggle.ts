@@ -14,14 +14,14 @@ import { UIElement } from "../UIElement.js";
  */
 export class UIToggle extends UIElement {
 	/** Creates a new toggle view object with the specified label */
-	constructor(label?: StringConvertible, state?: boolean) {
+	constructor(label?: StringConvertible, value?: boolean) {
 		super();
 		this.label = label;
-		this.state = !!state;
+		this.value = !!value;
 	}
 
 	/** The current toggle state, true for toggle 'on' state */
-	state: boolean;
+	value: boolean;
 
 	/** The toggle label to be displayed, if any */
 	label?: StringConvertible;
@@ -34,25 +34,6 @@ export class UIToggle extends UIElement {
 
 	/** Label style definition (overrides), if any */
 	labelStyle?: UIStyle.StyleOptions = undefined;
-
-	/**
-	 * Add a two-way binding to a form state field.
-	 * @param formState A form state object, or a binding to one (e.g. on an activity).
-	 * @param formField The name of the form field to which the toggle should be bound.
-	 */
-	bindFormState(
-		formState: BindingOrValue<FormState | undefined>,
-		formField: string,
-	) {
-		let current: FormState | undefined;
-		this.observe(formState as any, (formState) => {
-			current = formState;
-			if (formState) this.state = !!formState.values[formField];
-		});
-		this.observe("state", (state) => {
-			current?.set(formField, !!state);
-		});
-	}
 }
 
 export namespace UIToggle {
@@ -121,14 +102,11 @@ export namespace UIToggle {
 		 * @param formField The name of the form field to which the toggle should be bound.
 		 * @returns The builder instance for chaining.
 		 */
-		bindFormState(
+		formStateValue(
 			formState: BindingOrValue<FormState | undefined>,
 			formField: string,
 		) {
-			this.initializer.finalize((view) => {
-				view.bindFormState(formState, formField);
-			});
-			return this;
+			return this.observeFormState(formState, formField, (value) => !!value);
 		}
 
 		/**
@@ -141,14 +119,14 @@ export namespace UIToggle {
 		}
 
 		/**
-		 * Sets the state of the toggle, using {@link UIToggle.state}.
-		 * @param state The state (on/off) or a binding, converted dynamically to a boolean value.
+		 * Sets the state of the toggle, using {@link UIToggle.value}.
+		 * @param value The state (on/off) or a binding, converted dynamically to a boolean value.
 		 * @returns The builder instance for chaining.
 		 */
-		state(state: BindingOrValue<any>) {
+		value(value: BindingOrValue<any>) {
 			return this.setProperty(
-				"state",
-				state instanceof Binding ? state.map((v) => !!v) : !!state,
+				"value",
+				value instanceof Binding ? value.map((v) => !!v) : !!value,
 			);
 		}
 

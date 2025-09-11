@@ -1,5 +1,11 @@
 import type { StringConvertible } from "@talla-ui/util";
-import { AppContext, RenderContext, View, ViewBuilder } from "../app/index.js";
+import {
+	AppContext,
+	FormState,
+	RenderContext,
+	View,
+	ViewBuilder,
+} from "../app/index.js";
 import { err, ERROR } from "../errors.js";
 import {
 	Binding,
@@ -891,6 +897,26 @@ export namespace UIElement {
 							: (style as UIStyle | UIStyle.StyleOptions);
 				});
 			}
+			return this;
+		}
+
+		/** @internal Helper function to bind a form state field to the element `value` property */
+		protected observeFormState(
+			formState: BindingOrValue<FormState | undefined>,
+			formField: string,
+			f: (value: unknown) => any,
+		) {
+			this.initializer.finalize((view) => {
+				if (!("value" in view)) return;
+				let current: FormState | undefined;
+				view.observe(formState as any, (formState) => {
+					current = formState;
+					if (formState) view.value = f(formState.values[formField]);
+				});
+				view.observe("value" as any, (value) => {
+					current?.set(formField, value);
+				});
+			});
 			return this;
 		}
 

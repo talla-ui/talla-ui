@@ -11,12 +11,12 @@ import { ObservableObject } from "../object/index.js";
  *
  * Validation is performed using an {@link InputValidator} instance. Errors must be added as strings or {@link StringConvertible} values (e.g. the result of {@link fmt()}) using the `required()` or `error()` methods of each field in the schema.
  *
- * To use a FormState object with {@link UITextField} or {@link UIToggle} input elements, use their `.bindFormState()` builder method.
+ * To use a FormState object with {@link UITextField} or {@link UIToggle} input elements, use their `.formStateValue()` builder method.
  *
  * @example
  * function FormView(v: Binding<MyActivity>) {
  *   return UI.Column(
- *     UI.TextField().bindFormState(v.bind("form"), "foo"),
+ *     UI.TextField().formStateValue(v.bind("form"), "foo"),
  *     UI.Label(v.bind("form.errors.foo.message"))
  *       .hideWhen(v.bind("form.errors.foo").not()),
  *     UI.Button("Go").onClick("Submit")

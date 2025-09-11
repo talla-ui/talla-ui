@@ -9,6 +9,7 @@ import {
 	DeferredViewBuilder,
 	fmt,
 	FormState,
+	ModalMenuOptions,
 	ObservableObject,
 	StringConvertible,
 	UI,
@@ -148,6 +149,45 @@ function MainView(v: Binding<MainActivity>) {
 				)
 					.expand()
 					.width(400),
+				UI.Row(
+					UI.Button("Off")
+						.onClick((_, button) => {
+							button.pressed = !button.pressed;
+							button.text = button.pressed ? "On" : "Off";
+						})
+						.buttonStyle(
+							UI.styles.button.default.extend().setPressed({
+								background: UI.colors.success,
+								textColor: UI.colors.background,
+							}),
+						),
+					UI.Button()
+						.chevron()
+						.minWidth(200)
+						.textAlign("start")
+						.dropdownPicker(
+							new ModalMenuOptions([
+								{ value: 0, text: "Zero" },
+								{ value: 1, text: "One" },
+								{ value: 2, text: "Two" },
+							]),
+						)
+						.value(v.bind("countService.count")),
+					UI.Spacer(),
+					UI.Button()
+						.icon("more")
+						.buttonStyle("icon")
+						.dropdownMenu(
+							new ModalMenuOptions([
+								{ value: "one", text: "One" },
+								{ value: "two", text: "Two" },
+								{ value: "three", text: "Three" },
+							]),
+						)
+						.onMenuItemSelect((event) => {
+							console.log("Dropdown", event.data.value);
+						}),
+				),
 			),
 
 			UI.Label(bind.fmt("Current: {:L}", v.bind("currentDate"))).padding(),
@@ -356,7 +396,7 @@ function TextFieldGroup(
 			formField: string,
 		) {
 			let current: FormState | undefined;
-			this.bindFormState(formState, formField, "text", (form) => {
+			this.observeFormState(formState, formField, "text", (form) => {
 				current = form;
 				return form.values[formField] ?? "";
 			});
@@ -407,6 +447,27 @@ function OtherView(v: Binding<OtherActivity>) {
 						v.bind("form"),
 						"password",
 					),
+					UI.Row(
+						UI.Label("Remember"),
+						UI.Spacer(),
+						UI.Button()
+							.chevron("down")
+							.formStateValue(v.bind("form"), "rememberMe")
+							.value(false)
+							.dropdownPicker(
+								new ModalMenuOptions([
+									{ value: true, text: "Yes" },
+									{ value: false, text: "No" },
+								]),
+							),
+					),
+					UI.Row(
+						UI.Label("Remember"),
+						UI.Spacer(),
+						UI.Toggle()
+							.formStateValue(v.bind("form"), "rememberMe")
+							.type("switch"),
+					),
 					UI.Button("Submit").onClick("Submit"),
 				),
 
@@ -425,6 +486,7 @@ export class OtherActivity extends Activity {
 		f.object({
 			userName: f.string().required("User name is required"),
 			password: f.string().required("Password is required"),
+			rememberMe: f.boolean(),
 		}),
 	);
 
@@ -470,12 +532,12 @@ export class DialogActivity extends Activity {
 	protected async onDrop(e: ViewEvent<UIButton>) {
 		let choice = await app.showModalMenuAsync((menu) => {
 			menu.items = [
-				{ key: "one", text: "One" },
-				{ key: "two", text: "Two" },
-				{ key: "disabled", text: "Disabled", disabled: true },
-				{ key: "three", text: "Three", hint: "⌘+T" },
+				{ value: "one", text: "One" },
+				{ value: "two", text: "Two" },
+				{ value: "disabled", text: "Disabled", disabled: true },
+				{ value: "three", text: "Three", hint: "⌘+T" },
 				{ divider: true },
-				{ key: "more", text: "More..." },
+				{ value: "more", text: "More..." },
 			];
 		}, e.source);
 		app.showAlertDialogAsync(["You picked an option", String(choice)]);

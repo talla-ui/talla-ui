@@ -4,14 +4,15 @@ import {
 	StringConvertible,
 } from "@talla-ui/util";
 import type { AppContext } from "./AppContext.js";
+import type { ModalFactory } from "./ModalFactory.js";
 
 /**
  * A representation of the contents of an alert or confirm dialog
- * - Objects of this type are used by {@link AppContext.AlertDialogController} or {@link AppContext.ConfirmDialogController} to display a modal dialog view.
+ * - Objects of this type are used by {@link ModalFactory.AlertDialogController} or {@link ModalFactory.ConfirmDialogController} to display a modal dialog view.
  * @see {@link AppContext.showAlertDialogAsync}
  * @see {@link AppContext.showConfirmDialogAsync}
- * @see {@link AppContext.AlertDialogController}
- * @see {@link AppContext.ConfirmDialogController}
+ * @see {@link ModalFactory.AlertDialogController}
+ * @see {@link ModalFactory.ConfirmDialogController}
  */
 export class MessageDialogOptions extends ConfigOptions {
 	/**

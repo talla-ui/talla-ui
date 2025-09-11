@@ -1,10 +1,16 @@
 import { fmt, StringConvertible } from "@talla-ui/util";
-import { ViewBuilder } from "../../app/index.js";
+import {
+	AppContext,
+	FormState,
+	ModalMenuOptions,
+	ViewBuilder,
+} from "../../app/index.js";
 import {
 	bind,
 	Binding,
 	BindingOrValue,
 	isBinding,
+	ObservableEvent,
 } from "../../object/index.js";
 import { UIIconResource, UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
@@ -153,12 +159,12 @@ export namespace UIButton {
 
 		/**
 		 * Adds a chevron icon to the button, using {@link UIButton.chevron}.
-		 * @param chevron The direction of the chevron (`up`, `down`, `next`, `back`).
+		 * @param chevron The direction of the chevron (`up`, `down`, `next`, `back`), defaults to `down`.
 		 * @param chevronStyle Styling options for the chevron, or only the icon size (in pixels).
 		 * @returns The builder instance for chaining.
 		 */
 		chevron(
-			chevron: BindingOrValue<"up" | "down" | "next" | "back">,
+			chevron: BindingOrValue<"up" | "down" | "next" | "back"> = "down",
 			chevronStyle?: BindingOrValue<UILabel.IconStyle> | number,
 		) {
 			if (chevronStyle != null) {
@@ -198,6 +204,19 @@ export namespace UIButton {
 		}
 
 		/**
+		 * Adds a two-way binding to a form state field.
+		 * @param formState A form state object, or a binding to one (e.g. on an activity).
+		 * @param formField The name of the form field to which the button value should be bound.
+		 * @returns The builder instance for chaining.
+		 */
+		formStateValue(
+			formState: BindingOrValue<FormState | undefined>,
+			formField: string,
+		) {
+			return this.observeFormState(formState, formField, (value) => value);
+		}
+
+		/**
 		 * Applies a style to the button
 		 * @param style The name of a theme button style, a {@link UIStyle} instance, a style options (overrides) object, or a binding.
 		 * @returns The builder instance for chaining.
@@ -221,6 +240,83 @@ export namespace UIButton {
 		}
 
 		/**
+		 * Adds a modal menu that shows when the button is clicked.
+		 * - The button emits a `MenuItemSelect` event when a menu item is selected, with the selected menu item as data (including its `value` property).
+		 * - When a menu item is selected, the button {@link UIButton.value value} property is also set to the selected menu item's `value` property.
+		 * @param menu An instance of {@link ModalMenuOptions}.
+		 * @returns The builder instance for chaining.
+		 */
+		dropdownMenu(menu: ModalMenuOptions) {
+			this._showMenu ||= (button) => {
+				return AppContext.getInstance().showModalMenuAsync(menu, button);
+			};
+			const showMenu = async (_: ObservableEvent, button: UIButton) => {
+				button.pressed = true;
+				let value = await this._showMenu!(button);
+				button.pressed = false;
+				if (value == null) return;
+				button.value = value;
+				let item = menu.items.find((item) => item.value === value);
+				if (item) button.emit("MenuItemSelect", item);
+			};
+			this.onClick(showMenu);
+			this.onPress(showMenu);
+			return this;
+		}
+
+		/**
+		 * Adds a modal menu that allows the user to select a value from a list of options.
+		 * - The current value of the button determines the 'checked' item in the menu. This property can be bound using {@link UIButton.ButtonBuilder.value()} or {@link UIButton.ButtonBuilder.formStateValue()}.
+		 * - The button {@link UIButton.text text} property is set to the text of the selected menu item, if any.
+		 * - The button emits a `MenuItemSelect` event when a menu item is selected, with the selected menu item as data (including its `value` property).
+		 * @param menu An instance of {@link ModalMenuOptions}.
+		 * @returns The builder instance for chaining.
+		 */
+		dropdownPicker(menu: ModalMenuOptions) {
+			this._showMenu = (button) => {
+				return AppContext.getInstance().showModalMenuAsync((options) => {
+					options.width = menu.width;
+					options.minWidth = menu.minWidth;
+					options.items = menu.items.map((it) => ({
+						...it,
+						icon: UIIconResource.theme.ref(
+							it.value === button.value ? "check" : "blank",
+						),
+					}));
+				}, button);
+			};
+			this.initializer.initialize((button) => {
+				button.observe("value", (value) => {
+					if (value == null) return;
+					for (let item of menu.items) {
+						if (item.value === value) {
+							button.text = item.text;
+							break;
+						}
+					}
+				});
+			});
+			return this.dropdownMenu(menu);
+		}
+
+		/**
+		 * Handles the `MenuItemSelect` event, emitted when a menu item is selected.
+		 * @param handle The function to call, or name of the event to emit instead
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 * @see {@link UIButton.ButtonBuilder.dropdownMenu()}
+		 */
+		onMenuItemSelect(
+			select:
+				| string
+				| ((
+						event: ObservableEvent<UIButton, ModalMenuOptions.MenuItem>,
+						button: UIButton,
+				  ) => void),
+		) {
+			return this.handle("MenuItemSelect", select as any);
+		}
+
+		/**
 		 * Disables keyboard focus for the button.
 		 * @param disableKeyboardFocus If `true`, the button cannot be focused using the keyboard. Defaults to `true`.
 		 * @returns The builder instance for chaining.
@@ -228,5 +324,7 @@ export namespace UIButton {
 		disableKeyboardFocus(disableKeyboardFocus = true) {
 			return this.setProperty("disableKeyboardFocus", disableKeyboardFocus);
 		}
+
+		private _showMenu: ((button: UIButton) => Promise<unknown>) | undefined;
 	}
 }

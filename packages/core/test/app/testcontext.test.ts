@@ -366,8 +366,8 @@ describe("Rendering views", () => {
 		await expectOutputAsync({ type: "button" });
 		let p = app.showModalMenuAsync(
 			new ModalMenuOptions([
-				{ key: "one", text: "One" },
-				{ key: "two", text: "Two" },
+				{ value: "one", text: "One" },
+				{ value: "two", text: "Two" },
 			]),
 			button,
 		);
@@ -379,9 +379,9 @@ describe("Rendering views", () => {
 	test("Show modal menu, using configuration function", async () => {
 		let app = useTestContext();
 		let p = app.showModalMenuAsync((options) => {
-			options.items.push({ key: "one", text: "One", hint: "1" });
+			options.items.push({ value: "one", text: "One", hint: "1" });
 			options.items.push({ divider: true });
-			options.items.push({ key: "two", text: "Two", hint: "2" });
+			options.items.push({ value: "two", text: "Two", hint: "2" });
 			options.width = 200;
 		});
 

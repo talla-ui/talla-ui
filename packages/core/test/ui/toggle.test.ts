@@ -15,17 +15,17 @@ test("Constructor with label", () => {
 	expect(tf).toHaveProperty("label", "foo");
 });
 
-test("Constructor with label and state", () => {
+test("Constructor with label and value", () => {
 	let tf = new UIToggle("Accept terms", true);
 	expect(tf.label).toBe("Accept terms");
-	expect(tf.state).toBe(true);
+	expect(tf.value).toBe(true);
 });
 
 test("View builder with properties", () => {
-	let myToggle = UI.Toggle("foo").state(true);
+	let myToggle = UI.Toggle("foo").value(true);
 	let toggle = myToggle.build();
 	expect(toggle).toHaveProperty("label", "foo");
-	expect(toggle).toHaveProperty("state", true);
+	expect(toggle).toHaveProperty("value", true);
 });
 
 test("Rendered with label", async () => {
@@ -42,7 +42,7 @@ test("User input, directly setting checked value", async () => {
 	let toggleElt = (await expectOutputAsync({ type: "toggle" })).getSingle();
 	toggleElt.checked = true;
 	toggleElt.sendPlatformEvent("change");
-	expect(toggle.state).toBe(true);
+	expect(toggle.value).toBe(true);
 });
 
 test("User input with form state", async () => {
@@ -50,14 +50,14 @@ test("User input with form state", async () => {
 		// note that form must exist before it can be bound
 		readonly form = new FormState().set("foo", true);
 		readonly toggle = this.attach(
-			UI.Toggle().bindFormState(this.form, "foo").build(),
+			UI.Toggle().formStateValue(this.form, "foo").build(),
 		);
 	}
 	let host = new Host();
 	let toggle = host.toggle;
 
 	// use form state to check toggle
-	expect(toggle.state).toBe(true);
+	expect(toggle.value).toBe(true);
 
 	// render field, check that checkbox is checked
 	console.log("Rendering with state");

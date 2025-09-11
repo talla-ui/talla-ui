@@ -91,7 +91,7 @@ test("User input with form state", async () => {
 		// note that form must exist before it can be bound
 		readonly form = new FormState().set("foo", "bar");
 		readonly tf = this.attach(
-			UI.TextField().bindFormState(this.form, "foo").build(),
+			UI.TextField().formStateValue(this.form, "foo").build(),
 		);
 	}
 	let host = new Host();

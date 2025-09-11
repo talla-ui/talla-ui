@@ -53,7 +53,7 @@ export class WebModalMenuStyles extends ConfigOptions {
 	 */
 	itemCellStyle = new UIStyle({
 		margin: { x: 4 },
-		padding: { x: 16, y: 6 },
+		padding: { x: 12, y: 6 },
 		borderRadius: 6,
 		cursor: "pointer",
 	})
@@ -104,7 +104,7 @@ export class ModalMenu
 	async showAsync(place?: Partial<RenderContext.PlacementOptions>) {
 		// return a promise that's resolved when one of the items is selected
 		// or when the menu is dismissed otherwise
-		return new Promise<{ key: string } | undefined>((r) => {
+		return new Promise<{ value: unknown } | undefined>((r) => {
 			app.render(this, {
 				mode: "modal",
 				transform: {
@@ -114,9 +114,9 @@ export class ModalMenu
 				refOffset: [0, ModalMenu.styles.offset],
 				...place,
 			});
-			this._resolve = (key) => {
+			this._resolve = (value) => {
 				this.unlink();
-				r(key ? { key } : undefined);
+				r(value != null ? { value } : undefined);
 			};
 		});
 	}
@@ -133,7 +133,7 @@ export class ModalMenu
 				shown = Date.now();
 				this._fixPosition();
 			})
-			.handle("Select", (e) => this._resolve?.(e.data.key as string))
+			.handle("Select", (e) => this._resolve?.(e.data.value))
 			.with(
 				...this.options.items.map((item) => {
 					if (item.divider) {
@@ -143,14 +143,14 @@ export class ModalMenu
 					// use label builders for the label and hint, if any
 					const itemLabel = () =>
 						UI.Label(item.text)
-							.icon(item.icon, item.iconSize)
+							.icon(item.icon, item.iconStyle)
 							.dim(!!item.disabled)
 							.labelStyle(
 								ModalMenu.styles.labelStyle.override(item.labelStyle),
 							);
 					const itemHint = () =>
 						UI.Label(item.hint)
-							.icon(item.hintIcon, item.hintIconSize)
+							.icon(item.hintIcon, item.hintIconStyle)
 							.labelStyle(ModalMenu.styles.hintStyle.override(item.hintStyle));
 					const content =
 						item.hint || item.hintIcon
@@ -277,5 +277,5 @@ export class ModalMenu
 		setTimeout(checkFit, 250);
 	}
 
-	private _resolve?: (key?: string) => void;
+	private _resolve?: (value?: unknown) => void;
 }

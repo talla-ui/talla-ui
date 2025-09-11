@@ -158,7 +158,7 @@ test("Component view, binding to value and error", () => {
 		ComponentViewBuilder(FormView, (v) =>
 			UI.Row(
 				UI.Label(bind("form.errors.foo")),
-				UI.TextField().bindFormState(v.bind("form"), "foo"),
+				UI.TextField().formStateValue(v.bind("form"), "foo"),
 			),
 		);
 
@@ -204,10 +204,10 @@ test("Custom form container, rendered", async () => {
 		static override View(v: Binding<MyActivity>) {
 			return UI.Row(
 				FormContainer(v.bind("form1"), (v) => [
-					UI.TextField().bindFormState(v.bind("form"), "text"),
+					UI.TextField().formStateValue(v.bind("form"), "text"),
 				]),
 				FormContainer(v.bind("form2"), (v) => [
-					UI.TextField().bindFormState(v.bind("form"), "text"),
+					UI.TextField().formStateValue(v.bind("form"), "text"),
 				]),
 			);
 		}

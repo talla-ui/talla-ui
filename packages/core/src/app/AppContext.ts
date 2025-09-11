@@ -303,13 +303,13 @@ export class AppContext extends ObservableObject {
 	 * @summary
 	 * This method displays a modal menu, using the specified options (or options that are set in a configuration function). The menu is positioned near a particular UI element, an instance of {@link UIElement}, e.g. a button that was clicked by the user.
 	 *
-	 * The `key` value of the chosen menu item, if any, is returned asynchronously. If the menu was dismissed, the returned promise is resolved to `undefined`.
+	 * The `value` property of the chosen menu item, if any, is returned asynchronously. If the menu was dismissed, the returned promise is resolved to `undefined`.
 	 *
 	 * @note Use {@link fmt} to translate item labels if necessary; this method doesn't localize strings by default.
 	 *
 	 * @param config An instance of {@link ModalMenuOptions}, including a list of menu items; or a callback function to set options for the menu to be displayed
 	 * @param ref The related UI element
-	 * @returns A promise that resolves to the selected item key, if any
+	 * @returns A promise that resolves to the selected item value, if any
 	 * @error This method throws an error if the modal menu controller can't be initialized (i.e. there's no modal factory or menu builder).
 	 */
 	async showModalMenuAsync(
@@ -323,7 +323,7 @@ export class AppContext extends ObservableObject {
 		let result = await controller.showAsync({
 			ref: ref && ref.lastRenderOutput,
 		});
-		return result && result.key;
+		return result && result.value;
 	}
 
 	/**
@@ -368,66 +368,5 @@ export class AppContext extends ObservableObject {
 	 */
 	remount() {
 		this.renderer?.remount();
-	}
-}
-
-export namespace AppContext {
-	/**
-	 * An interface that defines methods for creating modal views
-	 * - An object of this type should be assigned to {@link RenderContext.modalFactory}, which is used by the `app` methods that display modal views, as well as {@link Activity} when using the `dialog` rendering mode.
-	 */
-	export interface ModalControllerFactory {
-		/** A factory method that returns an instance that implements the {@link DialogController} interface, for the provided view */
-		buildDialog?: (view: View) => DialogController;
-		/** A factory method that returns an instance that implements the {@link AlertDialogController} interface, using the provided dialog options */
-		buildAlertDialog?: (options: MessageDialogOptions) => AlertDialogController;
-		/** A factory method that returns an instance that implements the {@link ConfirmDialogController} interface, using the provided dialog options */
-		buildConfirmDialog?: (
-			options: MessageDialogOptions,
-		) => ConfirmDialogController;
-		/** A factory method that returns an instance that implements the {@link MenuController} interface, using the provided menu options */
-		buildMenu?: (options: ModalMenuOptions) => MenuController;
-	}
-
-	/**
-	 * An interface for a class that manages a modal dialog view
-	 * @see {@link AppContext.ModalControllerFactory}
-	 */
-	export interface DialogController {
-		/** Display the dialog, until the content view is unlinked */
-		show(place?: Partial<RenderContext.PlacementOptions>): void;
-	}
-
-	/**
-	 * An interface for a class that manages a modal alert dialog view
-	 * @see {@link AppContext.ModalControllerFactory}
-	 */
-	export interface AlertDialogController {
-		/** Display the dialog */
-		showAsync(
-			place?: Partial<RenderContext.PlacementOptions>,
-		): Promise<unknown>;
-	}
-
-	/**
-	 * An interface for a class that manages a modal confirmation dialog view
-	 * @see {@link AppContext.ModalControllerFactory}
-	 */
-	export interface ConfirmDialogController {
-		/** Display the dialog */
-		showAsync(
-			place?: Partial<RenderContext.PlacementOptions>,
-		): Promise<{ confirmed: boolean; other?: boolean }>;
-	}
-
-	/**
-	 * An interface for a class that manages a modal (dropdown) menu view
-	 * @see {@link AppContext.ModalControllerFactory}
-	 */
-	export interface MenuController {
-		/** Display the menu and get the result */
-		showAsync(
-			place?: Partial<RenderContext.PlacementOptions>,
-		): Promise<{ key: string } | undefined>;
 	}
 }

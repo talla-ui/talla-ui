@@ -762,7 +762,7 @@ if (data) console.log(data.foo);
 
 Since bindings always update the view one-way _only_, a separate construct is used for two-way binding.
 
-The `FormState` class is used to store form data and validation errors. UI input elements (text fields and toggles) can be bound to fields of form state objects using the `.bindFormState()` method.
+The `FormState` class is used to store form data and validation errors. UI input elements (text fields and toggles) can be bound to fields of form state objects using the `.formStateValue()` method.
 
 ```typescript
 // ... in a view:
@@ -771,7 +771,7 @@ UI.Column(
 		.labelStyle("secondary")
 		.padding({ y: 4 })
 		.onClick("RequestFocusNext"),
-	UI.TextField().bindFormState(v.bind("form"), "userName"),
+	UI.TextField().formStateValue(v.bind("form"), "userName"),
 	UI.Label(bind("form.errors.userName"))
 		.hideWhen(bind.not("form.errors.userName"))
 		.fg("danger"),
@@ -781,13 +781,13 @@ UI.Column(
 		.labelStyle("secondary")
 		.padding({ y: 4 })
 		.onClick("RequestFocusNext"),
-	UI.TextField().type("password").bindFormState(v.bind("form"), "password"),
+	UI.TextField().type("password").formStateValue(v.bind("form"), "password"),
 	UI.Label(bind("form.errors.password"))
 		.hideWhen(bind.not("form.errors.password"))
 		.fg("danger"),
 
 	UI.Spacer(8),
-	UI.Toggle.fmt("Remember me").bindFormState(v.bind("form"), "rememberMe"),
+	UI.Toggle.fmt("Remember me").formStateValue(v.bind("form"), "rememberMe"),
 
 	UI.Spacer(8),
 	UI.Button("Submit").onClick("Submit"),
@@ -912,12 +912,12 @@ export function BoundInput() {
 			InputViewComponent, // with `value` property
 			() => UI.Column(/* ... */), // a complex view
 		),
-		bindFormState(
+		formStateValue(
 			formState: BindingOrValue<FormState | undefined>,
 			formField: string,
 		) {
 			this.initializer.finalize((view) => {
-				view.bindFormState(formState, formField, "value");
+				view.observeFormState(formState, formField, "value");
 			});
 			return this;
 		},
@@ -1413,6 +1413,28 @@ UI.Button()
 	.disableKeyboardFocus()
 	.onClick("Close"); // intercept Click
 
+UI.Button() // Select / picker view
+	.chevron("down")
+	.minWidth(200)
+	.formStateValue(v.bind("form"), "rememberMe")
+	.dropdownPicker(
+		new ModalMenuOptions([
+			{ value: true, text: "Yes" },
+			{ value: false, text: "No" },
+		]),
+	);
+
+UI.Button() // Dropdown menu icon button
+	.icon("more")
+	.buttonStyle("icon")
+	.onMenuItemSelect("SelectMoreMenuItem")
+	.dropdownMenu(
+		new ModalMenuOptions([
+			{ value: "one", text: "One" },
+			// ...
+		]),
+	);
+
 UI.Label("...") // or UI.Label.fmt("..." [, bindings])
 	.icon("plus") // same as UI.Button.icon()
 	.align("center") // alignment within element (useful within column only)
@@ -1426,7 +1448,7 @@ UI.Label("...") // or UI.Label.fmt("..." [, bindings])
 
 UI.TextField("Placeholder") // or UI.TextField.fmt("..." [, bindings])
 	.value(bind("text"))
-	.bindFormState(v.bind("form"), "text")
+	.formStateValue(v.bind("form"), "text")
 	.multiline(true, 100) // or .multiline().height(100)
 	.type("password") // e.g. "email", "url", "search", "numeric" (special), "decimal"
 	.enterKeyHint("done") // or "enter", "go", etc.
@@ -1440,8 +1462,8 @@ UI.TextField("Placeholder") // or UI.TextField.fmt("..." [, bindings])
 
 UI.Toggle("Label text") // or UI.Toggle.fmt("..." [, bindings])
 	.type("checkbox") // or "switch", or "none"
-	.state(true) // or binding
-	.bindFormState(v.bind("form"), "isActive")
+	.value(true) // or binding
+	.formStateValue(v.bind("form"), "isActive")
 	.disabled() // or .disabled(binding)
 	.toggleStyle("danger") // or UIStyle instance, overrides, or binding
 	.labelStyle({ bold: true }) // or binding

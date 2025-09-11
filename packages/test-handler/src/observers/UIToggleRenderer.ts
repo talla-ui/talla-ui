@@ -8,14 +8,14 @@ const TOGGLE_STYLE = UI.styles.toggle.default;
 export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 	constructor(observed: UIToggle) {
 		super(observed);
-		this.observeProperties("label", "state", "disabled", "labelStyle");
+		this.observeProperties("label", "value", "disabled", "labelStyle");
 	}
 
 	protected override propertyChange(property: string, value: any) {
 		if (!this.element) return;
 		switch (property) {
 			case "label":
-			case "state":
+			case "value":
 				return this.scheduleUpdate(this.element);
 		}
 		super.propertyChange(property, value);
@@ -27,13 +27,13 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 	) {
 		if (this.observed?.disabled) return;
 
-		// update 'state' first, reflecting element checked state
+		// update 'value' first, reflecting element checked state
 		let checkbox = this.element!;
-		if (this.observed!.state !== checkbox.checked) {
-			this.observed!.state = !!checkbox.checked;
+		if (this.observed!.value !== checkbox.checked) {
+			this.observed!.value = !!checkbox.checked;
 		}
 
-		data.state = this.observed?.state;
+		data.value = this.observed?.value;
 		super.handlePlatformEvent(name, data);
 	}
 
@@ -57,6 +57,6 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 
 	updateContent(element: TestOutputElement) {
 		element.text = String(this.observed.label || "");
-		element.checked = !!this.observed.state;
+		element.checked = !!this.observed.value;
 	}
 }

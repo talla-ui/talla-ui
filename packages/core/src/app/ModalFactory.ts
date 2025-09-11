@@ -25,7 +25,7 @@ export interface ModalFactory {
 export namespace ModalFactory {
 	/**
 	 * An interface for a class that manages a modal dialog view
-	 * @see {@link AppContext.ModalControllerFactory}
+	 * @see {@link ModalFactory}
 	 */
 	export interface DialogController {
 		/** Display the dialog, until the content view is unlinked */
@@ -62,6 +62,6 @@ export namespace ModalFactory {
 		/** Display the menu and get the result */
 		showAsync(
 			place?: Partial<RenderContext.PlacementOptions>,
-		): Promise<{ key: string } | undefined>;
+		): Promise<{ value: unknown } | undefined>;
 	}
 }
