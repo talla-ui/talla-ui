@@ -67,8 +67,9 @@ export class OutputMount {
 
 		// darken shader after rendering, and focus
 		function setFocus() {
-			if (!document.activeElement) shader.focus();
-			else {
+			if (!document.activeElement || document.activeElement === document.body) {
+				shader.focus();
+			} else {
 				let pos = shader.compareDocumentPosition(document.activeElement);
 				if (!(pos & Node.DOCUMENT_POSITION_CONTAINED_BY)) shader.focus();
 			}

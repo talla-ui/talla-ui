@@ -80,13 +80,14 @@ export class WebRenderer extends RenderContext {
 						let restoreFocus = prevFocus;
 						setTimeout(() => {
 							if (
-								!document.activeElement &&
+								(!document.activeElement ||
+									document.activeElement === document.body) &&
 								document.body.compareDocumentPosition(restoreFocus!) &
 									Node.DOCUMENT_POSITION_CONTAINED_BY
 							) {
 								restoreFocus.focus();
 							}
-						}, 210);
+						}, 210); // (after fade out & remove mount element)
 					}
 				} else {
 					// mount output for given placement mode
