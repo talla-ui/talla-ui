@@ -119,6 +119,7 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 		if (viewport.prefersDark) {
 			UIColor.theme.set({
 				...defaultColors,
+				...colors,
 				...darkColors,
 			});
 		}

@@ -116,6 +116,10 @@ export function makeBaseCSS() {
 		},
 
 		// CSS for alignment of elements within buttons/labels
+		[`button.${CLASS_UI}`]: {
+			position: "relative",
+			overflow: "hidden",
+		},
 		[`.${CLASS_UI} icon`]: {
 			display: "inline-flex",
 			alignItems: "center",

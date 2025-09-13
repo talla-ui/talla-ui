@@ -767,20 +767,14 @@ The `FormState` class is used to store form data and validation errors. UI input
 ```typescript
 // ... in a view:
 UI.Column(
-	UI.Label.fmt("User name")
-		.labelStyle("secondary")
-		.padding({ y: 4 })
-		.onClick("RequestFocusNext"),
+	UI.Label.fmt("User name").dim().padding({ y: 4 }).onClick("RequestFocusNext"),
 	UI.TextField().formStateValue(v.bind("form"), "userName"),
 	UI.Label(bind("form.errors.userName"))
 		.hideWhen(bind.not("form.errors.userName"))
 		.fg("danger"),
 
 	UI.Spacer(8),
-	UI.Label.fmt("Password")
-		.labelStyle("secondary")
-		.padding({ y: 4 })
-		.onClick("RequestFocusNext"),
+	UI.Label.fmt("Password").dim().padding({ y: 4 }).onClick("RequestFocusNext"),
 	UI.TextField().type("password").formStateValue(v.bind("form"), "password"),
 	UI.Label(bind("form.errors.password"))
 		.hideWhen(bind.not("form.errors.password"))
@@ -1191,14 +1185,7 @@ UI.colors.divider; // semi-transparent text color
 UI.colors.danger; // for error messages, etc.
 UI.colors.success; // for success messages, etc.
 UI.colors.link; // blue, for links
-UI.colors.primary; // defaults to black/white, but often distinctive like blue
-UI.colors.brand; // app-specific brand color
-
-// Semantic background colors, if needed:
-UI.colors.dangerBackground;
-UI.colors.successBackground;
-UI.colors.primaryBackground;
-UI.colors.brandBackground;
+UI.colors.accent; // defaults to black/white, but often distinctive like blue
 
 // ### Predefined icons:
 // blank, close, check, plus, minus, menu, more, search
@@ -1207,22 +1194,22 @@ UI.Button("Close").icon(UI.icons.close);
 UI.Button("Close").icon("close");
 
 // ### Label styles:
-// default, title, large, headline, bold, italic, secondary, small
+// body (default), large, title, headline, caption,
 // badge, successBadge, dangerBadge, toggleLabel
 UI.Label("Title").labelStyle(UI.styles.label.title);
 UI.Label("Title").labelStyle("title");
 
 // ### Button styles:
-// default, primary, success, danger, plain, text, link, small,
-// Fixed size: icon, primaryIcon, successIcon, dangerIcon,
+// default, accent, success, danger, ghost, text, link, small,
+// Fixed size: icon, dangerIcon,
 // Icon placed above label: iconTop, iconTopStart, iconTopEnd
-UI.Button("Click").buttonStyle("primary");
-UI.Button("Click").buttonStyle(UI.styles.button.primary);
+UI.Button("Click").buttonStyle("accent");
+UI.Button("Click").buttonStyle(UI.styles.button.accent);
 
 // ### Textfield styles:
-// default, transparent (no border and background)
-UI.TextField().textfieldStyle("transparent");
-UI.TextField().textfieldStyle(UI.styles.textfield.transparent);
+// default, ghost (no border and background)
+UI.TextField().textfieldStyle("ghost");
+UI.TextField().textfieldStyle(UI.styles.textfield.ghost);
 
 // ### Toggle styles:
 // default, danger, success
@@ -1300,12 +1287,12 @@ UI.Label() // ... or UI.Button, UI.TextField, UI.Row, etc.
 	.padding(8)
 	.padding({ top: 8 }) // and bottom, left, right, start, end, x, y
 	.margin() // same arguments as padding
-	.textColor("primary") // theme color name
+	.textColor("accent") // theme color name
 	.textColor(myColor) // or UIColor instance, or binding
 	.fg(myColor) // alias for textColor
-	.background("primary") // same arguments as textColor
+	.background("accent") // same arguments as textColor
 	.bg(myColor) // alias for background
-	.border(1, "primary", "solid", 8) // width, [color, style, radius]
+	.border(1, "accent", "solid", 8) // width, [color, style, radius]
 	.borderRadius(16)
 	.dropShadow(16) // in pixels, approximate blur; negative for inset
 	.opacity(0.5)
@@ -1406,7 +1393,7 @@ UI.Button()
 	.disabled() // or disabled(true), disabled(false), or binding
 	.pressed() // same
 	.value("foo") // arbitrary value, set as `data.value` on events
-	.buttonStyle("primary") // theme button style name
+	.buttonStyle("accent") // theme button style name
 	.buttonStyle({ bold: true }) // overrides, or binding
 	.buttonStyle(myStyle) // UIStyle instance, or binding
 	.navigateTo("foo/bar") // or binding
@@ -1457,7 +1444,7 @@ UI.TextField("Placeholder") // or UI.TextField.fmt("..." [, bindings])
 	.selectOnFocus()
 	.disabled() // or .disabled(binding)
 	.readOnly() // same
-	.textfieldStyle("transparent") // or UIStyle instance, overrides, or binding
+	.textfieldStyle("ghost") // or UIStyle instance, overrides, or binding
 	.onInput("EmailInput"); // intercept Input
 
 UI.Toggle("Label text") // or UI.Toggle.fmt("..." [, bindings])

@@ -4,15 +4,10 @@ import { MainActivity } from "./main";
 
 useWebContext((options) => {
 	options.colors = {
-		primary: UI.colors.blue,
+		// accent: new UIColor("#ff6699"),
+		accent: UI.colors.blue,
 	};
 	options.darkColors = {
 		background: new UIColor("#111"),
 	};
-	options.dialogStyles.containerModifier = (cell) =>
-		cell.style(
-			options.dialogStyles.containerStyle.override({
-				borderColor: UI.colors.red,
-			}),
-		);
 }).addActivity(new MainActivity(), true);

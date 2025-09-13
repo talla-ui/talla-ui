@@ -11,7 +11,7 @@ const TextFieldStyle = UI.styles.textfield.default
 		width: "100%",
 	})
 	.setFocused({
-		borderColor: new UIColor("var(--primary-boldest)"),
+		borderColor: new UIColor("var(--accent-boldest)"),
 	});
 
 const CloseButtonStyle = UI.styles.button.icon
@@ -33,7 +33,7 @@ const ResultCellStyle = new UIStyle({
 		background: new UIColor("var(--nav-hover-background)"),
 	})
 	.setFocused({
-		borderColor: new UIColor("var(--primary-boldest)"),
+		borderColor: new UIColor("var(--accent-boldest)"),
 		borderWidth: 2,
 	});
 

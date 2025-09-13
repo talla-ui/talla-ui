@@ -14,6 +14,7 @@ import {
 	StringConvertible,
 	UI,
 	UIButton,
+	UIColumn,
 	UITextField,
 	ViewBuilder,
 	ViewEvent,
@@ -150,17 +151,10 @@ function MainView(v: Binding<MainActivity>) {
 					.expand()
 					.width(400),
 				UI.Row(
-					UI.Button("Off")
-						.onClick((_, button) => {
-							button.pressed = !button.pressed;
-							button.text = button.pressed ? "On" : "Off";
-						})
-						.buttonStyle(
-							UI.styles.button.default.extend().setPressed({
-								background: UI.colors.success,
-								textColor: UI.colors.background,
-							}),
-						),
+					UI.Button("Off").onClick((_, button) => {
+						button.pressed = !button.pressed;
+						button.text = button.pressed ? "On" : "Off";
+					}),
 					UI.Button()
 						.chevron()
 						.minWidth(200)
@@ -203,10 +197,76 @@ function MainView(v: Binding<MainActivity>) {
 					.navigateTo("./sub")
 					.icon("chevronNext")
 					.buttonStyle("iconTopEnd"),
-				UI.Button("Remount").onClick("Remount").buttonStyle("primary"),
+				UI.Button("Remount").onClick("Remount").buttonStyle("accent"),
 				UI.Button("Change").onClick("ChangeEvent"),
 			),
 			UI.Spacer(32),
+
+			UI.Column()
+				.gap(8)
+				.maxWidth("100%")
+				.with(
+					// Test: label styles
+					UI.Row(
+						UI.Label("Large").labelStyle("large"),
+						UI.Label("Title").labelStyle("title"),
+						UI.Label("Headline").labelStyle("headline"),
+						UI.Label("Body").labelStyle("body"),
+						UI.Label("Caption").labelStyle("caption"),
+						UI.Label("Bdg").labelStyle("badge"),
+						UI.Label("OK").labelStyle("successBadge"),
+						UI.Label("No").labelStyle("dangerBadge"),
+					),
+
+					// Test: button styles
+					UI.Row(
+						UI.Button("Default")
+							.buttonStyle("default")
+							.onClick(() => {
+								app.showConfirmDialogAsync([
+									"Button pressed",
+									"Are you sure you want to continue?",
+								]);
+							}),
+						UI.Button("Accent").buttonStyle("accent"),
+						UI.Button("Success").buttonStyle("success"),
+						UI.Button("Danger").buttonStyle("danger"),
+						UI.Button("Ghost").buttonStyle("ghost"),
+						UI.Button("Text").buttonStyle("text"),
+						UI.Button("Link").buttonStyle("link"),
+						UI.Button("Small").buttonStyle("small"),
+					).wrapContent(),
+					UI.Row(
+						UI.Button().icon("plus").buttonStyle("icon"),
+						UI.Button().icon("plus").buttonStyle("successIcon"),
+						UI.Button().icon("plus").buttonStyle("dangerIcon"),
+						UI.Button("Icon Top").icon("plus").buttonStyle("iconTop"),
+						UI.Button("Top Start").icon("plus").buttonStyle("iconTopStart"),
+						UI.Button("Top End").icon("plus").buttonStyle("iconTopEnd"),
+					),
+					UI.Row()
+						.padding(8)
+						.background("shade")
+						.with(
+							UI.Button("Default").buttonStyle("default"),
+							UI.Button("Accent").buttonStyle("accent"),
+							UI.Button("Success").buttonStyle("success"),
+							UI.Button("Danger").buttonStyle("danger"),
+							UI.Button("Ghost").buttonStyle("ghost"),
+							UI.Button("Text").buttonStyle("text"),
+							UI.Button("Link").buttonStyle("link"),
+							UI.Button("Small").buttonStyle("small"),
+						),
+					UI.Row()
+						.padding(8)
+						.background("shade")
+						.with(
+							UI.Label("Testing"),
+							UI.TextField("Testing"),
+							UI.Button("Button"),
+							UI.Button().icon("search").buttonStyle("icon"),
+						),
+				),
 
 			// Test: table
 			UI.Column(
@@ -414,7 +474,7 @@ function TextFieldGroup(
 			UI.Column()
 				.gap()
 				.with(
-					UI.Label(label).labelStyle("secondary"),
+					UI.Label(label).dim(),
 					UI.TextField().value(v.bind("text")).type(type),
 					UI.Label(v.bind("error"))
 						.hideWhen(v.bind("error").not())
@@ -451,15 +511,20 @@ function OtherView(v: Binding<OtherActivity>) {
 						UI.Label("Remember"),
 						UI.Spacer(),
 						UI.Button()
+							.buttonStyle("ghost")
 							.chevron("down")
 							.formStateValue(v.bind("form"), "rememberMe")
 							.value(false)
 							.dropdownPicker(
-								new ModalMenuOptions([
-									{ value: true, text: "Yes" },
-									{ value: false, text: "No" },
-								]),
-							),
+								new ModalMenuOptions(
+									[
+										{ value: true, text: "Yes" },
+										{ value: false, text: "No" },
+									],
+									140,
+								),
+							)
+							.minWidth(0),
 					),
 					UI.Row(
 						UI.Label("Remember"),
@@ -505,16 +570,44 @@ export class OtherActivity extends Activity {
 }
 
 function DialogView() {
-	return UI.Column()
-		.align("center")
-		.gap(8)
-		.padding(16)
-		.with(
-			UI.Spacer(32),
-			UI.Label("Dialog"),
-			UI.Button("Dropdown").chevron("down").onClick("Drop"),
-			UI.Row(UI.Button("Close").icon("close").onClick("Close")),
-		);
+	return UI.Column().with(
+		UI.Column()
+			.gap(8)
+			.padding(16)
+			.with(
+				UI.Label("Dialog").labelStyle("headline"),
+				UI.Button()
+					.icon("close")
+					.position("overlay", 8, 8)
+					.buttonStyle("icon")
+					.onClick("Close"),
+				UI.Label(
+					"This is a dialog. It contains a title, a body, and a row of buttons. " +
+						"It can be used to display a message or to collect input from the user.",
+				)
+					.wrap()
+					.maxWidth(340),
+				UI.Spacer(64),
+				UI.Button("Dropdown")
+					.chevron("down")
+					.dropdownMenu(
+						new ModalMenuOptions([
+							{ value: "one", text: "One" },
+							{ value: "two", text: "Two" },
+							{ value: "three", text: "Three" },
+						]),
+					)
+					.onMenuItemSelect("Dropdown"),
+			),
+		UI.Row()
+			.background("shade")
+			.padding(16)
+			.with(
+				UI.Spacer(),
+				UI.Button("Cancel").onClick("Close"),
+				UI.Button("Confirm").buttonStyle("accent").onClick("Close"),
+			),
+	);
 }
 
 export class DialogActivity extends Activity {
@@ -529,17 +622,8 @@ export class DialogActivity extends Activity {
 		this.unlink();
 	}
 
-	protected async onDrop(e: ViewEvent<UIButton>) {
-		let choice = await app.showModalMenuAsync((menu) => {
-			menu.items = [
-				{ value: "one", text: "One" },
-				{ value: "two", text: "Two" },
-				{ value: "disabled", text: "Disabled", disabled: true },
-				{ value: "three", text: "Three", hint: "⌘+T" },
-				{ divider: true },
-				{ value: "more", text: "More..." },
-			];
-		}, e.source);
+	protected async onDropdown(e: ViewEvent<UIButton>) {
+		let choice = e.data.value;
 		app.showAlertDialogAsync(["You picked an option", String(choice)]);
 	}
 }

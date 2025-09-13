@@ -19,7 +19,7 @@ describe("Base colors", () => {
 	test("Color value using indirectly predefined instance", () => {
 		let blue = UI.colors.blue;
 		expect(blue.toString()).toBe("#2277ff");
-		expect(UI.colors.primary.toString()).toBe("#222222");
+		expect(UI.colors.accent.toString()).toBe("#222222");
 		expect(UI.colors.text.toString()).toBe("#000");
 	});
 });

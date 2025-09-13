@@ -418,7 +418,7 @@ export namespace UIElement {
 
 		/**
 		 * Sets the text color.
-		 * @param color A `UIColor` instance, or a theme color name (e.g. "text", "primary"). Defaults to `"text"`.
+		 * @param color A `UIColor` instance, or a theme color name (e.g. "text", "accent"). Defaults to `"text"`.
 		 * @returns The builder instance for chaining.
 		 */
 		textColor(
@@ -434,7 +434,7 @@ export namespace UIElement {
 
 		/**
 		 * Sets the background color.
-		 * @param color A `UIColor` instance, or a theme color name (e.g. "background", "primary"). Defaults to `"background"`.
+		 * @param color A `UIColor` instance, or a theme color name (e.g. "background", "accent"). Defaults to `"background"`.
 		 * @returns The builder instance for chaining.
 		 */
 		background(

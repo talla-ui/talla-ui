@@ -19,7 +19,7 @@
 	--code-fg-color: #333;
 	--code-bg-color: rgba(0, 0, 0, 0.05);
 	--pre-bg-color: rgba(0, 0, 0, 0.035);
-	--primary-boldest: #06c;
+	--accent-boldest: #06c;
 	--border-color: #ddd;
 	--block-bg-color: linear-gradient(45deg, #edf, #def);
 	--refblock-glow: #def;
@@ -59,7 +59,7 @@
 		--code-fg-color: #ccc;
 		--code-bg-color: rgba(255, 255, 255, 0.1);
 		--pre-bg-color: #222;
-		--primary-boldest: #39f;
+		--accent-boldest: #39f;
 		--border-color: #333;
 		--block-bg-color: linear-gradient(45deg, #414, #124);
 		--refblock-glow: #235;
@@ -217,7 +217,7 @@ a,
 a:active,
 a:visited {
 	text-decoration: none;
-	color: var(--primary-boldest);
+	color: var(--accent-boldest);
 }
 
 a:active,

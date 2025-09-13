@@ -543,10 +543,10 @@ function getDropShadowCSS(dropShadow: number) {
 	if (dropShadow < 0) h = h * 0.5;
 	let b1 = h * 2;
 	let s1 = -h * 0.75;
-	let a1 = h * 0.2 + 0.1;
+	let a1 = Math.min(h * 0.2 + 0.1, 0.4);
 	let b2 = h * 2;
 	let s2 = -h * 0.5 - 0.1;
-	let a2 = h * 0.4 + 0.3;
+	let a2 = Math.min(h * 0.4 + 0.3, 0.6);
 	let inset = dropShadow < 0 ? "inset " : "";
 	return (
 		`${inset}0 0 ${b1}rem ${s1}rem rgba(0,0,0,${a1}),` +

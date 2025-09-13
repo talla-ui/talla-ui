@@ -41,7 +41,7 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 	 * - The default style only includes padding.
 	 */
 	buttonCellStyle = new UIStyle({
-		padding: 16,
+		padding: 24,
 	});
 
 	/**
@@ -108,9 +108,9 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 
 	/**
 	 * The button style used for the confirm button
-	 * - This property defaults to the default primary button style.
+	 * - This property defaults to the default accent button style.
 	 */
-	confirmButtonStyle = UI.styles.button.primary;
+	confirmButtonStyle = UI.styles.button.accent;
 }
 
 /** @internal Default modal message dialog view; shown asynchronously and resolves a promise */

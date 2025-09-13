@@ -15,28 +15,28 @@ beforeEach(() => {
 test("ThemeResolver creates references for predefined keys", () => {
 	// Create a simple theme resolver
 	let resolver = new UIStyle.ThemeResolver(
-		["primary", "secondary"],
+		["one", "two"],
 		(f) => new UIColor(f()?.toString() || "#000"),
 	);
 
 	// Test that refs() creates objects for all keys
 	let refs = resolver.refs();
-	expect(refs).toHaveProperty("primary");
-	expect(refs).toHaveProperty("secondary");
-	expect(refs.primary).toBeInstanceOf(UIColor);
-	expect(refs.secondary).toBeInstanceOf(UIColor);
+	expect(refs).toHaveProperty("one");
+	expect(refs).toHaveProperty("two");
+	expect(refs.one).toBeInstanceOf(UIColor);
+	expect(refs.two).toBeInstanceOf(UIColor);
 });
 
 test("ThemeResolver.set() updates theme values", () => {
 	// Test using the actual UIColor.theme to demonstrate dynamic updates
-	let testRef = UIColor.theme.ref("primary");
+	let testRef = UIColor.theme.ref("accent");
 
 	// Set initial value
-	UIColor.theme.set({ primary: new UIColor("#ff0000") });
+	UIColor.theme.set({ accent: new UIColor("#ff0000") });
 	expect(testRef.toString()).toBe("#ff0000");
 
 	// Update the value - the same reference should resolve to the new value
-	UIColor.theme.set({ primary: new UIColor("#00ff00") });
+	UIColor.theme.set({ accent: new UIColor("#00ff00") });
 	expect(testRef.toString()).toBe("#00ff00");
 });
 
@@ -86,13 +86,13 @@ test("UIColor theme references resolve dynamically", () => {
 });
 
 test("UIColor theme references support color methods", () => {
-	UIColor.theme.set({ primary: new UIColor("#003388") });
-	let primaryRef = UIColor.theme.ref("primary");
-	let alphaColor = primaryRef.alpha(0.5);
+	UIColor.theme.set({ accent: new UIColor("#003388") });
+	let accentRef = UIColor.theme.ref("accent");
+	let alphaColor = accentRef.alpha(0.5);
 	expect(alphaColor.toString()).toContain("0.5");
-	let brighterColor = primaryRef.brighten(0.2);
-	expect(brighterColor.toString()).not.toBe(primaryRef.toString());
-	let textColor = primaryRef.text();
+	let brighterColor = accentRef.brighten(0.2);
+	expect(brighterColor.toString()).not.toBe(accentRef.toString());
+	let textColor = accentRef.text();
 	expect(String(textColor)).toBe(UI.colors.lightText.toString());
 });
 
@@ -154,14 +154,10 @@ test("UIStyle theme has element style resolvers", () => {
 
 test("UIStyle theme resolvers have expected keys", () => {
 	expect(UI.styles.button).toHaveProperty("default");
-	expect(UI.styles.button).toHaveProperty("primary");
-	expect(UI.styles.button).toHaveProperty("success");
 	expect(UI.styles.button).toHaveProperty("danger");
 
 	expect(UI.styles.label).toHaveProperty("default");
 	expect(UI.styles.label).toHaveProperty("title");
-	expect(UI.styles.label).toHaveProperty("bold");
-	expect(UI.styles.label).toHaveProperty("secondary");
 });
 
 test("UIStyle theme references resolve dynamically", () => {

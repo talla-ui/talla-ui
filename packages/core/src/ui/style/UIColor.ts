@@ -24,8 +24,8 @@ let _cacheUpdate = 0;
  *
  * UI.colors.black // indirect theme color reference
  * UI.colors.green.alpha(0.5)
- * UI.colors.primaryBackground.text()
- * UI.colors.primaryBackground.brighten(0.2).text()
+ * UI.colors.accent.text()
+ * UI.colors.accent.brighten(0.2).text()
  */
 export class UIColor {
 	/** @internal Invalidates the cache of calculated color values */
@@ -61,13 +61,13 @@ export class UIColor {
 			let r = parseInt(c.slice(1, 3), 16);
 			let g = parseInt(c.slice(3, 5), 16);
 			let b = parseInt(c.slice(5, 7), 16);
-			return 0.3 * r + 0.6 * g + 0.1 * b > 140;
+			return 0.3 * r + 0.6 * g + 0.1 * b > 160;
 		} else if (c.slice(0, 4) === "rgb(" || c.slice(0, 5) === "rgba(") {
 			let v = c.slice(c.indexOf("(") + 1).split(",");
 			let r = parseFloat(v[0]!);
 			let g = parseFloat(v[1]!);
 			let b = parseFloat(v[2]!);
-			return 0.3 * r + 0.6 * g + 0.1 * b > 140;
+			return 0.3 * r + 0.6 * g + 0.1 * b > 160;
 		} else return true;
 	}
 
@@ -267,20 +267,15 @@ export namespace UIColor {
 			"purple",
 			"magenta",
 			"divider",
+			"accent",
 			"background",
 			"shade",
 			"text",
 			"darkText",
 			"lightText",
-			"danger",
-			"dangerBackground",
-			"success",
-			"successBackground",
-			"primary",
-			"primaryBackground",
-			"brand",
-			"brandBackground",
 			"link",
+			"danger",
+			"success",
 		],
 		UIColor.resolve,
 		UIColor.invalidateCache,

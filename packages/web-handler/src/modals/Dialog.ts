@@ -25,7 +25,7 @@ export class WebDialogStyles extends ConfigOptions {
 		maxWidth: "100vw",
 		grow: 0,
 		borderRadius: 12,
-		dropShadow: 16,
+		dropShadow: 32,
 	});
 
 	/** A variant modifier for the dialog container, applies the container style by default */

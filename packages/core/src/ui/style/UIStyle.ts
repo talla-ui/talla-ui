@@ -17,7 +17,7 @@ let _nextStyleId = 0x1234;
  *
  * Each instance contains a set of style definitions, optionally based on a dynamic theme reference, as well as an 'overrides' object. When applied to a UI element, styles are defined as needed and overrides are applied directly.
  *
- * To create a new instance, use the `new UIStyle(...)` constructor. To extend an existing style, use the {@link extend()} method, e.g. `UI.styles.button.primary.extend(...)`.
+ * To create a new instance, use the `new UIStyle(...)` constructor. To extend an existing style, use the {@link extend()} method, e.g. `UI.styles.button.accent.extend(...)`.
  */
 export class UIStyle {
 	/**
@@ -53,112 +53,100 @@ export class UIStyle {
 	/**
 	 * Adds conditional styles for disabled elements
 	 * - Disabled styles are applied to all disabled elements, regardless of other states (hovered, pressed, focused, readonly).
-	 * @note This method modifies the current style instance, and returns it for chaining. To create a new style with disabled styles, use {@link extend()} first.
 	 * @param styles Style properties to apply to disabled elements
-	 * @returns The current style instance, for chaining
+	 * @returns A new style instance with conditional styles applied
 	 */
 	setDisabled(styles: Readonly<UIStyle.StyleOptions>): UIStyle {
-		return this._setConditional({ state: { disabled: true } }, styles);
+		let result = this._clone([{ state: { disabled: true }, ...styles }]);
+		return result;
 	}
 
 	/**
 	 * Adds conditional styles for hovered elements
 	 * - Hovered styles are not applied to disabled or focused elements.
-	 * @note This method modifies the current style instance, and returns it for chaining. To create a new style with disabled styles, use {@link extend()} first.
 	 * @param styles Style properties to apply to disabled elements
-	 * @returns The current style instance, for chaining
+	 * @returns A new style instance with conditional styles applied
 	 */
 	setHovered(styles: Readonly<UIStyle.StyleOptions>): UIStyle {
-		return this._setConditional(
-			{ state: { hovered: true, disabled: false, focused: false } },
-			styles,
-		);
+		return this._clone([
+			{ state: { hovered: true, disabled: false, focused: false }, ...styles },
+		]);
 	}
 
 	/**
 	 * Adds conditional styles for focused elements
 	 * - Focused styles are not applied to disabled elements.
-	 * @note This method modifies the current style instance, and returns it for chaining. To create a new style with focused styles, use {@link extend()} first.
 	 * @param styles Style properties to apply to focused elements
-	 * @returns The current style instance, for chaining
+	 * @returns A new style instance with conditional styles applied
 	 */
 	setFocused(styles: Readonly<UIStyle.StyleOptions>): UIStyle {
-		return this._setConditional(
-			{ state: { focused: true, disabled: false } },
-			styles,
-		);
+		return this._clone([
+			{ state: { focused: true, disabled: false }, ...styles },
+		]);
 	}
 
 	/**
 	 * Adds conditional styles for pressed (button) elements
 	 * - Pressed styles are not applied to disabled elements.
 	 * - Hovered styles are not applied to focused elements.
-	 * @note This method modifies the current style instance, and returns it for chaining. To create a new style with pressed styles, use {@link extend()} first.
 	 * @param styles Style properties to apply to pressed elements
 	 * @param pressedHovered Style properties to apply to pressed and hovered (unfocused) elements
 	 * @param pressedFocused Style properties to apply to pressed and focused elements; defaults to hovered styles
-	 * @returns The current style instance, for chaining
+	 * @returns A new style instance with conditional styles applied
 	 */
 	setPressed(
 		styles: Readonly<UIStyle.StyleOptions>,
 		pressedHovered: Readonly<UIStyle.StyleOptions> = {},
 		pressedFocused: Readonly<UIStyle.StyleOptions> = pressedHovered,
 	): UIStyle {
-		return this._setConditional(
-			{ state: { pressed: true, disabled: false } },
-			styles,
-		)
-			._setConditional(
-				{
-					state: {
-						pressed: true,
-						hovered: true,
-						disabled: false,
-						focused: false,
-					},
+		return this._clone([
+			{ state: { pressed: true, disabled: false }, ...styles },
+			{
+				state: {
+					pressed: true,
+					hovered: true,
+					disabled: false,
+					focused: false,
 				},
-				pressedHovered,
-			)
-			._setConditional(
-				{ state: { pressed: true, focused: true, disabled: false } },
-				pressedFocused,
-			);
+				...pressedHovered,
+			},
+			{
+				state: { pressed: true, focused: true, disabled: false },
+				...pressedFocused,
+			},
+		]);
 	}
 
 	/**
 	 * Adds conditional styles for readonly elements
 	 * - Readonly styles are not applied to disabled elements.
 	 * - Hovered styles are not applied to focused elements.
-	 * @note This method modifies the current style instance, and returns it for chaining. To create a new style with pressed styles, use {@link extend()} first.
 	 * @param styles Style properties to apply to readonly elements
 	 * @param readonlyHovered Style properties to apply to readonly and hovered (unfocused) elements
 	 * @param readonlyFocused Style properties to apply to readonly and focused elements; defaults to hovered styles
-	 * @returns The current style instance, for chaining
+	 * @returns A new style instance with conditional styles applied
 	 */
 	setReadonly(
 		styles: Readonly<UIStyle.StyleOptions>,
 		readonlyHovered: Readonly<UIStyle.StyleOptions> = {},
 		readonlyFocused: Readonly<UIStyle.StyleOptions> = readonlyHovered,
 	): UIStyle {
-		return this._setConditional(
-			{ state: { readonly: true, disabled: false } },
-			styles,
-		)
-			._setConditional(
-				{
-					state: {
-						readonly: true,
-						hovered: true,
-						disabled: false,
-						focused: false,
-					},
+		return this._clone([
+			{ state: { readonly: true, disabled: false }, ...styles },
+			{
+				state: {
+					readonly: true,
+					hovered: true,
+					disabled: false,
+					focused: false,
 				},
-				readonlyHovered,
-			)
-			._setConditional(
-				{ state: { readonly: true, focused: true, disabled: false } },
-				readonlyFocused,
-			);
+				...readonlyHovered,
+			},
+			{
+				state: { readonly: true, focused: true, disabled: false },
+				...readonlyFocused,
+			},
+		]);
 	}
 
 	/**
@@ -167,11 +155,7 @@ export class UIStyle {
 	 * @returns A new {@link UIStyle} instance
 	 */
 	extend(...styles: Readonly<UIStyle.StyleOptions>[]): UIStyle {
-		let result = new UIStyle();
-		result._styles = this._styles.concat(styles);
-		result._id = this._id + "_" + result.id.slice(2);
-		result._resolve = this._resolve;
-		return result;
+		return this._clone(styles);
 	}
 
 	/**
@@ -181,10 +165,8 @@ export class UIStyle {
 	 * @returns A new {@link UIStyle} instance
 	 */
 	override(...styles: Readonly<UIStyle.StyleOptions | undefined>[]): UIStyle {
-		let result = new UIStyle();
-		result._styles = this._styles;
-		result._id = this._id;
-		result._resolve = this._resolve;
+		let result = this._clone();
+		result._id = this._id; // keep the same identifier
 		result._overrides = Object.assign({ ...this._overrides }, ...styles);
 		return result;
 	}
@@ -209,13 +191,16 @@ export class UIStyle {
 		return this._overrides;
 	}
 
-	/** Implementation of methods to apply conditional styles */
-	private _setConditional(
-		state: UIStyle.StyleDefinition,
-		styles: Readonly<UIStyle.StyleOptions>,
-	): UIStyle {
-		this._styles = [...this._styles, { ...state, ...styles }];
-		return this;
+	/**
+	 * Returns a clone of this style instance, with a new identifier and the specified styles
+	 * @returns A new {@link UIStyle} instance
+	 */
+	private _clone(styles?: ReadonlyArray<UIStyle.StyleDefinition>): UIStyle {
+		let result = new UIStyle();
+		result._resolve = this._resolve;
+		result._overrides = this._overrides;
+		result._styles = styles ? this._styles.concat(styles) : this._styles;
+		return result;
 	}
 
 	/** Style definition ID with serial number */
@@ -385,7 +370,7 @@ export namespace UIStyle {
 	export class ThemeResolver<T, K extends string> {
 		/**
 		 * Creates a new theme resolver
-		 * @param keys Array of available theme keys (e.g. "primary", "danger", "success")
+		 * @param keys Array of available theme keys (e.g. "accent", "danger", "success")
 		 * @param resolver Function to create resolved instances from factory functions
 		 * @param invalidate Optional callback to invalidate cached values when new values are applied
 		 */
@@ -457,13 +442,11 @@ export namespace UIStyle {
 		label: new ThemeResolver(
 			[
 				"default",
-				"title",
+				"body",
 				"large",
+				"title",
 				"headline",
-				"bold",
-				"italic",
-				"secondary",
-				"small",
+				"caption",
 				"badge",
 				"successBadge",
 				"dangerBadge",
@@ -474,15 +457,14 @@ export namespace UIStyle {
 		button: new ThemeResolver(
 			[
 				"default",
-				"primary",
+				"accent",
 				"success",
 				"danger",
-				"plain",
+				"ghost",
 				"text",
 				"link",
 				"small",
 				"icon",
-				"primaryIcon",
 				"successIcon",
 				"dangerIcon",
 				"iconTop",
@@ -491,7 +473,7 @@ export namespace UIStyle {
 			],
 			UIStyle.resolve,
 		),
-		textfield: new ThemeResolver(["default", "transparent"], UIStyle.resolve),
+		textfield: new ThemeResolver(["default", "ghost"], UIStyle.resolve),
 		toggle: new ThemeResolver(
 			["default", "danger", "success"],
 			UIStyle.resolve,
