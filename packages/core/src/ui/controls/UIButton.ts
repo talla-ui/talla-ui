@@ -247,13 +247,17 @@ export namespace UIButton {
 		 * @returns The builder instance for chaining.
 		 */
 		dropdownMenu(menu: ModalMenuOptions) {
+			let showing: UIButton | undefined;
 			this._showMenu ||= (button) => {
 				return AppContext.getInstance().showModalMenuAsync(menu, button);
 			};
 			const showMenu = async (_: ObservableEvent, button: UIButton) => {
+				if (showing === button) return;
+				showing = button;
 				button.pressed = true;
 				let value = await this._showMenu!(button);
 				button.pressed = false;
+				showing = undefined;
 				if (value == null) return;
 				button.value = value;
 				let item = menu.items.find((item) => item.value === value);
