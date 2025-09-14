@@ -50,10 +50,12 @@ export class UIColor {
 	 * Returns true if the pseudo-brightness of the specified color is greater than 55%
 	 * - This method is used by the {@link UIColor.text()} method to determine a suitable text color.
 	 * @param color A color value, in hex format `#112233` or `#123`, or rgb(a) format `rgb(255, 255, 255)`
+	 * @param threshold The threshold for the perceived brightness, 0.65 by default
 	 * @returns True if the specified color has a relatively high perceived brightness.
 	 */
-	static isBrightColor(color: UIColor | string) {
+	static isBrightColor(color: UIColor | string, threshold?: number) {
 		let c = String(color);
+		let w = threshold ? threshold * 255 : 165;
 		if (c[0] === "#") {
 			if (c.length === 4) {
 				c = "#" + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
@@ -61,13 +63,13 @@ export class UIColor {
 			let r = parseInt(c.slice(1, 3), 16);
 			let g = parseInt(c.slice(3, 5), 16);
 			let b = parseInt(c.slice(5, 7), 16);
-			return 0.3 * r + 0.6 * g + 0.1 * b > 160;
+			return 0.3 * r + 0.6 * g + 0.1 * b > w;
 		} else if (c.slice(0, 4) === "rgb(" || c.slice(0, 5) === "rgba(") {
 			let v = c.slice(c.indexOf("(") + 1).split(",");
 			let r = parseFloat(v[0]!);
 			let g = parseFloat(v[1]!);
 			let b = parseFloat(v[2]!);
-			return 0.3 * r + 0.6 * g + 0.1 * b > 160;
+			return 0.3 * r + 0.6 * g + 0.1 * b > w;
 		} else return true;
 	}
 
@@ -158,13 +160,14 @@ export class UIColor {
 	/**
 	 * Returns a new {@link UIColor} instance with increased (or decreased) contrast compared to 50% grey
 	 * @param d The change in contrast to apply, -0.5 to 0.5: positive values make light colors lighter and dark colors darker (away from mid-grey), negative values make light colors darker and dark colors lighter (towards mid-grey)
+	 * @param threshold The threshold for the perceived brightness, 0.65 by default
 	 * @returns A new instance of UIColor.
 	 */
-	contrast(d: number) {
+	contrast(d: number, threshold?: number) {
 		let result = new UIColor();
 		result._f = () => {
 			let c = String(this);
-			let bright = UIColor.isBrightColor(c);
+			let bright = UIColor.isBrightColor(c, threshold);
 			if (d > 0.5) d = 0.5;
 			if (d < -0.5) d = -0.5;
 
@@ -185,12 +188,21 @@ export class UIColor {
 	/**
 	 * Returns a new {@link UIColor} instance for a suitable foreground color based on the current color
 	 * - This method first determines if the current color is bright or dark, and then returns the corresponding color from the provided parameters.
+	 * @param colorOnLight The color to return if the current color is bright
+	 * @param colorOnDark The color to return if the current color is dark
+	 * @param threshold The threshold for the perceived brightness, 0.65 by default
 	 * @returns A new instance of UIColor.
 	 */
-	fg(colorOnLight: UIColor | string, colorOnDark: UIColor | string) {
+	fg(
+		colorOnLight: UIColor | string,
+		colorOnDark: UIColor | string,
+		threshold?: number,
+	) {
 		let result = new UIColor();
 		result._f = () =>
-			UIColor.isBrightColor(this) ? String(colorOnLight) : String(colorOnDark);
+			UIColor.isBrightColor(this, threshold)
+				? String(colorOnLight)
+				: String(colorOnDark);
 		return result;
 	}
 

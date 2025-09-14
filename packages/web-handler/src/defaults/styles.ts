@@ -10,6 +10,8 @@ const color_success = colors.success;
 const color_danger = colors.danger;
 const color_link = colors.link;
 
+const BTN_ACCENT_THRESHOLD = 0.2;
+
 const baseButtonOptions: UIStyle.StyleOptions = {
 	background: color_text.alpha(0.05),
 	textColor: color_inherit,
@@ -103,12 +105,18 @@ export default {
 		default: defaultButtonStyle,
 		accent: makeButtonStyle(
 			{ background: color_accent, textColor: color_accent.text() },
-			{ background: color_accent.brighten(-0.1), borderColor: color_accent },
-			{ background: color_accent.brighten(-0.2) },
+			{
+				background: color_accent.contrast(-0.1, BTN_ACCENT_THRESHOLD),
+				borderColor: color_accent,
+			},
+			{ background: color_accent.contrast(-0.2, BTN_ACCENT_THRESHOLD) },
 		),
 		success: makeButtonStyle(
 			{ background: color_success, textColor: color_success.text() },
-			{ background: color_success.brighten(-0.1), borderColor: color_success },
+			{
+				background: color_success.brighten(-0.1),
+				borderColor: color_success,
+			},
 			{ background: color_success.brighten(-0.2) },
 		),
 		danger: makeButtonStyle(
@@ -158,8 +166,8 @@ export default {
 				background: color_success,
 				textColor: color_success.text(),
 			},
-			{ background: color_success.contrast(-0.1) },
-			{ background: color_success.contrast(-0.2) },
+			{ background: color_success.brighten(-0.1) },
+			{ background: color_success.brighten(-0.2) },
 		),
 		dangerIcon: makeButtonStyle(
 			{
@@ -168,7 +176,7 @@ export default {
 			},
 			{ background: color_danger, textColor: color_danger.text() },
 			{
-				background: color_danger.contrast(-0.2),
+				background: color_danger.brighten(-0.2),
 				textColor: color_danger.text(),
 			},
 		),
