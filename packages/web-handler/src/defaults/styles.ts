@@ -103,19 +103,19 @@ export default {
 		default: defaultButtonStyle,
 		accent: makeButtonStyle(
 			{ background: color_accent, textColor: color_accent.text() },
-			{ background: color_accent.contrast(-0.1), borderColor: color_accent },
-			{ background: color_accent.contrast(-0.2) },
+			{ background: color_accent.brighten(-0.1), borderColor: color_accent },
+			{ background: color_accent.brighten(-0.2) },
 		),
 		success: makeButtonStyle(
 			{ background: color_success, textColor: color_success.text() },
-			{ background: color_success.contrast(-0.1), borderColor: color_success },
-			{ background: color_success.contrast(-0.2) },
+			{ background: color_success.brighten(-0.1), borderColor: color_success },
+			{ background: color_success.brighten(-0.2) },
 		),
 		danger: makeButtonStyle(
 			{ background: color_danger.alpha(0.15), textColor: color_danger },
 			{ background: color_danger, textColor: color_danger.text() },
 			{
-				background: color_danger.contrast(-0.2),
+				background: color_danger.brighten(-0.2),
 				textColor: color_danger.text(),
 			},
 		),
