@@ -9,7 +9,7 @@ import { UIStyle } from "./UIStyle.js";
  * @description
  * Each UIIconResource instance encapsulates platform-dependent icon content. For the Web (DOM) renderer, this may include SVG content, HTML, or plain text. Icons can be used directly as an image source, or with labels or buttons on their own or alongside a label.
  *
- * To create a new icon, use the `new UIIconResource(content)` constructor. To reference an icon from the theme, use the global `theme` object or the {@link UIIconResource.theme} resolver.
+ * To create a new icon, use the `new UIIconResource(content)` constructor. To reference an icon from the theme, use the global {@link UI} object or the {@link UIIconResource.theme} resolver.
  */
 export class UIIconResource {
 	/**
