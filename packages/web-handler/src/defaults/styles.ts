@@ -86,16 +86,14 @@ const defaultButtonStyle = new UIStyle(baseButtonOptions)
 
 function makeButtonStyle(
 	options: UIStyle.StyleOptions,
-	focusOptions?: UIStyle.StyleOptions,
-	pressedOptions?: UIStyle.StyleOptions,
+	focusOptions: UIStyle.StyleOptions = {},
+	pressedOptions: UIStyle.StyleOptions = {},
 ) {
-	let combo1 = { ...options, ...focusOptions };
-	let combo2 = { ...options, ...pressedOptions };
 	return UI.styles.button.default
 		.extend({ ...options })
-		.setHovered(combo1)
-		.setFocused(combo1)
-		.setPressed(combo2, combo2, combo2)
+		.setHovered(focusOptions)
+		.setFocused(focusOptions)
+		.setPressed(pressedOptions, pressedOptions, pressedOptions)
 		.setDisabled(disabledOptions);
 }
 
