@@ -4,6 +4,9 @@ import { CLASS_OVERLAY_WRAPPER } from "../defaults/css.js";
 // Debounce drag start by keeping track of the last start time
 let _dragStart = 0;
 
+// Start dragging only after the cursor has moved a bit
+const DRAG_START_PX = 6;
+
 // keep track of elements that were already dragged
 let _draggedElements = new WeakMap<HTMLElement, { x: number; y: number }>();
 
@@ -70,7 +73,12 @@ export function applyDragModal(builder: UIElement.ElementBuilder<UIElement>) {
 					y = Math.max(0, Math.min(y, window.innerHeight));
 					let diffX = x - startX;
 					let diffY = y - startY;
-					if (!moved && Math.abs(diffX) < 2 && Math.abs(diffY) < 2) return;
+					if (
+						!moved &&
+						Math.abs(diffX) < DRAG_START_PX &&
+						Math.abs(diffY) < DRAG_START_PX
+					)
+						return;
 
 					// set transition and transform CSS properties to move the element
 					dragElt!.style.transition = "none";
