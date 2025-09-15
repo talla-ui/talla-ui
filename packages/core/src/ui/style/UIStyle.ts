@@ -379,6 +379,7 @@ export namespace UIStyle {
 			resolver: (f: () => T | undefined) => T,
 			invalidate?: () => void,
 		) {
+			this._keys = keys;
 			this._resolver = resolver;
 			this._invalidate = invalidate;
 			this._theme = {} as Record<K, T | undefined>;
@@ -404,7 +405,9 @@ export namespace UIStyle {
 		 * @returns A reference created by the resolver for this object
 		 */
 		ref(id: K): T {
-			return (this._ref[id] ??= this._resolver(() => this._theme[id]));
+			return (this._ref[id] ??= this._resolver(
+				() => this._theme[id] || this._theme[this._keys[0]!],
+			));
 		}
 
 		/**
@@ -420,6 +423,7 @@ export namespace UIStyle {
 			return result;
 		}
 
+		private _keys: K[];
 		private _resolver: (f: () => T | undefined) => T;
 		private _invalidate?: () => void;
 		private _ref: Partial<Record<K, T>> = {};
