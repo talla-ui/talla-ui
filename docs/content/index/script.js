@@ -5,7 +5,7 @@
 	function scrollMenuItem() {
 		let currentMenuItem = document.getElementById("current-menu-item");
 		if (currentMenuItem && currentMenuItem.offsetParent) {
-			currentMenuItem.offsetParent.scrollTop = currentMenuItem.offsetTop - 40;
+			currentMenuItem.offsetParent.scrollTop = currentMenuItem.offsetTop - 44;
 		}
 	}
 	scrollMenuItem();
@@ -14,15 +14,6 @@
 	function handle(id, f) {
 		let element = document.getElementById(id);
 		if (element) element.onclick = f;
-	}
-
-	// scroll to top using script
-	handle("back-to-top", backToTop);
-	handle("search-back-to-top", backToTop);
-	function backToTop() {
-		window.scrollTo(0, 0);
-		scrollMenuItem();
-		return false;
 	}
 
 	// show and hide navbar

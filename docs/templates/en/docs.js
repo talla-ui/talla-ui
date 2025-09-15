@@ -70,60 +70,50 @@ export default async (html, data) => `
 		<meta charset="UTF-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
 		<link rel="stylesheet" href="/style.css?t=${TIME}" />
+		<link rel="stylesheet" href="/docpage.css?t=${TIME}" />
 		<link rel="stylesheet" href="/menu.css?t=${TIME}" />
 		<link rel="stylesheet" href="/diagram.css?t=${TIME}" />
 		<title>Tälla UI framework - ${data.title || data.id || ""}</title>
 		<meta name="description" content="${encode(data.metaDescription) || ""}" />
 	</head>
 	<body class="docpage">
-		<div class="docpage_header">
-			<a href="/" class="logo"></a>
-			<div class="header_links">
-				<a href="/docs/en/introduction.html" class="hide_narrow">About</a>
-				<a href="/docs/en/"><b>Docs</b></a>
-				<a href="/docs/en/blog/blog.html">Blog</a>
-				<a href="https://github.com/talla-ui/talla-ui" target="_blank">
-					<icon class="icon icon--github"></icon>
-				</a>
-			</div>
-		</div>
-		<div class="docpage_wrapper">
+		<div class="docpage_sidebar">
 			<div class="docpage_searchbar">
 				<div class="docpage_searchcontainer" id="docpage-search"></div>
-				<div class="docpage_navbar_footer">
-					<a href="#" id="search-back-to-top">
-						<span class="icon icon--arrow_up"></span>
-						Back to top
-					</a>
-				</div>
 			</div>
 			<div class="docpage_navbar" id="docpage-navbar">
 				<div class="docpage_navbar_header">
-					<a href="/docs/en/">Docs</a>
-					<button id="navbar-searchbutton" class="navbar_searchbutton" aria-label="search"></button>
-					<button id="navbar-closebutton" class="navbar_closebutton" aria-label="close"></button>
+					<a href="/" class="docpage_navbar_logo">
+						<picture>
+							<source srcset="/talla-logo-graphic.png" media="(max-width: 900px)" height="38">
+							<source srcset="/talla-logo-dark.png" media="(prefers-color-scheme: dark)" height="38">
+							<img src="/talla-logo.png" alt="Tälla UI framework logo" height="38">
+						</picture>
+					</a>
+					<button id="navbar-searchbutton" class="navbar_searchbutton iconbutton" aria-label="search"></button>
+					<button id="navbar-closebutton" class="navbar_closebutton iconbutton" aria-label="close"></button>
 				</div>
 				<div class="docpage_navbar_pane">
+					<h1 class="docpage_menu_title">Documentation</h1>
 					${data.menu ? menuList(data.menu, true) : ""}
 				</div>
-				<div class="docpage_navbar_footer">
-					<a href="#" id="back-to-top">
-						<span class="icon icon--arrow_up"></span>
-						Back to top
+			</div>
+		</div>
+		<div class="docpage_content">
+			<article class="docpage">
+				<div class="docpage_breadcrumb">
+					<button id="breadcrumb-menubutton" class="docpage_breadcrumb_menubutton iconbutton" aria-label="menu"></button>
+					<span>${breadcrumb(data)}</span>
+					<a href="/" class="docpage_breadcrumb_logo">
+						<img src="/talla-logo-graphic.png" alt="Tälla UI framework logo" height="38">
 					</a>
 				</div>
-			</div>
-			<div class="docpage_content">
-				<article class="docpage">
-					<div class="docpage_breadcrumb">
-						<button id="breadcrumb-menubutton" class="docpage_breadcrumb_menubutton" aria-label="menu"></button>
-						<span>${breadcrumb(data)}</span>
-						<button id="breadcrumb-searchbutton" class="docpage_breadcrumb_searchbutton" aria-label="search"></button>
-					</div>
-					${replaceTags(html)}
-				</article>
-			</div>
+				${replaceTags(html)}
+			</article>
 		</div>
 		<script src="/script.js?t=${TIME}"></script>
 		<script src="/icons.js?t=${TIME}"></script>

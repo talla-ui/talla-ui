@@ -12,8 +12,8 @@ li.menu-item {
 li.menu-item > .icon {
 	position: absolute;
 	left: 1.5rem;
-	top: 0.125rem;
-	color: var(--navbar-icon-color);
+	top: 0.25rem;
+	color: var(--menu-icon-color);
 }
 
 li.menu-item > a {
@@ -26,42 +26,45 @@ li.menu-item > a {
 }
 
 ul.menu > li.menu-item > a {
-	padding-left: 4rem;
+	padding-left: 3.5rem;
 }
 ul.menu > ul.menu > li.menu-item > a {
-	padding-left: 5rem;
+	padding-left: 4.5rem;
 }
 ul.menu > ul.menu > li.menu-item > .icon {
 	left: 2.5rem;
 }
 ul.menu > ul.menu > ul.menu > li.menu-item > a {
-	padding-left: 6rem;
+	padding-left: 5.5rem;
 }
 ul.menu > ul.menu > ul.menu > li.menu-item > .icon {
 	left: 3.5rem;
 }
 ul.menu > ul.menu > ul.menu > ul.menu > li.menu-item > a {
-	padding-left: 7rem;
+	padding-left: 6.5rem;
 }
 ul.menu > ul.menu > ul.menu > ul.menu > li.menu-item > .icon {
 	left: 4.5rem;
 }
 ul.menu > ul.menu > ul.menu > ul.menu > ul.menu > li.menu-item > a {
-	padding-left: 8rem;
+	padding-left: 7.5rem;
 }
 ul.menu > ul.menu > ul.menu > ul.menu > ul.menu > li.menu-item > .icon {
 	left: 5.5rem;
 }
 
 li.menu-item--heading > a {
+	font-size: 0.75rem;
+	text-transform: uppercase;
 	font-weight: var(--bold-weight);
+	opacity: 0.5;
 	margin-top: 0.25rem;
 }
 
 ul.menu--root > li.menu-item--heading > a {
 	margin: 1rem 0 0.25rem;
 	padding: 0.25rem 0 0.25rem 1.5rem;
-	color: var(--nav-heading-text);
+	color: var(--menu-heading-text);
 }
 
 ul.menu--root > li.menu-item--heading .icon {
@@ -74,18 +77,22 @@ li.menu-item--heading:first-child > a {
 }
 
 li.menu-item > a:hover {
-	background: var(--nav-hover-background);
+	background: var(--menu-hover-background);
 	text-decoration: none;
 }
 
 li.menu-item--current > a,
 li.menu-item--current > a:hover {
 	font-weight: var(--bold-weight);
-	background: var(--nav-current-background);
-	color: var(--nav-current-text);
+	background: var(--menu-current-background);
+	color: var(--menu-current-text);
+}
+
+li.menu-item--current > .icon {
+	color: var(--menu-current-text);
 }
 
 li.menu-item--current + ul {
 	overflow: hidden;
-	border-inline-end: 3px solid var(--nav-current-background);
+	border-inline-end: 3px solid var(--menu-current-background);
 }
