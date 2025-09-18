@@ -1,5 +1,6 @@
 import {
 	Activity,
+	ActivityRouter,
 	app,
 	bind,
 	Binding,
@@ -14,7 +15,6 @@ import {
 	StringConvertible,
 	UI,
 	UIButton,
-	UIColumn,
 	UITextField,
 	ViewBuilder,
 	ViewEvent,
@@ -331,9 +331,16 @@ export class RouterActivity extends Activity {
 		super();
 	}
 	navigationPath = "";
-	matchNavigationPath(remainder: string): void | boolean | Activity {
-		if (remainder === "sub") return new SubActivity(this.countService);
-		if (remainder === "other") return new OtherActivity();
+	router = this.attach(new ActivityRouter());
+	matchNavigationPath(path: string) {
+		if (path === "sub")
+			return () =>
+				this.router.replace(new SubActivity(this.countService), true);
+		if (path === "other")
+			return () => this.router.replace(new OtherActivity(), true);
+
+		// no match
+		this.router.clear();
 	}
 }
 
@@ -565,8 +572,9 @@ export class OtherActivity extends Activity {
 	}
 
 	protected async onShowDialog() {
-		let d = await this.attachActivityAsync(new DialogActivity());
+		this._dialogRouter.replace(new DialogActivity(), true);
 	}
+	private _dialogRouter = this.attach(new ActivityRouter());
 }
 
 function DialogView() {

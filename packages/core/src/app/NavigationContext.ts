@@ -1,14 +1,13 @@
 import { StringConvertible } from "@talla-ui/util";
 import { invalidArgErr, safeCall } from "../errors.js";
-import { ObservableList, ObservableObject } from "../object/index.js";
-import { Activity } from "./Activity.js";
+import { ObservableObject } from "../object/index.js";
 import { AppContext } from "./AppContext.js";
 
 /**
  * An abstract class that encapsulates the current location within the application navigation stack, part of the global application context
  * - An instance of this class is available as {@link AppContext.navigation app.navigation}, set by the platform-specific renderer package.
- * - This object contains the current location, represented as a path string. The path is matched against the {@link Activity.navigationPath} property of all activities in {@link AppContext.activities app.activities}.
- * - If a match is found, the activity is activated, and the `Match` event is emitted. If no match is found, the `NotFound` event is emitted.
+ * - This object contains the current location, represented as a path string.
+ * - The path is matched against the activities contained by the root activity router, i.e. {@link AppContext.activities app.activities}. If a match is found, the activity is activated, and a `Match` event is emitted. If no match is found after a path change, the `NotFound` event is emitted. Both events contain a `path` property as part of the event data.
  * - When a new path is set, a `Set` change event is emitted.
  * @docgen {hideconstructor}
  */
@@ -17,21 +16,8 @@ export abstract class NavigationContext extends ObservableObject {
 	constructor() {
 		super();
 
-		// listen to AppContext.activities for new activities
-		let activities = AppContext.getInstance().activities;
-		this._activities = activities.listen({
-			init: (_, stop) => {
-				this.listen({ unlinked: stop });
-			},
-			handler: (_, e) => {
-				let matched = this._matched;
-				if (e.data.added) {
-					AppContext.getInstance().schedule(() => {
-						if (matched === this._matched) this._matchActivities();
-					});
-				}
-			},
-		});
+		// wait for activities to be added in this tick, then update
+		AppContext.getInstance().schedule(() => this._matchActivityAsync());
 	}
 
 	/** The current navigation path, read-only */
@@ -39,10 +25,8 @@ export abstract class NavigationContext extends ObservableObject {
 		return this._path;
 	}
 
-	/** The path that was last matched to an activity, if any */
-	get matchedPath() {
-		return this._matchedPath;
-	}
+	/** The path that was last matched by the activity router, if any */
+	matchedPath?: string;
 
 	/**
 	 * Navigates to the specified path
@@ -69,9 +53,8 @@ export abstract class NavigationContext extends ObservableObject {
 		this._path = path;
 		this.emitChange("Set");
 
-		// find matching activity from all root activities
-		let matched = this._matchActivities();
-		this.emit(matched ? "Match" : "NotFound");
+		// find matching activity from all root activities, async
+		safeCall(this._matchActivityAsync, this);
 		return this;
 	}
 
@@ -81,75 +64,32 @@ export abstract class NavigationContext extends ObservableObject {
 		return this;
 	}
 
-	/** Finds matching activities from the list, returns true if any were found */
-	private _matchActivities() {
-		if (!this._activities || this.isUnlinked()) return false;
-		let matched = false;
-		for (let activity of this._activities) {
-			if (typeof activity.navigationPath !== "string") continue;
-			if (safeCall(this._handleActivity, this, activity as any)) matched = true;
+	/** Finds a matching root activity to activate, emits an event */
+	private async _matchActivityAsync() {
+		if (this.isUnlinked()) return;
+		let path = this._path;
+		if (path === this._last && !this._notFound) return;
+		this._last = path;
+		this._notFound = false;
+
+		// use the root activity router to activate
+		let router = AppContext.getInstance().activities;
+		let matched = router.matchNavigationPath(path);
+
+		// if moved on, don't bother to emit
+		if (this._path !== path) return;
+		if (matched) {
+			this.matchedPath = path;
+			this.emit("Match", { path });
+		} else {
+			this._notFound = true;
+			this.emit("NotFound", { path });
 		}
-		if (matched) this._matched++;
-		return matched;
-	}
-
-	/** Activate/deactivate single activity based on navigation path */
-	private _handleActivity(activity: Activity & { navigationPath: string }) {
-		if (activity.isUnlinked() || this.isUnlinked()) return false;
-
-		// check if the path matches, and run method to check
-		let activityPath = activity.navigationPath;
-		let pathMatch =
-			activityPath === "" ||
-			this._path === activityPath ||
-			this._path.startsWith(activityPath + "/");
-		let matchResult =
-			pathMatch &&
-			activity.matchNavigationPath(
-				this._path.slice(activityPath.length).replace(/^\/+/, ""),
-			);
-		let matchActivity: Activity | undefined;
-		if (matchResult) {
-			if (matchResult instanceof Activity) {
-				matchActivity = matchResult;
-				if (matchActivity.isUnlinked() || matchActivity === activity) {
-					throw RangeError();
-				}
-			}
-			this._matchedPath = this._path;
-			activity.emit("PathMatch", { path: this._path });
-		}
-
-		// check if activity is already active or activating
-		let isUp =
-			(activity.isActive() || activity.isActivating()) &&
-			!activity.isDeactivating();
-
-		// deactivate activity immediately if no match
-		if (!matchResult) {
-			if (isUp) safeCall(activity.deactivateAsync, activity);
-			return false;
-		}
-
-		// activate asynchronously
-		safeCall(async () => {
-			await Promise.resolve();
-			if (activity.isUnlinked() || this.isUnlinked()) return;
-			if (!isUp) await activity.activateAsync();
-			if (!activity.isActive()) return;
-
-			// attach and activate sub activity as well, if any
-			if (matchActivity && !matchActivity.isUnlinked()) {
-				await activity.attachActivityAsync(matchActivity, true);
-			}
-		});
-		return true;
 	}
 
 	private _path = "";
-	private _matched = 0;
-	private _matchedPath?: string;
-	private _activities?: ObservableList<Activity>;
+	private _last?: string;
+	private _notFound?: boolean;
 }
 
 export namespace NavigationContext {

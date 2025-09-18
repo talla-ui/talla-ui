@@ -1,18 +1,15 @@
-import {
-	clickOutputAsync,
-	expectOutputAsync,
-	useTestContext,
-} from "@talla-ui/test-handler";
+import { expectOutputAsync, useTestContext } from "@talla-ui/test-handler";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import {
 	Activity,
 	app,
-	AppContext,
 	ObservableObject,
 	NavigationContext,
 	UI,
 	Binding,
+	bind,
 } from "../../dist/index.js";
+import { ActivityRouter } from "../../dist/app/ActivityRouter.js";
 
 describe("NavigationContext standalone", () => {
 	class TestNavigationContext extends NavigationContext {
@@ -53,10 +50,9 @@ describe("AppContext.activities", () => {
 		useTestContext({ navigationDelay: 0 });
 	});
 
-	test("Activity context Object and properties", () => {
+	test("App context properties", () => {
 		expect(ObservableObject.whence(app.activities)).toBe(app);
 		expect(app.activities.toArray()).toEqual([]);
-		expect(app.activities.length).toBe(0);
 		expect(app.navigation).toBeInstanceOf(NavigationContext);
 	});
 
@@ -65,11 +61,32 @@ describe("AppContext.activities", () => {
 		activity.navigationPath = "foo";
 		app.navigation?.set("foo");
 		app.addActivity(activity);
-		expect(app.activities.length).toBe(1);
-		await new Promise((r) => setTimeout(r, 1));
+		expect(app.activities.toArray().length).toBe(1);
+		await new Promise((r) => setTimeout(r, 10));
 		expect(activity.isActive()).toBeTruthy();
 		expect(app.navigation?.matchedPath).toBe("foo");
 		expect(activity.isActive()).toBe(true);
+		expect(app.activities.active).toBe(activity);
+	});
+
+	test("Activity router emits changes", async () => {
+		let updated = 0;
+		let activity = new Activity();
+		activity.navigationPath = "foo";
+		activity.observe(bind("appContext.activities"), () => {
+			updated++;
+		});
+		app.addActivity(activity);
+		expect(updated).toBe(2); // once for attaching, once for change
+		app.addActivity(new Activity());
+		expect(updated).toBe(3); // once for adding another activity
+		app.navigation?.set("foo");
+		await new Promise((r) => setTimeout(r, 10));
+		expect(updated).toBe(4); // once for activation
+		app.navigation?.set("");
+		await new Promise((r) => setTimeout(r, 10));
+		expect(activity.isActive()).toBe(false);
+		expect(updated).toBe(5); // once for deactivation
 	});
 
 	test("Activity not activated when added", async () => {
@@ -80,10 +97,10 @@ describe("AppContext.activities", () => {
 		app.navigation?.set("bar");
 		app.addActivity(activityFoo);
 		app.addActivity(activityBar);
-		await new Promise((r) => setTimeout(r, 1));
+		await new Promise((r) => setTimeout(r, 10));
 		expect(activityFoo.isActive()).toBeFalsy();
 		expect(activityBar.isActive()).toBeTruthy();
-		for (let a of app.activities) {
+		for (let a of app.activities.toArray()) {
 			if ((a.navigationPath === app.navigation?.path) !== a.isActive()) {
 				throw Error("Activation state != page ID match");
 			}
@@ -95,10 +112,10 @@ describe("AppContext.activities", () => {
 		activity.navigationPath = "foo";
 		app.navigation?.set("bar");
 		app.addActivity(activity);
-		await new Promise((r) => setTimeout(r, 1));
+		await new Promise((r) => setTimeout(r, 10));
 		expect(activity.isActive()).toBeFalsy();
 		app.navigation?.set("foo");
-		await new Promise((r) => setTimeout(r, 1));
+		await new Promise((r) => setTimeout(r, 10));
 		expect(activity.isActive()).toBeTruthy();
 	});
 
@@ -117,40 +134,75 @@ describe("AppContext.activities", () => {
 		let activity = new MyActivity();
 		app.addActivity(activity);
 		app.navigation?.set("foo");
-		await new Promise((r) => setTimeout(r, 1));
+		await new Promise((r) => setTimeout(r, 10));
 		expect(active).toBe(1);
 		app.navigation?.set("bar");
-		await new Promise((r) => setTimeout(r, 1));
+		await new Promise((r) => setTimeout(r, 10));
 		app.navigation?.set("foo/bar");
-		await new Promise((r) => setTimeout(r, 1));
+		await new Promise((r) => setTimeout(r, 10));
 		expect(active).toBe(1);
 		expect(inactive).toBe(1);
 	});
 
-	test("Quick path changes", async () => {
-		let errored = 0;
-		AppContext.setErrorHandler((err) => {
-			errored++;
-			expect(String(err)).toMatch(/cancelled/);
-		});
-
+	test("Activity activated with custom match", async () => {
 		let active = 0;
 		let inactive = 0;
+		let called = 0;
 		class MyActivity extends Activity {
-			override navigationPath = "foo";
+			override matchNavigationPath(path: string) {
+				if (path === "foo" || path.startsWith("foo/")) {
+					return () => {
+						called++;
+					};
+				}
+			}
 			protected override async beforeActiveAsync() {
-				await new Promise((r) => setTimeout(r, 20));
 				active++;
 			}
 			protected override async beforeInactiveAsync() {
-				await new Promise((r) => setTimeout(r, 20));
 				inactive++;
 			}
 		}
-
-		// test synchronous changes:
 		let activity = new MyActivity();
 		app.addActivity(activity);
+		app.navigation?.set("foo");
+		await new Promise((r) => setTimeout(r, 10));
+		expect(active).toBe(1);
+		app.navigation?.set("bar");
+		await new Promise((r) => setTimeout(r, 10));
+		app.navigation?.set("foo/bar");
+		await new Promise((r) => setTimeout(r, 10));
+		expect(active).toBe(2);
+		expect(called).toBe(2);
+		expect(inactive).toBe(1);
+	});
+
+	test("Quick path changes", async () => {
+		let active = 0;
+		let inactive = 0;
+		class MyFooActivity extends Activity {
+			override navigationPath = "foo";
+			protected override async beforeActiveAsync() {
+				console.log("foo: beforeActiveAsync [...");
+				await new Promise((r) => setTimeout(r, 20));
+				active++;
+				console.log("...] foo: beforeActiveAsync", active);
+			}
+			protected override async beforeInactiveAsync() {
+				console.log("foo: beforeInactiveAsync [...");
+				await new Promise((r) => setTimeout(r, 20));
+				inactive++;
+				console.log("...] foo: beforeInactiveAsync", inactive);
+			}
+		}
+		class MyBarActivity extends Activity {
+			override navigationPath = "bar";
+		}
+
+		// test synchronous changes:
+		let activity = new MyFooActivity();
+		app.addActivity(activity);
+		app.addActivity(new MyBarActivity());
 		console.log("Setting path synchronously: foo");
 		app.navigation?.set("foo");
 		console.log("Setting path synchronously: bar");
@@ -158,28 +210,29 @@ describe("AppContext.activities", () => {
 		console.log("Setting path synchronously: foo");
 		app.navigation?.set("foo");
 		console.log("Waiting...");
-		await new Promise((r) => setTimeout(r, 50));
+		await new Promise((r) => setTimeout(r, 100));
 		expect(active).toBe(1);
 		expect(inactive).toBe(0);
 
-		// test cancellation:
+		// test async
 		console.log("Setting path asynchronously: bar");
 		app.navigation?.set("bar");
-		await new Promise((r) => setTimeout(r, 1)); // inactivate
+		await new Promise((r) => setTimeout(r, 5)); // inactivate
 		console.log("Setting path asynchronously: foo");
 		app.navigation?.set("foo");
-		await new Promise((r) => setTimeout(r, 1)); // activate, cancelled!
+		await new Promise((r) => setTimeout(r, 5)); // activate, stopped
 		console.log("Setting path asynchronously: bar");
 		app.navigation?.set("bar");
-		await new Promise((r) => setTimeout(r, 20)); // inactivate, skipped
-		expect(active).toBe(1);
-		await new Promise((r) => setTimeout(r, 50));
+		await new Promise((r) => setTimeout(r, 50)); // inactivate, skipped because already inactive
+		console.log("Setting path asynchronously: foo");
+		app.navigation?.set("foo");
+		await new Promise((r) => setTimeout(r, 50)); // activate, should go through again
+		expect(active).toBe(2);
 		expect(inactive).toBe(1);
-		expect(errored).toBe(1);
 	});
 });
 
-describe("attachActivityAsync method", () => {
+describe("Nested activity router", () => {
 	beforeEach(() => {
 		useTestContext({ navigationDelay: 0 });
 	});
@@ -188,159 +241,66 @@ describe("attachActivityAsync method", () => {
 		static override View(v: Binding<MyActivity>) {
 			return UI.Label(v.bind("label"));
 		}
-		label?: string;
-		toAttach?: Activity;
-		attachedClicked?: boolean;
-		createAttached() {
-			return (this.toAttach = this.attach(new MyActivity()));
+		constructor(public label: string) {
+			super();
 		}
-		async onClick() {
-			console.log("showing activity", this.toAttach?.isUnlinked());
-			let a = await this.attachActivityAsync(this.toAttach as any);
-			for await (let e of a.listenAsync()) {
-				if (e.name === "Click") this.attachedClicked = true;
-			}
-		}
+		router = this.attach(new ActivityRouter());
 	}
 
-	test("Basic functionality", async () => {
-		let activity = new MyActivity();
-		activity.label = "Parent";
-		let subActivity = new MyActivity();
-		subActivity.label = "Sub";
-		activity.toAttach = subActivity;
-		app.addActivity(activity, true);
-		await clickOutputAsync({ text: "Parent" });
-		// ... this should show the sub activity
-		await expectOutputAsync({ text: "Sub" });
+	test("Add nested activity", async () => {
+		let activity = new MyActivity("root");
+		let nested = new MyActivity("nested");
+		activity.router.add(nested);
+		app.addActivity(activity);
+		expect(activity.router.toArray()).toEqual([nested]);
+		expect(MyActivity.whence(nested)).toBe(activity);
 	});
 
-	test("Deactivate sub activity when parent is deactivated", async () => {
-		let activity = new MyActivity();
-		activity.label = "Parent";
-		let subActivity = new MyActivity();
-		subActivity.label = "Sub";
-		activity.toAttach = subActivity;
+	test("Activate nested activity", async () => {
+		let activity = new MyActivity("root");
 		app.addActivity(activity, true);
-		await clickOutputAsync({ text: "Parent" });
-		// ... this should show the sub activity
-		await expectOutputAsync({ text: "Sub" });
+		let nested = new MyActivity("nested");
+		activity.router.add(nested, true);
+		await expectOutputAsync({ text: "root" });
+		await expectOutputAsync({ text: "nested" });
+	});
+
+	test("Deactivate at same time", async () => {
+		let activity = new MyActivity("root");
+		let nested1 = new MyActivity("nested1");
+		let nested2 = new MyActivity("nested2");
+		app.addActivity(activity, true);
+		activity.router.add(nested1, true);
+		activity.router.add(nested2, true);
+		await expect
+			.poll(
+				() => activity.isActive() && nested1.isActive() && nested2.isActive(),
+				{
+					interval: 5,
+					timeout: 100,
+				},
+			)
+			.toBe(true);
 		await activity.deactivateAsync();
-		// ... the sub activity should be unlinked
-		expect(subActivity.isUnlinked()).toBe(true);
+		await expect
+			.poll(() => nested1.isActive() || nested2.isActive(), {
+				interval: 5,
+				timeout: 100,
+			})
+			.toBe(false);
 	});
 
-	test("Can show an activity that's already attached", async () => {
-		let activity = new MyActivity();
-		activity.label = "Parent";
-		let activity2 = new MyActivity();
-		let subActivity = activity2.createAttached();
-		activity.toAttach = subActivity;
-		subActivity.label = "Attached";
-		app.addActivity(activity, true);
-		await clickOutputAsync({ text: "Parent" });
-		// ... this should still show the sub activity
-		await expectOutputAsync({ text: "Attached" });
-		// ... and unlink it when the parent is deactivated
-		expect(subActivity.isUnlinked()).toBe(false);
-		await activity.deactivateAsync();
-		expect(subActivity.isUnlinked()).toBe(true);
-	});
-
-	test("Fails when either activity is unlinked", async () => {
-		let activity = new MyActivity();
-		activity.label = "Parent";
-		let subActivity = activity.createAttached();
-		subActivity.unlink();
-		app.addActivity(activity, true);
-		await expect(() => activity.onClick()).rejects.toThrowError("unlinked");
-		activity.toAttach = new MyActivity();
-		activity.unlink();
-		await expect(() => activity.onClick()).rejects.toThrowError("unlinked");
-	});
-});
-
-describe("Path match using method and sub activities", () => {
-	test("Sub path match", async () => {
-		let remainders: string[] = [];
-		class MyActivity extends Activity {
-			override navigationPath = "foo";
-			override matchNavigationPath(remainder: string) {
-				remainders.push(remainder);
-				return true;
-			}
-		}
-		let activity = new MyActivity();
+	test("Replace unlinks other activity", async () => {
+		let activity = new MyActivity("root");
+		let nested1 = new MyActivity("nested1");
+		let nested2 = new MyActivity("nested2");
 		app.addActivity(activity);
-		app.navigation?.set("foo");
-		await new Promise((r) => setTimeout(r, 1));
-		expect(activity.isActive()).toBe(true);
-		app.navigation?.set("foo/bar");
-		await new Promise((r) => setTimeout(r, 1));
-		expect(activity.isActive()).toBe(true);
-		app.navigation?.set("foo/bar/baz");
-		await new Promise((r) => setTimeout(r, 1));
-		expect(activity.isActive()).toBe(true);
-		app.navigation?.set("boo");
-		await new Promise((r) => setTimeout(r, 1));
-		expect(activity.isActive()).toBe(false);
-		expect(remainders).toEqual(["", "bar", "bar/baz"]);
-	});
-
-	test("Specific path match using blank path prefix", async () => {
-		class MyActivity extends Activity {
-			override navigationPath = "";
-			override matchNavigationPath(remainder: string) {
-				return remainder === "foo";
-			}
+		await activity.activateAsync();
+		activity.router.add(nested1, true);
+		for await (let e of nested1.listenAsync()) {
+			if (e.name === "Active") break;
 		}
-		let activity = new MyActivity();
-		app.addActivity(activity);
-		app.navigation?.set("");
-		await new Promise((r) => setTimeout(r, 1));
-		expect(activity.isActive()).toBe(false);
-		app.navigation?.set("foo");
-		await new Promise((r) => setTimeout(r, 1));
-		expect(activity.isActive()).toBe(true);
-		app.navigation?.set("bar");
-		await new Promise((r) => setTimeout(r, 1));
-		expect(activity.isActive()).toBe(false);
-	});
-
-	test("Path match using method and sub activity", async () => {
-		class MySubActivity extends Activity {
-			sub = true;
-		}
-		class MyActivity extends Activity {
-			override navigationPath = "foo";
-			override matchNavigationPath(remainder: string) {
-				if (!remainder) return true;
-				if (remainder === "bar") {
-					this.subActivity = new MySubActivity();
-					return this.subActivity;
-				}
-			}
-			subActivity?: MySubActivity;
-		}
-		let activity = new MyActivity();
-		app.addActivity(activity);
-
-		// exact match: active, but no sub activity
-		app.navigation?.set("foo");
-		await new Promise((r) => setTimeout(r, 1));
-		expect(activity.isActive()).toBe(true);
-		expect(activity.subActivity).toBeUndefined();
-
-		// sub path match: active, sub activity active
-		app.navigation?.set("foo/bar");
-		await new Promise((r) => setTimeout(r, 1));
-		expect(activity.isActive()).toBe(true);
-		expect(activity.subActivity?.isActive()).toBe(true);
-
-		// no match: inactive, sub activity unlinked
-		app.navigation?.set("bar");
-		await new Promise((r) => setTimeout(r, 1));
-		expect(activity.isActive()).toBe(false);
-		expect(activity.subActivity?.isUnlinked()).toBe(true);
+		activity.router.replace(nested2);
+		expect(nested1.isUnlinked()).toBe(true);
 	});
 });

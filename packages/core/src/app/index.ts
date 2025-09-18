@@ -6,6 +6,7 @@ export * from "./Viewport.js";
 export * from "./ModalFactory.js";
 export * from "./NavigationContext.js";
 export * from "./Activity.js";
+export * from "./ActivityRouter.js";
 export * from "./View.js";
 export * from "./ComponentView.js";
 export * from "./ViewBuilder.js";

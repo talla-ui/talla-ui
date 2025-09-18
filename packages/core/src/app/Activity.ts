@@ -22,9 +22,9 @@ const $_activity = Symbol("activity");
  * A class that represents a part of the application that can be activated when the user navigates to it
  *
  * @description
- * The activity is one of the main architectural components of an application. It represents a potential 'place' in the application, which can be activated and deactivated when the user navigates around.
+ * The activity is one of the main architectural components of an application. It represents a potential 'place' in the application, which can be activated and deactivated as the user navigates around.
  *
- * This class provides infrastructure for path-based routing, based on the application's navigation path (such as the browser's current URL). However, activities can also be activated and deactivated manually.
+ * This class provides infrastructure for path-based routing, based on the application's navigation path (such as the browser's current URL), together with {@link NavigationContext} and {@link ActivityRouter}. However, activities can also be activated and deactivated manually.
  *
  * Activities emit `Active` and `Inactive` change events when state transitions occur. Several methods can be overridden to add custom behavior when the activity is activated or deactivated – i.e. {@link beforeActiveAsync}, {@link afterActiveAsync}, {@link beforeInactiveAsync}, and {@link afterInactiveAsync}.
  *
@@ -91,7 +91,6 @@ export class Activity extends ObservableObject {
 
 	/**
 	 * Creates a new activity instance
-	 * @note Activities must be added to the application using {@link AppContext.addActivity app.addActivity()} before they can be activated.
 	 * @see {@link AppContext.addActivity}
 	 */
 	constructor() {
@@ -101,14 +100,14 @@ export class Activity extends ObservableObject {
 
 	/**
 	 * The path associated with this activity, to match the navigation path
-	 * - This property is used by the {@link NavigationContext} class, but only if the activity has been added to the list of root activities using {@link AppContext.addActivity app.addActivity()}.
-	 * - If the path is set to a string, the application navigation path will be matched against this value. If the specified path matches the start of the current navigation path, the {@link matchNavigationPath()} method is called to check if the activity should be activated or deactivated. This method may be overridden. By default, the activity is activated if the path matches exactly.
+	 * - This property is used by the default implementation of {@link matchNavigationPath()}, which returns true only if the current path matches exactly. This behavior can be changed (e.g. to match sub paths) by overriding that method.
+	 * - This property is also used for navigating to relative paths starting with `./`, in {@link onNavigate()} when responding to `Navigate` events from buttons that have a {@link UIButton.navigateTo} property set.
 	 * - Do not include a leading or trailing slash in the path. To match the root path (`/`), set this property to an empty string.
 	 */
 	navigationPath?: string = undefined;
 
 	/**
-	 * A user-facing name of this activity, if any
+	 * A user-facing name for this activity, if any
 	 * - The title string of an active activity may be displayed as the current window or document title.
 	 * - This property may be set to any object that includes a `toString()` method, notably {@link DeferredString} — the result of a call to {@link fmt()}. This way, the activity title is localized automatically.
 	 */
@@ -143,12 +142,12 @@ export class Activity extends ObservableObject {
 
 	/** Returns true if this activity is inactive but currently activating */
 	isActivating() {
-		return this._activation.activating;
+		return !this.isUnlinked() && this._activation.activating;
 	}
 
 	/** Returns true if this activity is active but currently inactivating */
 	isDeactivating() {
-		return this._activation.deactivating;
+		return !this.isUnlinked() && this._activation.deactivating;
 	}
 
 	/**
@@ -316,74 +315,22 @@ export class Activity extends ObservableObject {
 	}
 
 	/**
-	 * Checks if the provided path (remainder) should activate this activity
-	 * - This method is called automatically by {@link NavigationContext} to check if the activity should be activated, if the activity's {@link navigationPath} already matches the first part of the current navigation path. The argument is the remainder of the path after the activity's navigation path, without any leading or training slash.
-	 * - If this method returns false, the activity is (or stays) deactivated. If the result is true, the activity is (or stays) activated, and emits a 'PathMatch' event.
-	 * - If the method returns a different activity instance, that activity is attached, and activated _as well_. The new activity must not be attached yet, and must not be unlinked. It will be unlinked automatically when this activity is deactivated or unlinked itself, or when the next 'PathMatch' event is emitted.
-	 * - The default implementation only returns true if the remainder is empty, i.e. if the navigation path matches exactly.
-	 * - Override this method to allow the activity to be activated for sub paths, e.g. if the {@link navigationPath} is `foo`, then the activity may return true, or a sub activity instance to activate this activity.
-	 * @param remainder The remainder of the path to check (after the activity's navigation path)
-	 * @returns True if the path should activate this activity, false if not; or a different (sub) activity instance to activate _as well_ as this activity.
+	 * Checks if the provided path should activate this activity
+	 * - By default, this method only checks for exact matches with the {@link navigationPath} property.
+	 * - To implement other types of routing, override this method to consider further conditions based on the specified path.
+	 * - When overriding this method, you can return a callback function that will be called after the activity itself is activated (asynchronosly). This may be an asynchronous function, and is typically used to activate nested 'sub activities', adding them to an attached {@link ActivityRouter} instance.
+	 * @param path The (remainder of the) path to check
+	 * @returns True if the path should activate this activity, false if not; or a function to activate this activity and call the provided function afterwards
+	 * @see {@link ActivityRouter}
+	 * @see {@link NavigationContext}
 	 */
-	matchNavigationPath(remainder: string): void | boolean | Activity {
-		// by default, only activate on exact match
-		return !remainder;
-	}
-
-	/**
-	 * Attaches and activates another activity, as a sub activity
-	 * @summary This method attaches the provided activity and activates it. The provided activity is automatically unlinked when this activity is deactivated or unlinked itself, to prevent it from outlasting the current activity.
-	 * @param activity The activity to attach and activate
-	 * @param unlinkOnPathMatch If true, the activity will also be unlinked when the {@link matchNavigationPath()} method returns true, or a different activity instance (i.e. showing a different sub activity).
-	 * @returns A promise that resolves to the provided activity after activation
-	 * @error This method throws an error if either activity has been unlinked.
-	 *
-	 * @example
-	 * class MyActivity extends Activity {
-	 *   protected async onSomeEvent() {
-	 *     // show another activity by attaching and activating it (e.g. a dialog)
-	 *     let other = await this.attachActivityAsync(new OtherActivity());
-	 *
-	 *     // now listen for some event, for example:
-	 *     for await (let e of other.listenAsync()) {
-	 *       if (e.name === "Confirmed") {
-	 *         // ...
-	 *       }
-	 *     }
-	 *     // (here, the other activity is unlinked)
-	 *   }
-	 */
-	async attachActivityAsync<TActivity extends Activity>(
-		activity: TActivity,
-		unlinkOnPathMatch?: boolean,
-	) {
-		if (this.isUnlinked() || !activity || activity.isUnlinked()) {
-			throw err(ERROR.Object_Unlinked);
-		}
-
-		// attach the activity, then listen for deactivation to unlink
-		this.attach(activity);
-		this.listen({
-			init(_, stop) {
-				activity.listen({ unlinked: stop });
-			},
-			handler(_, event) {
-				if (
-					event.name === "Inactive" ||
-					(unlinkOnPathMatch && event.name === "PathMatch")
-				) {
-					activity.unlink();
-				}
-			},
-		});
-
-		// activate the activity and return it
-		return activity.activateAsync();
+	matchNavigationPath(path: string): void | boolean | (() => void) {
+		return path === this.navigationPath;
 	}
 
 	/**
 	 * Handles navigation to a provided path, from the current activity
-	 * - This method is called automatically by {@link onNavigate} when a view object emits the `Navigate` event while this activity is active.
+	 * - This method is called automatically by the {@link onNavigate} event handler when a view object emits the `Navigate` event while this activity is active.
 	 * - The default implementation directly calls {@link NavigationContext.navigateAsync()}. Override this method to handle navigation differently, e.g. to _replace_ the current path for detail view activities.
 	 */
 	protected async navigateAsync(target: StringConvertible) {
@@ -576,7 +523,7 @@ class ActivationQueue {
 		if (this._set === set) return this._result;
 
 		// prepare error to include better (sync) stack trace
-		let cancelErr = err(ERROR.Activity_Cancelled);
+		let cancelErr = err(ERROR.Activity_Cancelled, set ? "Active" : "Inactive");
 
 		// prepare promise, wait for ongoing transition if any
 		let prev = this._wait;

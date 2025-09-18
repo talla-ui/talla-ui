@@ -11,7 +11,7 @@ import {
 	safeCall,
 	setErrorHandler,
 } from "../errors.js";
-import { ObservableList, ObservableObject } from "../object/index.js";
+import { ObservableObject } from "../object/index.js";
 import type { Activity } from "./Activity.js";
 import { I18nContext } from "./I18nContext.js";
 import { LocalData } from "./LocalData.js";
@@ -23,6 +23,7 @@ import type { RenderContext } from "./RenderContext.js";
 import { AsyncTaskQueue, Scheduler } from "./Scheduler.js";
 import type { View } from "./View.js";
 import type { Viewport } from "./Viewport.js";
+import { ActivityRouter } from "./ActivityRouter.js";
 
 /** Last (and first) instance of AppContext, if any */
 let instance: AppContext | undefined;
@@ -72,14 +73,10 @@ export class AppContext extends ObservableObject {
 	appContext = this;
 
 	/**
-	 * A list of activities managed by the application
-	 * - To add an activity, use the {@link AppContext.addActivity app.addActivity()} method.
-	 * - Activities that are added to this list are automatically attached to the application context, allowing activities and views to bind to properties of the application context.
-	 * - This list is used by the navigation context to activate activities based on their navigation path, if any.
+	 * The root activity router
+	 * - Activities that are added to this router can be activated automatically based on the result of their {@link Activity.matchNavigationPath()} method, which is invoked by the root {@link ActivityRouter}, i.e. {@link activities}. By default, the implementation of this method returns true if the path matches {@link Activity.navigationPath} exactly.
 	 */
-	readonly activities = this.attach(
-		new ObservableList<Activity>().attachItems(true),
-	);
+	readonly activities = this.attach(new ActivityRouter());
 
 	/**
 	 * The global message log writer instance, an instance of {@link LogWriter}
@@ -162,34 +159,14 @@ export class AppContext extends ObservableObject {
 	 * Adds an activity to the application
 	 *
 	 * @summary
-	 * This method adds an {@link Activity} instance, activating it automatically if the current location matches {@link Activity.navigationPath}, or if the `activate` argument was set to true.
+	 * This method adds an {@link Activity} instance to the root activity router, i.e. {@link activities}. If the activity is added before the navigation context is initialized (asynchronously), the activity may be activated automatically based on the initial navigation path.
 	 *
 	 * @param activity The activity to be added
-	 * @param activate True if the activity should be activated immediately (asynchronously)
+	 * @param activate True if the activity should be activated immediately
 	 */
 	addActivity(activity: Activity, activate?: boolean) {
-		this.activities.add(activity);
-		if (activate) safeCall(activity.activateAsync, activity);
+		this.activities.add(activity, activate);
 		return this;
-	}
-
-	/**
-	 * Finds an activity of the specified type in the application context
-	 * - This method is used to find an activity instance that was added to the application context using {@link AppContext.addActivity app.addActivity()}.
-	 * @param type The type of activity to find (a class constructor)
-	 * @returns The activity instance
-	 * @error This method throws an error if the activity of the specified type is not found.
-	 * @example
-	 * test("...", async () => {
-	 *   let activity = app.getActivity(MyActivity);
-	 * 	 expect(activity.isActive()).toBe(true);
-	 * });
-	 */
-	getActivity<T extends Activity>(type: new (...args: any[]) => T) {
-		for (let activity of this.activities) {
-			if (activity instanceof type) return activity;
-		}
-		throw err(ERROR.Activity_NotFound);
 	}
 
 	/**

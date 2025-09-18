@@ -29,7 +29,7 @@ const app = useWebContext((options) => {
 	// ... configure options here, e.g. theme colors
 });
 
-// Add an activity to the app, activate it right away (see below)
+// Add an activity to the app's root activity router, and activate it
 app.addActivity(new FooActivity(), true);
 ```
 
@@ -101,7 +101,7 @@ Example file structure:
 
 ## Basic Activities
 
-Activities represent a single screen, dialog, or other 'place' in the application.
+Activities represent a single screen, dialog, or other 'place' in the application. They are managed by an `ActivityRouter`, which facilitates activating and deactivating a set of activities. The application context contains a root activity router at `app.activities`.
 
 ```typescript
 export class MyActivity extends Activity {
@@ -125,7 +125,7 @@ activity.isDeactivating();
 activity.isUnlinked();
 ```
 
-Activities can be activated immediately when added to the application context, or later using the `activateAsync` method. They are also automatically activated when the navigation path matches the activity's path.
+Activities can be activated immediately when added to an activity router. When added to the root router (`app.activities`), they are also automatically activated when the navigation path matches the activity's `navigationPath`.
 
 ```typescript
 export class MyActivity extends Activity {
@@ -137,6 +137,12 @@ export class MyActivity extends Activity {
 		// or use UI.Button("...").navigateTo("...")
 	}
 }
+
+// Add an activity to the root router and activate it
+app.addActivity(new MyActivity(), true);
+
+// ... which is the same as:
+app.activities.add(new MyActivity(), true);
 ```
 
 ## State Management
@@ -200,62 +206,54 @@ export class MyActivity extends Activity {
 
 ## Nested Activities
 
-Activities don't always need to be added to the application context directly. New activities can be attached manually (e.g. dialogs) or automatically to facilitate routing.
+Activities can be nested to create more complex UI flows, such as list-detail views or modal dialogs. This is achieved by attaching an `ActivityRouter` to a parent activity. Activities added to a nested router are automatically deactivated when the parent is deactivated.
+
+For path-based routing, the `matchNavigationPath` method on an activity can be overridden. Instead of returning a boolean, it can return a function that will be executed after the parent activity is activated. This function can then control the nested router.
 
 ```typescript
-export class BooksActivity extends Activity {
-	navigationPath = "books";
+// Use a nested activity router for a list-detail view with path routing
+export class MyListActivity extends Activity {
+	static View = MyListView;
+	navigationPath = "list";
 
-	// ...
+	// In a view, bind to "detail.active.view" (else show empty state)
+	detail = this.attach(new ActivityRouter());
 
-	// Called when the navigation path matches, with remainder of path if any
-	matchNavigationPath(remainder: string) {
-		// return true to activate this activity
-		// return false to not activate, or deactivate
-		// return an activity to activate both this and the nested activity
-		return new BookActivity(remainder);
-	}
-}
-```
-
-Note that the `matchNavigationPath` is synchronous, and the nested activity should handle loading states and errors (e.g. if the remainder passed here as an ID is invalid).
-
-Normally, all activities are rendered as scrollable 'pages'. However, the 'none' render mode should be used if the parent activity is going to render the nested activity's view instead, i.e. for list-detail views.
-
-```typescript
-export class BooksListActivity extends Activity {
-	static View = BooksListView;
-
-	navigationPath = "books";
-
-	// The nested activity is rendered by the parent view
-	// i.e. UI.Show(bind("detail.view"))
-	detail?: BookActivity;
-
-	matchNavigationPath(remainder: string) {
-		this.detail = new BookActivity(remainder);
-		this.detail.setRenderMode("none");
-		return this.detail;
+	matchNavigationPath(path: string) {
+		if (path === this.navigationPath) return true;
+		if (path.startsWith(this.navigationPath + "/")) {
+			// Return a function to be called when list activity is active
+			return () => {
+				let id = path.slice(this.navigationPath.length + 1);
+				let detailActivity = new MyDetailActivity(id);
+				detailActivity.setRenderMode("none");
+				this.detail.replace(detailActivity, true);
+			};
+		}
 	}
 
 	// Override navigation mode to replace, not push on stack
 	protected async navigateAsync(target: StringConvertible) {
-		if (!String(target).startsWith("books/")) {
+		if (!String(target).startsWith("list/")) {
 			return super.navigateAsync(target);
 		}
-		await app.navigation.navigateAsync(target, { mode: "replace" });
+		await app.navigation.navigateAsync(target, { replace: true });
 	}
 }
 ```
 
-The 'dialog' render mode can be used to display the view inside of a modal dialog wrapper. Dialogs should be encapsulated by activities, and shouldn't be created outside of other activities.
+The 'none' render mode is used when the parent activity's view is responsible for rendering the nested activity's view (e.g., `UI.Show(bind("detail.active.view"))`).
+
+Nested routers are also ideal for managing modal dialogs. The dialog activity is added to the router and activated, and its events can be handled asynchronously.
 
 ```typescript
 export class MyActivity extends Activity {
 	// ...
+	private _dialogRouter = this.attach(new ActivityRouter());
 
-	protected async onSomeEvent() {
-		let dialog = await this.attachActivityAsync(new DialogActivity());
+	protected async onShowDialog() {
+		let dialog = new DialogActivity();
+		this._dialogRouter.replace(dialog, true);
 		for await (let e of dialog.listenAsync()) {
 			// ... handle events from the dialog
 			if (e.name === "Confirm") {
@@ -286,12 +284,10 @@ class DialogActivity extends Activity {
 
 Summary:
 
-- For simple apps, add (all) activities to the app context and activate them manually.
-- For routed navigation, set `navigationPath`.
-- For complex routing, use `matchNavigationPath` in a view-less activity.
-- For list-detail routing, use `matchNavigationPath` with render mode 'none' on sub activities.
-- Use `attachActivityAsync` to display another activity (no routing).
-- Use `attachActivityAsync` with render mode 'dialog' to display a dialog.
+- For simple apps, add activities to `app.activities` and activate them manually or via routing.
+- For path-based navigation, set `navigationPath` on root activities.
+- For list-detail views and other sub-routing, attach a nested `ActivityRouter` and override `matchNavigationPath` on the parent activity.
+- For modal dialogs, use a nested `ActivityRouter` to `replace()` and manage the dialog activity.
 
 ## Task Queues
 
