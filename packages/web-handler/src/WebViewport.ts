@@ -20,8 +20,8 @@ export class WebViewport extends ObservableObject implements Viewport {
 	width = 0;
 	height = 0;
 	portrait = false;
-	cols = 0;
-	rows = 0;
+	cols = 1;
+	rows = 1;
 	prefersDark?: boolean = undefined;
 
 	/** Take the specified overrides into account */
@@ -46,8 +46,8 @@ export class WebViewport extends ObservableObject implements Viewport {
 			this.width = w;
 			this.height = h;
 			this.portrait = w < h;
-			this.cols = Math.floor(w / this._colSize);
-			this.rows = Math.floor(h / this._rowSize);
+			this.cols = Math.floor(w / this._colSize) || 1;
+			this.rows = Math.floor(h / this._rowSize) || 1;
 			this.emitChange("Resize");
 		}
 	}
