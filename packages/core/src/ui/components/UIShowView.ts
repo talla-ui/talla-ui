@@ -290,7 +290,7 @@ export namespace UIShowView {
 	 * @see {@link UIShowView}
 	 */
 	export function showBuilder(
-		content: ViewBuilder<View> | Binding<View>,
+		content: ViewBuilder<View> | Binding<View | undefined>,
 		propagateInsertedEvents?: boolean,
 	) {
 		return new ShowBuilder().show(content, propagateInsertedEvents);
@@ -373,7 +373,7 @@ export namespace UIShowView {
 		 * @returns The builder instance for chaining.
 		 */
 		show(
-			content: ViewBuilder<View> | Binding<View>,
+			content: ViewBuilder<View> | Binding<View | undefined>,
 			propagateInsertedEvents?: boolean,
 		) {
 			if (isBinding(content)) {
