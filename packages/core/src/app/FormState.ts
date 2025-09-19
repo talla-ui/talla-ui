@@ -96,13 +96,18 @@ export class FormState<
 	 */
 	set(name?: string & keyof TSchema, value?: unknown) {
 		if (!name) return this;
+		if (this._values[name] === value) return this;
 
-		// set and validate if needed
-		if (this._values[name] !== value) {
-			this._values[name] = value;
-			if (this._validated) this.validateField(name);
-			this.emitChange();
+		// set the value and check if need to validate this field
+		const oldValue = this._values[name];
+		this._values[name] = value;
+		if (
+			this._validated ||
+			(this._immediate && (oldValue !== undefined || value !== ""))
+		) {
+			this.validateField(name);
 		}
+		this.emitChange();
 		return this;
 	}
 
@@ -157,6 +162,21 @@ export class FormState<
 		return result.data;
 	}
 
+	/**
+	 * Enables field validation immediately upon setting a value
+	 * - Call this method after creating the form state object to enable validation on a per-field basis, rather than waiting for the entire form to be validated using {@link validate()}.
+	 * - If enabled, fields are validated immediately when they're set, except when setting an undefined field to an empty string value.
+	 * @param enable True (default) to enable immediate validation, false to disable it
+	 * @returns The form state object itself, for chaining
+	 * @see {@link set()}
+	 * @see {@link validate()}
+	 */
+	immediateValidation(enable = true) {
+		this._immediate = enable;
+		return this;
+	}
+
 	private _validator?: InputValidator<any>;
 	private _validated = false;
+	private _immediate?: boolean;
 }

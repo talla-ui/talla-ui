@@ -6,6 +6,7 @@ import {
 	ObservableObject,
 } from "../object/index.js";
 import type { ComponentView } from "./ComponentView.js";
+import type { FormState } from "./FormState.js";
 import type { View } from "./View.js";
 
 /** Cache of created view builders */
@@ -117,6 +118,35 @@ export namespace ViewBuilder {
 				} else {
 					handle.call(view, valueOrBinding);
 				}
+			});
+		}
+
+		/**
+		 * Registers a two-way binding between a view property and a bound form state field.
+		 * @param formState A binding to a form state object (e.g. on an activity).
+		 * @param formField The name of the form field to which the value should be bound.
+		 * @param property The view property to bind to.
+		 * @param formChanged A function that will be called when the form state is updated, which should take the current form state object and return the value to be set on the view's own property; if not provided, the value will be set directly using the form field.
+		 */
+		observeFormState(
+			formState: Binding<FormState | undefined>,
+			formField: string,
+			property: string & keyof TView,
+			formChanged?: (formState: FormState) => unknown,
+		) {
+			this._final.push((view) => {
+				let current: FormState | undefined;
+				view.observe(formState as any, (formState) => {
+					current = formState;
+					if (formState) {
+						view[property] = formChanged
+							? formChanged(formState)
+							: formState.values[formField];
+					}
+				});
+				view.observe(property, (value) => {
+					current?.set(formField, value);
+				});
 			});
 		}
 

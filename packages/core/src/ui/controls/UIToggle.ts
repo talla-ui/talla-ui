@@ -98,15 +98,21 @@ export namespace UIToggle {
 
 		/**
 		 * Adds a two-way binding to a form state field.
-		 * @param formState A form state object, or a binding to one (e.g. on an activity).
+		 * @param formState A binding to a form state object (e.g. on an activity).
 		 * @param formField The name of the form field to which the toggle should be bound.
 		 * @returns The builder instance for chaining.
 		 */
 		formStateValue(
-			formState: BindingOrValue<FormState | undefined>,
+			formState: Binding<FormState | undefined>,
 			formField: string,
 		) {
-			return this.observeFormState(formState, formField, (value) => !!value);
+			this.initializer.observeFormState(
+				formState,
+				formField,
+				"value",
+				(f) => !!f.values[formField],
+			);
+			return this;
 		}
 
 		/**

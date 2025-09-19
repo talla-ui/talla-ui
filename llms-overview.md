@@ -903,12 +903,10 @@ export function BoundInput() {
 			() => UI.Column(/* ... */), // a complex view
 		),
 		formStateValue(
-			formState: BindingOrValue<FormState | undefined>,
+			formState: Binding<FormState | undefined>,
 			formField: string,
 		) {
-			this.initializer.finalize((view) => {
-				view.observeFormState(formState, formField, "value");
-			});
+			this.initializer.observeFormState(formState, formField, "value");
 			return this;
 		},
 	};

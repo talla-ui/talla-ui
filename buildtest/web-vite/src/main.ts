@@ -458,22 +458,6 @@ function TextFieldGroup(
 		onInput(e: ViewEvent<UITextField>) {
 			this.text = e.source.value;
 		}
-		bindForm(
-			formState: BindingOrValue<FormState | undefined>,
-			formField: string,
-		) {
-			let current: FormState | undefined;
-			this.observeFormState(formState, formField, "text", (form) => {
-				current = form;
-				return form.values[formField] ?? "";
-			});
-			this.listen((e) => {
-				if (e.name === "Change" && current) {
-					current.validateField(formField);
-					current.emitChange();
-				}
-			});
-		}
 	}
 
 	return {
@@ -482,16 +466,19 @@ function TextFieldGroup(
 				.gap()
 				.with(
 					UI.Label(label).dim(),
-					UI.TextField().value(v.bind("text")).type(type),
+					UI.TextField().trim().value(v.bind("text")).type(type),
 					UI.Label(v.bind("error"))
 						.hideWhen(v.bind("error").not())
 						.fg("danger"),
 				),
 		),
-		bindFormState(formState: Binding<FormState>, formField: string) {
-			this.initializer.finalize((view) => {
-				view.bindForm(formState, formField);
-			});
+		bindFormState(
+			formState: Binding<FormState | undefined>,
+			formField: string,
+		) {
+			this.initializer.observeFormState(formState, formField, "text", (f) =>
+				String(f.values[formField] ?? ""),
+			);
 			this.initializer.set("error", formState.bind("errors").bind(formField));
 			return this;
 		},
@@ -540,6 +527,9 @@ function OtherView(v: Binding<OtherActivity>) {
 							.formStateValue(v.bind("form"), "rememberMe")
 							.type("switch"),
 					),
+					UI.Row(
+						UI.Label(v.bind("form.errors.rememberMe")).textColor("danger"),
+					),
 					UI.Button("Submit").onClick("Submit"),
 				),
 
@@ -558,9 +548,9 @@ export class OtherActivity extends Activity {
 		f.object({
 			userName: f.string().required("User name is required"),
 			password: f.string().required("Password is required"),
-			rememberMe: f.boolean(),
+			rememberMe: f.coerce.boolean().literal(true),
 		}),
-	);
+	).immediateValidation();
 
 	protected onSubmit() {
 		let values = this.form.validate();
