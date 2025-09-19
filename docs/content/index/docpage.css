@@ -25,15 +25,15 @@ body.docpage.show_search .docpage_searchbar {
 
 .docpage_sidebar {
 	position: fixed;
-	top: -5rem;
-	left: 0;
-	bottom: 0;
+	overflow: hidden;
+	inset: 1rem;
 	width: 25%;
 	min-width: 18rem;
 	max-width: 24rem;
-	background: var(--shade-color);
-	border-inline-end: 1px solid var(--border-color);
-	padding-top: 5rem;
+	background: var(--background-color);
+	border: 1px solid var(--border-color);
+	border-radius: 1rem;
+	box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.1);
 }
 
 .docpage_searchbar {
@@ -89,7 +89,7 @@ body.docpage.show_search .docpage_searchbar {
 }
 
 .docpage_content {
-	padding: 0 2rem 0 20rem;
+	padding: 0 2rem 0 21rem;
 	text-align: center;
 }
 
@@ -145,8 +145,8 @@ body.docpage.show_search .docpage_searchbar {
 @media screen and (max-width: 900px) {
 	.docpage_sidebar {
 		transform: translateX(-100%);
-		left: -0.5rem;
-		right: -0.5rem;
+		border: none;
+		inset: 0;
 		width: auto;
 		max-width: none;
 		z-index: 1000;

@@ -6,6 +6,7 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 # Placeholder
 
 - {@link Activity} +
+- {@link ActivityRouter} +
 - {@link app} +
 - {@link AppContext} +
 - {@link AppException} +

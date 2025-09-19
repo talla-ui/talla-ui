@@ -20,7 +20,7 @@
 	--code-bg-color: rgba(0, 0, 0, 0.05);
 	--pre-bg-color: rgba(0, 0, 0, 0.035);
 	--link-color: #b45;
-	--border-color: #ddd;
+	--border-color: rgba(0, 0, 0, 0.1);
 	--iconbutton-color: #888;
 	--iconbutton-hover: rgba(187, 68, 85, 0.2);
 	--block-bg-color: #ddd;
@@ -59,7 +59,7 @@
 		--code-bg-color: rgba(255, 255, 255, 0.1);
 		--pre-bg-color: #222;
 		--link-color: #d67;
-		--border-color: #333;
+		--border-color: rgba(255, 255, 255, 0.1);
 		--iconbutton-color: #888;
 		--iconbutton-hover: #333;
 		--block-bg-color: #444;
