@@ -212,12 +212,10 @@ export default {
 		large: new UIStyle(baseLabelOptions, {
 			fontSize: 28,
 			bold: true,
-			letterSpacing: "0.02em",
 		}),
 		title: new UIStyle(baseLabelOptions, {
 			fontSize: 20,
 			bold: true,
-			letterSpacing: "0.02em",
 		}),
 		headline: new UIStyle(baseLabelOptions, { bold: true }),
 		caption: new UIStyle(baseLabelOptions, {

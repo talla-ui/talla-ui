@@ -128,7 +128,7 @@ function MainView(v: Binding<MainActivity>) {
 		.align("center")
 		.with(
 			UI.Spacer(32),
-			MyTitle("Title").width(400),
+			MyTitle("Page title").width(400),
 			CardLayout("Card").with(
 				Collapsible(
 					"Rendered",
