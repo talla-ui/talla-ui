@@ -41,9 +41,7 @@ export class UIDividerRenderer extends BaseObserver<UIDivider> {
 		);
 
 		// set margin separately (to distinguish vertical from horizontal)
-		let margin = getCSSLength(
-			sep.lineMargin != null ? sep.lineMargin : UIStyle.defaultOptions.gap,
-		);
+		let margin = getCSSLength(sep.lineMargin ?? UIStyle.defaultOptions.gap);
 		let cssMargin =
 			margin.indexOf(" ") < 0
 				? sep.vertical

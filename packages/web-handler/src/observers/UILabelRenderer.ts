@@ -1,4 +1,4 @@
-import { RenderContext, UI, UILabel } from "@talla-ui/core";
+import { RenderContext, UI, UILabel, UIStyle } from "@talla-ui/core";
 import type { StringConvertible } from "@talla-ui/util";
 import { applyStyles, getCSSLength } from "../DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
@@ -77,7 +77,6 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 export function setTextOrHtmlContent(
 	element: HTMLElement,
 	content: TextContentProperties,
-	balanceSpace?: boolean,
 ) {
 	let text = content.text == null ? "" : String(content.text);
 	if (!content.icon && !content.chevron) {
@@ -96,15 +95,14 @@ export function setTextOrHtmlContent(
 
 	// add margin element
 	if (content.icon && content.text) {
-		if (content.iconStyle?.margin) {
-			let margin = getCSSLength(content.iconStyle.margin, 0);
-			let marginWrapper = document.createElement("span");
-			marginWrapper.style.width = margin;
-			marginWrapper.style.display = "inline-block";
-			element.appendChild(marginWrapper);
-		} else {
-			element.appendChild(document.createTextNode("  "));
-		}
+		let margin = getCSSLength(
+			content.iconStyle?.margin ?? UIStyle.defaultOptions.iconMargin,
+			0,
+		);
+		let marginWrapper = document.createElement("span");
+		marginWrapper.style.display = "inline-block";
+		marginWrapper.style.width = margin;
+		element.appendChild(marginWrapper);
 	}
 
 	// add text element
@@ -113,16 +111,6 @@ export function setTextOrHtmlContent(
 		if (content.htmlFormat) textWrapper.innerHTML = text;
 		else textWrapper.textContent = text;
 		element.appendChild(textWrapper);
-
-		// add space after text if needed (for buttons)
-		if (balanceSpace) {
-			if (content.icon) {
-				element.appendChild(document.createTextNode(" "));
-			}
-			if (content.chevron) {
-				element.insertBefore(document.createTextNode(" "), textWrapper);
-			}
-		}
 	}
 
 	// add chevron, if any

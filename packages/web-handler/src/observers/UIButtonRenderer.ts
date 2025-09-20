@@ -117,6 +117,6 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 	}
 
 	updateContent(element: HTMLButtonElement) {
-		setTextOrHtmlContent(element, this.observed, true);
+		setTextOrHtmlContent(element, this.observed);
 	}
 }

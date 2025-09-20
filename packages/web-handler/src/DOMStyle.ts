@@ -1,4 +1,4 @@
-import { UIColor, UIContainer, UIStyle, UIElement } from "@talla-ui/core";
+import { UIColor, UIContainer, UIElement, UIStyle } from "@talla-ui/core";
 import {
 	CLASS_CONTAINER,
 	CLASS_TEXTCONTROL,
@@ -130,7 +130,7 @@ export function setFocusDecoration(decoration?: UIStyle.StyleOptions) {
 export function setControlTextStyle(textStyle: UIStyle.StyleOptions) {
 	let styles = {};
 	addTextStyleCSS(styles, textStyle);
-	setGlobalCSS({ [`.${CLASS_UI}.${CLASS_TEXTCONTROL}`]: styles });
+	setGlobalCSS({ [`*.${CLASS_UI}.${CLASS_TEXTCONTROL}`]: styles });
 }
 
 /** @internal Measures window width in logical pixel units */

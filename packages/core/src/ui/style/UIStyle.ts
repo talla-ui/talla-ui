@@ -3,6 +3,7 @@ import type { UIColor } from "./index.js";
 // Default values for style defaults
 const DEFAULT_GAP = 8;
 const DEFAULT_ICON_SIZE = 20;
+const DEFAULT_ICON_MARGIN = 4;
 
 /** Next 'random' ID assigned if style definition doesn't specify one */
 let _nextStyleId = 0x1234;
@@ -499,5 +500,7 @@ export namespace UIStyle {
 		gap: DEFAULT_GAP,
 		/** Default icon size in pixels */
 		iconSize: DEFAULT_ICON_SIZE,
+		/** Default icon margin in pixels */
+		iconMargin: DEFAULT_ICON_MARGIN,
 	};
 }

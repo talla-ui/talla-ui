@@ -116,7 +116,7 @@ export function makeBaseCSS() {
 		},
 
 		// CSS for alignment of elements within buttons/labels
-		[`button.${CLASS_UI}`]: {
+		[`button.${CLASS_UI},a.${CLASS_UI}`]: {
 			position: "relative",
 			overflow: "hidden",
 		},
@@ -125,8 +125,6 @@ export function makeBaseCSS() {
 			alignItems: "center",
 			justifyContent: "center",
 			verticalAlign: "middle",
-		},
-		[`.${CLASS_UI} icon:not(:last-child)`]: {
 			paddingBottom: "0.125em",
 		},
 		[`.${CLASS_UI}>._chevron-wrapper`]: {
@@ -135,7 +133,8 @@ export function makeBaseCSS() {
 			position: "absolute",
 			insetInlineEnd: "1ex",
 			top: "0",
-			height: "100%",
+			bottom: "0",
+			paddingTop: "0.125em",
 		},
 
 		// flip icons in RTL mode

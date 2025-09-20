@@ -193,10 +193,7 @@ function MainView(v: Binding<MainActivity>) {
 			UI.Row(UI.Button("Up").icon("chevronUp").onClick("Count")),
 			UI.Spacer(8),
 			UI.Row(
-				UI.Button("Sub")
-					.navigateTo("./sub")
-					.icon("chevronNext")
-					.buttonStyle("iconTopEnd"),
+				UI.Button("Sub").navigateTo("./sub").chevron("next"),
 				UI.Button("Remount").onClick("Remount").buttonStyle("accent"),
 				UI.Button("Change").onClick("ChangeEvent"),
 			),
@@ -243,6 +240,10 @@ function MainView(v: Binding<MainActivity>) {
 						UI.Button("Icon Top").icon("plus").buttonStyle("iconTop"),
 						UI.Button("Top Start").icon("plus").buttonStyle("iconTopStart"),
 						UI.Button("Top End").icon("plus").buttonStyle("iconTopEnd"),
+						UI.Button().icon("plus").minWidth(0),
+						UI.Button().icon("search").minWidth(0),
+						UI.Button("Both").icon("plus"),
+						UI.Button("Both").icon("plus", { margin: 16 }),
 					),
 					UI.Row()
 						.padding(8)
@@ -588,6 +589,7 @@ function DialogView() {
 				UI.Spacer(64),
 				UI.Button("Dropdown")
 					.chevron("down")
+					.textAlign("start")
 					.dropdownMenu(
 						new ModalMenuOptions([
 							{ value: "one", text: "One" },

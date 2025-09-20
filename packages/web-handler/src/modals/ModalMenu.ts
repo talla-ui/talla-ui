@@ -5,6 +5,7 @@ import {
 	RenderContext,
 	UI,
 	UICell,
+	UILabel,
 	UIStyle,
 	ViewEvent,
 	app,
@@ -77,6 +78,12 @@ export class WebModalMenuStyles extends ConfigOptions {
 	labelStyle = UI.styles.label.default;
 
 	/**
+	 * The default icon style used for each menu item icon
+	 * - The icon style can be overridden per item using the `iconStyle` property
+	 */
+	iconStyle: UILabel.IconStyle = { margin: "gap" };
+
+	/**
 	 * The label style used for each menu item hint
 	 * - The default style includes a smaller font size and reduced opacity
 	 */
@@ -123,9 +130,10 @@ export class ModalMenu
 
 	protected override get body() {
 		let shown = Date.now();
+		let styles = ModalMenu.styles;
 		return UI.Cell()
-			.style(ModalMenu.styles.containerStyle)
-			.width(this.options.width || ModalMenu.styles.defaultWidth)
+			.style(styles.containerStyle)
+			.width(this.options.width || styles.defaultWidth)
 			.minWidth(this.options.minWidth)
 			.position(_containerPosition)
 			.accessibleRole("menu")
@@ -137,21 +145,19 @@ export class ModalMenu
 			.with(
 				...this.options.items.map((item) => {
 					if (item.divider) {
-						return UI.Divider().lineMargin(ModalMenu.styles.dividerMargin);
+						return UI.Divider().lineMargin(styles.dividerMargin);
 					}
 
 					// use label builders for the label and hint, if any
 					const itemLabel = () =>
 						UI.Label(item.text)
-							.icon(item.icon, item.iconStyle)
+							.icon(item.icon, item.iconStyle || styles.iconStyle)
 							.dim(!!item.disabled)
-							.labelStyle(
-								ModalMenu.styles.labelStyle.override(item.labelStyle),
-							);
+							.labelStyle(styles.labelStyle.override(item.labelStyle));
 					const itemHint = () =>
 						UI.Label(item.hint)
 							.icon(item.hintIcon, item.hintIconStyle)
-							.labelStyle(ModalMenu.styles.hintStyle.override(item.hintStyle));
+							.labelStyle(styles.hintStyle.override(item.hintStyle));
 					const content =
 						item.hint || item.hintIcon
 							? UI.Row(itemLabel(), UI.Spacer(), itemHint())
@@ -160,7 +166,7 @@ export class ModalMenu
 					// add a disabled item without event handlers
 					if (item.disabled) {
 						return UI.Cell()
-							.style(ModalMenu.styles.itemCellStyle)
+							.style(styles.itemCellStyle)
 							.bg("transparent")
 							.fg("text")
 							.with(content);
@@ -168,7 +174,7 @@ export class ModalMenu
 
 					// else, add the menu item with event handlers
 					return UI.Cell()
-						.style(ModalMenu.styles.itemCellStyle)
+						.style(styles.itemCellStyle)
 						.accessibleRole("menuitem")
 						.allowKeyboardFocus()
 						.handleKey("ArrowDown", (_, self) => self.requestFocusNext())
