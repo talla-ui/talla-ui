@@ -33,7 +33,7 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 		if (e.type !== "input" && e.type !== "change") return;
 		let value = elt.value;
 		if (this.observed.trim) value = value.trim();
-		if (this.observed!.value !== value) {
+		if (!this.isContentPending() && this.observed!.value !== value) {
 			this.observed!.value = value;
 		}
 		data.value = value;

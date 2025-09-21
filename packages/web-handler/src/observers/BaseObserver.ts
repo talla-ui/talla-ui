@@ -72,6 +72,11 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 		this.updateStyle(element);
 	}
 
+	/** Returns true if a content update is currently pending */
+	isContentPending() {
+		return !!this._asyncContentUp;
+	}
+
 	/** Schedules an asynchronous update (content and/or style); gets cancelled if `update` is called synchronously in the meantime */
 	scheduleUpdate(updateContent?: HTMLElement, updateStyle?: HTMLElement) {
 		if (updateContent) this._asyncContentUp = updateContent;
