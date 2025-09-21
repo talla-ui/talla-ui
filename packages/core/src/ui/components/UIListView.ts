@@ -148,6 +148,14 @@ export class UIListView<
 	lastFocusedIndex = 0;
 
 	/**
+	 * Sets the list of items to be displayed
+	 * - This method can be used instead of setting the {@link items} property directly, to convert other iterable objects (such as plain arrays) to an observable list.
+	 */
+	setItems(items?: Iterable<any>) {
+		(this.items as any) = items;
+	}
+
+	/**
 	 * Returns the list index of the specified view, or of its parent(s)
 	 * - If the specified view object is (currently) not contained within the list container, this method returns -1.
 	 */
