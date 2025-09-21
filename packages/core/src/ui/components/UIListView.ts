@@ -1,9 +1,10 @@
 import {
+	ComponentView,
 	View,
 	ViewBuilder,
-	ComponentView,
 	ViewEvent,
 } from "../../app/index.js";
+import { ERROR, err, safeCall } from "../../errors.js";
 import {
 	Binding,
 	BindingOrValue,
@@ -11,11 +12,10 @@ import {
 	ObservableList,
 	ObservableObject,
 } from "../../object/index.js";
-import { ERROR, err, safeCall } from "../../errors.js";
 import {
 	UIColumn,
-	UIRow,
 	UIContainer,
+	UIRow,
 	UIScrollView,
 } from "../containers/index.js";
 import { UISpacer } from "../controls/UISpacer.js";
@@ -242,7 +242,9 @@ export class UIListView<
 	 * - Otherwise, the index of the focused item is stored in {@link lastFocusedIndex}, which is used by {@link requestFocus()}.
 	 */
 	protected onFocusIn(event: ViewEvent) {
-		if (event.source === this.body) {
+		let body = this.body;
+		while (body instanceof UIScrollView) body = body.content.first();
+		if (event.source === body) {
 			// focus last focused item or first item instead of container
 			this.requestFocus();
 		} else {
