@@ -189,10 +189,10 @@ export namespace UIElement {
 		}
 
 		/**
-		 * Runs a builder modifier function, returning its result
+		 * Runs a modifier function, returning its result
 		 *
 		 * @description
-		 * This method provides a convenient way to call a function that takes the builder itself as an argument, and returns either the same or another builder, from within a chain of other method calls. The modifier may call additional methods on the builder, use its initializer directly, or return a new builder that encapsulates the current one.
+		 * This method provides a convenient way to call a function from within a chain of other method calls. The modifier may call additional methods on the builder, use its initializer directly, or return a new builder that encapsulates the current one.
 		 *
 		 * @param modifier A function that takes the current builder instance and applies configurations.
 		 * @returns The result of the modifier function.

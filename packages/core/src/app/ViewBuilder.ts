@@ -281,6 +281,9 @@ export const ComponentViewBuilder = function (
 	return {
 		initializer,
 		build: initializer.build.bind(initializer),
+		apply: function (f) {
+			return f(this);
+		},
 	};
 } as ComponentViewBuilder.Type;
 
@@ -309,4 +312,18 @@ export interface ComponentViewBuilder<
 	 * @returns A newly created and initialized component view instance
 	 */
 	build: () => TView;
+
+	/**
+	 * Runs a modifier function, returning its result
+	 *
+	 * @description
+	 * This method provides a convenient way to call a function from within a chain of other method calls. The modifier may call additional methods on the builder, use its initializer directly, or return a new builder that encapsulates the current one.
+	 *
+	 * @param modifier A function that takes the current builder instance and applies configurations.
+	 * @returns The result of the modifier function.
+	 */
+	apply<TBuilder, TResult>(
+		this: TBuilder,
+		modifier: (builder: TBuilder) => TResult,
+	): TResult;
 }
