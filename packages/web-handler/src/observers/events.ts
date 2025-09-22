@@ -39,6 +39,8 @@ const _listKeysPreventDefault: { [keyName: string]: boolean } = {
 const _listRolesPreventKeys: { [roleName: string]: boolean } = {
 	list: true,
 	listitem: true,
+	menu: true,
+	menuitem: true,
 	table: true,
 	cell: true,
 	option: true,

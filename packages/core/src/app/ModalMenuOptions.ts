@@ -37,7 +37,7 @@ export class ModalMenuOptions extends ConfigOptions {
 export namespace ModalMenuOptions {
 	/**
 	 * An object that represents a menu item, used by {@link ModalFactory.MenuController}
-	 * - Each item represents either a selectable menu item (with text and underlying value), or a divider.
+	 * - Each item represents either a selectable menu item (with text and underlying value), or a divider (with optional title)
 	 */
 	export type MenuItem =
 		| {
@@ -56,5 +56,6 @@ export namespace ModalMenuOptions {
 		| {
 				value?: never;
 				divider: true;
+				title?: StringConvertible;
 		  };
 }

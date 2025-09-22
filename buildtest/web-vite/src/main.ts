@@ -173,9 +173,21 @@ function MainView(v: Binding<MainActivity>) {
 						.buttonStyle("icon")
 						.dropdownMenu(
 							new ModalMenuOptions([
+								{ divider: true, title: "Options" },
 								{ value: "one", text: "One" },
 								{ value: "two", text: "Two" },
-								{ value: "three", text: "Three" },
+								{ value: "three", text: "Three", icon: UI.icons.check },
+								{ divider: true, title: "Divider" },
+								{ value: "four", text: "Four" },
+								{ value: "five", text: "Five" },
+								{ value: "six", text: "Six" },
+								{ value: "seven", text: "Seven" },
+								{ value: "eight", text: "Eight" },
+								{ value: "nine", text: "Nine" },
+								{ divider: true },
+								{ value: "ten", text: "Ten" },
+								{ value: "eleven", text: "Eleven" },
+								{ value: "twelve", text: "Twelve" },
 							]),
 						)
 						.onMenuItemSelect((event) => {

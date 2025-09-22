@@ -6,7 +6,9 @@ import {
 	UI,
 	UICell,
 	UILabel,
+	UIScrollView,
 	UIStyle,
+	ViewBuilder,
 	ViewEvent,
 	app,
 } from "@talla-ui/core";
@@ -93,6 +95,17 @@ export class WebModalMenuStyles extends ConfigOptions {
 		shrink: 0,
 	});
 
+	/**
+	 * The label style used for each title label
+	 * - The default style includes a bold font weight, smaller font size, and lower opacity
+	 */
+	titleStyle = UI.styles.label.default.extend({
+		margin: { x: 16, top: 4, bottom: 8 },
+		bold: true,
+		fontSize: 11,
+		opacity: 0.3,
+	});
+
 	/** The margin around a divider line, in pixels */
 	dividerMargin = 6;
 }
@@ -131,7 +144,90 @@ export class ModalMenu
 	protected override get body() {
 		let shown = Date.now();
 		let styles = ModalMenu.styles;
+
+		// Add blank icons to items in groups that have at least one icon
+		let items = this.options.items.slice();
+		const fillBlankIcons = (start: number, end: number) => {
+			let segment = items.slice(start, end);
+			if (segment.every((item) => item.divider || !item.icon)) return;
+			for (let i = start; i < end; i++) {
+				let it = items[i]!;
+				if (!it.divider && !it.icon) {
+					items[i] = { ...it, icon: UI.icons.blank };
+				}
+			}
+		};
+		let start = 0;
+		for (let i = 0; i < items.length; i++) {
+			let it = items[i]!;
+			if (it.divider) {
+				fillBlankIcons(start, i);
+				start = i + 1;
+			}
+		}
+		fillBlankIcons(start, items.length);
+
+		// prepare all view builders for item content
+		let labels: ViewBuilder[] = [];
+		for (let item of items) {
+			if (item.divider) {
+				if (labels.length)
+					labels.push(UI.Divider().lineMargin(styles.dividerMargin));
+				if (item.title) {
+					labels.push(UI.Label(item.title).labelStyle(styles.titleStyle));
+				}
+				continue;
+			}
+
+			// use label builders for the label and hint, if any
+			const itemLabel = () =>
+				UI.Label(item.text)
+					.icon(item.icon, item.iconStyle || styles.iconStyle)
+					.dim(!!item.disabled)
+					.labelStyle(styles.labelStyle.override(item.labelStyle));
+			const itemHint = () =>
+				UI.Label(item.hint)
+					.icon(item.hintIcon, item.hintIconStyle)
+					.labelStyle(styles.hintStyle.override(item.hintStyle));
+			const content =
+				item.hint || item.hintIcon
+					? UI.Row(itemLabel(), UI.Spacer(), itemHint())
+					: itemLabel();
+
+			// add a disabled item without event handlers
+			if (item.disabled) {
+				labels.push(
+					UI.Cell()
+						.style(styles.itemCellStyle)
+						.bg("transparent")
+						.fg("text")
+						.with(content),
+				);
+				continue;
+			}
+
+			// else, add the menu item with event handlers
+			labels.push(
+				UI.Cell()
+					.style(styles.itemCellStyle)
+					.accessibleRole("menuitem")
+					.allowKeyboardFocus()
+					.handleKey("ArrowDown", (_, self) => self.requestFocusNext())
+					.handleKey("ArrowUp", (_, self) => self.requestFocusPrevious())
+					.handleKey("Enter", "Click")
+					.handleKey("Spacebar", "Click")
+					.onRelease((_, self) => {
+						if (Date.now() - shown < 200) return;
+						self.emit("Select", item);
+					})
+					.onClick((_, self) => self.emit("Select", item))
+					.with(content),
+			);
+		}
+
 		return UI.Cell()
+			.scroll()
+			.maxHeight("90vh")
 			.style(styles.containerStyle)
 			.width(this.options.width || styles.defaultWidth)
 			.minWidth(this.options.minWidth)
@@ -142,62 +238,18 @@ export class ModalMenu
 				this._fixPosition();
 			})
 			.handle("Select", (e) => this._resolve?.(e.data.value))
-			.with(
-				...this.options.items.map((item) => {
-					if (item.divider) {
-						return UI.Divider().lineMargin(styles.dividerMargin);
-					}
-
-					// use label builders for the label and hint, if any
-					const itemLabel = () =>
-						UI.Label(item.text)
-							.icon(item.icon, item.iconStyle || styles.iconStyle)
-							.dim(!!item.disabled)
-							.labelStyle(styles.labelStyle.override(item.labelStyle));
-					const itemHint = () =>
-						UI.Label(item.hint)
-							.icon(item.hintIcon, item.hintIconStyle)
-							.labelStyle(styles.hintStyle.override(item.hintStyle));
-					const content =
-						item.hint || item.hintIcon
-							? UI.Row(itemLabel(), UI.Spacer(), itemHint())
-							: itemLabel();
-
-					// add a disabled item without event handlers
-					if (item.disabled) {
-						return UI.Cell()
-							.style(styles.itemCellStyle)
-							.bg("transparent")
-							.fg("text")
-							.with(content);
-					}
-
-					// else, add the menu item with event handlers
-					return UI.Cell()
-						.style(styles.itemCellStyle)
-						.accessibleRole("menuitem")
-						.allowKeyboardFocus()
-						.handleKey("ArrowDown", (_, self) => self.requestFocusNext())
-						.handleKey("ArrowUp", (_, self) => self.requestFocusPrevious())
-						.handleKey("Enter", "Click")
-						.handleKey("Spacebar", "Click")
-						.onRelease((_, self) => {
-							if (Date.now() - shown < 200) return;
-							self.emit("Select", item);
-						})
-						.onClick((_, self) => self.emit("Select", item))
-						.with(content);
-				}),
-			)
+			.with(...labels)
 			.build();
 	}
 
 	onKeyDown(e: ViewEvent) {
-		let cell = this.findViewContent(UICell)[0];
-		let content = cell!.content;
-		switch (e.data.key) {
+		let view = this.findViewContent(UIScrollView)[0]!;
+		let content = (view!.content.first() as UICell).content;
+		let key = e.data.key;
+		if (typeof key !== "string") return;
+		switch (key) {
 			case "ArrowDown":
-				if (e.source !== cell) return;
+				if (e.source !== view) return;
 				for (let item of content) {
 					if (item instanceof UICell) {
 						item.requestFocus();
@@ -206,7 +258,7 @@ export class ModalMenu
 				}
 				return true;
 			case "ArrowUp":
-				if (e.source !== cell) return;
+				if (e.source !== view) return;
 				let lastItem = content.last();
 				if (lastItem instanceof UICell) {
 					lastItem.requestFocus();
@@ -216,6 +268,26 @@ export class ModalMenu
 				this._resolve?.();
 				return true;
 		}
+
+		// type to search, using buffer and label text
+		let letter = String(key).toUpperCase();
+		if (letter.length > 1 || letter < "A" || letter > "Z") return;
+		if (!(this._lastKeyDown! > Date.now() - 500)) {
+			this._keyBuffer = "";
+		}
+		this._lastKeyDown = Date.now();
+		let buffer = (this._keyBuffer += letter);
+		let labels = view.findViewContent(UILabel);
+		for (let label of labels) {
+			if (
+				String(label.text || "")
+					.toUpperCase()
+					.startsWith(buffer)
+			) {
+				UICell.whence(label)?.requestFocus();
+				return true;
+			}
+		}
 	}
 
 	onCloseModal() {
@@ -224,8 +296,8 @@ export class ModalMenu
 	}
 
 	private _fixPosition() {
-		let cell = this.findViewContent(UICell)[0];
-		let elt = cell?.lastRenderOutput?.element as HTMLElement;
+		let view = this.findViewContent(UIScrollView)[0];
+		let elt = view?.lastRenderOutput?.element as HTMLElement;
 		if (!elt) return;
 
 		// make sure the menu appears within the screen bounds,
@@ -283,5 +355,7 @@ export class ModalMenu
 		setTimeout(checkFit, 250);
 	}
 
+	private _keyBuffer?: string;
+	private _lastKeyDown?: number;
 	private _resolve?: (value?: unknown) => void;
 }

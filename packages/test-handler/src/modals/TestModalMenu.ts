@@ -5,6 +5,7 @@ import {
 	ModalMenuOptions,
 	RenderContext,
 	UI,
+	ViewBuilder,
 	ViewEvent,
 } from "@talla-ui/core";
 
@@ -33,36 +34,39 @@ export class TestModalMenu
 	}
 
 	protected override get body() {
+		let labels: ViewBuilder[] = [];
+		for (let item of this.options.items) {
+			if (item.divider) continue;
+
+			// use label builders for the label and hint, if any
+			const itemLabel = () =>
+				UI.Label(item.text).icon(item.icon, item.iconStyle);
+			const itemHint = () =>
+				UI.Label(item.hint).icon(item.hintIcon, item.hintIconStyle);
+			const content =
+				item.hint || item.hintIcon
+					? UI.Row(itemLabel(), UI.Spacer(), itemHint())
+					: itemLabel();
+
+			// add a disabled item without event handlers
+			if (item.disabled) {
+				labels.push(UI.Cell().with(content));
+				continue;
+			}
+
+			// else, add the menu item with event handlers
+			labels.push(
+				UI.Cell()
+					.accessibleRole("menuitem")
+					.onClick(() => {
+						this._resolve?.(item.value);
+					})
+					.with(content),
+			);
+		}
 		return UI.Cell()
 			.accessibleRole("menu")
-			.with(
-				...this.options.items.map((item) => {
-					if (item.divider) return UI.Divider();
-
-					// use label builders for the label and hint, if any
-					const itemLabel = () =>
-						UI.Label(item.text).icon(item.icon, item.iconStyle);
-					const itemHint = () =>
-						UI.Label(item.hint).icon(item.hintIcon, item.hintIconStyle);
-					const content =
-						item.hint || item.hintIcon
-							? UI.Row(itemLabel(), UI.Spacer(), itemHint())
-							: itemLabel();
-
-					// add a disabled item without event handlers
-					if (item.disabled) {
-						return UI.Cell().with(content);
-					}
-
-					// else, add the menu item with event handlers
-					return UI.Cell()
-						.accessibleRole("menuitem")
-						.onClick((_, self) => {
-							this._resolve?.(item.value);
-						})
-						.with(content);
-				}),
-			)
+			.with(...labels)
 			.build();
 	}
 
