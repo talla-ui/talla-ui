@@ -3,8 +3,8 @@ import {
 	UI,
 	UIIconResource,
 	UIImage,
-	UILabel,
 	UIStyle,
+	UIText,
 } from "@talla-ui/core";
 import type { StringConvertible } from "@talla-ui/util";
 import { applyStyles, getCSSLength } from "../DOMStyle.js";
@@ -16,10 +16,7 @@ const IMAGE_STYLE = UI.styles.image.default;
 const _memoizedIcons: { [memo: string]: HTMLElement } = {};
 
 /** @internal Helper function to create an icon element for given icon name/content, size, and color */
-export function getIconElt(
-	icon?: StringConvertible,
-	style?: UILabel.IconStyle,
-) {
+export function getIconElt(icon?: StringConvertible, style?: UIText.IconStyle) {
 	let mirrorRTL = false;
 	if (icon instanceof UIIconResource) {
 		if (icon.isMirrorRTL()) mirrorRTL = true;

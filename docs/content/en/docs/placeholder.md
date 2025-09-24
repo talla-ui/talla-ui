@@ -62,7 +62,7 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link UIElement} +
 - {@link UIIconResource} +
 - {@link UIImage} +
-- {@link UILabel} +
+- {@link UIText} +
 - {@link UIListView} +
 - {@link UIListViewEvent} +
 - {@link UIRow} +

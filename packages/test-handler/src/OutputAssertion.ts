@@ -21,7 +21,7 @@ export interface OutputSelectFilter {
 	focused?: boolean;
 	/** True if the toggle must be checked, false if it must not */
 	checked?: boolean;
-	/** Text or label content, as an exact match or regular expression */
+	/** Text content, as an exact match or regular expression */
 	text?: string | RegExp;
 	/** A string representation of the element's icon content, must be an exact match */
 	icon?: string;

@@ -59,8 +59,8 @@ export class WebContextOptions extends ConfigOptions {
 	/** An optional set of style overrides that are applied as theme button styles */
 	buttonStyles?: Partial<Record<UI.styles.ButtonStyleName, UIStyle>>;
 
-	/** An optional set of style overrides that are applied as theme label styles */
-	labelStyles?: Partial<Record<UI.styles.LabelStyleName, UIStyle>>;
+	/** An optional set of style overrides that are applied as theme text styles */
+	textStyles?: Partial<Record<UI.styles.TextStyleName, UIStyle>>;
 
 	/** An optional set of style overrides that are applied as theme image styles */
 	imageStyles?: Partial<Record<UI.styles.ImageStyleName, UIStyle>>;

@@ -29,7 +29,7 @@ import { View } from "./View.js";
  *   return {
  *     ...ComponentViewBuilder(CollapsibleView, (v) =>
  *        UI.Column(
- *          UI.Label(title)
+ *          UI.Text(title)
  *            .icon(v.bind("expanded").then("chevronDown", "chevronNext"))
  *            .cursor("pointer")
  *            .onClick("Toggle"),

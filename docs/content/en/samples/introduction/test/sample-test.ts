@@ -2,7 +2,6 @@
 // Run (in folder):
 // npx tsc -p tsconfig.json && node dist/sample-test.js
 
-import { Activity, app, bound, ui } from "talla-ui";
 import {
 	describe,
 	expect,
@@ -11,6 +10,7 @@ import {
 	test,
 	useTestContext,
 } from "@talla-ui/test-handler";
+import { Activity, app, bound, ui } from "talla-ui";
 
 // Define a label style for the large counter
 const CounterLabelStyle = ui.style.LABEL.extend({
@@ -20,7 +20,7 @@ const CounterLabelStyle = ui.style.LABEL.extend({
 
 // Define the page view using static method calls
 const AppPage = ui.column(
-	ui.label(bound.strf("Count: %s", "count"), CounterLabelStyle),
+	UI.Text(bound.strf("Count: %s", "count"), CounterLabelStyle),
 	ui.row(
 		{ align: "center" },
 		ui.button("Down", "CountDown"),

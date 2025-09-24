@@ -5,7 +5,7 @@ import {
 	ComponentView,
 	ComponentViewBuilder,
 	UI,
-	UILabel,
+	UIText,
 	UITextField,
 	ViewEvent,
 } from "@talla-ui/core";
@@ -52,7 +52,7 @@ beforeEach(() => {
 });
 
 test("Single control is rendered", async () => {
-	const view = UI.Label("FOO");
+	const view = UI.Text("FOO");
 	renderTestView(view.build());
 	await expectOutputAsync({ text: "FOO" });
 });
@@ -64,7 +64,7 @@ test("Single component view with binding is rendered", async () => {
 				class extends ComponentView {
 					title = StringConvertible.EMPTY;
 				},
-				(v) => UI.Label(v.bind("title")),
+				(v) => UI.Text(v.bind("title")),
 			),
 		};
 	}
@@ -107,8 +107,8 @@ test("Other filters are not matched", async () => {
 	await expect(
 		expectOutputAsync({
 			timeout: 10,
-			type: "label",
-			source: new UILabel(),
+			type: "text",
+			source: new UIText(),
 			text: "Not found!",
 		}),
 	).rejects.toThrow(/timeout/);
@@ -150,7 +150,7 @@ test("Confirm dialog can be cancelled", async () => {
 test("Confirm dialog can be confirmed", async () => {
 	let p = app.showConfirmDialogAsync((d) => {
 		d.messages = ["Foo?", "Bar?"];
-		d.confirmLabel = "Yes";
+		d.confirmText = "Yes";
 	});
 	let dialog = await expectMessageDialogAsync(10, /Foo/, /Bar/);
 	await dialog.clickAsync("Yes");

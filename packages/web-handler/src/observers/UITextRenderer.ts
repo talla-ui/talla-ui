@@ -1,18 +1,18 @@
-import { RenderContext, UI, UILabel, UIStyle } from "@talla-ui/core";
+import { RenderContext, UI, UIStyle, UIText } from "@talla-ui/core";
 import type { StringConvertible } from "@talla-ui/util";
 import { applyStyles, getCSSLength } from "../DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
 import { getIconElt } from "./UIImageRenderer.js";
 
-const LABEL_STYLE = UI.styles.label.default;
+const TEXT_STYLE = UI.styles.text.default;
 
 type TextContentProperties = {
 	text?: StringConvertible;
 	htmlFormat?: boolean;
 	icon?: StringConvertible;
-	iconStyle?: UILabel.IconStyle;
+	iconStyle?: UIText.IconStyle;
 	chevron?: "up" | "down" | "back" | "next";
-	chevronStyle?: UILabel.IconStyle;
+	chevronStyle?: UIText.IconStyle;
 };
 
 const CHEVRON_ICONS = {
@@ -23,8 +23,8 @@ const CHEVRON_ICONS = {
 };
 
 /** @internal */
-export class UILabelRenderer extends BaseObserver<UILabel> {
-	constructor(observed: UILabel) {
+export class UITextRenderer extends BaseObserver<UIText> {
+	constructor(observed: UIText) {
 		super(observed);
 		this.observeProperties("text", "icon", "iconStyle");
 	}
@@ -53,18 +53,18 @@ export class UILabelRenderer extends BaseObserver<UILabel> {
 	}
 
 	override updateStyle(element: HTMLElement) {
-		let label = this.observed;
+		let text = this.observed;
 		applyStyles(
 			element,
 			[
-				LABEL_STYLE,
-				label.style,
-				label.selectable ? { userTextSelect: true } : undefined,
+				TEXT_STYLE,
+				text.style,
+				text.selectable ? { userTextSelect: true } : undefined,
 			],
 			undefined,
 			true,
 			false,
-			label.position,
+			text.position,
 		);
 	}
 

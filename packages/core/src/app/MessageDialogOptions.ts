@@ -18,37 +18,37 @@ export class MessageDialogOptions extends ConfigOptions {
 	/**
 	 * Creates a new object with the specified options
 	 * @param messages A message or list of messages that will be displayed in the alert dialog
-	 * @param confirmLabel Custom confirm/dismiss button label text (optional)
-	 * @param cancelLabel Custom cancel button label text (optional)
-	 * @param otherLabel Custom other alternative button label text (optional)
+	 * @param confirmText Custom confirm/dismiss button text (optional)
+	 * @param cancelText Custom cancel button text (optional)
+	 * @param otherText Custom other alternative button text (optional)
 	 */
 	constructor(
 		messages?: StringConvertible | StringConvertible[],
-		confirmLabel?: StringConvertible,
-		cancelLabel?: StringConvertible,
-		otherLabel?: StringConvertible,
+		confirmText?: StringConvertible,
+		cancelText?: StringConvertible,
+		otherText?: StringConvertible,
 		type?: MessageDialogOptions.DialogType,
 	) {
 		super();
 		this.messages =
 			(Array.isArray(messages) && messages) || (messages && [messages]) || [];
-		this.confirmLabel = confirmLabel;
-		this.cancelLabel = cancelLabel;
-		this.otherLabel = otherLabel;
+		this.confirmText = confirmText;
+		this.cancelText = cancelText;
+		this.otherText = otherText;
 		this.type = type;
 	}
 
 	/** A list of messages that will be displayed in the alert dialog */
 	messages: StringConvertible[];
 
-	/** Custom confirm/dismiss button label text */
-	confirmLabel?: StringConvertible;
+	/** Custom confirm/dismiss button text */
+	confirmText?: StringConvertible;
 
-	/** Custom cancel button label text */
-	cancelLabel?: StringConvertible;
+	/** Custom cancel button text */
+	cancelText?: StringConvertible;
 
-	/** Custom other alternative button label text */
-	otherLabel?: StringConvertible;
+	/** Custom other alternative button text */
+	otherText?: StringConvertible;
 
 	/** Type of dialog to be presented */
 	type?: MessageDialogOptions.DialogType;
@@ -63,15 +63,15 @@ export class MessageDialogOptions extends ConfigOptions {
 			this.messages.map((m) =>
 				m instanceof DeferredString ? m.format(...args) : m,
 			),
-			this.confirmLabel instanceof DeferredString
-				? this.confirmLabel.format(...args)
-				: this.confirmLabel,
-			this.cancelLabel instanceof DeferredString
-				? this.cancelLabel.format(...args)
-				: this.cancelLabel,
-			this.otherLabel instanceof DeferredString
-				? this.otherLabel.format(...args)
-				: this.otherLabel,
+			this.confirmText instanceof DeferredString
+				? this.confirmText.format(...args)
+				: this.confirmText,
+			this.cancelText instanceof DeferredString
+				? this.cancelText.format(...args)
+				: this.cancelText,
+			this.otherText instanceof DeferredString
+				? this.otherText.format(...args)
+				: this.otherText,
 			this.type,
 		);
 	}

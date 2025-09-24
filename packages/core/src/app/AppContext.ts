@@ -220,7 +220,7 @@ export class AppContext extends ObservableObject {
 	 * Displays an alert dialog with the specified content and a single dismiss button
 	 * - Use {@link fmt} to translate content if necessary; this method doesn't localize strings by default.
 	 * @param config An instance of {@link MessageDialogOptions}; or a callback function to set options for the dialog to be displayed; or one or more messages to be displayed
-	 * @param buttonLabel The label for the dismiss button (if a single message was provided)
+	 * @param buttonText The text for the dismiss button (if a single message was provided)
 	 * @returns A promise that resolves when the dialog is closed.
 	 * @error This method throws an error if the modal dialog controller can't be initialized (i.e. there's no modal factory or alert dialog builder).
 	 */
@@ -230,12 +230,12 @@ export class AppContext extends ObservableObject {
 			| DeferredString
 			| string
 			| StringConvertible[],
-		buttonLabel?: StringConvertible,
+		buttonText?: StringConvertible,
 	) {
 		let controller = this.renderer?.modalFactory.buildAlertDialog?.(
 			config instanceof MessageDialogOptions || typeof config === "function"
 				? MessageDialogOptions.init(config)
-				: new MessageDialogOptions(config, buttonLabel),
+				: new MessageDialogOptions(config, buttonText),
 		);
 		if (!controller) throw err(ERROR.Render_Unavailable);
 		await controller.showAsync();
@@ -245,8 +245,9 @@ export class AppContext extends ObservableObject {
 	 * Displays a confirmation dialog with the specified text and buttons
 	 * - Use {@link fmt} to translate content if necessary; this method doesn't localize strings by default.
 	 * @param config An instance of {@link MessageDialogOptions}; or a callback function to set options for the dialog to be displayed; or one or more messages to be displayed
-	 * @param confirmLabel The label for the confirm button (if a single message was provided instead of an options object or callback)
-	 * @param cancelLabel The label for the cancel button (if a single message was provided instead of an options object or callback)
+	 * @param confirmText The text for the confirm button (if a single message was provided instead of an options object or callback)
+	 * @param cancelText The text for the cancel button (if a single message was provided instead of an options object or callback)
+	 * @param otherText The text for an alternative button (if a single message was provided instead of an options object or callback)
 	 * @returns A promise that resolves to true if the confirm button was clicked, false if cancelled, or the number 0 if the alternative option is selected (if any).
 	 * @error This method throws an error if the modal dialog controller can't be initialized (i.e. there's no modal factory or confirm dialog builder).
 	 */
@@ -256,19 +257,14 @@ export class AppContext extends ObservableObject {
 			| DeferredString
 			| string
 			| StringConvertible[],
-		confirmLabel?: StringConvertible,
-		cancelLabel?: StringConvertible,
-		otherLabel?: StringConvertible,
+		confirmText?: StringConvertible,
+		cancelText?: StringConvertible,
+		otherText?: StringConvertible,
 	) {
 		let controller = this.renderer?.modalFactory.buildConfirmDialog?.(
 			config instanceof MessageDialogOptions || typeof config === "function"
 				? MessageDialogOptions.init(config)
-				: new MessageDialogOptions(
-						config,
-						confirmLabel,
-						cancelLabel,
-						otherLabel,
-					),
+				: new MessageDialogOptions(config, confirmText, cancelText, otherText),
 		);
 		if (!controller) throw err(ERROR.Render_Unavailable);
 		let result = await controller.showAsync();
@@ -282,7 +278,7 @@ export class AppContext extends ObservableObject {
 	 *
 	 * The `value` property of the chosen menu item, if any, is returned asynchronously. If the menu was dismissed, the returned promise is resolved to `undefined`.
 	 *
-	 * @note Use {@link fmt} to translate item labels if necessary; this method doesn't localize strings by default.
+	 * @note Use {@link fmt} to translate item text if necessary; this method doesn't localize strings by default.
 	 *
 	 * @param config An instance of {@link ModalMenuOptions}, including a list of menu items; or a callback function to set options for the menu to be displayed
 	 * @param ref The related UI element

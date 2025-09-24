@@ -108,7 +108,7 @@ function makeAttachHandler(
  *
  * **Events** — The {@link ObservableObject.emit emit()} method 'emits' an event from an observable object. Events are instances of {@link ObservableEvent}, which can be handled using a callback provided to the {@link ObservableObject.listen listen()} or {@link ObservableObject.attach()} methods. Typically, events are handled by their parent object (the object they're attached to). This enables event _propagation_, where events emitted by an object such as a {@link UIButton} are handled by an observable object further up the tree — such as an {@link Activity}.
  *
- * **Property bindings** — Whereas events typically flow 'up' a tree towards containing objects, data from these objects can be _bound_ so that it makes its way 'down'. In practice, this can be used to update properties automatically, such as the text of a {@link UILabel} object when a corresponding property is set on an {@link Activity}. Refer to {@link Binding} for details.
+ * **Property bindings** — Whereas events typically flow 'up' a tree towards containing objects, data from these objects can be _bound_ so that it makes its way 'down'. In practice, this can be used to update properties automatically, such as the text of a {@link UIText} object when a corresponding property is set on an {@link Activity}. Refer to {@link Binding} for details.
  */
 export class ObservableObject {
 	/**

@@ -27,7 +27,7 @@ const AppPage = (
 	// @doc-start introduction:sample-view
 	// Define the page view using static method calls
 	const AppPage = ui.column(
-		ui.label(bound.strf("Counter: %s", "count"), CounterLabelStyle),
+		UI.Text(bound.strf("Counter: %s", "count"), CounterLabelStyle),
 		ui.row(
 			{ align: "center" },
 			ui.button("Down", "CountDown"),

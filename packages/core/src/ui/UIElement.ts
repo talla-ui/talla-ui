@@ -172,7 +172,7 @@ export namespace UIElement {
 	 * @description
 	 * This class provides a fluent interface for creating and configuring {@link UIElement} instances: all built-in containers and controls. It includes a range of methods for setting properties, styles, and behaviors, which are applied to an 'initializer', and eventually to all instances created using the same builder. The builder is typically returned by a function that returns a view builder for a specific type of UI element, such as `UI.Column()`, `UI.Button()`, or `UI.ShowWhen()`.
 	 *
-	 * Objects of this type are returned by functions such as `UI.Button()`, `UI.Label()`, and `UI.Column()`, with additional methods as included in their specific return type (e.g. {@link UIButton.ButtonBuilder}).
+	 * Objects of this type are returned by functions such as `UI.Button()`, `UI.Text()`, and `UI.Column()`, with additional methods as included in their specific return type (e.g. {@link UIButton.ButtonBuilder}).
 	 */
 	export abstract class ElementBuilder<TView extends UIElement>
 		implements ViewBuilder<TView>

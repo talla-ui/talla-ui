@@ -5,9 +5,9 @@ import {
 	RenderContext,
 	UI,
 	UICell,
-	UILabel,
 	UIScrollView,
 	UIStyle,
+	UIText,
 	ViewBuilder,
 	ViewEvent,
 	app,
@@ -74,32 +74,32 @@ export class WebModalMenuStyles extends ConfigOptions {
 		});
 
 	/**
-	 * The label style used for each menu item label
-	 * - This property defaults to the default label style.
+	 * The text style used for each menu item text element
+	 * - This property defaults to the default text style.
 	 */
-	labelStyle = UI.styles.label.default;
+	textStyle = UI.styles.text.default;
 
 	/**
 	 * The default icon style used for each menu item icon
 	 * - The icon style can be overridden per item using the `iconStyle` property
 	 */
-	iconStyle: UILabel.IconStyle = { margin: "gap" };
+	iconStyle: UIText.IconStyle = { margin: "gap" };
 
 	/**
-	 * The label style used for each menu item hint
+	 * The text style used for each menu item hint
 	 * - The default style includes a smaller font size and reduced opacity
 	 */
-	hintStyle = UI.styles.label.default.extend({
+	hintStyle = UI.styles.text.default.extend({
 		opacity: 0.5,
 		fontSize: 12,
 		shrink: 0,
 	});
 
 	/**
-	 * The label style used for each title label
+	 * The text style used for each title text element
 	 * - The default style includes a bold font weight, smaller font size, and lower opacity
 	 */
-	titleStyle = UI.styles.label.default.extend({
+	titleStyle = UI.styles.text.default.extend({
 		margin: { x: 16, top: 4, bottom: 8 },
 		bold: true,
 		fontSize: 11,
@@ -168,35 +168,35 @@ export class ModalMenu
 		fillBlankIcons(start, items.length);
 
 		// prepare all view builders for item content
-		let labels: ViewBuilder[] = [];
+		let texts: ViewBuilder[] = [];
 		for (let item of items) {
 			if (item.divider) {
-				if (labels.length)
-					labels.push(UI.Divider().lineMargin(styles.dividerMargin));
+				if (texts.length)
+					texts.push(UI.Divider().lineMargin(styles.dividerMargin));
 				if (item.title) {
-					labels.push(UI.Label(item.title).labelStyle(styles.titleStyle));
+					texts.push(UI.Text(item.title).textStyle(styles.titleStyle));
 				}
 				continue;
 			}
 
-			// use label builders for the label and hint, if any
-			const itemLabel = () =>
-				UI.Label(item.text)
+			// use text element builders for the text and hint, if any
+			const itemText = () =>
+				UI.Text(item.text)
 					.icon(item.icon, item.iconStyle || styles.iconStyle)
 					.dim(!!item.disabled)
-					.labelStyle(styles.labelStyle.override(item.labelStyle));
+					.textStyle(styles.textStyle.override(item.textStyle));
 			const itemHint = () =>
-				UI.Label(item.hint)
+				UI.Text(item.hint)
 					.icon(item.hintIcon, item.hintIconStyle)
-					.labelStyle(styles.hintStyle.override(item.hintStyle));
+					.textStyle(styles.hintStyle.override(item.hintStyle));
 			const content =
 				item.hint || item.hintIcon
-					? UI.Row(itemLabel(), UI.Spacer(), itemHint())
-					: itemLabel();
+					? UI.Row(itemText(), UI.Spacer(), itemHint())
+					: itemText();
 
 			// add a disabled item without event handlers
 			if (item.disabled) {
-				labels.push(
+				texts.push(
 					UI.Cell()
 						.style(styles.itemCellStyle)
 						.bg("transparent")
@@ -207,7 +207,7 @@ export class ModalMenu
 			}
 
 			// else, add the menu item with event handlers
-			labels.push(
+			texts.push(
 				UI.Cell()
 					.style(styles.itemCellStyle)
 					.accessibleRole("menuitem")
@@ -238,7 +238,7 @@ export class ModalMenu
 				this._fixPosition();
 			})
 			.handle("Select", (e) => this._resolve?.(e.data.value))
-			.with(...labels)
+			.with(...texts)
 			.build();
 	}
 
@@ -269,7 +269,7 @@ export class ModalMenu
 				return true;
 		}
 
-		// type to search, using buffer and label text
+		// type to search, using buffer and item text
 		let letter = String(key).toUpperCase();
 		if (letter.length > 1 || letter < "A" || letter > "Z") return;
 		if (!(this._lastKeyDown! > Date.now() - 500)) {
@@ -277,14 +277,14 @@ export class ModalMenu
 		}
 		this._lastKeyDown = Date.now();
 		let buffer = (this._keyBuffer += letter);
-		let labels = view.findViewContent(UILabel);
-		for (let label of labels) {
+		let textViews = view.findViewContent(UIText);
+		for (let t of textViews) {
 			if (
-				String(label.text || "")
+				String(t.text || "")
 					.toUpperCase()
 					.startsWith(buffer)
 			) {
-				UICell.whence(label)?.requestFocus();
+				UICell.whence(t)?.requestFocus();
 				return true;
 			}
 		}

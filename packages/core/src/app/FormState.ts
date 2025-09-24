@@ -17,7 +17,7 @@ import { ObservableObject } from "../object/index.js";
  * function FormView(v: Binding<MyActivity>) {
  *   return UI.Column(
  *     UI.TextField().formStateValue(v.bind("form"), "foo"),
- *     UI.Label(v.bind("form.errors.foo.message"))
+ *     UI.Text(v.bind("form.errors.foo.message"))
  *       .hideWhen(v.bind("form.errors.foo").not()),
  *     UI.Button("Go").onClick("Submit")
  *   );

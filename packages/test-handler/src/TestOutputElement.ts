@@ -43,10 +43,10 @@ export class TestOutputElement {
 	/** The checked state of a toggle element */
 	checked?: boolean;
 
-	/** The rendered text content of an element: label text, button label, or placeholder */
+	/** The rendered text content of an element: text element, button, toggle, or text field placeholder */
 	text?: string;
 
-	/** A string representation of the icon as rendered for labels and buttons */
+	/** A string representation of the icon as rendered for text elements and buttons */
 	icon?: string;
 
 	/** The chevron direction (string) for button elements */
@@ -277,7 +277,7 @@ export namespace TestOutputElement {
 		| "row"
 		| "column"
 		| "form"
-		| "label"
+		| "text"
 		| "button"
 		| "image"
 		| "divider"

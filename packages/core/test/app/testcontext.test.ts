@@ -20,7 +20,7 @@ import {
 	UI,
 	UIButton,
 	UICell,
-	UILabel,
+	UIText,
 	ViewEvent,
 	app,
 } from "../../dist/index.js";
@@ -223,13 +223,13 @@ describe("Rendering views", () => {
 
 	test("View is not rendered twice", async () => {
 		const view = new UICell();
-		view.content.add(new UILabel("Test"));
+		view.content.add(new UIText("Test"));
 		let app = useTestContext();
 		app.render(view);
-		let out1 = await app.renderer.expectOutputAsync({ type: "label" });
-		view.findViewContent(UILabel)[0]!.text = "Foo";
+		let out1 = await app.renderer.expectOutputAsync({ type: "text" });
+		view.findViewContent(UIText)[0]!.text = "Foo";
 		app.render(view);
-		let out2 = await app.renderer.expectOutputAsync({ type: "label" });
+		let out2 = await app.renderer.expectOutputAsync({ type: "text" });
 		expect(out2.elements).toEqual(out1.elements);
 	});
 
@@ -272,7 +272,7 @@ describe("Rendering views", () => {
 	test("Show dialog", async () => {
 		class MyActivity extends Activity {
 			static override View() {
-				return UI.Cell(UI.Label("foo"));
+				return UI.Cell(UI.Text("foo"));
 			}
 			constructor() {
 				super();
@@ -316,9 +316,9 @@ describe("Rendering views", () => {
 		);
 		expect(myDialog?.messages).toHaveLength(2);
 		expect(myDialog.type).toBe("question");
-		expect(myDialog.confirmLabel).toBe("Go ahead");
-		expect(myDialog.cancelLabel).toBe("No, cancel");
-		expect(myDialog.otherLabel).toBe("Maybe");
+		expect(myDialog.confirmText).toBe("Go ahead");
+		expect(myDialog.cancelText).toBe("No, cancel");
+		expect(myDialog.otherText).toBe("Maybe");
 
 		console.log("Showing dialog and clicking confirm");
 		let p = app.showConfirmDialogAsync(myDialog);
@@ -385,7 +385,7 @@ describe("Rendering views", () => {
 			options.width = 200;
 		});
 
-		// click the label 'Two' inside of a row with accessibleRole 'menuitem':
+		// click the text 'Two' inside of a row with accessibleRole 'menuitem':
 		await clickOutputAsync({ accessibleRole: "menuitem" }, { text: "Two" });
 		let result = await p;
 		expect(result).toBe("two");

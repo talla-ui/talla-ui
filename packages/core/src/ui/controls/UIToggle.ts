@@ -13,18 +13,18 @@ import { UIElement } from "../UIElement.js";
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
 export class UIToggle extends UIElement {
-	/** Creates a new toggle view object with the specified label */
-	constructor(label?: StringConvertible, value?: boolean) {
+	/** Creates a new toggle view object with the specified text */
+	constructor(text?: StringConvertible, value?: boolean) {
 		super();
-		this.label = label;
+		this.text = text;
 		this.value = !!value;
 	}
 
 	/** The current toggle state, true for toggle 'on' state */
 	value: boolean;
 
-	/** The toggle label to be displayed, if any */
-	label?: StringConvertible;
+	/** The text to be displayed, if any */
+	text?: StringConvertible;
 
 	/** The toggle visual presentation type, defaults to checkbox */
 	type: "none" | "checkbox" | "switch" = "checkbox";
@@ -32,24 +32,24 @@ export class UIToggle extends UIElement {
 	/** True if user input should be disabled on this control */
 	disabled = false;
 
-	/** Label style definition (overrides), if any */
-	labelStyle?: UIStyle.StyleOptions = undefined;
+	/** Text element style definition (overrides), if any */
+	textStyle?: UIStyle.StyleOptions = undefined;
 }
 
 export namespace UIToggle {
 	/**
 	 * Creates a view builder for a toggle (checkbox/switch) element
-	 * @param label The text label to display next to the toggle, or a binding to a string value.
+	 * @param text The text to display next to the toggle, or a binding to a string value.
 	 * @returns A builder object for configuring the toggle.
 	 * @see {@link UIToggle}
 	 */
-	export function toggleBuilder(label?: BindingOrValue<StringConvertible>) {
-		return new ToggleBuilder().label(label);
+	export function toggleBuilder(text?: BindingOrValue<StringConvertible>) {
+		return new ToggleBuilder().text(text);
 	}
 
 	export namespace toggleBuilder {
 		/**
-		 * Creates a view builder for a toggle (checkbox/switch) element with a localizable or dynamic text label.
+		 * Creates a view builder for a toggle (checkbox/switch) element with a localizable or dynamic text.
 		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
 		 * @param args Additional bindings, used to format the text dynamically
 		 * @returns A builder instance for chaining.
@@ -68,23 +68,23 @@ export namespace UIToggle {
 		readonly initializer = new ViewBuilder.Initializer(UIToggle);
 
 		/**
-		 * Sets the text label for the toggle, using {@link UIToggle.label}.
-		 * @param label The text to display next to the toggle, or a binding to a string value.
+		 * Sets the text for the toggle, using {@link UIToggle.text}.
+		 * @param text The text to display next to the toggle, or a binding to a string value.
 		 * @returns The builder instance for chaining.
 		 */
-		label(label?: StringConvertible) {
-			return this.setProperty("label", label);
+		text(text?: StringConvertible) {
+			return this.setProperty("text", text);
 		}
 
 		/**
-		 * Sets a localizable or dynamic text for the toggle label.
+		 * Sets a localizable or dynamic text for the toggle.
 		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
 		 * @param args Additional bindings, used to format the text dynamically
 		 * @returns The builder instance for chaining.
 		 */
 		fmt(text: StringConvertible, ...args: Binding[]) {
-			if (args.length === 0) return this.label(fmt(text));
-			return this.label(Binding.fmt(text, ...args));
+			if (args.length === 0) return this.text(fmt(text));
+			return this.text(Binding.fmt(text, ...args));
 		}
 
 		/**
@@ -150,12 +150,12 @@ export namespace UIToggle {
 		}
 
 		/**
-		 * Applies styling to the toggle's label, using {@link UIToggle.labelStyle}.
-		 * @param labelStyle A style options object for the label.
+		 * Applies styling to the toggle's text, using {@link UIToggle.textStyle}.
+		 * @param textStyle A style options object for the text.
 		 * @returns The builder instance for chaining.
 		 */
-		labelStyle(labelStyle?: BindingOrValue<UIStyle.StyleOptions | undefined>) {
-			return this.setProperty("labelStyle", labelStyle);
+		textStyle(textStyle?: BindingOrValue<UIStyle.StyleOptions | undefined>) {
+			return this.setProperty("textStyle", textStyle);
 		}
 	}
 }

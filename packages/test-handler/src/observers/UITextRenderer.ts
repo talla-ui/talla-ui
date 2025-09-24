@@ -1,12 +1,12 @@
-import { RenderContext, UI, UILabel } from "@talla-ui/core";
+import { RenderContext, UI, UIText } from "@talla-ui/core";
 import { TestOutputElement } from "../TestOutputElement.js";
 import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 
-const LABEL_STYLE = UI.styles.label.default;
+const TEXT_STYLE = UI.styles.text.default;
 
 /** @internal */
-export class UILabelRenderer extends TestBaseObserver<UILabel> {
-	constructor(observed: UILabel) {
+export class UITextRenderer extends TestBaseObserver<UIText> {
+	constructor(observed: UIText) {
 		super(observed);
 		this.observeProperties("text", "icon");
 	}
@@ -22,7 +22,7 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 	}
 
 	getOutput() {
-		let elt = new TestOutputElement("label");
+		let elt = new TestOutputElement("text");
 		let output = new RenderContext.Output(this.observed, elt);
 		elt.output = output;
 		if (this.observed.allowFocus || this.observed.allowKeyboardFocus)
@@ -31,8 +31,8 @@ export class UILabelRenderer extends TestBaseObserver<UILabel> {
 	}
 
 	override updateStyle(element: TestOutputElement) {
-		let label = this.observed;
-		applyElementStyle(element, [LABEL_STYLE, label.style, label.position]);
+		let text = this.observed;
+		applyElementStyle(element, [TEXT_STYLE, text.style, text.position]);
 	}
 
 	updateContent(element: TestOutputElement) {

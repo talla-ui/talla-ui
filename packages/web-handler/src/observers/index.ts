@@ -2,11 +2,11 @@ import {
 	UIButton,
 	UICell,
 	UIContainer,
-	UIImage,
-	UILabel,
-	UIScrollView,
 	UIDivider,
+	UIImage,
+	UIScrollView,
 	UISpacer,
+	UIText,
 	UITextField,
 	UIToggle,
 	View,
@@ -15,12 +15,12 @@ import { BaseObserver } from "./BaseObserver.js";
 import { UIButtonRenderer } from "./UIButtonRenderer.js";
 import { UICellRenderer } from "./UICellRenderer.js";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
-import { UIImageRenderer } from "./UIImageRenderer.js";
-import { UILabelRenderer } from "./UILabelRenderer.js";
-import { UIScrollViewRenderer } from "./UIScrollViewRenderer.js";
 import { UIDividerRenderer } from "./UIDividerRenderer.js";
+import { UIImageRenderer } from "./UIImageRenderer.js";
+import { UIScrollViewRenderer } from "./UIScrollViewRenderer.js";
 import { UISpacerRenderer } from "./UISpacerRenderer.js";
 import { UITextFieldRenderer } from "./UITextFieldRenderer.js";
+import { UITextRenderer } from "./UITextRenderer.js";
 import { UIToggleRenderer } from "./UIToggleRenderer.js";
 
 /** @internal Helper function to create the appropriate renderer for given object */
@@ -32,8 +32,8 @@ export function makeObserver(target: View): BaseObserver<any> | undefined {
 				? new UIScrollViewRenderer(target)
 				: target instanceof UIContainer
 					? new UIContainerRenderer(target)
-					: target instanceof UILabel
-						? new UILabelRenderer(target)
+					: target instanceof UIText
+						? new UITextRenderer(target)
 						: target instanceof UIButton
 							? new UIButtonRenderer(target)
 							: target instanceof UIImage

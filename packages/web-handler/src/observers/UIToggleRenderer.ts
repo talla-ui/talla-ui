@@ -6,19 +6,19 @@ import { BaseObserver } from "./BaseObserver.js";
 let _nextId = 0;
 
 const TOGGLE_STYLE = UI.styles.toggle.default;
-const TOGGLE_LABEL_STYLE = UI.styles.label.toggleLabel;
+const TOGGLE_TEXT_STYLE = UI.styles.text.toggleText;
 
 /** @internal */
 export class UIToggleRenderer extends BaseObserver<UIToggle> {
 	constructor(observed: UIToggle) {
 		super(observed);
-		this.observeProperties("label", "value", "disabled", "labelStyle");
+		this.observeProperties("text", "value", "disabled", "textStyle");
 	}
 
 	protected override propertyChange(property: string, value: any) {
 		if (!this.element) return;
 		switch (property) {
-			case "label":
+			case "text":
 			case "value":
 				return this.scheduleUpdate(this.element);
 		}
@@ -65,11 +65,11 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 			toggle.position,
 		);
 
-		// set label style
+		// set text style
 		let label = element.lastChild as HTMLLabelElement;
 		applyStyles(
 			label,
-			[TOGGLE_LABEL_STYLE, toggle.labelStyle],
+			[TOGGLE_TEXT_STYLE, toggle.textStyle],
 			undefined,
 			true,
 			false,
@@ -100,7 +100,7 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 
 		// update label
 		let label = element.lastChild as HTMLLabelElement;
-		let text = toggle.label;
+		let text = toggle.text;
 		label.style.display = text ? "" : "none";
 		label.textContent = text == null ? "" : String(text);
 	}

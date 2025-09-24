@@ -58,7 +58,7 @@ export class UITextField extends UIElement {
 	/** True if user input should be disabled on this control */
 	disabled = false;
 
-	/** True if the text field should appear like a label */
+	/** True if the text field should appear read-only */
 	readOnly = false;
 }
 

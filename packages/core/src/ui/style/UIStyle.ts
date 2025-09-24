@@ -444,7 +444,7 @@ export namespace UIStyle {
 	 * @see {@link UIAnimation.theme}
 	 */
 	export const theme = Object.freeze({
-		label: new ThemeResolver(
+		text: new ThemeResolver(
 			[
 				"default",
 				"body",
@@ -455,7 +455,7 @@ export namespace UIStyle {
 				"badge",
 				"successBadge",
 				"dangerBadge",
-				"toggleLabel",
+				"toggleText",
 			],
 			UIStyle.resolve,
 		),

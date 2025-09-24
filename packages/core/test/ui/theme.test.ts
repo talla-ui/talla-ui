@@ -144,7 +144,7 @@ test("UIAnimation theme references resolve dynamically", async () => {
 });
 
 test("UIStyle theme has element style resolvers", () => {
-	expect(UI.styles.label).toBeDefined();
+	expect(UI.styles.text).toBeDefined();
 	expect(UI.styles.button).toBeDefined();
 	expect(UI.styles.textfield).toBeDefined();
 	expect(UI.styles.toggle).toBeDefined();
@@ -156,8 +156,8 @@ test("UIStyle theme resolvers have expected keys", () => {
 	expect(UI.styles.button).toHaveProperty("default");
 	expect(UI.styles.button).toHaveProperty("danger");
 
-	expect(UI.styles.label).toHaveProperty("default");
-	expect(UI.styles.label).toHaveProperty("title");
+	expect(UI.styles.text).toHaveProperty("default");
+	expect(UI.styles.text).toHaveProperty("title");
 });
 
 test("UIStyle theme references resolve dynamically", () => {

@@ -16,7 +16,7 @@ import { Dialog, WebDialogStyles } from "./Dialog.js";
  * A class that defines the styles for the default modal message dialog view
  * - A default instance of this class is created, and can be modified in the {@link WebContextOptions} configuration callback passed to {@link useWebContext}.
  * - These styles are used by the default message dialog view, created by {@link AppContext.showAlertDialogAsync app.showAlertDialogAsync()} and {@link AppContext.showConfirmDialogAsync app.showConfirmDialogAsync()}.
- * - The default dialog view includes an outer container, a block of message labels, and a block of buttons.
+ * - The default dialog view includes an outer container, a block of messages, and a block of buttons.
  *
  * @see {@link WebContextOptions}
  * @see {@link ModalFactory}
@@ -75,10 +75,10 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 	narrowReverseButtons = false;
 
 	/**
-	 * The label style used for the first message label
+	 * The text style used for the first message
 	 * - The default style includes centered, bold text, with a maximum width of 480 pixels.
 	 */
-	firstLabelStyle = UI.styles.label.default.extend({
+	firstTextStyle = UI.styles.text.default.extend({
 		bold: true,
 		textAlign: "center",
 		maxWidth: 480,
@@ -87,18 +87,18 @@ export class WebMessageDialogStyles extends WebDialogStyles {
 	});
 
 	/**
-	 * The label style used for all labels except the first
+	 * The text style used for all messages except the first
 	 * - The default style includes centered text, with a maximum width of 480 pixels.
 	 */
-	labelStyle = UI.styles.label.default.extend({
+	textStyle = UI.styles.text.default.extend({
 		textAlign: "center",
 		maxWidth: 480,
 		lineBreakMode: "pre-wrap",
 		userTextSelect: true,
 	});
 
-	/** The amount of (vertical) space between labels */
-	labelGap = 8;
+	/** The amount of (vertical) space between text elements */
+	textGap = 8;
 
 	/**
 	 * The button style used for all buttons except the confirm button
@@ -127,20 +127,20 @@ export class MessageDialog
 	}
 
 	setAlertButton() {
-		this.confirmLabel = this.options.confirmLabel || fmt("Dismiss");
+		this.confirmText = this.options.confirmText || fmt("Dismiss");
 		return this;
 	}
 
 	setConfirmButtons() {
-		this.confirmLabel = this.options.confirmLabel || fmt("Confirm");
-		this.cancelLabel = this.options.cancelLabel || fmt("Cancel");
-		this.otherLabel = this.options.otherLabel;
+		this.confirmText = this.options.confirmText || fmt("Confirm");
+		this.cancelText = this.options.cancelText || fmt("Cancel");
+		this.otherText = this.options.otherText;
 		return this;
 	}
 
-	confirmLabel?: StringConvertible;
-	cancelLabel?: StringConvertible;
-	otherLabel?: StringConvertible;
+	confirmText?: StringConvertible;
+	cancelText?: StringConvertible;
+	otherText?: StringConvertible;
 
 	async showAsync(place?: Partial<RenderContext.PlacementOptions>) {
 		app.render(this, {
@@ -171,27 +171,27 @@ export class MessageDialog
 	protected override get body() {
 		let narrow = app.viewport?.cols! < 2;
 		let styles = MessageDialog.styles;
-		let messageLabels = this.options.messages.map((text, i) =>
-			UI.Label(String(text)).labelStyle(
-				i ? styles.labelStyle : styles.firstLabelStyle,
+		let messages = this.options.messages.map((text, i) =>
+			UI.Text(String(text)).textStyle(
+				i ? styles.textStyle : styles.firstTextStyle,
 			),
 		);
 		let buttons = [
-			UI.Button(this.confirmLabel)
+			UI.Button(this.confirmText)
 				.onClick("Confirm")
 				.buttonStyle(styles.confirmButtonStyle)
 				.requestFocus(),
 		];
-		if (this.otherLabel) {
+		if (this.otherText) {
 			buttons.push(
-				UI.Button(this.otherLabel)
+				UI.Button(this.otherText)
 					.onClick("Other")
 					.buttonStyle(styles.buttonStyle),
 			);
 		}
-		if (this.cancelLabel) {
+		if (this.cancelText) {
 			buttons.push(
-				UI.Button(this.cancelLabel)
+				UI.Button(this.cancelText)
 					.onClick("Cancel")
 					.buttonStyle(styles.buttonStyle),
 			);
@@ -207,7 +207,7 @@ export class MessageDialog
 				applyDragModal(
 					UI.Cell()
 						.style(styles.messageCellStyle)
-						.with(UI.Column(...messageLabels).gap(styles.labelGap)),
+						.with(UI.Column(...messages).gap(styles.textGap)),
 				),
 				UI.Cell()
 					.style(styles.buttonCellStyle)

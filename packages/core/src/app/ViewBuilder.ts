@@ -201,11 +201,11 @@ export namespace ViewBuilder {
  *
  * @example
  * function MyButton() {
- *   let label = "";
+ *   let text = "";
  *   return {
- *     ...DeferredViewBuilder(() => UI.Button(label)),
- *     label(label: BindingOrValue<StringConvertible>) {
- *       label = label;
+ *     ...DeferredViewBuilder(() => UI.Button(text)),
+ *     text(text: BindingOrValue<StringConvertible>) {
+ *       text = text;
  *       return this;
  *     },
  *   }
@@ -240,14 +240,14 @@ export declare namespace DeferredViewBuilder {
  *
  * @example
  * class MyWrapper extends ComponentView {
- *   label = "";
+ *   text = "";
  * }
  *
  * function MyWrapper() {
  *   return {
- *     ...ComponentViewBuilder(MyWrapper, (v) => UI.Button(v.bind("label"))),
- *     label(label: BindingOrValue<StringConvertible>) {
- *       this.initializer.set("label", label);
+ *     ...ComponentViewBuilder(MyWrapper, (v) => UI.Button(v.bind("text"))),
+ *     text(text: BindingOrValue<StringConvertible>) {
+ *       this.initializer.set("text", text);
  *       return this;
  *     },
  *   }

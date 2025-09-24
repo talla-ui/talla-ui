@@ -8,13 +8,13 @@ const TOGGLE_STYLE = UI.styles.toggle.default;
 export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 	constructor(observed: UIToggle) {
 		super(observed);
-		this.observeProperties("label", "value", "disabled", "labelStyle");
+		this.observeProperties("text", "value", "disabled", "textStyle");
 	}
 
 	protected override propertyChange(property: string, value: any) {
 		if (!this.element) return;
 		switch (property) {
-			case "label":
+			case "text":
 			case "value":
 				return this.scheduleUpdate(this.element);
 		}
@@ -56,7 +56,7 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 	}
 
 	updateContent(element: TestOutputElement) {
-		element.text = String(this.observed.label || "");
+		element.text = String(this.observed.text || "");
 		element.checked = !!this.observed.value;
 	}
 }

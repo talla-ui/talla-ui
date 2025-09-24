@@ -38,14 +38,14 @@ const iconButtonOptions: UIStyle.StyleOptions = {
 	fontSize: "0",
 };
 
-const baseLabelOptions: UIStyle.StyleOptions = {
+const baseTextOptions: UIStyle.StyleOptions = {
 	shrink: 1,
 	maxWidth: "100%",
 	lineBreakMode: "ellipsis",
 	cursor: "inherit",
 };
 
-const baseBadgeLabelOptions: UIStyle.StyleOptions = {
+const baseBadgeTextOptions: UIStyle.StyleOptions = {
 	fontSize: 12,
 	borderRadius: 6,
 	padding: { x: 8, y: 2 },
@@ -206,35 +206,35 @@ export default {
 			},
 		}),
 	},
-	label: {
-		default: new UIStyle(baseLabelOptions),
-		body: new UIStyle(baseLabelOptions),
-		large: new UIStyle(baseLabelOptions, {
+	text: {
+		default: new UIStyle(baseTextOptions),
+		body: new UIStyle(baseTextOptions),
+		large: new UIStyle(baseTextOptions, {
 			fontSize: 28,
 			bold: true,
 		}),
-		title: new UIStyle(baseLabelOptions, {
+		title: new UIStyle(baseTextOptions, {
 			fontSize: 20,
 			bold: true,
 		}),
-		headline: new UIStyle(baseLabelOptions, { bold: true }),
-		caption: new UIStyle(baseLabelOptions, {
+		headline: new UIStyle(baseTextOptions, { bold: true }),
+		caption: new UIStyle(baseTextOptions, {
 			fontSize: 11,
 			lineHeight: 1.2,
 		}),
-		badge: new UIStyle(baseBadgeLabelOptions, {
+		badge: new UIStyle(baseBadgeTextOptions, {
 			background: color_accent.alpha(0.1),
 			textColor: color_accent,
 		}),
-		dangerBadge: new UIStyle(baseBadgeLabelOptions, {
+		dangerBadge: new UIStyle(baseBadgeTextOptions, {
 			background: color_danger.alpha(0.1),
 			textColor: color_danger,
 		}),
-		successBadge: new UIStyle(baseBadgeLabelOptions, {
+		successBadge: new UIStyle(baseBadgeTextOptions, {
 			background: color_success.alpha(0.1),
 			textColor: color_success,
 		}),
-		toggleLabel: new UIStyle({
+		toggleText: new UIStyle({
 			textColor: color_text, // (don't inherit :checked fill)
 			lineBreakMode: "pre-wrap",
 			lineHeight: 1.5,

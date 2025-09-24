@@ -14,7 +14,7 @@ import {
 import { UIIconResource, UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
 import { UIElement } from "../UIElement.js";
-import { UILabel } from "./UILabel.js";
+import { UIText } from "./UIText.js";
 
 /**
  * A view class that represents a button control
@@ -24,26 +24,26 @@ import { UILabel } from "./UILabel.js";
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
 export class UIButton extends UIElement {
-	/** Creates a new button view object with the specified label */
+	/** Creates a new button view object with the specified text */
 	constructor(text?: StringConvertible) {
 		super();
 		this.text = text;
 	}
 
-	/** The button label to be displayed */
+	/** The button text to be displayed */
 	text?: StringConvertible;
 
 	/** The button icon to be displayed */
 	icon?: UIIconResource = undefined;
 
 	/** Options for displaying the button icon */
-	iconStyle?: UILabel.IconStyle = undefined;
+	iconStyle?: UIText.IconStyle = undefined;
 
 	/** Direction of chevron icon to be placed at the far end of the button, if any */
 	chevron?: "up" | "down" | "next" | "back" = undefined;
 
 	/** Options for displaying the chevron icon */
-	chevronStyle?: UILabel.IconStyle = undefined;
+	chevronStyle?: UIText.IconStyle = undefined;
 
 	/**
 	 * Navigation target to navigate to when this button is clicked
@@ -81,7 +81,7 @@ export class UIButton extends UIElement {
 export namespace UIButton {
 	/**
 	 * Creates a view builder for a button element
-	 * @param text The text label for the button, or a binding to a string value.
+	 * @param text The text for the button, or a binding to a string value.
 	 * @returns A builder object for configuring the button.
 	 * @see {@link UIButton}
 	 */
@@ -91,7 +91,7 @@ export namespace UIButton {
 
 	export namespace buttonBuilder {
 		/**
-		 * Creates a view builder for a button element with a localizable or dynamic text label.
+		 * Creates a view builder for a button element with a localizable or dynamic text.
 		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
 		 * @param args Additional bindings, used to format the text dynamically
 		 * @returns A builder instance for chaining.
@@ -110,7 +110,7 @@ export namespace UIButton {
 		readonly initializer = new ViewBuilder.Initializer(UIButton);
 
 		/**
-		 * Sets the text label for the button, using {@link UIButton.text}.
+		 * Sets the text for the button, using {@link UIButton.text}.
 		 * @param text The text to display, or a binding to a string value.
 		 * @returns The builder instance for chaining.
 		 */
@@ -119,7 +119,7 @@ export namespace UIButton {
 		}
 
 		/**
-		 * Sets a localizable or dynamic text label for the button.
+		 * Sets a localizable or dynamic text for the button.
 		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
 		 * @param args Additional bindings, used to format the text dynamically
 		 * @returns The builder instance for chaining.
@@ -137,7 +137,7 @@ export namespace UIButton {
 		 */
 		icon(
 			icon: UI.IconName | BindingOrValue<UIIconResource | string | undefined>,
-			iconStyle?: BindingOrValue<UILabel.IconStyle> | number,
+			iconStyle?: BindingOrValue<UIText.IconStyle> | number,
 		) {
 			if (iconStyle != null) {
 				this.initializer.update(iconStyle, function (value) {
@@ -164,7 +164,7 @@ export namespace UIButton {
 		 */
 		chevron(
 			chevron: BindingOrValue<"up" | "down" | "next" | "back"> = "down",
-			chevronStyle?: BindingOrValue<UILabel.IconStyle> | number,
+			chevronStyle?: BindingOrValue<UIText.IconStyle> | number,
 		) {
 			if (chevronStyle != null) {
 				this.initializer.update(chevronStyle, function (value) {

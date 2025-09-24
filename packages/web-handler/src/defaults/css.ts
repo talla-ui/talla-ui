@@ -115,7 +115,7 @@ export function makeBaseCSS() {
 			objectFit: "cover",
 		},
 
-		// CSS for alignment of elements within buttons/labels
+		// CSS for alignment of elements within buttons/text elements
 		[`button.${CLASS_UI},a.${CLASS_UI}`]: {
 			position: "relative",
 			overflow: "hidden",

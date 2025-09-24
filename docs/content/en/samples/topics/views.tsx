@@ -20,7 +20,7 @@ import { bound } from "talla-ui";
 {
 	// @doc-start views:controls
 	// preset a label with some text:
-	const MyLabel = ui.label("Hello, world!");
+	const MyLabel = UI.Text("Hello, world!");
 
 	// ... now, MyLabel is a view class that can be instantiated
 	let view = new MyLabel();
@@ -45,7 +45,7 @@ import { bound } from "talla-ui";
 	// a single row with two controls:
 	const MyRow = ui.row(
 		{ padding: 8 },
-		ui.label("Name:"),
+		UI.Text("Name:"),
 		ui.textField({ formField: "name" }),
 	);
 
@@ -57,10 +57,10 @@ import { bound } from "talla-ui";
 			borderRadius: 8,
 		},
 		ui.column(
-			ui.label("Form", ui.style.LABEL_TITLE),
+			UI.Text("Form", ui.style.LABEL_TITLE),
 			ui.form(
 				{ formContext: bound("myForm") },
-				ui.row(ui.label("Name:"), ui.textField({ formField: "name" })),
+				ui.row(UI.Text("Name:"), ui.textField({ formField: "name" })),
 				ui.button("Submit", "SubmitForm", ui.style.BUTTON_PRIMARY),
 			),
 		),
@@ -76,7 +76,7 @@ import { bound } from "talla-ui";
 			ui.column(
 				// ... content goes here
 				// (only created and rendered when showContent is true)
-				ui.label("Hello, world!"),
+				UI.Text("Hello, world!"),
 			),
 		),
 	);
@@ -108,9 +108,9 @@ import { bound } from "talla-ui";
 	ui.list(
 		{ items: bound("myList") },
 		ui.row(
-			ui.label(bound("item.name")),
+			UI.Text(bound("item.name")),
 			ui.spacer(),
-			ui.label(bound("item.price")),
+			UI.Text(bound("item.price")),
 		),
 	);
 	// @doc-end

@@ -8,8 +8,8 @@ import { UIRow } from "./containers/UIRow.js";
 import { UIButton } from "./controls/UIButton.js";
 import { UIDivider } from "./controls/UIDivider.js";
 import { UIImage } from "./controls/UIImage.js";
-import { UILabel } from "./controls/UILabel.js";
 import { UISpacer } from "./controls/UISpacer.js";
+import { UIText } from "./controls/UIText.js";
 import { UITextField } from "./controls/UITextField.js";
 import { UIToggle } from "./controls/UIToggle.js";
 import { UIAnimation } from "./style/UIAnimation.js";
@@ -37,8 +37,8 @@ export namespace UI {
 	/** Alias for {@link UIImage.imageBuilder} */
 	export const Image = UIImage.imageBuilder;
 
-	/** Alias for {@link UILabel.labelBuilder} */
-	export const Label = UILabel.labelBuilder;
+	/** Alias for {@link UIText.textBuilder} */
+	export const Text = UIText.textBuilder;
 
 	/** Alias for {@link UISpacer.spacerBuilder} */
 	export const Spacer = UISpacer.spacerBuilder;
@@ -81,11 +81,11 @@ export namespace UI {
 
 	/** Object containing all available theme style references */
 	export namespace styles {
-		/** Object containing all available theme label style references */
-		export const label = UIStyle.theme.label.refs();
+		/** Object containing all available theme text element style references */
+		export const text = UIStyle.theme.text.refs();
 
-		/** Type definition for theme label style names */
-		export type LabelStyleName = keyof typeof label;
+		/** Type definition for theme text element style names */
+		export type TextStyleName = keyof typeof text;
 
 		/** Object containing all available theme button style references */
 		export const button = UIStyle.theme.button.refs();

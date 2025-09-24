@@ -4,7 +4,7 @@ import globeSvg from "./icons/globe.svg";
 export class MainActivity extends Activity {
 	static override View() {
 		return UI.Cell(
-			UI.Label("Hello, world!").icon(new UIIconResource(globeSvg)).center(),
+			UI.Text("Hello, world!").icon(new UIIconResource(globeSvg)).center(),
 		);
 	}
 }

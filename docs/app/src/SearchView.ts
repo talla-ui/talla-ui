@@ -65,7 +65,7 @@ export function SearchView(v: Binding<SearchActivity>) {
 			UI.Cell()
 				.hideWhen(v.bind("hasInput").and("loading").not())
 				.padding({ y: 32 })
-				.with(UI.Label("Loading...")),
+				.with(UI.Text("Loading...")),
 			UI.List(v.bind("results"))
 				.bounds(0, 50)
 				.outer(UI.Cell().grow(false).allowKeyboardFocus().scroll())
@@ -80,13 +80,13 @@ export function SearchView(v: Binding<SearchActivity>) {
 						.with(
 							UI.Column().with(
 								UI.Row(
-									UI.Label(item.bind("title")).labelStyle({
+									UI.Text(item.bind("title")).textStyle({
 										fontWeight: "var(--bold-weight)",
 										shrink: 0,
 									}),
-									UI.Label(item.bind("showId")).dim().fontSize(14),
+									UI.Text(item.bind("showId")).dim().fontSize(14),
 								),
-								UI.Label().html(item.bind("abstract")).padding(0).fontSize(14),
+								UI.Text().html(item.bind("abstract")).padding(0).fontSize(14),
 							),
 						),
 				),

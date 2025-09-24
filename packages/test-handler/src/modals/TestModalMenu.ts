@@ -9,7 +9,7 @@ import {
 	ViewEvent,
 } from "@talla-ui/core";
 
-/** @internal Limited implementation of a menu controller, that can be used to test menu selection using label clicks */
+/** @internal Limited implementation of a menu controller, that can be used to test menu selection using text element clicks */
 export class TestModalMenu
 	extends ComponentView
 	implements ModalFactory.MenuController
@@ -34,28 +34,27 @@ export class TestModalMenu
 	}
 
 	protected override get body() {
-		let labels: ViewBuilder[] = [];
+		let texts: ViewBuilder[] = [];
 		for (let item of this.options.items) {
 			if (item.divider) continue;
 
-			// use label builders for the label and hint, if any
-			const itemLabel = () =>
-				UI.Label(item.text).icon(item.icon, item.iconStyle);
+			// use text builders for the text and hint, if any
+			const itemText = () => UI.Text(item.text).icon(item.icon, item.iconStyle);
 			const itemHint = () =>
-				UI.Label(item.hint).icon(item.hintIcon, item.hintIconStyle);
+				UI.Text(item.hint).icon(item.hintIcon, item.hintIconStyle);
 			const content =
 				item.hint || item.hintIcon
-					? UI.Row(itemLabel(), UI.Spacer(), itemHint())
-					: itemLabel();
+					? UI.Row(itemText(), UI.Spacer(), itemHint())
+					: itemText();
 
 			// add a disabled item without event handlers
 			if (item.disabled) {
-				labels.push(UI.Cell().with(content));
+				texts.push(UI.Cell().with(content));
 				continue;
 			}
 
 			// else, add the menu item with event handlers
-			labels.push(
+			texts.push(
 				UI.Cell()
 					.accessibleRole("menuitem")
 					.onClick(() => {
@@ -66,7 +65,7 @@ export class TestModalMenu
 		}
 		return UI.Cell()
 			.accessibleRole("menu")
-			.with(...labels)
+			.with(...texts)
 			.build();
 	}
 

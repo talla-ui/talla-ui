@@ -10,9 +10,9 @@ import {
 	ObservableList,
 	ObservableObject,
 	UI,
-	UILabel,
 	UIListView,
 	UIListViewEvent,
+	UIText,
 } from "../../dist/index.js";
 
 beforeEach(() => {
@@ -24,7 +24,7 @@ function getListText(list: UIListView) {
 	return list.getContent()!.map((c) => {
 		let itemView =
 			c instanceof UIListView.ItemControllerView ? c.getListItemView() : c;
-		return itemView instanceof UILabel ? itemView.text : "";
+		return itemView instanceof UIText ? itemView.text : "";
 	});
 }
 
@@ -55,16 +55,16 @@ test("Constructor", () => {
 });
 
 test("Empty list, rendered", async () => {
-	let myList = UI.List([], UI.Label("foo"));
+	let myList = UI.List([], UI.Text("foo"));
 	renderTestView(myList.build());
 	await expectOutputAsync({ type: "column" });
 });
 
-test("List of labels from ObservableList, rendered", async () => {
+test("List of text elements from ObservableList, rendered", async () => {
 	let list = new ObservableList(...getObjects());
 
 	console.log("Creating instance");
-	let myList = UI.List(list, (item) => UI.Label(item.bind("name")));
+	let myList = UI.List(list, (item) => UI.Text(item.bind("name")));
 	let instance = myList.build();
 
 	console.log("Rendering");
@@ -81,9 +81,9 @@ test("List of labels from ObservableList, rendered", async () => {
 	expect((instance as any).body.isUnlinked()).toBeTruthy();
 });
 
-test("List of labels from bound array, rendered", async () => {
+test("List of text elements from bound array, rendered", async () => {
 	console.log("Creating instance");
-	let myList = UI.List(new Binding("array"), (item) => UI.Label(item)).outer(
+	let myList = UI.List(new Binding("array"), (item) => UI.Text(item)).outer(
 		UI.Row(),
 	);
 	class ArrayProvider extends ObservableObject {
@@ -99,12 +99,12 @@ test("List of labels from bound array, rendered", async () => {
 	expect(getListText(instance)).toEqual(["a", "b", "c"]);
 });
 
-test("List of labels, rendered, then updated", async () => {
+test("List of text elements, rendered, then updated", async () => {
 	let [a, b, c, d] = getObjects();
 	let list = new ObservableList(a, b, c);
 
 	console.log("Creating instance");
-	let myList = UI.List(list, (item) => UI.Label(item.bind("name"))).outer(
+	let myList = UI.List(list, (item) => UI.Text(item.bind("name"))).outer(
 		UI.Row(),
 	);
 	let instance = myList.build();
@@ -122,12 +122,12 @@ test("List of labels, rendered, then updated", async () => {
 	expect(sameC.getSingle()).toBe(cRendered);
 });
 
-test("List of labels, rendered, then updated, with scroll view", async () => {
+test("List of text elements, rendered, then updated, with scroll view", async () => {
 	let [a, b, c, d] = getObjects();
 	let list = new ObservableList(a, b, c);
 
 	console.log("Creating instance");
-	let myList = UI.List(list, UI.Label(new Binding("item.name"))).outer(
+	let myList = UI.List(list, UI.Text(new Binding("item.name"))).outer(
 		UI.Row().scroll(),
 	);
 	let instance = myList.build();
@@ -150,7 +150,7 @@ test("Event propagation through list", async () => {
 	let view = UI.Row(
 		UI.List(
 			new ObservableList(...getObjects()),
-			UI.Label(new Binding("item.name")).onClick("Foo"),
+			UI.Text(new Binding("item.name")).onClick("Foo"),
 		),
 	).build();
 	let count = 0;
@@ -192,7 +192,7 @@ test("Nested list", async () => {
 				new Binding<{ name: string; numbers: number[] }[]>("array"),
 				(item) =>
 					UI.List(item.bind("numbers"), (number) =>
-						UI.Label.fmt("{}{}", item.bind("name"), number),
+						UI.Text.fmt("{}{}", item.bind("name"), number),
 					),
 			).build(),
 		);
@@ -202,29 +202,17 @@ test("Nested list", async () => {
 
 	console.log("Rendering");
 	renderTestView(instance);
-	await expectOutputAsync({ type: "label" });
-	let labels = instance
-		.findViewContent(UILabel)
-		.map((label) => String(label.text));
-	console.log(`Rendered ${labels.length} labels`);
-	expect(labels).toEqual([
-		"a1",
-		"a2",
-		"a3",
-		"b4",
-		"b5",
-		"b6",
-		"c7",
-		"c8",
-		"c9",
-	]);
+	await expectOutputAsync({ type: "text" });
+	let texts = instance.findViewContent(UIText).map((text) => String(text.text));
+	console.log(`Rendered ${texts.length} text elements`);
+	expect(texts).toEqual(["a1", "a2", "a3", "b4", "b5", "b6", "c7", "c8", "c9"]);
 });
 
 test("Empty state", async () => {
 	console.log("Creating instance");
 	let myList = UI.List(new ObservableList(...getObjects()))
-		.with(UI.Label(new Binding("item.name")))
-		.emptyState(UI.Label("empty"));
+		.with(UI.Text(new Binding("item.name")))
+		.emptyState(UI.Text("empty"));
 	let instance = myList.build();
 
 	console.log("Rendering");
@@ -244,7 +232,7 @@ test("Empty state", async () => {
 test("Pagination", async () => {
 	console.log("Creating instance");
 	let myList = UI.List(new ObservableList(...getObjects()))
-		.with(UI.Label(new Binding("item.name")))
+		.with(UI.Text(new Binding("item.name")))
 		.outer(UI.Row())
 		.bounds(0, 2);
 	let instance = myList.build();
@@ -279,7 +267,7 @@ test("Pagination", async () => {
 test("Get indices for elements", async () => {
 	let myList = UI.List(
 		new ObservableList(...getObjects()),
-		UI.Label(new Binding("item.name")).allowFocus(true),
+		UI.Text(new Binding("item.name")).allowFocus(true),
 	);
 	let list = myList.build();
 	renderTestView(list);
@@ -294,7 +282,7 @@ test("Request focus on list focuses previous item", async () => {
 	let myList = UI.Cell(
 		UI.Button("button"),
 		UI.List(new ObservableList(...getObjects()))
-			.with(UI.Label(new Binding("item.name")).allowFocus(true))
+			.with(UI.Text(new Binding("item.name")).allowFocus(true))
 			.outer(UI.Cell().allowKeyboardFocus()),
 	);
 	renderTestView(myList.build());
@@ -317,7 +305,7 @@ test("Request focus on list focuses previous item", async () => {
 test("Arrow key focus, single list", async () => {
 	let myList = UI.List(
 		new ObservableList(...getObjects()),
-		UI.Label(new Binding("item.name"))
+		UI.Text(new Binding("item.name"))
 			.allowFocus()
 			.handleKey("ArrowDown", "FocusNext")
 			.handleKey("ArrowUp", "FocusPrevious"),

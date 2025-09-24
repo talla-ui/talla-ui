@@ -26,17 +26,17 @@ const MAX_SCHED_RUNTIME = 30;
 export class RenderedTestMessageDialog {
 	/** Creates a new instance; do not use directly */
 	constructor(dialogOutput: OutputAssertion) {
-		this.labels.push(...dialogOutput.containing({ type: "label" }).elements);
+		this.texts.push(...dialogOutput.containing({ type: "text" }).elements);
 		this.buttons.push(...dialogOutput.containing({ type: "button" }).elements);
 	}
 
-	/** The rendered label output elements */
-	labels: TestOutputElement[] = [];
+	/** The rendered text output elements */
+	texts: TestOutputElement[] = [];
 
 	/** The rendered button output elements */
 	buttons: TestOutputElement[] = [];
 
-	/** Clicks the specified button (matched using the button label) */
+	/** Clicks the specified button (matched using the button text) */
 	async clickAsync(button: string) {
 		for (let b of this.buttons) {
 			if (b.text === button) return this._click(b);
@@ -200,7 +200,7 @@ export class TestRenderer extends RenderContext {
 	 *
 	 * @summary
 	 * This method regularly polls all rendered output, and attempts to match the specified filter(s). As soon as one or more elements match **and** no further rendering is scheduled to take place, the resulting promise is resolved.
-	 * 
+	 *
 	 * This method can be used to validate new output, and find the subset of output elements that match the given filter(s). Any element in the current output may be matched, including container content; but not content _within_ a matching container (i.e. only the highest-level elements that match a selection filter).
 
 	 * The first argument may include a timeout property, in milliseconds. If the specified timeout is reached, the promise is rejected. If no timeout is specified, a timeout value of 200ms is used.
@@ -272,26 +272,26 @@ export class TestRenderer extends RenderContext {
 	}
 
 	/**
-	 * Waits for an alert or confirmation dialog to be rendered, that contains the provided label(s)
+	 * Waits for an alert or confirmation dialog to be rendered, that contains the provided text(s)
 	 * - To avoid casting {@link app} to get to the {@link TestRenderer} instance, use the {@link expectMessageDialogAsync()} method instead.
 	 * @note This method is asynchronous, and **must** be `await`-ed in a test function.
 	 *
 	 * @summary
 	 * This method regularly polls all rendered output, and attempts to find a message dialog. As soon as one is found, the resulting promise is resolved to an instance of {@link RenderedTestMessageDialog}.
-	 * 
+	 *
 	 * The returned object can be used to validate dialog contents, and to click its buttons (asynchronously).
 
 	 * If the specified timeout is reached, the promise is rejected.
 	 *
 	 * @param timeout The number of milliseconds to wait for matching output to be rendered
-	 * @param match A list of strings or regular expressions to validate matching label(s) on the message dialog.
+	 * @param match A list of strings or regular expressions to validate matching text(s) on the message dialog.
 	 * @returns A promise for a {@link RenderedTestMessageDialog} instance. The promise is rejected if a timeout occurs.
 	 *
 	 * @example
 	 * describe("My scope", () => {
 	 *   test("Cancel a confirmation dialog", async (t) => {
 	 *     let app = useTestContext();
-	 *     // ... 
+	 *     // ...
 	 *     let p = app.showConfirmDialog("Are you sure?");
 	 *     await (
 	 *       await app.renderer.expectMessageDialogAsync(100, /sure/)
@@ -311,7 +311,7 @@ export class TestRenderer extends RenderContext {
 		});
 		dialogOut.getSingle();
 		for (let m of match) {
-			dialogOut.containing({ type: "label", text: m }).toBeRendered();
+			dialogOut.containing({ type: "text", text: m }).toBeRendered();
 		}
 		return new RenderedTestMessageDialog(dialogOut);
 	}

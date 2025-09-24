@@ -31,7 +31,7 @@ export function CardLayout(title: StringConvertible) {
 				.borderRadius(16)
 				.padding(16)
 				.gap()
-				.with(UI.Label(title).labelStyle("title"), ...content),
+				.with(UI.Text(title).textStyle("title"), ...content),
 		),
 		with(...cardContent: ViewBuilder[]) {
 			content = cardContent;
@@ -40,7 +40,7 @@ export function CardLayout(title: StringConvertible) {
 	};
 }
 
-function Collapsible(label: StringConvertible, ...content: ViewBuilder[]) {
+function Collapsible(text: StringConvertible, ...content: ViewBuilder[]) {
 	class CollapsibleView extends ComponentView {
 		width = width;
 		expanded = false;
@@ -55,7 +55,7 @@ function Collapsible(label: StringConvertible, ...content: ViewBuilder[]) {
 			UI.Column()
 				.width(v.bind("width"))
 				.with(
-					UI.Label(label)
+					UI.Text(text)
 						.icon(v.bind("expanded").then("chevronDown", "chevronNext"))
 						.cursor("pointer")
 						.background("text")
@@ -77,27 +77,27 @@ function Collapsible(label: StringConvertible, ...content: ViewBuilder[]) {
 	};
 }
 
-function MyTitle(label?: StringConvertible) {
+function MyTitle(text?: StringConvertible) {
 	let width: BindingOrValue<number | undefined>;
 	return {
 		...DeferredViewBuilder(() =>
-			UI.Label(label)
-				.labelStyle("title")
+			UI.Text(text)
+				.textStyle("title")
 				.padding({ bottom: 8 })
 				.width(width)
 				.allowKeyboardFocus()
 				.onClick("Select")
 				.handleKey("Enter", "Select")
-				.handle("Select", async function (_, label) {
-					label.text = "Confirming...";
+				.handle("Select", async function (_, text) {
+					text.text = "Confirming...";
 					let choice = await app.showConfirmDialogAsync([
 						"Are you sure you want to click this button?",
 					]);
 					console.log("Select", choice);
 				}),
 		),
-		label(l: BindingOrValue<StringConvertible | undefined>) {
-			label = l;
+		text(l: BindingOrValue<StringConvertible | undefined>) {
+			text = l;
 			return this;
 		},
 		width(w: BindingOrValue<number | undefined>) {
@@ -136,14 +136,12 @@ function MainView(v: Binding<MainActivity>) {
 						.divider()
 						.border()
 						.with(
-							UI.Label(fmt("Built: {}", new Date().toLocaleString())).padding(),
-							UI.Label(
+							UI.Text(fmt("Built: {}", new Date().toLocaleString())).padding(),
+							UI.Text(
 								bind.fmt("View defined: {}", v.bind("viewDefined")),
 							).padding(),
-							UI.Label(
-								bind.fmt("Current: {}", v.bind("currentDate")),
-							).padding(),
-							UI.Label(
+							UI.Text(bind.fmt("Current: {}", v.bind("currentDate"))).padding(),
+							UI.Text(
 								bind.fmt("Count: {}", v.bind("countService.count")),
 							).padding(),
 						),
@@ -196,9 +194,9 @@ function MainView(v: Binding<MainActivity>) {
 				),
 			),
 
-			UI.Label(bind.fmt("Current: {:L}", v.bind("currentDate"))).padding(),
+			UI.Text(bind.fmt("Current: {:L}", v.bind("currentDate"))).padding(),
 			UI.Spacer(8),
-			UI.Label(bind.fmt("Count: {}", v.bind("countService.count"))).dim(
+			UI.Text(bind.fmt("Count: {}", v.bind("countService.count"))).dim(
 				v.bind("countService.count").not(),
 			),
 			UI.Spacer(8),
@@ -215,16 +213,16 @@ function MainView(v: Binding<MainActivity>) {
 				.gap(8)
 				.maxWidth("100%")
 				.with(
-					// Test: label styles
+					// Test: text styles
 					UI.Row(
-						UI.Label("Large").labelStyle("large"),
-						UI.Label("Title").labelStyle("title"),
-						UI.Label("Headline").labelStyle("headline"),
-						UI.Label("Body").labelStyle("body"),
-						UI.Label("Caption").labelStyle("caption"),
-						UI.Label("Bdg").labelStyle("badge"),
-						UI.Label("OK").labelStyle("successBadge"),
-						UI.Label("No").labelStyle("dangerBadge"),
+						UI.Text("Large").textStyle("large"),
+						UI.Text("Title").textStyle("title"),
+						UI.Text("Headline").textStyle("headline"),
+						UI.Text("Body").textStyle("body"),
+						UI.Text("Caption").textStyle("caption"),
+						UI.Text("Bdg").textStyle("badge"),
+						UI.Text("OK").textStyle("successBadge"),
+						UI.Text("No").textStyle("dangerBadge"),
 					),
 
 					// Test: button styles
@@ -274,7 +272,7 @@ function MainView(v: Binding<MainActivity>) {
 						.padding(8)
 						.background("shade")
 						.with(
-							UI.Label("Testing"),
+							UI.Text("Testing"),
 							UI.TextField("Testing"),
 							UI.Button("Button"),
 							UI.Button().icon("search").buttonStyle("icon"),
@@ -283,15 +281,12 @@ function MainView(v: Binding<MainActivity>) {
 
 			// Test: table
 			UI.Column(
-				UI.Row(
-					UI.Label("Numbers").align("end").width(100),
-					UI.Label("Factors"),
-				),
+				UI.Row(UI.Text("Numbers").align("end").width(100), UI.Text("Factors")),
 				UI.List(v.bind("numbers"), (item) =>
 					UI.List(item.bind("factors"), (factor) =>
 						UI.Row(
-							UI.Label(item.bind("id")).align("end").width(100),
-							UI.Label(factor),
+							UI.Text(item.bind("id")).align("end").width(100),
+							UI.Text(factor),
 						),
 					).outer(UI.Column().border({ top: 1 })),
 				),
@@ -362,20 +357,20 @@ function SubView(v: Binding<SubActivity>) {
 		.align("center")
 		.with(
 			UI.Spacer(32),
-			UI.Label(bind.fmt("Sub activity created {}", v.bind("created"))),
-			UI.Label(bind.fmt("Changes: {}", v.bind("activeCount.changes"))),
-			UI.Label(bind.fmt("Count: {}", v.bind("activeCount.state.count"))),
-			UI.Label(
+			UI.Text(bind.fmt("Sub activity created {}", v.bind("created"))),
+			UI.Text(bind.fmt("Changes: {}", v.bind("activeCount.changes"))),
+			UI.Text(bind.fmt("Count: {}", v.bind("activeCount.state.count"))),
+			UI.Text(
 				bind.fmt("Count * 2: {}", v.bind("activeCount.state.countTimesTwo")),
 			),
-			UI.Label(
+			UI.Text(
 				bind.fmt(
 					"Count is non-zero? {}",
 					v.bind("activeCount.state.countIsNonZero"),
 				),
 			),
 			UI.Spacer(8),
-			UI.Label(
+			UI.Text(
 				bind.fmt(
 					"Viewport: {:i}×{:i}",
 					UI.viewport.bind("width"),
@@ -462,7 +457,7 @@ export class SubActivity extends Activity {
 }
 
 function TextFieldGroup(
-	label: StringConvertible,
+	text: StringConvertible,
 	type: "text" | "password" = "text",
 ) {
 	class TextFieldGroupView extends ComponentView {
@@ -478,11 +473,9 @@ function TextFieldGroup(
 			UI.Column()
 				.gap()
 				.with(
-					UI.Label(label).dim(),
+					UI.Text(text).dim(),
 					UI.TextField().trim().value(v.bind("text")).type(type),
-					UI.Label(v.bind("error"))
-						.hideWhen(v.bind("error").not())
-						.fg("danger"),
+					UI.Text(v.bind("error")).hideWhen(v.bind("error").not()).fg("danger"),
 				),
 		),
 		bindFormState(
@@ -503,7 +496,7 @@ function OtherView(v: Binding<OtherActivity>) {
 		.align("center")
 		.with(
 			UI.Spacer(32),
-			UI.Label(bind.fmt("Other activity created {}", v.bind("created"))),
+			UI.Text(bind.fmt("Other activity created {}", v.bind("created"))),
 
 			UI.Divider(),
 			UI.Column()
@@ -515,7 +508,7 @@ function OtherView(v: Binding<OtherActivity>) {
 						"password",
 					),
 					UI.Row(
-						UI.Label("Remember"),
+						UI.Text("Remember"),
 						UI.Spacer(),
 						UI.Button()
 							.buttonStyle("ghost")
@@ -534,15 +527,13 @@ function OtherView(v: Binding<OtherActivity>) {
 							.minWidth(0),
 					),
 					UI.Row(
-						UI.Label("Remember"),
+						UI.Text("Remember"),
 						UI.Spacer(),
 						UI.Toggle()
 							.formStateValue(v.bind("form"), "rememberMe")
 							.type("switch"),
 					),
-					UI.Row(
-						UI.Label(v.bind("form.errors.rememberMe")).textColor("danger"),
-					),
+					UI.Row(UI.Text(v.bind("form.errors.rememberMe")).textColor("danger")),
 					UI.Button("Submit").onClick("Submit"),
 				),
 
@@ -586,13 +577,13 @@ function DialogView() {
 			.gap(8)
 			.padding(16)
 			.with(
-				UI.Label("Dialog").labelStyle("headline"),
+				UI.Text("Dialog").textStyle("headline"),
 				UI.Button()
 					.icon("close")
 					.position("overlay", 8, 8)
 					.buttonStyle("icon")
 					.onClick("Close"),
-				UI.Label(
+				UI.Text(
 					"This is a dialog. It contains a title, a body, and a row of buttons. " +
 						"It can be used to display a message or to collect input from the user.",
 				)

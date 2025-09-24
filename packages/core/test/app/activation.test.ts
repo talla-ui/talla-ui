@@ -238,9 +238,9 @@ describe("Nested activity router", () => {
 
 	class MyActivity extends Activity {
 		static override View(v: Binding<MyActivity>) {
-			return UI.Label(v.bind("label"));
+			return UI.Text(v.bind("text"));
 		}
-		constructor(public label: string) {
+		constructor(public text: string) {
 			super();
 		}
 		router = this.attach(new ActivityRouter());

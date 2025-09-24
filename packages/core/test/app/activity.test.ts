@@ -5,12 +5,12 @@ import {
 	app,
 	AppContext,
 	AsyncTaskQueue,
-	UI,
-	ObservableObject,
-	UILabel,
+	Binding,
 	ComponentView,
 	ComponentViewBuilder,
-	Binding,
+	ObservableObject,
+	UI,
+	UIText,
 	ViewBuilder,
 } from "../../dist/index.js";
 
@@ -272,24 +272,24 @@ describe("View rendering", () => {
 	test("Rendered page view", async () => {
 		class MyActivity extends Activity {
 			static override View() {
-				return UI.Cell(UI.Label("Hello, world!"));
+				return UI.Cell(UI.Text("Hello, world!"));
 			}
 		}
 		let activity = new MyActivity();
 		app.addActivity(activity, true);
-		await expectOutputAsync({ timeout: 50, type: "label" });
+		await expectOutputAsync({ timeout: 50, type: "text" });
 	});
 
 	test("Find views", async () => {
 		class MyActivity extends Activity {
 			static override View() {
-				return UI.Cell(UI.Label("foo"), UI.Label("bar"));
+				return UI.Cell(UI.Text("foo"), UI.Text("bar"));
 			}
 		}
 		let activity = new MyActivity();
 		app.addActivity(activity, true);
 		await expectOutputAsync({ timeout: 50, type: "cell" });
-		expect(activity.findViewContent(UILabel)).toHaveLength(2);
+		expect(activity.findViewContent(UIText)).toHaveLength(2);
 	});
 
 	test("Nested views with bindings", async () => {
@@ -298,7 +298,7 @@ describe("View rendering", () => {
 		}
 		function MyComponent(foo: number, ...content: ViewBuilder[]) {
 			let builder = ComponentViewBuilder(MyComponentView, (v) =>
-				UI.Column(UI.Label(v.bind("foo")), ...content),
+				UI.Column(UI.Text(v.bind("foo")), ...content),
 			);
 			builder.initializer.set("foo", foo);
 			return builder;
@@ -306,8 +306,8 @@ describe("View rendering", () => {
 		class MyActivity extends Activity {
 			static override View(v: Binding<MyActivity>) {
 				return UI.Cell(
-					UI.Label(v.bind("foo")),
-					MyComponent(2, UI.Label(v.bind("foo")), UI.Label(v.bind("bar"))),
+					UI.Text(v.bind("foo")),
+					MyComponent(2, UI.Text(v.bind("foo")), UI.Text(v.bind("bar"))),
 				);
 			}
 
@@ -317,7 +317,7 @@ describe("View rendering", () => {
 		let activity = new MyActivity();
 		app.addActivity(activity, true);
 		await expectOutputAsync({ timeout: 50, type: "cell" });
-		let labels = activity.findViewContent(UILabel);
-		expect(labels.map((l) => l.text)).toEqual([1, 2, 1, 3]);
+		let texts = activity.findViewContent(UIText);
+		expect(texts.map((l) => l.text)).toEqual([1, 2, 1, 3]);
 	});
 });

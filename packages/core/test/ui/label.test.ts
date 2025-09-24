@@ -10,9 +10,9 @@ import {
 	ComponentViewBuilder,
 	UI,
 	UICell,
-	UILabel,
 	UIRow,
 	UIStyle,
+	UIText,
 } from "../../dist/index.js";
 
 beforeEach(() => {
@@ -20,50 +20,50 @@ beforeEach(() => {
 });
 
 test("Constructor with text", () => {
-	let label = new UILabel("foo");
-	expect(label.text?.toString()).toBe("foo");
+	let text = new UIText("foo");
+	expect(text.text?.toString()).toBe("foo");
 
 	// check that findViewContent on controls
 	// returns a frozen empty array
-	let content = label.findViewContent(UILabel);
+	let content = text.findViewContent(UIText);
 	expect(content).toHaveLength(0);
 	expect(() => {
-		content.push(new UILabel("bar"));
+		content.push(new UIText("bar"));
 	}).toThrowError();
 });
 
 test("View builder with properties", () => {
-	let myLabel = UI.Label("foo");
-	let label = myLabel.build();
-	expect(label.text?.toString()).toBe("foo");
+	let myText = UI.Text("foo");
+	let text = myText.build();
+	expect(text.text?.toString()).toBe("foo");
 });
 
 test("Focusable follows keyboard focusable", () => {
-	let plainLabel = new UILabel();
-	expect(plainLabel.allowFocus).toBeFalsy();
-	expect(plainLabel.allowKeyboardFocus).toBeFalsy();
-	let focusableLabel = UI.Label().allowKeyboardFocus().build();
-	expect(focusableLabel.allowFocus).toBeTruthy();
-	expect(focusableLabel.allowKeyboardFocus).toBeTruthy();
+	let plainText = new UIText();
+	expect(plainText.allowFocus).toBeFalsy();
+	expect(plainText.allowKeyboardFocus).toBeFalsy();
+	let focusableText = UI.Text().allowKeyboardFocus().build();
+	expect(focusableText.allowFocus).toBeTruthy();
+	expect(focusableText.allowKeyboardFocus).toBeTruthy();
 });
 
 test("View builder using text", () => {
-	let myLabel = UI.Label("foo");
-	let label = myLabel.build();
-	expect(label.text?.toString()).toBe("foo");
+	let myText = UI.Text("foo");
+	let text = myText.build();
+	expect(text.text?.toString()).toBe("foo");
 });
 
 test("View builder using text and style", () => {
-	let myLabel = UI.Label("foo").bold();
-	let label = myLabel.build();
-	expect(label.text?.toString()).toBe("foo");
-	expect((label.style as any).bold).toBeTruthy();
+	let myText = UI.Text("foo").bold();
+	let text = myText.build();
+	expect(text.text?.toString()).toBe("foo");
+	expect((text.style as any).bold).toBeTruthy();
 });
 
 test("Rendered with text", async () => {
-	let myLabel = UI.Label("foo").accessibleLabel("My label");
-	let label = myLabel.build();
-	renderTestView(label);
+	let myText = UI.Text("foo").accessibleLabel("My label");
+	let text = myText.build();
+	renderTestView(text);
 	await expectOutputAsync({
 		text: "foo",
 		accessibleLabel: "My label",
@@ -71,53 +71,53 @@ test("Rendered with text", async () => {
 });
 
 test("Rendered with fmt", async () => {
-	function MyLabel() {
+	function MyText() {
 		return ComponentViewBuilder(
 			class extends ComponentView {
 				bar = "bar";
 			},
-			(v) => UI.Label.fmt("foo {}", v.bind("bar")),
+			(v) => UI.Text.fmt("foo {}", v.bind("bar")),
 		);
 	}
-	let myLabel = MyLabel().build();
-	renderTestView(myLabel);
+	let myText = MyText().build();
+	renderTestView(myText);
 	await expectOutputAsync({
 		text: "foo bar",
 	});
-	myLabel.bar = "baz";
+	myText.bar = "baz";
 	await expectOutputAsync({
 		text: "foo baz",
 	});
 });
 
 test("Rendered with styles (using view builder)", async () => {
-	let myLabel1 = UI.Label("one").labelStyle(
-		UI.styles.label.default.override({ bold: true }),
+	let myText1 = UI.Text("one").textStyle(
+		UI.styles.text.default.override({ bold: true }),
 	);
-	let myLabel2 = UI.Label("two").bold();
+	let myText2 = UI.Text("two").bold();
 	let row = new UIRow();
-	row.content.add(myLabel1.build(), myLabel2.build());
+	row.content.add(myText1.build(), myText2.build());
 	renderTestView(row);
 	let match = await expectOutputAsync({
-		type: "label",
+		type: "text",
 		styles: { bold: true },
 	});
 	expect(match.elements).toHaveLength(2);
 });
 
 test("Rendered with combined styles", async () => {
-	let ignoredStyle = UI.styles.label.default.override({ fontSize: 12 });
-	let baseStyle = UI.styles.label.default.override({ bold: true });
-	let myLabel = UI.Label("foo")
+	let ignoredStyle = UI.styles.text.default.override({ fontSize: 12 });
+	let baseStyle = UI.styles.text.default.override({ bold: true });
+	let myText = UI.Text("foo")
 		.padding(8)
-		.labelStyle(ignoredStyle)
-		.labelStyle(baseStyle)
+		.textStyle(ignoredStyle)
+		.textStyle(baseStyle)
 		.italic();
 	let row = new UIRow();
-	row.content.add(myLabel.build());
+	row.content.add(myText.build());
 	renderTestView(row);
 	let match = await expectOutputAsync({
-		type: "label",
+		type: "text",
 		styles: {
 			padding: 8,
 			bold: true,
@@ -128,11 +128,11 @@ test("Rendered with combined styles", async () => {
 });
 
 test("Rendered with named style", async () => {
-	UIStyle.theme.label.set({ test: new UIStyle({ bold: true, fontSize: 20 }) });
-	let myLabel = UI.Label("foo").labelStyle("test" as any);
-	renderTestView(myLabel.build());
+	UIStyle.theme.text.set({ test: new UIStyle({ bold: true, fontSize: 20 }) });
+	let myText = UI.Text("foo").textStyle("test" as any);
+	renderTestView(myText.build());
 	await expectOutputAsync({
-		type: "label",
+		type: "text",
 		styles: {
 			bold: true,
 			fontSize: 20,
@@ -141,14 +141,14 @@ test("Rendered with named style", async () => {
 });
 
 test("Rendered with named style and overrides", async () => {
-	UIStyle.theme.label.set({ test: new UIStyle({ bold: true, fontSize: 20 }) });
-	let myLabel = UI.Label("foo")
-		.labelStyle("test" as any)
+	UIStyle.theme.text.set({ test: new UIStyle({ bold: true, fontSize: 20 }) });
+	let myText = UI.Text("foo")
+		.textStyle("test" as any)
 		.bold(false)
 		.underline(true);
-	renderTestView(myLabel.build());
+	renderTestView(myText.build());
 	await expectOutputAsync({
-		type: "label",
+		type: "text",
 		styles: {
 			bold: false,
 			underline: true,
@@ -158,10 +158,10 @@ test("Rendered with named style and overrides", async () => {
 });
 
 test("Rendered with named color", async () => {
-	let myLabel = UI.Label("foo").fg("blue");
-	renderTestView(myLabel.build());
+	let myText = UI.Text("foo").fg("blue");
+	renderTestView(myText.build());
 	await expectOutputAsync({
-		type: "label",
+		type: "text",
 		styles: {
 			textColor: UI.colors.blue,
 		},
@@ -169,32 +169,32 @@ test("Rendered with named color", async () => {
 });
 
 test("Rendered, hidden and shown", async () => {
-	let label = new UILabel("foo");
+	let text = new UIText("foo");
 	let view = new UICell();
-	view.content.add(label);
+	view.content.add(text);
 	renderTestView(view);
-	await expectOutputAsync({ type: "label", text: "foo" });
-	label.hidden = true;
+	await expectOutputAsync({ type: "text", text: "foo" });
+	text.hidden = true;
 	let out = await expectOutputAsync({ type: "cell" });
-	out.containing({ type: "label" }).toBeEmpty();
-	label.hidden = false;
-	await expectOutputAsync({ type: "label", text: "foo" });
+	out.containing({ type: "text" }).toBeEmpty();
+	text.hidden = false;
+	await expectOutputAsync({ type: "text", text: "foo" });
 });
 
 test("Rendered with bound named color", async () => {
-	function MyLabel() {
-		class MyLabelView extends ComponentView {
+	function MyText() {
+		class MyTextView extends ComponentView {
 			text = "Foo";
 			color = "blue";
 		}
-		return ComponentViewBuilder(MyLabelView, () =>
-			UI.Label(new Binding("text")).fg(new Binding("color")),
+		return ComponentViewBuilder(MyTextView, () =>
+			UI.Text(new Binding("text")).fg(new Binding("color")),
 		);
 	}
-	let view = MyLabel().build();
+	let view = MyText().build();
 	renderTestView(view);
 	await expectOutputAsync({
-		type: "label",
+		type: "text",
 		text: "Foo",
 		styles: {
 			textColor: UI.colors.blue,

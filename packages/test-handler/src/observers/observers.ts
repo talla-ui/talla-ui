@@ -2,24 +2,24 @@ import {
 	UIButton,
 	UICell,
 	UIContainer,
-	UIImage,
-	UILabel,
 	UIDivider,
+	UIImage,
 	UISpacer,
+	UIText,
 	UITextField,
 	UIToggle,
 	View,
 } from "@talla-ui/core";
+import { TestBaseObserver } from "./TestBaseObserver.js";
 import { UIButtonRenderer } from "./UIButtonRenderer.js";
 import { UICellRenderer } from "./UICellRenderer.js";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
-import { UIImageRenderer } from "./UIImageRenderer.js";
-import { UILabelRenderer } from "./UILabelRenderer.js";
 import { UIDividerRenderer } from "./UIDividerRenderer.js";
+import { UIImageRenderer } from "./UIImageRenderer.js";
 import { UISpacerRenderer } from "./UISpacerRenderer.js";
 import { UITextFieldRenderer } from "./UITextFieldRenderer.js";
+import { UITextRenderer } from "./UITextRenderer.js";
 import { UIToggleRenderer } from "./UIToggleRenderer.js";
-import { TestBaseObserver } from "./TestBaseObserver.js";
 
 /** @internal */
 export function makeObserver(target: View): TestBaseObserver<any> | undefined {
@@ -28,8 +28,8 @@ export function makeObserver(target: View): TestBaseObserver<any> | undefined {
 			? new UICellRenderer(target)
 			: target instanceof UIContainer
 				? new UIContainerRenderer(target)
-				: target instanceof UILabel
-					? new UILabelRenderer(target)
+				: target instanceof UIText
+					? new UITextRenderer(target)
 					: target instanceof UIButton
 						? new UIButtonRenderer(target)
 						: target instanceof UIImage

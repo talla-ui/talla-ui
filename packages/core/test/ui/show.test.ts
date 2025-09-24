@@ -16,9 +16,9 @@ import {
 	UI,
 	UICell,
 	UIColumn,
-	UILabel,
 	UIRow,
 	UIShowView,
+	UIText,
 	UITextField,
 } from "../../dist/index.js";
 
@@ -107,7 +107,7 @@ test("Rendering content using bound state", async () => {
 			condition = false;
 		}
 		return ComponentViewBuilder(TestView, (v) =>
-			UI.Cell(UI.ShowWhen(v.bind("condition"), UI.Label("foo"))),
+			UI.Cell(UI.ShowWhen(v.bind("condition"), UI.Text("foo"))),
 		);
 	}
 
@@ -118,17 +118,17 @@ test("Rendering content using bound state", async () => {
 	console.log("Rendering view");
 	renderTestView(testView);
 
-	// after rendering, there should be a cell but no label
-	console.log("Checking for cell but no label");
+	// after rendering, there should be a cell but no text
+	console.log("Checking for cell but no text");
 	let expectCell = await expectOutputAsync({ type: "cell" });
 	expectCell.containing({ text: "foo" }).toBeEmpty();
 
-	// when condition becomes true, label should be rendered
+	// when condition becomes true, text should be rendered
 	console.log("Setting state to true");
 	testView.condition = true;
 	await expectOutputAsync({ text: "foo" });
 
-	// when condition becomes false, label should be removed
+	// when condition becomes false, text should be removed
 	console.log("Setting state to false");
 	testView.condition = false;
 	expectCell = await expectOutputAsync({ type: "cell" });
@@ -136,17 +136,17 @@ test("Rendering content using bound state", async () => {
 });
 
 test("Set inserted view and render", async () => {
-	let myCell = UI.Cell(UI.Label("foo"));
+	let myCell = UI.Cell(UI.Text("foo"));
 	let viewRenderer = new UIShowView();
 	viewRenderer.insert = myCell.build();
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ text: "foo" });
-	expect(viewRenderer.findViewContent(UILabel)).toHaveLength(1);
+	expect(viewRenderer.findViewContent(UIText)).toHaveLength(1);
 });
 
 test("Change inserted view after rendering", async () => {
-	let myCell1 = UI.Cell(UI.Label("foo"));
-	let myCell2 = UI.Cell(UI.Label("bar"));
+	let myCell1 = UI.Cell(UI.Text("foo"));
+	let myCell2 = UI.Cell(UI.Text("bar"));
 	let viewRenderer = new UIShowView();
 	viewRenderer.insert = myCell1.build();
 	renderTestView(viewRenderer);
@@ -156,7 +156,7 @@ test("Change inserted view after rendering", async () => {
 });
 
 test("Unlink inserted view after rendering", async () => {
-	let myCell = UI.Cell(UI.Label("foo"));
+	let myCell = UI.Cell(UI.Text("foo"));
 	let viewRenderer = new UIShowView();
 	viewRenderer.insert = myCell.build();
 	renderTestView(viewRenderer);
@@ -175,12 +175,12 @@ test("Rendering self as inserted view fails silently", async () => {
 });
 
 test("Rendering parent as inserted view fails silently", async () => {
-	let parent = UI.Cell(UI.Label("foo")).build();
+	let parent = UI.Cell(UI.Text("foo")).build();
 	let viewRenderer = new UIShowView();
 	parent.content.add(viewRenderer);
 	viewRenderer.insert = parent;
 	renderTestView(parent);
-	await expectOutputAsync({ text: "foo" }); // label rendered, no errors
+	await expectOutputAsync({ text: "foo" }); // text rendered, no errors
 });
 
 test("Set inserted view using component view, and render", async () => {
@@ -190,7 +190,7 @@ test("Set inserted view using component view, and render", async () => {
 			text = StringConvertible.EMPTY;
 		}
 		return {
-			...ComponentViewBuilder(MyContentView, (v) => UI.Label(v.bind("text"))),
+			...ComponentViewBuilder(MyContentView, (v) => UI.Text(v.bind("text"))),
 			text(text: StringConvertible) {
 				this.initializer.set("text", text);
 				return this;

@@ -8,7 +8,7 @@ import {
 import { StringConvertible } from "@talla-ui/util";
 import { applyStyles } from "../DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
-import { setTextOrHtmlContent } from "./UILabelRenderer.js";
+import { setTextOrHtmlContent } from "./UITextRenderer.js";
 
 interface HrefNavigationContext extends NavigationContext {
 	getPathHref(path?: StringConvertible): string | undefined;

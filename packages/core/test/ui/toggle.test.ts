@@ -16,25 +16,25 @@ beforeEach(() => {
 	useTestContext();
 });
 
-test("Constructor with label", () => {
+test("Constructor with text", () => {
 	let tf = new UIToggle("foo");
-	expect(tf).toHaveProperty("label", "foo");
+	expect(tf).toHaveProperty("text", "foo");
 });
 
-test("Constructor with label and value", () => {
+test("Constructor with text and value", () => {
 	let tf = new UIToggle("Accept terms", true);
-	expect(tf.label).toBe("Accept terms");
+	expect(tf.text).toBe("Accept terms");
 	expect(tf.value).toBe(true);
 });
 
 test("View builder with properties", () => {
 	let myToggle = UI.Toggle("foo").value(true);
 	let toggle = myToggle.build();
-	expect(toggle).toHaveProperty("label", "foo");
+	expect(toggle).toHaveProperty("text", "foo");
 	expect(toggle).toHaveProperty("value", true);
 });
 
-test("Rendered with label", async () => {
+test("Rendered with text", async () => {
 	renderTestView(new UIToggle("foo", true));
 	await expectOutputAsync({
 		text: "foo",

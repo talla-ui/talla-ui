@@ -13,8 +13,8 @@ import {
 	FormState,
 	ObservableEvent,
 	UI,
-	UILabel,
 	UIRow,
+	UIText,
 	UITextField,
 	ViewBuilder,
 } from "../../dist/index.js";
@@ -145,7 +145,7 @@ test("Component view, binding to value and error", () => {
 
 	UI.Toggle()
 		.accessibleRole("checkbox")
-		.label("Foo")
+		.text("Foo")
 		.borderRadius(10)
 		.accessibleLabel("Foo")
 		.bold();
@@ -156,7 +156,7 @@ test("Component view, binding to value and error", () => {
 	const MyComp = () =>
 		ComponentViewBuilder(FormView, (v) =>
 			UI.Row(
-				UI.Label(v.bind("form.errors.foo")),
+				UI.Text(v.bind("form.errors.foo")),
 				UI.TextField().formStateValue(v.bind("form"), "foo"),
 			),
 		);
@@ -165,21 +165,21 @@ test("Component view, binding to value and error", () => {
 	expect(view).toHaveProperty("form");
 	view.render((() => {}) as any); // force render to get reference to body
 	let row = (view as any).body as UIRow;
-	let [label, tf] = row.content.toArray() as [UILabel, UITextField];
+	let [text, tf] = row.content.toArray() as [UIText, UITextField];
 	view.form = ctx;
 
 	// set and check text field
 	expect(tf.value).toBe("bar");
 	ctx.set("foo", 123);
 	expect(tf.value).toBe("123");
-	expect(label.text).toBe(undefined);
+	expect(text.text).toBe(undefined);
 
-	// set invalid (using text box), validate, and check label
+	// set invalid (using text box), validate, and check text
 	tf.value = "1";
 	tf.emit("Change");
 	expect(ctx.validate(), "validate() result").toBeUndefined();
 	expect(ctx.errors, "form errors").toHaveProperty("foo");
-	expect(String(label.text)).toBe(ERR);
+	expect(String(text.text)).toBe(ERR);
 });
 
 test("Custom form container, rendered", async () => {

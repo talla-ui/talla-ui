@@ -66,8 +66,8 @@ import type { FooActivity } from "./FooActivity.js";
 
 export function FooView(v: Binding<FooActivity>) {
 	return UI.Column.align("center").with(
-		UI.Label("Counter").labelStyle("title"),
-		UI.Label(v.bind("count")).fontSize(24),
+		UI.Text("Counter").textStyle("title"),
+		UI.Text(v.bind("count")).fontSize(24),
 		UI.Row(
 			// Don't include complex event handling in the view, emit named events instead
 			UI.Button("Up").icon("plus").onClick("CountUp"),
@@ -464,15 +464,15 @@ Bindings can be created using the `new Binding(...)` constructor, which creates 
 import { Binding, UI } from "talla-ui";
 
 // Simple bindings
-UI.Label(new Binding("count")); // binds the label text
-UI.Label(new Binding("customer.contracts.length")); // nested property
-UI.Label("Active").hideWhen(new Binding("isActive"));
-UI.Label("Inactive").hideWhen(new Binding("isActive").not());
+UI.Text(new Binding("count")); // binds the text
+UI.Text(new Binding("customer.contracts.length")); // nested property
+UI.Text("Active").hideWhen(new Binding("isActive"));
+UI.Text("Inactive").hideWhen(new Binding("isActive").not());
 
 // Binding provided to activity view function
 class MyActivity extends Activity {
 	static override View(v: Binding<MyActivity>) {
-		return UI.Label(v.bind("count"));
+		return UI.Text(v.bind("count"));
 	}
 	// ...
 }
@@ -483,7 +483,7 @@ function SomeComponent() {
 		// ...
 	}
 	return ComponentViewBuilder(SomeComponentView, (v) =>
-		UI.Label(v.bind("count")),
+		UI.Text(v.bind("count")),
 	);
 }
 
@@ -498,33 +498,33 @@ UI.ShowWhen(
 );
 
 // and, or, matches methods for multiple bindings
-UI.Label("...").hideWhen(v.bind("foo").and(v.bind("bar"))); // .foo && .bar
-UI.Label("...").hideWhen(v.bind("foo").or(v.bind("bar"))); // .foo || .bar
-UI.Label("...").hideWhen(v.bind("foo").matches(v.bind("bar"))); // .foo === .bar
+UI.Text("...").hideWhen(v.bind("foo").and(v.bind("bar"))); // .foo && .bar
+UI.Text("...").hideWhen(v.bind("foo").or(v.bind("bar"))); // .foo || .bar
+UI.Text("...").hideWhen(v.bind("foo").matches(v.bind("bar"))); // .foo === .bar
 
 // map transforms the bound value
-UI.Label(v.bind("foo").map((v) => v.toUpperCase())); // .foo.toUpperCase()
-UI.Label("...").labelStyle(
+UI.Text(v.bind("foo").map((v) => v.toUpperCase())); // .foo.toUpperCase()
+UI.Text("...").textStyle(
 	v.bind("isActive").map((v) => (v ? undefined : { bold: true })),
 );
 
 // equals, lt, gt, then, else are shortcuts for map
-UI.Label("...").hideWhen(v.bind("foo").equals(5)); // .foo === 5
-UI.Label("...").hideWhen(v.bind("foo").lt(5)); // .foo < 5
-UI.Label("...").hideWhen(v.bind("foo").gt(5)); // .foo > 5
-UI.Label("...").fontSize(v.bind("isActive").then(24)); // .isActive ? 24 : undefined
-UI.Label("...").labelStyle(v.bind("isActive").then(undefined, { bold: true }));
-UI.Label(v.bind("title").else(fmt("Untitled"))); // .title || fmt("Untitled")
+UI.Text("...").hideWhen(v.bind("foo").equals(5)); // .foo === 5
+UI.Text("...").hideWhen(v.bind("foo").lt(5)); // .foo < 5
+UI.Text("...").hideWhen(v.bind("foo").gt(5)); // .foo > 5
+UI.Text("...").fontSize(v.bind("isActive").then(24)); // .isActive ? 24 : undefined
+UI.Text("...").textStyle(v.bind("isActive").then(undefined, { bold: true }));
+UI.Text(v.bind("title").else(fmt("Untitled"))); // .title || fmt("Untitled")
 
 // string formatting
-UI.Label(v.bind("total").fmt("{:.2f}"));
-UI.Label(v.bind("date").fmt("{:Ldate}"));
+UI.Text(v.bind("total").fmt("{:.2f}"));
+UI.Text(v.bind("date").fmt("{:Ldate}"));
 
 // Localizable/dynamically formatted text bindings
-UI.Label.fmt("foo {} {}", v.bind("bar"), v.bind("baz"));
-// ^^ same as UI.Label(Binding.fmt("foo {}", v.bind("bar"), v.bind("baz")))
-UI.Label.fmt("Customer {:?/active/inactive}", v.bind("customer.isActive"));
-UI.Label.fmt("{:Ldate}", v.bind("date"));
+UI.Text.fmt("foo {} {}", v.bind("bar"), v.bind("baz"));
+// ^^ same as UI.Text(Binding.fmt("foo {}", v.bind("bar"), v.bind("baz")))
+UI.Text.fmt("Customer {:?/active/inactive}", v.bind("customer.isActive"));
+UI.Text.fmt("{:Ldate}", v.bind("date"));
 ```
 
 ## Observable Objects
@@ -571,7 +571,7 @@ console.log(model.isUnlinked()); // true
 
 ## Observable Lists
 
-Because arrays in JavaScript are unsuitable for UI work (not easily observed, may contain duplicates, gaps, etc.), Tälla UI provides an `ObservableList` class. This class encapsulates a linked list of observable objects (i.e. instances of `ObservableObject`, `ObservableList` itself, or sub classes such as `Activity` or `UILabel`).
+Because arrays in JavaScript are unsuitable for UI work (not easily observed, may contain duplicates, gaps, etc.), Tälla UI provides an `ObservableList` class. This class encapsulates a linked list of observable objects (i.e. instances of `ObservableObject`, `ObservableList` itself, or sub classes such as `Activity` or `UIText`).
 
 This construct is key to Tälla UI's application model, storing activities and views in a tree structure of (attached) observable objects and lists, propagating events and bindings.
 
@@ -761,16 +761,16 @@ The `FormState` class is used to store form data and validation errors. UI input
 ```typescript
 // ... in a view:
 UI.Column(
-	UI.Label.fmt("User name").dim().padding({ y: 4 }).onClick("RequestFocusNext"),
+	UI.Text.fmt("User name").dim().padding({ y: 4 }).onClick("RequestFocusNext"),
 	UI.TextField().formStateValue(v.bind("form"), "userName"),
-	UI.Label(v.bind("form.errors.userName"))
+	UI.Text(v.bind("form.errors.userName"))
 		.hideWhen(v.bind.not("form.errors.userName"))
 		.fg("danger"),
 
 	UI.Spacer(8),
-	UI.Label.fmt("Password").dim().padding({ y: 4 }).onClick("RequestFocusNext"),
+	UI.Text.fmt("Password").dim().padding({ y: 4 }).onClick("RequestFocusNext"),
 	UI.TextField().type("password").formStateValue(v.bind("form"), "password"),
-	UI.Label(v.bind("form.errors.password"))
+	UI.Text(v.bind("form.errors.password"))
 		.hideWhen(v.bind.not("form.errors.password"))
 		.fg("danger"),
 
@@ -839,7 +839,7 @@ export function CardLayout(title: StringConvertible) {
 				.borderRadius(16)
 				.padding(16)
 				.gap()
-				.with(UI.Label(title).labelStyle("title"), ...content),
+				.with(UI.Text(title).textStyle("title"), ...content),
 		),
 		with(...cardContent: ViewBuilder[]) {
 			content = cardContent;
@@ -850,7 +850,7 @@ export function CardLayout(title: StringConvertible) {
 
 // Use within a view
 CardLayout("Options").with(
-	UI.Label("Option 1"),
+	UI.Text("Option 1"),
 	// ...
 );
 ```
@@ -876,7 +876,7 @@ export function Collapsible(
 	return {
 		...ComponentViewBuilder(CollapsibleView, (v) =>
 			UI.Column(
-				UI.Label(title)
+				UI.Text(title)
 					.icon(v.bind("expanded").then("chevronDown", "chevronNext"))
 					.cursor("pointer")
 					.onClick("Toggle"),
@@ -1028,8 +1028,8 @@ test("...", async () => {
 	// Expect some output to be rendered; all properties optional
 	await expectOutputAsync({
 		source: someView, // view instance itself
-		type: "label", // or "textfield", "button", etc.
-		name: "someLabel",
+		type: "text", // or "textfield", "button", etc.
+		name: "someName",
 		accessibleRole: "...",
 		accessibleLabel: "...",
 		text: "Some text",
@@ -1120,7 +1120,7 @@ let boldOverride = italicOnHover.override({ bold: true });
 UI.Button("Bolder").buttonStyle({ bold: true });
 
 // Available properties:
-let myLabelStyle = UI.styles.label.title.extend({
+let myTextStyle = UI.styles.text.title.extend({
 	width: 100, // or "100%", other CSS values
 	height: 100, // or "100%"
 	minWidth: 100, // and maxWidth, minHeight, maxHeight
@@ -1185,16 +1185,16 @@ UI.colors.accent; // defaults to black/white, but often distinctive like blue
 UI.Button("Close").icon(UI.icons.close);
 UI.Button("Close").icon("close");
 
-// ### Label styles:
+// ### Text element styles:
 // body (default), large, title, headline, caption,
-// badge, successBadge, dangerBadge, toggleLabel
-UI.Label("Title").labelStyle(UI.styles.label.title);
-UI.Label("Title").labelStyle("title");
+// badge, successBadge, dangerBadge, toggleText
+UI.Text("Title").textStyle(UI.styles.text.title);
+UI.Text("Title").textStyle("title");
 
 // ### Button styles:
 // default, accent, success, danger, ghost, text, link, small,
 // Fixed size: icon, dangerIcon,
-// Icon placed above label: iconTop, iconTopStart, iconTopEnd
+// Icon placed above text: iconTop, iconTopStart, iconTopEnd
 UI.Button("Click").buttonStyle("accent");
 UI.Button("Click").buttonStyle(UI.styles.button.accent);
 
@@ -1222,7 +1222,7 @@ Simple responsive design can be achieved using the UI.viewport binding and its p
 
 ```typescript
 // Switch row to column when viewport is narrow
-UI.Row(UI.Label("1"), UI.Label("2")).layout(
+UI.Row(UI.Text("1"), UI.Text("2")).layout(
 	UI.viewport.bind("cols").lt(2).then({ axis: "vertical" }),
 );
 
@@ -1241,7 +1241,7 @@ Positioning and layout mostly follow 'flexbox' principles.
 Try to position elements using padding and spacers whenever possible, rather than margin. For advanced positioning, use `position`.
 
 ```typescript
-UI.Label("...")
+UI.Text("...")
 	.position("start") // align self to 'start' along cross-axis
 	.position("stretch") // align 'stretch', default for containers
 	.position("start", 8) // same, with top: 8px
@@ -1252,7 +1252,7 @@ UI.Label("...")
 
 ## UI Elements
 
-Primary building blocks for UIs are provided by the following classes: `UIElement` (abstract), `UIContainer` (abstract), `UIColumn`, `UIRow`, `UICell`, `UIScrollView`, `UIButton`, `UILabel`, `UITextField`, `UIToggle`, `UIImage`, `UIDivider`, and `UISpacer`. That's all, there are no other UI elements that are rendered directly.
+Primary building blocks for UIs are provided by the following classes: `UIElement` (abstract), `UIContainer` (abstract), `UIColumn`, `UIRow`, `UICell`, `UIScrollView`, `UIButton`, `UIText`, `UITextField`, `UIToggle`, `UIImage`, `UIDivider`, and `UISpacer`. That's all, there are no other UI elements that are rendered directly.
 
 In addition, the `UIShowView` and `UIListView` classes control embedded views.
 
@@ -1261,7 +1261,7 @@ Functions to create view builders are provided by `UI`, e.g. `UI.Row()`. View bu
 All UI builders for containers and controls support basic methods for styling and event handling:
 
 ```typescript
-UI.Label() // ... or UI.Button, UI.TextField, UI.Row, etc.
+UI.Text() // ... or UI.Button, UI.TextField, UI.Row, etc.
 	.accessibleRole("listitem") // WAI-ARIA role
 	.accessibleLabel("Item 1") // WAI-ARIA label
 	.hideWhen(v.bind("isInactive")) // hide (but still render)
@@ -1316,8 +1316,8 @@ Alternatively use a 'cell', which is an automatically growing container element 
 Content in cells is centered in both directions. Columns place items from top to bottom, rows from left to right. Most controls attempt to stretch in the cross-axis. Use spacers to push content, or use `align()`.
 
 ```typescript
-UI.Row(UI.Label("1"), UI.Label("2")); // includes default gap (8px)
-UI.Row(UI.Label("1"), UI.Label("2")).gap(0); // or any other gap, or none
+UI.Row(UI.Text("1"), UI.Text("2")); // includes default gap (8px)
+UI.Row(UI.Text("1"), UI.Text("2")).gap(0); // or any other gap, or none
 UI.Row()
 	.align("center") // or "end", "start", "space-between", "space-around"
 	.align("space-between", "center") // second is vertical alignment
@@ -1340,15 +1340,15 @@ UI.Cell()
 // Use .with() to turn around method chaining (preferred style)
 UI.Row().gap(0).minHeight(64).with(
 	// better if content spans multiple lines
-	UI.Label("1"),
-	UI.Label("2"),
+	UI.Text("1"),
+	UI.Text("2"),
 );
 UI.Column()
 	.gap(8) // columns have no default gap
 	.width(480)
 	.border(1, "divider")
 	.divider()
-	.with(UI.Label("1"), UI.Label("2"));
+	.with(UI.Text("1"), UI.Text("2"));
 ```
 
 ## Scroll Containers
@@ -1370,10 +1370,10 @@ UI.Column()
 
 ## Controls
 
-Controls in a row stretch/center vertically, but not horizontally. Buttons and text fields have a minimum width (except text/link/icon buttons) but labels don't. Use `minWidth` or `grow` within a row where needed.
+Controls in a row stretch/center vertically, but not horizontally. Buttons and text fields have a minimum width (except text/link/icon buttons) but text elements don't. Use `minWidth` or `grow` within a row where needed.
 
 ```typescript
-UI.Button("Label text");
+UI.Button("Name");
 UI.Button.fmt("Localized and formatted {}", v.bind("text"));
 UI.Button()
 	.icon("plus") // theme icon name
@@ -1414,14 +1414,14 @@ UI.Button() // Dropdown menu icon button
 		]),
 	);
 
-UI.Label("...") // or UI.Label.fmt("..." [, bindings])
+UI.Text("...") // or UI.Text.fmt("..." [, bindings])
 	.icon("plus") // same as UI.Button.icon()
 	.align("center") // alignment within element (useful within column only)
 	.center()
 	.wrap() // sets lineBreakMode to "pre-wrap"
 	.html(v.bind("description"))
-	.selectable() // label text is NOT selectable by default
-	.labelStyle("badge") // or UIStyle instance, overrides, or binding
+	.selectable() // text is NOT selectable by default
+	.textStyle("badge") // or UIStyle instance, overrides, or binding
 	.allowFocus()
 	.allowKeyboardFocus();
 
@@ -1439,13 +1439,13 @@ UI.TextField("Placeholder") // or UI.TextField.fmt("..." [, bindings])
 	.textfieldStyle("ghost") // or UIStyle instance, overrides, or binding
 	.onInput("EmailInput"); // intercept Input
 
-UI.Toggle("Label text") // or UI.Toggle.fmt("..." [, bindings])
+UI.Toggle("Name") // or UI.Toggle.fmt("..." [, bindings])
 	.type("checkbox") // or "switch", or "none"
 	.value(true) // or binding
 	.formStateValue(v.bind("form"), "isActive")
 	.disabled() // or .disabled(binding)
 	.toggleStyle("danger") // or UIStyle instance, overrides, or binding
-	.labelStyle({ bold: true }) // or binding
+	.textStyle({ bold: true }) // or binding
 	.onChange("Toggle"); // intercept Change
 
 UI.Image("...") // URL or UIIconResource, or binding
@@ -1487,8 +1487,8 @@ Use `.hideWhen(binding)` to hide a single element on the fly. Use `UI.ShowWhen(b
 Note that `UI.Show(binding)` can also be used to render outside views (nested activities). If the bound value is undefined, the view is simply not rendered.
 
 ```typescript
-UI.Label(v.bind("messages.length"))
-	.labelStyle("badge")
+UI.Text(v.bind("messages.length"))
+	.textStyle("badge")
 	.hideWhen(v.bind.not("messages.length"));
 
 UI.ShowWhen(v.bind("selectedCustomer"), UI.Column(/* complex view */));
@@ -1521,16 +1521,16 @@ UI.List(v.bind("customers"))
 	.outer(UI.Column().divider().scroll().border(1, "divider").height(240))
 	.addSpacer() // this also adds a divider below the last item
 	.renderOptions({ async: true, delayEach: 100 }) // animate rendering
-	.emptyState(UI.Label("No people").center().padding({ y: 64 }))
+	.emptyState(UI.Text("No people").center().padding({ y: 64 }))
 	.with((item) =>
 		// Evaluated only once, views built for all items
 		UI.Row()
 			.cursor("pointer")
 			.onClick("SelectItem")
 			.with(
-				UI.Label(item.bind("name")).padding(),
-				UI.Label("Inactive")
-					.labelStyle("dangerBadge")
+				UI.Text(item.bind("name")).padding(),
+				UI.Text("Inactive")
+					.textStyle("dangerBadge")
 					.shrink(false),
 					.hideWhen(item.bind.not("inactive")),
 				UI.Spacer(),

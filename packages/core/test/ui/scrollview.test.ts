@@ -4,13 +4,7 @@ import {
 	useTestContext,
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
-import {
-	UILabel,
-	UIScrollView,
-	UI,
-	UIColumn,
-	UIRow,
-} from "../../dist/index.js";
+import { UI, UIColumn, UIRow, UIScrollView, UIText } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
@@ -18,7 +12,7 @@ beforeEach(() => {
 
 test("Constructor", () => {
 	let scrollView = new UIScrollView();
-	scrollView.content.add(new UILabel("foo"));
+	scrollView.content.add(new UIText("foo"));
 	expect(scrollView.horizontalScroll).toBe(true);
 	expect(scrollView.verticalScroll).toBe(true);
 	expect(scrollView.content).toHaveProperty("length", 1);
@@ -38,13 +32,13 @@ test("Scroll target events", () => {
 
 test("Rendered as container", async () => {
 	let scrollView = new UIScrollView();
-	scrollView.content.add(new UILabel("foo"));
+	scrollView.content.add(new UIText("foo"));
 	renderTestView(scrollView);
 	await expectOutputAsync({ type: "container" }, { text: "foo" });
 });
 
 test("View builder with properties", () => {
-	let myScrollView = UI.Column(UI.Label("content"))
+	let myScrollView = UI.Column(UI.Text("content"))
 		.scroll()
 		.horizontalScroll(false)
 		.verticalScroll(true)
@@ -61,7 +55,7 @@ test("View builder with properties", () => {
 });
 
 test("Scrollable row with content", () => {
-	let myScrollView = UI.Row(UI.Label("A"), UI.Label("B")).scroll();
+	let myScrollView = UI.Row(UI.Text("A"), UI.Text("B")).scroll();
 	let scrollView = myScrollView.build();
 	expect(scrollView.content).toHaveProperty("length", 1);
 	let row = scrollView.content.first() as UIRow;
@@ -70,15 +64,15 @@ test("Scrollable row with content", () => {
 });
 
 test("Adding content to container using scroll builder with()", () => {
-	let myScrollView = UI.Column().scroll().with(UI.Label("Added content"));
+	let myScrollView = UI.Column().scroll().with(UI.Text("Added content"));
 	let scrollView = myScrollView.build();
 	expect(scrollView.content).toHaveProperty("length", 1);
 	let column = scrollView.content.first() as UIColumn;
-	expect(column.content.first()).toBeInstanceOf(UILabel);
+	expect(column.content.first()).toBeInstanceOf(UIText);
 });
 
 test("Rendered scrollable column", async () => {
-	let myScrollView = UI.Column(UI.Label("Scrollable content")).scroll();
+	let myScrollView = UI.Column(UI.Text("Scrollable content")).scroll();
 	renderTestView(myScrollView.build());
 	await expectOutputAsync(
 		{ type: "container" },
@@ -88,7 +82,7 @@ test("Rendered scrollable column", async () => {
 });
 
 test("Rendered scrollable row", async () => {
-	let myScrollView = UI.Row(UI.Label("A"), UI.Label("B")).scroll();
+	let myScrollView = UI.Row(UI.Text("A"), UI.Text("B")).scroll();
 	renderTestView(myScrollView.build());
 	await expectOutputAsync(
 		{ type: "container" },

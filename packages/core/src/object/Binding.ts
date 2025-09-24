@@ -43,11 +43,11 @@ export namespace BindingOrValue {
  *
  * Instead of a single source property, bindings can also specify a source property 'path' using dots to separate property names: a path of `p.foo.bar` first watches `p`, then (if `p` refers to an object) its property `foo`, and so on — going first _up_ the tree structure to find the object containing `p`, and then down again to find the rest.
  *
- * As a concrete example, a binding can be used to update the `text` property of a {@link UILabel} view, with the value of a string property `labelText` of the activity. Or perhaps the property `name` of a `user` object referenced by the activity (see example below). Whenever the data in the activity changes, so does the label text.
+ * As a concrete example, a binding can be used to update the `text` property of a {@link UIText} view, with the value of a string property `someText` of the activity. Or perhaps the property `name` of a `user` object referenced by the activity (see example below). Whenever the data in the activity changes, so does the text.
  *
  * **Creating bindings** — To create a binding, use the {@link Binding} constructor to bind a single property, use the {@link Binding.either()} or {@link Binding.neither()} methods to combine bindings, or use the {@link Binding.fmt()} function to bind a string composed using a format string and one or more embedded bindings.
  *
- * **Applying bindings** — To use a binding, pass it to a UI view builder function, e.g. `UI.Label(bind("labelText"))`. To apply a binding to any other observable object directly, use the {@link ObservableObject.observe()} method.
+ * **Applying bindings** — To use a binding, pass it to a UI view builder function, e.g. `UI.Text(v.bind("someText"))`. To apply a binding to any other observable object directly, use the {@link ObservableObject.observe()} method.
  *
  * **Adding transformations** — To convert the value of the original property, or to combine multiple bindings using boolean operations (and/or), use one of the Binding methods such as {@link Binding.map map()} and {@link Binding.or or()}.
  *
@@ -420,8 +420,8 @@ Binding.prototype.isBinding = _isBinding;
  * )
  *
  * @example
- * // A label with bound text
- * UI.Label(bind.fmt("Welcome, {}", v.bind("user.fullName")))
+ * // A text element with bound text
+ * UI.Text(bind.fmt("Welcome, {}", v.bind("user.fullName")))
  */
 export class StringFormatBinding extends Binding<DeferredString> {
 	/**

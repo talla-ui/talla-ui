@@ -79,9 +79,9 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 		...defaultStyles.button,
 		...options.buttonStyles,
 	});
-	UIStyle.theme.label.set({
-		...defaultStyles.label,
-		...options.labelStyles,
+	UIStyle.theme.text.set({
+		...defaultStyles.text,
+		...options.textStyles,
 	});
 	UIStyle.theme.image.set({
 		...defaultStyles.image,
