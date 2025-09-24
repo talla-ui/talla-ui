@@ -401,7 +401,7 @@ export class SubActivity extends Activity {
 	created = new Date();
 
 	activeCount = this.createActiveState(
-		[Binding.withProperty(this, "countService")],
+		["countService"],
 		async (): Promise<{
 			service: CountService;
 			changes: number;
@@ -411,17 +411,13 @@ export class SubActivity extends Activity {
 				countIsNonZero?: boolean;
 			};
 		}> => {
+			console.log("countService updated");
 			let changes: number = this.activeCount.changes || 0;
 			return {
 				service: this.countService,
 				changes: changes + 1,
 				state: this.createActiveState(
-					[
-						Binding.withProperty<SubActivity, "activeCount">(
-							this,
-							"activeCount",
-						).bind("service.count"),
-					],
+					["activeCount.service.count"],
 					(count) => {
 						console.log("activeCount.state updated", count);
 						return {
@@ -433,9 +429,12 @@ export class SubActivity extends Activity {
 				),
 			};
 		},
-	);
+	).watch(["countService"], (service: CountService) => {
+		console.log("countService changed here too:", service);
+		return { updated: true };
+	});
 
-	fooState = this.createActiveState([new Binding("foo")], () => {
+	fooState = this.createActiveState(["foo"], () => {
 		return { foo: this.foo };
 	});
 	foo = "bar";

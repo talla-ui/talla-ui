@@ -415,57 +415,19 @@ export class Activity extends ObservableObject {
 	 * - The state object is updated using the provided update function, which is called with the current values of the observed objects or bindings.
 	 * - Nested state objects are automatically unlinked when the property referencing them is overwritten.
 	 * - Additional objects or bindings can be observed, updating the same state object, using the `watch` method on the resulting state object.
-	 * @param observe An array of objects or bindings to observe
+	 * @param observe An array of objects, or strings to create bindings to observe
 	 * @param update A function that's called with the current values of the observed objects or bindings, and should return updated state object property values
 	 * @returns The resulting active state object
 	 */
 	protected createActiveState<T extends Record<string, any>>(
-		observe: (ObservableObject | Binding)[],
+		observe: (string | Binding | ObservableObject)[],
 		update: (...args: any[]) => T | Promise<T>,
 	): Activity.ActiveStateObject & Partial<T> {
-		const activity = this;
-		const queue = this.createActiveTaskQueue();
-		const object = new ObservableObject() as any;
-		(object.watch = watch as any).activity = this;
-		function watch(
-			observe: (ObservableObject | Binding)[],
-			update: (...args: any[]) => any,
-		) {
-			// start observing given objects or bindings, async
-			let scheduled = false;
-			let values: any[] = [];
-			queue.add(async () =>
-				observe.forEach((o, i) =>
-					object.observe(o as any, (value: any) => {
-						values[i] = value;
-
-						// run update async and add properties to object
-						if (scheduled) return;
-						scheduled = true;
-						queue.add(async () => {
-							if (object.isUnlinked()) return;
-							scheduled = false;
-							let data = await update(...values);
-							let added = false;
-							for (let key in data) {
-								let old = object[key];
-								if (old !== data[key]) {
-									if (!(key in object)) added = true;
-									object[key] = data[key];
-									if (old?.watch?.activity === activity) {
-										// unlink overwritten state object
-										old.unlink();
-									}
-								}
-							}
-							if (added) object.emitChange();
-						});
-					}),
-				),
-			);
-			return object as any;
-		}
-		return this.attach(watch(observe, update));
+		let result = new Activity.ActiveStateObject(
+			this,
+			this.createActiveTaskQueue(),
+		);
+		return this.attach(result.watch(observe, update));
 	}
 
 	/** @internal Render placement options, modified using setRenderMode */
@@ -488,13 +450,65 @@ export class Activity extends ObservableObject {
 }
 
 export namespace Activity {
-	/** An active state object, the result of {@link Activity.createActiveState()} */
-	export interface ActiveStateObject extends ObservableObject {
+	/**
+	 * An active state object, the result of {@link Activity.createActiveState()}
+	 * @docgen {hideconstructor}
+	 */
+	export class ActiveStateObject extends ObservableObject {
+		/** Create a new active state object for the specified activity */
+		constructor(
+			private _activity: Activity,
+			private _queue: AsyncTaskQueue,
+		) {
+			super();
+		}
+
 		/** Observe additional objects or bindings, updating the same state object */
 		watch<T extends Record<string, any>>(
-			observe: (ObservableObject | Binding)[],
+			observe: (string | Binding | ObservableObject)[],
 			update: (...args: any[]) => T | Promise<T>,
-		): this & Partial<T>;
+		): this & Partial<T> {
+			// start observing given objects or bindings, async
+			let values: any[] = [];
+			let scheduled = false;
+			const schedule = () => {
+				scheduled = true;
+				this._queue.add(async () => {
+					if (this.isUnlinked()) return;
+					scheduled = false;
+					this._update(await update(...values));
+				});
+			};
+			this._queue.add(() =>
+				observe.forEach((o, i) =>
+					this.observe(
+						typeof o === "string" ? new Binding(o) : (o as any),
+						(value) => {
+							values[i] = value;
+							if (!scheduled) schedule();
+						},
+					),
+				),
+			);
+			return this as any;
+		}
+
+		/** Update this object using the given data */
+		private _update(data: any) {
+			let added = false;
+			for (let key in data) {
+				let old = (this as any)[key];
+				if (old !== data[key]) {
+					if (!(key in this)) added = true;
+					(this as any)[key] = data[key];
+					if (old?.watch?.activity === this._activity) {
+						// unlink overwritten state object
+						old.unlink();
+					}
+				}
+			}
+			if (added) this.emitChange();
+		}
 	}
 }
 

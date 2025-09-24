@@ -161,11 +161,11 @@ class MyActivity extends Activity {
 	// Computed state (object with the returned properties)
 	messages = this.createActiveState(
 		[
-			new Binding("filter"), // binds to an activity property
-			new Binding("messageService"), // listens for change events
-			new Binding("messageService.messages"), // nested property changes
+			"filter", // binds to an activity property
+			"messageService", // listens for change events, too
+			"messageService.messages", // nested property changes
 		],
-		(service, filter, messages) => {
+		(filter, service, messages) => {
 			// Return the computed state object
 			return {
 				visible: service.filterMessages(filter),
