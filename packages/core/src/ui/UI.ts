@@ -1,4 +1,3 @@
-import { Viewport } from "../app/index.js";
 import { Binding } from "../object/index.js";
 import { UIListView } from "./components/UIListView.js";
 import { UIShowView } from "./components/UIShowView.js";
@@ -118,6 +117,28 @@ export namespace UI {
 		export type DividerStyleName = keyof typeof divider;
 	}
 
-	/** A binding that refers to the current viewport object */
-	export const viewport = new Binding<Viewport>("appContext.viewport");
+	/** Object containing bindings to viewport properties */
+	export namespace viewport {
+		/** Binding to the viewport width in logical pixel units */
+		export const width = new Binding<number>("appContext.viewport.width");
+
+		/** Binding to the viewport height in logical pixel units */
+		export const height = new Binding<number>("appContext.viewport.height");
+
+		/** Binding that is true if the viewport is taller than it is wide */
+		export const portrait = new Binding<boolean>(
+			"appContext.viewport.portrait",
+		);
+
+		/** Binding to the number of columns in the viewport grid */
+		export const cols = new Binding<number>("appContext.viewport.cols");
+
+		/** Binding to the number of rows in the viewport grid */
+		export const rows = new Binding<number>("appContext.viewport.rows");
+
+		/** Binding that is true if the user's preferences indicate a dark color scheme */
+		export const prefersDark = new Binding<boolean>(
+			"appContext.viewport.prefersDark",
+		);
+	}
 }

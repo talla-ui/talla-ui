@@ -1216,18 +1216,16 @@ UI.Divider().dividerStyle(UI.styles.divider.dashed);
 
 ## Responsive Design
 
-The renderer maintains a viewport object with information about the current window size, using a grid of columns and rows (defaults to 300×300 pixels).
-
-Simple responsive design can be achieved using the UI.viewport binding and its properties.
+The renderer maintains a viewport object with information about the current window size, using a grid of columns and rows (defaults to 300×300 pixels). Bindings are available from `UI.viewport`, including `width`, `height`, `cols`, and `rows` (based on a grid that defaults to 300px, i.e. a phone is 1 column wide, a tablet 2 or 3, etc.).
 
 ```typescript
 // Switch row to column when viewport is narrow
 UI.Row(UI.Text("1"), UI.Text("2")).layout(
-	UI.viewport.bind("cols").lt(2).then({ axis: "vertical" }),
+	UI.viewport.cols.lt(2).then({ axis: "vertical" }),
 );
 
 // Show an element only on wide viewports
-UI.ShowWhen(UI.viewport.bind("cols").gt(2), someComplexView);
+UI.ShowWhen(UI.viewport.cols.gt(2), someComplexView);
 ```
 
 ## Positioning and Layout
@@ -1322,7 +1320,7 @@ UI.Row()
 	.align("center") // or "end", "start", "space-between", "space-around"
 	.align("space-between", "center") // second is vertical alignment
 	.reverse() // or ...
-	.reverse(UI.viewport.bind("cols").equals(1))
+	.reverse(UI.viewport.cols.equals(1))
 	.style(myStyle) // any style or override object
 	.wrapContent() // or binding
 	.clip(); // or binding

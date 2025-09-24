@@ -1,8 +1,8 @@
 /**
- * Interface definition for an object that contains information about the user's viewport, e.g. screen or browser window
+ * Interface definition for an object that contains information about the user's viewport, i.e. screen or window
  *
  * @description
- * A viewport object is available on the global application context, as {@link AppContext.viewport app.viewport}. Properties of this instance can be bound from views, to create a responsive UI.
+ * A viewport object is available on the global application context, as {@link AppContext.viewport app.viewport}. Properties of this instance can be bound from views, to create a responsive UI, using the bindings from the {@link UI.viewport} object.
  *
  * @online_docs Refer to the online documentation for more information on responsive design and the viewport context.
  * @docgen {hideconstructor}

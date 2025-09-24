@@ -109,6 +109,7 @@ export class AppContext extends ObservableObject {
 	/**
 	 * Current viewport information, an object of type {@link Viewport}
 	 * - This property is set by the platform-specific renderer package.
+	 * - Bindings are available from the {@link UI.viewport} object, allowing you to create a UI that changes based on viewport size and orientation.
 	 */
 	viewport?: Viewport = undefined;
 

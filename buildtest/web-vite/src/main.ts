@@ -371,11 +371,7 @@ function SubView(v: Binding<SubActivity>) {
 			),
 			UI.Spacer(8),
 			UI.Text(
-				bind.fmt(
-					"Viewport: {:i}×{:i}",
-					UI.viewport.bind("width"),
-					UI.viewport.bind("height"),
-				),
+				bind.fmt("Viewport: {:i}×{:i}", UI.viewport.width, UI.viewport.height),
 			),
 			UI.Spacer(8),
 			UI.Row(
@@ -388,7 +384,7 @@ function SubView(v: Binding<SubActivity>) {
 			UI.Row(
 				UI.Button("Back").icon("chevronBack").onClick("NavigateBack"),
 				UI.Row(UI.Button("Other").navigateTo("/other").icon("chevronNext")),
-			).layout(UI.viewport.bind("cols").lt(2).then({ axis: "vertical" })),
+			).layout(UI.viewport.cols.lt(2).then({ axis: "vertical" })),
 		);
 }
 
