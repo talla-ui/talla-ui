@@ -6,7 +6,6 @@ import {
 	Activity,
 	app,
 	AppContext,
-	bind,
 	Binding,
 	BindingOrValue,
 	ComponentView,
@@ -157,7 +156,7 @@ test("Component view, binding to value and error", () => {
 	const MyComp = () =>
 		ComponentViewBuilder(FormView, (v) =>
 			UI.Row(
-				UI.Label(bind("form.errors.foo")),
+				UI.Label(v.bind("form.errors.foo")),
 				UI.TextField().formStateValue(v.bind("form"), "foo"),
 			),
 		);

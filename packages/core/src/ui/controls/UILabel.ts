@@ -1,11 +1,6 @@
 import { fmt, StringConvertible } from "@talla-ui/util";
 import { ViewBuilder } from "../../app/index.js";
-import {
-	bind,
-	Binding,
-	BindingOrValue,
-	isBinding,
-} from "../../object/index.js";
+import { Binding, BindingOrValue, isBinding } from "../../object/index.js";
 import { UIColor, UIIconResource, UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
 import { UIElement } from "../UIElement.js";
@@ -91,7 +86,7 @@ export namespace UILabel {
 	export namespace labelBuilder {
 		/**
 		 * Creates a view builder for a text label element with a localizable or dynamic text label.
-		 * @param text The text to display, passed to {@link fmt()} or {@link bind.fmt()}
+		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
 		 * @param args Additional bindings, used to format the text dynamically
 		 * @returns A builder instance for chaining.
 		 */
@@ -119,13 +114,13 @@ export namespace UILabel {
 
 		/**
 		 * Sets a localizable or dynamic text for the label.
-		 * @param text The text to display, passed to {@link fmt()} or {@link bind.fmt()}
+		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
 		 * @param args Additional bindings, used to format the text dynamically
 		 * @returns The builder instance for chaining.
 		 */
 		fmt(text: StringConvertible, ...args: Binding[]) {
 			if (args.length === 0) return this.text(fmt(text));
-			return this.text(bind.fmt(text, ...args));
+			return this.text(Binding.fmt(text, ...args));
 		}
 
 		/**

@@ -5,6 +5,7 @@ import {
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
 import {
+	Binding,
 	ComponentView,
 	ComponentViewBuilder,
 	UI,
@@ -12,7 +13,6 @@ import {
 	UILabel,
 	UIRow,
 	UIStyle,
-	bind,
 } from "../../dist/index.js";
 
 beforeEach(() => {
@@ -76,7 +76,7 @@ test("Rendered with fmt", async () => {
 			class extends ComponentView {
 				bar = "bar";
 			},
-			() => UI.Label.fmt("foo {}", bind("bar")),
+			(v) => UI.Label.fmt("foo {}", v.bind("bar")),
 		);
 	}
 	let myLabel = MyLabel().build();
@@ -188,7 +188,7 @@ test("Rendered with bound named color", async () => {
 			color = "blue";
 		}
 		return ComponentViewBuilder(MyLabelView, () =>
-			UI.Label(bind("text")).fg(bind("color")),
+			UI.Label(new Binding("text")).fg(new Binding("color")),
 		);
 	}
 	let view = MyLabel().build();

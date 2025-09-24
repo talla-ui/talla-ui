@@ -6,7 +6,6 @@ import {
 	ViewBuilder,
 } from "../../app/index.js";
 import {
-	bind,
 	Binding,
 	BindingOrValue,
 	isBinding,
@@ -93,7 +92,7 @@ export namespace UIButton {
 	export namespace buttonBuilder {
 		/**
 		 * Creates a view builder for a button element with a localizable or dynamic text label.
-		 * @param text The text to display, passed to {@link fmt()} or {@link bind.fmt()}
+		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
 		 * @param args Additional bindings, used to format the text dynamically
 		 * @returns A builder instance for chaining.
 		 */
@@ -121,13 +120,13 @@ export namespace UIButton {
 
 		/**
 		 * Sets a localizable or dynamic text label for the button.
-		 * @param text The text to display, passed to {@link fmt()} or {@link bind.fmt()}
+		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
 		 * @param args Additional bindings, used to format the text dynamically
 		 * @returns The builder instance for chaining.
 		 */
 		fmt(text: StringConvertible, ...args: Binding[]) {
 			if (args.length === 0) return this.text(fmt(text));
-			return this.text(bind.fmt(text, ...args));
+			return this.text(Binding.fmt(text, ...args));
 		}
 
 		/**

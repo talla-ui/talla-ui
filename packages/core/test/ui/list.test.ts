@@ -6,7 +6,7 @@ import {
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
 import {
-	bind,
+	Binding,
 	ObservableList,
 	ObservableObject,
 	UI,
@@ -83,7 +83,9 @@ test("List of labels from ObservableList, rendered", async () => {
 
 test("List of labels from bound array, rendered", async () => {
 	console.log("Creating instance");
-	let myList = UI.List(bind("array"), (item) => UI.Label(item)).outer(UI.Row());
+	let myList = UI.List(new Binding("array"), (item) => UI.Label(item)).outer(
+		UI.Row(),
+	);
 	class ArrayProvider extends ObservableObject {
 		array = ["a", "b", "c"];
 		readonly view = this.attach(myList.build());
@@ -125,7 +127,7 @@ test("List of labels, rendered, then updated, with scroll view", async () => {
 	let list = new ObservableList(a, b, c);
 
 	console.log("Creating instance");
-	let myList = UI.List(list, UI.Label(bind("item.name"))).outer(
+	let myList = UI.List(list, UI.Label(new Binding("item.name"))).outer(
 		UI.Row().scroll(),
 	);
 	let instance = myList.build();
@@ -148,7 +150,7 @@ test("Event propagation through list", async () => {
 	let view = UI.Row(
 		UI.List(
 			new ObservableList(...getObjects()),
-			UI.Label(bind("item.name")).onClick("Foo"),
+			UI.Label(new Binding("item.name")).onClick("Foo"),
 		),
 	).build();
 	let count = 0;
@@ -186,10 +188,12 @@ test("Nested list", async () => {
 			{ name: "c", numbers: [7, 8, 9] },
 		];
 		readonly view = this.attach(
-			UI.List(bind<{ name: string; numbers: number[] }[]>("array"), (item) =>
-				UI.List(item.bind("numbers"), (number) =>
-					UI.Label.fmt("{}{}", item.bind("name"), number),
-				),
+			UI.List(
+				new Binding<{ name: string; numbers: number[] }[]>("array"),
+				(item) =>
+					UI.List(item.bind("numbers"), (number) =>
+						UI.Label.fmt("{}{}", item.bind("name"), number),
+					),
 			).build(),
 		);
 	}
@@ -219,7 +223,7 @@ test("Nested list", async () => {
 test("Empty state", async () => {
 	console.log("Creating instance");
 	let myList = UI.List(new ObservableList(...getObjects()))
-		.with(UI.Label(bind("item.name")))
+		.with(UI.Label(new Binding("item.name")))
 		.emptyState(UI.Label("empty"));
 	let instance = myList.build();
 
@@ -240,7 +244,7 @@ test("Empty state", async () => {
 test("Pagination", async () => {
 	console.log("Creating instance");
 	let myList = UI.List(new ObservableList(...getObjects()))
-		.with(UI.Label(bind("item.name")))
+		.with(UI.Label(new Binding("item.name")))
 		.outer(UI.Row())
 		.bounds(0, 2);
 	let instance = myList.build();
@@ -275,7 +279,7 @@ test("Pagination", async () => {
 test("Get indices for elements", async () => {
 	let myList = UI.List(
 		new ObservableList(...getObjects()),
-		UI.Label(bind("item.name")).allowFocus(true),
+		UI.Label(new Binding("item.name")).allowFocus(true),
 	);
 	let list = myList.build();
 	renderTestView(list);
@@ -290,7 +294,7 @@ test("Request focus on list focuses previous item", async () => {
 	let myList = UI.Cell(
 		UI.Button("button"),
 		UI.List(new ObservableList(...getObjects()))
-			.with(UI.Label(bind("item.name")).allowFocus(true))
+			.with(UI.Label(new Binding("item.name")).allowFocus(true))
 			.outer(UI.Cell().allowKeyboardFocus()),
 	);
 	renderTestView(myList.build());
@@ -313,7 +317,7 @@ test("Request focus on list focuses previous item", async () => {
 test("Arrow key focus, single list", async () => {
 	let myList = UI.List(
 		new ObservableList(...getObjects()),
-		UI.Label(bind("item.name"))
+		UI.Label(new Binding("item.name"))
 			.allowFocus()
 			.handleKey("ArrowDown", "FocusNext")
 			.handleKey("ArrowUp", "FocusPrevious"),

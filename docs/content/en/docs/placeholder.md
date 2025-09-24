@@ -11,7 +11,6 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link AppContext} +
 - {@link AppException} +
 - {@link AsyncTaskQueue} +
-- {@link bind} +
 - {@link Binding} +
 - {@link BindingOrValue} +
 - {@link clickOutputAsync} +

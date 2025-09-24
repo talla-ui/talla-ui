@@ -4,7 +4,13 @@ import {
 	useTestContext,
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
-import { FormState, ObservableObject, UI, UIToggle } from "../../dist/index.js";
+import {
+	Binding,
+	FormState,
+	ObservableObject,
+	UI,
+	UIToggle,
+} from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
@@ -50,7 +56,7 @@ test("User input with form state", async () => {
 		// note that form must exist before it can be bound
 		readonly form = new FormState().set("foo", true);
 		readonly toggle = this.attach(
-			UI.Toggle().formStateValue(this.form, "foo").build(),
+			UI.Toggle().formStateValue(Binding.withValue(this.form), "foo").build(),
 		);
 	}
 	let host = new Host();

@@ -1,4 +1,5 @@
-import { bind, UI, UIColor, UIStyle } from "talla-ui";
+import { Binding, UI, UIColor, UIStyle } from "talla-ui";
+import { SearchActivity } from "./SearchActivity";
 
 const TextFieldStyle = UI.styles.textfield.default
 	.extend({
@@ -37,7 +38,7 @@ const ResultCellStyle = new UIStyle({
 		borderWidth: 2,
 	});
 
-export function SearchView() {
+export function SearchView(v: Binding<SearchActivity>) {
 	return UI.Cell()
 		.padding({ start: 16 })
 		.width("100%")
@@ -62,13 +63,13 @@ export function SearchView() {
 						.onClick("Close"),
 				),
 			UI.Cell()
-				.hideWhen(bind("hasInput").and("loading").not())
+				.hideWhen(v.bind("hasInput").and("loading").not())
 				.padding({ y: 32 })
 				.with(UI.Label("Loading...")),
-			UI.List(bind("results"))
+			UI.List(v.bind("results"))
 				.bounds(0, 50)
 				.outer(UI.Cell().grow(false).allowKeyboardFocus().scroll())
-				.with(
+				.with((item) =>
 					UI.Cell()
 						.allowFocus()
 						.style(ResultCellStyle)
@@ -79,13 +80,13 @@ export function SearchView() {
 						.with(
 							UI.Column().with(
 								UI.Row(
-									UI.Label(bind("item.title")).labelStyle({
+									UI.Label(item.bind("title")).labelStyle({
 										fontWeight: "var(--bold-weight)",
 										shrink: 0,
 									}),
-									UI.Label(bind("item.showId")).dim().fontSize(14),
+									UI.Label(item.bind("showId")).dim().fontSize(14),
 								),
-								UI.Label().html(bind("item.abstract")).padding(0).fontSize(14),
+								UI.Label().html(item.bind("abstract")).padding(0).fontSize(14),
 							),
 						),
 				),

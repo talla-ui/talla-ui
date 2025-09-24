@@ -1,6 +1,6 @@
-import type { ObservableObject } from "./ObservableObject.js";
 import { err, ERROR, errorHandler } from "../errors.js";
 import type { ObservableEvent } from "./ObservableEvent.js";
+import type { ObservableObject } from "./ObservableObject.js";
 
 // Symbols used for ObservableObject properties:
 
@@ -531,7 +531,7 @@ class Bound {
 			this.t = []; // prevent restart on attachment
 			errorHandler(
 				firstProp == null
-					? err(ERROR.Object_NoBind, this.p.join("."))
+					? err(ERROR.Object_NoBind, this.p.map(String).join("."))
 					: err(ERROR.Object_NoObserve, firstProp),
 			);
 			return true;

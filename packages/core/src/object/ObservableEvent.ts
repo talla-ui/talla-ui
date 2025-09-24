@@ -36,7 +36,7 @@ const NO_DATA = Object.freeze({});
  * @example
  * // Handling delegated UI events
  * const bodyView = list(
- *   bind("items"),
+ *   v.bind("items"),
  *   row(
  *     // ...
  *     button("Remove").onClick("RemoveItem")

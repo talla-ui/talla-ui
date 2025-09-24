@@ -1,15 +1,14 @@
 import { expectOutputAsync, useTestContext } from "@talla-ui/test-handler";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { ActivityRouter } from "../../dist/app/ActivityRouter.js";
 import {
 	Activity,
 	app,
-	ObservableObject,
-	NavigationContext,
-	UI,
 	Binding,
-	bind,
+	NavigationContext,
+	ObservableObject,
+	UI,
 } from "../../dist/index.js";
-import { ActivityRouter } from "../../dist/app/ActivityRouter.js";
 
 describe("NavigationContext standalone", () => {
 	class TestNavigationContext extends NavigationContext {
@@ -73,7 +72,7 @@ describe("AppContext.activities", () => {
 		let updated = 0;
 		let activity = new Activity();
 		activity.navigationPath = "foo";
-		activity.observe(bind("appContext.activities"), () => {
+		activity.observe(new Binding("appContext.activities"), () => {
 			updated++;
 		});
 		app.addActivity(activity);

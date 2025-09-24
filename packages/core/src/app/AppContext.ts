@@ -13,6 +13,7 @@ import {
 } from "../errors.js";
 import { ObservableObject } from "../object/index.js";
 import type { Activity } from "./Activity.js";
+import { ActivityRouter } from "./ActivityRouter.js";
 import { I18nContext } from "./I18nContext.js";
 import { LocalData } from "./LocalData.js";
 import { LogWriter } from "./LogWriter.js";
@@ -23,7 +24,6 @@ import type { RenderContext } from "./RenderContext.js";
 import { AsyncTaskQueue, Scheduler } from "./Scheduler.js";
 import type { View } from "./View.js";
 import type { Viewport } from "./Viewport.js";
-import { ActivityRouter } from "./ActivityRouter.js";
 
 /** Last (and first) instance of AppContext, if any */
 let instance: AppContext | undefined;
@@ -87,7 +87,7 @@ export class AppContext extends ObservableObject {
 
 	/**
 	 * The current i18n context, an instance of {@link I18nContext}
-	 * - This object encapsulates the current locale and options, which are used by {@link fmt()} and {@link bind.fmt()} to translate and format strings.
+	 * - This object encapsulates the current locale and options, which are used by {@link fmt()} and {@link Binding.fmt()} to translate and format strings.
 	 * - To set the current locale, use {@link I18nContext.configure()} and/or {@link I18nContext.setTranslations()}.
 	 */
 	readonly i18n = new I18nContext();

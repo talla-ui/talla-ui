@@ -1,6 +1,6 @@
 import {
 	app,
-	bind,
+	Binding,
 	ComponentView,
 	ModalFactory,
 	RenderContext,
@@ -21,7 +21,7 @@ export class TestDialog
 	}
 
 	protected override get body() {
-		return UI.Cell(UI.Show(bind("dialogView"))).build();
+		return UI.Cell(UI.Show(Binding.withValue(this.dialogView))).build();
 	}
 
 	show(place?: Partial<RenderContext.PlacementOptions>) {

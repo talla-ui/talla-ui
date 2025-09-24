@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test } from "vitest";
 import {
 	AppContext,
-	bind,
+	Binding,
 	ObservableEvent,
 	ObservableList,
 	ObservableObject,
@@ -851,7 +851,7 @@ describe("Events and observation", () => {
 		class MyObject extends ObservableObject {
 			constructor() {
 				super();
-				this.observe(bind("list.length"), (v: any) => {
+				this.observe(new Binding("list.length"), (v: any) => {
 					this.boundCount = v;
 				});
 			}

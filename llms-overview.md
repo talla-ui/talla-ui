@@ -161,9 +161,9 @@ class MyActivity extends Activity {
 	// Computed state (object with the returned properties)
 	messages = this.createActiveState(
 		[
-			bind("filter"), // binds to an activity property
-			bind("messageService"), // listens for change events
-			bind("messageService.messages"), // nested property changes
+			new Binding("filter"), // binds to an activity property
+			new Binding("messageService"), // listens for change events
+			new Binding("messageService.messages"), // nested property changes
 		],
 		(service, filter, messages) => {
 			// Return the computed state object
@@ -242,7 +242,7 @@ export class MyListActivity extends Activity {
 }
 ```
 
-The 'none' render mode is used when the parent activity's view is responsible for rendering the nested activity's view (e.g., `UI.Show(bind("detail.active.view"))`).
+The 'none' render mode is used when the parent activity's view is responsible for rendering the nested activity's view (e.g., `UI.Show(v.bind("detail.active.view"))`).
 
 Nested routers are also ideal for managing modal dialogs. The dialog activity is added to the router and activated, and its events can be handled asynchronously.
 
@@ -413,7 +413,7 @@ Note that `alertOptions` and `confirmOptions` may be provided as instances of `M
 ## Internationalization
 
 ```typescript
-// Set the current locale, used by `fmt` and `bind.fmt`, all methods are optional
+// Set the current locale, used by `fmt` and `Binding.fmt`, all methods are optional
 app.i18n.configure("es-MX", {
 	isRTL: () => false, // or true
 	getText: (text) => {
@@ -458,16 +458,16 @@ Bindings can be used to update views dynamically, using the value of a public pr
 
 Nested properties are resolved using dot notation, e.g. `customer.name`. If the object containing the nested property is an `ObservableObject` (i.e. `customer` is an instance of a class that extends `ObservableObject`), the binding updates when the property changes, or when a change event is emitted by the object. Otherwise, the binding only updates when the last non-observable object property (`customer`) is changed.
 
-Bindings can be created using the `bind` function, which look for properties within the view/activity hierarchy. Bindings are also provided as parameters to main activity view functions, and to the callback to `ComponentViewBuilder`, which can be used to bind to (nested) properties using the `.bind()` method.
+Bindings can be created using the `new Binding(...)` constructor, which creates bindings that look for properties within the view/activity hierarchy. Bindings are also provided as parameters to main activity view functions, and to the callback to `ComponentViewBuilder`, which can be used to bind to (nested) properties using the `.bind()` method.
 
 ```typescript
-import { bind, UI } from "talla-ui";
+import { Binding, UI } from "talla-ui";
 
 // Simple bindings
-UI.Label(bind("count")); // binds the label text
-UI.Label(bind("customer.contracts.length")); // nested property
-UI.Label("Active").hideWhen(bind("isActive"));
-UI.Label("Inactive").hideWhen(bind("isActive").not());
+UI.Label(new Binding("count")); // binds the label text
+UI.Label(new Binding("customer.contracts.length")); // nested property
+UI.Label("Active").hideWhen(new Binding("isActive"));
+UI.Label("Inactive").hideWhen(new Binding("isActive").not());
 
 // Binding provided to activity view function
 class MyActivity extends Activity {
@@ -487,46 +487,44 @@ function SomeComponent() {
 	);
 }
 
-// not, neither, either shortcuts
-UI.Label("Inactive").hideWhen(bind.not("isActive"));
+// neither, either shortcuts
 UI.ShowWhen(
-	bind.neither("customers.length", "newCustomer"),
+	Binding.neither(v.bind("customers.length"), v.bind("newCustomer")),
 	UI.Column(/* empty state */),
 );
 UI.ShowWhen(
-	// or explicitly:
-	bind.either(bind("customers.length"), bind("newCustomer")),
+	Binding.either(v.bind("customers.length"), v.bind("newCustomer")),
 	UI.Column(/* list */),
 );
 
 // and, or, matches methods for multiple bindings
-UI.Label("...").hideWhen(bind("foo").and("bar")); // .foo && .bar
-UI.Label("...").hideWhen(bind("foo").or("bar")); // .foo || .bar
-UI.Label("...").hideWhen(bind("foo").matches("bar")); // .foo === .bar
+UI.Label("...").hideWhen(v.bind("foo").and(v.bind("bar"))); // .foo && .bar
+UI.Label("...").hideWhen(v.bind("foo").or(v.bind("bar"))); // .foo || .bar
+UI.Label("...").hideWhen(v.bind("foo").matches(v.bind("bar"))); // .foo === .bar
 
 // map transforms the bound value
-UI.Label(bind("foo").map((v) => v.toUpperCase())); // .foo.toUpperCase()
+UI.Label(v.bind("foo").map((v) => v.toUpperCase())); // .foo.toUpperCase()
 UI.Label("...").labelStyle(
-	bind("isActive").map((v) => (v ? undefined : { bold: true })),
+	v.bind("isActive").map((v) => (v ? undefined : { bold: true })),
 );
 
 // equals, lt, gt, then, else are shortcuts for map
-UI.Label("...").hideWhen(bind("foo").equals(5)); // .foo === 5
-UI.Label("...").hideWhen(bind("foo").lt(5)); // .foo < 5
-UI.Label("...").hideWhen(bind("foo").gt(5)); // .foo > 5
-UI.Label("...").fontSize(bind("isActive").then(24)); // .isActive ? 24 : undefined
-UI.Label("...").labelStyle(bind("isActive").then(undefined, { bold: true }));
-UI.Label(bind("title").else(fmt("Untitled"))); // .title || fmt("Untitled")
+UI.Label("...").hideWhen(v.bind("foo").equals(5)); // .foo === 5
+UI.Label("...").hideWhen(v.bind("foo").lt(5)); // .foo < 5
+UI.Label("...").hideWhen(v.bind("foo").gt(5)); // .foo > 5
+UI.Label("...").fontSize(v.bind("isActive").then(24)); // .isActive ? 24 : undefined
+UI.Label("...").labelStyle(v.bind("isActive").then(undefined, { bold: true }));
+UI.Label(v.bind("title").else(fmt("Untitled"))); // .title || fmt("Untitled")
 
 // string formatting
-UI.Label(bind("total").fmt("{:.2f}"));
-UI.Label(bind("date").fmt("{:Ldate}"));
+UI.Label(v.bind("total").fmt("{:.2f}"));
+UI.Label(v.bind("date").fmt("{:Ldate}"));
 
 // Localizable/dynamically formatted text bindings
-UI.Label.fmt("foo {} {}", bind("bar"), bind("baz"));
-// ^^ same as UI.Label(bind.fmt("foo {}", bind("bar"), bind("baz")))
-UI.Label.fmt("Customer {:?/active/inactive}", bind("customer.isActive"));
-UI.Label.fmt("{:Ldate}", bind("date"));
+UI.Label.fmt("foo {} {}", v.bind("bar"), v.bind("baz"));
+// ^^ same as UI.Label(Binding.fmt("foo {}", v.bind("bar"), v.bind("baz")))
+UI.Label.fmt("Customer {:?/active/inactive}", v.bind("customer.isActive"));
+UI.Label.fmt("{:Ldate}", v.bind("date"));
 ```
 
 ## Observable Objects
@@ -765,15 +763,15 @@ The `FormState` class is used to store form data and validation errors. UI input
 UI.Column(
 	UI.Label.fmt("User name").dim().padding({ y: 4 }).onClick("RequestFocusNext"),
 	UI.TextField().formStateValue(v.bind("form"), "userName"),
-	UI.Label(bind("form.errors.userName"))
-		.hideWhen(bind.not("form.errors.userName"))
+	UI.Label(v.bind("form.errors.userName"))
+		.hideWhen(v.bind.not("form.errors.userName"))
 		.fg("danger"),
 
 	UI.Spacer(8),
 	UI.Label.fmt("Password").dim().padding({ y: 4 }).onClick("RequestFocusNext"),
 	UI.TextField().type("password").formStateValue(v.bind("form"), "password"),
-	UI.Label(bind("form.errors.password"))
-		.hideWhen(bind.not("form.errors.password"))
+	UI.Label(v.bind("form.errors.password"))
+		.hideWhen(v.bind.not("form.errors.password"))
 		.fg("danger"),
 
 	UI.Spacer(8),
@@ -1220,16 +1218,16 @@ UI.Divider().dividerStyle(UI.styles.divider.dashed);
 
 The renderer maintains a viewport object with information about the current window size, using a grid of columns and rows (defaults to 300×300 pixels).
 
-Simple responsive design can be achieved by binding to properties of this `app.viewport` object.
+Simple responsive design can be achieved using the UI.viewport binding and its properties.
 
 ```typescript
 // Switch row to column when viewport is narrow
 UI.Row(UI.Label("1"), UI.Label("2")).layout(
-	bind("viewport.cols").lt(2).then({ axis: "vertical" }),
+	UI.viewport.bind("cols").lt(2).then({ axis: "vertical" }),
 );
 
 // Show an element only on wide viewports
-UI.ShowWhen(bind("viewport.cols").gt(2), someComplexView);
+UI.ShowWhen(UI.viewport.bind("cols").gt(2), someComplexView);
 ```
 
 ## Positioning and Layout
@@ -1266,7 +1264,7 @@ All UI builders for containers and controls support basic methods for styling an
 UI.Label() // ... or UI.Button, UI.TextField, UI.Row, etc.
 	.accessibleRole("listitem") // WAI-ARIA role
 	.accessibleLabel("Item 1") // WAI-ARIA label
-	.hideWhen(bind("isInactive")) // hide (but still render)
+	.hideWhen(v.bind("isInactive")) // hide (but still render)
 	.position("center") // see above
 	.size(100) // width and height, either pixels or CSS value
 	.size(w, h) // ...or...
@@ -1324,7 +1322,7 @@ UI.Row()
 	.align("center") // or "end", "start", "space-between", "space-around"
 	.align("space-between", "center") // second is vertical alignment
 	.reverse() // or ...
-	.reverse(bind("viewport.cols").equals(1))
+	.reverse(UI.viewport.bind("cols").equals(1))
 	.style(myStyle) // any style or override object
 	.wrapContent() // or binding
 	.clip(); // or binding
@@ -1376,14 +1374,14 @@ Controls in a row stretch/center vertically, but not horizontally. Buttons and t
 
 ```typescript
 UI.Button("Label text");
-UI.Button.fmt("Localized and formatted {}", bind("text"));
+UI.Button.fmt("Localized and formatted {}", v.bind("text"));
 UI.Button()
 	.icon("plus") // theme icon name
 	.icon(UI.icons.plus) // or UIIconResource instance, or binding
 	.icon("plus", { size: 16 }) // size, margin, color
 	.chevron("up") // or "down", "next", "back"
 	.chevron("up", { size: 16 })
-	.chevron(bind("direction").then("up", "down"))
+	.chevron(v.bind("direction").then("up", "down"))
 	.disabled() // or disabled(true), disabled(false), or binding
 	.pressed() // same
 	.value("foo") // arbitrary value, set as `data.value` on events
@@ -1421,14 +1419,14 @@ UI.Label("...") // or UI.Label.fmt("..." [, bindings])
 	.align("center") // alignment within element (useful within column only)
 	.center()
 	.wrap() // sets lineBreakMode to "pre-wrap"
-	.html(bind("description"))
+	.html(v.bind("description"))
 	.selectable() // label text is NOT selectable by default
 	.labelStyle("badge") // or UIStyle instance, overrides, or binding
 	.allowFocus()
 	.allowKeyboardFocus();
 
 UI.TextField("Placeholder") // or UI.TextField.fmt("..." [, bindings])
-	.value(bind("text"))
+	.value(v.bind("text"))
 	.formStateValue(v.bind("form"), "text")
 	.multiline(true, 100) // or .multiline().height(100)
 	.type("password") // e.g. "email", "url", "search", "numeric" (special), "decimal"
@@ -1473,7 +1471,7 @@ Typically, interactivitiy requires combining event handlers and bindings.
 // ... view -- what the user sees:
 UI.Button("Settings")
 	.value("settings")
-	.pressed(bind("selectedTab").equals("settings"))
+	.pressed(v.bind("selectedTab").equals("settings"))
 	.onClick("SetTab");
 
 // ... activity -- interaction logic:
@@ -1489,12 +1487,12 @@ Use `.hideWhen(binding)` to hide a single element on the fly. Use `UI.ShowWhen(b
 Note that `UI.Show(binding)` can also be used to render outside views (nested activities). If the bound value is undefined, the view is simply not rendered.
 
 ```typescript
-UI.Label(bind("messages.length"))
+UI.Label(v.bind("messages.length"))
 	.labelStyle("badge")
-	.hideWhen(bind.not("messages.length"));
+	.hideWhen(v.bind.not("messages.length"));
 
-UI.ShowWhen(bind("selectedCustomer"), UI.Column(/* complex view */));
-UI.ShowUnless(bind("selectedCustomer"), UI.Column(/* empty state */));
+UI.ShowWhen(v.bind("selectedCustomer"), UI.Column(/* complex view */));
+UI.ShowUnless(v.bind("selectedCustomer"), UI.Column(/* empty state */));
 
 UI.Show(UI.Column(/* animated view */))
 	.showAnimation("fadeIn") // theme animation name, e.g. "fadeOutDown"
@@ -1506,8 +1504,8 @@ UI.Show(UI.Column(/* animated view */))
 		}),
 	);
 
-UI.Show(bind("customerActivity.view"));
-UI.ShowUnless(bind("customerActivity.view"), UI.Cell(/* loading state */));
+UI.Show(v.bind("customerActivity.view"));
+UI.ShowUnless(v.bind("customerActivity.view"), UI.Cell(/* loading state */));
 ```
 
 ## Lists
@@ -1519,7 +1517,7 @@ The outer container defaults to a simple column, but can be changed using `outer
 ```typescript
 UI.List(v.bind("customers"))
 	.bounds(0, 10) // only show 10 items
-	.bounds(bind("firstIndex"), 10) // pagination (can bind both, too)
+	.bounds(v.bind("firstIndex"), 10) // pagination (can bind both, too)
 	.outer(UI.Column().divider().scroll().border(1, "divider").height(240))
 	.addSpacer() // this also adds a divider below the last item
 	.renderOptions({ async: true, delayEach: 100 }) // animate rendering
@@ -1534,7 +1532,7 @@ UI.List(v.bind("customers"))
 				UI.Label("Inactive")
 					.labelStyle("dangerBadge")
 					.shrink(false),
-					.hideWhen(item.bind("inactive").not()),
+					.hideWhen(item.bind.not("inactive")),
 				UI.Spacer(),
 				UI.Button().icon("chevronNext").buttonStyle("text").minWidth(24),
 			),

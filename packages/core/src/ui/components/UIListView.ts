@@ -485,7 +485,7 @@ export namespace UIListView {
 	 * @see {@link UIListView}
 	 */
 	export function listBuilder<TItem>(
-		items: BindingOrValue<Iterable<TItem>>,
+		items: BindingOrValue<Iterable<TItem> | undefined>,
 		content?: ViewBuilder<View> | ((item: Binding<TItem>) => ViewBuilder<View>),
 	) {
 		return new ListBuilder().items(items).with(content);
@@ -546,7 +546,7 @@ export namespace UIListView {
 		 * @param items An iterable collection of items, or a binding to one.
 		 * @returns The builder instance for chaining.
 		 */
-		items(items: BindingOrValue<Iterable<any>>) {
+		items(items: BindingOrValue<Iterable<any> | undefined>) {
 			this.initializer.set("items", items as any);
 			return this;
 		}

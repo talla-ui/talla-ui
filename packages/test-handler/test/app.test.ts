@@ -1,7 +1,6 @@
 import {
 	Activity,
 	app,
-	bind,
 	Binding,
 	ComponentView,
 	ComponentViewBuilder,
@@ -28,7 +27,7 @@ class CountActivity extends Activity {
 	static override View(v: Binding<CountActivity>) {
 		return UI.Cell(
 			UI.TextField()
-				.value(v.bind("count").fmt("{}"))
+				.value(v.bind("count"))
 				.onInput("SetCount")
 				.name("count-input"),
 			UI.Button("+").onClick("CountUp"),
@@ -65,7 +64,7 @@ test("Single component view with binding is rendered", async () => {
 				class extends ComponentView {
 					title = StringConvertible.EMPTY;
 				},
-				() => UI.Label(bind("title")),
+				(v) => UI.Label(v.bind("title")),
 			),
 		};
 	}

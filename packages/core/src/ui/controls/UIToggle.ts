@@ -1,6 +1,6 @@
 import { fmt, StringConvertible } from "@talla-ui/util";
 import { FormState, ViewBuilder } from "../../app/index.js";
-import { bind, Binding, BindingOrValue } from "../../object/index.js";
+import { Binding, BindingOrValue } from "../../object/index.js";
 import { UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
 import { UIElement } from "../UIElement.js";
@@ -50,7 +50,7 @@ export namespace UIToggle {
 	export namespace toggleBuilder {
 		/**
 		 * Creates a view builder for a toggle (checkbox/switch) element with a localizable or dynamic text label.
-		 * @param text The text to display, passed to {@link fmt()} or {@link bind.fmt()}
+		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
 		 * @param args Additional bindings, used to format the text dynamically
 		 * @returns A builder instance for chaining.
 		 */
@@ -78,13 +78,13 @@ export namespace UIToggle {
 
 		/**
 		 * Sets a localizable or dynamic text for the toggle label.
-		 * @param text The text to display, passed to {@link fmt()} or {@link bind.fmt()}
+		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
 		 * @param args Additional bindings, used to format the text dynamically
 		 * @returns The builder instance for chaining.
 		 */
 		fmt(text: StringConvertible, ...args: Binding[]) {
 			if (args.length === 0) return this.label(fmt(text));
-			return this.label(bind.fmt(text, ...args));
+			return this.label(Binding.fmt(text, ...args));
 		}
 
 		/**

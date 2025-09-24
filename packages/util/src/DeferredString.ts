@@ -132,7 +132,7 @@ export function fmt(
  * The {@link format()} method returns a new instance, where the input string is formatted with the provided values before caching.
  *
  * @see {@link fmt}
- * @see {@link bind.fmt}
+ * @see {@link Binding.fmt}
  */
 export class DeferredString extends String {
 	/**
@@ -154,7 +154,7 @@ export class DeferredString extends String {
 
 	/**
 	 * Creates a new lazily evaluated string instance
-	 * - This method is used by {@link fmt()}, {@link bind.fmt()}, and other methods. Typically, you don't need to call this constructor yourself.
+	 * - This method is used by {@link fmt()}, {@link Binding.fmt()}, and other methods. Typically, you don't need to call this constructor yourself.
 	 * @param str The string to be encapsulated (and translated, formatted, and cached on demand)
 	 * @param args The arguments that were (last) passed to `format`, or an empty array
 	 */
@@ -182,7 +182,7 @@ export class DeferredString extends String {
 
 	/**
 	 * Returns a (lazily) formatted string incorporating the provided values
-	 * @note This method is used internally by {@link fmt()}, {@link bind.fmt()}, and doesn't need to be called directly unless an existing instance needs to be formatted using new placeholder values.
+	 * @note This method is used internally by {@link fmt()}, {@link Binding.fmt()}, and doesn't need to be called directly unless an existing instance needs to be formatted using new placeholder values.
 	 * @summary This method captures the provided values, and returns a new instance that will result in the input string with the values inserted and formatted.
 	 * @returns A new DeferredString instance.
 	 */

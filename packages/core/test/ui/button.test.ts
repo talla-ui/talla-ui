@@ -9,7 +9,6 @@ import { beforeEach, expect, test } from "vitest";
 import {
 	Activity,
 	app,
-	bind,
 	ComponentView,
 	ComponentViewBuilder,
 	UI,
@@ -82,8 +81,8 @@ test("Rendered with fmt", async () => {
 		class MyButtonView extends ComponentView {
 			bar = "bar";
 		}
-		return ComponentViewBuilder(MyButtonView, () =>
-			UI.Button.fmt("foo {}", bind("bar")),
+		return ComponentViewBuilder(MyButtonView, (v) =>
+			UI.Button.fmt("foo {}", v.bind("bar")),
 		);
 	}
 	let myButton = MyButton().build();

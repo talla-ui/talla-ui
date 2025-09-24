@@ -1,6 +1,11 @@
 import { fmt } from "@talla-ui/util";
 import { afterEach, beforeEach, expect, test } from "vitest";
-import { bind, app, AppContext, ObservableObject } from "../../dist/index.js";
+import {
+	app,
+	AppContext,
+	Binding,
+	ObservableObject,
+} from "../../dist/index.js";
 
 beforeEach(() => {
 	AppContext.setErrorHandler((err) => {
@@ -54,7 +59,7 @@ test("Locale format binding", () => {
 	let parent: any = new MyParent();
 	parent.child = parent.attach(new ObservableObject());
 	parent.child.observe(
-		bind.fmt("{:Ltest/format}", bind("value")),
+		Binding.fmt("{:Ltest/format}", new Binding("value")),
 		(v: any) => (parent.child.value = String(v)),
 	);
 	expect(parent.child).toHaveProperty("value", "{123:test,format}");

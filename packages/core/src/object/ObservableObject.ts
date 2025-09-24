@@ -149,7 +149,7 @@ export class ObservableObject {
 
 	/**
 	 * Disables bindings on all instances of this class
-	 * @summary If this method is called on a class, bindings created using the global `bind()` function will not bind on properties of this class (i.e. all instances are 'skipped' in the hierarchy of observable objects). Use this method to hide properties of this class from bindings that may be applied on attached child objects.
+	 * @summary If this method is called on a class, bindings created using `new Binding("...")` will not bind on properties of this class (i.e. all instances are 'skipped' in the hierarchy of observable objects). Use this method to hide properties of this class from bindings that may be applied on attached child objects.
 	 * @note Bindings are disabled on {@link ObservableList} and {@link UIElement} by default. You cannot call this method on {@link ObservableObject} itself.
 	 */
 	static disableBindings() {

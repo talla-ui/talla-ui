@@ -2,7 +2,7 @@ import { DeferredString, fmt } from "@talla-ui/util";
 
 /**
  * An object that provides internationalization functionality for the current locale
- * - This object is used by {@link fmt()} and {@link bind.fmt()} to translate and format strings.
+ * - This object is used by {@link fmt()} and {@link Binding.fmt()} to translate and format strings.
  * - An instance of this class is available on the global application context, as {@link AppContext.i18n app.i18n}.
  * @see {@link DeferredString}
  */
@@ -13,7 +13,7 @@ export class I18nContext implements DeferredString.I18nProvider {
 	}
 
 	/** Configures the i18n context
-	 * @summary This method can be used to set the current internationalization locale and options, which are used by {@link fmt()} and {@link bind.fmt()} to translate and format strings. After using this method, re-render all views if needed using {@link AppContext.remount() app.remount()}.
+	 * @summary This method can be used to set the current internationalization locale and options, which are used by {@link fmt()} and {@link Binding.fmt()} to translate and format strings. After using this method, re-render all views if needed using {@link AppContext.remount() app.remount()}.
 	 * @param locale The name of the current locale.
 	 * @param provider An object with (optional) methods that determine the behavior of the current locale, including translation and formatting. The current locale is cleared before applying the new methods.
 	 */

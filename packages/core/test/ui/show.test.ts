@@ -9,7 +9,7 @@ import { beforeEach, expect, test } from "vitest";
 import {
 	Activity,
 	app,
-	bind,
+	Binding,
 	ComponentView,
 	ComponentViewBuilder,
 	ObservableObject,
@@ -106,8 +106,8 @@ test("Rendering content using bound state", async () => {
 		class TestView extends ComponentView {
 			condition = false;
 		}
-		return ComponentViewBuilder(TestView, () =>
-			UI.Cell(UI.ShowWhen(bind("condition"), UI.Label("foo"))),
+		return ComponentViewBuilder(TestView, (v) =>
+			UI.Cell(UI.ShowWhen(v.bind("condition"), UI.Label("foo"))),
 		);
 	}
 
@@ -190,7 +190,7 @@ test("Set inserted view using component view, and render", async () => {
 			text = StringConvertible.EMPTY;
 		}
 		return {
-			...ComponentViewBuilder(MyContentView, () => UI.Label(bind("text"))),
+			...ComponentViewBuilder(MyContentView, (v) => UI.Label(v.bind("text"))),
 			text(text: StringConvertible) {
 				this.initializer.set("text", text);
 				return this;
@@ -200,7 +200,7 @@ test("Set inserted view using component view, and render", async () => {
 
 	class MyActivity extends Activity {
 		static override View() {
-			return UI.Show(bind("vc"));
+			return UI.Show(new Binding("vc"));
 		}
 		vc = this.attach(MyContent().text("foo").build());
 	}
@@ -242,7 +242,7 @@ test("Use activity view as inserted view and render", async () => {
 		static override View() {
 			return UI.Cell()
 				.accessibleLabel("outer")
-				.with(UI.Show(bind("second.view"), true));
+				.with(UI.Show(new Binding("second.view"), true));
 		}
 		readonly second = this.attach(new MySecondActivity());
 		onButtonPress() {

@@ -1,6 +1,6 @@
 import {
 	app,
-	bind,
+	Binding,
 	ComponentView,
 	ModalFactory,
 	RenderContext,
@@ -48,7 +48,7 @@ export class Dialog
 	}
 
 	protected override get body() {
-		return UI.Cell(UI.Show(bind("dialogView")))
+		return UI.Cell(UI.Show(Binding.withValue(this.dialogView)))
 			.apply(Dialog.styles.containerModifier)
 			.build();
 	}
