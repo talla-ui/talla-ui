@@ -2,7 +2,6 @@ import {
 	Activity,
 	ActivityRouter,
 	app,
-	bind,
 	Binding,
 	BindingOrValue,
 	ComponentView,
@@ -138,11 +137,13 @@ function MainView(v: Binding<MainActivity>) {
 						.with(
 							UI.Text(fmt("Built: {}", new Date().toLocaleString())).padding(),
 							UI.Text(
-								bind.fmt("View defined: {}", v.bind("viewDefined")),
+								Binding.fmt("View defined: {}", v.bind("viewDefined")),
 							).padding(),
-							UI.Text(bind.fmt("Current: {}", v.bind("currentDate"))).padding(),
 							UI.Text(
-								bind.fmt("Count: {}", v.bind("countService.count")),
+								Binding.fmt("Current: {}", v.bind("currentDate")),
+							).padding(),
+							UI.Text(
+								Binding.fmt("Count: {}", v.bind("countService.count")),
 							).padding(),
 						),
 				)
@@ -194,11 +195,11 @@ function MainView(v: Binding<MainActivity>) {
 				),
 			),
 
-			UI.Text(bind.fmt("Current: {:L}", v.bind("currentDate"))).padding(),
+			UI.Text().fmt("Current: {:L}", v.bind("currentDate")).padding(),
 			UI.Spacer(8),
-			UI.Text(bind.fmt("Count: {}", v.bind("countService.count"))).dim(
-				v.bind("countService.count").not(),
-			),
+			UI.Text()
+				.fmt("Count: {}", v.bind("countService.count"))
+				.dim(v.bind("countService.count").not()),
 			UI.Spacer(8),
 			UI.Row(UI.Button("Up").icon("chevronUp").onClick("Count")),
 			UI.Spacer(8),
@@ -357,21 +358,23 @@ function SubView(v: Binding<SubActivity>) {
 		.align("center")
 		.with(
 			UI.Spacer(32),
-			UI.Text(bind.fmt("Sub activity created {}", v.bind("created"))),
-			UI.Text(bind.fmt("Changes: {}", v.bind("activeCount.changes"))),
-			UI.Text(bind.fmt("Count: {}", v.bind("activeCount.state.count"))),
+			UI.Text().fmt("Sub activity created {}", v.bind("created")),
+			UI.Text().fmt("Changes: {}", v.bind("activeCount.changes")),
+			UI.Text().fmt("Count: {}", v.bind("activeCount.state.count")),
+			UI.Text().fmt("Count * 2: {}", v.bind("activeCount.state.countTimesTwo")),
 			UI.Text(
-				bind.fmt("Count * 2: {}", v.bind("activeCount.state.countTimesTwo")),
-			),
-			UI.Text(
-				bind.fmt(
+				Binding.fmt(
 					"Count is non-zero? {}",
 					v.bind("activeCount.state.countIsNonZero"),
 				),
 			),
 			UI.Spacer(8),
 			UI.Text(
-				bind.fmt("Viewport: {:i}×{:i}", UI.viewport.width, UI.viewport.height),
+				Binding.fmt(
+					"Viewport: {:i}×{:i}",
+					UI.viewport.width,
+					UI.viewport.height,
+				),
 			),
 			UI.Spacer(8),
 			UI.Row(
@@ -398,7 +401,7 @@ export class SubActivity extends Activity {
 	created = new Date();
 
 	activeCount = this.createActiveState(
-		[bind.from(this, "countService")],
+		[Binding.withProperty(this, "countService")],
 		async (): Promise<{
 			service: CountService;
 			changes: number;
@@ -414,9 +417,10 @@ export class SubActivity extends Activity {
 				changes: changes + 1,
 				state: this.createActiveState(
 					[
-						bind
-							.from<SubActivity, "activeCount">(this, "activeCount")
-							.bind("service.count"),
+						Binding.withProperty<SubActivity, "activeCount">(
+							this,
+							"activeCount",
+						).bind("service.count"),
 					],
 					(count) => {
 						console.log("activeCount.state updated", count);
@@ -431,7 +435,7 @@ export class SubActivity extends Activity {
 		},
 	);
 
-	fooState = this.createActiveState([bind("foo")], () => {
+	fooState = this.createActiveState([new Binding("foo")], () => {
 		return { foo: this.foo };
 	});
 	foo = "bar";
@@ -492,7 +496,7 @@ function OtherView(v: Binding<OtherActivity>) {
 		.align("center")
 		.with(
 			UI.Spacer(32),
-			UI.Text(bind.fmt("Other activity created {}", v.bind("created"))),
+			UI.Text().fmt("Other activity created {}", v.bind("created")),
 
 			UI.Divider(),
 			UI.Column()
