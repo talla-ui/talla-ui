@@ -206,7 +206,7 @@ export class MyActivity extends Activity {
 
 ## Nested Activities
 
-Activities can be nested to create more complex UI flows, such as list-detail views or modal dialogs. This is achieved by attaching an `ActivityRouter` to a parent activity. Activities added to a nested router are automatically deactivated when the parent is deactivated.
+Activities can be nested to create more complex UI flows, such as list-detail views or modal dialogs. This is achieved by creating a nested router, and adding or replacing its activities. Activities added to a nested router are automatically deactivated when the parent is deactivated.
 
 For path-based routing, the `matchNavigationPath` method on an activity can be overridden. Instead of returning a boolean, it can return a function that will be executed after the parent activity is activated. This function can then control the nested router.
 
@@ -217,7 +217,7 @@ export class MyListActivity extends Activity {
 	navigationPath = "list";
 
 	// In a view, bind to "detail.active.view" (else show empty state)
-	detail = this.attach(new ActivityRouter());
+	detail = this.createActiveRouter();
 
 	matchNavigationPath(path: string) {
 		if (path === this.navigationPath) return true;

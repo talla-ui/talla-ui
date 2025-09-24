@@ -2,6 +2,7 @@ import type { ConfigOptions, StringConvertible } from "@talla-ui/util";
 import { ERROR, err, safeCall } from "../errors.js";
 import { Binding, ObservableEvent, ObservableObject } from "../object/index.js";
 import { $_origin } from "../object/object_util.js";
+import { ActivityRouter } from "./ActivityRouter.js";
 import { AppContext } from "./AppContext.js";
 import type { NavigationContext } from "./NavigationContext.js";
 import type { RenderContext } from "./RenderContext.js";
@@ -376,6 +377,26 @@ export class Activity extends ObservableObject {
 		return AppContext.getInstance().navigation?.navigateAsync(undefined, {
 			back: true,
 		});
+	}
+
+	/**
+	 * Creates an activity router that's enabled while this activity is active
+	 * - Use this method to create an {@link ActivityRouter} instance to manage a set of sub-activities that are only active while the parent activity is active.
+	 * - The router is disabled when the activity becomes inactive, and re-enabled when the activity becomes active again.
+	 * - When the router is disabled, any active activities in the router are deactivated asynchronously.
+	 * @returns A new {@link ActivityRouter} instance
+	 */
+	protected createActiveRouter() {
+		let result = this.attach(new ActivityRouter());
+		this.listen((e) => {
+			if (e.name === "Active") {
+				result.disableMatch(false);
+			} else if (e.name === "Inactive") {
+				result.disableMatch();
+				result.toArray().forEach((a) => safeCall(a.deactivateAsync, a));
+			}
+		});
+		return result;
 	}
 
 	/**

@@ -1,6 +1,6 @@
 import { safeCall } from "../errors.js";
 import { ObservableList, ObservableObject } from "../object/index.js";
-import { Activity } from "./Activity.js";
+import type { Activity } from "./Activity.js";
 import { AppContext } from "./AppContext.js";
 import type { AsyncTaskQueue } from "./Scheduler.js";
 
@@ -11,7 +11,7 @@ import type { AsyncTaskQueue } from "./Scheduler.js";
  *
  * If an activity is added to the root activity router, its {@link Activity.matchNavigationPath()} method is used to determine if the activity should be activated in response to navigation path changes. The default implementation of that method checks for exact path matches against {@link Activity.navigationPath}.
  *
- * For nested routers, attach an activity router to an existing activity. Activities that are added to a nested router are automatically deactivated when the containing activity is deactivated. If the activity is unlinked, both the router and all of the activities added to it are also unlinked.
+ * For nested routers, use the {@link Activity.createActiveRouter} method. The resulting router only matches activities while the containing activity is active, and automatically deactivates contained activities when the containing activity is deactivated.
  *
  * @example
  * // Add an activity to the root activity router, and activate it
@@ -22,7 +22,7 @@ import type { AsyncTaskQueue } from "./Scheduler.js";
  * // Use a nested activity router to display a model dialog
  * class MyActivity extends Activity {
  *   // ...
- *   private _dialogRouter = this.attach(new ActivityRouter());
+ *   private _dialogRouter = this.createActiveRouter();
  *   protected onShowDialog() {
  *     let myDialog = new MyDialogActivity();
  *     myDialog.setRenderMode("dialog"); // ... or do this in constructor
@@ -38,7 +38,7 @@ import type { AsyncTaskQueue } from "./Scheduler.js";
  *   // ...
  *
  *   // In a view, bind to "detail.active.view" (else show empty state)
- *   detail = this.attach(new ActivityRouter());
+ *   detail = this.createActiveRouter();
  *
  *   navigationPath = "list";
  *   matchNavigationPath(path: string) {
@@ -60,7 +60,7 @@ export class ActivityRouter extends ObservableObject {
 
 		// attach the list of activities, and watch for updates
 		this._list = this.attach(
-			new ObservableList<Activity>().restrict(Activity).attachItems(true),
+			new ObservableList<Activity>().attachItems(true),
 			(e) => {
 				if (e.name === "Active" && this._list.includes(e.source as Activity)) {
 					// set active, if an activity in the list was activated
@@ -94,26 +94,10 @@ export class ActivityRouter extends ObservableObject {
 	/**
 	 * Adds an activity to this router
 	 * - This method adds the activity to the list of activities that are considered by {@link matchNavigationPath()}.
-	 * - If the router is attached to another activity, the activity that is added will be automatically deactivated after the containing activity is deactivated, and unlinked when the containing activity is unlinked.
 	 * @param activity The activity to be added
 	 * @param activate True if the activity should be activated immediately
 	 */
 	add(activity: Activity, activate?: boolean) {
-		let parent = Activity.whence(this);
-		if (parent) {
-			// deactivate at same time as parent
-			parent.listen({
-				init(_, stop) {
-					activity.listen({ unlinked: stop });
-				},
-				handler(_, e) {
-					if (e.name === "Inactive") {
-						safeCall(activity.deactivateAsync, activity);
-					}
-				},
-			});
-		}
-
 		this._list.add(activity);
 		if (activate) safeCall(activity.activateAsync, activity);
 		return this;
@@ -127,7 +111,7 @@ export class ActivityRouter extends ObservableObject {
 	 */
 	replace(activity: Activity, activate?: boolean) {
 		this._list.clear();
-		this.add(activity, activate);
+		return this.add(activity, activate);
 	}
 
 	/** Removes all activities and stops all pending asynchronous activations and deactivations */
@@ -135,6 +119,16 @@ export class ActivityRouter extends ObservableObject {
 		this._list.clear();
 		this._queue?.stop();
 		this._queue = undefined;
+		return this;
+	}
+
+	/**
+	 * Disables or enables path matching for this router
+	 * - When disabled, calls to {@link matchNavigationPath()} will be ignored. The router created by {@link Activity.createActiveRouter} automatically disables and enables path matching when the containing activity is deactivated or activated, using this method.
+	 * @param disable True (default) to disable path matching; false to enable
+	 */
+	disableMatch(disable = true) {
+		this._disabled = disable;
 	}
 
 	/**
@@ -147,14 +141,15 @@ export class ActivityRouter extends ObservableObject {
 	 */
 	matchNavigationPath(path: string) {
 		let list = this._list.toArray();
-		if (!list.length) return;
+		if (this._disabled || this.isUnlinked() || !list.length) return;
 
 		// prepare functions to activate and deactivate asynchronously
+		let router = this;
 		let toActivate: Activity | undefined;
 		async function deactivateOthersAsync(t: AsyncTaskQueue.Task) {
 			for (let other of list) {
 				if (other !== toActivate) {
-					if (t.cancelled) return;
+					if (t.cancelled || router.isUnlinked()) return;
 					if (other.isActive() || other.isActivating()) {
 						await other.deactivateAsync();
 					}
@@ -163,6 +158,7 @@ export class ActivityRouter extends ObservableObject {
 		}
 		async function activateAsync() {
 			if (
+				!router.isUnlinked() &&
 				!toActivate?.isUnlinked() &&
 				!toActivate!.isActive() &&
 				!toActivate!.isActivating()
@@ -199,6 +195,7 @@ export class ActivityRouter extends ObservableObject {
 		return this._queue;
 	}
 
+	private _disabled?: boolean;
 	private _queue?: AsyncTaskQueue;
 	private _list: ObservableList<Activity>;
 }
