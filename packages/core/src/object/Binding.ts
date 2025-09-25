@@ -552,7 +552,25 @@ export namespace Binding {
 	export type BoundPath<T> = T extends object
 		? {
 				[K in Extract<keyof T, string>]: T[K] extends object | undefined
-					? K | `${K}.${BoundPath<T[K]>}`
+					? K | `${K}.${BoundPath2<T[K]>}`
+					: K;
+			}[Extract<keyof T, string>]
+		: never;
+
+	// repeat the above, to limit recursion depth to 3
+	export type BoundPath2<T> = T extends object
+		? {
+				[K in Extract<keyof T, string>]: T[K] extends object | undefined
+					? K | `${K}.${BoundPath3<T[K]>}`
+					: K;
+			}[Extract<keyof T, string>]
+		: never;
+
+	// repeat the above, to limit recursion depth to 3
+	export type BoundPath3<T> = T extends object
+		? {
+				[K in Extract<keyof T, string>]: T[K] extends object | undefined
+					? K | `${K}.${string}`
 					: K;
 			}[Extract<keyof T, string>]
 		: never;
