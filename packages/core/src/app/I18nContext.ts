@@ -27,11 +27,11 @@ export class I18nContext implements DeferredString.I18nProvider {
 	/**
 	 * Sets the translations for the current locale
 	 * - This method can be used to set the translations for the current locale, if the current provider methods passed to {@link configure()} do not include a custom `getText()` method.
-	 * - If a `getText()` method is provided, the translation dictionary is ignored.
+	 * - If a `getText()` method is provided by the current provider instance, the translation dictionary is ignored.
 	 * - The keys of the dictionary can be either the original strings **or** markers, which are used as `{#marker}` in the original string. Markers may not include spaces or `{` and `}` characters.
 	 * @param dict A dictionary of translations, where the keys are the original strings **or** markers, and the values are the translated strings.
 	 */
-	setTranslations(dict: Record<string, string>) {
+	setText(dict: Record<string, string>) {
 		DeferredString.setI18nInterface(this);
 		this._dict = dict;
 	}
@@ -48,7 +48,7 @@ export class I18nContext implements DeferredString.I18nProvider {
 	/**
 	 * Translates the provided text to the current locale, if necessary
 	 * - This method is used by {@link DeferredString} to translate strings, and is part of the {@link DeferredString.I18nProvider} interface.
-	 * - If a translation dictionary is set using {@link setTranslations()}, it is used to translate the text. Any text not found is returned as is.
+	 * - If a translation dictionary is set using {@link setText()}, it is used to translate the text. Any text not found is returned as is.
 	 * @param text The text to translate
 	 * @returns The translated text
 	 */
@@ -87,12 +87,17 @@ export class I18nContext implements DeferredString.I18nProvider {
 		);
 	}
 
-	/** Returns true if the current locale uses right-to-left script */
-	isRTL(): boolean {
-		return !!this._provider?.isRTL?.();
+	/**
+	 * Returns current (user) culture preferences and/or locale defaults, as reported by the configured i18n provider
+	 * - This method returns an object with culture-specific options, as used by localizable components. The exact properties of this object are intentionally application and platform specific. They may be initialized from defaults for the selected language and region, and extended with user preferences (to allow for e.g. `en-US` language with non-US date formatting).
+	 * - The framework renderer itself may use at least the `textDirection` property, if present, to determine whether the current locale uses right-to-left script.
+	 * @see {@link DeferredString.I18nProvider}
+	 */
+	getCulture() {
+		return this._provider?.getCulture?.() || {};
 	}
 
-	private _locale?: string = undefined;
+	private _locale?: string;
 	private _provider?: Partial<DeferredString.I18nProvider>;
 	private _dict?: Record<string, string>;
 }

@@ -415,9 +415,8 @@ Note that `alertOptions` and `confirmOptions` may be provided as instances of `M
 ```typescript
 // Set the current locale, used by `fmt` and `Binding.fmt`, all methods are optional
 app.i18n.configure("es-MX", {
-	isRTL: () => false, // or true
 	getText: (text) => {
-		// ... translate text (optional, can use app.i18n.setTranslations)
+		// ... translate text (optional, can use app.i18n.setText)
 	},
 	getPlural: (n, forms) => {
 		// ... return the correct plural form
@@ -431,11 +430,16 @@ app.i18n.configure("es-MX", {
 			// ... perhaps type[1] is the currency code
 		}
 	},
+	getCulture: () => ({
+		textDirection: "ltr",
+		firstDayOfWeek: 1,
+		// ...any application specific culture info
+	})
 });
 
 // Simple cases can use defaults, and translation dictionary
 app.i18n.configure("nl-NL");
-app.i18n.setTranslations({
+app.i18n.setText({
 	// either translate using markers (where fmt string starts with {#...})
 	HELLO: "Hallo, {#name}!",
 	// or format exact matches
@@ -450,7 +454,7 @@ fmt("{#HELLO}", "world"); // "Hallo, world!"
 fmt("Length: {:.2f}", 1.23456789); // "Lengte: 1.23"
 ```
 
-The `getText`, `getPlural`, `format`, and `isRTL` methods are exposed by the `app.i18n` object.
+The `getText`, `getPlural`, `format`, and `getCulture` methods are exposed by the `app.i18n` object.
 
 ## Bindings
 

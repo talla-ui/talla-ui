@@ -1,8 +1,8 @@
 import { useTestContext } from "@talla-ui/test-handler";
+import { DeferredString } from "@talla-ui/util";
 import { beforeEach } from "node:test";
 import { afterEach, expect, test } from "vitest";
 import { app, AppException } from "../../dist/index.js";
-import { DeferredString } from "@talla-ui/util";
 
 beforeEach(() => {
 	useTestContext();
@@ -49,10 +49,10 @@ test("Constructor with formatted string and cause", () => {
 test("Constructor with translated string", () => {
 	class MyI18n implements DeferredString.I18nProvider {
 		constructor(public word: string) {}
-		isRTL = () => false;
 		getAttributes = () => ({ locale: "test" });
 		format = () => "";
 		getPlural = () => "";
+		getCulture = () => ({});
 		getText(str: string) {
 			if (str === "Foo: {}") return this.word + ": {}";
 			return "";

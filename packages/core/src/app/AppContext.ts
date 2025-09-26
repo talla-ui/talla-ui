@@ -88,7 +88,7 @@ export class AppContext extends ObservableObject {
 	/**
 	 * The current i18n context, an instance of {@link I18nContext}
 	 * - This object encapsulates the current locale and options, which are used by {@link fmt()} and {@link Binding.fmt()} to translate and format strings.
-	 * - To set the current locale, use {@link I18nContext.configure()} and/or {@link I18nContext.setTranslations()}.
+	 * - To set the current locale, use {@link I18nContext.configure()} and/or {@link I18nContext.setText()}.
 	 */
 	readonly i18n = new I18nContext();
 

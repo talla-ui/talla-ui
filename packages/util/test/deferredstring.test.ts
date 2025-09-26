@@ -77,7 +77,7 @@ describe("Formatting", () => {
 
 		// Dates get locale string
 		const date = new Date("2023-01-15T10:30:00Z");
-		expect(String(fmt("{:s}", date))).toBe(date.toLocaleString());
+		expect(String(fmt("{:s}", date))).toBe(date.toISOString());
 	});
 
 	test("Number formatting (:d)", () => {

@@ -32,7 +32,8 @@ export class OutputMount {
 		elt.dataset.title = title || "";
 		if (scroll) elt.style.overflow = "auto";
 		this._remount = () => {
-			elt.dir = app.i18n.isRTL() ? "rtl" : "ltr";
+			let culture = app.i18n.getCulture();
+			elt.dir = culture.textDirection || "ltr";
 			elt.style.background = String(background);
 			elt.style.color = String(UI.colors.text);
 		};
@@ -86,8 +87,9 @@ export class OutputMount {
 
 		// create a flex wrapper to contain content
 		let wrapper = (this._inner = document.createElement("div"));
+		let culture = app.i18n.getCulture();
 		wrapper.className = CLASS_OVERLAY_WRAPPER;
-		wrapper.dir = app.i18n.isRTL() ? "rtl" : "ltr";
+		wrapper.dir = culture.textDirection || "ltr";
 		wrapper.ariaModal = "true";
 		wrapper.ariaAtomic = "true";
 		wrapper.style.color = String(UI.colors.text);
@@ -158,9 +160,10 @@ export class OutputMount {
 
 		// handle remount by setting colors again
 		this._remount = () => {
+			let culture = app.i18n.getCulture();
 			shader.style.backgroundColor = String(shadeBackground);
 			wrapper.style.color = String(UI.colors.text);
-			wrapper.dir = app.i18n.isRTL() ? "rtl" : "ltr";
+			wrapper.dir = culture.textDirection || "ltr";
 		};
 	}
 

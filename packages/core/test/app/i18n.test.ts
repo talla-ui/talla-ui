@@ -19,10 +19,11 @@ afterEach(() => {
 test("Set i18n provider with global context", () => {
 	let word = "foo";
 	app.i18n.configure("test", {
+		getCulture: () => ({ textDirection: "ltr" }),
 		getText: () => word,
 	});
 	expect(app.i18n.locale).toBe("test");
-	expect(app.i18n.isRTL()).toBe(false);
+	expect(app.i18n.getCulture()).toEqual({ textDirection: "ltr" });
 	expect(fmt("abc").toString()).toBe("foo");
 	word = "bar";
 	expect(fmt("abc").toString()).toBe("bar");
@@ -33,7 +34,7 @@ test("Set i18n provider with global context", () => {
 test("Set translations with global context", () => {
 	let abc = fmt("abc");
 	expect(abc.toString()).toBe("abc");
-	app.i18n.setTranslations({ abc: "def" });
+	app.i18n.setText({ abc: "def" });
 	expect(abc.toString()).toBe("def");
 });
 

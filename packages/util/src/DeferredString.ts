@@ -237,8 +237,12 @@ export namespace DeferredString {
 		 */
 		format(value: any, ...type: string[]): string;
 
-		/** Returns true if the current locale uses right-to-left script */
-		isRTL(): boolean;
+		/**
+		 * Returns the current (user) culture preferences and/or locale defaults
+		 * - This method should return an object with culture-specific options, as used by localizable components. The exact properties of this object are intentionally application and platform specific. They may be initialized from defaults for the selected language and region, and extended with user preferences (to allow for e.g. `en-US` language with non-US date formatting).
+		 * - The framework renderer itself may use at least the `textDirection` property, if present, to determine whether the current locale uses right-to-left script.
+		 */
+		getCulture(): Record<string, any>;
 	}
 
 	/** @internal Format string with given values */
@@ -333,7 +337,7 @@ export namespace DeferredString {
 						.join(", ");
 				}
 				if (v.toString === DATE_TO_STRING) {
-					return v.toLocaleString();
+					return (v as Date).toISOString();
 				}
 				break;
 			case "number":

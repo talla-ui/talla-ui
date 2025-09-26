@@ -11,9 +11,7 @@ beforeEach(() => {
 describe("Set i18n provider with DeferredString directly", () => {
 	test("No placeholders, class implementation", () => {
 		class MyI18nProvider implements DeferredString.I18nProvider {
-			isRTL() {
-				return false;
-			}
+			getCulture = () => ({});
 			getText(_text: string): string {
 				return "foo";
 			}
@@ -32,9 +30,7 @@ describe("Set i18n provider with DeferredString directly", () => {
 
 	test("Template literal with placeholder", () => {
 		DeferredString.setI18nInterface({
-			isRTL() {
-				return false;
-			},
+			getCulture: () => ({}),
 			getText: () => "bar {} foo",
 			getPlural: () => "",
 			format: () => "",
@@ -44,9 +40,7 @@ describe("Set i18n provider with DeferredString directly", () => {
 
 	test("Translate with tags", () => {
 		DeferredString.setI18nInterface({
-			isRTL() {
-				return false;
-			},
+			getCulture: () => ({}),
 			getText: (s: string) => {
 				let tag = s.match(/^\{\#(\w+)/)?.[1];
 				switch (tag) {
@@ -77,9 +71,7 @@ test("Pluralizer", () => {
 	expect(fmt("{} book{0:+//s}", 1.5).toString()).toBe("1.5 books");
 	expect(fmt("{} book{0:+//s}", 2).toString()).toBe("2 books");
 	DeferredString.setI18nInterface({
-		isRTL() {
-			return false;
-		},
+		getCulture: () => ({}),
 		getText: (s: string) => (s === "{} book{0:+//s}" ? "{} livre{0:+//s}" : s),
 		getPlural: (n: number, forms: string[]) => forms[n < 2 ? 0 : 1] || "",
 		format: () => "",
@@ -98,9 +90,7 @@ test("Pluralizer", () => {
 
 test("Local format", () => {
 	DeferredString.setI18nInterface({
-		isRTL() {
-			return false;
-		},
+		getCulture: () => ({}),
 		getText: (s) => s,
 		getPlural: () => "",
 		format: (value: any, ...type: string[]) => {
@@ -117,9 +107,7 @@ test("Local format", () => {
 
 test("Default local format", () => {
 	DeferredString.setI18nInterface({
-		isRTL() {
-			return false;
-		},
+		getCulture: () => ({}),
 		getText: (s) => s,
 		getPlural: () => "",
 		format: (value: any, type: string) => {
