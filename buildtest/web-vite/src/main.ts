@@ -163,6 +163,8 @@ function MainView(v: Binding<MainActivity>) {
 								{ value: 0, text: "Zero" },
 								{ value: 1, text: "One" },
 								{ value: 2, text: "Two" },
+								{ value: 3, text: "Three", disabled: true },
+								{ value: 4, text: "Four" },
 							]),
 						)
 						.value(v.bind("countService.count")),

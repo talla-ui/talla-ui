@@ -258,14 +258,13 @@ export namespace UIButton {
 				let value = await this._showMenu!(button);
 				button.pressed = false;
 				showing = undefined;
-				if (value == null) return;
-				button.value = value;
-				let item = menu.items.find((item) => item.value === value);
-				if (item) button.emit("MenuItemSelect", item);
+				if (value != null) {
+					button.value = value;
+					let item = menu.items.find((item) => item.value === value);
+					if (item) button.emit("MenuItemSelect", item);
+				}
 			};
-			this.onClick(showMenu);
-			this.onPress(showMenu);
-			return this;
+			return this.onClick(showMenu).onPress(showMenu);
 		}
 
 		/**
@@ -277,30 +276,50 @@ export namespace UIButton {
 		 * @returns The builder instance for chaining.
 		 */
 		dropdownPicker(menu: ModalMenuOptions) {
+			let items = menu.items;
 			this._showMenu = (button) => {
-				return AppContext.getInstance().showModalMenuAsync((options) => {
-					options.width = menu.width;
-					options.minWidth = menu.minWidth;
-					options.items = menu.items.map((it) => ({
-						...it,
-						icon: UIIconResource.theme.ref(
-							it.value === button.value ? "check" : "blank",
-						),
-					}));
-				}, button);
+				items = items.map((it) => ({
+					...it,
+					icon:
+						it.value === button.value
+							? UIIconResource.theme.ref("check")
+							: undefined,
+				}));
+				return AppContext.getInstance().showModalMenuAsync(
+					{ ...menu, items },
+					button,
+				);
 			};
 			this.initializer.initialize((button) => {
-				button.observe("value", (value) => {
-					if (value == null) return;
-					for (let item of menu.items) {
-						if (item.value === value) {
-							button.text = item.text;
-							break;
-						}
+				let buffer = "";
+				let lastKeyTime = 0;
+				button.listen((e) => {
+					if (e.name !== "KeyDown") return;
+					let key = e.data.key;
+					if (key === "ArrowDown" || key === "ArrowUp") {
+						let idx = items.findIndex((it) => it.value === button.value);
+						let item = items[idx + (key === "ArrowUp" ? -1 : 1)];
+						if (item && !item.divider && !item.disabled)
+							button.value = item.value;
+						return;
 					}
+					let letter = String(key).toUpperCase();
+					if (letter.length !== 1) return;
+					let now = Date.now();
+					buffer = now - lastKeyTime > 500 ? letter : buffer + letter;
+					lastKeyTime = now;
+					let item = items.find(
+						(it: any) =>
+							!it.disabled && String(it.text).toUpperCase().startsWith(buffer),
+					);
+					if (item) button.value = item.value;
+				});
+				button.observe("value", (value) => {
+					let item = value != null && items.find((it) => it.value === value);
+					if (item) button.text = (item as any).text;
 				});
 			});
-			return this.dropdownMenu(menu);
+			return this.accessibleRole("button").dropdownMenu(menu);
 		}
 
 		/**

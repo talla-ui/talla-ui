@@ -37,6 +37,7 @@ const _listKeysPreventDefault: { [keyName: string]: boolean } = {
 
 /** Roles for which keyboard default actions should be prevented */
 const _listRolesPreventKeys: { [roleName: string]: boolean } = {
+	button: true,
 	list: true,
 	listitem: true,
 	menu: true,
