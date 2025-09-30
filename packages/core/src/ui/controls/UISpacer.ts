@@ -29,7 +29,7 @@ export namespace UISpacer {
 		let result = new SpacerBuilder();
 		if (minWidth) result.minWidth(minWidth);
 		if (minHeight) result.minHeight(minHeight);
-		if (!minWidth && !minHeight) result.grow();
+		if (minWidth == null && minHeight == null) result.grow();
 		return result;
 	}
 
