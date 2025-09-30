@@ -116,16 +116,20 @@ export function setTextOrHtmlContent(
 	// add chevron, if any
 	if (content.chevron) {
 		let chevronStyle = content.chevronStyle;
-		let width = getCSSLength(chevronStyle?.size, "1rem");
+		let width = getCSSLength(
+			chevronStyle?.size || UIStyle.defaultOptions.iconSize,
+			"1rem",
+		);
 		let chevronSpacer = document.createElement("span");
 		chevronSpacer.style.display = "inline-block";
 		chevronSpacer.style.width = width;
 		element.appendChild(chevronSpacer);
 		let chevronWrapper = document.createElement("span");
 		chevronWrapper.className = "_chevron-wrapper";
-		if (chevronStyle?.margin !== undefined) {
-			chevronWrapper.style.insetInlineEnd = getCSSLength(chevronStyle.margin);
-		}
+		chevronWrapper.style.insetInlineEnd = getCSSLength(
+			chevronStyle?.margin,
+			"0.25rem",
+		);
 		let chevronElement = getIconElt(
 			CHEVRON_ICONS[content.chevron],
 			chevronStyle,

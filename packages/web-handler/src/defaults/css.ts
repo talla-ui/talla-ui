@@ -131,7 +131,6 @@ export function makeBaseCSS() {
 			display: "inline-flex",
 			alignItems: "center",
 			position: "absolute",
-			insetInlineEnd: "1ex",
 			top: "0",
 			bottom: "0",
 			paddingTop: "0.125em",
