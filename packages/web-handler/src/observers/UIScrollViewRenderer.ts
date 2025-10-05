@@ -3,6 +3,9 @@ import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
 const EMIT_INTERVAL = 100;
 
+/** Cache of scroll views and last scroll top, to restore on remount */
+const scrollViewCache = new WeakMap<UIScrollView, number>();
+
 /** @internal */
 export class UIScrollViewRenderer extends UIContainerRenderer<UIScrollView> {
 	override getOutput() {
@@ -15,6 +18,17 @@ export class UIScrollViewRenderer extends UIContainerRenderer<UIScrollView> {
 		// (app should provide other ways to enable keyboard navigation)
 		out.element.tabIndex = -1;
 		return out;
+	}
+
+	onRendered() {
+		// scroll back to previous output scroll top, if any
+		let element = this.element;
+		let lastTop = scrollViewCache.get(this.observed!);
+		if (lastTop != null && element) {
+			setTimeout(() => {
+				element.scrollTop = lastTop;
+			}, 0);
+		}
 	}
 
 	override updateStyle(element: HTMLElement) {
@@ -65,6 +79,7 @@ export class UIScrollViewRenderer extends UIContainerRenderer<UIScrollView> {
 			if (horzDist < 0) wentXEnd = !(wentXStart = true);
 			if (horzDist > 0) wentXEnd = !(wentXStart = false);
 			lastTop = element.scrollTop;
+			scrollViewCache.set(scrollContainer, lastTop);
 			lastLeft = Math.abs(element.scrollLeft);
 			lastT = Date.now();
 			let eventData: UIScrollView.ScrollEventData = {
