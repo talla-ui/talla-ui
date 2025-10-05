@@ -36,6 +36,9 @@ export class OutputMount {
 			elt.dir = culture.textDirection || "ltr";
 			elt.style.background = String(background);
 			elt.style.color = String(UI.colors.text);
+			elt.style.colorScheme = UIColor.isBrightColor(UI.colors.background)
+				? "light"
+				: "dark";
 		};
 		this._remount();
 		registerHandlers(elt, true);
