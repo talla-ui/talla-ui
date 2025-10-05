@@ -67,6 +67,9 @@ export class AppContext extends ObservableObject {
 
 		// set as root object (cannot be attached, no more bindings)
 		ObservableObject.makeRoot(this);
+
+		// Link up deferred string i18n provider
+		DeferredString.setI18nInterface(this.i18n);
 	}
 
 	/** @internal A reference to the application context itself */

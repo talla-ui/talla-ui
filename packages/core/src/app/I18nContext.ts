@@ -41,7 +41,6 @@ export class I18nContext implements DeferredString.I18nProvider {
 		this._locale = undefined;
 		this._provider = undefined;
 		this._dict = undefined;
-		DeferredString.setI18nInterface();
 		return this;
 	}
 
@@ -75,16 +74,22 @@ export class I18nContext implements DeferredString.I18nProvider {
 
 	/**
 	 * Formats a value according to the specified type
-	 * - This method is used by {@link DeferredString} to format values, and is part of the {@link DeferredString.I18nProvider} interface.
+	 * - This method is used by {@link DeferredString} to format values with the `:L` specifier, and is part of the {@link DeferredString.I18nProvider} interface.
+	 * - By default, only `Date` values are formatted using `toLocaleDateString()` or `toLocaleString()`. Other values are formatted using the default `fmt()` behavior if no type is specified at all.
 	 * @param value The value to format
 	 * @param type The type of formatting to be performed, possibly with further options
 	 * @returns The formatted value
 	 */
 	format(value: any, ...type: string[]): string {
-		return (
-			this._provider?.format?.(value, ...type) ||
-			(type[0] ? "???" : fmt("{}", value).toString())
-		);
+		if (this._provider?.format) {
+			return this._provider.format(value, ...type) || "";
+		}
+		if (value instanceof Date) {
+			return type[0] === "date"
+				? value.toLocaleDateString()
+				: value.toLocaleString();
+		}
+		return type[0] ? "???" : fmt("{}", value).toString();
 	}
 
 	/**
