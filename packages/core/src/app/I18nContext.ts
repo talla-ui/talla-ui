@@ -1,4 +1,5 @@
 import { DeferredString, fmt } from "@talla-ui/util";
+import { ObservableObject } from "../object/index.js";
 
 /**
  * An object that provides internationalization functionality for the current locale
@@ -6,7 +7,10 @@ import { DeferredString, fmt } from "@talla-ui/util";
  * - An instance of this class is available on the global application context, as {@link AppContext.i18n app.i18n}.
  * @see {@link DeferredString}
  */
-export class I18nContext implements DeferredString.I18nProvider {
+export class I18nContext
+	extends ObservableObject
+	implements DeferredString.I18nProvider
+{
 	/** The current locale, if any */
 	get locale() {
 		return this._locale;
@@ -21,6 +25,7 @@ export class I18nContext implements DeferredString.I18nProvider {
 		this._locale = locale;
 		this._provider = provider;
 		DeferredString.setI18nInterface(this);
+		this.emitChange();
 		return this;
 	}
 
