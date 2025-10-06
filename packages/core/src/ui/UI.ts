@@ -93,10 +93,10 @@ export namespace UI {
 		export type ButtonStyleName = keyof typeof button;
 
 		/** Object containing all available theme text field style references */
-		export const textfield = UIStyle.theme.textfield.refs();
+		export const textField = UIStyle.theme.textField.refs();
 
 		/** Type definition for theme text field style names */
-		export type TextfieldStyleName = keyof typeof textfield;
+		export type TextFieldStyleName = keyof typeof textField;
 
 		/** Object containing all available theme toggle style references */
 		export const toggle = UIStyle.theme.toggle.refs();

@@ -87,9 +87,9 @@ export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
 		...defaultStyles.image,
 		...options.imageStyles,
 	});
-	UIStyle.theme.textfield.set({
-		...defaultStyles.textfield,
-		...options.textfieldStyles,
+	UIStyle.theme.textField.set({
+		...defaultStyles.textField,
+		...options.textFieldStyles,
 	});
 	UIStyle.theme.toggle.set({
 		...defaultStyles.toggle,

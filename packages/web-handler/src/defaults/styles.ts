@@ -51,7 +51,7 @@ const baseBadgeTextOptions: UIStyle.StyleOptions = {
 	padding: { x: 8, y: 2 },
 };
 
-const baseTextfieldOptions: UIStyle.StyleOptions = {
+const baseTextFieldOptions: UIStyle.StyleOptions = {
 	textColor: color_text,
 	borderWidth: 1,
 	borderColor: color_transparent,
@@ -248,8 +248,8 @@ export default {
 			maxWidth: "100%",
 		}),
 	},
-	textfield: {
-		default: new UIStyle(baseTextfieldOptions, {
+	textField: {
+		default: new UIStyle(baseTextFieldOptions, {
 			background: color_background,
 			borderColor: color_text.alpha(0.2),
 		})
@@ -262,7 +262,7 @@ export default {
 				{ borderColor: color_text.alpha(0.3) },
 			)
 			.setDisabled(disabledOptions),
-		ghost: new UIStyle(baseTextfieldOptions, {
+		ghost: new UIStyle(baseTextFieldOptions, {
 			background: color_transparent,
 		})
 			.setReadonly({ background: color_text.alpha(0.1) })

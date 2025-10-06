@@ -139,7 +139,7 @@ import { bound } from "talla-ui";
 				<form formContext={bound("myForm")}>
 					<row>
 						<label>Name:</label>
-						<textfield formField="name" />
+						<textField formField="name" />
 					</row>
 					<button primary label="Submit" onClick="SubmitForm" />
 				</form>

@@ -1109,7 +1109,7 @@ let btnStyle = new UIStyle({
 );
 
 // Readonly, readonly + hovered, readonly + focused states:
-let textfieldStyle = new UIStyle({
+let textFieldStyle = new UIStyle({
 	/* ... */
 })
 	.setDisabled({ opacity: 0.5 })
@@ -1202,10 +1202,10 @@ UI.Text("Title").textStyle("title");
 UI.Button("Click").buttonStyle("accent");
 UI.Button("Click").buttonStyle(UI.styles.button.accent);
 
-// ### Textfield styles:
+// ### TextField styles:
 // default, ghost (no border and background)
-UI.TextField().textfieldStyle("ghost");
-UI.TextField().textfieldStyle(UI.styles.textfield.ghost);
+UI.TextField().textFieldStyle("ghost");
+UI.TextField().textFieldStyle(UI.styles.textField.ghost);
 
 // ### Toggle styles:
 // default, danger, success
@@ -1438,7 +1438,7 @@ UI.TextField("Placeholder") // or UI.TextField.fmt("..." [, bindings])
 	.selectOnFocus()
 	.disabled() // or .disabled(binding)
 	.readOnly() // same
-	.textfieldStyle("ghost") // or UIStyle instance, overrides, or binding
+	.textFieldStyle("ghost") // or UIStyle instance, overrides, or binding
 	.onInput("EmailInput"); // intercept Input
 
 UI.Toggle("Name") // or UI.Toggle.fmt("..." [, bindings])

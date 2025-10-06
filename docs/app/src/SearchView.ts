@@ -1,7 +1,7 @@
 import { Binding, UI, UIColor, UIStyle } from "talla-ui";
 import { SearchActivity } from "./SearchActivity";
 
-const TextFieldStyle = UI.styles.textfield.default
+const TextFieldStyle = UI.styles.textField.default
 	.extend({
 		background: UI.colors.transparent,
 		textColor: new UIColor("inherit"),
@@ -51,7 +51,7 @@ export function SearchView(v: Binding<SearchActivity>) {
 				.padding({ start: 8, end: 12 })
 				.with(
 					UI.TextField("Search...")
-						.textfieldStyle(TextFieldStyle)
+						.textFieldStyle(TextFieldStyle)
 						.requestFocus()
 						.disableSpellCheck()
 						.onInput("SearchInput")

@@ -65,8 +65,8 @@ export class WebContextOptions extends ConfigOptions {
 	/** An optional set of style overrides that are applied as theme image styles */
 	imageStyles?: Partial<Record<UI.styles.ImageStyleName, UIStyle>>;
 
-	/** An optional set of style overrides that are applied as theme textfield styles */
-	textfieldStyles?: Partial<Record<UI.styles.TextfieldStyleName, UIStyle>>;
+	/** An optional set of style overrides that are applied as theme text field styles */
+	textFieldStyles?: Partial<Record<UI.styles.TextFieldStyleName, UIStyle>>;
 
 	/** An optional set of style overrides that are applied as theme toggle styles */
 	toggleStyles?: Partial<Record<UI.styles.ToggleStyleName, UIStyle>>;

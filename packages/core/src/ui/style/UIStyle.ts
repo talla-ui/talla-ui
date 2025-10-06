@@ -478,7 +478,7 @@ export namespace UIStyle {
 			],
 			UIStyle.resolve,
 		),
-		textfield: new ThemeResolver(["default", "ghost"], UIStyle.resolve),
+		textField: new ThemeResolver(["default", "ghost"], UIStyle.resolve),
 		toggle: new ThemeResolver(
 			["default", "danger", "success"],
 			UIStyle.resolve,

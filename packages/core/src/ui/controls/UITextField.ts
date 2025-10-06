@@ -219,15 +219,15 @@ export namespace UITextField {
 		 * @param style The name of a theme text field style, a {@link UIStyle} instance, a style options (overrides) object, or a binding.
 		 * @returns The builder instance for chaining.
 		 */
-		textfieldStyle(
+		textFieldStyle(
 			style?: BindingOrValue<
-				| UI.styles.TextfieldStyleName
+				| UI.styles.TextFieldStyleName
 				| UIStyle
 				| UIStyle.StyleOptions
 				| undefined
 			>,
 		) {
-			return this.setStyleProperty(style, UIStyle.theme.textfield);
+			return this.setStyleProperty(style, UIStyle.theme.textField);
 		}
 	}
 }

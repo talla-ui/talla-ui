@@ -146,7 +146,7 @@ test("UIAnimation theme references resolve dynamically", async () => {
 test("UIStyle theme has element style resolvers", () => {
 	expect(UI.styles.text).toBeDefined();
 	expect(UI.styles.button).toBeDefined();
-	expect(UI.styles.textfield).toBeDefined();
+	expect(UI.styles.textField).toBeDefined();
 	expect(UI.styles.toggle).toBeDefined();
 	expect(UI.styles.image).toBeDefined();
 	expect(UI.styles.divider).toBeDefined();

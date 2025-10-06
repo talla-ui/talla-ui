@@ -1,8 +1,8 @@
-import { RenderContext, UITextField, UI } from "@talla-ui/core";
+import { RenderContext, UI, UITextField } from "@talla-ui/core";
 import { TestOutputElement } from "../TestOutputElement.js";
 import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 
-const TEXTFIELD_STYLE = UI.styles.textfield.default;
+const TEXTFIELD_STYLE = UI.styles.textField.default;
 
 /** @internal */
 export class UITextFieldRenderer extends TestBaseObserver<UITextField> {
@@ -47,17 +47,17 @@ export class UITextFieldRenderer extends TestBaseObserver<UITextField> {
 	}
 
 	override updateStyle(element: TestOutputElement) {
-		let textfield = this.observed;
+		let textField = this.observed;
 
 		// set state
-		element.disabled = textfield.disabled;
-		element.readOnly = textfield.readOnly;
+		element.disabled = textField.disabled;
+		element.readOnly = textField.readOnly;
 
 		// set styles
 		applyElementStyle(element, [
 			TEXTFIELD_STYLE,
-			textfield.style,
-			textfield.position,
+			textField.style,
+			textField.position,
 		]);
 	}
 
