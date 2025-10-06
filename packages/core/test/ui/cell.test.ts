@@ -19,8 +19,14 @@ test("Constructor with content", () => {
 	expect(cell.findViewContent(UIText)).toHaveLength(2);
 });
 
-test("View builder with properties", () => {
+test("View builder with method call", () => {
 	let myCell = UI.Cell().hideWhen(true);
+	let cell = myCell.build();
+	expect(cell.hidden).toBe(true);
+});
+
+test("View builder with apply call", () => {
+	let myCell = UI.Cell().apply((b) => b.hideWhen(true));
 	let cell = myCell.build();
 	expect(cell.hidden).toBe(true);
 });
