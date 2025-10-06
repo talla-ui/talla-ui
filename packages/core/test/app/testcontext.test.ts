@@ -35,12 +35,8 @@ describe("Local data", () => {
 	test("Empty data", async () => {
 		let app = useTestContext();
 		expect(app.localData).toBeInstanceOf(LocalData);
-		let read = await app.localData.readAsync("test", (b) =>
-			b.object({
-				foo: b.any(),
-			}),
-		);
-		expect(read?.data).toHaveProperty("foo", undefined);
+		let read = await app.localData.readAsync("test", (b) => b.string());
+		expect(read?.data).toBeUndefined();
 	});
 
 	test("Specified local data", async () => {

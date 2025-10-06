@@ -48,7 +48,7 @@ export class LocalData extends ObservableObject {
 		let json = this._obj?.[key];
 		return json
 			? validator.safeParse(JSON.parse(json))
-			: validator.safeParse(this._defaults[key] || ({} as any));
+			: validator.safeParse(this._defaults[key]);
 	}
 
 	/**
