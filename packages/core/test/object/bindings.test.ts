@@ -765,6 +765,23 @@ describe("Mapped/boolean bindings", () => {
 		expect(JSON.stringify(parent.child.updates)).toBe("[1,2,3,0]");
 	});
 
+	test("Either-binding, 3 terms with undefined", () => {
+		let { parent } = setup();
+		parent.child.bindValue(
+			Binding.either(undefined, "value1", "value2", new Binding("value3")),
+		);
+		parent.value1 = 0;
+		parent.value2 = 0;
+		parent.value3 = 0;
+		expect(JSON.stringify(parent.child.updates)).toBe("[1,2,3,0]");
+	});
+
+	test("Either-binding, undefined", () => {
+		let { parent } = setup();
+		parent.child.bindValue(Binding.either(undefined, undefined));
+		expect(parent.child.updates).toEqual([]);
+	});
+
 	test("Neither-binding, 3 terms", () => {
 		let { parent } = setup();
 		parent.child.bindValue(

@@ -635,15 +635,18 @@ export namespace Binding {
 	 * - This function repeatedly calls {@link Binding.or} for each source and returns the resulting binding.
 	 * @param sources One or more instances of {@link Binding} or source paths that will be passed to the constructor
 	 */
-	export function either<A extends Array<string | Binding<any>>>(
+	export function either<A extends Array<undefined | string | Binding<any>>>(
 		...sources: A
 	): Binding<A[number] extends Binding<infer T> ? T : any>;
-	export function either(...sources: Binding<any>[]): Binding<any> {
-		let result = new Binding(sources.shift());
+	export function either(
+		...sources: Array<undefined | string | Binding<any>>
+	): Binding<any> {
+		let result: Binding | undefined;
 		while (sources.length) {
-			result = result.or(sources.shift()!);
+			let b = sources.shift()!;
+			if (b) result = result ? result.or(b) : new Binding(b);
 		}
-		return result;
+		return result || new Binding(); // use undefined binding as fallback
 	}
 
 	/**
@@ -651,7 +654,7 @@ export namespace Binding {
 	 * - This function repeatedly calls {@link Binding.or} for each source and returns the negated resulting binding (using {@link Binding.not}).
 	 * @param sources One or more instances of {@link Binding} or source paths that will be passed to the constructor
 	 */
-	export function neither(...sources: Array<string | Binding>) {
+	export function neither(...sources: Array<undefined | string | Binding>) {
 		return either(...sources).not();
 	}
 }
