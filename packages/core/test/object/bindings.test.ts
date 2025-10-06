@@ -106,7 +106,7 @@ describe("Basic bindings", () => {
 	test("Value binding", () => {
 		let { TestObject } = setup();
 		let c = new TestObject();
-		c.child.applyBind("aa", Binding.withValue(123));
+		c.child.applyBind("aa", Binding.from(123));
 		expect(c.child).toHaveProperty("aa", 123);
 		c.unlink();
 		expect(c.child).toHaveProperty("aa", 123);
@@ -394,12 +394,12 @@ describe("Basic bindings", () => {
 		expect(c.child).toHaveProperty("aa", undefined);
 	});
 
-	test("Binding to specific origin (object.bind())", () => {
+	test("Binding to specific origin", () => {
 		let { TestObject } = setup();
 		let a = new TestObject();
 		a.a = 123;
 		let c = new TestObject();
-		c.applyBind("a", Binding.withProperty(a, "a"));
+		c.applyBind("a", Binding.observe(a, "a"));
 		expect(c).toHaveProperty("a", 123);
 		a.a = 234;
 		expect(c).toHaveProperty("a", 234);
@@ -587,7 +587,7 @@ describe("Mapped/boolean bindings", () => {
 
 	test("Value binding, not", () => {
 		let { parent } = setup();
-		parent.child.bindValue(Binding.withValue(true).not());
+		parent.child.bindValue(Binding.from(true).not());
 		parent.child.expectValue().toBe(false);
 	});
 

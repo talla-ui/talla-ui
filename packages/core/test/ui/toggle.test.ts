@@ -56,7 +56,7 @@ test("User input with form state", async () => {
 		// note that form must exist before it can be bound
 		readonly form = new FormState().set("foo", true);
 		readonly toggle = this.attach(
-			UI.Toggle().formStateValue(Binding.withValue(this.form), "foo").build(),
+			UI.Toggle().formStateValue(Binding.from(this.form), "foo").build(),
 		);
 	}
 	let host = new Host();

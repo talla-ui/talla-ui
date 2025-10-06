@@ -21,7 +21,7 @@ export class TestDialog
 	}
 
 	protected override get body() {
-		return UI.Cell(UI.Show(Binding.withValue(this.dialogView))).build();
+		return UI.Cell(UI.Show(Binding.from(this.dialogView))).build();
 	}
 
 	show(place?: Partial<RenderContext.PlacementOptions>) {

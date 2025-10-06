@@ -48,7 +48,7 @@ export class Dialog
 	}
 
 	protected override get body() {
-		return UI.Cell(UI.Show(Binding.withValue(this.dialogView)))
+		return UI.Cell(UI.Show(Binding.from(this.dialogView)))
 			.apply(Dialog.styles.containerModifier)
 			.build();
 	}

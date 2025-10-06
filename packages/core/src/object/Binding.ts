@@ -55,6 +55,30 @@ export namespace BindingOrValue {
  */
 export class Binding<T = any> {
 	/**
+	 * Creates a new binding using the provided binding, or a new binding that encapsulates the provided value
+	 * @param value An existing binding, or a literal value
+	 * @returns A new {@link Binding} object
+	 */
+	static from<T>(value: BindingOrValue<T>): Binding<T> {
+		return isBinding(value) ? value.clone() : new Binding(undefined, value);
+	}
+
+	/**
+	 * Creates a new binding that references a property of the provided object
+	 * - If the property doesn't exist yet, it will be initialized as undefined.
+	 * @param object The object to bind to
+	 * @param propertyName The name of the property to observe
+	 * @returns A new {@link Binding} object
+	 */
+	static observe<TObject extends ObservableObject, K extends keyof TObject>(
+		object: TObject,
+		propertyName: K,
+	): Binding<TObject[K]> {
+		if (!(propertyName in object)) (object as any)[propertyName] = undefined;
+		return new Binding({ path: [propertyName], origin: object });
+	}
+
+	/**
 	 * Creates a new binding for given property and default value
 	 * @param source The source path that's used for obtaining the bound value, another {@link Binding} to clone from, or an object with advanced options
 	 * @param defaultValue An optional default value that's used when the bound value is undefined
@@ -590,30 +614,6 @@ export namespace Binding {
 				? NonNullable<T>[P] | undefined
 				: NonNullable<T>[P]
 			: never;
-
-	/**
-	 * Creates a new binding that always returns the specified value
-	 * @param value The value to return
-	 * @returns A new {@link Binding} object
-	 */
-	export function withValue<T>(value: T) {
-		return new Binding<T>(undefined, value);
-	}
-
-	/**
-	 * Creates a new binding that references a property of the provided object
-	 * - If the property doesn't exist yet, it will be initialized as undefined.
-	 * @param object The object to bind to
-	 * @param propertyName The name of the property to bind to
-	 * @returns A new {@link Binding} object
-	 */
-	export function withProperty<
-		TObject extends ObservableObject,
-		K extends keyof TObject,
-	>(object: TObject, propertyName: K): Binding<TObject[K]> {
-		if (!(propertyName in object)) (object as any)[propertyName] = undefined;
-		return new Binding({ path: [propertyName], origin: object });
-	}
 
 	/**
 	 * Creates a new binding for a string-formatted value
