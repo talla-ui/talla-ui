@@ -128,7 +128,7 @@ export function setTextOrHtmlContent(
 		chevronWrapper.className = "_chevron-wrapper";
 		chevronWrapper.style.insetInlineEnd = getCSSLength(
 			chevronStyle?.margin,
-			"0.25rem",
+			"0.375rem",
 		);
 		let chevronElement = getIconElt(
 			CHEVRON_ICONS[content.chevron],

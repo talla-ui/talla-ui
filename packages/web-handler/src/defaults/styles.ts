@@ -4,6 +4,10 @@ const color_inherit = new UIColor("inherit");
 const colors = UI.colors;
 const color_transparent = colors.transparent;
 const color_text = colors.text;
+const color_text_05 = colors.text.alpha(0.05);
+const color_text_1 = colors.text.alpha(0.1);
+const color_text_2 = colors.text.alpha(0.2);
+const color_text_3 = colors.text.alpha(0.3);
 const color_background = colors.background;
 const color_accent = colors.accent;
 const color_success = colors.success;
@@ -13,12 +17,11 @@ const color_link = colors.link;
 const BTN_ACCENT_THRESHOLD = 0.2;
 
 const baseButtonOptions: UIStyle.StyleOptions = {
-	background: color_text.alpha(0.05),
+	background: color_text_05,
 	textColor: color_inherit,
-	padding: { y: 1, x: 12 },
-	borderRadius: 8,
-	borderWidth: 1,
-	borderColor: color_text.alpha(0.1),
+	padding: { y: 3, x: 16 },
+	borderRadius: 18,
+	borderWidth: 0,
 	fontWeight: 600,
 	textAlign: "center",
 	lineBreakMode: "nowrap",
@@ -29,10 +32,10 @@ const baseButtonOptions: UIStyle.StyleOptions = {
 
 const iconButtonOptions: UIStyle.StyleOptions = {
 	background: color_transparent,
-	minWidth: 32,
-	minHeight: 32,
+	minWidth: 34,
+	minHeight: 34,
 	padding: 4,
-	borderRadius: 16,
+	borderRadius: 18,
 	borderWidth: 0,
 	lineHeight: 1,
 	fontSize: "0",
@@ -55,10 +58,10 @@ const baseTextFieldOptions: UIStyle.StyleOptions = {
 	textColor: color_text,
 	borderWidth: 1,
 	borderColor: color_transparent,
-	borderRadius: 5,
+	borderRadius: 6,
 	minWidth: 96,
 	shrink: 1,
-	height: 36,
+	height: 34,
 	padding: { x: 10, y: 4 },
 	lineBreakMode: "pre-wrap",
 	lineHeight: 1.5,
@@ -76,8 +79,8 @@ const disabledOptions: UIStyle.StyleOptions = {
 	cursor: "default",
 };
 
-const _btnBg1 = { background: color_text.alpha(0.1) };
-const _btnBg2 = { background: color_text.alpha(0.2) };
+const _btnBg1 = { background: color_text_1 };
+const _btnBg2 = { background: color_text_2 };
 const defaultButtonStyle = new UIStyle(baseButtonOptions)
 	.setDisabled(disabledOptions)
 	.setHovered(_btnBg1)
@@ -105,7 +108,6 @@ export default {
 			{ background: color_accent, textColor: color_accent.text() },
 			{
 				background: color_accent.contrast(-0.1, BTN_ACCENT_THRESHOLD),
-				borderColor: color_accent,
 			},
 			{ background: color_accent.contrast(-0.2, BTN_ACCENT_THRESHOLD) },
 		),
@@ -113,7 +115,6 @@ export default {
 			{ background: color_success, textColor: color_success.text() },
 			{
 				background: color_success.brighten(-0.1),
-				borderColor: color_success,
 			},
 			{ background: color_success.brighten(-0.2) },
 		),
@@ -129,7 +130,6 @@ export default {
 			{
 				minWidth: 0,
 				background: color_transparent,
-				borderColor: color_transparent,
 			},
 			_btnBg1,
 			_btnBg2,
@@ -147,7 +147,6 @@ export default {
 				underline: true,
 				textColor: color_link,
 				background: color_transparent,
-				borderColor: color_transparent,
 			},
 			{ background: color_link.alpha(0.1) },
 			{ background: color_link.alpha(0.2) },
@@ -251,29 +250,29 @@ export default {
 	textField: {
 		default: new UIStyle(baseTextFieldOptions, {
 			background: color_background,
-			borderColor: color_text.alpha(0.2),
+			borderColor: color_text_2,
 		})
-			.setHovered({ borderColor: color_text.alpha(0.3) })
+			.setHovered({ borderColor: color_text_3 })
 			.setReadonly(
 				{
-					background: color_text.alpha(0.1),
+					background: color_text_1,
 					borderColor: color_transparent,
 				},
-				{ borderColor: color_text.alpha(0.3) },
+				{ borderColor: color_text_3 },
 			)
 			.setDisabled(disabledOptions),
 		ghost: new UIStyle(baseTextFieldOptions, {
 			background: color_transparent,
 		})
-			.setReadonly({ background: color_text.alpha(0.1) })
+			.setReadonly({ background: color_text_1 })
 			.setDisabled(disabledOptions),
 	},
 	toggle: {
 		default: new UIStyle(baseToggleOptions, {
-			borderColor: color_text.alpha(0.2),
+			borderColor: color_text_2,
 			textColor: color_accent, // :checked fill
 		})
-			.setHovered({ borderColor: color_text.alpha(0.3) })
+			.setHovered({ borderColor: color_text_3 })
 			.setDisabled(disabledOptions),
 		danger: new UIStyle(baseToggleOptions, {
 			borderColor: color_danger,
