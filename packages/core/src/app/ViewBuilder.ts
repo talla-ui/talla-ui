@@ -194,6 +194,11 @@ export namespace ViewBuilder {
 	}
 }
 
+/** A type of function that returns a view builder, often provided with the same type of view builder as an argument */
+export type ViewBuilderFunction<TResult extends ViewBuilder, TArg = TResult> = (
+	arg: TArg,
+) => TResult;
+
 /**
  * A view builder that encapsulates a function to define a view builder lazily
  * - This function is helpful for creating view builders that may require further configuration after being returned from a function.
@@ -282,7 +287,7 @@ export const ComponentViewBuilder = function (
 		initializer,
 		build: initializer.build.bind(initializer),
 		apply: function (f) {
-			return f(this);
+			return f ? f(this) : this;
 		},
 	};
 } as ComponentViewBuilder.Type;
@@ -314,16 +319,16 @@ export interface ComponentViewBuilder<
 	build: () => TView;
 
 	/**
-	 * Runs a modifier function, returning its result
+	 * Applies a view builder function, returning its result
 	 *
 	 * @description
 	 * This method provides a convenient way to call a function from within a chain of other method calls. The modifier may call additional methods on the builder, use its initializer directly, or return a new builder that encapsulates the current one.
 	 *
 	 * @param modifier A function that takes the current builder instance and applies configurations.
-	 * @returns The result of the modifier function.
+	 * @returns The result of the function.
 	 */
-	apply<TBuilder, TResult>(
+	apply<TBuilder extends ViewBuilder, TResult extends ViewBuilder = TBuilder>(
 		this: TBuilder,
-		modifier: (builder: TBuilder) => TResult,
+		modifier?: ViewBuilderFunction<TResult, TBuilder>,
 	): TResult;
 }

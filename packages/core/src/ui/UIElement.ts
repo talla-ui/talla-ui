@@ -1,5 +1,11 @@
 import type { StringConvertible } from "@talla-ui/util";
-import { AppContext, RenderContext, View, ViewBuilder } from "../app/index.js";
+import {
+	AppContext,
+	RenderContext,
+	View,
+	ViewBuilder,
+	ViewBuilderFunction,
+} from "../app/index.js";
 import { err, ERROR } from "../errors.js";
 import {
 	Binding,
@@ -189,22 +195,24 @@ export namespace UIElement {
 		}
 
 		/**
-		 * Runs a modifier function, returning its result
+		 * Applies a view builder function, returning its result
 		 *
 		 * @description
 		 * This method provides a convenient way to call a function from within a chain of other method calls. The modifier may call additional methods on the builder, use its initializer directly, or return a new builder that encapsulates the current one.
 		 *
 		 * @param modifier A function that takes the current builder instance and applies configurations.
-		 * @returns The result of the modifier function.
+		 * @returns The result of the function.
 		 *
 		 * @example
-		 * function limitCellWidth(b: cell.Builder) {
+		 * function limitCellWidth(b: UICell.CellBuilder) {
 		 *   return b.width(200, 100).shrink();
 		 * }
-		 * let myCell = cell("Hello").apply(limitCellWidth);
+		 * let myCell = UI.Cell("Hello").apply(limitCellWidth);
 		 */
-		apply<TResult>(modifier: (builder: this) => TResult): TResult {
-			return modifier(this);
+		apply<TResult extends ViewBuilder = this>(
+			modifier?: ViewBuilderFunction<TResult, this>,
+		): TResult {
+			return modifier ? modifier(this) : (this as any);
 		}
 
 		// --- base properties

@@ -35,11 +35,13 @@ const NO_DATA = Object.freeze({});
  *
  * @example
  * // Handling delegated UI events
- * const bodyView = list(
- *   v.bind("items"),
- *   row(
- *     // ...
- *     button("Remove").onClick("RemoveItem")
+ * function MyView(v: Binding<MyActivity>) {
+ *   return UI.List(
+ *     v.bind("items"),
+ *     UI.Row(
+ *       // ...
+ *       UI.Button("Remove").onClick("RemoveItem")
+ *     )
  *   )
  * )
  * class MyActivity extends Activity {
