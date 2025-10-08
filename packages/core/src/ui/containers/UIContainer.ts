@@ -68,8 +68,6 @@ export namespace UIContainer {
 	 * @see {@link UIContainer.Layout}
 	 */
 	export type SeparatorOptions = {
-		/** True for vertical line, or width-only spacer */
-		vertical?: boolean;
 		/** Width/height of separator space (CSS length or pixels) */
 		space?: string | number;
 		/** Separator line width (CSS length or pixels) */
@@ -78,6 +76,8 @@ export namespace UIContainer {
 		lineColor?: UIColor;
 		/** Line separator margin (CSS length or pixels) */
 		lineMargin?: string | number;
+		/** True for vertical line */
+		vertical?: boolean;
 	};
 
 	/**

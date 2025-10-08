@@ -93,7 +93,6 @@ export class UIContainerRenderer<
 			// is called explicitly on container
 			this.contentUpdater.stop();
 			this.contentUpdater = undefined;
-			this.lastSeparator = undefined;
 		}
 		super.update(element);
 	}
@@ -176,20 +175,11 @@ export class UIContainerRenderer<
 			if (!options && "gap" in (this.observed as unknown as UIRow)) {
 				let gap =
 					(this.observed as unknown as UIRow).gap ?? UIStyle.defaultOptions.gap;
-				options =
-					this.lastSeparator &&
-					this.lastSeparator.space === gap &&
-					this.lastSeparator.vertical === horzAxis
-						? this.lastSeparator
-						: { space: gap, vertical: horzAxis };
+				options = { space: gap, vertical: horzAxis };
 			}
-			if (this.lastSeparator !== options) {
-				this.lastSeparator = options;
-				this.contentUpdater.setSeparator(options, horzAxis);
-			}
+			this.contentUpdater.setSeparator(options, horzAxis);
 		}
 	}
-	lastSeparator?: UIContainer.SeparatorOptions;
 }
 
 /** @internal Asynchronous container content updater */
@@ -213,31 +203,50 @@ export class ContentUpdater {
 		options?: UIContainer.SeparatorOptions,
 		defaultVertical?: boolean,
 	) {
+		let oldOptions = this._sepOptions;
+		this._sepOptions = options;
 		let sep: HTMLElement | undefined;
-		let vertical = (options && options.vertical) ?? defaultVertical;
-		if (options && options.lineWidth) {
-			let size = getCSSLength(options.lineWidth, "");
+		if (options?.lineWidth) {
+			if (
+				oldOptions &&
+				oldOptions.lineWidth === options.lineWidth &&
+				oldOptions.lineColor === options.lineColor &&
+				oldOptions.lineMargin === options.lineMargin &&
+				oldOptions.vertical === options.vertical
+			)
+				return;
+
+			// create line separator element
+			let vertical = options?.vertical ?? defaultVertical;
+			let borderWidth = getCSSLength(options.lineWidth, "");
 			let margin = getCSSLength(options.lineMargin, "");
 			sep = document.createElement("hr");
 			sep.className =
 				CLASS_SEPARATOR_LINE +
 				(vertical ? " " + CLASS_SEPARATOR_LINE_VERT : "");
-			sep.style.borderWidth = size;
+			sep.style.borderWidth = borderWidth;
 			sep.style.margin = margin
 				? vertical
 					? "0 " + margin
 					: margin + " 0"
 				: "";
 			sep.style.borderColor = String(options.lineColor || UI.colors.divider);
-		} else if (options && options.space) {
+			this.element.style.columnGap = "";
+			this.element.style.rowGap = "";
+		} else if (options?.space) {
 			let size = getCSSLength(options && options.space, "0");
+			if (CSS.supports("gap", "1px")) {
+				// if gap is supported, use pure CSS
+				this.element.style.gap = size;
+				return;
+			}
+			if (oldOptions && oldOptions.space === options.space) return;
+
+			// otherwise, create spacer elements
 			sep = document.createElement("spacer" as string);
 			sep.className = CLASS_SEPARATOR_SPACER;
-			if (vertical) {
-				sep.style.width = size;
-			} else {
-				sep.style.height = size;
-			}
+			sep.style.width = size;
+			sep.style.height = size;
 		}
 		if (sep) sep.dataset.isSeparator = "true";
 		this._sepTemplate = sep;
@@ -471,6 +480,7 @@ export class ContentUpdater {
 	private _updateP?: Promise<void>;
 	private _updateResolve?: () => void;
 	private _output = new Map<View, RenderContext.Output<Node> | undefined>();
+	private _sepOptions?: UIContainer.SeparatorOptions;
 	private _sepTemplate?: HTMLElement;
 	private _separators = new Map<View, HTMLElement>();
 }
