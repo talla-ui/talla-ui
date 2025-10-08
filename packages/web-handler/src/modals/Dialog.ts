@@ -5,17 +5,18 @@ import {
 	ModalFactory,
 	RenderContext,
 	UI,
-	UICell,
+	UIContainer,
 	UIStyle,
 	View,
 	ViewEvent,
 } from "@talla-ui/core";
-import { ConfigOptions } from "@talla-ui/util";
 
-/** Default modal dialog view styles */
-export class WebDialogStyles extends ConfigOptions {
-	/** The style used for the dialog container */
-	containerStyle = new UIStyle({
+/** @internal Default modal dialog view; shown synchronously, removed when view is unlinked */
+export class Dialog
+	extends ComponentView
+	implements ModalFactory.DialogController
+{
+	static containerStyle = new UIStyle({
 		background: UI.colors.background,
 		borderColor: UI.colors.text.alpha(0.2),
 		borderWidth: 1,
@@ -28,17 +29,9 @@ export class WebDialogStyles extends ConfigOptions {
 		dropShadow: 32,
 	});
 
-	/** A variant modifier for the dialog container, applies the container style by default */
-	containerModifier = (cell: UICell.CellBuilder) =>
-		cell.style(this.containerStyle);
-}
-
-/** @internal Default modal dialog view; shown synchronously, removed when view is unlinked */
-export class Dialog
-	extends ComponentView
-	implements ModalFactory.DialogController
-{
-	static styles = new WebDialogStyles();
+	static Container(): UIContainer.ContainerBuilder {
+		return UI.Cell().accessibleRole("dialog").style(Dialog.containerStyle);
+	}
 
 	constructor(public dialogView: View) {
 		super();
@@ -48,8 +41,8 @@ export class Dialog
 	}
 
 	protected override get body() {
-		return UI.Cell(UI.Show(Binding.from(this.dialogView)))
-			.apply(Dialog.styles.containerModifier)
+		return Dialog.Container()
+			.with(UI.Show(Binding.from(this.dialogView)))
 			.build();
 	}
 

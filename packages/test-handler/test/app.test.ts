@@ -4,6 +4,7 @@ import {
 	Binding,
 	ComponentView,
 	ComponentViewBuilder,
+	MessageDialogOptions,
 	UI,
 	UIText,
 	UITextField,
@@ -46,7 +47,9 @@ let activity: CountActivity;
 
 beforeEach(() => {
 	// initialize test app before every test
-	useTestContext({ navigationPath: "count" });
+	useTestContext((options) => {
+		options.navigationPath = "count";
+	});
 	activity = new CountActivity();
 	app.addActivity(activity);
 });
@@ -148,10 +151,9 @@ test("Confirm dialog can be cancelled", async () => {
 });
 
 test("Confirm dialog can be confirmed", async () => {
-	let p = app.showConfirmDialogAsync((d) => {
-		d.messages = ["Foo?", "Bar?"];
-		d.confirmText = "Yes";
-	});
+	let p = app.showConfirmDialogAsync(
+		new MessageDialogOptions(["Foo?", "Bar?"], "Yes"),
+	);
 	let dialog = await expectMessageDialogAsync(10, /Foo/, /Bar/);
 	await dialog.clickAsync("Yes");
 	let result = await p;

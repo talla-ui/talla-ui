@@ -22,7 +22,7 @@
 		"prebuild": "npm run clean",
 		"build": "tsc -p src",
 		"postbuild": "prettier --log-level error --write \"dist/**/*.d.ts\" && node esbuild-lib",
-		"check-format": "prettier --check \"src/**/*.{ts,tsx}\""
+		"check-format": "prettier -l \"src/**/*.{ts,tsx}\""
 	},
 	"prettier": {
 		"useTabs": true,

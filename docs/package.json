@@ -13,7 +13,7 @@
 		"build:site": "docgen",
 		"build-verbose": "npm run prebuild && docgen -v > docgen.log",
 		"check-docs": "docgen check-docs.config.json",
-		"check-format": "prettier --check \"{content,templates}/**/*.{ts,md}\" && cd app && npm run check-format",
+		"check-format": "prettier -l \"{content,templates}/**/*.{ts,md}\" && cd app && npm run check-format",
 		"serve": "http-server _site -g"
 	},
 	"prettier": {

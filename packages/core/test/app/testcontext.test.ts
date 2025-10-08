@@ -40,7 +40,9 @@ describe("Local data", () => {
 	});
 
 	test("Specified local data", async () => {
-		let app = useTestContext({ localData: { test: { foo: 123 } } });
+		let app = useTestContext((options) => {
+			options.localData = { test: { foo: 123 } };
+		});
 		let read = await app.localData.readAsync("test", (b) =>
 			b.object({ foo: b.number() }),
 		);
@@ -48,8 +50,8 @@ describe("Local data", () => {
 	});
 
 	test("Write and read local data", async () => {
-		let app = useTestContext({
-			localData: { foo: 123, test: { foo: 123 }, other: { foo: 456 } },
+		let app = useTestContext((options) => {
+			options.localData = { foo: 123, test: { foo: 123 }, other: { foo: 456 } };
 		});
 		await app.localData.writeAsync("foo", 321);
 		let readFoo = await app.localData.readAsync("foo", (b) => b.number());
@@ -74,19 +76,25 @@ describe("Navigation paths", () => {
 	});
 
 	test("Initial path: set in options", () => {
-		let app = useTestContext({ navigationPath: "foo" });
+		let app = useTestContext((options) => {
+			options.navigationPath = "foo";
+		});
 		expect(app.navigation.path).toBe("foo");
 	});
 
 	test("Navigation history: set once", async () => {
-		let app = useTestContext({ navigationPath: "foo" });
+		let app = useTestContext((options) => {
+			options.navigationPath = "foo";
+		});
 		let nav = app.navigation;
 		await nav.navigateAsync("foo/bar");
 		expect(nav.getHistory()).toEqual(["foo", "foo/bar"]);
 	});
 
 	test("Navigation history: set, replace", async () => {
-		let app = useTestContext({ navigationPath: "foo" });
+		let app = useTestContext((options) => {
+			options.navigationPath = "foo";
+		});
 		let nav = app.navigation;
 		await nav.navigateAsync("foo/bar");
 		await nav.navigateAsync("foo/bar/baz", {
@@ -96,7 +104,9 @@ describe("Navigation paths", () => {
 	});
 
 	test("Navigation history: back", async () => {
-		let app = useTestContext({ navigationPath: "foo" });
+		let app = useTestContext((options) => {
+			options.navigationPath = "foo";
+		});
 		let nav = app.navigation;
 		await nav.navigateAsync("bar");
 		await nav.navigateAsync(undefined, { back: true });
@@ -104,7 +114,9 @@ describe("Navigation paths", () => {
 	});
 
 	test("Navigation history: back twice", async () => {
-		let app = useTestContext({ navigationPath: "foo" });
+		let app = useTestContext((options) => {
+			options.navigationPath = "foo";
+		});
 		app.navigate("foo/bar");
 		await expectNavAsync({ path: "foo/bar" });
 		app.navigate("/baz");
@@ -115,7 +127,9 @@ describe("Navigation paths", () => {
 	});
 
 	test("Navigation history: back using goBack() sync", async () => {
-		let app = useTestContext({ navigationPath: "foo" });
+		let app = useTestContext((options) => {
+			options.navigationPath = "foo";
+		});
 		let nav = app.navigation;
 		await nav.navigateAsync("foo/bar");
 		app.goBack();
@@ -124,7 +138,9 @@ describe("Navigation paths", () => {
 	});
 
 	test("Navigation history: back, set", async () => {
-		let app = useTestContext({ navigationPath: "foo" });
+		let app = useTestContext((options) => {
+			options.navigationPath = "foo";
+		});
 		let nav = app.navigation;
 		await nav.navigateAsync("bar");
 		await nav.navigateAsync("baz", { back: true });
@@ -132,7 +148,9 @@ describe("Navigation paths", () => {
 	});
 
 	test("Navigation history: back, error if app would exit", async () => {
-		let app = useTestContext({ navigationPath: "foo" });
+		let app = useTestContext((options) => {
+			options.navigationPath = "foo";
+		});
 		let nav = app.navigation;
 		await expect(
 			nav.navigateAsync(undefined, { back: true }),
@@ -194,7 +212,9 @@ describe("Rendering views", () => {
 		}
 		const MyView = ComponentViewBuilder(CellView, () => UI.Cell());
 		let view = MyView.build();
-		useTestContext({ throwUncaughtErrors: false });
+		useTestContext((options) => {
+			options.throwUncaughtErrors = false;
+		});
 		let mockErrorHandler = vi.fn();
 		AppContext.setErrorHandler(mockErrorHandler);
 		renderTestView(view);

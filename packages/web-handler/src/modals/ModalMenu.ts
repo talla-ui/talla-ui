@@ -5,6 +5,8 @@ import {
 	RenderContext,
 	UI,
 	UICell,
+	UIContainer,
+	UIElement,
 	UIScrollView,
 	UIStyle,
 	UIText,
@@ -12,37 +14,20 @@ import {
 	ViewEvent,
 	app,
 } from "@talla-ui/core";
-import { ConfigOptions } from "@talla-ui/util";
 import { reduceElementMotion } from "../WebOutputTransform.js";
 
-/** @internal Fixed container position, used for each menu container */
-const _containerPosition = {
-	gravity: "overlay",
-	top: "100%",
-	bottom: "auto",
-	start: 0,
-} as const;
+/** The default width that's used if none is specified */
+const DEFAULT_WIDTH = 260;
 
-/**
- * A class that defines the styles for the default modal menu view
- * - A default instance of this class is created, and can be modified in the {@link WebContextOptions} configuration callback passed to {@link useWebContext}.
- * - These styles are used by the default menu view referenced by {@link AppContext.showModalMenuAsync app.showModalMenuAsync()}.
- *
- * @see {@link WebContextOptions}
- * @see {@link ModalFactory}
- */
-export class WebModalMenuStyles extends ConfigOptions {
-	/** The default width that's used if none is specified in menu options */
-	defaultWidth = 260;
+/** The default icon style that's used if none is specified */
+const DEFAULT_ICON_STYLE: UIText.IconStyle = { margin: "gap" };
 
-	/** The vertical distance from the reference element, in pixels; defaults to 2 */
-	offset = 2;
-
-	/**
-	 * The cell style used for the outer menu container
-	 * - The default style includes properties for padding, background, and border radius.
-	 */
-	containerStyle = new UIStyle({
+/** @internal Default modal menu view; shown asynchronously and resolves a promise */
+export class ModalMenu
+	extends ComponentView
+	implements ModalFactory.MenuController
+{
+	static containerStyle = new UIStyle({
 		background: UI.colors.background.brighten(0.1),
 		padding: { y: 4 },
 		borderRadius: 8,
@@ -50,11 +35,14 @@ export class WebModalMenuStyles extends ConfigOptions {
 		dropShadow: 4,
 	});
 
-	/**
-	 * The cell style used for each menu item
-	 * - The default style includes properties for padding, cursor, and (hover/focus) background color
-	 */
-	itemCellStyle = new UIStyle({
+	static containerPosition: UIElement.Position = {
+		gravity: "overlay",
+		top: "100%",
+		bottom: "auto",
+		start: 0,
+	};
+
+	static itemRowStyle = new UIStyle({
 		margin: { x: 4 },
 		padding: { x: 12, y: 6 },
 		borderRadius: 6,
@@ -73,49 +61,41 @@ export class WebModalMenuStyles extends ConfigOptions {
 			),
 		});
 
-	/**
-	 * The text style used for each menu item text element
-	 * - This property defaults to the default text style.
-	 */
-	textStyle = UI.styles.text.default;
-
-	/**
-	 * The default icon style used for each menu item icon
-	 * - The icon style can be overridden per item using the `iconStyle` property
-	 */
-	iconStyle: UIText.IconStyle = { margin: "gap" };
-
-	/**
-	 * The text style used for each menu item hint
-	 * - The default style includes a smaller font size and reduced opacity
-	 */
-	hintStyle = UI.styles.text.default.extend({
-		opacity: 0.5,
-		fontSize: 12,
-		shrink: 0,
-	});
-
-	/**
-	 * The text style used for each title text element
-	 * - The default style includes a bold font weight, smaller font size, and lower opacity
-	 */
-	titleStyle = UI.styles.text.default.extend({
+	static titleStyle = UI.styles.text.default.extend({
 		margin: { x: 16, top: 4, bottom: 8 },
 		bold: true,
 		fontSize: 11,
 		opacity: 0.3,
 	});
 
-	/** The margin around a divider line, in pixels */
-	dividerMargin = 6;
-}
+	static Container(): UIContainer.ContainerBuilder {
+		return UI.Cell()
+			.accessibleRole("menu")
+			.scroll()
+			.maxHeight("90vh")
+			.style(ModalMenu.containerStyle)
+			.position(ModalMenu.containerPosition);
+	}
 
-/** @internal Default modal menu view; shown asynchronously and resolves a promise */
-export class ModalMenu
-	extends ComponentView
-	implements ModalFactory.MenuController
-{
-	static styles = new WebModalMenuStyles();
+	static ItemCell() {
+		return UI.Cell().style(ModalMenu.itemRowStyle);
+	}
+
+	static ItemText() {
+		return UI.Text();
+	}
+
+	static ItemHint() {
+		return UI.Text().opacity(0.5).fontSize(12).shrink(0);
+	}
+
+	static TitleText() {
+		return UI.Text().textStyle(ModalMenu.titleStyle);
+	}
+
+	static Divider() {
+		return UI.Divider().lineMargin(6);
+	}
 
 	constructor(public options: ModalMenuOptions) {
 		super();
@@ -131,7 +111,7 @@ export class ModalMenu
 					show: UI.animations.showMenu,
 					hide: UI.animations.hideMenu,
 				},
-				refOffset: [0, ModalMenu.styles.offset],
+				refOffset: [0, UIStyle.defaultOptions.menuOffset],
 				...place,
 			});
 			this._resolve = (value) => {
@@ -143,7 +123,6 @@ export class ModalMenu
 
 	protected override get body() {
 		let shown = Date.now();
-		let styles = ModalMenu.styles;
 
 		// Add blank icons to items in groups that have at least one icon
 		let items = this.options.items.slice();
@@ -171,24 +150,25 @@ export class ModalMenu
 		let texts: ViewBuilder[] = [];
 		for (let item of items) {
 			if (item.divider) {
-				if (texts.length)
-					texts.push(UI.Divider().lineMargin(styles.dividerMargin));
+				if (texts.length) texts.push(ModalMenu.Divider());
 				if (item.title) {
-					texts.push(UI.Text(item.title).textStyle(styles.titleStyle));
+					texts.push(ModalMenu.TitleText().text(item.title));
 				}
 				continue;
 			}
 
 			// use text element builders for the text and hint, if any
 			const itemText = () =>
-				UI.Text(item.text)
-					.icon(item.icon, item.iconStyle || styles.iconStyle)
+				ModalMenu.ItemText()
+					.text(item.text)
+					.icon(item.icon, item.iconStyle || DEFAULT_ICON_STYLE)
 					.dim(!!item.disabled)
-					.textStyle(styles.textStyle.override(item.textStyle));
+					.textStyle(item.textStyle); // override, if any
 			const itemHint = () =>
-				UI.Text(item.hint)
+				ModalMenu.ItemHint()
+					.text(item.hint)
 					.icon(item.hintIcon, item.hintIconStyle)
-					.textStyle(styles.hintStyle.override(item.hintStyle));
+					.textStyle(item.hintStyle);
 			const content =
 				item.hint || item.hintIcon
 					? UI.Row(itemText(), UI.Spacer(), itemHint())
@@ -197,19 +177,14 @@ export class ModalMenu
 			// add a disabled item without event handlers
 			if (item.disabled) {
 				texts.push(
-					UI.Cell()
-						.style(styles.itemCellStyle)
-						.bg("transparent")
-						.fg("text")
-						.with(content),
+					ModalMenu.ItemCell().bg("transparent").fg("text").with(content),
 				);
 				continue;
 			}
 
 			// else, add the menu item with event handlers
 			texts.push(
-				UI.Cell()
-					.style(styles.itemCellStyle)
+				ModalMenu.ItemCell()
 					.accessibleRole("menuitem")
 					.allowKeyboardFocus()
 					.handleKey("ArrowDown", (_, self) => self.requestFocusNext())
@@ -225,14 +200,9 @@ export class ModalMenu
 			);
 		}
 
-		return UI.Cell()
-			.scroll()
-			.maxHeight("90vh")
-			.style(styles.containerStyle)
-			.width(this.options.width || styles.defaultWidth)
+		return ModalMenu.Container()
+			.width(this.options.width || DEFAULT_WIDTH)
 			.minWidth(this.options.minWidth)
-			.position(_containerPosition)
-			.accessibleRole("menu")
 			.onRendered(() => {
 				shown = Date.now();
 				this._fixPosition();

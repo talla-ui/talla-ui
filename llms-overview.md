@@ -434,7 +434,7 @@ app.i18n.configure("es-MX", {
 		textDirection: "ltr",
 		firstDayOfWeek: 1,
 		// ...any application specific culture info
-	})
+	}),
 });
 
 // Simple cases can use defaults, and translation dictionary
@@ -625,31 +625,6 @@ Use these methods to work with observable lists:
 - `.reverse()` reverses the list in-place
 - `.replaceObject(item, replacement)` replaces an item
 - `.replaceAll(items)` replaces all items (efficiently)
-
-## Config options
-
-A utility class `ConfigOptions` is used by `useWebContext` and `useTestContext`, and can be used elsewhere too, e.g. for configuring services on startup, or options for a component view.
-
-```typescript
-import { ConfigOptions } from "talla-ui";
-
-class MyOptions extends ConfigOptions {
-	foo = "bar"; // this is configurable, "bar" is default
-}
-
-function takeOptions(options: ConfOptions.Arg<MyOptions>) {
-	let options = MyOptions.init(options);
-	console.log(options.foo); // options is always an instance
-}
-
-// Call a function/method that takes options (such as useWebContext)
-takeOptions({ foo: "baz" }); // partial object
-takeOptions((options) => {
-	// a function that gets the default instance, and can modify it
-	options.foo = "baz";
-});
-takeOptions(new MyOptions()); // passed straight through
-```
 
 ## Input Validators
 
@@ -917,7 +892,7 @@ export function BoundInput() {
 
 ## Web Handler Setup
 
-Options for the web handler are passed to `useWebContext()`, typically using a `ConfigOptions` callback function.
+Options for the web handler are passed to `useWebContext()`, using a callback function that receives and modifies defaults.
 
 ```typescript
 import { useWebContext } from "talla-ui";

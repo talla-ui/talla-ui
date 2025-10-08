@@ -5,16 +5,16 @@ import {
 	UIIconResource,
 	UIStyle,
 } from "@talla-ui/core";
-import { ConfigOptions } from "@talla-ui/util";
 import { Dialog } from "./modals/Dialog.js";
 import { MessageDialog } from "./modals/MessageDialog.js";
 import { ModalMenu } from "./modals/ModalMenu.js";
+import { WebModalComponents } from "./WebModalFactory.js";
 
 /**
  * A class that contains options for the web handler instance
  * - These options should be set in a configuration callback passed to {@link useWebContext}.
  */
-export class WebContextOptions extends ConfigOptions {
+export class WebContextOptions {
 	/** The application base path */
 	basePath = "";
 
@@ -95,25 +95,25 @@ export class WebContextOptions extends ConfigOptions {
 		.alpha(0.3);
 
 	/**
-	 * Options for the appearance of the default modal dialog view (container)
-	 * - These styles can be changed directly on this object. Refer to {@link WebDialogStyles} for details.
-	 * @see {@link WebDialogStyles}
+	 * Components that are used by the default modal views (dialog, message dialog, and modal menu)
+	 * - View builder functions can be changed directly on this object.
 	 */
-	dialogStyles = Dialog.styles;
-
-	/**
-	 * Options for the appearance of the default modal message dialog view
-	 * - These styles can be changed directly on this object. Refer to {@link WebMessageDialogStyles} for details.
-	 * @see {@link WebMessageDialogStyles}
-	 */
-	messageDialogStyles = MessageDialog.styles;
-
-	/**
-	 * Options for the appearance of the default modal menu view
-	 * - These styles can be changed directly on this object. Refer to {@link WebModalMenuStyles} for details.
-	 * @see {@link WebModalMenuStyles}
-	 */
-	modalMenuStyles = ModalMenu.styles;
+	modalComponents: WebModalComponents = {
+		DialogContainer: Dialog.Container,
+		MessageDialogContainer: MessageDialog.Container,
+		MessageContainer: MessageDialog.MessageContainer,
+		MessageButtonContainer: MessageDialog.ButtonContainer,
+		FirstMessageText: MessageDialog.FirstMessageText,
+		MessageText: MessageDialog.MessageText,
+		MessageConfirmButton: MessageDialog.ConfirmButton,
+		MessageButton: MessageDialog.Button,
+		MenuContainer: ModalMenu.Container,
+		MenuItemCell: ModalMenu.ItemCell,
+		MenuItemText: ModalMenu.ItemText,
+		MenuItemHint: ModalMenu.ItemHint,
+		MenuTitleText: ModalMenu.TitleText,
+		MenuDivider: ModalMenu.Divider,
+	};
 
 	/** Viewport column width in pixels, defaults to 300 */
 	viewportColumnWidth = 300;

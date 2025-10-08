@@ -5,7 +5,6 @@ import {
 	UIColor,
 	UIIconResource,
 } from "@talla-ui/core";
-import { ConfigOptions } from "@talla-ui/util";
 import { TestContextOptions } from "./TestContextOptions.js";
 import { TestNavigationContext } from "./TestNavigationContext.js";
 import { TestRenderer } from "./TestRenderer.js";
@@ -33,8 +32,11 @@ export type TestAppContext = AppContext & {
  *   // ... add some tests here, to use `app`
  * });
  */
-export function useTestContext(config?: ConfigOptions.Arg<TestContextOptions>) {
-	let options = TestContextOptions.init(config);
+export function useTestContext(
+	config?: (opts: TestContextOptions) => void,
+): TestAppContext {
+	let options = new TestContextOptions();
+	config?.(options);
 
 	// set error handler
 	AppContext.setErrorHandler((e) => {

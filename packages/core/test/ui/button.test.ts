@@ -17,8 +17,8 @@ import {
 } from "../../dist/index.js";
 
 beforeEach(() => {
-	useTestContext({
-		navigationDelay: 0,
+	useTestContext((options) => {
+		options.navigationDelay = 0;
 	});
 });
 

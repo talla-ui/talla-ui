@@ -1,17 +1,13 @@
 import * as core from "@talla-ui/core";
-import { WebDialogStyles } from "./modals/Dialog.js";
-import { WebMessageDialogStyles } from "./modals/MessageDialog.js";
-import { WebModalMenuStyles } from "./modals/ModalMenu.js";
 import { useWebContext } from "./setup.js";
 import { WebContextOptions } from "./WebContextOptions.js";
+import { WebModalComponents } from "./WebModalFactory.js";
 import { WebNavigationContext } from "./WebNavigationContext.js";
 import { WebRenderer } from "./WebRenderer.js";
 export {
 	useWebContext,
 	WebContextOptions,
-	WebDialogStyles,
-	WebMessageDialogStyles,
-	WebModalMenuStyles,
+	WebModalComponents,
 	WebNavigationContext,
 	WebRenderer,
 };
@@ -32,9 +28,6 @@ if (!window.require) {
 				WebContextOptions,
 				WebNavigationContext,
 				WebRenderer,
-				WebDialogStyles,
-				WebMessageDialogStyles,
-				WebModalMenuStyles,
 			};
 		}
 		throw Error("Invalid require() call");

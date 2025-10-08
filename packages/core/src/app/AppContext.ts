@@ -1,9 +1,4 @@
-import {
-	ConfigOptions,
-	DeferredString,
-	StringConvertible,
-	fmt,
-} from "@talla-ui/util";
+import { DeferredString, StringConvertible, fmt } from "@talla-ui/util";
 import {
 	ERROR,
 	err,
@@ -230,15 +225,15 @@ export class AppContext extends ObservableObject {
 	 */
 	async showAlertDialogAsync(
 		config:
-			| ConfigOptions.Arg<MessageDialogOptions>
+			| MessageDialogOptions
 			| DeferredString
 			| string
 			| StringConvertible[],
 		buttonText?: StringConvertible,
 	) {
 		let controller = this.renderer?.modalFactory.buildAlertDialog?.(
-			config instanceof MessageDialogOptions || typeof config === "function"
-				? MessageDialogOptions.init(config)
+			config instanceof MessageDialogOptions
+				? config
 				: new MessageDialogOptions(config, buttonText),
 		);
 		if (!controller) throw err(ERROR.Render_Unavailable);
@@ -257,7 +252,7 @@ export class AppContext extends ObservableObject {
 	 */
 	async showConfirmDialogAsync(
 		config:
-			| ConfigOptions.Arg<MessageDialogOptions>
+			| MessageDialogOptions
 			| DeferredString
 			| string
 			| StringConvertible[],
@@ -266,8 +261,8 @@ export class AppContext extends ObservableObject {
 		otherText?: StringConvertible,
 	) {
 		let controller = this.renderer?.modalFactory.buildConfirmDialog?.(
-			config instanceof MessageDialogOptions || typeof config === "function"
-				? MessageDialogOptions.init(config)
+			config instanceof MessageDialogOptions
+				? config
 				: new MessageDialogOptions(config, confirmText, cancelText, otherText),
 		);
 		if (!controller) throw err(ERROR.Render_Unavailable);
@@ -290,12 +285,13 @@ export class AppContext extends ObservableObject {
 	 * @error This method throws an error if the modal menu controller can't be initialized (i.e. there's no modal factory or menu builder).
 	 */
 	async showModalMenuAsync(
-		config: ConfigOptions.Arg<ModalMenuOptions>,
+		config: ModalMenuOptions | ((opts: ModalMenuOptions) => void),
 		ref?: { lastRenderOutput?: RenderContext.Output },
 	) {
-		let controller = this.renderer?.modalFactory.buildMenu?.(
-			ModalMenuOptions.init(config),
-		);
+		let options =
+			config instanceof ModalMenuOptions ? config : new ModalMenuOptions();
+		if (typeof config === "function") config(options);
+		let controller = this.renderer?.modalFactory.buildMenu?.(options);
 		if (!controller) throw err(ERROR.Render_Unavailable);
 		let result = await controller.showAsync({
 			ref: ref && ref.lastRenderOutput,

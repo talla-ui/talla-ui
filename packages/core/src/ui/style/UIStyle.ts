@@ -4,6 +4,7 @@ import type { UIColor } from "./index.js";
 const DEFAULT_GAP = 8;
 const DEFAULT_ICON_SIZE = 20;
 const DEFAULT_ICON_MARGIN = 4;
+const DEFAULT_MENU_OFFSET = 2;
 
 /** Next 'random' ID assigned if style definition doesn't specify one */
 let _nextStyleId = 0x1234;
@@ -502,5 +503,7 @@ export namespace UIStyle {
 		iconSize: DEFAULT_ICON_SIZE,
 		/** Default icon margin in pixels */
 		iconMargin: DEFAULT_ICON_MARGIN,
+		/** Default modal menu distance (from reference element) in pixels */
+		menuOffset: DEFAULT_MENU_OFFSET,
 	};
 }

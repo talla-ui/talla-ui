@@ -57,7 +57,7 @@
 		"buildtest:web-vite": "cd buildtest/web-vite && npm install && npm start",
 		"buildtest:web-vite:test": "cd buildtest/web-vite && npm install && npm test",
 		"check-format": " concurrently npm:check-format:* && echo OK",
-		"check-format:other": "prettier --check \"*.md\" \"**/{package,tsconfig,config,launch,tasks}.json\"",
+		"check-format:other": "prettier -l \"*.md\" \"**/{package,tsconfig,config,launch,tasks}.json\"",
 		"check-format:util": "cd packages/util && npm run check-format",
 		"check-format:core": "cd packages/core && npm run check-format",
 		"check-format:test": "cd packages/test-handler && npm run check-format",

@@ -1,10 +1,8 @@
-import { ConfigOptions } from "@talla-ui/util";
-
 /**
  * A class that contains options for the test application context
  * - These options should be set in a configuration callback passed to {@link useTestContext}.
  */
-export class TestContextOptions extends ConfigOptions {
+export class TestContextOptions {
 	/** The initial navigation path on the history stack, defaults to empty string */
 	navigationPath = "";
 

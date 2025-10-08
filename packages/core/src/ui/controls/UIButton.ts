@@ -286,7 +286,7 @@ export namespace UIButton {
 							: undefined,
 				}));
 				return AppContext.getInstance().showModalMenuAsync(
-					{ ...menu, items },
+					new ModalMenuOptions(items, menu.width, menu.minWidth),
 					button,
 				);
 			};

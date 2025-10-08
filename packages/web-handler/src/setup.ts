@@ -6,7 +6,6 @@ import {
 	UIIconResource,
 	UIStyle,
 } from "@talla-ui/core";
-import { ConfigOptions } from "@talla-ui/util";
 import defaultAnimations from "./defaults/animations.js";
 import defaultColors from "./defaults/colors.js";
 import defaultIcons from "./defaults/icons.js";
@@ -34,8 +33,9 @@ import { WebViewport } from "./WebViewport.js";
  * });
  * app.addActivity(new MyActivity());
  */
-export function useWebContext(config?: ConfigOptions.Arg<WebContextOptions>) {
-	let options = WebContextOptions.init(config);
+export function useWebContext(config?: (opts: WebContextOptions) => void) {
+	let options = new WebContextOptions();
+	config?.(options);
 
 	// clear the current app properties first
 	app.clear();

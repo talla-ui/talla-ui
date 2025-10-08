@@ -1,8 +1,4 @@
-import {
-	ConfigOptions,
-	DeferredString,
-	StringConvertible,
-} from "@talla-ui/util";
+import { DeferredString, StringConvertible } from "@talla-ui/util";
 import type { AppContext } from "./AppContext.js";
 import type { ModalFactory } from "./ModalFactory.js";
 
@@ -14,7 +10,7 @@ import type { ModalFactory } from "./ModalFactory.js";
  * @see {@link ModalFactory.AlertDialogController}
  * @see {@link ModalFactory.ConfirmDialogController}
  */
-export class MessageDialogOptions extends ConfigOptions {
+export class MessageDialogOptions {
 	/**
 	 * Creates a new object with the specified options
 	 * @param messages A message or list of messages that will be displayed in the alert dialog
@@ -29,7 +25,6 @@ export class MessageDialogOptions extends ConfigOptions {
 		otherText?: StringConvertible,
 		type?: MessageDialogOptions.DialogType,
 	) {
-		super();
 		this.messages =
 			(Array.isArray(messages) && messages) || (messages && [messages]) || [];
 		this.confirmText = confirmText;

@@ -16,7 +16,7 @@
 	"scripts": {
 		"prebuild": "rimraf dist",
 		"build": "tsc",
-		"check-format": "prettier --check \"{src,cli}/**/*.{ts,js}\""
+		"check-format": "prettier -l \"{src,cli}/**/*.{ts,js}\""
 	},
 	"prettier": {
 		"useTabs": true,

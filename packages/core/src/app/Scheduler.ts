@@ -1,4 +1,3 @@
-import { ConfigOptions } from "@talla-ui/util";
 import { errorHandler } from "../errors.js";
 import { AppException } from "./AppException.js";
 
@@ -18,7 +17,9 @@ export class Scheduler {
 	createQueue(
 		name: string | symbol,
 		replace?: boolean,
-		config?: ConfigOptions.Arg<AsyncTaskQueue.Options>,
+		config?:
+			| Partial<AsyncTaskQueue.Options>
+			| ((options: AsyncTaskQueue.Options) => void),
 	) {
 		// stop all and remove queues with the same name first, if required
 		if (replace) {
@@ -32,7 +33,10 @@ export class Scheduler {
 		}
 
 		// create the queue with given options
-		let queue = new AsyncTaskQueue(name, AsyncTaskQueue.Options.init(config));
+		let options = new AsyncTaskQueue.Options();
+		if (typeof config === "function") config(options);
+		else if (config) Object.assign(options, config);
+		let queue = new AsyncTaskQueue(name, options);
 		this._queues.push(queue);
 		return queue;
 	}
@@ -333,7 +337,7 @@ export class AsyncTaskQueue {
 
 export namespace AsyncTaskQueue {
 	/** An object with options for a particular {@link AsyncTaskQueue} */
-	export class Options extends ConfigOptions {
+	export class Options {
 		/** The number of tasks that can be started (asynchronously) in parallel, defaults to 1 */
 		parallel = 1;
 		/** True if errors should be added to {@link AsyncTaskQueue.errors} instead of being handled globally */

@@ -1,4 +1,4 @@
-import { ConfigOptions, StringConvertible } from "@talla-ui/util";
+import { StringConvertible } from "@talla-ui/util";
 import type { UIIconResource, UIStyle, UIText } from "../ui/index.js";
 import type { ModalFactory } from "./ModalFactory.js";
 
@@ -6,7 +6,7 @@ import type { ModalFactory } from "./ModalFactory.js";
  * A class that contains options for the display of a modal menu
  * @see {@link ModalFactory.MenuController}
  */
-export class ModalMenuOptions extends ConfigOptions {
+export class ModalMenuOptions {
 	/**
 	 * Creates a new object with the specified options
 	 * @param items List of items to be included in the menu
@@ -18,7 +18,6 @@ export class ModalMenuOptions extends ConfigOptions {
 		width?: string | number,
 		minWidth?: string | number,
 	) {
-		super();
 		this.items = items;
 		this.width = width;
 		this.minWidth = minWidth;

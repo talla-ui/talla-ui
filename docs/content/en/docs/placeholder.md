@@ -16,7 +16,6 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link clickOutputAsync} +
 - {@link ComponentView} +
 - {@link ComponentViewBuilder} +
-- {@link ConfigOptions} +
 - {@link DeferredString} +
 - {@link DeferredViewBuilder} +
 - {@link enterTextOutputAsync} +
@@ -76,12 +75,11 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link useWebContext} +
 - {@link View} +
 - {@link ViewBuilder} +
+- {@link ViewBuilderFunction} +
 - {@link ViewEvent} +
 - {@link ViewEventHandler} +
 - {@link Viewport} +
 - {@link WebContextOptions} +
-- {@link WebDialogStyles} +
-- {@link WebMessageDialogStyles} +
-- {@link WebModalMenuStyles} +
+- {@link WebModalComponents} +
 - {@link WebNavigationContext} +
 - {@link WebRenderer} +

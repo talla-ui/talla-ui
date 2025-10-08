@@ -1,5 +1,4 @@
 import { app, View } from "@talla-ui/core";
-import { ConfigOptions } from "@talla-ui/util";
 import { OutputAssertion, OutputSelectFilter } from "./OutputAssertion.js";
 import { TestOutputElement } from "./TestOutputElement.js";
 import { RenderedTestMessageDialog, TestRenderer } from "./TestRenderer.js";
@@ -13,12 +12,12 @@ function getTestRenderer() {
 }
 
 /** Options to be used with {@link expectNavAsync()} */
-export class ExpectNavOptions extends ConfigOptions {
+export type ExpectNavOptions = {
 	/** Navigation path to wait for, must be an exact match */
 	path?: string;
 	/** Timeout, in milliseconds; defaults to 200ms */
-	timeout = 200;
-}
+	timeout?: number;
+};
 
 /**
  * Waits for the global navigation location to match the given page ID and detail
@@ -34,22 +33,18 @@ export class ExpectNavOptions extends ConfigOptions {
  *   await expectNavAsync({ path: "foo/bar" });
  * });
  */
-export async function expectNavAsync(
-	expect: ConfigOptions.Arg<ExpectNavOptions>,
-) {
-	let options = ExpectNavOptions.init(expect);
-
+export async function expectNavAsync(expect: ExpectNavOptions) {
 	// create error first, to capture accurate stack trace
-	let error = Error("Expected navigation to " + options.path);
+	let error = Error("Expected navigation to " + expect.path);
 
 	// start polling
 	let start = Date.now();
 	while (true) {
-		let match = app.navigation?.path === options.path;
+		let match = app.navigation?.path === expect.path;
 		if (match) return;
 
 		// check timeout or loop
-		if (Date.now() - start > options.timeout) {
+		if (Date.now() - start > (expect.timeout ?? 200)) {
 			error.message += ", but location is " + app.navigation?.path;
 			throw error;
 		}

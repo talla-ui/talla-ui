@@ -1,4 +1,4 @@
-import type { ConfigOptions, StringConvertible } from "@talla-ui/util";
+import type { StringConvertible } from "@talla-ui/util";
 import { ERROR, err, safeCall } from "../errors.js";
 import { Binding, ObservableEvent, ObservableObject } from "../object/index.js";
 import { $_origin } from "../object/object_util.js";
@@ -407,14 +407,17 @@ export class Activity extends ObservableObject {
 	 * @error This method throws an error if the activity has been unlinked.
 	 */
 	protected createActiveTaskQueue(
-		config?: ConfigOptions.Arg<AsyncTaskQueue.Options>,
+		config?:
+			| Partial<AsyncTaskQueue.Options>
+			| ((options: AsyncTaskQueue.Options) => void),
 	) {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 
 		// create queue with given options, pause if activity is not active
-		let queue = new AsyncTaskQueue(
+		let queue = AppContext.getInstance().scheduler.createQueue(
 			Symbol("ActiveTaskQueue"),
-			AsyncTaskQueue.Options.init(config),
+			false,
+			config,
 		);
 		if (!this._activation.active) queue.pause();
 

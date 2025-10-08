@@ -248,7 +248,9 @@ describe("Active task queue", () => {
 
 describe("Global context and parents", () => {
 	beforeEach(() => {
-		useTestContext({ navigationDelay: 1 });
+		useTestContext((options) => {
+			options.navigationDelay = 1;
+		});
 	});
 
 	test("Add activity", () => {

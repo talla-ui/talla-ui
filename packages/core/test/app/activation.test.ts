@@ -45,7 +45,9 @@ describe("NavigationContext standalone", () => {
 
 describe("AppContext.activities", () => {
 	beforeEach(() => {
-		useTestContext({ navigationDelay: 0 });
+		useTestContext((options) => {
+			options.navigationDelay = 0;
+		});
 	});
 
 	test("App context properties", () => {
@@ -232,7 +234,9 @@ describe("AppContext.activities", () => {
 
 describe("Nested activity router", () => {
 	beforeEach(() => {
-		useTestContext({ navigationDelay: 0 });
+		useTestContext((options) => {
+			options.navigationDelay = 0;
+		});
 	});
 
 	class MyActivity extends Activity {

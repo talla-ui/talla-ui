@@ -85,7 +85,7 @@ export namespace UIContainer {
 	 * @note This class is used as a base class for container builders, such as the ones returned by `UI.Cell()` and `UI.Column()`. You should not use this class directly.
 	 */
 	export abstract class ContainerBuilder<
-		T extends UIContainer,
+		T extends UIContainer = UIContainer,
 	> extends UIElement.ElementBuilder<T> {
 		/**
 		 * Adds content to the container.
