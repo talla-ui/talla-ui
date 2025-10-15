@@ -126,7 +126,7 @@ export namespace UIScrollView {
 	};
 
 	export type ContentBuilder = ViewBuilder & {
-		with(...content: ViewBuilder[]): void;
+		with(...content: Array<ViewBuilder | undefined>): void;
 	};
 
 	/**
@@ -167,7 +167,7 @@ export namespace UIScrollView {
 		 * @param content An array of view builders for the content elements.
 		 * @returns The builder instance for chaining.
 		 */
-		override with(...content: ViewBuilder[]) {
+		override with(...content: Array<ViewBuilder | undefined>) {
 			if (!this.content) throw RangeError();
 			this.content.with(...content);
 			return this;

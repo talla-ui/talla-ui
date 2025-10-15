@@ -298,7 +298,10 @@ describe("View rendering", () => {
 		class MyComponentView extends ComponentView {
 			foo = 2;
 		}
-		function MyComponent(foo: number, ...content: ViewBuilder[]) {
+		function MyComponent(
+			foo: number,
+			...content: Array<ViewBuilder | undefined>
+		) {
 			let builder = ComponentViewBuilder(MyComponentView, (v) =>
 				UI.Column(UI.Text(v.bind("foo")), ...content),
 			);

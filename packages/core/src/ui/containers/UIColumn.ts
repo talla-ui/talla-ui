@@ -44,7 +44,7 @@ export namespace UIColumn {
 	 * @see {@link UIColumn}
 	 * @see {@link UIContainer}
 	 */
-	export function columnBuilder(...builders: ViewBuilder[]) {
+	export function columnBuilder(...builders: Array<ViewBuilder | undefined>) {
 		return new ColumnBuilder().with(...builders);
 	}
 

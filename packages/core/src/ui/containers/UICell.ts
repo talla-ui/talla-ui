@@ -33,7 +33,7 @@ export namespace UICell {
 	 * @see {@link UICell}
 	 * @see {@link UIContainer}
 	 */
-	export function cellBuilder(...builders: ViewBuilder[]) {
+	export function cellBuilder(...builders: Array<ViewBuilder | undefined>) {
 		return new CellBuilder().with(...builders);
 	}
 

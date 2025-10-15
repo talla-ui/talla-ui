@@ -41,7 +41,7 @@ export namespace UIRow {
 	 * @see {@link UIRow}
 	 * @see {@link UIContainer}
 	 */
-	export function rowBuilder(...builders: ViewBuilder[]) {
+	export function rowBuilder(...builders: Array<ViewBuilder | undefined>) {
 		return new RowBuilder().with(...builders);
 	}
 

@@ -92,10 +92,12 @@ export namespace UIContainer {
 		 * @param builders An array of view builders for the content elements.
 		 * @returns The builder instance for chaining.
 		 */
-		with(...builders: ViewBuilder[]) {
+		with(...builders: Array<ViewBuilder | undefined>) {
 			if (builders.length) {
 				this.initializer.finalize((view) => {
-					view.content.add(...builders.map((b) => b.build()));
+					let content: View[] = [];
+					for (let b of builders) b && content.push(b.build());
+					view.content.add(...content);
 				});
 			}
 			return this;
