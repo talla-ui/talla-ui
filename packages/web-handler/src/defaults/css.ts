@@ -107,6 +107,7 @@ export function makeBaseCSS() {
 			alignItems: "center",
 			justifyContent: "center",
 			overflow: "hidden",
+			fontSize: "0",
 		},
 		[`.${CLASS_UI} figure>img`]: {
 			display: "block",
@@ -119,21 +120,25 @@ export function makeBaseCSS() {
 		[`button.${CLASS_UI},a.${CLASS_UI}`]: {
 			position: "relative",
 			overflow: "hidden",
+			transition: "background 0.1s ease-in-out",
 		},
 		[`.${CLASS_UI} icon`]: {
 			display: "inline-flex",
 			alignItems: "center",
 			justifyContent: "center",
 			verticalAlign: "middle",
-			paddingBottom: "0.125em",
+			position: "relative",
+			top: "-0.0625em", // relative to font size, so icon buttons not affected
+			height: 0,
+			lineHeight: 1,
 		},
 		[`.${CLASS_UI}>._chevron-wrapper`]: {
 			display: "inline-flex",
 			alignItems: "center",
 			position: "absolute",
+			fontSize: "0",
 			top: "0",
 			bottom: "0",
-			paddingTop: "0.125em",
 		},
 
 		// flip icons in RTL mode

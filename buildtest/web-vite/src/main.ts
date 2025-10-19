@@ -14,6 +14,7 @@ import {
 	StringConvertible,
 	UI,
 	UIButton,
+	UIIconResource,
 	UITextField,
 	ViewBuilder,
 	ViewEvent,
@@ -228,6 +229,39 @@ function MainView(v: Binding<MainActivity>) {
 						UI.Text("No").textStyle("dangerBadge"),
 					),
 
+					// Test: line height
+					UI.Row(
+						UI.Text("Text with icon").icon("search"),
+						UI.Text("Actual text"),
+						UI.Button("Text button").buttonStyle("text"),
+						UI.Button("Ghost button").buttonStyle("ghost"),
+						UI.Button("Button with icon").buttonStyle("text").icon("search"),
+					),
+					UI.Row(
+						UI.Text("Text with icon").icon(new UIIconResource("💬")),
+						UI.Text("Regular text"),
+					),
+					UI.Row(
+						UI.Text("Text with small icon").icon(new UIIconResource("💬"), 12),
+						UI.Text("Text with large icon").icon(new UIIconResource("💬"), 24),
+						UI.Button("Small icon button")
+							.buttonStyle("text")
+							.icon(new UIIconResource("💬"), 12),
+						UI.Button("Large icon button")
+							.buttonStyle("text")
+							.icon(new UIIconResource("💬"), 24),
+					),
+					UI.Row(
+						UI.Text("Text with small icon").icon("search", 12),
+						UI.Text("Text with large icon").icon("search", 24),
+						UI.Button("Small icon button")
+							.buttonStyle("text")
+							.icon("search", 12),
+						UI.Button("Large icon button")
+							.buttonStyle("text")
+							.icon("search", 24),
+					),
+
 					// Test: button styles
 					UI.Row(
 						UI.Button("Default")
@@ -248,6 +282,7 @@ function MainView(v: Binding<MainActivity>) {
 					).wrapContent(),
 					UI.Row(
 						UI.Button().icon("plus").buttonStyle("icon"),
+						UI.Button().icon("plus").buttonStyle("accentIcon"),
 						UI.Button().icon("plus").buttonStyle("successIcon"),
 						UI.Button().icon("plus").buttonStyle("dangerIcon"),
 						UI.Button("Icon Top").icon("plus").buttonStyle("iconTop"),
@@ -257,7 +292,20 @@ function MainView(v: Binding<MainActivity>) {
 						UI.Button().icon("search").minWidth(0),
 						UI.Button("Both").icon("plus"),
 						UI.Button("Both").icon("plus", { margin: 16 }),
-					),
+					).wrapContent(),
+					UI.Row(
+						UI.Button().icon("plus", 12).buttonStyle("icon"),
+						UI.Button().icon("plus", 12).buttonStyle("accentIcon"),
+						UI.Button().icon("plus", 12).buttonStyle("successIcon"),
+						UI.Button().icon("plus", 12).buttonStyle("dangerIcon"),
+						UI.Button("Icon Top").icon("plus", 12).buttonStyle("iconTop"),
+						UI.Button("Top Start").icon("plus", 12).buttonStyle("iconTopStart"),
+						UI.Button("Top End").icon("plus", 12).buttonStyle("iconTopEnd"),
+						UI.Button().icon("plus", 12).minWidth(0),
+						UI.Button().icon("search", 12).minWidth(0),
+						UI.Button("Both").icon("plus", 12),
+						UI.Button("Both").icon("plus", { size: 12, margin: 16 }),
+					).wrapContent(),
 					UI.Row()
 						.padding(8)
 						.background("shade")

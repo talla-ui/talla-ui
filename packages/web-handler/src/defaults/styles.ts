@@ -19,13 +19,12 @@ const BTN_ACCENT_THRESHOLD = 0.2;
 const baseButtonOptions: UIStyle.StyleOptions = {
 	background: color_text_05,
 	textColor: color_inherit,
-	padding: { y: 3, x: 16 },
+	padding: { y: 6, x: 16 },
 	borderRadius: 18,
 	borderWidth: 0,
 	fontWeight: 600,
 	textAlign: "center",
 	lineBreakMode: "nowrap",
-	lineHeight: 2,
 	minWidth: 104,
 	shrink: 1,
 };
@@ -147,16 +146,26 @@ export default {
 				underline: true,
 				textColor: color_link,
 				background: color_transparent,
+				cursor: "pointer",
 			},
 			{ background: color_link.alpha(0.1) },
 			{ background: color_link.alpha(0.2) },
 		),
 		small: makeButtonStyle({
 			fontSize: 12,
-			padding: { x: 6 },
+			padding: { x: 6, y: 2 },
 			minWidth: 80,
 		}),
 		icon: makeButtonStyle(iconButtonOptions, _btnBg1, _btnBg2),
+		accentIcon: makeButtonStyle(
+			{
+				...iconButtonOptions,
+				background: color_accent,
+				textColor: color_accent.text(),
+			},
+			{ background: color_accent.contrast(-0.1) },
+			{ background: color_accent.contrast(-0.2) },
+		),
 		successIcon: makeButtonStyle(
 			{
 				...iconButtonOptions,
@@ -178,30 +187,33 @@ export default {
 			},
 		),
 		iconTop: makeButtonStyle({
-			padding: { top: 8, bottom: 4, x: 12 },
+			padding: { top: 16, bottom: 4, x: 12 },
 			css: {
 				display: "flex",
 				flexDirection: "column",
 				justifyContent: "center",
 				alignItems: "center",
+				gap: "0.5em",
 			},
 		}),
 		iconTopStart: makeButtonStyle({
-			padding: { top: 8, bottom: 4, x: 12 },
+			padding: { top: 16, bottom: 4, x: 12 },
 			css: {
 				display: "flex",
 				flexDirection: "column",
 				justifyContent: "start",
 				alignItems: "start",
+				gap: "0.5em",
 			},
 		}),
 		iconTopEnd: makeButtonStyle({
-			padding: { top: 8, bottom: 4, x: 12 },
+			padding: { top: 16, bottom: 4, x: 12 },
 			css: {
 				display: "flex",
 				flexDirection: "column",
 				justifyContent: "end",
 				alignItems: "end",
+				gap: "0.5em",
 			},
 		}),
 	},
@@ -236,7 +248,6 @@ export default {
 		toggleText: new UIStyle({
 			textColor: color_text, // (don't inherit :checked fill)
 			lineBreakMode: "pre-wrap",
-			lineHeight: 1.5,
 			padding: { y: 6 },
 			css: { display: "inline" },
 		}),

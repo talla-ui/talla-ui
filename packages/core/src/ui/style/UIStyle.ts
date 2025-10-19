@@ -471,6 +471,7 @@ export namespace UIStyle {
 				"link",
 				"small",
 				"icon",
+				"accentIcon",
 				"successIcon",
 				"dangerIcon",
 				"iconTop",

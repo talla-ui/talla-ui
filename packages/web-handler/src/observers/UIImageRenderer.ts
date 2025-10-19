@@ -50,12 +50,11 @@ export function getIconElt(icon?: StringConvertible, style?: UIText.IconStyle) {
 			elt.style.fill = "currentColor";
 		}
 		elt.style.display = "inline-block";
-		elt.style.height = "100%";
+		elt.style.width = "100%";
 	} else {
 		iconWrapper.style.fontSize = size;
 	}
 	iconWrapper.style.width = size;
-	iconWrapper.style.height = size;
 	iconWrapper.appendChild(iconElement);
 	_memoizedIcons[memo] = iconWrapper.cloneNode(true) as HTMLElement;
 	return iconWrapper;
