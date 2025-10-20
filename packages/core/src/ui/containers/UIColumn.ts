@@ -95,11 +95,11 @@ export namespace UIColumn {
 
 		/**
 		 * Sets the alignment of content within the column, using {@link UIColumn.align}.
-		 * @param horizontal The horizontal alignment (`start`, `center`, `end`, `stretch`).
-		 * @param distribute The vertical distribution (`start`, `center`, `end`, `space-between`).
+		 * @param horizontal The horizontal alignment (`start`, `center`, `end`, `stretch`, `baseline`).
+		 * @param distribute The vertical distribution (`start`, `center`, `end`, `space-between`, `space-around`).
 		 * @returns The builder instance for chaining.
 		 */
-		align(
+		override align(
 			horizontal?: BindingOrValue<UIContainer.Layout["gravity"]>,
 			distribute?: BindingOrValue<UIContainer.Layout["distribution"]>,
 		) {

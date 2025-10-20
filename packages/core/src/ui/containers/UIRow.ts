@@ -64,11 +64,11 @@ export namespace UIRow {
 
 		/**
 		 * Sets the alignment of content within the row, using {@link UIRow.align}.
-		 * @param horizontal The horizontal alignment (`start`, `center`, `end`, `fill`).
-		 * @param gravity The vertical alignment (`start`, `center`, `end`, `stretch`).
+		 * @param horizontal The horizontal alignment (`start`, `center`, `end`, `space-between`, `space-around`).
+		 * @param gravity The vertical alignment (`start`, `center`, `end`, `stretch`, `baseline`).
 		 * @returns The builder instance for chaining.
 		 */
-		align(
+		override align(
 			horizontal?: BindingOrValue<UIContainer.Layout["distribution"]>,
 			gravity?: BindingOrValue<UIContainer.Layout["gravity"]>,
 		) {

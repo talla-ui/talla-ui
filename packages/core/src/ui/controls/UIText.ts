@@ -151,13 +151,6 @@ export namespace UIText {
 		}
 
 		/**
-		 * Alias for `textAlign`, to set the text alignment.
-		 */
-		align(align?: BindingOrValue<UIStyle.StyleOptions["textAlign"]>) {
-			return this.textAlign(align);
-		}
-
-		/**
 		 * A shorthand for `textAlign("center")`, to set the text alignment to center.
 		 */
 		center() {

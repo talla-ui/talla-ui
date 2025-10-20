@@ -606,6 +606,18 @@ export namespace UIElement {
 			return this.setStyleOverride("textAlign", align);
 		}
 
+		/**
+		 * Alias for {@link textAlign}.
+		 * @note This method is overridden on column and row builders to set alignment of content within the container instead.
+		 * @param align The text alignment (CSS value).
+		 * @returns The builder instance for chaining.
+		 */
+		align(
+			align?: BindingOrValue<UIStyle.StyleOptions["textAlign"] | undefined>,
+		) {
+			return this.textAlign(align);
+		}
+
 		// --- delayed initialization
 
 		/**
