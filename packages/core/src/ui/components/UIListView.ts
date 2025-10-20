@@ -284,8 +284,8 @@ export class UIListView<
 	/** Update the container with (existing or new) views, one for each list item; only called from list observer */
 	private async _updateItems(
 		itemProp: symbol,
-		itemBuilder: ViewBuilder<View>,
-		emptyStateBuilder?: ViewBuilder<View>,
+		itemBuilder: ViewBuilder,
+		emptyStateBuilder?: ViewBuilder,
 		cancel?: { abort?: boolean },
 	) {
 		if (this.isUnlinked()) return;
@@ -442,7 +442,7 @@ export namespace UIListView {
 		 * - This constructor is used by {@link UIListView} and should not be used directly by an application.
 		 * @hideconstructor
 		 */
-		constructor(itemProp: symbol, item: any, body: ViewBuilder<View>) {
+		constructor(itemProp: symbol, item: any, body: ViewBuilder) {
 			super();
 			item = item instanceof ItemValueWrapper ? item.value : item;
 			this.item = item;
@@ -486,7 +486,7 @@ export namespace UIListView {
 	 */
 	export function listBuilder<TItem>(
 		items: BindingOrValue<Iterable<TItem> | undefined>,
-		content?: ViewBuilder<View> | ((item: Binding<TItem>) => ViewBuilder<View>),
+		content?: ViewBuilder | ((item: Binding<TItem>) => ViewBuilder),
 	) {
 		return new ListBuilder().items(items).with(content);
 	}
@@ -556,7 +556,7 @@ export namespace UIListView {
 		 * @param content A view builder that defines the template for each list item.
 		 * @returns The builder instance for chaining.
 		 */
-		with(content?: ViewBuilder<View> | ((item: Binding) => ViewBuilder<View>)) {
+		with(content?: ViewBuilder | ((item: Binding) => ViewBuilder)) {
 			if (typeof content === "function") {
 				this._buildItem = content;
 			} else {
@@ -572,7 +572,7 @@ export namespace UIListView {
 		 * @param container A view builder for the outer container (e.g., `UI.Column()`, `UI.Row()`).
 		 * @returns The builder instance for chaining.
 		 */
-		outer(container?: ViewBuilder<View>) {
+		outer(container?: ViewBuilder) {
 			this._container = container;
 			return this;
 		}
@@ -582,7 +582,7 @@ export namespace UIListView {
 		 * @param emptyState A view builder for the view to show when the list is empty.
 		 * @returns The builder instance for chaining.
 		 */
-		emptyState(emptyState?: ViewBuilder<View>) {
+		emptyState(emptyState?: ViewBuilder) {
 			this._emptyState = emptyState;
 			return this;
 		}
@@ -634,9 +634,9 @@ export namespace UIListView {
 		}
 
 		private _itemProp = Symbol("UIListView");
-		private _buildItem?: (item: Binding) => ViewBuilder<View>;
-		private _itemBuilder?: ViewBuilder<View>;
-		private _container?: ViewBuilder<View>;
-		private _emptyState?: ViewBuilder<View>;
+		private _buildItem?: (item: Binding) => ViewBuilder;
+		private _itemBuilder?: ViewBuilder;
+		private _container?: ViewBuilder;
+		private _emptyState?: ViewBuilder;
 	}
 }

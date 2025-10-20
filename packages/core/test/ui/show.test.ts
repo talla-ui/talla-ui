@@ -135,6 +135,13 @@ test("Rendering content using bound state", async () => {
 	expectCell.containing({ text: "foo" }).toBeEmpty();
 });
 
+test("Build view using function and render", async () => {
+	let viewRenderer = UI.ShowWhen(true, () => UI.Cell(UI.Text("foo"))).build();
+	renderTestView(viewRenderer);
+	await expectOutputAsync({ text: "foo" });
+	expect(viewRenderer.findViewContent(UIText)).toHaveLength(1);
+});
+
 test("Set inserted view and render", async () => {
 	let myCell = UI.Cell(UI.Text("foo"));
 	let viewRenderer = new UIShowView();

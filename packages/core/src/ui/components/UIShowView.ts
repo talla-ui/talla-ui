@@ -253,8 +253,8 @@ export namespace UIShowView {
 	 */
 	export function showWhenBuilder(
 		condition: BindingOrValue<any>,
-		content?: ViewBuilder<View>,
-		elseContent?: ViewBuilder<View>,
+		content?: ViewBuilder | (() => ViewBuilder),
+		elseContent?: ViewBuilder,
 	) {
 		let b = new ShowBuilder().when(condition);
 		if (content) b.show(content);
@@ -271,8 +271,8 @@ export namespace UIShowView {
 	 */
 	export function showUnlessBuilder(
 		condition: BindingOrValue<any>,
-		content?: ViewBuilder<View>,
-		elseContent?: ViewBuilder<View>,
+		content?: ViewBuilder | (() => ViewBuilder),
+		elseContent?: ViewBuilder | (() => ViewBuilder),
 	) {
 		let b = new ShowBuilder().unless(condition);
 		if (content) b.show(content);
@@ -290,7 +290,7 @@ export namespace UIShowView {
 	 * @see {@link UIShowView}
 	 */
 	export function showBuilder(
-		content: ViewBuilder<View> | Binding<View | undefined>,
+		content: ViewBuilder | (() => ViewBuilder) | Binding<View | undefined>,
 		propagateInsertedEvents?: boolean,
 	) {
 		return new ShowBuilder().show(content, propagateInsertedEvents);
@@ -306,8 +306,12 @@ export namespace UIShowView {
 			let content = this._content;
 			let elseContent = this._elseContent;
 			if (content || elseContent) {
+				let contentBuilder =
+					typeof content === "function" ? content() : content;
+				let elseContentBuilder =
+					typeof elseContent === "function" ? elseContent() : elseContent;
 				view.setBody = function (state) {
-					let body = (state ? content : elseContent)?.build();
+					let body = (state ? contentBuilder : elseContentBuilder)?.build();
 					this.body?.unlink();
 					this.body = body && this.attach(body, { delegate: this });
 				};
@@ -316,10 +320,10 @@ export namespace UIShowView {
 		});
 
 		/** Content to show conditionally */
-		private _content?: ViewBuilder<View>;
+		private _content?: ViewBuilder | (() => ViewBuilder);
 
 		/** Content to show conditionally */
-		private _elseContent?: ViewBuilder<View>;
+		private _elseContent?: ViewBuilder | (() => ViewBuilder);
 
 		/**
 		 * Creates a new instance of the view renderer.
@@ -373,7 +377,7 @@ export namespace UIShowView {
 		 * @returns The builder instance for chaining.
 		 */
 		show(
-			content: ViewBuilder<View> | Binding<View | undefined>,
+			content: ViewBuilder | (() => ViewBuilder) | Binding<View | undefined>,
 			propagateInsertedEvents?: boolean,
 		) {
 			if (isBinding(content)) {
@@ -389,7 +393,7 @@ export namespace UIShowView {
 			return this;
 		}
 
-		else(content: ViewBuilder<View>) {
+		else(content: ViewBuilder | (() => ViewBuilder)) {
 			this._elseContent = content;
 			return this;
 		}
