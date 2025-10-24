@@ -1,5 +1,4 @@
-import { ViewBuilder } from "../../app/index.js";
-import { ObservableEvent } from "../../object/index.js";
+import { ViewBuilder, ViewBuilderEventHandler } from "../../app/index.js";
 import { UIContainer } from "./UIContainer.js";
 import { UIScrollView } from "./UIScrollView.js";
 
@@ -69,9 +68,7 @@ export namespace UICell {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onMouseEnter(
-			handle: string | ((event: ObservableEvent, cell: UICell) => void),
-		) {
+		onMouseEnter(handle: string | ViewBuilderEventHandler<UICell>) {
 			return this.handle("MouseEnter", handle);
 		}
 
@@ -80,9 +77,7 @@ export namespace UICell {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onMouseLeave(
-			handle: string | ((event: ObservableEvent, cell: UICell) => void),
-		) {
+		onMouseLeave(handle: string | ViewBuilderEventHandler<UICell>) {
 			return this.handle("MouseLeave", handle);
 		}
 

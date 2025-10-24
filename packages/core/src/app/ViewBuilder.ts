@@ -167,10 +167,10 @@ export namespace ViewBuilder {
 		 */
 		handle(
 			eventName: string,
-			handle: string | ((event: ObservableEvent, view: TView) => void),
+			handle: string | ViewBuilderEventHandler<TView, any>,
 		) {
 			this._final.push((view) => {
-				ObservableObject.intercept(view, eventName, handle);
+				ObservableObject.intercept(view, eventName, handle as any);
 			});
 		}
 
@@ -198,6 +198,15 @@ export namespace ViewBuilder {
 export type ViewBuilderFunction<TResult extends ViewBuilder, TArg = TResult> = (
 	arg: TArg,
 ) => TResult;
+
+/**
+ * A type of event handler that can be added by a view builder
+ * @note The view that the handler listens to (passed as a second argument) may not be the event source, since an event may have originated from within the view hierarchy.
+ */
+export type ViewBuilderEventHandler<TView extends View = View, TData = {}> = (
+	event: ObservableEvent<View, Record<string, unknown> & TData>,
+	view: TView,
+) => void;
 
 /**
  * A view builder that encapsulates a function to define a view builder lazily

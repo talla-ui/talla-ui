@@ -7,12 +7,6 @@ export type ViewEvent<
 	TData extends Record<string, unknown> = Record<string, unknown>,
 > = ObservableEvent<TSource, TData>;
 
-/** Type definition for a view event handler function or method */
-export type ViewEventHandler<
-	TSource extends View = View,
-	TData extends Record<string, unknown> = Record<string, unknown>,
-> = (event: ViewEvent<TSource, TData>) => any;
-
 /**
  * An abstract class that represents a view
  *

@@ -17,6 +17,8 @@ import {
 	UIIconResource,
 	UITextField,
 	ViewBuilder,
+	ViewBuilderEventHandler,
+	ViewBuilderFunction,
 	ViewEvent,
 } from "talla-ui";
 
@@ -123,6 +125,67 @@ class CountService extends ObservableObject {
 	}
 }
 
+type ButtonSwitchOption = {
+	text?: StringConvertible;
+	icon?: UIIconResource;
+	value: unknown;
+	disabled?: boolean;
+};
+
+const switchButtonStyle = UI.styles.button.default
+	.extend({ borderRadius: 8, minWidth: 0 })
+	.setPressed({
+		background: UI.colors.accent,
+		textColor: UI.colors.accent.text(),
+	});
+const SwitchButton = () => UI.Button().buttonStyle(switchButtonStyle);
+
+class ButtonSwitchView extends ComponentView {
+	value: unknown = undefined;
+	protected onSetValue(e: ViewEvent) {
+		if (!e.data.value) return;
+		if (this.value === e.data.value) return;
+		this.value = e.data.value;
+		this.emitChange("Change", { value: this.value });
+	}
+}
+
+function ButtonSwitch(options: ButtonSwitchOption[]) {
+	let Button = SwitchButton;
+	return {
+		...ComponentViewBuilder(ButtonSwitchView, (v) =>
+			UI.Row().with(
+				...options.map((option) =>
+					Button()
+						.text(option.text)
+						.icon(option.icon)
+						.value(option.value)
+						.pressed(v.bind("value").equals(option.value))
+						.disabled(option.disabled ?? false)
+						.onClick("SetValue")
+						.onPress("SetValue"),
+				),
+			),
+		),
+		value(value: BindingOrValue<unknown>) {
+			this.initializer.set("value", value);
+			return this;
+		},
+		formStateValue(formState: Binding<FormState>, formField: string) {
+			this.initializer.observeFormState(formState, formField, "value");
+			return this;
+		},
+		onChange(handle: string | ViewBuilderEventHandler<ButtonSwitchView>) {
+			this.initializer.handle("Change", handle);
+			return this;
+		},
+		button(fn: ViewBuilderFunction<UIButton.ButtonBuilder>) {
+			Button = () => fn(Button());
+			return this;
+		},
+	};
+}
+
 function MainView(v: Binding<MainActivity>) {
 	return UI.Column()
 		.align("center")
@@ -212,6 +275,52 @@ function MainView(v: Binding<MainActivity>) {
 				UI.Button("Change").onClick("ChangeEvent"),
 			),
 			UI.Spacer(32),
+
+			UI.Row(
+				UI.Button("Select (form)")
+					.align("start")
+					.chevron("down")
+					.dropdownPicker([
+						{ value: "one", text: "1" },
+						{ value: "two", text: "2" },
+						{ value: "three", text: "3" },
+					])
+					.formStateValue(v.bind("tabform"), "tab"),
+				UI.Text(v.bind("tabform.values.tab").string("Selected: {}")),
+				UI.Spacer(),
+				UI.Button("Select")
+					.align("start")
+					.chevron("down")
+					.dropdownPicker([
+						{ value: "one", text: "1" },
+						{ value: "two", text: "2" },
+						{ value: "three", text: "3" },
+					])
+					.value(v.bind("tab"))
+					.onMenuItemSelect("SelectTab"),
+			),
+
+			UI.Row(
+				UI.Button("1")
+					.value("one")
+					.buttonStyle(v.bind("tab").equals("one").then("accent"))
+					.onClick("SelectTab"),
+				UI.Button("2")
+					.value("two")
+					.buttonStyle(v.bind("tab").equals("two").then("accent"))
+					.onClick("SelectTab"),
+				UI.Button("3")
+					.value("three")
+					.buttonStyle(v.bind("tab").equals("three").then("accent"))
+					.onClick("SelectTab"),
+			),
+			ButtonSwitch([
+				{ text: "One", value: "one" },
+				{ text: "Two", value: "two" },
+				{ text: "Three", value: "three" },
+			])
+				.value(v.bind("tab"))
+				.onChange("SelectTab"),
 
 			UI.Column()
 				.gap(8)
@@ -319,15 +428,13 @@ function MainView(v: Binding<MainActivity>) {
 							UI.Button("Link").buttonStyle("link"),
 							UI.Button("Small").buttonStyle("small"),
 						),
-					UI.Row()
-						.padding(8)
-						.background("shade")
-						.with(
-							UI.Text("Testing"),
-							UI.TextField("Testing"),
-							UI.Button("Button"),
-							UI.Button().icon("search").buttonStyle("icon"),
-						),
+					UI.Row().padding(8).background("shade").with(
+						UI.Text("Testing"),
+						UI.TextField("Testing"),
+						UI.TextField("Testing").textFieldStyle("ghost"), //.readOnly(),
+						UI.Button("Button"),
+						UI.Button().icon("search").buttonStyle("icon"),
+					),
 				),
 
 			// Test: table
@@ -361,6 +468,10 @@ export class MainActivity extends Activity {
 		factors: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].filter((f) => i % f === 0),
 	}));
 
+	tab: string = "one";
+
+	tabform = new FormState((f) => f.object({ tab: f.string() }));
+
 	get currentDate() {
 		return new Date();
 	}
@@ -376,6 +487,10 @@ export class MainActivity extends Activity {
 
 	onChangeEvent() {
 		this.emitChange();
+	}
+
+	onSelectTab(e: ViewEvent) {
+		this.tab = e.data.value as string;
 	}
 
 	countService = new CountService();

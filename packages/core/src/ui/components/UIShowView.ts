@@ -1,4 +1,9 @@
-import { RenderContext, View, ViewBuilder } from "../../app/index.js";
+import {
+	RenderContext,
+	View,
+	ViewBuilder,
+	ViewBuilderEventHandler,
+} from "../../app/index.js";
 import { invalidArgErr } from "../../errors.js";
 import {
 	Binding,
@@ -342,7 +347,7 @@ export namespace UIShowView {
 		 */
 		handle(
 			eventName: string,
-			handle: string | ((event: ObservableEvent, view: UIShowView) => void),
+			handle: string | ViewBuilderEventHandler<UIShowView>,
 		) {
 			this.initializer.handle(eventName, handle);
 			return this;

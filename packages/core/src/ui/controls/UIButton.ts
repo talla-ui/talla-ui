@@ -4,6 +4,7 @@ import {
 	FormState,
 	ModalMenuOptions,
 	ViewBuilder,
+	ViewBuilderEventHandler,
 } from "../../app/index.js";
 import {
 	Binding,
@@ -334,12 +335,9 @@ export namespace UIButton {
 		onMenuItemSelect(
 			select:
 				| string
-				| ((
-						event: ObservableEvent<UIButton, ModalMenuOptions.MenuItem>,
-						button: UIButton,
-				  ) => void),
+				| ViewBuilderEventHandler<UIButton, ModalMenuOptions.MenuItem>,
 		) {
-			return this.handle("MenuItemSelect", select as any);
+			return this.handle("MenuItemSelect", select);
 		}
 
 		/**

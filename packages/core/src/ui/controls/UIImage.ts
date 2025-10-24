@@ -1,10 +1,9 @@
 import type { StringConvertible } from "@talla-ui/util";
-import { ViewBuilder } from "../../app/index.js";
+import { ViewBuilder, ViewBuilderEventHandler } from "../../app/index.js";
 import { BindingOrValue } from "../../object/Binding.js";
 import { UIIconResource, UIStyle } from "../style/index.js";
 import type { UI } from "../UI.js";
 import { UIElement } from "../UIElement.js";
-import { ObservableEvent } from "../../object/index.js";
 
 /**
  * A view class that represents an image or icon control
@@ -106,9 +105,7 @@ export namespace UIImage {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onLoad(
-			handle: string | ((event: ObservableEvent, image: UIImage) => void),
-		) {
+		onLoad(handle: string | ViewBuilderEventHandler<UIImage>) {
 			return this.handle("Load", handle);
 		}
 
@@ -117,9 +114,7 @@ export namespace UIImage {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onLoadError(
-			handle: string | ((event: ObservableEvent, image: UIImage) => void),
-		) {
+		onLoadError(handle: string | ViewBuilderEventHandler<UIImage>) {
 			return this.handle("LoadError", handle);
 		}
 	}

@@ -2,6 +2,7 @@ import {
 	ComponentView,
 	View,
 	ViewBuilder,
+	ViewBuilderEventHandler,
 	ViewEvent,
 } from "../../app/index.js";
 import { ERROR, err, safeCall } from "../../errors.js";
@@ -535,7 +536,7 @@ export namespace UIListView {
 		 */
 		handle(
 			eventName: string,
-			handle: string | ((event: ObservableEvent, view: UIListView) => void),
+			handle: string | ViewBuilderEventHandler<UIListView>,
 		) {
 			this.initializer.handle(eventName, handle);
 			return this;
@@ -627,9 +628,7 @@ export namespace UIListView {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onListItemsChange(
-			handle: string | ((event: ObservableEvent, list: UIListView) => void),
-		) {
+		onListItemsChange(handle: string | ViewBuilderEventHandler<UIListView>) {
 			return this.handle("ListItemsChange", handle);
 		}
 

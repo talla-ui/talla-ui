@@ -4,6 +4,7 @@ import {
 	RenderContext,
 	View,
 	ViewBuilder,
+	ViewBuilderEventHandler,
 	ViewBuilderFunction,
 } from "../app/index.js";
 import { err, ERROR } from "../errors.js";
@@ -642,7 +643,7 @@ export namespace UIElement {
 		 */
 		handle(
 			eventName: string,
-			handle: string | ((event: ObservableEvent, view: TView) => void),
+			handle: string | ViewBuilderEventHandler<TView, any>,
 		) {
 			this.initializer.handle(eventName, handle);
 			return this;
@@ -657,10 +658,7 @@ export namespace UIElement {
 		 * @param handle The function to call, or name of an event to emit
 		 * @returns The builder instance for chaining.
 		 */
-		handleKey(
-			key: string,
-			handle: string | ((event: ObservableEvent, view: TView) => void),
-		) {
+		handleKey(key: string, handle: string | ViewBuilderEventHandler<TView>) {
 			if (!this._keyHandlers) {
 				this._keyHandlers = {};
 				this.initializer.finalize((view) => {
@@ -668,7 +666,7 @@ export namespace UIElement {
 						if (e.name !== "KeyDown") return;
 						let handler = this._keyHandlers![e.data.key as string];
 						if (typeof handler === "string") view.emit(handler, e.data);
-						else if (handler) handler(e, view);
+						else if (handler) handler(e as any, view);
 					});
 				});
 			}
@@ -681,7 +679,7 @@ export namespace UIElement {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onClick(handle: string | ((event: ObservableEvent, view: TView) => void)) {
+		onClick(handle: string | ViewBuilderEventHandler<TView>) {
 			return this.handle("Click", handle);
 		}
 
@@ -690,9 +688,7 @@ export namespace UIElement {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onDoubleClick(
-			handle: string | ((event: ObservableEvent, view: TView) => void),
-		) {
+		onDoubleClick(handle: string | ViewBuilderEventHandler<TView>) {
 			return this.handle("DoubleClick", handle);
 		}
 
@@ -701,9 +697,7 @@ export namespace UIElement {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onContextMenu(
-			handle: string | ((event: ObservableEvent, view: TView) => void),
-		) {
+		onContextMenu(handle: string | ViewBuilderEventHandler<TView>) {
 			return this.handle("ContextMenu", handle);
 		}
 
@@ -712,7 +706,7 @@ export namespace UIElement {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onPress(handle: string | ((event: ObservableEvent, view: TView) => void)) {
+		onPress(handle: string | ViewBuilderEventHandler<TView>) {
 			return this.handle("Press", handle);
 		}
 
@@ -721,9 +715,7 @@ export namespace UIElement {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onRelease(
-			handle: string | ((event: ObservableEvent, view: TView) => void),
-		) {
+		onRelease(handle: string | ViewBuilderEventHandler<TView>) {
 			return this.handle("Release", handle);
 		}
 
@@ -733,7 +725,7 @@ export namespace UIElement {
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
 		onKeyDown(
-			handle: string | ((event: ObservableEvent, view: TView) => void),
+			handle: string | ViewBuilderEventHandler<TView, { key: string }>,
 		) {
 			return this.handle("KeyDown", handle);
 		}
@@ -743,7 +735,7 @@ export namespace UIElement {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onKeyUp(handle: string | ((event: ObservableEvent, view: TView) => void)) {
+		onKeyUp(handle: string | ViewBuilderEventHandler<TView, { key: string }>) {
 			return this.handle("KeyUp", handle);
 		}
 
@@ -752,9 +744,7 @@ export namespace UIElement {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onFocusIn(
-			handle: string | ((event: ObservableEvent, view: TView) => void),
-		) {
+		onFocusIn(handle: string | ViewBuilderEventHandler<TView>) {
 			return this.handle("FocusIn", handle);
 		}
 
@@ -763,9 +753,7 @@ export namespace UIElement {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onFocusOut(
-			handle: string | ((event: ObservableEvent, view: TView) => void),
-		) {
+		onFocusOut(handle: string | ViewBuilderEventHandler<TView>) {
 			return this.handle("FocusOut", handle);
 		}
 
@@ -774,7 +762,7 @@ export namespace UIElement {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onChange(handle: string | ((event: ObservableEvent, view: TView) => void)) {
+		onChange(handle: string | ViewBuilderEventHandler<TView>) {
 			return this.handle("Change", handle);
 		}
 
@@ -783,7 +771,7 @@ export namespace UIElement {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onInput(handle: string | ((event: ObservableEvent, view: TView) => void)) {
+		onInput(handle: string | ViewBuilderEventHandler<TView>) {
 			return this.handle("Input", handle);
 		}
 
@@ -792,9 +780,7 @@ export namespace UIElement {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onBeforeRender(
-			handle: string | ((event: ObservableEvent, view: TView) => void),
-		) {
+		onBeforeRender(handle: string | ViewBuilderEventHandler<TView>) {
 			return this.handle("BeforeRender", handle);
 		}
 
@@ -803,9 +789,7 @@ export namespace UIElement {
 		 * @param handle The function to call, or name of the event to emit instead
 		 * @see {@link UIElement.ElementBuilder.handle()}
 		 */
-		onRendered(
-			handle: string | ((event: ObservableEvent, view: TView) => void),
-		) {
+		onRendered(handle: string | ViewBuilderEventHandler<TView>) {
 			return this.handle("Rendered", handle);
 		}
 
@@ -927,7 +911,7 @@ export namespace UIElement {
 
 		/** @internal Key handlers, if interceptor has been added */
 		private _keyHandlers?: {
-			[key: string]: string | ((event: ObservableEvent, view: TView) => void);
+			[key: string]: string | ViewBuilderEventHandler<TView>;
 		};
 	}
 }
