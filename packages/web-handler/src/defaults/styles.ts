@@ -84,7 +84,7 @@ const defaultButtonStyle = new UIStyle(baseButtonOptions)
 	.setDisabled(disabledOptions)
 	.setHovered(_btnBg1)
 	.setFocused(_btnBg1)
-	.setPressed(_btnBg2, _btnBg2, _btnBg2);
+	.setPressed(_btnBg2);
 
 function makeButtonStyle(
 	options: UIStyle.StyleOptions,
@@ -95,7 +95,7 @@ function makeButtonStyle(
 		.extend({ ...options })
 		.setHovered(focusOptions)
 		.setFocused(focusOptions)
-		.setPressed(pressedOptions, pressedOptions, pressedOptions)
+		.setPressed(pressedOptions)
 		.setDisabled(disabledOptions);
 }
 
@@ -133,13 +133,17 @@ export default {
 			_btnBg1,
 			_btnBg2,
 		),
-		text: makeButtonStyle({
-			minWidth: 0,
-			padding: { y: 4 },
-			borderRadius: 0,
-			borderWidth: 0,
-			background: color_transparent,
-		}),
+		text: makeButtonStyle(
+			{
+				minWidth: 0,
+				padding: { y: 4 },
+				borderRadius: 0,
+				borderWidth: 0,
+				background: color_transparent,
+			},
+			{ background: color_transparent },
+			{ background: color_transparent },
+		),
 		link: makeButtonStyle(
 			{
 				minWidth: 0,

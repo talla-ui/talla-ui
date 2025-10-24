@@ -92,13 +92,13 @@ export class UIStyle {
 	 * - Pressed styles are not applied to disabled elements.
 	 * - Hovered styles are not applied to focused elements.
 	 * @param styles Style properties to apply to pressed elements
-	 * @param pressedHovered Style properties to apply to pressed and hovered (unfocused) elements
-	 * @param pressedFocused Style properties to apply to pressed and focused elements; defaults to hovered styles
+	 * @param pressedHovered Style properties to apply to pressed and hovered (unfocused) defaults to `styles`
+	 * @param pressedFocused Style properties to apply to pressed and focused elements; defaults to `pressedHovered`
 	 * @returns A new style instance with conditional styles applied
 	 */
 	setPressed(
 		styles: Readonly<UIStyle.StyleOptions>,
-		pressedHovered: Readonly<UIStyle.StyleOptions> = {},
+		pressedHovered: Readonly<UIStyle.StyleOptions> = styles,
 		pressedFocused: Readonly<UIStyle.StyleOptions> = pressedHovered,
 	): UIStyle {
 		return this._clone([
@@ -124,13 +124,13 @@ export class UIStyle {
 	 * - Readonly styles are not applied to disabled elements.
 	 * - Hovered styles are not applied to focused elements.
 	 * @param styles Style properties to apply to readonly elements
-	 * @param readonlyHovered Style properties to apply to readonly and hovered (unfocused) elements
-	 * @param readonlyFocused Style properties to apply to readonly and focused elements; defaults to hovered styles
+	 * @param readonlyHovered Style properties to apply to readonly and hovered (unfocused) elements; defaults to `styles`
+	 * @param readonlyFocused Style properties to apply to readonly and focused elements; defaults to `readonlyHovered`
 	 * @returns A new style instance with conditional styles applied
 	 */
 	setReadonly(
 		styles: Readonly<UIStyle.StyleOptions>,
-		readonlyHovered: Readonly<UIStyle.StyleOptions> = {},
+		readonlyHovered: Readonly<UIStyle.StyleOptions> = styles,
 		readonlyFocused: Readonly<UIStyle.StyleOptions> = readonlyHovered,
 	): UIStyle {
 		return this._clone([
