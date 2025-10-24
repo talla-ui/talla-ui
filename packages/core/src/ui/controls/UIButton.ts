@@ -272,10 +272,13 @@ export namespace UIButton {
 		 * - The current value of the button determines the 'checked' item in the menu. This property can be bound using {@link UIButton.ButtonBuilder.value()} or {@link UIButton.ButtonBuilder.formStateValue()}.
 		 * - The button {@link UIButton.text text} property is set to the text of the selected menu item, if any.
 		 * - The button emits a `MenuItemSelect` event when a menu item is selected, with the selected menu item as data (including its `value` property).
-		 * @param menu An instance of {@link ModalMenuOptions}.
+		 * @param menu An instance of {@link ModalMenuOptions}, or a list of items.
 		 * @returns The builder instance for chaining.
 		 */
-		dropdownPicker(menu: ModalMenuOptions) {
+		dropdownPicker(menu: ModalMenuOptions | ModalMenuOptions.MenuItem[]) {
+			if (Array.isArray(menu)) {
+				menu = new ModalMenuOptions(menu, "100%");
+			}
 			let items = menu.items;
 			this._showMenu = (button) => {
 				items = items.map((it) => ({
