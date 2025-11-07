@@ -4,7 +4,7 @@
 	"description": "A build test using Vite",
 	"type": "module",
 	"scripts": {
-		"start": "vite",
+		"start": "vite --host",
 		"test": "vitest run --silent"
 	},
 	"devDependencies": {

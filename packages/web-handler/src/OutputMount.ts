@@ -3,6 +3,7 @@ import {
 	CLASS_OVERLAY_SHADER,
 	CLASS_OVERLAY_WRAPPER,
 	CLASS_PAGE_ROOT,
+	CLASS_PAGE_WRAPPER,
 } from "./defaults/css.js";
 import { registerHandlers } from "./observers/events.js";
 import type { WebRenderer } from "./WebRenderer.js";
@@ -23,14 +24,21 @@ export class OutputMount {
 		scroll?: boolean,
 		title?: string,
 	) {
-		let elt =
-			(this._outer =
-			this._inner =
-				document.createElement("web-handler-page-root"));
+		let elt = (this._outer = document.createElement("web-handler-page-root"));
 		elt.ariaAtomic = "true";
 		elt.className = CLASS_PAGE_ROOT;
 		elt.dataset.title = title || "";
 		if (scroll) elt.style.overflow = "auto";
+
+		// For page mode (scroll=true), create a wrapper to unpin height
+		if (scroll) {
+			let wrapper = (this._inner = document.createElement("div"));
+			wrapper.className = CLASS_PAGE_WRAPPER;
+			elt.appendChild(wrapper);
+		} else {
+			this._inner = elt;
+		}
+
 		this._remount = () => {
 			let culture = app.i18n.getCulture();
 			elt.dir = culture.textDirection || "ltr";

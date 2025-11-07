@@ -65,6 +65,14 @@ let _currentLogicalPxScaleNarrow = 1;
 export function initializeCSS(options: WebContextOptions) {
 	resetCSS();
 	setGlobalCSS(makeBaseCSS());
+	if (options.resetBodySpacing) {
+		setGlobalCSS({
+			body: {
+				margin: "0",
+				padding: "0",
+			},
+		});
+	}
 	setLogicalPxScale(options.logicalPxScale, options.logicalPxScaleNarrow);
 	importStylesheets(options.importCSS);
 	setFocusDecoration(options.focusDecoration);

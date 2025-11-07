@@ -124,6 +124,12 @@ export class WebContextOptions {
 	/** True if all anumations should be disabled */
 	reducedMotion = false;
 
+	/**
+	 * True if the body element's default margin and padding should be reset to 0, defaults to true
+	 * - This is recommended for full-page applications to prevent unexpected spacing around page root elements
+	 */
+	resetBodySpacing = true;
+
 	/** Relative scale of logical pixels, defaults to 1 */
 	logicalPxScale = 1;
 

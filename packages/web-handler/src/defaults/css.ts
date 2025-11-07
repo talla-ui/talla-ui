@@ -2,6 +2,8 @@
 export const CLASS_UI = "WebHandler__UI";
 /** @internal Page root element class name */
 export const CLASS_PAGE_ROOT = "WebHandler__Pg";
+/** @internal Page wrapper element class name (for page mode scrolling) */
+export const CLASS_PAGE_WRAPPER = "WebHandler__PgWr";
 /** @internal Modal/overlay root (shader) element class name */
 export const CLASS_OVERLAY_SHADER = "WebHandler__Ovl";
 /** @internal Modal/overlay wrapper element class name */
@@ -154,10 +156,24 @@ export function makeBaseCSS() {
 			left: "0",
 			right: "0",
 			overflow: "hidden",
-			contain: "strict",
+			contain: "layout paint",
 			display: "flex",
 			flexDirection: "column",
 			cursor: "default",
+		},
+		["web-handler-page-root:only-of-type"]: {
+			position: "relative",
+			minHeight: "100vh",
+			top: "auto",
+			bottom: "auto",
+			left: "auto",
+			right: "auto",
+		},
+		[`.${CLASS_PAGE_WRAPPER}`]: {
+			display: "flex",
+			flexDirection: "column",
+			flex: "0 1 auto",
+			minHeight: "100vh",
 		},
 		[`.${CLASS_OVERLAY_SHADER}`]: {
 			zIndex: "1000",

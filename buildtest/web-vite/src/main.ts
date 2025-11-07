@@ -33,6 +33,7 @@ export function CardLayout(title: StringConvertible) {
 				.borderRadius(16)
 				.padding(16)
 				.gap()
+				.maxWidth("100%")
 				.with(UI.Text(title).textStyle("title"), ...content),
 		),
 		with(...cardContent: ViewBuilder[]) {
@@ -55,7 +56,7 @@ function Collapsible(text: StringConvertible, ...content: ViewBuilder[]) {
 	return {
 		...ComponentViewBuilder(CollapsibleView, (v) =>
 			UI.Column()
-				.width(v.bind("width"))
+				.width(v.bind("width"), undefined, "100%")
 				.with(
 					UI.Text(text)
 						.icon(v.bind("expanded").then("chevronDown", "chevronNext"))
@@ -220,7 +221,7 @@ function MainView(v: Binding<MainActivity>) {
 					}),
 					UI.Button()
 						.chevron()
-						.minWidth(200)
+						.minWidth(180)
 						.textAlign("start")
 						.dropdownPicker(
 							new ModalMenuOptions([
@@ -418,6 +419,7 @@ function MainView(v: Binding<MainActivity>) {
 					UI.Row()
 						.padding(8)
 						.background("shade")
+						.wrapContent()
 						.with(
 							UI.Button("Default").buttonStyle("default"),
 							UI.Button("Accent").buttonStyle("accent"),
