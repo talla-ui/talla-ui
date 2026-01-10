@@ -7,15 +7,15 @@ export default {
 	module: {
 		rules: [
 			{
-				test: /\.tsx?$/,
+				test: /\.ts$/,
 				use: "ts-loader",
 				exclude: /node_modules/,
 			},
 		],
 	},
 	resolve: {
-		extensions: [".tsx", ".ts", ".js"],
-		extensionAlias: { ".js": [".ts", ".tsx", ".js"] },
+		extensions: [".ts", ".js"],
+		extensionAlias: { ".js": [".ts", ".js"] },
 	},
 	devtool: "eval-source-map",
 	devServer: {},

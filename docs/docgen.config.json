@@ -6,7 +6,7 @@
 		"../packages/web-handler/dist/**/*.d.ts",
 		"./content/en/**/*.md"
 	],
-	"samples": ["./content/en/samples/**/*.{ts,tsx}"],
+	"samples": ["./content/en/samples/**/*.ts"],
 	"refFolder": "ref",
 	"checkOrphans": true,
 	"output": {

@@ -1,7 +1,5 @@
 {
 	"compilerOptions": {
-		"jsx": "react",
-		"jsxFactory": "jj",
 		"declaration": true,
 		"pretty": true,
 		"stripInternal": true,
@@ -17,6 +15,6 @@
 		"target": "esnext",
 		"lib": ["dom", "es2015"],
 		"skipLibCheck": true,
-		"outDir": "../dist"
-	}
+		"outDir": "../dist",
+	},
 }

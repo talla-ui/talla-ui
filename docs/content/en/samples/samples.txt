@@ -1,1 +1,0 @@
-These files are processed as source files and can be imported using the sample tag.
