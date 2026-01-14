@@ -1,5 +1,5 @@
 import { StringConvertible } from "@talla-ui/util";
-import type { UIIconResource, UIStyle, UIText } from "../ui/index.js";
+import type { StyleOverrides, UIIconResource, UIText } from "../ui/index.js";
 import type { ModalFactory } from "./ModalFactory.js";
 
 /**
@@ -47,8 +47,8 @@ export namespace ModalMenuOptions {
 				hint?: StringConvertible;
 				hintIcon?: UIIconResource;
 				hintIconStyle?: UIText.IconStyle;
-				textStyle?: UIStyle.StyleOptions;
-				hintStyle?: UIStyle.StyleOptions;
+				textStyle?: StyleOverrides;
+				hintStyle?: StyleOverrides;
 				disabled?: boolean;
 				divider?: never;
 		  }

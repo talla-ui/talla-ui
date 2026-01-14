@@ -1,5 +1,5 @@
-import * as path from "path";
 import * as yaml from "js-yaml";
+import * as path from "path";
 import { Entry, EntryType } from "./Entry.js";
 
 /** A class that encapsulates a file reader for plain markdown files */

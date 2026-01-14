@@ -1,5 +1,7 @@
 /** @internal UI element class name */
 export const CLASS_UI = "WebHandler__UI";
+/** @internal Named style class prefix */
+export const CLASS_NAMED = "WebHandler-";
 /** @internal Page root element class name */
 export const CLASS_PAGE_ROOT = "WebHandler__Pg";
 /** @internal Page wrapper element class name (for page mode scrolling) */
@@ -7,15 +9,15 @@ export const CLASS_PAGE_WRAPPER = "WebHandler__PgWr";
 /** @internal Modal/overlay root (shader) element class name */
 export const CLASS_OVERLAY_SHADER = "WebHandler__Ovl";
 /** @internal Modal/overlay wrapper element class name */
-export const CLASS_OVERLAY_WRAPPER = "__Wr";
+export const CLASS_OVERLAY_WRAPPER = "WebHandler__Wr";
 /** @internal Container separator element class name: horizontal or vertical line */
-export const CLASS_SEPARATOR_LINE = "__Sp-l";
+export const CLASS_SEPARATOR_LINE = "WebHandler__Sp-l";
 /** @internal Container separator element class name: vertical line */
-export const CLASS_SEPARATOR_LINE_VERT = "__Sp-lv";
+export const CLASS_SEPARATOR_LINE_VERT = "WebHandler__Sp-lv";
 /** @internal Container separator element class name: spacer */
-export const CLASS_SEPARATOR_SPACER = "__Sp";
+export const CLASS_SEPARATOR_SPACER = "WebHandler__Sp";
 /** @internal Additional text control class name */
-export const CLASS_TEXTCONTROL = "__T";
+export const CLASS_TEXTCONTROL = "WebHandler__T";
 /** @internal Additional container class name */
 export const CLASS_CONTAINER = "__C";
 /** @internal Additional column class name */
@@ -36,9 +38,9 @@ export const CLASS_TOGGLE_TYPE = {
 } as const;
 
 /** @internal Returns an object with necessary global CSS classes */
-export function makeBaseCSS() {
+export function makeBaseCSS(): Record<string, {}> {
 	return {
-		// add UI element base styles
+		// add UI element base style
 		[`.${CLASS_UI}`]: {
 			display: "block",
 			margin: "0",
@@ -144,7 +146,7 @@ export function makeBaseCSS() {
 		},
 
 		// flip icons in RTL mode
-		[`[dir="rtl"] ._RTL-flip`]: {
+		[`[dir="rtl"] .${CLASS_UI} ._RTL-flip`]: {
 			transform: "scaleX(-1)",
 		},
 
@@ -201,7 +203,7 @@ export function makeBaseCSS() {
 			zIndex: "10000",
 		},
 
-		// add separator line styles
+		// add separator line style
 		[`.${CLASS_SEPARATOR_LINE}`]: {
 			flex: "0 0 auto",
 			margin: "0",
@@ -223,7 +225,7 @@ export function makeBaseCSS() {
 			alignSelf: "center",
 		},
 
-		// add custom toggle styles
+		// add custom toggle style
 		[`.${CLASS_UI}.${CLASS_TOGGLE}`]: {
 			display: "inline-flex",
 			alignItems: "center",

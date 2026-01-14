@@ -1,15 +1,15 @@
 import { existsSync, readFileSync } from "fs";
-import { Config } from "./Config.js";
 import { glob } from "glob";
-import { Parser } from "./Parser.js";
+import { Config } from "./Config.js";
 import { DocsIndex } from "./DocsIndex.js";
+import { HTMLOutput } from "./HTMLOutput.js";
+import { IndexOutput } from "./IndexOutput.js";
 import { JSONOutput } from "./JSONOutput.js";
+import { log } from "./Log.js";
 import { MarkdownOutput } from "./MarkdownOutput.js";
 import { MarkdownReader } from "./MarkdownReader.js";
-import { IndexOutput } from "./IndexOutput.js";
-import { log } from "./Log.js";
-import { HTMLOutput } from "./HTMLOutput.js";
 import { Output } from "./Output.js";
+import { Parser } from "./Parser.js";
 import { SamplesReader } from "./SamplesReader.js";
 
 // read config from a file, or use defaults

@@ -1,8 +1,6 @@
-import { RenderContext, UI, UIText } from "@talla-ui/core";
+import { RenderContext, UIText } from "@talla-ui/core";
 import { TestOutputElement } from "../TestOutputElement.js";
 import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
-
-const TEXT_STYLE = UI.styles.text.default;
 
 /** @internal */
 export class UITextRenderer extends TestBaseObserver<UIText> {
@@ -32,7 +30,7 @@ export class UITextRenderer extends TestBaseObserver<UIText> {
 
 	override updateStyle(element: TestOutputElement) {
 		let text = this.observed;
-		applyElementStyle(element, [TEXT_STYLE, text.style, text.position]);
+		applyElementStyle(element, text.styleName, text.style, text.position);
 	}
 
 	updateContent(element: TestOutputElement) {

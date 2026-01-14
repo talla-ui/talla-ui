@@ -4,7 +4,7 @@ import {
 	useTestContext,
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
-import { UI, UIImage, UIIconResource } from "../../dist/index.js";
+import { UI, UIIconResource, UIImage } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();

@@ -1,12 +1,9 @@
-import { RenderContext, UI, UIToggle } from "@talla-ui/core";
+import { RenderContext, UIToggle } from "@talla-ui/core";
 import { applyStyles } from "../DOMStyle.js";
 import { CLASS_TOGGLE, CLASS_TOGGLE_TYPE } from "../defaults/css.js";
 import { BaseObserver } from "./BaseObserver.js";
 
 let _nextId = 0;
-
-const TOGGLE_STYLE = UI.styles.toggle.default;
-const TOGGLE_TEXT_STYLE = UI.styles.text.toggleText;
 
 /** @internal */
 export class UIToggleRenderer extends BaseObserver<UIToggle> {
@@ -58,7 +55,9 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 		// set element (wrapper) style
 		applyStyles(
 			element,
-			[TOGGLE_STYLE, toggle.style],
+			"toggle",
+			toggle.styleName,
+			toggle.style,
 			CLASS_TOGGLE + " " + CLASS_TOGGLE_TYPE[toggle.type],
 			false,
 			false,
@@ -69,7 +68,9 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 		let label = element.lastChild as HTMLLabelElement;
 		applyStyles(
 			label,
-			[TOGGLE_TEXT_STYLE, toggle.textStyle],
+			"text",
+			"toggleText",
+			toggle.textStyle,
 			undefined,
 			true,
 			false,

@@ -48,6 +48,7 @@
 		"test:util": "cd packages/util && npm test",
 		"test:core": "cd packages/core && npm test",
 		"test:test": "cd packages/test-handler && npm test",
+		"test:web": "cd packages/web-handler && npm test",
 		"buildtest:web-esbuild": "cd buildtest/web-esbuild && npm install && npm start",
 		"buildtest:web-esm-tsc": "cd buildtest/web-esm-tsc && npm install && npm start",
 		"buildtest:web-esm-js": "cd buildtest/web-esm-js && npm install && npm start",
@@ -64,6 +65,14 @@
 		"check-format:web": "cd packages/web-handler && npm run check-format",
 		"check-format:docgen": "cd packages/docgen && npm run check-format",
 		"check-format:docs": "cd docs && npm run check-format",
+		"format": "concurrently npm:format:* && echo OK",
+		"format:other": "prettier --write \"*.md\" \"**/{package,tsconfig,config,launch,tasks}.json\"",
+		"format:util": "cd packages/util && npm run format",
+		"format:core": "cd packages/core && npm run format",
+		"format:test": "cd packages/test-handler && npm run format",
+		"format:web": "cd packages/web-handler && npm run format",
+		"format:docgen": "cd packages/docgen && npm run format",
+		"format:docs": "cd docs && npm run format",
 		"check-docs": "npm run build:docgen && npm run www-build:check-docs",
 		"www-build": "npm run build:docgen && npm run www-build:docs",
 		"www-build:docs": "cd docs && npm run build",
@@ -79,7 +88,10 @@
 		"publish:packages:docgen": "cd packages/docgen && npm publish --silent"
 	},
 	"prettier": {
-		"useTabs": true
+		"useTabs": true,
+		"plugins": [
+			"prettier-plugin-organize-imports"
+		]
 	},
 	"dependencies": {
 		"@talla-ui/core": "4.0.0-dev.105",
@@ -93,7 +105,9 @@
 		"concurrently": "latest",
 		"esbuild": "^0.23.1",
 		"http-server": "latest",
+		"jsdom": "^27.4.0",
 		"prettier": "^3.3.3",
+		"prettier-plugin-organize-imports": "^4",
 		"rimraf": "latest",
 		"tslib": "^2.7.0",
 		"typescript": "5.6",

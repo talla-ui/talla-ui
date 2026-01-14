@@ -21,13 +21,15 @@ export class UIDividerRenderer extends TestBaseObserver<UIDivider> {
 	updateStyle(element: TestOutputElement) {
 		let sep = this.observed;
 		// NOTE: margin is ignored in test renderer
-		applyElementStyle(element, [
-			sep.style,
+		applyElementStyle(
+			element,
+			sep.styleName,
 			{
+				...sep.style,
 				borderColor: sep.lineColor || UI.colors.divider,
 				borderWidth: sep.lineWidth,
 			},
 			sep.position,
-		]);
+		);
 	}
 }

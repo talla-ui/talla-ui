@@ -1,135 +1,128 @@
-import {
-	app,
-	AppContext,
-	UIAnimation,
-	UIColor,
-	UIIconResource,
-	UIStyle,
-} from "@talla-ui/core";
-import defaultAnimations from "./defaults/animations.js";
-import defaultColors from "./defaults/colors.js";
-import defaultIcons from "./defaults/icons.js";
-import defaultStyles from "./defaults/styles.js";
+import { app, UIAnimation, UIColor, UIIconResource } from "@talla-ui/core";
 import { initializeCSS } from "./DOMStyle.js";
 import { WebContextOptions } from "./WebContextOptions.js";
 import { WebLocalData } from "./WebLocalData.js";
 import { WebNavigationContext } from "./WebNavigationContext.js";
 import { WebRenderer } from "./WebRenderer.js";
+import { WebTheme, WebThemeData } from "./WebTheme.js";
 import { WebViewport } from "./WebViewport.js";
+import { ModalMenu } from "./modals/ModalMenu.js";
+import { UITextRenderer } from "./observers/UITextRenderer.js";
+
+/** @internal Currently active theme, for auto dark mode */
+let _activeTheme: WebTheme | undefined;
 
 /**
- * Clears the current global {@link app} context and initializes the application context for the web handler
- * - This method must be used to set up an application using the web handler. It can also be used to clear the state of the current application, e.g. after logging out the current user or applying global settings.
- * - Before initializing a new context, the {@link AppContext.clear()} method is used to reset the current context, if any.
+ * Applies a theme to the web application.
+ * - Dark mode is handled automatically based on {@link Viewport.prefersDark}, if colors and/or icons are defined as part of the theme.
+ * - Triggers a renderer remount to apply all new styles and re-evaluate color values.
+ * - Can be called during the {@link useWebContext()} configuration callback or later at runtime.
  *
- * @param config A {@link WebContextOptions} object, or a callback function to set options
- * @returns The global {@link app} context
+ * @param theme The theme to apply.
  *
  * @example
- * // Start the application
- * const app = useWebContext((options) => {
- *   options.logicalPxScale = 1.5;
- *   // ... more options
- * });
+ * // Apply a theme with custom colors
+ * setWebTheme(new WebTheme()
+ *   .colors({ accent: "#FF5722" })
+ *   .darkColors({ accent: "#FF7043" })
+ * );
+ */
+export function setWebTheme(theme: WebTheme): void {
+	_activeTheme = theme;
+	let renderer = app.renderer as WebRenderer | undefined;
+	if (!renderer) return;
+
+	let isDark = app.viewport?.prefersDark ?? false;
+	let data = theme.getThemeData(isDark) as WebThemeData;
+
+	// apply colors, icons, animations to global registries
+	UIColor.setColors(data.colors);
+	UIIconResource.setIcons(data.icons);
+	UIAnimation.setAnimations(data.animations);
+
+	// apply style default configuration
+	UITextRenderer.defaultIconStyle = {
+		size: data.options.iconSize,
+		margin: data.options.iconMargin,
+	};
+	ModalMenu.menuOffset = data.options.menuOffset;
+
+	// apply global CSS, with defaults, named styles, and URL imports
+	initializeCSS(data.options, data.styles, data.imports);
+	renderer.setBackgrounds(
+		data.options.pageBackground,
+		data.options.modalShadeBackground,
+	);
+	let reducedMotion =
+		data.options.reducedMotion ??
+		(typeof window !== "undefined" &&
+			window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
+	renderer.setReducedMotion(reducedMotion);
+
+	// remount to apply all changes
+	app.remount();
+}
+
+/**
+ * Initializes the web application context with renderer, viewport, and navigation.
+ * - Clears any existing context using {@link AppContext.clear()} before initialization.
+ * - Applies a default theme automatically; use {@link setWebTheme()} in the callback to customize.
+ * - Sets up automatic dark mode handling when the system color scheme changes.
+ * - Enables hot module reload for activities when using a compatible bundler.
+ *
+ * Call this function once at application startup to configure the web handler. It can also
+ * be called again to reset application state, for example after logging out the current user.
+ *
+ * @param config A callback to configure options and apply a custom theme.
+ * @returns The global {@link app} context.
+ *
+ * @example
+ * // Start the application with default theme
+ * const app = useWebContext();
  * app.addActivity(new MyActivity());
+ *
+ * @example
+ * // Start with custom theme
+ * const app = useWebContext(() => {
+ *   setWebTheme(new WebTheme()
+ *     .colors({ accent: "#FF5722" })
+ *     .darkColors({ accent: "#FF7043" })
+ *   );
+ * });
  */
 export function useWebContext(config?: (opts: WebContextOptions) => void) {
 	let options = new WebContextOptions();
-	config?.(options);
 
-	// clear the current app properties first
+	// Clear the current app properties first
 	app.clear();
 
-	// initialize local data
+	// Initialize local data
 	app.localData = new WebLocalData(options);
 
-	// create DOM renderer and viewport
+	// Create DOM renderer and viewport
 	let renderer = new WebRenderer(options);
 	app.renderer = renderer;
 	let viewport = new WebViewport(options);
 	app.viewport = viewport;
 
-	// fix string colors if needed
-	function mapColors(colors?: Record<string, any>) {
-		if (!colors) return undefined;
-		let result: Record<string, any> = {};
-		for (let key in colors) {
-			result[key] =
-				colors[key] instanceof UIColor ? colors[key] : new UIColor(colors[key]);
+	// Apply default theme first (before calling config callback)
+	setWebTheme(new WebTheme());
+
+	// Run configuration callback (which may call setWebTheme again)
+	config?.(options);
+
+	// Set up dark mode listener to re-apply theme when color scheme changes
+	viewport.listen((e) => {
+		if (e.name === "ColorScheme" && _activeTheme) {
+			setWebTheme(_activeTheme);
 		}
-		return result;
-	}
-	let colors = mapColors(options.colors);
-	let darkColors = mapColors(options.darkColors);
-
-	// initialize theme and global CSS styles (also on remount)
-	UIColor.theme.set({
-		...defaultColors,
-		...colors,
-	});
-	UIIconResource.theme.set({
-		...defaultIcons,
-		...options.icons,
-	});
-	UIAnimation.theme.set({
-		...defaultAnimations,
-		...options.animations,
-	});
-	UIStyle.theme.button.set({
-		...defaultStyles.button,
-		...options.buttonStyles,
-	});
-	UIStyle.theme.text.set({
-		...defaultStyles.text,
-		...options.textStyles,
-	});
-	UIStyle.theme.image.set({
-		...defaultStyles.image,
-		...options.imageStyles,
-	});
-	UIStyle.theme.textField.set({
-		...defaultStyles.textField,
-		...options.textFieldStyles,
-	});
-	UIStyle.theme.toggle.set({
-		...defaultStyles.toggle,
-		...options.toggleStyles,
-	});
-	UIStyle.theme.divider.set({
-		...defaultStyles.divider,
-		...options.dividerStyles,
-	});
-	initializeCSS(options);
-	renderer.listen((e) => {
-		if (e.name === "Remount") initializeCSS(options);
 	});
 
-	// apply dark color scheme automatically, if any
-	if (options.darkColors) {
-		viewport.listen((e) => {
-			if (e.name === "ColorScheme") {
-				UIColor.theme.set({
-					...defaultColors,
-					...colors,
-					...(viewport.prefersDark ? darkColors : undefined),
-				});
-				app.remount();
-			}
-		});
-		if (viewport.prefersDark) {
-			UIColor.theme.set({
-				...defaultColors,
-				...colors,
-				...darkColors,
-			});
-		}
-	}
-
-	// create navigation context
+	// Create navigation context
 	app.navigation?.unlink();
 	app.navigation = new WebNavigationContext(options);
 
-	// enable hot module reload for activities
+	// Enable hot module reload for activities
 	// handle is either module, module.hot, or import.meta.hot
 	app.hotReload = function (handle, ActivityClass) {
 		if (handle && handle.hot) handle = handle.hot;
@@ -146,6 +139,6 @@ export function useWebContext(config?: (opts: WebContextOptions) => void) {
 		}
 	};
 
-	// return a reference to the app context
+	// Return a reference to the app context
 	return app;
 }

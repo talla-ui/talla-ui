@@ -14,12 +14,16 @@
 		"build-verbose": "npm run prebuild && docgen -v > docgen.log",
 		"check-docs": "docgen check-docs.config.json",
 		"check-format": "prettier -l \"{content,templates}/**/*.{ts,md}\" && cd app && npm run check-format",
+		"format": "prettier --write \"{content,templates}/**/*.{ts,md}\" && cd app && npm run format",
 		"serve": "http-server _site -g"
 	},
 	"prettier": {
 		"useTabs": true,
 		"trailingComma": "all",
 		"endOfLine": "lf",
+		"plugins": [
+			"prettier-plugin-organize-imports"
+		],
 		"overrides": [
 			{
 				"files": "*.yaml",

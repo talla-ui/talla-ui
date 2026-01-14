@@ -1,13 +1,13 @@
-import * as path from "path";
-import { DocsIndex, href } from "./DocsIndex.js";
-import { log } from "./Log.js";
-import { CollatedMarkdownOutput } from "./MarkdownOutput.js";
 import hljs from "highlight.js";
 import { Marked } from "marked";
 import { markedHighlight } from "marked-highlight";
 import { markedSmartypants } from "marked-smartypants";
-import { Output } from "./Output.js";
+import * as path from "path";
+import { DocsIndex, href } from "./DocsIndex.js";
 import { Entry, EntryType } from "./Entry.js";
+import { log } from "./Log.js";
+import { CollatedMarkdownOutput } from "./MarkdownOutput.js";
+import { Output } from "./Output.js";
 
 export type HTMLTemplateFunction = (
 	text: string,

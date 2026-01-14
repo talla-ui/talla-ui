@@ -337,7 +337,7 @@ export class AppContext extends ObservableObject {
 
 	/**
 	 * Re-renders output, and relocates existing mounted view output if needed
-	 * - Use this method to force a full re-render of all output, e.g. when the color theme has been updated, or when the current locale/language changes after some views have already been rendered.
+	 * - Use this method to force a full re-render of all output, e.g. when colors have been updated, or when the current locale/language changes after some views have already been rendered.
 	 */
 	remount() {
 		this.renderer?.remount();

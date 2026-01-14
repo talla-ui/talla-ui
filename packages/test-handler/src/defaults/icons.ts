@@ -1,4 +1,4 @@
-import { UI, UIIconResource } from "@talla-ui/core";
+import { UIIconResource } from "@talla-ui/core";
 
 /** @internal test SVG icon set */
 export default {
@@ -18,4 +18,4 @@ export default {
 	menu: new UIIconResource(`<svg id="test-menu"></svg>`),
 	more: new UIIconResource(`<svg id="test-more"></svg>`),
 	search: new UIIconResource(`<svg id="test-search"></svg>`),
-} as Readonly<Record<UI.IconName, UIIconResource>>;
+} as Readonly<Record<UIIconResource.IconName, UIIconResource>>;

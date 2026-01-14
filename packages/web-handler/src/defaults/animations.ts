@@ -1,4 +1,4 @@
-import { RenderContext, UI, UIAnimation } from "@talla-ui/core";
+import { RenderContext, UIAnimation } from "@talla-ui/core";
 
 /** Helper function to compose an animation transform function */
 function _anim(
@@ -22,20 +22,25 @@ function _anim(
 	});
 }
 
-/** @internal Default set of animations */
-export default {
-	fadeIn: _anim([[], []], [0, 1]),
-	fadeOut: _anim([[], []], [1, 0], false, true),
-	fadeInUp: _anim([[0, 0.1], []], [0, 1]),
-	fadeInDown: _anim([[0, -0.1], []], [0, 1]),
-	fadeInLeft: _anim([[0.1, 0], []], [0, 1]),
-	fadeInRight: _anim([[-0.1, 0], []], [0, 1]),
-	fadeOutUp: _anim([[], [0, -0.1]], [1, 0], false, true),
-	fadeOutDown: _anim([[], [0, 0.1]], [1, 0], false, true),
-	fadeOutLeft: _anim([[], [-0.1, 0]], [1, 0], false, true),
-	fadeOutRight: _anim([[], [0.1, 0]], [1, 0], false, true),
-	showDialog: _anim([[0, 0.1], []], [0, 1]),
-	hideDialog: _anim([[], []], [1, 0], true, true),
-	showMenu: _anim([[0, -0.1], []], [0, 1], false, false, 50),
-	hideMenu: _anim([[], []], [1, 0], true, true, 50),
-} as Readonly<Record<UI.AnimationName, UIAnimation>>;
+/** @internal Returns the default set of animations */
+export function makeDefaultAnimations(): Record<
+	UIAnimation.AnimationName,
+	UIAnimation
+> {
+	return {
+		fadeIn: _anim([[], []], [0, 1]),
+		fadeOut: _anim([[], []], [1, 0], false, true),
+		fadeInUp: _anim([[0, 0.1], []], [0, 1]),
+		fadeInDown: _anim([[0, -0.1], []], [0, 1]),
+		fadeInLeft: _anim([[0.1, 0], []], [0, 1]),
+		fadeInRight: _anim([[-0.1, 0], []], [0, 1]),
+		fadeOutUp: _anim([[], [0, -0.1]], [1, 0], false, true),
+		fadeOutDown: _anim([[], [0, 0.1]], [1, 0], false, true),
+		fadeOutLeft: _anim([[], [-0.1, 0]], [1, 0], false, true),
+		fadeOutRight: _anim([[], [0.1, 0]], [1, 0], false, true),
+		showDialog: _anim([[0, 0.1], []], [0, 1]),
+		hideDialog: _anim([[], []], [1, 0], true, true),
+		showMenu: _anim([[0, -0.1], []], [0, 1], false, false, 50),
+		hideMenu: _anim([[], []], [1, 0], true, true, 50),
+	};
+}

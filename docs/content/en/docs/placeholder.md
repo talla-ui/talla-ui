@@ -45,6 +45,7 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link Scheduler} +
 - {@link StringConvertible} +
 - {@link StringFormatBinding} +
+- {@link StyleOverrides} +
 - {@link TestAppContext} +
 - {@link TestContextOptions} +
 - {@link TestNavigationContext} +
@@ -68,9 +69,9 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link UIScrollView} +
 - {@link UIShowView} +
 - {@link UISpacer} +
-- {@link UIStyle} +
 - {@link UITextField} +
 - {@link UIToggle} +
+- {@link setWebTheme} +
 - {@link useTestContext} +
 - {@link useWebContext} +
 - {@link View} +
@@ -83,3 +84,4 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link WebModalComponents} +
 - {@link WebNavigationContext} +
 - {@link WebRenderer} +
+- {@link WebTheme} +

@@ -2,6 +2,7 @@ import {
 	Activity,
 	UIListView,
 	UIListViewEvent,
+	UIScrollView,
 	UITextField,
 	ViewEvent,
 } from "talla-ui";
@@ -46,6 +47,7 @@ export class SearchActivity extends Activity {
 		this.searchDebounce.debounce(async () => {
 			if (!(this.hasInput = !!searchText)) return;
 			this.hasInput = true;
+			this.findViewContent(UIScrollView)[0]?.scrollToTop();
 			let results = this.search.query(searchText)?.getResults() || [];
 			this.results = results;
 		}, 30);

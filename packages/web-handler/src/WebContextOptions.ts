@@ -1,102 +1,60 @@
-import {
-	UI,
-	UIAnimation,
-	UIColor,
-	UIIconResource,
-	UIStyle,
-} from "@talla-ui/core";
 import { Dialog } from "./modals/Dialog.js";
 import { MessageDialog } from "./modals/MessageDialog.js";
 import { ModalMenu } from "./modals/ModalMenu.js";
 import { WebModalComponents } from "./WebModalFactory.js";
 
 /**
- * A class that contains options for the web handler instance
- * - These options should be set in a configuration callback passed to {@link useWebContext}.
+ * A class that contains configuration options for the web handler.
+ * - Set options in the configuration callback passed to {@link useWebContext()}.
+ * - Visual appearance (colors, icons, styles) is configured through {@link WebTheme} and {@link setWebTheme()}.
  */
 export class WebContextOptions {
-	/** The application base path */
+	/**
+	 * The application base path.
+	 * - Set this when the application is hosted in a subdirectory.
+	 * - Do not include a trailing slash.
+	 */
 	basePath = "";
 
-	/** True if the DOM history API should be used, rather than location hashes */
+	/**
+	 * The navigation mode for the application.
+	 * - Set to true to use the DOM History API for navigation.
+	 * - Defaults to false, which uses location hashes (e.g., `#/page`).
+	 */
 	useHistoryAPI = false;
 
 	/**
-	 * True if root and/or page entries should be inserted into DOM history when browsing to a page or detail path directly
-	 * - Setting this option to true or `page` will allow users to navigate back to the page even if they opened a detail path in a new tab or from a bookmark.
-	 * - Setting this option to `root` also inserts a root path (i.e. page `""`) into the history.
+	 * The history insertion mode for direct navigation to pages or detail paths.
+	 * - Set to true or `"page"` to insert the page path into history when navigating directly to a detail path.
+	 * - Set to `"root"` to also insert the root path (`""`) into history.
+	 * - Allows users to navigate back to the page even if they opened a detail path directly.
 	 */
 	insertHistory: boolean | "root" | "page" = false;
 
 	/**
-	 * Default data for specific keys of `app.localData`
-	 * - Each of the properties of this object gets used by `app.localData` **only** if no data has been written for the corresponding key yet (or it has been cleared).
-	 * - Data must be serializable as JSON, and readable by {@link InputValidator}.
+	 * The default data for specific keys of `app.localData`.
+	 * - Values are used only if no data has been written for the corresponding key yet.
+	 * - Data must be serializable as JSON and readable by {@link InputValidator}.
 	 */
 	defaultLocalData: Record<string, unknown> = {};
 
 	/**
-	 * Database name to be used when storing and retrieving `app.localData` objects from IndexedDB
-	 * - This property defaults to `LocalData`, and may be modified if multiple applications run on the same page that may be using conflicting databases.
+	 * The database name for storing `app.localData` objects in IndexedDB.
+	 * - Defaults to `"LocalData"`.
+	 * - Change this if multiple applications on the same page may use conflicting databases.
 	 */
 	localDataName = "LocalData";
 
-	/** A list of URLs for CSS files to import */
+	/**
+	 * A list of URLs for external CSS files to import.
+	 * - These stylesheets are loaded when the web context is initialized.
+	 */
 	importCSS: string[] = [];
 
-	/** An optional set of color overrides that are applied as theme colors*/
-	colors?: Partial<Record<UI.ColorName, UIColor | string>>;
-
-	/** An optional set of color overrides that, if set, are applied automatically when a dark color scheme is detected */
-	darkColors?: Partial<Record<UI.ColorName, UIColor | string>>;
-
-	/** An optional set of icon overrides that are applied as theme icons */
-	icons?: Partial<Record<UI.IconName, UIIconResource>>;
-
-	/** An optional set of animation overrides that are applied as theme animations */
-	animations?: Partial<Record<UI.AnimationName, UIAnimation>>;
-
-	/** An optional set of style overrides that are applied as theme button styles */
-	buttonStyles?: Partial<Record<UI.styles.ButtonStyleName, UIStyle>>;
-
-	/** An optional set of style overrides that are applied as theme text styles */
-	textStyles?: Partial<Record<UI.styles.TextStyleName, UIStyle>>;
-
-	/** An optional set of style overrides that are applied as theme image styles */
-	imageStyles?: Partial<Record<UI.styles.ImageStyleName, UIStyle>>;
-
-	/** An optional set of style overrides that are applied as theme text field styles */
-	textFieldStyles?: Partial<Record<UI.styles.TextFieldStyleName, UIStyle>>;
-
-	/** An optional set of style overrides that are applied as theme toggle styles */
-	toggleStyles?: Partial<Record<UI.styles.ToggleStyleName, UIStyle>>;
-
-	/** An optional set of style overrides that are applied as theme divider styles */
-	dividerStyles?: Partial<Record<UI.styles.DividerStyleName, UIStyle>>;
-
-	/** Control text styles, defaults to system font at 14 logical pixels if not set */
-	controlTextStyle?: UIStyle.StyleOptions;
-
-	/** Custom focus (outline) decoration styles, if any */
-	focusDecoration?: UIStyle.StyleOptions;
-
 	/**
-	 * Page background color (or CSS value), defaults to Background color
-	 * - Use a preset color rather than a specific color to allow the color to change with color presets. The page background is updated dynamically when the app is remounted.
-	 */
-	pageBackground: UIColor | string = UI.colors.background;
-
-	/**
-	 * Modal shade backdrop color (or CSS value), defaults to darkened Text color at low opacity
-	 * - Use a preset color rather than a specific color to allow the color to change with color presets. The modal shade color is updated dynamically when the app is remounted.
-	 */
-	modalShadeBackground: UIColor | string = UI.colors.text
-		.brighten(-0.8)
-		.alpha(0.3);
-
-	/**
-	 * Components that are used by the default modal views (dialog, message dialog, and modal menu)
-	 * - View builder functions can be changed directly on this object.
+	 * The view builder components used by modal views.
+	 * - Includes components for dialogs, message dialogs, and context menus.
+	 * - Modify individual properties to customize modal appearance.
 	 */
 	modalComponents: WebModalComponents = {
 		DialogContainer: Dialog.Container,
@@ -115,27 +73,24 @@ export class WebContextOptions {
 		MenuDivider: ModalMenu.Divider,
 	};
 
-	/** Viewport column width in pixels, defaults to 300 */
+	/**
+	 * The viewport column width in pixels.
+	 * - Defaults to 300.
+	 * - Used by {@link Viewport} to calculate responsive breakpoints.
+	 */
 	viewportColumnWidth = 300;
 
-	/** Viewport row height in pixels, defaults to 300 */
+	/**
+	 * The viewport row height in pixels.
+	 * - Defaults to 300.
+	 * - Used by {@link Viewport} to calculate responsive breakpoints.
+	 */
 	viewportRowHeight = 300;
 
-	/** True if all anumations should be disabled */
-	reducedMotion = false;
-
 	/**
-	 * True if the body element's default margin and padding should be reset to 0, defaults to true
-	 * - This is recommended for full-page applications to prevent unexpected spacing around page root elements
+	 * The fallback frame render interval in milliseconds.
+	 * - Defaults to 30.
+	 * - Used when requestAnimationFrame does not trigger (e.g., when the tab is inactive).
 	 */
-	resetBodySpacing = true;
-
-	/** Relative scale of logical pixels, defaults to 1 */
-	logicalPxScale = 1;
-
-	/** Relative scale of logical pixels for narrow screens (< 600px), defaults to (16/14) to upscale 14px text to 16px */
-	logicalPxScaleNarrow = 16 / 14;
-
-	/** Time (in ms) between frame renders if animation frame doesn't trigger */
 	missedFrameTime = 30;
 }

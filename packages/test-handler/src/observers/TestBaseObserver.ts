@@ -1,8 +1,9 @@
 import {
 	ObservableEvent,
 	RenderContext,
+	StyleOverrides,
+	UIContainer,
 	UIElement,
-	UIStyle,
 	app,
 } from "@talla-ui/core";
 import { TestOutputElement } from "../TestOutputElement.js";
@@ -25,53 +26,25 @@ const _eventNames: { [p in TestOutputElement.PlatformEvent]?: string } = {
 	submit: "Submit",
 };
 
-/** @internal Helper function to merge all style overrides, position, and layout on a single test output element */
-export function applyElementStyle(element: TestOutputElement, styles: any[]) {
-	let result: any;
-	function recurse(values: readonly any[]) {
-		for (let i = 0, len = values.length; i < len; i++) {
-			let style = values[i];
-			if (!style) continue;
-
-			// check if next item is a(nother) full UIStyle, if so ignore this one
-			if (values[i + 1] instanceof UIStyle) continue;
-
-			// recurse for (nested) arrays
-			if (Array.isArray(style)) {
-				return recurse(style);
-			}
-
-			// apply styles and overrides to result
-			if (style instanceof UIStyle) {
-				result = {};
-				recurse(style.getStyles());
-				let overrides = style.getOverrides() as any;
-				for (let p in overrides) {
-					if (overrides[p] !== undefined) result[p] = overrides[p];
-				}
-			} else {
-				let state = (style as UIStyle.StyleDefinition).state || {};
-
-				// ignore hover state in test handler, check other states
-				if (
-					state.hovered ||
-					("disabled" in state && state.disabled !== !!element.disabled) ||
-					("focused" in state && state.focused !== element.hasFocus()) ||
-					("pressed" in state && state.pressed !== !!element.pressed) ||
-					("readonly" in state && state.readonly !== !!element.readOnly)
-				)
-					continue;
-
-				// apply all styles to result
-				result ||= {};
-				for (let p in style) {
-					if (style[p] !== undefined) result[p] = style[p];
-				}
-			}
-		}
-	}
-	recurse(styles);
-	element.styles = result || {};
+/**
+ * @internal Helper function to apply style, position, and layout to a test output element
+ * @param element The test output element to apply styles to
+ * @param styleName Optional style name from the UI element
+ * @param style Optional style overrides from the UI element
+ * @param position Optional position from the UI element
+ * @param layout Optional layout from the UI container element
+ */
+export function applyElementStyle(
+	element: TestOutputElement,
+	styleName?: string,
+	style?: StyleOverrides,
+	position?: UIElement.Position,
+	layout?: UIContainer.Layout,
+) {
+	element.styleName = styleName || "default";
+	element.style = style ? { ...style } : {};
+	element.position = position;
+	element.layout = layout;
 }
 
 /** @internal Abstract observer class for all `UIElement` instances, to create output and call render callback; implemented for all types of UI elements, created upon rendering, and attached to enable property bindings */
@@ -84,7 +57,7 @@ export abstract class TestBaseObserver<TUIViewElement extends UIElement> {
 			undefined,
 			true,
 		);
-		this.observeProperties("hidden", "position");
+		this.observeProperties("hidden", "position", "style", "styleName");
 		observed.listen((e) => {
 			let handler = (this as any)["on" + e.name];
 			if (typeof handler === "function") handler.call(this, e);
@@ -124,7 +97,7 @@ export abstract class TestBaseObserver<TUIViewElement extends UIElement> {
 	/** Updates the specified output element with content: either from properties (e.g. text content) or from other UI elements; called automatically by `update()`, but can also be called when state properties change; must be overridden */
 	abstract updateContent(element: TestOutputElement): void;
 
-	/** Updates the specified output element with all style properties; called automatically by `update()`, but can also be called when state properties change; must be overridden to update test output element styles */
+	/** Updates the specified output element with all style properties; called automatically by `update()`, but can also be called when state properties change; must be overridden to update test output element style */
 	abstract updateStyle(element: TestOutputElement): void;
 
 	/** Updates the specified output element with all properties of the UI element; called automatically before rendering (after `getOutput`), but can also be called when state properties change */
@@ -238,6 +211,11 @@ export abstract class TestBaseObserver<TUIViewElement extends UIElement> {
 				},
 			);
 		}
+	}
+
+	/** Returns true if element has focus (implements UIElementRenderer) */
+	isFocused(): boolean {
+		return this.element?.hasFocus() ?? false;
 	}
 
 	/** Focus current element if possible */

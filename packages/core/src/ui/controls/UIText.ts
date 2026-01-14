@@ -1,80 +1,93 @@
 import { fmt, StringConvertible } from "@talla-ui/util";
 import { ViewBuilder } from "../../app/index.js";
 import { Binding, BindingOrValue, isBinding } from "../../object/index.js";
-import { UIColor, UIIconResource, UIStyle } from "../style/index.js";
-import type { UI } from "../UI.js";
+import { StyleOverrides, UIColor, UIIconResource } from "../style/index.js";
 import { UIElement } from "../UIElement.js";
 
 /**
- * A view class that represents a text element
- *
- * @description A text element is rendered as a stand-alone piece of text.
+ * A view class that represents a text element.
+ * - Use the {@link UI.Text()} function to create text elements using a builder.
  *
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
 export class UIText extends UIElement {
-	/** Creates a new text view object with the specified text */
+	/** Creates a new text view object with the specified text. */
 	constructor(text?: StringConvertible) {
 		super();
 		this.text = text;
 	}
 
-	/** The text to be displayed */
+	/** The text content to be displayed. */
 	text?: StringConvertible;
 
-	/** The icon to be displayed */
+	/** The icon to be displayed alongside the text. */
 	icon?: UIIconResource = undefined;
 
-	/** Options for displaying the icon */
+	/** The style options for displaying the icon. */
 	iconStyle?: UIText.IconStyle = undefined;
 
 	/**
-	 * Text heading level
-	 * - Heading level 1 refers to the most prominent heading, i.e. `<h1>` HTML element.
-	 * - This property can't be changed after rendering.
+	 * The heading level for semantic HTML output.
+	 * - Valid values are 1-6, where 1 is the most prominent heading (e.g. `<h1>`).
+	 * - This property cannot be changed after rendering.
 	 */
 	headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
 
-	/** True if text should be rendered as HTML instead of plain text */
+	/** True if the text should be rendered as HTML instead of plain text. */
 	htmlFormat?: boolean;
 
 	/**
-	 * True if text selection should be enabled within this text element, defaults to false
-	 * - This property isn't observed, and can't be changed after rendering. If set, this value overrides the `userTextSelect` style property.
+	 * True if text selection should be enabled within this element.
+	 * - Defaults to false.
+	 * - This property is not observed and cannot be changed after rendering.
+	 * - If set, this value overrides the `userTextSelect` style property.
 	 */
 	selectable?: boolean;
 
 	/**
-	 * True if this element may receive input focus
-	 * - This property isn't observed, and can't be changed after rendering.
+	 * True if this element may receive input focus.
+	 * - This property is not observed and cannot be changed after rendering.
 	 */
 	allowFocus?: boolean;
 
 	/**
-	 * True if this element may receive input focus using the keyboard (e.g. Tab key)
-	 * - This property isn't observed, and can't be changed after rendering.
-	 * - If this property is set to true, allowFocus is assumed to be true as well and no longer checked.
+	 * True if this element may receive input focus using the keyboard (e.g. Tab key).
+	 * - This property is not observed and cannot be changed after rendering.
+	 * - If set to true, {@link allowFocus} is assumed to be true as well.
 	 */
 	allowKeyboardFocus?: boolean;
 }
 
 export namespace UIText {
-	/** Options for displaying an icon within a text or button control */
+	/**
+	 * Options for displaying an icon within a text or button control.
+	 */
 	export type IconStyle = {
-		/** Icon size (in pixels or string with unit) */
+		/** The icon size in pixels or as a string with unit. */
 		size?: string | number;
 
-		/** Space between icon and text (in pixels or string with unit) */
+		/** The space between the icon and text, in pixels or as a string with unit. */
 		margin?: string | number;
 
-		/** Icon color */
+		/** The icon color. */
 		color?: UIColor;
 	};
-}
 
-export namespace UIText {
+	/** Default style names for text/label elements. */
+	export type StyleName =
+		| "default"
+		| "body"
+		| "large"
+		| "title"
+		| "headline"
+		| "caption"
+		| "badge"
+		| "dangerBadge"
+		| "successBadge"
+		| "toggleText";
+
 	/**
-	 * Creates a view builder for a text element
+	 * Creates a view builder for a text element.
 	 * @param text The text content to display, or a binding to a string value.
 	 * @returns A builder object for configuring the text element.
 	 * @see {@link UIText}
@@ -85,9 +98,9 @@ export namespace UIText {
 
 	export namespace textBuilder {
 		/**
-		 * Creates a view builder for a text element with a localizable or dynamic text.
-		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
-		 * @param args Additional bindings, used to format the text dynamically
+		 * Creates a view builder for a text element with localizable or dynamic text.
+		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}.
+		 * @param args Additional bindings used to format the text dynamically.
 		 * @returns A builder instance for chaining.
 		 */
 		export function fmt(text: StringConvertible, ...args: Binding[]) {
@@ -96,15 +109,18 @@ export namespace UIText {
 	}
 
 	/**
-	 * A builder class for creating `UIText` instances.
-	 * - Objects of this type are returned by the `UI.Text()` function.
+	 * A builder class for creating {@link UIText} instances.
+	 * - Returned by the {@link UI.Text()} function.
 	 */
-	export class TextBuilder extends UIElement.ElementBuilder<UIText> {
-		/** The initializer that is used to create each text element instance */
+	export class TextBuilder extends UIElement.ElementBuilder<
+		UIText,
+		UIText.StyleName
+	> {
+		/** The initializer used to create each text element instance. */
 		readonly initializer = new ViewBuilder.Initializer(UIText);
 
 		/**
-		 * Sets the text for the element, using {@link UIText.text}.
+		 * Sets the text content.
 		 * @param text The text to display, or a binding to a string value.
 		 * @returns The builder instance for chaining.
 		 */
@@ -113,9 +129,9 @@ export namespace UIText {
 		}
 
 		/**
-		 * Sets a localizable or dynamic text.
-		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
-		 * @param args Additional bindings, used to format the text dynamically
+		 * Sets localizable or dynamic text.
+		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}.
+		 * @param args Additional bindings used to format the text dynamically.
 		 * @returns The builder instance for chaining.
 		 */
 		fmt(text: StringConvertible, ...args: Binding[]) {
@@ -124,13 +140,15 @@ export namespace UIText {
 		}
 
 		/**
-		 * Sets the icon, using {@link UIText.icon}.
-		 * @param icon An icon resource, a theme icon name, or a binding to an icon.
-		 * @param iconStyle Styling options for the icon, or only the icon size (in pixels).
+		 * Sets the icon to display alongside the text.
+		 * @param icon An icon resource, an icon name, or a binding.
+		 * @param iconStyle Styling options for the icon, or only the icon size in pixels.
 		 * @returns The builder instance for chaining.
 		 */
 		icon(
-			icon: UI.IconName | BindingOrValue<UIIconResource | string | undefined>,
+			icon: BindingOrValue<
+				UIIconResource | UIIconResource.IconName | undefined
+			>,
 			iconStyle?: BindingOrValue<UIText.IconStyle> | number,
 		) {
 			if (iconStyle != null) {
@@ -139,35 +157,32 @@ export namespace UIText {
 				});
 			}
 			if (typeof icon === "string") {
-				icon = UIIconResource.theme.ref(icon as any);
+				icon = UIIconResource.getIcon(icon);
 			} else if (isBinding(icon)) {
 				icon = icon.map((value) =>
-					typeof value === "string"
-						? UIIconResource.theme.ref(value as any)
-						: value,
+					typeof value === "string" ? UIIconResource.getIcon(value) : value,
 				);
 			}
 			return this.setProperty("icon", icon);
 		}
 
 		/**
-		 * A shorthand for `textAlign("center")`, to set the text alignment to center.
+		 * Sets the text alignment to center.
+		 * - Shorthand for `textAlign("center")`.
 		 */
 		center() {
 			return this.textAlign("center");
 		}
 
 		/**
-		 * Enables or disables text wrapping by setting the line break mode
-		 * @param lineBreakMode Line break mode (string) or boolean. If `true`, sets the line break mode to `pre-wrap`. Defaults to `true`.
+		 * Enables or disables text wrapping.
+		 * @param mode The line break mode, or true to use `pre-wrap`; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
 		wrap(
-			mode: BindingOrValue<
-				boolean | UIStyle.StyleOptions["lineBreakMode"]
-			> = true,
+			mode: BindingOrValue<boolean | StyleOverrides["lineBreakMode"]> = true,
 		) {
-			function t(value: boolean | UIStyle.StyleOptions["lineBreakMode"]) {
+			function t(value: boolean | StyleOverrides["lineBreakMode"]) {
 				return value === true ? "pre-wrap" : value || "";
 			}
 			return this.setStyleOverride(
@@ -177,7 +192,7 @@ export namespace UIText {
 		}
 
 		/**
-		 * Sets the heading level for semantic HTML output
+		 * Sets the heading level for semantic HTML output.
 		 * @param level The heading level (1-6).
 		 * @returns The builder instance for chaining.
 		 */
@@ -186,8 +201,8 @@ export namespace UIText {
 		}
 
 		/**
-		 * Sets the text, to be interpreted as HTML
-		 * - This method sets the `htmlFormat` property to `true`, and then sets the text using {@link UIText.text}.
+		 * Sets the text content to be interpreted as HTML.
+		 * - Sets {@link UIText.htmlFormat} to true.
 		 * @param text The HTML content to display, or a binding to a string value.
 		 * @returns The builder instance for chaining.
 		 */
@@ -197,8 +212,8 @@ export namespace UIText {
 		}
 
 		/**
-		 * Makes the text selectable by the user, using {@link UIText.selectable}.
-		 * @param selectable If `true`, text can be selected. Defaults to `true`.
+		 * Makes the text selectable by the user.
+		 * @param selectable True to enable text selection; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
 		selectable(selectable: BindingOrValue<boolean> = true) {
@@ -206,21 +221,8 @@ export namespace UIText {
 		}
 
 		/**
-		 * Applies a style to the text element
-		 * @param style The name of a theme text element style, a {@link UIStyle} instance, a style options (overrides) object, or a binding.
-		 * @returns The builder instance for chaining.
-		 */
-		textStyle(
-			style?: BindingOrValue<
-				UI.styles.TextStyleName | UIStyle | UIStyle.StyleOptions | undefined
-			>,
-		) {
-			return this.setStyleProperty(style, UIStyle.theme.text);
-		}
-
-		/**
 		 * Allows the text element to receive input focus.
-		 * @param allow If `true`, the text can be focused. Defaults to `true`.
+		 * @param allow True to allow focus; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
 		allowFocus(allow = true) {
@@ -229,7 +231,7 @@ export namespace UIText {
 
 		/**
 		 * Allows the text element to receive input focus via the keyboard.
-		 * @param allow If `true`, the text can be focused with the keyboard. Defaults to `true`.
+		 * @param allow True to allow keyboard focus; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
 		allowKeyboardFocus(allow = true) {

@@ -1,10 +1,10 @@
 import type { StringConvertible } from "@talla-ui/util";
-import { ObservableObject } from "../object/index.js";
 import { errorHandler, invalidArgErr, safeCall } from "../errors.js";
+import { ObservableObject } from "../object/index.js";
 import type { UIColor } from "../ui/index.js";
-import { View } from "./View.js";
-import { ModalFactory } from "./ModalFactory.js";
 import { AppContext } from "./AppContext.js";
+import { ModalFactory } from "./ModalFactory.js";
+import { View } from "./View.js";
 
 /**
  * An abstract class that supports global view rendering, part of the global application context
@@ -365,5 +365,18 @@ export namespace RenderContext {
 			}
 		}
 		declare stop: () => void;
+	}
+
+	/**
+	 * Interface for platform-specific state queries on UI element observers
+	 * - All methods are optional; renderer observers implement what they support
+	 */
+	export interface UIElementRenderer {
+		/** Returns true if the element currently has input focus */
+		isFocused?(): boolean;
+		/** Returns true if the element is currently hovered (UICell only) */
+		isHovered?(): boolean;
+		/** Returns true if content update is pending */
+		isContentPending?(): boolean;
 	}
 }

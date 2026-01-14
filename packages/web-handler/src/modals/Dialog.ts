@@ -6,7 +6,6 @@ import {
 	RenderContext,
 	UI,
 	UIContainer,
-	UIStyle,
 	View,
 	ViewEvent,
 } from "@talla-ui/core";
@@ -16,21 +15,21 @@ export class Dialog
 	extends ComponentView
 	implements ModalFactory.DialogController
 {
-	static containerStyle = new UIStyle({
-		background: UI.colors.background,
-		borderColor: UI.colors.text.alpha(0.2),
-		borderWidth: 1,
-		margin: "auto",
-		width: "auto",
-		minWidth: 320,
-		maxWidth: "100vw",
-		grow: 0,
-		borderRadius: 12,
-		dropShadow: 32,
-	});
-
 	static Container(): UIContainer.ContainerBuilder {
-		return UI.Cell().accessibleRole("dialog").style(Dialog.containerStyle);
+		return UI.Cell()
+			.accessibleRole("dialog")
+			.style({
+				background: UI.colors.background,
+				borderColor: UI.colors.text.alpha(0.2),
+				borderWidth: 1,
+				margin: "auto",
+				width: "auto",
+				minWidth: 320,
+				maxWidth: "100vw",
+				grow: 0,
+				borderRadius: 12,
+				dropShadow: 32,
+			});
 	}
 
 	constructor(public dialogView: View) {

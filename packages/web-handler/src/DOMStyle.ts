@@ -1,18 +1,47 @@
-import { UIColor, UIContainer, UIElement, UIStyle } from "@talla-ui/core";
+import {
+	StyleOverrides,
+	UIColor,
+	UIContainer,
+	UIElement,
+} from "@talla-ui/core";
 import {
 	CLASS_CONTAINER,
+	CLASS_NAMED,
 	CLASS_TEXTCONTROL,
 	CLASS_TOGGLE,
 	CLASS_UI,
 	makeBaseCSS,
 } from "./defaults/css.js";
-import type { WebContextOptions } from "./WebContextOptions.js";
+
+/** @internal Element type identifiers for style class names */
+export type StyleElementType =
+	| "button"
+	| "text"
+	| "textfield"
+	| "toggle"
+	| "divider"
+	| "container";
+
+/**
+ * @internal Style definition for named styles
+ * - Uses StyleOverrides from core for base properties (supports UIColor)
+ * - Adds state keys: `+hover`, `+focus`, `+pressed`, `+disabled`, `+readonly`
+ * - Adds CSS selector keys (`:` or `[` prefix, e.g. `:first-child`, `[data-foo]`)
+ */
+export type WebNamedStyleDefinition = StyleOverrides & {
+	"+hover"?: StyleOverrides;
+	"+focus"?: StyleOverrides;
+	"+pressed"?: StyleOverrides;
+	"+disabled"?: StyleOverrides;
+	"+readonly"?: StyleOverrides;
+	[selector: `:${string}` | `[${string}`]: StyleOverrides | undefined;
+};
 
 /** @internal Default number of logical pixels in a REM unit */
 export const LOGICAL_PX_PER_REM = 16;
 
 /** @internal Default control text CSS styles */
-export const defaultControlTextStyle: UIStyle.StyleOptions = {
+export const defaultControlTextStyle: StyleOverrides = {
 	fontFamily:
 		'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, "Helvetica Neue", Arial, sans-serif',
 	fontSize: 14,
@@ -29,31 +58,17 @@ const _flexOptions: Record<string, string | undefined> = {
 // Note: styles and imports are defined in separate elements to prevent FOUC
 // while loading styles from external sources
 
-/** Root CSS style element, if defined already */
+/** Root CSS style element, if defined */
 let _cssElt: HTMLStyleElement | undefined;
 
-/** Root CSS imports style element, if defined already */
-let _cssImportElt: HTMLStyleElement | undefined;
-
-/** Adopted CSS style sheet, if defined already */
+/** Adopted CSS style sheet, if defined */
 let _adoptedSheet: CSSStyleSheet | undefined;
 
-/** Root CSS style updater, after creating style element the first time */
-let _cssUpdater:
-	| ((css: { [spec: string]: any }, allImports: string[]) => void)
-	| undefined;
+/** Root CSS imports style element, if defined */
+let _cssImportElt: HTMLStyleElement | undefined;
 
-/** CSS classes currently defined, by ID */
-let _cssDefined = new Set<string>();
-
-/** Pending CSS update, if any */
-let _pendingCSS: { [spec: string]: any } | undefined;
-
-/** All CSS imports */
-let _cssImports: string[] = [];
-
-/** Set of imports that have been added to avoid re-importing */
-let _importsAdded = new Set<string>();
+/** Incremented each time an update has been scheduled (async) */
+let _cssPending = 0;
 
 /** Current logical pixel scaling */
 let _currentLogicalPxScale = 1;
@@ -61,84 +76,82 @@ let _currentLogicalPxScale = 1;
 /** Current logical pixel scaling in narrow viewport */
 let _currentLogicalPxScaleNarrow = 1;
 
-/** @internal Helper method to reset all CSS and apply global settings */
-export function initializeCSS(options: WebContextOptions) {
-	resetCSS();
-	setGlobalCSS(makeBaseCSS());
-	if (options.resetBodySpacing) {
-		setGlobalCSS({
-			body: {
-				margin: "0",
-				padding: "0",
-			},
-		});
+/** Current gap size in pixels */
+let _currentGap = 8;
+
+/** @internal Settings passed to initializeCSS from WebTheme */
+export type InitializeCSSOptions = {
+	updateBodyStyle?: boolean;
+	pageBackground?: UIColor | string;
+	logicalPxScale?: number;
+	logicalPxScaleNarrow?: number;
+	gap?: number;
+	focusDecoration?: StyleOverrides;
+	controlTextStyle?: StyleOverrides;
+};
+
+/** @internal Helper method to reset all CSS and apply specified options */
+export function initializeCSS(
+	options: InitializeCSSOptions,
+	namedStyles?: Record<string, Record<string, WebNamedStyleDefinition>>,
+	importCSS?: string[],
+) {
+	let allCss = makeBaseCSS();
+
+	let logicalPxScale = options.logicalPxScale ?? 1;
+	let logicalPxScaleNarrow = options.logicalPxScaleNarrow ?? 16 / 14;
+	_currentLogicalPxScale = logicalPxScale;
+	_currentLogicalPxScaleNarrow = logicalPxScaleNarrow;
+	_currentGap = options.gap ?? 8;
+
+	allCss.html = { fontSize: logicalPxScale * LOGICAL_PX_PER_REM + "px" };
+	allCss["@media (max-width: 600px)"] = {
+		html: { fontSize: logicalPxScaleNarrow * LOGICAL_PX_PER_REM + "px" },
+	};
+	allCss[`.${CLASS_TEXTCONTROL}`] = addTextStyleCSS(
+		{},
+		{ ...defaultControlTextStyle, ...options.controlTextStyle },
+	);
+
+	// set focus decoration if defined (otherwise, use browser default)
+	if (options.focusDecoration) {
+		let focusStyle = addDecorationStyleCSS({}, options.focusDecoration);
+		allCss[`.${CLASS_UI}[tabindex]:focus-visible`] = focusStyle;
+		allCss[`.${CLASS_UI}[role=listitem]:focus`] = focusStyle;
+		allCss[`.${CLASS_TOGGLE}>input:focus-visible`] = focusStyle;
+		allCss[`.${CLASS_UI}:focus`] = { outline: "0", outlineOffset: "0" };
 	}
-	setLogicalPxScale(options.logicalPxScale, options.logicalPxScaleNarrow);
-	importStylesheets(options.importCSS);
-	setFocusDecoration(options.focusDecoration);
-	setControlTextStyle({
-		...defaultControlTextStyle,
-		...options.controlTextStyle,
-	});
-}
 
-/** @internal Clears all styles and stylesheet imports, so that next update will start fresh */
-export function resetCSS() {
-	_pendingCSS = undefined;
-	_cssImports = [];
-	_cssDefined = new Set();
-	_importsAdded = new Set();
-
-	// Remove existing stylesheets
-	_cssElt?.remove();
-	_cssImportElt?.remove();
-	_cssElt = undefined;
-	_cssImportElt = undefined;
-	if (_adoptedSheet) {
-		document.adoptedStyleSheets = [...document.adoptedStyleSheets].filter(
-			(s) => s !== _adoptedSheet,
-		);
-		_adoptedSheet = undefined;
+	// set body margin/padding and background, if requested
+	if (options.updateBodyStyle) {
+		allCss.body = {
+			margin: "0",
+			padding: "0",
+			background: options.pageBackground
+				? String(options.pageBackground)
+				: undefined,
+		};
 	}
-	_cssUpdater = undefined;
-}
 
-/** @internal Imports an external stylesheet */
-export function importStylesheets(urls: string[]) {
-	_cssImports.push(...urls);
-	setGlobalCSS({});
-}
+	// add named styles, if any
+	if (namedStyles) {
+		console.log("Adding named styles", namedStyles);
+		for (let elementType in namedStyles) {
+			for (let styleName in namedStyles[elementType]) {
+				let style = namedStyles[elementType][styleName]!;
+				let fullName = elementType + "-" + styleName;
+				Object.assign(allCss, _generateNamedStyleCSS(fullName, style));
+			}
+		}
+	}
 
-/** @internal Overrides REM size globally, as a factor of the default size */
-export function setLogicalPxScale(scale: number, narrow?: number) {
-	_currentLogicalPxScale = scale;
-	_currentLogicalPxScaleNarrow = narrow ?? scale;
-	setGlobalCSS({
-		html: { fontSize: scale * LOGICAL_PX_PER_REM + "px" },
-		"@media (max-width: 600px)": {
-			html: { fontSize: (narrow ?? scale) * LOGICAL_PX_PER_REM + "px" },
-		},
+	// update or create style sheets with new CSS
+	let update = ++_cssPending;
+	setTimeout(() => {
+		if (_cssPending !== update) return;
+		console.log("APPLYING CSS", allCss);
+		_updateStyleSheets(allCss, importCSS);
 	});
-}
-
-/** @internal Sets the global focus 'glow' outline width and blur (pixels or string with unit), and color */
-export function setFocusDecoration(decoration?: UIStyle.StyleOptions) {
-	if (!decoration) return;
-	let styles = {};
-	addDecorationStyleCSS(styles, decoration);
-	setGlobalCSS({
-		[`.${CLASS_UI}:focus`]: { outline: "0", outlineOffset: "0" },
-		[`.${CLASS_UI}[tabindex]:focus-visible`]: styles,
-		[`.${CLASS_UI}[role=listitem]:focus`]: styles,
-		[`.${CLASS_TOGGLE}>input:focus-visible`]: styles,
-	});
-}
-
-/** @internal Sets the global control style based on given text styles */
-export function setControlTextStyle(textStyle: UIStyle.StyleOptions) {
-	let styles = {};
-	addTextStyleCSS(styles, textStyle);
-	setGlobalCSS({ [`*.${CLASS_UI}.${CLASS_TEXTCONTROL}`]: styles });
 }
 
 /** @internal Measures window width in logical pixel units */
@@ -157,10 +170,10 @@ export function getWindowInnerHeight() {
 
 /** @internal Helper method to convert a CSS length unit *or* pixels number to a CSS string or given default string (e.g. `auto`) */
 export function getCSSLength(
-	length?: UIStyle.Offsets,
+	length?: StyleOverrides.Offsets,
 	defaultValue: any = "auto",
 ): string {
-	if (length === "gap") length = UIStyle.defaultOptions.gap;
+	if (length === "gap") length = _currentGap;
 	if (typeof length === "string") return length;
 	if (typeof length === "number") return length / LOGICAL_PX_PER_REM + "rem";
 	if (typeof length === "object") {
@@ -181,75 +194,13 @@ export function getCSSLength(
 	return defaultValue;
 }
 
-/** @internal Replaces given CSS styles in the global root style sheet */
-export function setGlobalCSS(css: {
-	[spec: string]:
-		| Partial<CSSStyleDeclaration>
-		| { [spec: string]: any }
-		| undefined;
-}) {
-	if (!_pendingCSS) _pendingCSS = {};
-	for (let p in css) if (css[p]) _pendingCSS[p] = css[p];
-	Promise.resolve().then(() => {
-		if (!_cssUpdater) _cssUpdater = _makeCSSUpdater();
-		if (_pendingCSS) _cssUpdater(_pendingCSS, _cssImports);
-		_pendingCSS = undefined;
-	});
-}
-
-/** @internal Defines a CSS class for given style instance */
-export function defineStyleClass(style: UIStyle, isTextStyle?: boolean) {
-	let id = style.id;
-	if (!id) throw RangeError();
-	if (_cssDefined.has(id)) return;
-	_cssDefined.add(id);
-
-	let styles = style.getStyles();
-	if (!styles.length) return;
-
-	// combine all CSS styles
-	let combined: { [spec: string]: Partial<CSSStyleDeclaration> } = {};
-	let selector = "*." + CLASS_UI + "." + id;
-	function addStateStyle(object: any) {
-		let stateSelector = selector;
-		let state = (object as UIStyle.StyleDefinition).state;
-		if (state) {
-			// add suffixes for disabled, readonly, hovered, focused
-			if (state.disabled) stateSelector += "[disabled]";
-			else if (state.disabled === false) stateSelector += ":not([disabled])";
-			if (state.readonly) stateSelector += "[readonly]";
-			else if (state.readonly === false) stateSelector += ":not([readonly])";
-			if (state.focused) stateSelector += ":focus";
-			else if (state.focused === false) stateSelector += ":not(:focus)";
-			if (state.hovered) stateSelector += ":hover";
-			else if (state.hovered === false) stateSelector += ":not(:hover)";
-
-			// pressed state is controlled by two selectors
-			if (state.pressed)
-				stateSelector += ":active," + stateSelector + "[aria-pressed=true]";
-			else if (state.pressed === false)
-				stateSelector += ":not(:active):not([aria-pressed=true])";
-		}
-
-		let css = combined[stateSelector] || {};
-		addDimensionsCSS(css, object);
-		addDecorationStyleCSS(css, object);
-		if (isTextStyle) addTextStyleCSS(css, object);
-		combined[stateSelector] = css;
-	}
-	for (let style of styles) {
-		addStateStyle(style);
-	}
-
-	// add CSS to global element for base and conditional styles
-	setGlobalCSS(combined);
-}
-
 /** @internal Helper function to apply CSS classes and styles to an element */
 export function applyStyles(
 	element: HTMLElement,
-	styles: any[],
-	systemName?: string,
+	elementType: StyleElementType | undefined,
+	styleName: string | undefined,
+	style: StyleOverrides | undefined,
+	systemClass?: string,
 	isTextControl?: boolean,
 	isContainer?: boolean,
 	position?: UIElement.Position,
@@ -263,24 +214,24 @@ export function applyStyles(
 		return;
 	}
 
-	// set class name based on (last provided) style instance
+	// set class name
 	let className = CLASS_UI;
 	if (isTextControl) className += " " + CLASS_TEXTCONTROL;
 	if (isContainer) className += " " + CLASS_CONTAINER;
-	if (systemName) className += " " + systemName;
-	for (let i = styles.length; i > 0; ) {
-		let style = styles[--i];
-		if (style instanceof UIStyle) {
-			defineStyleClass(style, isTextControl);
-			className += " " + style.id;
-			break;
-		}
+	if (systemClass) className += " " + systemClass;
+	if (elementType) {
+		// undefined styleName means "use default style"
+		className += ` ${CLASS_NAMED}${elementType}-${styleName || "default"}`;
 	}
 	element.className = className;
 
 	// apply overrides inline
 	let inline: any = {};
-	addInlineCSS(inline, styles, isTextControl);
+	if (style) {
+		addDimensionsCSS(inline, style);
+		addDecorationStyleCSS(inline, style);
+		if (isTextControl) addTextStyleCSS(inline, style);
+	}
 	if (position) addPositionCSS(inline, position);
 	if (layout) addContainerLayoutCSS(inline, layout);
 
@@ -292,31 +243,78 @@ export function applyStyles(
 	}
 }
 
-/** @internal Helper function to copy inline CSS styles to given object */
-function addInlineCSS(
-	inline: Partial<CSSStyleDeclaration>,
-	values: any[],
-	isTextControl?: boolean,
+/** Generate CSS rules for a named style */
+function _generateNamedStyleCSS(
+	className: string,
+	definition: WebNamedStyleDefinition,
 ) {
-	for (let i = 0, len = values.length; i < len; i++) {
-		let style = values[i];
-		if (!style) continue;
+	const result: { [selector: string]: any } = {};
+	const baseSel = `*.${CLASS_NAMED}${className}`;
 
-		// check if next item is a(nother) full UIStyle, if so ignore this one
-		if (values[i + 1] instanceof UIStyle) continue;
+	// Helper for combining style properties
+	const _makeStyle = (def: StyleOverrides): Partial<CSSStyleDeclaration> =>
+		addDecorationStyleCSS(addTextStyleCSS(addDimensionsCSS({}, def), def), def);
 
-		// recurse for (nested) arrays
-		if (Array.isArray(style)) {
-			return addInlineCSS(inline, style, isTextControl);
-		}
-
-		// set styles from overrides or plain object
-		let overrides = style instanceof UIStyle ? style.getOverrides() : style;
-		if (!overrides) continue;
-		addDimensionsCSS(inline, overrides);
-		addDecorationStyleCSS(inline, overrides);
-		if (isTextControl) addTextStyleCSS(inline, overrides);
+	// Base rule - convert StyleOverrides to CSS
+	const baseCss = _makeStyle(definition);
+	if (Object.keys(baseCss).length > 0) {
+		result[baseSel] = baseCss;
 	}
+
+	// Extract state and selector style objects
+	const stateStyles: { [state: string]: StyleOverrides } = {};
+	const selectorStyles: { [selector: string]: StyleOverrides } = {};
+	for (const key in definition) {
+		const value = (definition as any)[key];
+		if (typeof value !== "object") continue;
+		if (key.startsWith("+")) {
+			stateStyles[key] = value;
+		} else if (key.startsWith(":") || key.startsWith("[")) {
+			selectorStyles[key] = value;
+		}
+	}
+
+	// Check if +pressed is defined (affects +hover and +focus selectors)
+	const hasPressed = "+pressed" in stateStyles;
+
+	// State rules in priority order
+	for (let state in stateStyles) {
+		let selector: string | undefined;
+		switch (state) {
+			case "+hover":
+				selector = hasPressed
+					? `${baseSel}:hover:not([disabled]):not(:focus):not(:active):not([aria-pressed=true])`
+					: `${baseSel}:hover:not([disabled]):not(:focus)`;
+				break;
+			case "+focus":
+				selector = hasPressed
+					? `${baseSel}:focus:not([disabled]):not(:active):not([aria-pressed=true])`
+					: `${baseSel}:focus:not([disabled])`;
+				break;
+			case "+pressed":
+				selector = `${baseSel}:active:not([disabled]),${baseSel}[aria-pressed=true]:not([disabled])`;
+				break;
+			case "+disabled":
+				selector = `${baseSel}[disabled]`;
+				break;
+			case "+readonly":
+				selector = `${baseSel}[readonly]`;
+				break;
+		}
+		let stateCss = _makeStyle(stateStyles[state]!);
+		if (!selector || Object.keys(stateCss).length === 0) continue;
+		result[selector] = stateCss;
+	}
+
+	// Handle CSS selector properties
+	for (const selector in selectorStyles) {
+		const selectorCss = _makeStyle(selectorStyles[selector]!);
+		if (Object.keys(selectorCss).length > 0) {
+			result[baseSel + selector] = selectorCss;
+		}
+	}
+
+	return result;
 }
 
 /** Helper function to append CSS styles to given object for a given `Position` object */
@@ -358,12 +356,13 @@ function addPositionCSS(
 				result.position = "relative";
 			}
 	}
+	return result;
 }
 
 /** Helper function to append CSS styles to given object for a given `Dimensions` object */
 function addDimensionsCSS(
 	result: Partial<CSSStyleDeclaration>,
-	dimensions: UIStyle.StyleOptions,
+	dimensions: StyleOverrides,
 ) {
 	let width = dimensions.width;
 	if (width !== undefined) result.width = getCSSLength(width);
@@ -386,12 +385,13 @@ function addDimensionsCSS(
 		result.flexShrink =
 			shrink === true ? 1 : shrink === false ? 0 : (shrink as any);
 	}
+	return result;
 }
 
 /** Helper function to append CSS styles to given object for a given `TextStyle` object */
 function addTextStyleCSS(
 	result: Partial<CSSStyleDeclaration>,
-	textStyle: UIStyle.StyleOptions,
+	textStyle: StyleOverrides,
 ) {
 	let direction = textStyle.textDirection;
 	if (direction !== undefined) result.direction = direction;
@@ -440,12 +440,13 @@ function addTextStyleCSS(
 		(result as any).webkitUserSelect = "text";
 		result.cursor = "text";
 	}
+	return result;
 }
 
 /** Helper function to append CSS styles to given object for a given `Decoration` object */
 function addDecorationStyleCSS(
 	result: Partial<CSSStyleDeclaration>,
-	decoration: UIStyle.StyleOptions,
+	decoration: StyleOverrides,
 ) {
 	let background = decoration.background;
 	if (background !== undefined) result.background = String(background);
@@ -509,6 +510,7 @@ function addDecorationStyleCSS(
 		if ("end" in margin) result.marginInlineEnd = getCSSLength(margin.end);
 	}
 	addPadding(result, decoration.padding);
+	return result;
 }
 
 /** Helper function to append CSS styles to given object for a given `ContainerLayout` object */
@@ -531,11 +533,12 @@ function addContainerLayoutCSS(
 	let clip = layout.clip;
 	if (clip !== undefined) result.overflow = clip ? "hidden" : "visible";
 	addPadding(result, layout.padding);
+	return result;
 }
 
 function addPadding(
 	result: Partial<CSSStyleDeclaration>,
-	padding?: UIStyle.Offsets,
+	padding?: StyleOverrides.Offsets,
 ) {
 	if (padding !== undefined) result.padding = getCSSLength(padding);
 	if (typeof padding === "object") {
@@ -543,6 +546,7 @@ function addPadding(
 			result.paddingInlineStart = getCSSLength(padding.start);
 		if ("end" in padding) result.paddingInlineEnd = getCSSLength(padding.end);
 	}
+	return result;
 }
 
 /** Helper function to return a CSS drop shadow value for the given pixel value */
@@ -593,63 +597,48 @@ function camelToCssCase(k: string) {
 }
 
 /** Helper function to make a CSS style element updater function */
-function _makeCSSUpdater() {
-	return "adoptedStyleSheets" in document &&
+function _updateStyleSheets(
+	css: { [spec: string]: any },
+	importCSS?: string[],
+) {
+	let sheet: CSSStyleSheet;
+	let supportAdoptedStyleSheets =
+		"adoptedStyleSheets" in document &&
 		"CSSStyleSheet" in window &&
-		"replace" in CSSStyleSheet.prototype
-		? _makeAdoptedStyleSheetUpdater()
-		: _makeDOMStyleSheetUpdater();
-}
-
-/** Modern adoptedStyleSheets implementation */
-function _makeAdoptedStyleSheetUpdater() {
-	return (css: { [spec: string]: any }, allImports: string[]) => {
-		_addNewImports(allImports);
-		if (!_adoptedSheet) {
-			_adoptedSheet = new CSSStyleSheet();
-			document.adoptedStyleSheets = [
-				...document.adoptedStyleSheets,
-				_adoptedSheet,
-			];
-		}
-		_addCSSRules(css, _adoptedSheet);
-	};
-}
-
-/** Fallback DOM-based stylesheet implementation */
-function _makeDOMStyleSheetUpdater() {
-	return (css: { [spec: string]: any }, allImports: string[]) => {
-		_addNewImports(allImports);
-		if (!_cssElt) {
-			_cssElt = document.createElement("style");
-			_cssElt.setAttribute("type", "text/css");
-			document.head!.appendChild(_cssElt);
-		}
-		let mainSheet = _cssElt.sheet!;
-		_addCSSRules(css, mainSheet);
-	};
+		"replace" in CSSStyleSheet.prototype;
+	if (supportAdoptedStyleSheets) {
+		let _newAdoptedSheet = new CSSStyleSheet();
+		document.adoptedStyleSheets = [
+			...document.adoptedStyleSheets,
+			_newAdoptedSheet,
+		].filter((s) => s !== _adoptedSheet);
+		sheet = _adoptedSheet = _newAdoptedSheet;
+	} else {
+		_cssElt?.remove();
+		_cssElt = document.createElement("style");
+		_cssElt.setAttribute("type", "text/css");
+		document.head!.appendChild(_cssElt);
+		sheet = _cssElt.sheet!;
+	}
+	if (importCSS?.length) _addCSSImports(importCSS);
+	_addCSSRules(css, sheet);
 }
 
 /** Helper function to add new imports to the import stylesheet */
-function _addNewImports(allImports: string[]) {
-	if (!allImports.length) return;
-	if (!_cssImportElt) {
-		_cssImportElt = document.createElement("style");
-		_cssImportElt.setAttribute("type", "text/css");
-		document.head!.appendChild(_cssImportElt);
-	}
+function _addCSSImports(importCSS: string[]) {
+	_cssImportElt?.remove();
+	_cssImportElt = document.createElement("style");
+	_cssImportElt.setAttribute("type", "text/css");
+	document.head!.appendChild(_cssImportElt);
 	let sheet = _cssImportElt.sheet!;
-	for (let importUrl of allImports) {
-		if (!_importsAdded.has(importUrl)) {
-			try {
-				sheet.insertRule(
-					`@import url(${JSON.stringify(importUrl)});`,
-					sheet.cssRules.length,
-				);
-				_importsAdded.add(importUrl);
-			} catch (e) {
-				console.warn(e);
-			}
+	for (let importUrl of importCSS) {
+		try {
+			sheet.insertRule(
+				`@import url(${JSON.stringify(importUrl)});`,
+				sheet.cssRules.length,
+			);
+		} catch (e) {
+			console.warn(e);
 		}
 	}
 }

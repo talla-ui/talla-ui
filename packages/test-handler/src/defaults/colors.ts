@@ -30,4 +30,4 @@ export default {
 	danger: UI.colors.red,
 	success: UI.colors.green,
 	link: UI.colors.blue,
-} as Readonly<Record<UI.ColorName, UIColor>>;
+} as Readonly<Record<UIColor.ColorName, UIColor>>;

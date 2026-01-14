@@ -18,21 +18,6 @@ export class MessageDialog
 		ModalFactory.AlertDialogController,
 		ModalFactory.ConfirmDialogController
 {
-	static textStyle = UI.styles.text.default.extend({
-		textAlign: "center",
-		maxWidth: 480,
-		lineBreakMode: "pre-wrap",
-		userTextSelect: true,
-	});
-
-	static firstTextStyle = UI.styles.text.default.extend({
-		bold: true,
-		textAlign: "center",
-		maxWidth: 480,
-		lineBreakMode: "pre-wrap",
-		userTextSelect: true,
-	});
-
 	static Container(): UIContainer.ContainerBuilder {
 		return Dialog.Container()
 			.maxWidth("min(95vw,28rem)")
@@ -61,15 +46,26 @@ export class MessageDialog
 	}
 
 	static FirstMessageText() {
-		return UI.Text().textStyle(MessageDialog.firstTextStyle);
+		return UI.Text().style({
+			bold: true,
+			textAlign: "center",
+			maxWidth: 480,
+			lineBreakMode: "pre-wrap",
+			userTextSelect: true,
+		});
 	}
 
 	static MessageText() {
-		return UI.Text().textStyle(MessageDialog.textStyle);
+		return UI.Text().style({
+			textAlign: "center",
+			maxWidth: 480,
+			lineBreakMode: "pre-wrap",
+			userTextSelect: true,
+		});
 	}
 
 	static ConfirmButton() {
-		return UI.Button().buttonStyle("accent");
+		return UI.Button().style("accent");
 	}
 
 	static Button() {

@@ -79,6 +79,7 @@ export class OutputMount {
 
 		// darken shader after rendering, and focus
 		function setFocus() {
+			if (typeof document === "undefined") return;
 			if (!document.activeElement || document.activeElement === document.body) {
 				shader.focus();
 			} else {
@@ -115,7 +116,7 @@ export class OutputMount {
 			let prev = "";
 			let interval = 128;
 			const updateRect = () => {
-				if (!this._inner) return;
+				if (typeof document === "undefined" || !this._inner) return;
 				let rect = refElt!.getBoundingClientRect();
 				let scr = shader.getBoundingClientRect();
 				let styles = [
@@ -257,6 +258,7 @@ export class OutputMount {
 		// remove the outer element, asynchronously
 		setTimeout(
 			() => {
+				if (typeof document === "undefined") return;
 				this._outer!.remove();
 				this._updateTitle();
 			},

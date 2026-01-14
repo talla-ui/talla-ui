@@ -1,12 +1,23 @@
 import { useTestContext } from "@talla-ui/test-handler";
 import { beforeEach, describe, expect, test } from "vitest";
-import { UIColor, UI } from "../../dist/index.js";
+import { UI, UIColor } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
 });
 
 describe("Base colors", () => {
+	test("UI.colors has predefined color keys", () => {
+		expect(UI.colors).toHaveProperty("black");
+		expect(UI.colors).toHaveProperty("white");
+		expect(UI.colors).toHaveProperty("red");
+		expect(UI.colors).toHaveProperty("blue");
+		expect(UI.colors).toHaveProperty("transparent");
+		expect(UI.colors).toHaveProperty("accent");
+		expect(UI.colors).toHaveProperty("background");
+		expect(UI.colors).toHaveProperty("text");
+	});
+
 	test("Color value using constructor", () => {
 		expect(new UIColor("Foo").toString()).toBe("Foo");
 		expect(new UIColor("#000000").toString()).toBe("#000000");
@@ -21,6 +32,87 @@ describe("Base colors", () => {
 		expect(blue.toString()).toBe("#2277ff");
 		expect(UI.colors.accent.toString()).toBe("#222222");
 		expect(UI.colors.text.toString()).toBe("#000");
+	});
+});
+
+describe("Color registration and lookup", () => {
+	test("UIColor.defaults contains standard color references", () => {
+		expect(UIColor.defaults).toHaveProperty("black");
+		expect(UIColor.defaults).toHaveProperty("white");
+		expect(UIColor.defaults).toHaveProperty("accent");
+		expect(UIColor.defaults).toHaveProperty("text");
+		expect(UIColor.defaults).toHaveProperty("background");
+		expect(Object.keys(UIColor.defaults).length).toBeGreaterThan(20);
+	});
+
+	test("UIColor.setColors registers new colors", () => {
+		UIColor.setColors({
+			customRed: "#ff0000",
+			customBlue: new UIColor("#0000ff"),
+		});
+		expect(UIColor.getColor("customRed").toString()).toBe("#ff0000");
+		expect(UIColor.getColor("customBlue").toString()).toBe("#0000ff");
+	});
+
+	test("UIColor.setColors updates existing colors", () => {
+		UIColor.setColors({ testColor: "#111111" });
+		let colorRef = UIColor.getColor("testColor");
+		expect(colorRef.toString()).toBe("#111111");
+
+		// Update the color
+		UIColor.setColors({ testColor: "#222222" });
+		// Same reference should now resolve to new value
+		expect(colorRef.toString()).toBe("#222222");
+	});
+
+	test("UIColor.getColor returns cached references", () => {
+		let ref1 = UIColor.getColor("accent");
+		let ref2 = UIColor.getColor("accent");
+		expect(ref1).toBe(ref2);
+	});
+
+	test("UIColor.getColor returns transparent for unknown colors", () => {
+		let unknown = UIColor.getColor("unknownColorName");
+		expect(unknown.toString()).toBe("transparent");
+	});
+
+	test("UI.color function returns color references", () => {
+		UIColor.setColors({ myCustomColor: "#abcdef" });
+		let color = UI.color("myCustomColor");
+		expect(color.toString()).toBe("#abcdef");
+	});
+
+	test("UI.color returns same reference as UIColor.getColor", () => {
+		let ref1 = UI.color("accent");
+		let ref2 = UIColor.getColor("accent");
+		expect(ref1).toBe(ref2);
+	});
+
+	test("UIColor.resolve creates dynamic color reference", () => {
+		let baseColor = new UIColor("#123456");
+		let resolved = UIColor.resolve(() => baseColor);
+		expect(resolved.toString()).toBe("#123456");
+	});
+
+	test("UIColor.resolve returns transparent when factory returns undefined", () => {
+		let resolved = UIColor.resolve(() => undefined);
+		expect(resolved.toString()).toBe("transparent");
+	});
+
+	test("Derived colors update when base color changes", () => {
+		UIColor.setColors({ derivedBase: "#000000" });
+		let baseRef = UIColor.getColor("derivedBase");
+		let derived = baseRef.brighten(0.5);
+
+		// Get initial derived value
+		let initialValue = derived.toString();
+
+		// Update base color
+		UIColor.setColors({ derivedBase: "#ffffff" });
+
+		// Derived color should now produce different result
+		let newValue = derived.toString();
+		expect(newValue).not.toBe(initialValue);
 	});
 });
 

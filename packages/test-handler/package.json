@@ -24,12 +24,16 @@
 		"build": "tsc -p src",
 		"postbuild": "prettier --log-level error --write \"dist/**/*.d.ts\"",
 		"test": "vitest run --silent",
-		"check-format": "prettier -l \"{src,test}/**/*.ts\""
+		"check-format": "prettier -l \"{src,test}/**/*.ts\"",
+		"format": "prettier --write \"{src,test}/**/*.ts\""
 	},
 	"prettier": {
 		"useTabs": true,
 		"trailingComma": "all",
-		"endOfLine": "lf"
+		"endOfLine": "lf",
+		"plugins": [
+			"prettier-plugin-organize-imports"
+		]
 	},
 	"files": [
 		"dist"

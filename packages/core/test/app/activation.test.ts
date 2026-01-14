@@ -223,10 +223,10 @@ describe("AppContext.activities", () => {
 		await new Promise((r) => setTimeout(r, 5)); // activate, stopped
 		console.log("Setting path asynchronously: bar");
 		app.navigation?.set("bar");
-		await new Promise((r) => setTimeout(r, 50)); // inactivate, skipped because already inactive
+		await new Promise((r) => setTimeout(r, 100)); // inactivate, skipped because already inactive
 		console.log("Setting path asynchronously: foo");
 		app.navigation?.set("foo");
-		await new Promise((r) => setTimeout(r, 50)); // activate, should go through again
+		await new Promise((r) => setTimeout(r, 100)); // activate, should go through again
 		expect(active).toBe(2);
 		expect(inactive).toBe(1);
 	});

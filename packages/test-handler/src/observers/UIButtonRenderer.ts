@@ -1,8 +1,6 @@
-import { RenderContext, UI, UIButton } from "@talla-ui/core";
+import { RenderContext, UIButton } from "@talla-ui/core";
 import { TestOutputElement } from "../TestOutputElement.js";
 import { applyElementStyle, TestBaseObserver } from "./TestBaseObserver.js";
-
-const BUTTON_STYLE = UI.styles.button.default;
 
 /** @internal */
 export class UIButtonRenderer extends TestBaseObserver<UIButton> {
@@ -54,8 +52,8 @@ export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 		element.disabled = !!button.disabled;
 		element.pressed = !!button.pressed;
 
-		// set styles
-		applyElementStyle(element, [BUTTON_STYLE, button.style, button.position]);
+		// set style
+		applyElementStyle(element, button.styleName, button.style, button.position);
 	}
 
 	updateContent(element: TestOutputElement) {

@@ -16,12 +16,16 @@
 	"scripts": {
 		"prebuild": "rimraf dist",
 		"build": "tsc",
-		"check-format": "prettier -l \"{src,cli}/**/*.{ts,js}\""
+		"check-format": "prettier -l \"{src,cli}/**/*.{ts,js}\"",
+		"format": "prettier --write \"{src,cli}/**/*.{ts,js}\""
 	},
 	"prettier": {
 		"useTabs": true,
 		"trailingComma": "all",
-		"endOfLine": "lf"
+		"endOfLine": "lf",
+		"plugins": [
+			"prettier-plugin-organize-imports"
+		]
 	},
 	"files": [
 		"dist",

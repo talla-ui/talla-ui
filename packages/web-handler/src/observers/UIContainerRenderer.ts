@@ -6,7 +6,6 @@ import {
 	UIContainer,
 	UIRow,
 	UIScrollView,
-	UIStyle,
 	View,
 } from "@talla-ui/core";
 import {
@@ -115,10 +114,10 @@ export class UIContainerRenderer<
 	override updateStyle(element: HTMLElement) {
 		// set styles based on type of container
 		let container = this.observed;
-		let systemName: string;
+		let systemClass: string;
 		let layout = container.layout;
 		if (container instanceof UIRow) {
-			systemName = CLASS_ROW;
+			systemClass = CLASS_ROW;
 			if (container.align || container.gravity) {
 				layout = Object.assign(
 					{},
@@ -128,7 +127,7 @@ export class UIContainerRenderer<
 				);
 			}
 		} else if (container instanceof UIColumn) {
-			systemName = CLASS_COLUMN;
+			systemClass = CLASS_COLUMN;
 			if (container.align || container.distribute) {
 				layout = Object.assign(
 					{},
@@ -140,16 +139,18 @@ export class UIContainerRenderer<
 				);
 			}
 		} else if (container instanceof UIScrollView) {
-			systemName = CLASS_SCROLL;
+			systemClass = CLASS_SCROLL;
 		} else {
 			// (use styles passed in by cell renderer)
-			systemName = CLASS_CELL;
+			systemClass = CLASS_CELL;
 		}
 
 		applyStyles(
 			element,
-			[container.style],
-			systemName,
+			"container",
+			container.styleName,
+			container.style,
+			systemClass,
 			false,
 			true,
 			container.position,
@@ -173,8 +174,7 @@ export class UIContainerRenderer<
 						: this.observed instanceof UIRow;
 			let options = layout?.separator;
 			if (!options && "gap" in (this.observed as unknown as UIRow)) {
-				let gap =
-					(this.observed as unknown as UIRow).gap ?? UIStyle.defaultOptions.gap;
+				let gap = (this.observed as unknown as UIRow).gap ?? "gap";
 				options = { space: gap, vertical: horzAxis };
 			}
 			this.contentUpdater.setSeparator(options, horzAxis);
@@ -205,6 +205,7 @@ export class ContentUpdater {
 	) {
 		let oldOptions = this._sepOptions;
 		this._sepOptions = options;
+		if (!options && !oldOptions) return;
 		let sep: HTMLElement | undefined;
 		if (options?.lineWidth) {
 			if (
@@ -234,8 +235,8 @@ export class ContentUpdater {
 			this.element.style.columnGap = "";
 			this.element.style.rowGap = "";
 		} else if (options?.space) {
-			let size = getCSSLength(options && options.space, "0");
-			if (CSS.supports("gap", "1px")) {
+			let size = getCSSLength(options.space, "0");
+			if (CSS?.supports?.("gap", "1px") ?? true) {
 				// if gap is supported, use pure CSS
 				this.element.style.gap = size;
 				return;

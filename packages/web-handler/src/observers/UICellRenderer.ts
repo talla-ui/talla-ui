@@ -14,6 +14,7 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 
 		// add mouse handlers (events not propagated)
 		elt.addEventListener("mouseenter", (e) => {
+			this._isHovered = true;
 			let event = new ObservableEvent(
 				"MouseEnter",
 				cell,
@@ -24,6 +25,7 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 			if (this.observed === cell) cell.emit(event);
 		});
 		elt.addEventListener("mouseleave", (e) => {
+			this._isHovered = false;
 			let event = new ObservableEvent(
 				"MouseLeave",
 				cell,
@@ -35,6 +37,13 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 		});
 		return output;
 	}
+
+	/** Returns true if cell is hovered (implements UIElementRenderer) */
+	isHovered(): boolean {
+		return this._isHovered;
+	}
+
+	private _isHovered = false;
 
 	override updateContent(element: HTMLElement) {
 		let cell = this.observed as UICell;

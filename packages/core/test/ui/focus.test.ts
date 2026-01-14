@@ -98,3 +98,35 @@ test("Focusing one element blurs another", async () => {
 	await expect.poll(() => done).toBeTruthy();
 	expect(events).toEqual(["FocusIn", "FocusOut"]);
 });
+
+test("isFocused() returns false when not rendered", () => {
+	let cell = UI.Cell().allowFocus().build();
+	expect(cell.isFocused()).toBe(false);
+});
+
+test("isFocused() returns true after requestFocus()", async () => {
+	let cell = UI.Cell().allowFocus().build();
+	renderTestView(cell);
+	await expectOutputAsync({ type: "cell" });
+	cell.requestFocus();
+	await expectOutputAsync({ type: "cell", focused: true });
+	expect(cell.isFocused()).toBe(true);
+});
+
+test("isFocused() returns false after focus moves elsewhere", async () => {
+	let cell1 = UI.Cell().allowFocus().build();
+	let cell2 = UI.Cell().allowFocus().build();
+	let container = new UICell();
+	container.content.add(cell1, cell2);
+	renderTestView(container);
+
+	// Focus first cell
+	cell1.requestFocus();
+	await expectOutputAsync({ type: "cell", focused: true });
+	expect(cell1.isFocused()).toBe(true);
+
+	// Focus second cell, first should lose focus
+	cell2.requestFocus();
+	await expect.poll(() => cell2.isFocused()).toBe(true);
+	expect(cell1.isFocused()).toBe(false);
+});

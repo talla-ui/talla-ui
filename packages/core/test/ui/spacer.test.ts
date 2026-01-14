@@ -14,7 +14,7 @@ test("Rendered", async () => {
 	renderTestView(UI.Spacer(10, 10).build());
 	await expectOutputAsync({
 		type: "spacer",
-		styles: { minWidth: 10, minHeight: 10 },
+		style: { minWidth: 10, minHeight: 10 },
 	});
 });
 
@@ -22,6 +22,6 @@ test("Rendered, flexible", async () => {
 	renderTestView(UI.Spacer().build());
 	await expectOutputAsync({
 		type: "spacer",
-		styles: { grow: true },
+		style: { grow: true },
 	});
 });

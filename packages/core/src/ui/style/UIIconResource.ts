@@ -1,23 +1,55 @@
-import { UIStyle } from "./UIStyle.js";
-
 // NOTE: this class is pretty basic right now, some features could be added
 // especially for SVG icons, e.g. rotation, combination, etc.
 
+// Module-level storage for icons
+let _icons: Record<string, UIIconResource> = {};
+let _iconRefs: Record<string, UIIconResource> = {};
+
 /**
- * An object that represents icon source content
+ * A class that represents icon source content.
+ * - For the web renderer, content can be SVG, HTML, or plain text.
+ * - Use as an image source, or with text elements and buttons.
  *
- * @description
- * Each UIIconResource instance encapsulates platform-dependent icon content. For the Web (DOM) renderer, this may include SVG content, HTML, or plain text. Icons can be used directly as an image source, or with text elements or buttons.
- *
- * To create a new icon, use the `new UIIconResource(content)` constructor. To reference an icon from the theme, use the global {@link UI} object or the {@link UIIconResource.theme} resolver.
+ * Create icons using `new UIIconResource(content)`, or reference named icons
+ * using {@link UI.icons} or {@link UIIconResource.getIcon}.
  */
 export class UIIconResource {
 	/**
-	 * Creates a {@link UIIconResource} instance that dynamically resolves to another icon
-	 * - This method is used to create a theme icon reference by {@link UIIconResource.theme}.
-	 * @param f A function that returns the icon to resolve to, or undefined
-	 * @returns A new {@link UIIconResource} instance that will resolve the factory function when applied
-	 * @see {@link UIIconResource.theme}
+	 * Sets icons in the global icon registry.
+	 * - Call `app.remount()` after setting icons to update all views.
+	 * @param values An object mapping icon names to {@link UIIconResource} instances or content strings.
+	 */
+	static setIcons(values: Record<string, UIIconResource | string | undefined>) {
+		for (let key in values) {
+			let v = values[key];
+			if (v != null) {
+				_icons[key] = v instanceof UIIconResource ? v : new UIIconResource(v);
+			}
+		}
+	}
+
+	/**
+	 * Returns an icon reference by name.
+	 * - The returned instance dynamically resolves to the named icon.
+	 * - Results are cached and reused for subsequent calls with the same name.
+	 * @param name The name of the icon to retrieve.
+	 * @returns A {@link UIIconResource} instance that resolves to the named icon.
+	 */
+	static getIcon(name: string): UIIconResource {
+		if (!_iconRefs[name]) {
+			let ref = new UIIconResource();
+			ref.toString = () => String(_icons[name] || "");
+			ref.isMirrorRTL = () => _icons[name]?.isMirrorRTL() || false;
+			_iconRefs[name] = ref;
+		}
+		return _iconRefs[name]!;
+	}
+
+	/**
+	 * Creates a {@link UIIconResource} instance that dynamically resolves using a factory function.
+	 * @param f A function that returns the icon to resolve to, or undefined.
+	 * @returns A new {@link UIIconResource} instance.
+	 * @see {@link UIIconResource.getIcon}
 	 */
 	static resolve(f: () => UIIconResource | undefined): UIIconResource {
 		return Object.assign(new UIIconResource(), {
@@ -27,28 +59,29 @@ export class UIIconResource {
 	}
 
 	/**
-	 * Creates a new icon object
-	 * @param content The icon content as SVG, HTML, or plain text
+	 * Creates a new icon instance.
+	 * @param content The icon content as SVG, HTML, or plain text.
 	 */
 	constructor(content?: string) {
 		if (content) this._content = String(content);
 	}
 
 	/**
-	 * Indicate that this icon should be mirrored in RTL mode
-	 * @param mirror True if this icon should be mirrored in RTL mode, may be omitted (default is true)
+	 * Sets whether this icon should be mirrored in RTL mode.
+	 * @param mirror True to mirror the icon in RTL mode; defaults to true.
+	 * @returns The icon instance, for method chaining.
 	 */
 	setMirrorRTL(mirror = true) {
 		this._mRTL = mirror;
 		return this;
 	}
 
-	/** True if this icon should be mirrored in RTL mode */
+	/** Returns true if this icon should be mirrored in RTL mode. */
 	isMirrorRTL(): boolean {
 		return !!this._mRTL;
 	}
 
-	/** Returns the icon content string, i.e. SVG, HTML, or plain text */
+	/** Returns the icon content string (SVG, HTML, or plain text). */
 	toString() {
 		return String(this._content || "");
 	}
@@ -58,29 +91,36 @@ export class UIIconResource {
 }
 
 export namespace UIIconResource {
-	/**
-	 * A theme resolver for predefined theme icons
-	 *
-	 * @description
-	 * This object provides access to predefined theme icons, referenced by string keys.
-	 *
-	 * To update these icons, use the {@link UIStyle.ThemeResolver.set set()} method, and then remount all views using the `app.remount()` method.
-	 */
-	export const theme = new UIStyle.ThemeResolver(
-		[
-			"blank",
-			"close",
-			"check",
-			"chevronDown",
-			"chevronUp",
-			"chevronNext",
-			"chevronBack",
-			"plus",
-			"minus",
-			"menu",
-			"more",
-			"search",
-		],
-		UIIconResource.resolve,
-	);
+	const _names = [
+		"blank",
+		"close",
+		"check",
+		"chevronDown",
+		"chevronUp",
+		"chevronNext",
+		"chevronBack",
+		"plus",
+		"minus",
+		"menu",
+		"more",
+		"search",
+	] as const;
+
+	type _DefaultIcons = {
+		readonly [K in (typeof _names)[number]]: UIIconResource;
+	};
+
+	/** An object containing all standard icon references. */
+	export const defaults: _DefaultIcons = Object.freeze(
+		_names.reduce(
+			(obj, name) => {
+				obj[name] = UIIconResource.getIcon(name);
+				return obj;
+			},
+			{} as Record<string, UIIconResource>,
+		),
+	) as _DefaultIcons;
+
+	/** A type that represents icon names, supporting both standard names and custom strings. */
+	export type IconName = keyof typeof defaults | (string & {});
 }

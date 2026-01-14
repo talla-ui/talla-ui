@@ -1,7 +1,7 @@
-import { ObservableObject } from "./ObservableObject.js";
+import { err, ERROR, invalidArgErr } from "../errors.js";
 import { $_origin, unlinkObject } from "./object_util.js";
 import { ObservableEvent } from "./ObservableEvent.js";
-import { err, ERROR, invalidArgErr } from "../errors.js";
+import { ObservableObject } from "./ObservableObject.js";
 
 /** Private structure that's used to maintain a doubly-linked list */
 type LinkedList<TObject extends ObservableObject> = {

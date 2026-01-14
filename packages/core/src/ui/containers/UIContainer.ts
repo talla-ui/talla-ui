@@ -1,6 +1,6 @@
 import { View, ViewBuilder } from "../../app/index.js";
 import { BindingOrValue, ObservableList } from "../../object/index.js";
-import { UIColor, UIStyle } from "../style/index.js";
+import { StyleOverrides, UIColor } from "../style/index.js";
 import { UIElement } from "../UIElement.js";
 
 /**
@@ -60,7 +60,7 @@ export namespace UIContainer {
 		/** Options for separator between each UI element */
 		separator?: Readonly<SeparatorOptions>;
 		/** Padding around contained UI elements, in pixels or CSS length with unit, **or** an object with separate offset values */
-		padding?: UIStyle.Offsets;
+		padding?: StyleOverrides.Offsets;
 	};
 
 	/**
@@ -101,15 +101,6 @@ export namespace UIContainer {
 				});
 			}
 			return this;
-		}
-
-		/**
-		 * Applies a style to the container
-		 * @param style A {@link UIStyle} instance, a style options (overrides) object, or a binding.
-		 * @returns The builder instance for chaining.
-		 */
-		style(style?: BindingOrValue<UIStyle | UIStyle.StyleOptions | undefined>) {
-			return this.setStyleProperty(style);
 		}
 
 		/**

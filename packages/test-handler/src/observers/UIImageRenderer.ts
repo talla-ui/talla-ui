@@ -1,8 +1,6 @@
-import { RenderContext, UI, UIIconResource, UIImage } from "@talla-ui/core";
+import { RenderContext, UIIconResource, UIImage } from "@talla-ui/core";
 import { TestOutputElement } from "../TestOutputElement.js";
 import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
-
-const IMAGE_STYLE = UI.styles.image.default;
 
 /** @internal */
 export class UIImageRenderer extends TestBaseObserver<UIImage> {
@@ -31,7 +29,7 @@ export class UIImageRenderer extends TestBaseObserver<UIImage> {
 
 	override updateStyle(element: TestOutputElement) {
 		let image = this.observed;
-		applyElementStyle(element, [IMAGE_STYLE, image.style, image.position]);
+		applyElementStyle(element, image.styleName, image.style, image.position);
 	}
 
 	updateContent(element: TestOutputElement) {

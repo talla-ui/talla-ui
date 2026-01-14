@@ -124,7 +124,13 @@ export class UIContainerRenderer<
 			}
 		}
 
-		applyElementStyle(element, [container.style, container.position, layout]);
+		applyElementStyle(
+			element,
+			container.styleName,
+			container.style,
+			container.position,
+			layout,
+		);
 	}
 }
 

@@ -65,16 +65,20 @@ export class WebOutputTransform implements RenderContext.OutputTransform {
 			// set DOM handlers and timeout if needed
 			if (!startT) {
 				startT = Date.now();
-				setTimeout(
-					() => {
-						resolve(removeHandlers(applied));
-					},
-					this._delay + this._duration + 200,
-				);
 				if (this._duration) {
+					// fallback timeout in case transitionend doesn't fire
+					setTimeout(
+						() => {
+							resolve(removeHandlers(applied));
+						},
+						this._delay + this._duration + 200,
+					);
 					elt.addEventListener("transitionstart", addHandlers);
 				}
 			}
+
+			// cancel if document is torn down (e.g., in tests)
+			if (typeof document === "undefined") return cancelHandler();
 
 			// retry (within 1s) or cancel if element is not in DOM yet
 			if (!document.body?.contains(elt)) {

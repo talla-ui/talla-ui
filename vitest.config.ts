@@ -9,9 +9,15 @@ export default defineConfig({
 				"packages/util/dist/**/*.js",
 				"packages/core/dist/**/*.js",
 				"packages/test-handler/dist/**/*.js",
+				"packages/web-handler/dist/**/*.js",
 			],
 		},
 		root: import.meta.dirname,
-		projects: ["packages/util", "packages/core", "packages/test-handler"],
+		projects: [
+			"packages/util",
+			"packages/core",
+			"packages/test-handler",
+			"packages/web-handler",
+		],
 	},
 });

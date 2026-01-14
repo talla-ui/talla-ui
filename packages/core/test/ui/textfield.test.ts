@@ -47,7 +47,7 @@ test("Multiline text field with height", async () => {
 	await expectOutputAsync({
 		type: "textfield",
 		text: "Enter long text",
-		styles: { height: 100 },
+		style: { height: 100 },
 	});
 });
 

@@ -1,16 +1,14 @@
 import {
 	RenderContext,
-	UI,
+	StyleOverrides,
 	UIIconResource,
 	UIImage,
-	UIStyle,
 	UIText,
 } from "@talla-ui/core";
 import type { StringConvertible } from "@talla-ui/util";
 import { applyStyles, getCSSLength } from "../DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
-
-const IMAGE_STYLE = UI.styles.image.default;
+import { UITextRenderer } from "./UITextRenderer.js";
 
 /** @internal Memoized icon elements */
 const _memoizedIcons: { [memo: string]: HTMLElement } = {};
@@ -22,7 +20,7 @@ export function getIconElt(icon?: StringConvertible, style?: UIText.IconStyle) {
 		if (icon.isMirrorRTL()) mirrorRTL = true;
 	}
 	let size = getCSSLength(
-		style?.size ?? UIStyle.defaultOptions.iconSize,
+		style?.size ?? UITextRenderer.defaultIconStyle.size,
 		"1.5rem",
 	);
 	let color = style?.color ? String(style.color) : "";
@@ -90,19 +88,20 @@ export class UIImageRenderer extends BaseObserver<UIImage> {
 	override updateStyle(element: HTMLElement) {
 		let image = this.observed;
 		let isIcon = image.source instanceof UIIconResource;
+		let style: StyleOverrides | undefined = image.style;
+		if (isIcon) {
+			style = {
+				shrink: 0,
+				width: UITextRenderer.defaultIconStyle.size,
+				height: UITextRenderer.defaultIconStyle.size,
+				...style,
+			};
+		}
 		applyStyles(
 			element,
-			[
-				IMAGE_STYLE,
-				isIcon
-					? {
-							shrink: 0,
-							width: UIStyle.defaultOptions.iconSize,
-							height: UIStyle.defaultOptions.iconSize,
-						}
-					: undefined,
-				image.style,
-			],
+			undefined,
+			undefined,
+			style,
 			undefined,
 			false,
 			false,

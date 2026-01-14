@@ -10,6 +10,6 @@
 		"noUnusedLocals": true,
 		"noUncheckedIndexedAccess": true,
 		"useDefineForClassFields": true,
-		"outDir": "../dist",
-	},
+		"outDir": "../dist"
+	}
 }

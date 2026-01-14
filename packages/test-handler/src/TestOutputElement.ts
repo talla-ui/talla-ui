@@ -1,10 +1,27 @@
-import { RenderContext } from "@talla-ui/core";
+import { RenderContext, UIContainer, UIElement } from "@talla-ui/core";
 
 /** Running ID for generated elements */
 let _uid = 1;
 
 /** Last focused element, if any */
 let lastFocusedElement: TestOutputElement | undefined;
+
+/** Helper function to recursively match object values */
+function _matchAll(a: any, b: any): boolean {
+	if (a == b) return true;
+	if (
+		a != null &&
+		b != null &&
+		typeof a === "object" &&
+		typeof b === "object"
+	) {
+		for (let key in b) {
+			if (!_matchAll(a[key], b[key])) return false;
+		}
+		return true;
+	}
+	return false;
+}
 
 /** A class that represents a rendered output element */
 export class TestOutputElement {
@@ -73,11 +90,28 @@ export class TestOutputElement {
 	}
 
 	/**
-	 * A combination of all styles applied to this element, including position and layout
-	 * - Styles are copied as specified from {@link UIStyle} objects and overrides from {@link UIElement.style} and {@link UIElement.position}.
-	 * - While styles are usually applied to the rendered element in a platform-dependent way, the test renderer simply stores all properties in this object, which therefore has no specific type.
+	 * The name of the style applied to this element
+	 * - This is the styleName from the UI element, e.g., "default", "accent".
 	 */
-	styles: Record<string, any> = {};
+	styleName?: string;
+
+	/**
+	 * Style overrides applied to this element
+	 * - Styles are copied from {@link UIElement.style}.
+	 */
+	style: Record<string, any> = {};
+
+	/**
+	 * Position options applied to this element
+	 * - Position is copied from {@link UIElement.position}.
+	 */
+	position?: UIElement.Position;
+
+	/**
+	 * Layout options applied to this element (containers only)
+	 * - Layout is copied from {@link UIContainer.layout}.
+	 */
+	layout?: UIContainer.Layout;
 
 	/** A list of all nested content elements, for containers */
 	content: TestOutputElement[] = [];
@@ -163,8 +197,8 @@ export class TestOutputElement {
 	 * Handles the specified (simulated) platform event
 	 * - Event names are based on DOM events, but the data object isn't DOM specific.
 	 * - This method is overridden by the renderer for the specific UI element type.
-	 * @param _name The event name, e.g. `click`
-	 * @param _data Arbitrary event data
+	 * @param name The event name, e.g. `click`
+	 * @param data Arbitrary event data
 	 */
 	sendPlatformEvent = (name: TestOutputElement.PlatformEvent, data?: any) => {
 		return this;
@@ -190,29 +224,33 @@ export class TestOutputElement {
 	}
 
 	/**
-	 * Checks if given styles match with the current styles object
+	 * Checks if given styles match with the current style object
 	 * - This method is used by {@link expectOutputAsync()}.
-	 * - While styles are usually applied to the rendered element in a platform-dependent way, the test renderer simply stores all properties in the {@link styles} object, which therefore has no specific type.
-	 * @param styles A set of style properties on a single object
-	 * @returns True, if _all_ of the properties in the provided object match with current styles.
+	 * @param style A set of style properties on a single object
+	 * @returns True, if _all_ of the properties in the provided object match with current style.
 	 */
-	matchStyleValues(styles: Record<string, any>) {
-		function matchAll(a: any, b: any) {
-			if (a == b) return true;
-			if (
-				a != null &&
-				b != null &&
-				typeof a === "object" &&
-				typeof b === "object"
-			) {
-				for (let key in b) {
-					if (!matchAll(a[key], b[key])) return false;
-				}
-				return true;
-			}
-			return false;
-		}
-		return matchAll(this.styles, styles);
+	matchStyleValues(style: Record<string, any>) {
+		return _matchAll(this.style, style);
+	}
+
+	/**
+	 * Checks if given position values match the current position
+	 * - This method is used by {@link expectOutputAsync()}.
+	 * @param position A set of position properties
+	 * @returns True, if _all_ of the properties in the provided object match with current position.
+	 */
+	matchPositionValues(position: Partial<UIElement.Position>) {
+		return _matchAll(this.position, position);
+	}
+
+	/**
+	 * Checks if given layout values match the current layout
+	 * - This method is used by {@link expectOutputAsync()}.
+	 * @param layout A set of layout properties
+	 * @returns True, if _all_ of the properties in the provided object match with current layout.
+	 */
+	matchLayoutValues(layout: Partial<UIContainer.Layout>) {
+		return _matchAll(this.layout, layout);
 	}
 
 	/**
@@ -259,7 +297,9 @@ export class TestOutputElement {
 		if (this.type === "textfield") result.value = this.value;
 		if (this.accessibleRole) result.accessibleRole = this.accessibleRole;
 		if (this.accessibleLabel) result.accessibleLabel = this.accessibleLabel;
-		if (Object.keys(this.styles).length) result.styles = this.styles;
+		if (Object.keys(this.style).length) result.style = this.style;
+		if (this.position) result.position = this.position;
+		if (this.layout) result.layout = this.layout;
 		if (this.content.length) {
 			result.content = this.content.map((c) => c?.toJSON());
 		}

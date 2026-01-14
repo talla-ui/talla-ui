@@ -1,10 +1,8 @@
-import { RenderContext, UI, UIStyle, UIText } from "@talla-ui/core";
+import { RenderContext, UI, UIText } from "@talla-ui/core";
 import type { StringConvertible } from "@talla-ui/util";
 import { applyStyles, getCSSLength } from "../DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
 import { getIconElt } from "./UIImageRenderer.js";
-
-const TEXT_STYLE = UI.styles.text.default;
 
 type TextContentProperties = {
 	text?: StringConvertible;
@@ -24,6 +22,18 @@ const CHEVRON_ICONS = {
 
 /** @internal */
 export class UITextRenderer extends BaseObserver<UIText> {
+	/** Defaults for default icon style, applied to new {@link WebTheme} instances */
+	static readonly ICON_DEFAULTS = {
+		size: 20,
+		margin: 4,
+	};
+
+	/** Default icon size and margin, updated by {@link setWebTheme} */
+	static defaultIconStyle: UIText.IconStyle = {
+		size: 20,
+		margin: 4,
+	};
+
 	constructor(observed: UIText) {
 		super(observed);
 		this.observeProperties("text", "icon", "iconStyle");
@@ -54,13 +64,15 @@ export class UITextRenderer extends BaseObserver<UIText> {
 
 	override updateStyle(element: HTMLElement) {
 		let text = this.observed;
+		let style = text.style;
+		if (text.selectable) {
+			style = { ...style, userTextSelect: true };
+		}
 		applyStyles(
 			element,
-			[
-				TEXT_STYLE,
-				text.style,
-				text.selectable ? { userTextSelect: true } : undefined,
-			],
+			"text",
+			text.styleName,
+			style,
 			undefined,
 			true,
 			false,
@@ -96,7 +108,7 @@ export function setTextOrHtmlContent(
 	// add margin element
 	if (content.icon && content.text) {
 		let margin = getCSSLength(
-			content.iconStyle?.margin ?? UIStyle.defaultOptions.iconMargin,
+			content.iconStyle?.margin ?? UITextRenderer.defaultIconStyle.margin,
 			0,
 		);
 		let marginWrapper = document.createElement("span");
@@ -117,7 +129,7 @@ export function setTextOrHtmlContent(
 	if (content.chevron) {
 		let chevronStyle = content.chevronStyle;
 		let width = getCSSLength(
-			chevronStyle?.size || UIStyle.defaultOptions.iconSize,
+			chevronStyle?.size || UITextRenderer.defaultIconStyle.size,
 			"1rem",
 		);
 		let chevronSpacer = document.createElement("span");

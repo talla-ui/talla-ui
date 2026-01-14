@@ -15,6 +15,6 @@
 		"target": "esnext",
 		"lib": ["dom", "es2015"],
 		"skipLibCheck": true,
-		"outDir": "../dist",
-	},
+		"outDir": "../dist"
+	}
 }

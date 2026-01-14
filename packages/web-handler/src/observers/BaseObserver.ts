@@ -12,7 +12,7 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 			undefined,
 			true,
 		);
-		this.observeProperties("hidden", "position", "style");
+		this.observeProperties("hidden", "position", "style", "styleName");
 		observed.listen((e) => {
 			let handler = (this as any)["on" + e.name];
 			if (typeof handler === "function") handler.call(this, e);
@@ -216,6 +216,12 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 				}
 			}
 		}
+	}
+
+	/** Returns true if element has focus (implements UIElementRenderer) */
+	isFocused(): boolean {
+		let focusElt = this._getFocusElement();
+		return !!focusElt && document.activeElement === focusElt;
 	}
 
 	/** Helper method that returns a focusable (sub) element, with tabIndex */

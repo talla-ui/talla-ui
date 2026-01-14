@@ -4,7 +4,7 @@ import {
 	useTestContext,
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
-import { UI, UICell, UIColor, UIText } from "../../dist/index.js";
+import { UI, UICell, UIText } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
@@ -64,7 +64,7 @@ test("Rendered with content and layout", async () => {
 	renderTestView(myCell.build());
 	let out = await expectOutputAsync({
 		type: "cell",
-		styles: { gravity: "end" },
+		layout: { gravity: "end" },
 	});
 	out.containing({ type: "text", text: "foo" }).toBeRendered();
 });
@@ -77,10 +77,10 @@ test("Rendered with style", async () => {
 	renderTestView(myCell.build());
 	await expectOutputAsync({
 		type: "cell",
-		styles: {
-			distribution: "start",
+		layout: { distribution: "start" },
+		style: {
 			padding: 16,
-			borderColor: UIColor.theme.ref("green"),
+			borderColor: UI.colors.green,
 			borderWidth: 1,
 		},
 	});
@@ -120,4 +120,77 @@ test("Move content between cells", async () => {
 	let out2 = await expectOutputAsync({ source: cell2 }, { text: "foo" });
 
 	expect(out2.getSingle().uid).toBe(uid);
+});
+
+test("Cell with style name", async () => {
+	let myCell = UI.Cell().style("card");
+	let cell = myCell.build();
+	expect(cell.styleName).toBe("card");
+
+	renderTestView(cell);
+	await expectOutputAsync({
+		type: "cell",
+		styleName: "card",
+	});
+});
+
+test("Cell with style overrides object", async () => {
+	let myCell = UI.Cell().style({
+		background: UI.colors.background,
+		padding: 16,
+	});
+	let cell = myCell.build();
+	expect(cell.style?.background).toBe(UI.colors.background);
+	expect(cell.style?.padding).toBe(16);
+
+	renderTestView(cell);
+	await expectOutputAsync({
+		type: "cell",
+		style: { background: UI.colors.background, padding: 16 },
+	});
+});
+
+test("Cell with style name and additional overrides", async () => {
+	let myCell = UI.Cell()
+		.style("card")
+		.background("accent")
+		.borderRadius(8)
+		.dropShadow(4);
+
+	let cell = myCell.build();
+	expect(cell.styleName).toBe("card");
+	expect(cell.style?.background).toBe(UI.colors.accent);
+	expect(cell.style?.borderRadius).toBe(8);
+	expect(cell.style?.dropShadow).toBe(4);
+});
+
+test("isHovered() returns false when not rendered", () => {
+	let cell = UI.Cell().build();
+	expect(cell.isHovered()).toBe(false);
+});
+
+test("isHovered() returns true after mouseenter", async () => {
+	let cell = UI.Cell().build();
+	renderTestView(cell);
+	let out = await expectOutputAsync({ type: "cell" });
+
+	// Initially not hovered
+	expect(cell.isHovered()).toBe(false);
+
+	// Simulate mouseenter
+	out.getSingle().sendPlatformEvent("mouseenter");
+	expect(cell.isHovered()).toBe(true);
+});
+
+test("isHovered() returns false after mouseleave", async () => {
+	let cell = UI.Cell().build();
+	renderTestView(cell);
+	let out = await expectOutputAsync({ type: "cell" });
+
+	// Simulate mouseenter then mouseleave
+	out.getSingle().sendPlatformEvent("mouseenter");
+	expect(cell.isHovered()).toBe(true);
+
+	out.getSingle().sendPlatformEvent("mouseleave");
+	expect(cell.isHovered()).toBe(false);
 });

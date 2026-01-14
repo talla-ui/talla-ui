@@ -14,129 +14,129 @@ import { UIToggle } from "./controls/UIToggle.js";
 import { UIAnimation } from "./style/UIAnimation.js";
 import { UIColor } from "./style/UIColor.js";
 import { UIIconResource } from "./style/UIIconResource.js";
-import { UIStyle } from "./style/UIStyle.js";
 
-/** A namespace that contains functions for building a declarative UI using view builders */
+/**
+ * A namespace that contains functions for building a declarative UI using view builders.
+ * - Use these functions to create UI elements such as buttons, text, and containers.
+ * - Each function returns a view builder that can be configured using method chaining.
+ */
 export namespace UI {
-	/** Alias for {@link UICell.cellBuilder} */
+	/** Alias for {@link UICell.cellBuilder}. */
 	export const Cell = UICell.cellBuilder;
 
-	/** Alias for {@link UIColumn.columnBuilder} */
+	/** Alias for {@link UIColumn.columnBuilder}. */
 	export const Column = UIColumn.columnBuilder;
 
-	/** Alias for {@link UIRow.rowBuilder} */
+	/** Alias for {@link UIRow.rowBuilder}. */
 	export const Row = UIRow.rowBuilder;
 
-	/** Alias for {@link UIButton.buttonBuilder} */
+	/** Alias for {@link UIButton.buttonBuilder}. */
 	export const Button = UIButton.buttonBuilder;
 
-	/** Alias for {@link UIDivider.dividerBuilder} */
+	/** Alias for {@link UIDivider.dividerBuilder}. */
 	export const Divider = UIDivider.dividerBuilder;
 
-	/** Alias for {@link UIImage.imageBuilder} */
+	/** Alias for {@link UIImage.imageBuilder}. */
 	export const Image = UIImage.imageBuilder;
 
-	/** Alias for {@link UIText.textBuilder} */
+	/** Alias for {@link UIText.textBuilder}. */
 	export const Text = UIText.textBuilder;
 
-	/** Alias for {@link UISpacer.spacerBuilder} */
+	/** Alias for {@link UISpacer.spacerBuilder}. */
 	export const Spacer = UISpacer.spacerBuilder;
 
-	/** Alias for {@link UITextField.textFieldBuilder} */
+	/** Alias for {@link UITextField.textFieldBuilder}. */
 	export const TextField = UITextField.textFieldBuilder;
 
-	/** Alias for {@link UIToggle.toggleBuilder} */
+	/** Alias for {@link UIToggle.toggleBuilder}. */
 	export const Toggle = UIToggle.toggleBuilder;
 
-	/** Alias for {@link UIListView.listBuilder} */
+	/** Alias for {@link UIListView.listBuilder}. */
 	export const List = UIListView.listBuilder;
 
-	/** Alias for {@link UIShowView.showBuilder} */
+	/** Alias for {@link UIShowView.showBuilder}. */
 	export const Show = UIShowView.showBuilder;
 
-	/** Alias for {@link UIShowView.showWhenBuilder} */
+	/** Alias for {@link UIShowView.showWhenBuilder}. */
 	export const ShowWhen = UIShowView.showWhenBuilder;
 
-	/** Alias for {@link UIShowView.showUnlessBuilder} */
+	/** Alias for {@link UIShowView.showUnlessBuilder}. */
 	export const ShowUnless = UIShowView.showUnlessBuilder;
 
-	/** Object containing all available theme color references */
-	export const colors = UIColor.theme.refs();
+	/**
+	 * An object containing all available color references.
+	 * @see {@link UIColor.defaults}
+	 * @see {@link UIColor.getColor}
+	 */
+	export const colors: typeof UIColor.defaults = UIColor.defaults;
 
-	/** Type definition for theme color names */
-	export type ColorName = keyof typeof colors;
-
-	/** Object containing all available theme icon references */
-	export const icons = UIIconResource.theme.refs();
-
-	/** Type definition for theme icon names */
-	export type IconName = keyof typeof icons;
-
-	/** Object containing all available theme animation references */
-	export const animations = UIAnimation.theme.refs();
-
-	/** Type definition for theme animation names */
-	export type AnimationName = keyof typeof animations;
-
-	/** Object containing all available theme style references */
-	export namespace styles {
-		/** Object containing all available theme text element style references */
-		export const text = UIStyle.theme.text.refs();
-
-		/** Type definition for theme text element style names */
-		export type TextStyleName = keyof typeof text;
-
-		/** Object containing all available theme button style references */
-		export const button = UIStyle.theme.button.refs();
-
-		/** Type definition for theme button style names */
-		export type ButtonStyleName = keyof typeof button;
-
-		/** Object containing all available theme text field style references */
-		export const textField = UIStyle.theme.textField.refs();
-
-		/** Type definition for theme text field style names */
-		export type TextFieldStyleName = keyof typeof textField;
-
-		/** Object containing all available theme toggle style references */
-		export const toggle = UIStyle.theme.toggle.refs();
-
-		/** Type definition for theme toggle style names */
-		export type ToggleStyleName = keyof typeof toggle;
-
-		/** Object containing all available theme image style references */
-		export const image = UIStyle.theme.image.refs();
-
-		/** Type definition for theme image style names */
-		export type ImageStyleName = keyof typeof image;
-
-		/** Object containing all available theme divider style references */
-		export const divider = UIStyle.theme.divider.refs();
-
-		/** Type definition for theme divider style names */
-		export type DividerStyleName = keyof typeof divider;
+	/**
+	 * Returns a color reference by name, including custom colors.
+	 * @param name The name of the color to get.
+	 * @returns A {@link UIColor} instance that resolves to the named color.
+	 * @see {@link UIColor.getColor}
+	 */
+	export function color(name: string): UIColor {
+		return UIColor.getColor(name);
 	}
 
-	/** Object containing bindings to viewport properties */
+	/**
+	 * An object containing all available icon references.
+	 * @see {@link UIIconResource.defaults}
+	 * @see {@link UIIconResource.getIcon}
+	 */
+	export const icons: typeof UIIconResource.defaults = UIIconResource.defaults;
+
+	/**
+	 * Returns an icon reference by name, including custom icons.
+	 * @param name The name of the icon to get.
+	 * @returns A {@link UIIconResource} instance that resolves to the named icon.
+	 * @see {@link UIIconResource.getIcon}
+	 */
+	export function icon(name: string): UIIconResource {
+		return UIIconResource.getIcon(name);
+	}
+
+	/**
+	 * An object containing all available animation references.
+	 * @see {@link UIAnimation.defaults}
+	 * @see {@link UIAnimation.getAnimation}
+	 */
+	export const animations: typeof UIAnimation.defaults = UIAnimation.defaults;
+
+	/**
+	 * Returns an animation reference by name, including custom animations.
+	 * @param name The name of the animation to get.
+	 * @returns A {@link UIAnimation} instance that resolves to the named animation.
+	 * @see {@link UIAnimation.getAnimation}
+	 */
+	export function animation(name: string): UIAnimation {
+		return UIAnimation.getAnimation(name);
+	}
+
+	/**
+	 * A namespace containing bindings to viewport properties.
+	 * - These bindings automatically update when viewport dimensions or preferences change.
+	 */
 	export namespace viewport {
-		/** Binding to the viewport width in logical pixel units */
+		/** A binding to the viewport width in logical pixel units. */
 		export const width = new Binding<number>("appContext.viewport.width");
 
-		/** Binding to the viewport height in logical pixel units */
+		/** A binding to the viewport height in logical pixel units. */
 		export const height = new Binding<number>("appContext.viewport.height");
 
-		/** Binding that is true if the viewport is taller than it is wide */
+		/** A binding that is true if the viewport is taller than it is wide. */
 		export const portrait = new Binding<boolean>(
 			"appContext.viewport.portrait",
 		);
 
-		/** Binding to the number of columns in the viewport grid */
+		/** A binding to the number of columns in the viewport grid. */
 		export const cols = new Binding<number>("appContext.viewport.cols");
 
-		/** Binding to the number of rows in the viewport grid */
+		/** A binding to the number of rows in the viewport grid. */
 		export const rows = new Binding<number>("appContext.viewport.rows");
 
-		/** Binding that is true if the user's preferences indicate a dark color scheme */
+		/** A binding that is true if the user's preferences indicate a dark color scheme. */
 		export const prefersDark = new Binding<boolean>(
 			"appContext.viewport.prefersDark",
 		);

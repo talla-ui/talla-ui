@@ -12,67 +12,73 @@ import {
 	isBinding,
 	ObservableEvent,
 } from "../../object/index.js";
-import { UIIconResource, UIStyle } from "../style/index.js";
-import type { UI } from "../UI.js";
+import { UIIconResource } from "../style/index.js";
 import { UIElement } from "../UIElement.js";
 import { UIText } from "./UIText.js";
 
 /**
- * A view class that represents a button control
- *
- * @description A button UI element is rendered as a button control.
+ * A view class that represents a button control.
+ * - Buttons emit events when clicked, including a `Navigate` event if {@link navigateTo} is set.
+ * - Use the {@link UI.Button()} function to create buttons using a builder.
  *
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
 export class UIButton extends UIElement {
-	/** Creates a new button view object with the specified text */
+	/** Creates a new button view object with the specified text. */
 	constructor(text?: StringConvertible) {
 		super();
 		this.text = text;
 	}
 
-	/** The button text to be displayed */
+	/** The button text to be displayed. */
 	text?: StringConvertible;
 
-	/** The button icon to be displayed */
+	/** The button icon to be displayed. */
 	icon?: UIIconResource = undefined;
 
-	/** Options for displaying the button icon */
+	/** The style options for displaying the button icon. */
 	iconStyle?: UIText.IconStyle = undefined;
 
-	/** Direction of chevron icon to be placed at the far end of the button, if any */
+	/**
+	 * The direction of a chevron icon placed at the far end of the button.
+	 * - Valid values are `up`, `down`, `next`, or `back`.
+	 */
 	chevron?: "up" | "down" | "next" | "back" = undefined;
 
-	/** Options for displaying the chevron icon */
+	/** The style options for displaying the chevron icon. */
 	chevronStyle?: UIText.IconStyle = undefined;
 
 	/**
-	 * Navigation target to navigate to when this button is clicked
-	 * - If this property is set, the button will emit a `Navigate` event when clicked. This event is handled automatically by a containing {@link Activity}, if any. If the target starts with a dot, it's treated as a relative path to the current activity's navigation path.
+	 * The navigation target to navigate to when this button is clicked.
+	 * - If set, the button emits a `Navigate` event when clicked, which is handled automatically by a containing {@link Activity}.
+	 * - Paths starting with a dot are treated as relative to the current activity's navigation path.
 	 */
 	navigateTo?: StringConvertible;
 
 	/**
-	 * The current visual selection state
-	 * - This property is not set automatically. It can be set manually, or bound to select and deselect the button based on the current application state.
+	 * The current visual pressed state.
+	 * - This property is not set automatically; set it manually or bind it to reflect application state.
 	 */
 	pressed?: boolean = undefined;
 
 	/**
-	 * An option value that's associated with this button
-	 * - This property isn't rendered in any way, but it may be used to find out which button was clicked in a group of buttons, either using the property directly or from the event data property that's added to events emitted by the button.
+	 * An arbitrary value associated with this button.
+	 * - This property is not rendered, but can be used to identify which button was clicked in a group, either directly or from event data.
 	 */
 	value?: unknown;
 
-	/** True to disable keyboard focus (e.g. Tab key) for this button */
+	/**
+	 * True if keyboard focus (e.g. Tab key) should be disabled for this button.
+	 */
 	disableKeyboardFocus?: boolean;
 
-	/** True if user input should be disabled on this control */
+	/** True if user input should be disabled on this control. */
 	disabled = false;
 
 	/**
-	 * Returns the navigation target for this button
-	 * - This method returns the value of the {@link UIButton.navigateTo} property, and is called automatically by {@link Activity.onNavigate()}.
+	 * Returns the navigation target for this button.
+	 * - Returns the value of the {@link navigateTo} property.
+	 * - Called automatically by {@link Activity.onNavigate()}.
 	 */
 	getNavigationTarget() {
 		return this.navigateTo;
@@ -80,8 +86,26 @@ export class UIButton extends UIElement {
 }
 
 export namespace UIButton {
+	/** Default style names for button elements. */
+	export type StyleName =
+		| "default"
+		| "accent"
+		| "success"
+		| "danger"
+		| "ghost"
+		| "text"
+		| "link"
+		| "small"
+		| "icon"
+		| "accentIcon"
+		| "successIcon"
+		| "dangerIcon"
+		| "iconTop"
+		| "iconTopStart"
+		| "iconTopEnd";
+
 	/**
-	 * Creates a view builder for a button element
+	 * Creates a view builder for a button element.
 	 * @param text The text for the button, or a binding to a string value.
 	 * @returns A builder object for configuring the button.
 	 * @see {@link UIButton}
@@ -92,9 +116,9 @@ export namespace UIButton {
 
 	export namespace buttonBuilder {
 		/**
-		 * Creates a view builder for a button element with a localizable or dynamic text.
-		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
-		 * @param args Additional bindings, used to format the text dynamically
+		 * Creates a view builder for a button element with localizable or dynamic text.
+		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}.
+		 * @param args Additional bindings used to format the text dynamically.
 		 * @returns A builder instance for chaining.
 		 */
 		export function fmt(text: StringConvertible, ...args: Binding[]) {
@@ -103,15 +127,18 @@ export namespace UIButton {
 	}
 
 	/**
-	 * A builder class for creating `UIButton` instances.
-	 * - Objects of this type are returned by the `UI.Button()` function.
+	 * A builder class for creating {@link UIButton} instances.
+	 * - Returned by the {@link UI.Button()} function.
 	 */
-	export class ButtonBuilder extends UIElement.ElementBuilder<UIButton> {
-		/** The initializer that is used to create each button instance */
+	export class ButtonBuilder extends UIElement.ElementBuilder<
+		UIButton,
+		UIButton.StyleName
+	> {
+		/** The initializer used to create each button instance. */
 		readonly initializer = new ViewBuilder.Initializer(UIButton);
 
 		/**
-		 * Sets the text for the button, using {@link UIButton.text}.
+		 * Sets the button text.
 		 * @param text The text to display, or a binding to a string value.
 		 * @returns The builder instance for chaining.
 		 */
@@ -120,9 +147,9 @@ export namespace UIButton {
 		}
 
 		/**
-		 * Sets a localizable or dynamic text for the button.
-		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
-		 * @param args Additional bindings, used to format the text dynamically
+		 * Sets localizable or dynamic text for the button.
+		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}.
+		 * @param args Additional bindings used to format the text dynamically.
 		 * @returns The builder instance for chaining.
 		 */
 		fmt(text: StringConvertible, ...args: Binding[]) {
@@ -131,13 +158,15 @@ export namespace UIButton {
 		}
 
 		/**
-		 * Sets the icon for the button, using {@link UIButton.icon}.
-		 * @param icon An icon resource, a theme icon name, or a binding to an icon.
-		 * @param iconStyle Styling options for the icon, or only the icon size (in pixels).
+		 * Sets the button icon.
+		 * @param icon An icon resource, an icon name, or a binding.
+		 * @param iconStyle Styling options for the icon, or only the icon size in pixels.
 		 * @returns The builder instance for chaining.
 		 */
 		icon(
-			icon: UI.IconName | BindingOrValue<UIIconResource | string | undefined>,
+			icon: BindingOrValue<
+				UIIconResource | UIIconResource.IconName | undefined
+			>,
 			iconStyle?: BindingOrValue<UIText.IconStyle> | number,
 		) {
 			if (iconStyle != null) {
@@ -146,21 +175,19 @@ export namespace UIButton {
 				});
 			}
 			if (typeof icon === "string") {
-				icon = UIIconResource.theme.ref(icon as any);
+				icon = UIIconResource.getIcon(icon);
 			} else if (isBinding(icon)) {
 				icon = icon.map((value) =>
-					typeof value === "string"
-						? UIIconResource.theme.ref(value as any)
-						: value,
+					typeof value === "string" ? UIIconResource.getIcon(value) : value,
 				);
 			}
 			return this.setProperty("icon", icon);
 		}
 
 		/**
-		 * Adds a chevron icon to the button, using {@link UIButton.chevron}.
-		 * @param chevron The direction of the chevron (`up`, `down`, `next`, `back`), defaults to `down`.
-		 * @param chevronStyle Styling options for the chevron, or only the icon size (in pixels).
+		 * Adds a chevron icon to the button.
+		 * @param chevron The direction of the chevron; defaults to `down`.
+		 * @param chevronStyle Styling options for the chevron, or only the icon size in pixels.
 		 * @returns The builder instance for chaining.
 		 */
 		chevron(
@@ -177,8 +204,8 @@ export namespace UIButton {
 		}
 
 		/**
-		 * Disables the button, using {@link UIButton.disabled}.
-		 * @param disabled If `true`, the button is disabled. Defaults to `true`.
+		 * Disables the button.
+		 * @param disabled True to disable the button; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
 		disabled(disabled: BindingOrValue<boolean> = true) {
@@ -186,8 +213,8 @@ export namespace UIButton {
 		}
 
 		/**
-		 * Sets the visual pressed state of the button, using {@link UIButton.pressed}.
-		 * @param pressed If `true`, the button appears pressed. Defaults to `true`.
+		 * Sets the visual pressed state of the button.
+		 * @param pressed True if the button appears pressed; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
 		pressed(pressed: BindingOrValue<boolean> = true) {
@@ -195,7 +222,7 @@ export namespace UIButton {
 		}
 
 		/**
-		 * Associates an arbitrary value with the button, using {@link UIButton.value}.
+		 * Associates an arbitrary value with the button.
 		 * @param value The value to associate.
 		 * @returns The builder instance for chaining.
 		 */
@@ -205,8 +232,8 @@ export namespace UIButton {
 
 		/**
 		 * Adds a two-way binding to a form state field.
-		 * @param formState A binding to a form state object (e.g. on an activity).
-		 * @param formField The name of the form field to which the button value should be bound.
+		 * @param formState A binding to a form state object.
+		 * @param formField The name of the form field to bind to.
 		 * @returns The builder instance for chaining.
 		 */
 		formStateValue(
@@ -218,21 +245,8 @@ export namespace UIButton {
 		}
 
 		/**
-		 * Applies a style to the button
-		 * @param style The name of a theme button style, a {@link UIStyle} instance, a style options (overrides) object, or a binding.
-		 * @returns The builder instance for chaining.
-		 */
-		buttonStyle(
-			style?: BindingOrValue<
-				UI.styles.ButtonStyleName | UIStyle | UIStyle.StyleOptions | undefined
-			>,
-		) {
-			return this.setStyleProperty(style, UIStyle.theme.button);
-		}
-
-		/**
-		 * Sets a navigation target for the button, making it behave like a link.
-		 * @param navigateTo A path string
+		 * Sets a navigation target, making the button behave like a link.
+		 * @param navigateTo The navigation path.
 		 * @returns The builder instance for chaining.
 		 */
 		navigateTo(navigateTo?: BindingOrValue<StringConvertible>) {
@@ -242,8 +256,8 @@ export namespace UIButton {
 
 		/**
 		 * Adds a modal menu that shows when the button is clicked.
-		 * - The button emits a `MenuItemSelect` event when a menu item is selected, with the selected menu item as data (including its `value` property).
-		 * - When a menu item is selected, the button {@link UIButton.value value} property is also set to the selected menu item's `value` property.
+		 * - The button emits a `MenuItemSelect` event when a menu item is selected, with the selected item as data.
+		 * - The button's {@link UIButton.value} property is set to the selected item's value.
 		 * @param menu An instance of {@link ModalMenuOptions}.
 		 * @returns The builder instance for chaining.
 		 */
@@ -269,10 +283,10 @@ export namespace UIButton {
 		}
 
 		/**
-		 * Adds a modal menu that allows the user to select a value from a list of options.
-		 * - The current value of the button determines the 'checked' item in the menu. This property can be bound using {@link UIButton.ButtonBuilder.value()} or {@link UIButton.ButtonBuilder.formStateValue()}.
-		 * - The button {@link UIButton.text text} property is set to the text of the selected menu item, if any.
-		 * - The button emits a `MenuItemSelect` event when a menu item is selected, with the selected menu item as data (including its `value` property).
+		 * Adds a modal menu for selecting a value from a list of options.
+		 * - The button's current value determines the checked item in the menu; bind using {@link value()} or {@link formStateValue()}.
+		 * - The button's {@link UIButton.text} property is set to the selected item's text.
+		 * - The button emits a `MenuItemSelect` event when a menu item is selected.
 		 * @param menu An instance of {@link ModalMenuOptions}, or a list of items.
 		 * @returns The builder instance for chaining.
 		 */
@@ -286,7 +300,7 @@ export namespace UIButton {
 					...it,
 					icon:
 						it.value === button.value
-							? UIIconResource.theme.ref("check")
+							? UIIconResource.getIcon("check")
 							: undefined,
 				}));
 				return AppContext.getInstance().showModalMenuAsync(
@@ -303,8 +317,10 @@ export namespace UIButton {
 					if (key === "ArrowDown" || key === "ArrowUp") {
 						let idx = items.findIndex((it) => it.value === button.value);
 						let item = items[idx + (key === "ArrowUp" ? -1 : 1)];
-						if (item && !item.divider && !item.disabled)
+						if (item && !item.divider && !item.disabled) {
 							button.value = item.value;
+							button.emit("MenuItemSelect", item);
+						}
 						return;
 					}
 					let letter = String(key).toUpperCase();
@@ -316,7 +332,10 @@ export namespace UIButton {
 						(it: any) =>
 							!it.disabled && String(it.text).toUpperCase().startsWith(buffer),
 					);
-					if (item) button.value = item.value;
+					if (item) {
+						button.value = item.value;
+						button.emit("MenuItemSelect", item);
+					}
 				});
 				button.observe("value", (value) => {
 					let item = value != null && items.find((it) => it.value === value);
@@ -327,10 +346,10 @@ export namespace UIButton {
 		}
 
 		/**
-		 * Handles the `MenuItemSelect` event, emitted when a menu item is selected.
-		 * @param handle The function to call, or name of the event to emit instead
-		 * @see {@link UIElement.ElementBuilder.handle()}
-		 * @see {@link UIButton.ButtonBuilder.dropdownMenu()}
+		 * Handles the `MenuItemSelect` event emitted when a menu item is selected.
+		 * @param select The function to call, or the name of an event to emit instead.
+		 * @returns The builder instance for chaining.
+		 * @see {@link dropdownMenu()}
 		 */
 		onMenuItemSelect(
 			select:
@@ -342,7 +361,7 @@ export namespace UIButton {
 
 		/**
 		 * Disables keyboard focus for the button.
-		 * @param disableKeyboardFocus If `true`, the button cannot be focused using the keyboard. Defaults to `true`.
+		 * @param disableKeyboardFocus True to disable keyboard focus; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
 		disableKeyboardFocus(disableKeyboardFocus = true) {

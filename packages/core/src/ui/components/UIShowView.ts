@@ -13,7 +13,6 @@ import {
 	ObservableObject,
 } from "../../object/index.js";
 import { UIAnimation } from "../style/index.js";
-import type { UI } from "../UI.js";
 
 const MIN_ANIM_REPEAT_MS = 8;
 
@@ -405,12 +404,14 @@ export namespace UIShowView {
 
 		/**
 		 * Sets the animation to be played when the content is shown.
-		 * @param animation A theme animation name, a {@link UIAnimation} instance, or a binding.
+		 * @param animation An animation name, a {@link UIAnimation} instance, or a binding.
 		 * @param ignoreFirst If `true`, the animation is skipped on the first appearance.
 		 * @returns The builder instance for chaining.
 		 */
 		showAnimation(
-			animation: BindingOrValue<UIAnimation | UI.AnimationName | undefined>,
+			animation: BindingOrValue<
+				UIAnimation | UIAnimation.AnimationName | undefined
+			>,
 			ignoreFirst?: boolean,
 		) {
 			this.initializer.update(ignoreFirst, function (value) {
@@ -421,33 +422,38 @@ export namespace UIShowView {
 
 		/**
 		 * Sets the animation to be played when the content is hidden.
-		 * @param animation A theme animation name, a {@link UIAnimation} instance, or a binding.
+		 * @param animation An animation name, a {@link UIAnimation} instance, or a binding.
 		 * @returns The builder instance for chaining.
 		 */
 		hideAnimation(
-			animation: BindingOrValue<UIAnimation | UI.AnimationName | undefined>,
+			animation: BindingOrValue<
+				UIAnimation | UIAnimation.AnimationName | undefined
+			>,
 		) {
 			return this._setAnimation("hideAnimation", animation);
 		}
 
 		/**
 		 * Sets an animation to be played repeatedly while the content is visible.
-		 * @param animation A theme animation name, a {@link UIAnimation} instance, or a binding.
+		 * @param animation An animation name, a {@link UIAnimation} instance, or a binding.
 		 * @returns The builder instance for chaining.
 		 */
 		repeatAnimation(
-			animation: BindingOrValue<UIAnimation | UI.AnimationName | undefined>,
+			animation: BindingOrValue<
+				UIAnimation | UIAnimation.AnimationName | undefined
+			>,
 		) {
 			return this._setAnimation("repeatAnimation", animation);
 		}
 
 		private _setAnimation(
 			k: "showAnimation" | "hideAnimation" | "repeatAnimation",
-			animation: BindingOrValue<UIAnimation | UI.AnimationName | undefined>,
+			animation: BindingOrValue<
+				UIAnimation | UIAnimation.AnimationName | undefined
+			>,
 		) {
 			this.initializer.update(animation, function (value) {
-				if (typeof value === "string")
-					value = UIAnimation.theme.ref(value as any);
+				if (typeof value === "string") value = UIAnimation.getAnimation(value);
 				this[k] = value;
 			});
 			return this;

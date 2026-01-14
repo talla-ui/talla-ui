@@ -1,15 +1,18 @@
 import * as core from "@talla-ui/core";
-import { useWebContext } from "./setup.js";
+import { setWebTheme, useWebContext } from "./setup.js";
 import { WebContextOptions } from "./WebContextOptions.js";
 import { WebModalComponents } from "./WebModalFactory.js";
 import { WebNavigationContext } from "./WebNavigationContext.js";
 import { WebRenderer } from "./WebRenderer.js";
+import { WebTheme } from "./WebTheme.js";
 export {
+	setWebTheme,
 	useWebContext,
 	WebContextOptions,
 	WebModalComponents,
 	WebNavigationContext,
 	WebRenderer,
+	WebTheme,
 };
 
 // Re-export app from core for convenience
@@ -25,9 +28,11 @@ if (!window.require) {
 			return {
 				...core,
 				useWebContext,
+				setWebTheme,
 				WebContextOptions,
 				WebNavigationContext,
 				WebRenderer,
+				WebTheme,
 			};
 		}
 		throw Error("Invalid require() call");

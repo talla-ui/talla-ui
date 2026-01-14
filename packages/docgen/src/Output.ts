@@ -1,10 +1,10 @@
+import CleanCss from "clean-css";
 import { mkdirSync, readFileSync, statSync, writeFileSync } from "fs";
-import * as path from "path";
-import { log } from "./Log.js";
 import { glob } from "glob";
 import * as htmlMinifier from "html-minifier-terser";
-import CleanCss from "clean-css";
+import * as path from "path";
 import * as terser from "terser";
+import { log } from "./Log.js";
 
 /** Base class for various output formatters */
 export class Output {

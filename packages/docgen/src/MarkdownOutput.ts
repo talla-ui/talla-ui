@@ -1,7 +1,7 @@
+import { encode } from "html-entities";
 import * as yaml from "js-yaml";
 import { DocsIndex, href, MenuItem, safeId } from "./DocsIndex.js";
 import { Entry } from "./Entry.js";
-import { encode } from "html-entities";
 import { log } from "./Log.js";
 import { Output } from "./Output.js";
 

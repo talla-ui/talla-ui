@@ -10,7 +10,6 @@ import {
 	app,
 } from "@talla-ui/core";
 import type { StringConvertible } from "@talla-ui/util";
-import { setLogicalPxScale } from "./DOMStyle.js";
 import { applyDragModal } from "./drag/modal.js";
 import { applyDragRelative } from "./drag/relative.js";
 import { makeObserver } from "./observers/index.js";
@@ -38,9 +37,6 @@ export class WebRenderer extends RenderContext {
 				queueOptions.delayTime = options.missedFrameTime * 1.5;
 			},
 		);
-		if (options.reducedMotion) this.setReducedMotion(true);
-		this._pageBackground = options.pageBackground;
-		this._modalBackground = options.modalShadeBackground;
 	}
 
 	/** The default modal factory */
@@ -156,21 +152,26 @@ export class WebRenderer extends RenderContext {
 		document.title = String(title || "");
 	}
 
-	/** Enables or disables reduced motion mode (forces all transition timings to 0 if set) */
+	/**
+	 * Enables or disables reduced motion mode (forces all transition timings to 0 if set)
+	 * @note Prefer using {@link WebTheme.setReducedMotion} to configure this as part of a theme.
+	 */
 	setReducedMotion(enable: boolean) {
 		this._reducedMotion = !!enable;
 	}
 
 	/**
-	 * Overrides the logical pixel scaling factor, for both default and narrow viewports
-	 * @note This method overrides the values set from {@link WebContextOptions}. Refer to that class for default values.
-	 * @param scale The scaling factor for default viewports, 1 means default size
-	 * @param narrow The scaling factor for narrow viewports, 1 means default size, usually set to a higher fraction to upscale text to a minimum of 16px
-	 * @see {@link WebContextOptions.logicalPxScale}
-	 * @see {@link WebContextOptions.logicalPxScaleNarrow}
+	 * Sets the background colors for page and modal shader elements
+	 * @note Prefer using {@link WebTheme.pageBackground} and {@link WebTheme.modalShadeBackground} to configure these as part of a theme.
+	 * @param pageBackground Background color for page/screen mounts (defaults to "background")
+	 * @param modalBackground Background color for modal shade (defaults to pageBackground)
 	 */
-	setLogicalPxScale(scale = 1, narrow = scale) {
-		setLogicalPxScale(scale, narrow);
+	setBackgrounds(
+		pageBackground: UIColor | string = "background",
+		modalBackground: UIColor | string = pageBackground,
+	) {
+		this._pageBackground = pageBackground;
+		this._modalBackground = modalBackground;
 	}
 
 	/** Overrides page and overlay element sizing, and updates viewport measurements */
@@ -240,8 +241,8 @@ export class WebRenderer extends RenderContext {
 	private _mounts: Map<number, OutputMount>;
 	private _queue: AsyncTaskQueue;
 	private _reducedMotion?: boolean;
-	private _pageBackground: UIColor | string;
-	private _modalBackground: UIColor | string;
+	private _pageBackground: UIColor | string = "background";
+	private _modalBackground: UIColor | string = "transparent";
 	private _raf?: any;
 	private _viewportLocation?: WebRenderer.ViewportLocation;
 }

@@ -6,9 +6,7 @@ import {
 	UI,
 	UICell,
 	UIContainer,
-	UIElement,
 	UIScrollView,
-	UIStyle,
 	UIText,
 	ViewBuilder,
 	ViewEvent,
@@ -27,58 +25,34 @@ export class ModalMenu
 	extends ComponentView
 	implements ModalFactory.MenuController
 {
-	static containerStyle = new UIStyle({
-		background: UI.colors.background.brighten(0.1),
-		padding: { y: 4 },
-		borderRadius: 8,
-		grow: 0,
-		dropShadow: 4,
-	});
+	/** Defaults for vertical menu offset, applied to new {@link WebTheme} instances */
+	static readonly OFFSET_DEFAULT = 2;
 
-	static containerPosition: UIElement.Position = {
-		gravity: "overlay",
-		top: "100%",
-		bottom: "auto",
-		start: 0,
-	};
-
-	static itemRowStyle = new UIStyle({
-		margin: { x: 4 },
-		padding: { x: 12, y: 6 },
-		borderRadius: 6,
-		cursor: "pointer",
-	})
-		.setHovered({
-			background: UI.colors.background.fg(
-				UI.colors.background.contrast(-0.1),
-				UI.colors.background.contrast(-0.3),
-			),
-		})
-		.setFocused({
-			background: UI.colors.background.fg(
-				UI.colors.background.contrast(-0.1),
-				UI.colors.background.contrast(-0.3),
-			),
-		});
-
-	static titleStyle = UI.styles.text.default.extend({
-		margin: { x: 16, top: 4, bottom: 8 },
-		bold: true,
-		fontSize: 11,
-		opacity: 0.3,
-	});
+	/** Vertical menu offset, updated by {@link setWebTheme} */
+	static menuOffset = 2;
 
 	static Container(): UIContainer.ContainerBuilder {
 		return UI.Cell()
 			.accessibleRole("menu")
 			.scroll()
-			.maxHeight("90vh")
-			.style(ModalMenu.containerStyle)
-			.position(ModalMenu.containerPosition);
+			.style({
+				maxHeight: "90vh",
+				background: UI.colors.background.brighten(0.1),
+				padding: { y: 4 },
+				borderRadius: 8,
+				grow: 0,
+				dropShadow: 4,
+			})
+			.position({
+				gravity: "overlay",
+				top: "100%",
+				bottom: "auto",
+				start: 0,
+			});
 	}
 
 	static ItemCell() {
-		return UI.Cell().style(ModalMenu.itemRowStyle);
+		return UI.Cell().style("ModalMenu-item");
 	}
 
 	static ItemText() {
@@ -90,7 +64,12 @@ export class ModalMenu
 	}
 
 	static TitleText() {
-		return UI.Text().textStyle(ModalMenu.titleStyle);
+		return UI.Text().style({
+			margin: { x: 16, top: 4, bottom: 8 },
+			bold: true,
+			fontSize: 11,
+			opacity: 0.3,
+		});
 	}
 
 	static Divider() {
@@ -111,7 +90,7 @@ export class ModalMenu
 					show: UI.animations.showMenu,
 					hide: UI.animations.hideMenu,
 				},
-				refOffset: [0, UIStyle.defaultOptions.menuOffset],
+				refOffset: [0, ModalMenu.menuOffset],
 				...place,
 			});
 			this._resolve = (value) => {
@@ -163,12 +142,12 @@ export class ModalMenu
 					.text(item.text)
 					.icon(item.icon, item.iconStyle || DEFAULT_ICON_STYLE)
 					.dim(!!item.disabled)
-					.textStyle(item.textStyle); // override, if any
+					.style(item.textStyle); // override, if any
 			const itemHint = () =>
 				ModalMenu.ItemHint()
 					.text(item.hint)
 					.icon(item.hintIcon, item.hintIconStyle)
-					.textStyle(item.hintStyle);
+					.style(item.hintStyle);
 			const content =
 				item.hint || item.hintIcon
 					? UI.Row(itemText(), UI.Spacer(), itemHint())
@@ -307,6 +286,7 @@ export class ModalMenu
 		// after rendering the menu, check that it fits on the screen
 		// (vertically), and move it up or down if needed
 		function checkFit() {
+			if (typeof document === "undefined") return;
 			let menuBounds = elt.getBoundingClientRect();
 			if (menuBounds.top < 0) {
 				elt.style.bottom = "auto";

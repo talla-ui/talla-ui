@@ -22,6 +22,11 @@ export class UICell extends UIContainer {
 	 * - If this property is set to true, allowFocus is assumed to be true as well and no longer checked.
 	 */
 	allowKeyboardFocus?: boolean;
+
+	/** Returns true if this cell is currently hovered by the mouse. */
+	isHovered(): boolean {
+		return !!this.getRenderer()?.isHovered?.();
+	}
 }
 
 export namespace UICell {

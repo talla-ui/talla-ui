@@ -1,9 +1,9 @@
 import { Config } from "./Config.js";
 import { Entry, EntryType } from "./Entry.js";
-import { Parser } from "./Parser.js";
-import { MarkdownReader } from "./MarkdownReader.js";
 import { log } from "./Log.js";
-import { SamplesReader, CodeSample } from "./SamplesReader.js";
+import { MarkdownReader } from "./MarkdownReader.js";
+import { Parser } from "./Parser.js";
+import { CodeSample, SamplesReader } from "./SamplesReader.js";
 
 /** Lists of member entries for a particular parent */
 export type EntryMembers = {

@@ -1,4 +1,4 @@
-import { RenderContext, UI, UIDivider, UIStyle } from "@talla-ui/core";
+import { RenderContext, StyleOverrides, UI, UIDivider } from "@talla-ui/core";
 import { applyStyles, getCSSLength } from "../DOMStyle.js";
 import {
 	CLASS_SEPARATOR_LINE,
@@ -23,25 +23,26 @@ export class UIDividerRenderer extends BaseObserver<UIDivider> {
 
 	override updateStyle(element: HTMLElement) {
 		let sep = this.observed;
-		let systemName = CLASS_SEPARATOR_LINE;
-		if (sep.vertical) systemName += " " + CLASS_SEPARATOR_LINE_VERT;
+		let systemClass = CLASS_SEPARATOR_LINE;
+		if (sep.vertical) systemClass += " " + CLASS_SEPARATOR_LINE_VERT;
+		let style: StyleOverrides = {
+			...sep.style,
+			borderColor: sep.lineColor || UI.colors.divider,
+			borderWidth: sep.lineWidth,
+		};
 		applyStyles(
 			element,
-			[
-				sep.style,
-				{
-					borderColor: sep.lineColor || UI.colors.divider,
-					borderWidth: sep.lineWidth,
-				},
-			],
-			systemName,
+			"divider",
+			sep.styleName,
+			style,
+			systemClass,
 			false,
 			false,
 			sep.position,
 		);
 
 		// set margin separately (to distinguish vertical from horizontal)
-		let margin = getCSSLength(sep.lineMargin ?? UIStyle.defaultOptions.gap);
+		let margin = getCSSLength(sep.lineMargin ?? "gap");
 		let cssMargin =
 			margin.indexOf(" ") < 0
 				? sep.vertical

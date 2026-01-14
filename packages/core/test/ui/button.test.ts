@@ -13,7 +13,6 @@ import {
 	ComponentViewBuilder,
 	UI,
 	UIButton,
-	UIColor,
 } from "../../dist/index.js";
 
 beforeEach(() => {
@@ -125,8 +124,8 @@ test("Rendered with styles", async () => {
 	renderTestView(myButton.build());
 	await expectOutputAsync({
 		text: "foo",
-		styles: {
-			borderColor: UIColor.theme.ref("orange"),
+		style: {
+			borderColor: UI.colors.orange,
 			bold: true,
 		},
 	});
@@ -240,5 +239,219 @@ test("Request button focus", async () => {
 	await expectOutputAsync({
 		text: "Focus me",
 		focused: true,
+	});
+});
+
+test("Button with style name", async () => {
+	let myButton = UI.Button("Styled").style("accent");
+	let button = myButton.build();
+	expect(button.styleName).toBe("accent");
+
+	renderTestView(button);
+	await expectOutputAsync({
+		text: "Styled",
+		styleName: "accent",
+	});
+});
+
+test("Button with style overrides object", async () => {
+	let myButton = UI.Button("Custom").style({ bold: true, fontSize: 18 });
+	let button = myButton.build();
+	expect(button.style).toEqual({ bold: true, fontSize: 18 });
+
+	renderTestView(button);
+	await expectOutputAsync({
+		text: "Custom",
+		style: { bold: true, fontSize: 18 },
+	});
+});
+
+test("Button with style name and additional overrides", async () => {
+	let myButton = UI.Button("Both").style("danger").bold().fontSize(20);
+	let button = myButton.build();
+	expect(button.styleName).toBe("danger");
+	expect(button.style?.bold).toBe(true);
+	expect(button.style?.fontSize).toBe(20);
+
+	renderTestView(button);
+	await expectOutputAsync({
+		text: "Both",
+		styleName: "danger",
+		style: { bold: true, fontSize: 20 },
+	});
+});
+
+test("Button default styleName", async () => {
+	let button = UI.Button("Default").build();
+	// Element styleName is undefined, renderer substitutes "default"
+	expect(button.styleName).toBeUndefined();
+
+	renderTestView(button);
+	await expectOutputAsync({
+		text: "Default",
+		styleName: "default",
+	});
+});
+
+test("Button style with binding (styleName)", async () => {
+	function MyButton() {
+		class MyButtonView extends ComponentView {
+			buttonStyle = "default";
+		}
+		return ComponentViewBuilder(MyButtonView, (v) =>
+			UI.Button("Dynamic style").style(v.bind("buttonStyle")),
+		);
+	}
+	let myButton = MyButton().build();
+	renderTestView(myButton);
+
+	// Initial style
+	await expectOutputAsync({
+		text: "Dynamic style",
+		styleName: "default",
+	});
+
+	// Change style
+	myButton.buttonStyle = "accent";
+	await expectOutputAsync({
+		text: "Dynamic style",
+		styleName: "accent",
+	});
+});
+
+test("Button style overrides with binding", async () => {
+	function MyButton() {
+		class MyButtonView extends ComponentView {
+			isBold = false;
+		}
+		return ComponentViewBuilder(MyButtonView, (v) =>
+			UI.Button("Bold toggle").bold(v.bind("isBold")),
+		);
+	}
+	let myButton = MyButton().build();
+	renderTestView(myButton);
+
+	// Initially not bold
+	let initial = await expectOutputAsync({ text: "Bold toggle" });
+	expect(initial.getSingle().style.bold).toBeFalsy();
+
+	// Change to bold
+	myButton.isBold = true;
+	let bolded = await expectOutputAsync({
+		text: "Bold toggle",
+		style: { bold: true },
+	});
+	expect(bolded.getSingle().style.bold).toBe(true);
+});
+
+test("Button with background color", async () => {
+	let myButton = UI.Button("Colored").background("accent");
+	let button = myButton.build();
+	expect(button.style?.background).toBe(UI.colors.accent);
+
+	renderTestView(button);
+	await expectOutputAsync({
+		text: "Colored",
+		style: { background: UI.colors.accent },
+	});
+});
+
+test("Button with textColor", async () => {
+	let myButton = UI.Button("Text color").textColor("accent");
+	let button = myButton.build();
+	expect(button.style?.textColor).toBe(UI.colors.accent);
+
+	renderTestView(button);
+	await expectOutputAsync({
+		text: "Text color",
+		style: { textColor: UI.colors.accent },
+	});
+});
+
+test("Button with padding and margin", async () => {
+	let myButton = UI.Button("Spaced").padding(16).margin(8);
+	let button = myButton.build();
+	expect(button.style?.padding).toBe(16);
+	expect(button.style?.margin).toBe(8);
+
+	renderTestView(button);
+	await expectOutputAsync({
+		text: "Spaced",
+		style: { padding: 16, margin: 8 },
+	});
+});
+
+test("Button with width and height", async () => {
+	let myButton = UI.Button("Sized").width(100).height(50);
+	let button = myButton.build();
+	expect(button.style?.width).toBe(100);
+	expect(button.style?.height).toBe(50);
+
+	renderTestView(button);
+	await expectOutputAsync({
+		text: "Sized",
+		style: { width: 100, height: 50 },
+	});
+});
+
+test("Button with position", async () => {
+	let myButton = UI.Button("Positioned").position("end", 10, 20);
+	let button = myButton.build();
+	expect(button.position?.gravity).toBe("end");
+	expect(button.position?.top).toBe(10);
+	expect(button.position?.end).toBe(20);
+
+	renderTestView(button);
+	await expectOutputAsync({
+		text: "Positioned",
+		position: { gravity: "end", top: 10, end: 20 },
+	});
+});
+
+test("Button with opacity and dim", async () => {
+	let myButton = UI.Button("Dimmed").dim();
+	let button = myButton.build();
+	expect(button.style?.opacity).toBe(0.5);
+
+	let myButton2 = UI.Button("Custom opacity").opacity(0.75);
+	let button2 = myButton2.build();
+	expect(button2.style?.opacity).toBe(0.75);
+});
+
+test("Button with multiple chained style methods", async () => {
+	let myButton = UI.Button("Styled")
+		.style("accent")
+		.bold()
+		.italic()
+		.underline()
+		.fontSize(18)
+		.textColor("text")
+		.background("accent")
+		.padding(12)
+		.borderRadius(8);
+
+	let button = myButton.build();
+	expect(button.styleName).toBe("accent");
+	expect(button.style?.bold).toBe(true);
+	expect(button.style?.italic).toBe(true);
+	expect(button.style?.underline).toBe(true);
+	expect(button.style?.fontSize).toBe(18);
+	expect(button.style?.textColor).toBe(UI.colors.text);
+	expect(button.style?.background).toBe(UI.colors.accent);
+	expect(button.style?.padding).toBe(12);
+	expect(button.style?.borderRadius).toBe(8);
+
+	renderTestView(button);
+	await expectOutputAsync({
+		text: "Styled",
+		styleName: "accent",
+		style: {
+			bold: true,
+			italic: true,
+			underline: true,
+			fontSize: 18,
+			padding: 12,
+			borderRadius: 8,
+		},
 	});
 });

@@ -1,7 +1,6 @@
 import {
 	NavigationContext,
 	RenderContext,
-	UI,
 	UIButton,
 	app,
 } from "@talla-ui/core";
@@ -13,8 +12,6 @@ import { setTextOrHtmlContent } from "./UITextRenderer.js";
 interface HrefNavigationContext extends NavigationContext {
 	getPathHref(path?: StringConvertible): string | undefined;
 }
-
-const BUTTON_STYLE = UI.styles.button.default;
 
 /** @internal */
 export class UIButtonRenderer extends BaseObserver<UIButton> {
@@ -105,10 +102,12 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 			element.setAttribute("aria-pressed", "false");
 		else element.removeAttribute("aria-pressed");
 
-		// set CSS styles
+		// set CSS style
 		applyStyles(
 			element,
-			[BUTTON_STYLE, button.style],
+			"button",
+			button.styleName,
+			button.style,
 			undefined,
 			true,
 			false,

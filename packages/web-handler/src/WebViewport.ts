@@ -54,10 +54,10 @@ export class WebViewport extends ObservableObject implements Viewport {
 
 	/** Update the color scheme preference */
 	private _updateColorScheme() {
-		let m = window.matchMedia("(prefers-color-scheme: dark)");
-		let dark = m.matches;
-		if (this.prefersDark !== dark) {
-			this.prefersDark = dark;
+		let prefersDark = !!window.matchMedia?.("(prefers-color-scheme: dark)")
+			?.matches;
+		if (this.prefersDark !== prefersDark) {
+			this.prefersDark = prefersDark;
 			this.emitChange("ColorScheme");
 		}
 	}
@@ -74,8 +74,8 @@ export class WebViewport extends ObservableObject implements Viewport {
 		window.addEventListener("resize", update);
 		setInterval(update, 800);
 		window
-			.matchMedia("(prefers-color-scheme: dark)")
-			.addEventListener("change", () => {
+			.matchMedia?.("(prefers-color-scheme: dark)")
+			?.addEventListener("change", () => {
 				this._updateColorScheme();
 			});
 	}

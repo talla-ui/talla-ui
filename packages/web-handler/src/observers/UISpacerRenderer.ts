@@ -16,7 +16,9 @@ export class UISpacerRenderer extends BaseObserver<UISpacer> {
 		let spacer = this.observed;
 		applyStyles(
 			element,
-			[spacer.style],
+			undefined,
+			undefined,
+			spacer.style,
 			undefined,
 			false,
 			false,

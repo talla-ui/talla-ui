@@ -1,45 +1,51 @@
 import { fmt, StringConvertible } from "@talla-ui/util";
 import { FormState, ViewBuilder } from "../../app/index.js";
 import { Binding, BindingOrValue } from "../../object/index.js";
-import { UIStyle } from "../style/index.js";
-import type { UI } from "../UI.js";
+import { StyleOverrides } from "../style/index.js";
 import { UIElement } from "../UIElement.js";
 
 /**
- * A view control that represents a checkbox or toggle input
- *
- * @description A toggle UI element is rendered as a checkbox or toggle control that can be switched on and off by the user.
+ * A view class that represents a checkbox or toggle input.
+ * - Renders as a checkbox (default) or switch control that can be toggled on and off.
+ * - Use the {@link UI.Toggle()} function to create toggles using a builder.
  *
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
 export class UIToggle extends UIElement {
-	/** Creates a new toggle view object with the specified text */
+	/** Creates a new toggle view object with the specified text. */
 	constructor(text?: StringConvertible, value?: boolean) {
 		super();
 		this.text = text;
 		this.value = !!value;
 	}
 
-	/** The current toggle state, true for toggle 'on' state */
+	/** The current toggle state; true for the 'on' state. */
 	value: boolean;
 
-	/** The text to be displayed, if any */
+	/** The text to be displayed alongside the toggle. */
 	text?: StringConvertible;
 
-	/** The toggle visual presentation type, defaults to checkbox */
+	/**
+	 * The visual presentation type of the toggle.
+	 * - Valid values are `checkbox`, `switch`, or `none`.
+	 * - Defaults to `checkbox`.
+	 */
 	type: "none" | "checkbox" | "switch" = "checkbox";
 
-	/** True if user input should be disabled on this control */
+	/** True if user input should be disabled on this control. */
 	disabled = false;
 
-	/** Text element style definition (overrides), if any */
-	textStyle?: UIStyle.StyleOptions = undefined;
+	/** The style overrides for the toggle's text element. */
+	textStyle?: StyleOverrides = undefined;
 }
 
 export namespace UIToggle {
+	/** Default style names for toggle elements. */
+	export type StyleName = "default" | "danger" | "success";
+
 	/**
-	 * Creates a view builder for a toggle (checkbox/switch) element
-	 * @param text The text to display next to the toggle, or a binding to a string value.
+	 * Creates a view builder for a toggle (checkbox/switch) element.
+	 * @param text The text to display next to the toggle, or a binding.
 	 * @returns A builder object for configuring the toggle.
 	 * @see {@link UIToggle}
 	 */
@@ -49,9 +55,9 @@ export namespace UIToggle {
 
 	export namespace toggleBuilder {
 		/**
-		 * Creates a view builder for a toggle (checkbox/switch) element with a localizable or dynamic text.
-		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
-		 * @param args Additional bindings, used to format the text dynamically
+		 * Creates a view builder for a toggle element with localizable or dynamic text.
+		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}.
+		 * @param args Additional bindings used to format the text dynamically.
 		 * @returns A builder instance for chaining.
 		 */
 		export function fmt(text: StringConvertible, ...args: Binding[]) {
@@ -60,16 +66,19 @@ export namespace UIToggle {
 	}
 
 	/**
-	 * A builder class for creating `UIToggle` instances.
-	 * - Objects of this type are returned by the `UI.Toggle()` function.
+	 * A builder class for creating {@link UIToggle} instances.
+	 * - Returned by the {@link UI.Toggle()} function.
 	 */
-	export class ToggleBuilder extends UIElement.ElementBuilder<UIToggle> {
-		/** The initializer that is used to create each toggle instance */
+	export class ToggleBuilder extends UIElement.ElementBuilder<
+		UIToggle,
+		UIToggle.StyleName
+	> {
+		/** The initializer used to create each toggle instance. */
 		readonly initializer = new ViewBuilder.Initializer(UIToggle);
 
 		/**
-		 * Sets the text for the toggle, using {@link UIToggle.text}.
-		 * @param text The text to display next to the toggle, or a binding to a string value.
+		 * Sets the text displayed next to the toggle.
+		 * @param text The text to display, or a binding.
 		 * @returns The builder instance for chaining.
 		 */
 		text(text?: StringConvertible) {
@@ -77,9 +86,9 @@ export namespace UIToggle {
 		}
 
 		/**
-		 * Sets a localizable or dynamic text for the toggle.
-		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}
-		 * @param args Additional bindings, used to format the text dynamically
+		 * Sets localizable or dynamic text for the toggle.
+		 * @param text The text to display, passed to {@link fmt()} or {@link Binding.fmt()}.
+		 * @param args Additional bindings used to format the text dynamically.
 		 * @returns The builder instance for chaining.
 		 */
 		fmt(text: StringConvertible, ...args: Binding[]) {
@@ -88,8 +97,8 @@ export namespace UIToggle {
 		}
 
 		/**
-		 * Sets the visual presentation of the toggle, using {@link UIToggle.type}.
-		 * @param type The type of the toggle (`checkbox`, `switch`, or `none`).
+		 * Sets the visual presentation type of the toggle.
+		 * @param type The type (`checkbox`, `switch`, or `none`).
 		 * @returns The builder instance for chaining.
 		 */
 		type(type: "none" | "checkbox" | "switch") {
@@ -98,8 +107,8 @@ export namespace UIToggle {
 
 		/**
 		 * Adds a two-way binding to a form state field.
-		 * @param formState A binding to a form state object (e.g. on an activity).
-		 * @param formField The name of the form field to which the toggle should be bound.
+		 * @param formState A binding to a form state object.
+		 * @param formField The name of the form field to bind to.
 		 * @returns The builder instance for chaining.
 		 */
 		formStateValue(
@@ -116,8 +125,8 @@ export namespace UIToggle {
 		}
 
 		/**
-		 * Disables the toggle, using {@link UIToggle.disabled}.
-		 * @param disabled If `true`, the toggle is disabled. Defaults to `true`.
+		 * Disables the toggle.
+		 * @param disabled True to disable the toggle; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
 		disabled(disabled: BindingOrValue<boolean> = true) {
@@ -125,8 +134,8 @@ export namespace UIToggle {
 		}
 
 		/**
-		 * Sets the state of the toggle, using {@link UIToggle.value}.
-		 * @param value The state (on/off) or a binding, converted dynamically to a boolean value.
+		 * Sets the toggle state.
+		 * @param value The state (on/off) or a binding; converted to boolean.
 		 * @returns The builder instance for chaining.
 		 */
 		value(value: BindingOrValue<any>) {
@@ -137,24 +146,12 @@ export namespace UIToggle {
 		}
 
 		/**
-		 * Applies a style to the toggle
-		 * @param style The name of a theme toggle style, a {@link UIStyle} instance, a style options (overrides) object, or a binding.
+		 * Applies styling to the toggle's text.
+		 * - These overrides are applied on top of the `toggleText` named text style.
+		 * @param textStyle A style overrides object for the text.
 		 * @returns The builder instance for chaining.
 		 */
-		toggleStyle(
-			style?: BindingOrValue<
-				UI.styles.ToggleStyleName | UIStyle | UIStyle.StyleOptions | undefined
-			>,
-		) {
-			return this.setStyleProperty(style, UIStyle.theme.toggle);
-		}
-
-		/**
-		 * Applies styling to the toggle's text, using {@link UIToggle.textStyle}.
-		 * @param textStyle A style options object for the text.
-		 * @returns The builder instance for chaining.
-		 */
-		textStyle(textStyle?: BindingOrValue<UIStyle.StyleOptions | undefined>) {
+		textStyle(textStyle?: BindingOrValue<StyleOverrides | undefined>) {
 			return this.setProperty("textStyle", textStyle);
 		}
 	}

@@ -16,4 +16,20 @@ export class UICellRenderer extends UIContainerRenderer<UICell> {
 		super.updateContent(element);
 		if (cell.allowFocus || cell.allowKeyboardFocus) element.focusable = true;
 	}
+
+	/** Returns true if cell is hovered (implements UIElementRenderer) */
+	isHovered(): boolean {
+		return this._isHovered;
+	}
+
+	override handlePlatformEvent(
+		name: TestOutputElement.PlatformEvent,
+		data?: any,
+	) {
+		if (name === "mouseenter") this._isHovered = true;
+		else if (name === "mouseleave") this._isHovered = false;
+		super.handlePlatformEvent(name, data);
+	}
+
+	private _isHovered = false;
 }

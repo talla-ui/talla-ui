@@ -1,5 +1,3 @@
-import { UIStyle } from "./UIStyle.js";
-
 // Use string constants for some common values
 const STR_BLACK = "#000";
 const STR_WHITE = "#fff";
@@ -7,38 +5,69 @@ const STR_NOCOLOR = "transparent";
 
 let _cacheUpdate = 0;
 
+// Module-level storage for colors
+let _colors: Record<string, UIColor> = {};
+let _colorRefs: Record<string, UIColor> = {};
+
 /**
- * An object that represents a single color value
+ * A class that represents a single color value.
+ * - Use the constructor with a CSS color string, or reference a preset using {@link UIColor.getColor}.
+ * - Use instance methods like {@link alpha()}, {@link brighten()}, and {@link mix()} to create derived colors.
+ * - The {@link toString()} method returns a CSS-compatible color string.
  *
- * @description
- * Instances of UIColor can be used with style classes and overrides, as well as properties of various UI elements. The {@link UIColor.toString toString()} method simply evaluates a CSS-compatible color string as needed, requiring no further logic where colors are used.
- *
- * UIColor instances can be created using the constructor with a base color such as `#000` or `rgba(0, 0, 0, 0.5)`, **or** by referencing a preset color name (see {@link UIColor.theme} and the global {@link UI} object). Afterwards, UIColor methods can be used to create derived colors — changing brightness, transparency, or mixing colors together.
+ * Instances can be used with style properties and UI element color properties. Named colors are
+ * available through {@link UI.colors} and can be customized using {@link setColors()}.
  *
  * @example
- * // Different ways to create UIColor objects
+ * // Create colors directly
  * new UIColor("#000")
- * new UIColor("#aabbcc")
- * new UIColor("rgb(0,0,0)")
- * new UIColor("rgb(0,0,0,0.5)")
+ * new UIColor("rgba(0,0,0,0.5)")
  *
- * UI.colors.black // indirect theme color reference
+ * // Use preset colors
+ * UI.colors.black
  * UI.colors.green.alpha(0.5)
  * UI.colors.accent.text()
- * UI.colors.accent.brighten(0.2).text()
  */
 export class UIColor {
-	/** @internal Invalidates the cache of calculated color values */
+	/** @internal Invalidates the cache of calculated color values. */
 	static invalidateCache() {
 		_cacheUpdate++;
 	}
 
 	/**
-	 * Creates a {@link UIColor} instance that dynamically resolves to another color
-	 * - This method is used to create a theme color reference by {@link UIColor.theme}.
-	 * @param f A function that returns the color to resolve to, or undefined
-	 * @returns A new {@link UIColor} instance that will resolve the factory function when applied
-	 * @see {@link UIColor.theme}
+	 * Sets colors in the global color registry.
+	 * - Call `app.remount()` after setting colors to update all views.
+	 * @param values An object mapping color names to {@link UIColor} instances or CSS color strings.
+	 */
+	static setColors(values: Record<string, UIColor | string>) {
+		for (let key in values) {
+			let v = values[key];
+			_colors[key] = v instanceof UIColor ? v : new UIColor(v);
+		}
+		UIColor.invalidateCache();
+	}
+
+	/**
+	 * Returns a color reference by name.
+	 * - The returned instance dynamically resolves to the named color.
+	 * - Results are cached and reused for subsequent calls with the same name.
+	 * @param name The name of the color to retrieve.
+	 * @returns A {@link UIColor} instance that resolves to the named color.
+	 */
+	static getColor(name: string): UIColor {
+		if (!_colorRefs[name]) {
+			let result = new UIColor();
+			result._f = () => String(_colors[name] || STR_NOCOLOR);
+			_colorRefs[name] = result;
+		}
+		return _colorRefs[name]!;
+	}
+
+	/**
+	 * Creates a {@link UIColor} instance that dynamically resolves using a factory function.
+	 * @param f A function that returns the color to resolve to, or undefined.
+	 * @returns A new {@link UIColor} instance.
+	 * @see {@link UIColor.getColor}
 	 */
 	static resolve(f: () => UIColor | undefined): UIColor {
 		let result = new UIColor();
@@ -47,11 +76,11 @@ export class UIColor {
 	}
 
 	/**
-	 * Returns true if the pseudo-brightness of the specified color is greater than 55%
-	 * - This method is used by the {@link UIColor.text()} method to determine a suitable text color.
-	 * @param color A color value, in hex format `#112233` or `#123`, or rgb(a) format `rgb(255, 255, 255)`
-	 * @param threshold The threshold for the perceived brightness, 0.65 by default
-	 * @returns True if the specified color has a relatively high perceived brightness.
+	 * Determines whether a color has high perceived brightness.
+	 * - Used by {@link UIColor.text()} to select a contrasting text color.
+	 * @param color A color value in hex or rgb(a) format.
+	 * @param threshold The brightness threshold, from 0 to 1; defaults to 0.65.
+	 * @returns True if the color's perceived brightness exceeds the threshold.
 	 */
 	static isBrightColor(color: UIColor | string, threshold?: number) {
 		let c = String(color);
@@ -74,13 +103,18 @@ export class UIColor {
 	}
 
 	/**
-	 * Returns the result of mixing two colors together at the specified ratio
-	 * - Where possible, use {@link UIColor} methods instead, e.g. {@link UIColor.mix()}.
+	 * Mixes two colors together at the specified ratio.
+	 * - Prefer instance methods like {@link UIColor.mix()} when working with {@link UIColor} objects.
 	 *
-	 * @color1 The first color, in hex format `#112233` or `#123`, or rgb(a) format `rgb(255, 255, 255)`
-	 * @color2 The second color, idem
-	 * @ratio The amount that the second color should contribute to the mix; i.e. a value of 0 results in the first color, a value of 1 results in the second color, and 0.5 results in an equal mix
-	 * @returns A color string in rgb(a) format, e.g. `rgb(40,60,255)` or `rgba(40,60,255,.5)`.
+	 * @summary
+	 * Blends the RGB channels of two colors. A ratio of 0 returns the first color,
+	 * 1 returns the second color, and 0.5 returns an equal mix.
+	 *
+	 * @param color1 The first color, in hex or rgb(a) format.
+	 * @param color2 The second color, in hex or rgb(a) format.
+	 * @param ratio The contribution of the second color, from 0 to 1.
+	 * @param ignoreAlpha True to preserve the first color's alpha value.
+	 * @returns A color string in rgb(a) format.
 	 */
 	static mixColors(
 		color1: UIColor | string,
@@ -132,36 +166,38 @@ export class UIColor {
 	}
 
 	/**
-	 * Creates a new UIColor instance
-	 * @param color The base color, in hex format `#112233` or `#123`, or rgb(a) format `rgb(255, 255, 255)`, or a theme color name.
+	 * Creates a new UIColor instance.
+	 * @param color A CSS color string in hex or rgb(a) format.
 	 */
 	constructor(color?: string) {
 		if (color) this._f = () => String(color);
 	}
 
 	/**
-	 * Returns a new {@link UIColor} instance with increased transparency
-	 * @param alpha The opacity change to apply, 0 meaining fully transparent, and 1 meaning no change
-	 * @returns A new instance of UIColor.
+	 * Returns a new {@link UIColor} with increased transparency.
+	 * @param alpha The opacity level, from 0 (fully transparent) to 1 (no change).
+	 * @returns A new {@link UIColor} instance.
 	 */
 	alpha(alpha: number) {
 		return this.mix("rgba(,,,0)", 1 - alpha);
 	}
 
 	/**
-	 * Returns a new {@link UIColor} instance with increased (or decreased) brightness
-	 * @param d The change in brightness to apply, -1 meaning fully black, 1 meaning fully white, and 0 meaning no change
-	 * @returns A new instance of UIColor.
+	 * Returns a new {@link UIColor} with adjusted brightness.
+	 * @param d The brightness adjustment, from -1 (black) to 1 (white); 0 means no change.
+	 * @returns A new {@link UIColor} instance.
 	 */
 	brighten(d: number) {
 		return this.mix(d > 0 ? STR_WHITE : STR_BLACK, Math.abs(d), true);
 	}
 
 	/**
-	 * Returns a new {@link UIColor} instance with increased (or decreased) contrast compared to 50% grey
-	 * @param d The change in contrast to apply, -0.5 to 0.5: positive values make light colors lighter and dark colors darker (away from mid-grey), negative values make light colors darker and dark colors lighter (towards mid-grey)
-	 * @param threshold The threshold for the perceived brightness, 0.65 by default
-	 * @returns A new instance of UIColor.
+	 * Returns a new {@link UIColor} with adjusted contrast relative to mid-grey.
+	 * - Positive values move light colors toward white and dark colors toward black.
+	 * - Negative values move colors toward mid-grey.
+	 * @param d The contrast adjustment, from -0.5 to 0.5.
+	 * @param threshold The brightness threshold for determining light vs dark; defaults to 0.65.
+	 * @returns A new {@link UIColor} instance.
 	 */
 	contrast(d: number, threshold?: number) {
 		let result = new UIColor();
@@ -186,12 +222,12 @@ export class UIColor {
 	}
 
 	/**
-	 * Returns a new {@link UIColor} instance for a suitable foreground color based on the current color
-	 * - This method first determines if the current color is bright or dark, and then returns the corresponding color from the provided parameters.
-	 * @param colorOnLight The color to return if the current color is bright
-	 * @param colorOnDark The color to return if the current color is dark
-	 * @param threshold The threshold for the perceived brightness, 0.65 by default
-	 * @returns A new instance of UIColor.
+	 * Returns a new {@link UIColor} for a suitable foreground color.
+	 * - Chooses between two colors based on whether the current color is bright or dark.
+	 * @param colorOnLight The color to use if the current color is bright.
+	 * @param colorOnDark The color to use if the current color is dark.
+	 * @param threshold The brightness threshold; defaults to 0.65.
+	 * @returns A new {@link UIColor} instance.
 	 */
 	fg(
 		colorOnLight: UIColor | string,
@@ -207,21 +243,20 @@ export class UIColor {
 	}
 
 	/**
-	 * Returns a new {@link UIColor} instance for a suitable text color (black or white)
-	 * - This method uses preset light and dark text colors to determine a contrasting text color for the current color.
-	 * - Set `darkText` and `lightText` in the color theme to override the default black and white text colors.
-	 * @returns A new instance of UIColor.
+	 * Returns a new {@link UIColor} for a contrasting text color.
+	 * - Uses the preset `darkText` and `lightText` colors.
+	 * @returns A new {@link UIColor} instance, either dark or light.
 	 */
 	text() {
 		return this.fg(UIColor.darkTextColor, UIColor.lightTextColor);
 	}
 
 	/**
-	 * Returns a new {@link UIColor} instance for a color that's closer to the specified color
-	 * @param color The color to mix into the current color
-	 * @param amount The amount to mix the color into the current color, 0–1
-	 * @param ignoreAlpha True if the transparency channel of the second color should be ignored; if set, the resulting color will have the same transparency value as the current color
-	 * @returns A new instance of UIColor.
+	 * Returns a new {@link UIColor} mixed with the specified color.
+	 * @param color The color to mix in.
+	 * @param amount The mix ratio, from 0 (no change) to 1 (fully the other color).
+	 * @param ignoreAlpha True to preserve the current color's alpha value.
+	 * @returns A new {@link UIColor} instance.
 	 */
 	mix(color: UIColor | string, amount: number, ignoreAlpha?: boolean) {
 		let result = new UIColor();
@@ -229,7 +264,7 @@ export class UIColor {
 		return result;
 	}
 
-	/** Returns a CSS-compatible string representation of the current color */
+	/** Returns a CSS-compatible string representation of the current color. */
 	toString() {
 		// return cached value if presets are still the same
 		if (this._s && this._up === _cacheUpdate) {
@@ -248,58 +283,65 @@ export class UIColor {
 }
 
 export namespace UIColor {
-	/**
-	 * A theme resolver for predefined theme colors
-	 *
-	 * @description
-	 * This object provides access to predefined theme colors, referenced by string keys.
-	 *
-	 * To update these colors, use the {@link UIStyle.ThemeResolver.set set()} method, and then remount all views using the `app.remount()` method.
-	 */
-	export const theme = new UIStyle.ThemeResolver(
-		[
-			"transparent",
-			"black",
-			"darkerGray",
-			"darkGray",
-			"gray",
-			"lightGray",
-			"white",
-			"slate",
-			"lightSlate",
-			"red",
-			"orange",
-			"yellow",
-			"lime",
-			"green",
-			"turquoise",
-			"cyan",
-			"blue",
-			"violet",
-			"purple",
-			"magenta",
-			"divider",
-			"accent",
-			"background",
-			"shade",
-			"text",
-			"darkText",
-			"lightText",
-			"link",
-			"danger",
-			"success",
-		],
-		UIColor.resolve,
-		UIColor.invalidateCache,
-	).set({
-		transparent: new UIColor(STR_NOCOLOR),
-		darkText: new UIColor(STR_BLACK),
-		lightText: new UIColor(STR_WHITE),
-	});
+	const _names = [
+		"transparent",
+		"black",
+		"darkerGray",
+		"darkGray",
+		"gray",
+		"lightGray",
+		"white",
+		"slate",
+		"lightSlate",
+		"red",
+		"orange",
+		"yellow",
+		"lime",
+		"green",
+		"turquoise",
+		"cyan",
+		"blue",
+		"violet",
+		"purple",
+		"magenta",
+		"divider",
+		"accent",
+		"background",
+		"shade",
+		"text",
+		"darkText",
+		"lightText",
+		"link",
+		"danger",
+		"success",
+	] as const;
 
-	/** A reference to the theme's light text color, typically white */
-	export const lightTextColor = theme.ref("lightText");
+	type _DefaultColors = { readonly [K in (typeof _names)[number]]: UIColor };
 
-	/** A reference to the theme's dark text color, typically black */
-	export const darkTextColor = theme.ref("darkText");
+	/** An object containing all standard color references. */
+	export const defaults: _DefaultColors = Object.freeze(
+		_names.reduce(
+			(obj, name) => {
+				obj[name] = UIColor.getColor(name);
+				return obj;
+			},
+			{} as Record<string, UIColor>,
+		),
+	) as _DefaultColors;
+
+	/** A type that represents color names, supporting both standard names and custom strings. */
+	export type ColorName = keyof typeof defaults | (string & {});
+
+	/** The light text color reference, typically white. */
+	export const lightTextColor = UIColor.getColor("lightText");
+
+	/** The dark text color reference, typically black. */
+	export const darkTextColor = UIColor.getColor("darkText");
 }
+
+// Initialize default colors in _colors
+UIColor.setColors({
+	transparent: STR_NOCOLOR,
+	darkText: STR_BLACK,
+	lightText: STR_WHITE,
+});

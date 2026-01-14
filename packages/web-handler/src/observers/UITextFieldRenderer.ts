@@ -1,8 +1,6 @@
-import { RenderContext, UI, UITextField } from "@talla-ui/core";
+import { RenderContext, UITextField } from "@talla-ui/core";
 import { applyStyles } from "../DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
-
-const TEXTFIELD_STYLE = UI.styles.textField.default;
 
 /** @internal */
 export class UITextFieldRenderer extends BaseObserver<UITextField> {
@@ -60,7 +58,9 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 		// apply other CSS styles
 		applyStyles(
 			element,
-			[TEXTFIELD_STYLE, textField.style],
+			"textfield",
+			textField.styleName,
+			textField.style,
 			undefined,
 			true,
 			false,

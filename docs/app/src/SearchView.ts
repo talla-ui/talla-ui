@@ -1,46 +1,9 @@
-import { Binding, UI, UIColor, UIStyle } from "talla-ui";
+import { Binding, UI, UIColor } from "talla-ui";
 import { SearchActivity } from "./SearchActivity";
-
-const TextFieldStyle = UI.styles.textField.default
-	.extend({
-		background: UI.colors.transparent,
-		textColor: new UIColor("inherit"),
-		padding: { y: 4 },
-		borderColor: UI.colors.divider,
-		borderWidth: { bottom: 1 },
-		borderRadius: 0,
-		width: "100%",
-	})
-	.setFocused({
-		borderColor: new UIColor("var(--accent-boldest)"),
-	});
-
-const CloseButtonStyle = UI.styles.button.icon
-	.extend({
-		background: UI.colors.transparent,
-		textColor: new UIColor("inherit"),
-	})
-	.setHovered({
-		background: UI.colors.transparent,
-		textColor: new UIColor("inherit"),
-	});
-
-const ResultCellStyle = new UIStyle({
-	padding: { x: 6, y: 4 },
-	borderWidth: 2,
-	css: { cursor: "pointer" },
-})
-	.setHovered({
-		background: new UIColor("var(--nav-hover-background)"),
-	})
-	.setFocused({
-		borderColor: new UIColor("var(--accent-boldest)"),
-		borderWidth: 2,
-	});
 
 export function SearchView(v: Binding<SearchActivity>) {
 	return UI.Cell()
-		.padding({ start: 16 })
+		.padding({ start: 16, end: 8 })
 		.width("100%")
 		.grow(false)
 		.shrink(true)
@@ -51,16 +14,31 @@ export function SearchView(v: Binding<SearchActivity>) {
 				.padding({ start: 8, end: 12 })
 				.with(
 					UI.TextField("Search...")
-						.textFieldStyle(TextFieldStyle)
+						.style({
+							background: UI.colors.transparent,
+							textColor: new UIColor("inherit"),
+							padding: { y: 4 },
+							borderColor: UI.colors.divider,
+							borderWidth: { bottom: 1 },
+							borderRadius: 0,
+							width: "100%",
+						})
+						.onFocusIn((_, tf) =>
+							tf.setStyle({
+								borderColor: new UIColor("var(--accent-boldest)"),
+							}),
+						)
+						.onFocusOut((_, tf) =>
+							tf.setStyle({
+								borderColor: UI.colors.divider,
+							}),
+						)
 						.requestFocus()
 						.disableSpellCheck()
 						.onInput("SearchInput")
 						.handleKey("ArrowDown", "ArrowDownOnInput")
 						.handleKey("Enter", "GoToFirstResult"),
-					UI.Button()
-						.icon(UI.icons.close)
-						.buttonStyle(CloseButtonStyle)
-						.onClick("Close"),
+					UI.Button().icon(UI.icons.close).style("text").onClick("Close"),
 				),
 			UI.Cell()
 				.hideWhen(v.bind("hasInput").and("loading").not())
@@ -72,7 +50,29 @@ export function SearchView(v: Binding<SearchActivity>) {
 				.with((item) =>
 					UI.Cell()
 						.allowFocus()
-						.style(ResultCellStyle)
+						.padding({ x: 6, y: 4 })
+						.border(2, UI.colors.transparent)
+						.cursor("pointer")
+						.onFocusIn((_, cell) =>
+							cell.setStyle({
+								borderColor: new UIColor("var(--accent-boldest)"),
+							}),
+						)
+						.onFocusOut((_, cell) =>
+							cell.setStyle({
+								borderColor: UI.colors.transparent,
+							}),
+						)
+						.onMouseEnter((_, cell) =>
+							cell.setStyle({
+								background: new UIColor("var(--menu-hover-background)"),
+							}),
+						)
+						.onMouseLeave((_, cell) =>
+							cell.setStyle({
+								background: UI.colors.transparent,
+							}),
+						)
 						.onClick("GoToResult")
 						.handleKey("Enter", "GoToResult")
 						.handleKey("ArrowUp", "FocusPrevious")
@@ -80,7 +80,7 @@ export function SearchView(v: Binding<SearchActivity>) {
 						.with(
 							UI.Column().with(
 								UI.Row(
-									UI.Text(item.bind("title")).textStyle({
+									UI.Text(item.bind("title")).style({
 										fontWeight: "var(--bold-weight)",
 										shrink: 0,
 									}),

@@ -1,19 +1,17 @@
 import { fmt, type StringConvertible } from "@talla-ui/util";
 import { FormState, ViewBuilder } from "../../app/index.js";
 import { Binding, BindingOrValue } from "../../object/index.js";
-import { UIStyle } from "../style/index.js";
-import type { UI } from "../UI.js";
 import { UIElement } from "../UIElement.js";
 
 /**
- * A view class that represents a text field control
- *
- * @description A text field UI element is rendered as a single-line (default) or multi-line input field.
+ * A view class that represents a text field control.
+ * - Renders as a single-line (default) or multi-line input field.
+ * - Use the {@link UI.TextField()} function to create text fields using a builder.
  *
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
 export class UITextField extends UIElement {
-	/** Creates a new text field view instance */
+	/** Creates a new text field view instance. */
 	constructor(placeholder?: StringConvertible, value?: string) {
 		super();
 		this.placeholder = placeholder;
@@ -21,52 +19,56 @@ export class UITextField extends UIElement {
 	}
 
 	/**
-	 * The current input value
-	 * - This field can be preset to initialize the input text.
-	 * - This field can be bound, to update and/or initialize the text field with a bound property value.
+	 * The current input value.
+	 * - Can be preset to initialize the input text.
+	 * - Can be bound to update and/or initialize the text field with a bound property value.
 	 */
 	value: string;
 
-	/** The text field placeholder text */
+	/** The placeholder text displayed when the field is empty. */
 	placeholder?: StringConvertible;
 
 	/**
-	 * True if multiline input mode should be enabled
-	 * - This property can't be changed after rendering.
+	 * True if multiline input mode should be enabled.
+	 * - This property cannot be changed after rendering.
 	 */
 	multiline?: boolean;
 
 	/**
-	 * The input field type, defaults to `text`
-	 * - The accepted values for this property are platform dependent. Examples that work well in most environments include `text`, `password`, `email`, `url`, `tel`, and `search`.
-	 * - For numeric input, the `number` type often changes alignment, validation, and adds built-in UI controls (a 'spinner' with up and down buttons). Since this is often not desirable, the special `numeric` and `decimal` types can be used with the web (DOM) renderer to control the touch screen keyboard type without changing the look and feel of the input element itself.
+	 * The input field type.
+	 * - Defaults to `text`.
+	 * - Accepted values are platform dependent; common values include `text`, `password`, `email`, `url`, `tel`, and `search`.
+	 * - For numeric input, the `number` type often changes alignment and adds spinner controls; use `numeric` or `decimal` with the web renderer to control the keyboard type without changing the input's appearance.
 	 */
 	type: UITextField.InputType | string = "text";
 
-	/** An optional type that determines the text to be displayed on touch screen 'enter' keys, where supported */
+	/**
+	 * The text to display on the virtual keyboard's 'enter' key.
+	 * - Supported on some platforms only.
+	 */
 	enterKeyHint?: UITextField.EnterKeyHintType | string;
 
-	/** True if spell and/or grammar checks should be disabled, where supported */
+	/** True if spell and/or grammar checks should be disabled, where supported. */
 	disableSpellCheck?: boolean;
 
-	/** True if the text field should automatically trim whitespace from the input value */
+	/** True if the text field should automatically trim whitespace from the input value. */
 	trim?: boolean;
 
-	/** True if the entire text in the text field should be selected whenever it gains input focus */
+	/** True if all text should be selected whenever the field gains input focus. */
 	selectOnFocus?: boolean;
 
-	/** True if user input should be disabled on this control */
+	/** True if user input should be disabled on this control. */
 	disabled = false;
 
-	/** True if the text field should appear read-only */
+	/** True if the text field should appear read-only. */
 	readOnly = false;
 }
 
 export namespace UITextField {
-	/** An identifier for a text field input type */
+	/** An identifier for a text field input type. */
 	export type InputType = "text" | "password" | "number" | "date" | "color";
 
-	/** An identifier for a virtual keyboard 'enter' button type, used only on some devices */
+	/** An identifier for a virtual keyboard 'enter' button type. */
 	export type EnterKeyHintType =
 		| "enter"
 		| "done"
@@ -78,9 +80,12 @@ export namespace UITextField {
 }
 
 export namespace UITextField {
+	/** Default style names for text field elements. */
+	export type StyleName = "default" | "ghost";
+
 	/**
-	 * Creates a view builder for a text input field element
-	 * @param placeholder The placeholder text to display when the field is empty, or a binding to a string value.
+	 * Creates a view builder for a text input field element.
+	 * @param placeholder The placeholder text to display when the field is empty, or a binding.
 	 * @returns A builder object for configuring the text field.
 	 * @see {@link UITextField}
 	 */
@@ -91,16 +96,19 @@ export namespace UITextField {
 	}
 
 	/**
-	 * A builder class for creating `UITextField` instances.
-	 * - Objects of this type are returned by the `UI.TextField()` function.
+	 * A builder class for creating {@link UITextField} instances.
+	 * - Returned by the {@link UI.TextField()} function.
 	 */
-	export class TextFieldBuilder extends UIElement.ElementBuilder<UITextField> {
-		/** The initializer that is used to create each text field instance */
+	export class TextFieldBuilder extends UIElement.ElementBuilder<
+		UITextField,
+		UITextField.StyleName
+	> {
+		/** The initializer used to create each text field instance. */
 		readonly initializer = new ViewBuilder.Initializer(UITextField);
 
 		/**
-		 * Sets the value of the text field, using {@link UITextField.value}.
-		 * @param value The text value or a binding to a string value.
+		 * Sets the text field value.
+		 * @param value The text value or a binding.
 		 * @returns The builder instance for chaining.
 		 */
 		value(value: BindingOrValue<StringConvertible | undefined>) {
@@ -116,8 +124,8 @@ export namespace UITextField {
 
 		/**
 		 * Adds a two-way binding to a form state field.
-		 * @param formState A binding to a form state object (e.g. on an activity).
-		 * @param formField The name of the form field to which the text field value should be bound.
+		 * @param formState A binding to a form state object.
+		 * @param formField The name of the form field to bind to.
 		 * @returns The builder instance for chaining.
 		 */
 		formStateValue(
@@ -131,8 +139,8 @@ export namespace UITextField {
 		}
 
 		/**
-		 * Sets the placeholder text for the text field, using {@link UITextField.placeholder}.
-		 * @param placeholder The placeholder text, or a binding to a string value.
+		 * Sets the placeholder text.
+		 * @param placeholder The placeholder text, or a binding.
 		 * @returns The builder instance for chaining.
 		 */
 		placeholder(placeholder?: BindingOrValue<StringConvertible>) {
@@ -140,9 +148,9 @@ export namespace UITextField {
 		}
 
 		/**
-		 * Enables multi-line input, using {@link UITextField.multiline}.
-		 * - Multi-line input fields don't have a default height. Provide a height using the `height` parameter, or use a predefined style that includes a height value to size the field.
-		 * @param multiline If `true`, the text field will be multi-line. Defaults to `true`.
+		 * Enables multi-line input.
+		 * - Multi-line fields have no default height; provide one using the `height` parameter or a predefined style.
+		 * @param multiline True to enable multi-line input; defaults to true.
 		 * @param height The height of the text field in pixels, or as a string with unit.
 		 * @returns The builder instance for chaining.
 		 */
@@ -152,8 +160,8 @@ export namespace UITextField {
 		}
 
 		/**
-		 * Sets the input type of the text field, using {@link UITextField.type}.
-		 * @param type The input type (e.g., "text", "password", "number").
+		 * Sets the input type of the text field.
+		 * @param type The input type (e.g. `text`, `password`, `number`).
 		 * @returns The builder instance for chaining.
 		 */
 		type(type: UITextField.InputType | string) {
@@ -161,8 +169,8 @@ export namespace UITextField {
 		}
 
 		/**
-		 * Sets the hint for the virtual keyboard's 'Enter' key, using {@link UITextField.enterKeyHint}.
-		 * @param enterKeyHint The hint type (e.g., "go", "search", "send").
+		 * Sets the hint for the virtual keyboard's 'Enter' key.
+		 * @param enterKeyHint The hint type (e.g. `go`, `search`, `send`).
 		 * @returns The builder instance for chaining.
 		 */
 		enterKeyHint(enterKeyHint: UITextField.EnterKeyHintType | string) {
@@ -170,8 +178,8 @@ export namespace UITextField {
 		}
 
 		/**
-		 * Disables spell checking, using {@link UITextField.disableSpellCheck}.
-		 * @param disableSpellCheck If `true`, spell check is disabled. Defaults to `true`.
+		 * Disables spell checking.
+		 * @param disableSpellCheck True to disable spell check; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
 		disableSpellCheck(disableSpellCheck = true) {
@@ -179,8 +187,8 @@ export namespace UITextField {
 		}
 
 		/**
-		 * Automatically trims whitespace from the input value, using {@link UITextField.trim}.
-		 * @param trim If `true`, whitespace is trimmed. Defaults to `true`.
+		 * Enables automatic whitespace trimming.
+		 * @param trim True to trim whitespace; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
 		trim(trim = true) {
@@ -188,8 +196,8 @@ export namespace UITextField {
 		}
 
 		/**
-		 * Selects all text in the field when it gains focus, using {@link UITextField.selectOnFocus}.
-		 * @param selectOnFocus If `true`, text is selected on focus. Defaults to `true`.
+		 * Selects all text when the field gains focus.
+		 * @param selectOnFocus True to select text on focus; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
 		selectOnFocus(selectOnFocus = true) {
@@ -197,8 +205,8 @@ export namespace UITextField {
 		}
 
 		/**
-		 * Disables the text field, using {@link UITextField.disabled}.
-		 * @param disabled If `true`, the text field is disabled. Defaults to `true`.
+		 * Disables the text field.
+		 * @param disabled True to disable the text field; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
 		disabled(disabled: BindingOrValue<boolean> = true) {
@@ -206,28 +214,12 @@ export namespace UITextField {
 		}
 
 		/**
-		 * Makes the text field read-only, using {@link UITextField.readOnly}.
-		 * @param readOnly If `true`, the text field is read-only. Defaults to `true`.
+		 * Makes the text field read-only.
+		 * @param readOnly True to make the text field read-only; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
 		readOnly(readOnly: BindingOrValue<boolean> = true) {
 			return this.setProperty("readOnly", readOnly);
-		}
-
-		/**
-		 * Applies a style to the text field
-		 * @param style The name of a theme text field style, a {@link UIStyle} instance, a style options (overrides) object, or a binding.
-		 * @returns The builder instance for chaining.
-		 */
-		textFieldStyle(
-			style?: BindingOrValue<
-				| UI.styles.TextFieldStyleName
-				| UIStyle
-				| UIStyle.StyleOptions
-				| undefined
-			>,
-		) {
-			return this.setStyleProperty(style, UIStyle.theme.textField);
 		}
 	}
 }

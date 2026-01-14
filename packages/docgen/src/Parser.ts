@@ -307,8 +307,10 @@ export class Parser {
 
 			// check for some formatting oddities where the indentation returns
 			// but the statement isn't over yet
-			if (/[{([<]$/.test(lines[idx]!.text)) continue;
-			if (lines[idx + 1] && lines[idx + 1]?.text.startsWith("?")) continue;
+			if (/[{([<,]$/.test(lines[idx]!.text)) continue;
+			if (lines[idx + 1]?.text.startsWith("?")) continue;
+			if (lines[idx + 1]?.text.startsWith(">")) continue;
+			if (lines[idx + 1]?.text === "{") continue;
 
 			// stop if this line is deindented
 			if (lines[idx]!.text && lines[idx]!.indent <= indent) break;

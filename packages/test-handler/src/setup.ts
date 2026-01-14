@@ -47,10 +47,10 @@ export function useTestContext(
 	// clear the current app properties first
 	app.clear();
 
-	// create test renderer and set theme values
+	// create test renderer and set colors/icons
 	(app as any).renderer = new TestRenderer(options);
-	UIColor.theme.set({ ...defaultColors });
-	UIIconResource.theme.set({ ...defaultIcons });
+	UIColor.setColors(defaultColors);
+	UIIconResource.setIcons(defaultIcons);
 
 	// create test navigation path and set initial path
 	app.navigation?.unlink();

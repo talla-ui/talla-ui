@@ -34,7 +34,7 @@ export class UIScrollViewRenderer extends UIContainerRenderer<UIScrollView> {
 	override updateStyle(element: HTMLElement) {
 		super.updateStyle(element);
 
-		// set scroll styles
+		// set scroll style
 		let { horizontalScroll, verticalScroll } = this.observed;
 		element.style.overflowX = horizontalScroll ? "auto" : "";
 		element.style.overflowY = verticalScroll ? "auto" : "";

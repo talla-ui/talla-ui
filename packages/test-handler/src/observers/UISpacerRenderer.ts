@@ -20,6 +20,6 @@ export class UISpacerRenderer extends TestBaseObserver<UISpacer> {
 
 	override updateStyle(element: TestOutputElement) {
 		let spacer = this.observed;
-		applyElementStyle(element, [spacer.style, spacer.position]);
+		applyElementStyle(element, spacer.styleName, spacer.style, spacer.position);
 	}
 }

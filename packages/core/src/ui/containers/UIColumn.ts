@@ -1,7 +1,6 @@
 import { ViewBuilder } from "../../app/index.js";
 import type { BindingOrValue } from "../../object/index.js";
 import { UIColor } from "../style/index.js";
-import type { UI } from "../UI.js";
 import { UIContainer } from "./UIContainer.js";
 import { UIScrollView } from "./UIScrollView.js";
 
@@ -75,12 +74,12 @@ export namespace UIColumn {
 		 */
 		divider(
 			lineWidth: string | number = 1,
-			lineColor?: UIColor | UI.ColorName,
+			lineColor?: UIColor | UIColor.ColorName,
 			lineMargin?: string | number,
 		) {
 			this.initializer.finalize((view) => {
 				if (typeof lineColor === "string")
-					lineColor = UIColor.theme.ref(lineColor);
+					lineColor = UIColor.getColor(lineColor);
 				view.layout = {
 					...view.layout,
 					separator: {
