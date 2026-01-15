@@ -27,7 +27,7 @@ const $_activity = Symbol("activity");
  *
  * This class provides infrastructure for path-based routing, based on the application's navigation path (such as the browser's current URL), together with {@link NavigationContext} and {@link ActivityRouter}. However, activities can also be activated and deactivated manually.
  *
- * Activities emit `Active` and `Inactive` change events when state transitions occur. Several methods can be overridden to add custom behavior when the activity is activated or deactivated – i.e. {@link beforeActiveAsync}, {@link afterActiveAsync}, {@link beforeInactiveAsync}, and {@link afterInactiveAsync}.
+ * Activities emit `Active` and `Inactive` change events when state transitions occur. Override {@link afterActive} for initialization (receiving an AbortSignal for cancellation), and {@link afterInactive} for cleanup. Use {@link canDeactivateAsync} as a navigation guard to prevent deactivation when there are unsaved changes.
  *
  * The static {@link Activity.View} property must be set to a function that returns a view builder, which is used to create the view object when the activity becomes active. This function is called only once for each activity, as well as when the activity is reloaded using Hot Module Replacement (HMR).
  *
@@ -100,6 +100,14 @@ export class Activity extends ObservableObject {
 	}
 
 	/**
+	 * AbortSignal for the current activation
+	 * - This signal is aborted when the activity is deactivated or unlinked. Pass this signal to fetch requests, timers, or other async operations to automatically cancel them when the activity becomes inactive.
+	 */
+	get activeSignal(): AbortSignal {
+		return this._abortController.signal;
+	}
+
+	/**
 	 * The path associated with this activity, to match the navigation path
 	 * - This property is used by the default implementation of {@link matchNavigationPath()}, which returns true only if the current path matches exactly. This behavior can be changed (e.g. to match sub paths) by overriding that method.
 	 * - This property is also used for navigating to relative paths starting with `./`, in {@link onNavigate()} when responding to `Navigate` events from buttons that have a {@link UIButton.navigateTo} property set.
@@ -138,97 +146,110 @@ export class Activity extends ObservableObject {
 
 	/** Returns true if this activity is currently active */
 	isActive() {
-		return !this.isUnlinked() && this._activation.active;
-	}
-
-	/** Returns true if this activity is inactive but currently activating */
-	isActivating() {
-		return !this.isUnlinked() && this._activation.activating;
-	}
-
-	/** Returns true if this activity is active but currently inactivating */
-	isDeactivating() {
-		return !this.isUnlinked() && this._activation.deactivating;
+		return !this.isUnlinked() && this._active;
 	}
 
 	/**
-	 * Activates the activity asynchronously
-	 * - If the activity is currently transitioning between active and inactive states, the transition will be allowed to finish before the activity is activated.
-	 * - After activation, the activity's view is (re-) created automatically, and displayed if needed.
-	 * @error This method throws an error if the activity has been unlinked.
+	 * Activates the activity.
+	 * - After activation, the activity's view is created automatically, and displayed if needed.
+	 * - The {@link afterActive} method is called after activation for initialization (may be async).
+	 * @returns This activity instance, for chaining
+	 * @error This method throws an error if the activity has been unlinked or not attached.
 	 */
-	async activateAsync() {
+	activate(): this {
+		if (this._active) return this;
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
+		if (!AppContext.whence(this)) throw err(ERROR.Activity_NotAttached);
 
-		// set active asynchronously and run beforeActiveAsync
-		await this._activation.waitAndSetAsync(
-			true,
-			() => {
-				if (!AppContext.whence(this)) throw err(ERROR.Activity_NotAttached);
-				if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
-				return this.beforeActiveAsync();
-			},
-			async () => {
-				if (this.isUnlinked()) return;
-				if (this._hotInstances && !this._isHot) {
-					this._isHot = true;
-					this._hotInstances.add(this);
-					this.listen({
-						unlinked: () => {
-							this._hotInstances!.delete(this);
-						},
-					});
-				}
-				AppContext.getInstance().schedule(async () => {
-					// render view async to allow any processing to catch up
-					this._showView();
-				});
-				this.emitChange("Active");
-				await this.afterActiveAsync();
-			},
-		);
+		// HMR tracking
+		if (this._hotInstances && !this._isHot) {
+			this._isHot = true;
+			this._hotInstances.add(this);
+			this.listen({ unlinked: () => this._hotInstances!.delete(this) });
+		}
+
+		this._abortController = new AbortController();
+		this._active = true;
+		this.emitChange("Active");
+
+		// create view and run handler asynchronously, to allow processing or redirection
+		let signal = this._abortController.signal;
+		AppContext.getInstance().schedule(async () => {
+			if (signal.aborted) return;
+			this._showView();
+			try {
+				await this.afterActive(signal);
+			} catch (e: any) {
+				if (!this._active || e?.name === "AbortError") return;
+				throw e;
+			}
+		});
 		return this;
 	}
 
 	/**
-	 * Deactivates the activity asynchronously
-	 * - If the activity is currently transitioning between active and inactive states, the transition will be allowed to finish before the activity is deactivated.
-	 * - Before deactivation, the activity's {@link Activity.View view} property is set to undefined, unlinking the current view object, if any.
-	 * @error This method throws an error if the activity has been unlinked.
+	 * Deactivates the activity.
+	 * - The activity's view is unlinked and the {@link view} property is set to undefined.
+	 * - The {@link activeSignal} is aborted to cancel any pending async operations.
+	 * - The {@link afterInactive} method is called after deactivation for cleanup (may be async).
+	 * @returns This activity instance, for chaining
 	 */
-	async deactivateAsync() {
-		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
+	deactivate(): this {
+		if (!this._active) return this;
+		this._abortController.abort();
+		this._active = false;
 
-		// set inactive asynchronously and run beforeInactiveAsync
-		await this._activation.waitAndSetAsync(
-			false,
-			() => {
-				if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
-				if (this.view) {
-					this.view.unlink();
-					this.view = undefined;
-				}
-				return this.beforeInactiveAsync();
-			},
-			() => {
-				this.emitChange("Inactive");
-				return this.afterInactiveAsync();
-			},
-		);
+		if (this.view) {
+			this.view.unlink();
+			this.view = undefined;
+		}
+
+		this.emitChange("Inactive");
+		let signal = this._abortController.signal;
+		AppContext.getInstance().schedule(async () => {
+			// Only call if no reactivation (same signal) and not unlinked
+			if (!this.isUnlinked() && this.activeSignal === signal) {
+				await this.afterInactive();
+			}
+		});
 		return this;
 	}
 
-	/** A method that's called and awaited before the activity is activated, to be overridden if needed */
-	protected async beforeActiveAsync() {}
+	/**
+	 * Called after activation, for initialization (may be async).
+	 * - The view has been created before this method is called (if a View function is defined).
+	 * - Use the signal parameter to cancel fetch requests, timers, etc. when the activity deactivates or is unlinked.
+	 * - This method is not called if the activity is deactivated before the scheduler runs; check {@link activeSignal}.aborted if needed.
+	 * @param signal Aborted when activity deactivates or is unlinked
+	 */
+	protected afterActive(signal: AbortSignal): void | Promise<void> {}
 
-	/** A method that's called and awaited after the activity is activated, to be overridden if needed */
-	protected async afterActiveAsync() {}
+	/**
+	 * Called after deactivation, for cleanup (may be async).
+	 * - This method is not called if the activity is reactivated before the scheduler runs.
+	 * - This method is not called if the activity is unlinked; override {@link beforeUnlink} for cleanup on unlink.
+	 */
+	protected afterInactive(): void | Promise<void> {}
 
-	/** A method that's called and awaited before the activity is deactivated, to be overridden if needed */
-	protected async beforeInactiveAsync() {}
+	/**
+	 * A method that's called as a navigation guard, should return false if the activity should not be deactivated.
+	 * - Override this method to prevent navigation when there are unsaved changes. Return (a promise that resolves to) false to prevent navigation, or true to allow it.
+	 * @returns A promise that resolves to true if the activity can be deactivated
+	 */
+	async canDeactivateAsync(): Promise<boolean> {
+		return true;
+	}
 
-	/** A method that's called and awaited after the activity is deactivated, to be overridden if needed */
-	protected async afterInactiveAsync() {}
+	/**
+	 * Called immediately before the activity is unlinked.
+	 * - Override this method to perform cleanup when the activity is destroyed.
+	 * - The {@link activeSignal} is aborted automatically to cancel any pending async operations.
+	 * - Note: {@link afterInactive} is not called when the activity is unlinked.
+	 */
+	protected override beforeUnlink() {
+		this._abortController.abort();
+		this._active = false;
+	}
 
 	/**
 	 * Set rendering mode and additional options
@@ -319,7 +340,7 @@ export class Activity extends ObservableObject {
 	 * Checks if the provided path should activate this activity
 	 * - By default, this method only checks for exact matches with the {@link navigationPath} property.
 	 * - To implement other types of routing, override this method to consider further conditions based on the specified path.
-	 * - When overriding this method, you can return a callback function that will be called after the activity itself is activated (asynchronosly). This may be an asynchronous function, and is typically used to activate nested 'sub activities', adding them to an attached {@link ActivityRouter} instance.
+	 * - When overriding this method, you can return a callback function that will be called after the activity itself is activated. This may be an async function, and is typically used to activate nested 'sub activities', adding them to an attached {@link ActivityRouter} instance.
 	 * @param path The (remainder of the) path to check
 	 * @returns True if the path should activate this activity, false if not; or a function to activate this activity and call the provided function afterwards
 	 * @see {@link ActivityRouter}
@@ -383,7 +404,7 @@ export class Activity extends ObservableObject {
 	 * Creates an activity router that's enabled while this activity is active
 	 * - Use this method to create an {@link ActivityRouter} instance to manage a set of sub-activities that are only active while the parent activity is active.
 	 * - The router is disabled when the activity becomes inactive, and re-enabled when the activity becomes active again.
-	 * - When the router is disabled, any active activities in the router are deactivated asynchronously.
+	 * - When the router is disabled, any active activities in the router are deactivated.
 	 * @returns A new {@link ActivityRouter} instance
 	 */
 	protected createActiveRouter() {
@@ -393,7 +414,7 @@ export class Activity extends ObservableObject {
 				result.disableMatch(false);
 			} else if (e.name === "Inactive") {
 				result.disableMatch();
-				result.toArray().forEach((a) => safeCall(a.deactivateAsync, a));
+				result.toArray().forEach((a) => a.deactivate());
 			}
 		});
 		return result;
@@ -419,7 +440,7 @@ export class Activity extends ObservableObject {
 			false,
 			config,
 		);
-		if (!this._activation.active) queue.pause();
+		if (!this._active) queue.pause();
 
 		// listen for active/inactive events to pause/resume queue
 		this.listen({
@@ -454,14 +475,17 @@ export class Activity extends ObservableObject {
 		return this.attach(result.watch(observe, update));
 	}
 
+	/** @internal Activation state */
+	private _active = false;
+
+	/** @internal Abort controller for current activation */
+	private _abortController = new AbortController();
+
 	/** @internal Render placement options, modified using setRenderMode */
 	private _renderOptions: RenderContext.PlacementOptions = { mode: "page" };
 
 	/** @internal True if the view should be rendered within a dialog */
 	private _renderDialog?: boolean;
-
-	/** @internal Activation queue for this activity */
-	private readonly _activation = new ActivationQueue();
 
 	/** @internal Original class that's been updated using hot reload (set on prototype) */
 	declare private _OrigClass?: typeof Activity;
@@ -534,65 +558,4 @@ export namespace Activity {
 			if (added) this.emitChange();
 		}
 	}
-}
-
-/** @internal Helper class that contains activation state, and runs callbacks on activation/deactivation asynchronously */
-class ActivationQueue {
-	/** Current state */
-	active = false;
-
-	/** True if currently activating asynchronously */
-	get activating() {
-		return this._set === true;
-	}
-
-	/** True if currently deactivating asynchronously */
-	get deactivating() {
-		return this._set === false;
-	}
-
-	/** Sets given activation state asynchronously, and runs given callbacks before and after transitioning; rejects with an error if the transition was cancelled OR if the _before_ callback failed */
-	async waitAndSetAsync(
-		set: boolean,
-		before: () => Promise<void>,
-		after: () => Promise<void>,
-	) {
-		// if latest transition does/did the same, then return same promise
-		if (this._set === set) return this._result;
-
-		// prepare error to include better (sync) stack trace
-		let cancelErr = err(ERROR.Activity_Cancelled, set ? "Active" : "Inactive");
-
-		// prepare promise, wait for ongoing transition if any
-		let prev = this._wait;
-		let result = (async () => {
-			await prev;
-			if (this.active !== set) {
-				// cancel if latest call has opposite effect
-				if (this._set !== set) throw cancelErr;
-
-				// invoke callbacks and set activation state
-				await before();
-				this.active = set;
-				safeCall(after);
-			}
-		})();
-
-		// keep track of this (last) transition
-		this._set = set;
-		this._result = result;
-		this._wait = result
-			.catch(() => {})
-			.then(() => {
-				if (this._result === result) {
-					this._result = undefined;
-					this._set = undefined;
-				}
-			});
-		return result;
-	}
-
-	private _set?: boolean;
-	private _result?: Promise<void>;
-	private _wait?: Promise<void>;
 }

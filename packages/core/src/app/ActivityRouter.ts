@@ -1,4 +1,3 @@
-import { safeCall } from "../errors.js";
 import { ObservableList, ObservableObject } from "../object/index.js";
 import type { Activity } from "./Activity.js";
 import { AppContext } from "./AppContext.js";
@@ -99,7 +98,7 @@ export class ActivityRouter extends ObservableObject {
 	 */
 	add(activity: Activity, activate?: boolean) {
 		this._list.add(activity);
-		if (activate) safeCall(activity.activateAsync, activity);
+		if (activate) activity.activate();
 		return this;
 	}
 
@@ -133,9 +132,10 @@ export class ActivityRouter extends ObservableObject {
 
 	/**
 	 * Checks for activation of all contained activities using the provided path, and activates the first activity that matches
-	 * - This method calls {@link Activity.matchNavigationPath()} on all contained activities, and activates (asynchronously) the first activity that returns a value that equals to true.
-	 * - All other activities are deactivated (also asynchronously) _before_ activating the matching activity; unless no activity had matched before. This enables 'path routing' only after the first successful match.
-	 * - If the matching {@link Activity.matchNavigationPath()} method returned a function, the function will be invoked asynchronously after the activity has been activated.
+	 * - This method calls {@link Activity.matchNavigationPath()} on all contained activities, and activates the first activity that returns a value that equals to true.
+	 * - All other activities are deactivated _before_ activating the matching activity; unless no activity had matched before. This enables 'path routing' only after the first successful match.
+	 * - Activities can prevent deactivation by returning false from {@link Activity.canDeactivateAsync()}.
+	 * - If the matching {@link Activity.matchNavigationPath()} method returned a function, the function will be invoked after the activity has been activated.
 	 * @param path The path to pass to all contained activities
 	 * @returns The activity that will be activated, if any
 	 */
@@ -143,40 +143,52 @@ export class ActivityRouter extends ObservableObject {
 		let list = this._list.toArray();
 		if (this._disabled || this.isUnlinked() || !list.length) return;
 
-		// prepare functions to activate and deactivate asynchronously
+		// Cancel any stale navigation
+		this._navAbort?.abort();
+		this._navAbort = new AbortController();
+		let navSignal = this._navAbort.signal;
+
+		// prepare functions to activate and deactivate
 		let router = this;
 		let toActivate: Activity | undefined;
 		async function deactivateOthersAsync(t: AsyncTaskQueue.Task) {
 			for (let other of list) {
 				if (other !== toActivate) {
-					if (t.cancelled || router.isUnlinked()) return;
-					if (other.isActive() || other.isActivating()) {
-						await other.deactivateAsync();
+					if (t.cancelled || navSignal.aborted || router.isUnlinked()) return;
+					if (other.isActive()) {
+						let canLeave = await other.canDeactivateAsync();
+						if (t.cancelled || navSignal.aborted || router.isUnlinked()) return;
+						if (!canLeave) {
+							// Activity blocked navigation, abort the entire navigation
+							router._navAbort?.abort();
+							return;
+						}
+						other.deactivate();
 					}
 				}
 			}
 		}
-		async function activateAsync() {
+		function activate() {
 			if (
+				!navSignal.aborted &&
 				!router.isUnlinked() &&
 				!toActivate?.isUnlinked() &&
-				!toActivate!.isActive() &&
-				!toActivate!.isActivating()
+				!toActivate!.isActive()
 			) {
-				await toActivate!.activateAsync();
+				toActivate!.activate();
 			}
 		}
 
 		// go through the list and find a matching activity
 		for (let activity of list) {
-			let activate = activity.matchNavigationPath(path);
-			if (activate) {
+			let activate_ = activity.matchNavigationPath(path);
+			if (activate_) {
 				toActivate = activity;
 				let q = this._getQueue();
 				q.stop();
 				q.add(deactivateOthersAsync);
-				q.add(activateAsync);
-				if (typeof activate === "function") q.add(activate);
+				q.add(activate);
+				if (typeof activate_ === "function") q.add(activate_);
 				return activity;
 			}
 		}
@@ -196,6 +208,7 @@ export class ActivityRouter extends ObservableObject {
 	}
 
 	private _disabled?: boolean;
+	private _navAbort?: AbortController;
 	private _queue?: AsyncTaskQueue;
 	private _list: ObservableList<Activity>;
 }

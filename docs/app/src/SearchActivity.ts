@@ -29,11 +29,10 @@ export class SearchActivity extends Activity {
 		if (input) input.value = "";
 	}
 
-	protected override async afterActiveAsync() {
-		await super.afterActiveAsync();
+	protected override async afterActive(signal: AbortSignal) {
 		this.loading = (async () => {
 			await this.search.loadJsonAsync("/docs/en/search.json");
-			this.loading = undefined;
+			if (!signal.aborted) this.loading = undefined;
 		})();
 	}
 

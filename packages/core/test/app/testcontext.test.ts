@@ -276,7 +276,7 @@ describe("Rendering views", () => {
 		expect(activity.view).toBeInstanceOf(UICell);
 		let view = activity.view!;
 		await app.renderer.expectOutputAsync({ source: view });
-		await activity.deactivateAsync();
+		activity.deactivate();
 		await expect
 			.poll(() => !app.renderer.hasOutput(), {
 				interval: 5,
@@ -299,7 +299,7 @@ describe("Rendering views", () => {
 		let app = useTestContext();
 		app.addActivity(activity, true);
 		await app.renderer.expectOutputAsync({ text: "foo" });
-		await activity.deactivateAsync();
+		activity.deactivate();
 		await expect
 			.poll(() => !app.renderer.hasOutput(), { interval: 10, timeout: 100 })
 			.toBe(true);

@@ -268,7 +268,7 @@ test("Use activity view as inserted view and render", async () => {
 	});
 	out.containing({ text: "foo" }).toBeEmpty();
 	console.log("Activating `second`...");
-	await activity.second!.activateAsync();
+	activity.second!.activate();
 	out = await expectOutputAsync({ accessibleLabel: "outer" }, { text: "foo" });
 
 	// clicking the button should propagate all events
