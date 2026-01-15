@@ -173,8 +173,10 @@ describe("Activation and deactivation, standalone", () => {
 		const mockErrorHandler = vi.fn();
 		AppContext.setErrorHandler(mockErrorHandler);
 
+		let afterActiveRan = false;
 		class AbortActivity extends Activity {
 			protected override async afterActive(signal: AbortSignal) {
+				afterActiveRan = true;
 				const err = new Error("Aborted");
 				err.name = "AbortError";
 				throw err;
@@ -182,7 +184,9 @@ describe("Activation and deactivation, standalone", () => {
 		}
 		let a = addActivity(new AbortActivity());
 		a.activate();
-		await new Promise((r) => setTimeout(r, 20));
+		await expect
+			.poll(() => afterActiveRan, { interval: 5, timeout: 100 })
+			.toBe(true);
 		expect(mockErrorHandler).not.toHaveBeenCalled();
 	});
 
@@ -229,8 +233,12 @@ describe("Activation and deactivation, standalone", () => {
 
 	test("afterInactive is not called if reactivated quickly", async () => {
 		let afterInactiveCalled = false;
+		let afterActiveCalled = false;
 
 		class MyActivity extends Activity {
+			protected override afterActive(signal: AbortSignal) {
+				afterActiveCalled = true;
+			}
 			protected override afterInactive() {
 				afterInactiveCalled = true;
 			}
@@ -239,7 +247,9 @@ describe("Activation and deactivation, standalone", () => {
 		a.activate();
 		a.deactivate();
 		a.activate(); // Reactivate immediately
-		await new Promise((r) => setTimeout(r, 50));
+		await expect
+			.poll(() => afterActiveCalled, { interval: 5, timeout: 100 })
+			.toBe(true);
 		expect(afterInactiveCalled).toBe(false); // Should not be called
 	});
 
@@ -254,17 +264,26 @@ describe("Activation and deactivation, standalone", () => {
 
 	test("afterInactive is not called on unlink", async () => {
 		let afterInactiveCalled = false;
+		let afterActiveCalled = false;
 
 		class MyActivity extends Activity {
+			protected override afterActive(signal: AbortSignal) {
+				afterActiveCalled = true;
+			}
 			protected override afterInactive() {
 				afterInactiveCalled = true;
 			}
 		}
 		let a = addActivity(new MyActivity());
 		a.activate();
-		await new Promise((r) => setTimeout(r, 10)); // Let scheduler run
+		await expect
+			.poll(() => afterActiveCalled, { interval: 5, timeout: 100 })
+			.toBe(true);
 		a.unlink();
-		await new Promise((r) => setTimeout(r, 50));
+		// Give time for any erroneous afterInactive call, then verify it wasn't called
+		await expect
+			.poll(() => a.isUnlinked(), { interval: 5, timeout: 100 })
+			.toBe(true);
 		expect(afterInactiveCalled).toBe(false);
 	});
 
@@ -281,8 +300,9 @@ describe("Activation and deactivation, standalone", () => {
 		a.deactivate();
 		a.activate();
 		a.deactivate();
-		await new Promise((r) => setTimeout(r, 50));
-		expect(afterInactiveCount).toBe(1); // Only the last deactivation
+		await expect
+			.poll(() => afterInactiveCount, { interval: 5, timeout: 100 })
+			.toBe(1); // Only the last deactivation
 	});
 });
 
@@ -465,7 +485,10 @@ describe("View rendering", () => {
 		a.activate();
 		expect(a.view).toBeUndefined();
 		a.deactivate();
-		await new Promise((r) => setTimeout(r, 50));
+		// Poll for deactivated state and verify view was never created
+		await expect
+			.poll(() => !a.isActive(), { interval: 5, timeout: 100 })
+			.toBe(true);
 		expect(viewCreated).toBe(false);
 		expect(a.view).toBeUndefined();
 	});

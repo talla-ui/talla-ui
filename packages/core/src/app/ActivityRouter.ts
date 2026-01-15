@@ -143,10 +143,8 @@ export class ActivityRouter extends ObservableObject {
 		let list = this._list.toArray();
 		if (this._disabled || this.isUnlinked() || !list.length) return;
 
-		// Cancel any stale navigation
-		this._navAbort?.abort();
-		this._navAbort = new AbortController();
-		let navSignal = this._navAbort.signal;
+		// Increment navigation index to invalidate prior navigations
+		let navIdx = ++this._navIdx;
 
 		// prepare functions to activate and deactivate
 		let router = this;
@@ -154,13 +152,15 @@ export class ActivityRouter extends ObservableObject {
 		async function deactivateOthersAsync(t: AsyncTaskQueue.Task) {
 			for (let other of list) {
 				if (other !== toActivate) {
-					if (t.cancelled || navSignal.aborted || router.isUnlinked()) return;
+					if (t.cancelled || navIdx !== router._navIdx || router.isUnlinked())
+						return;
 					if (other.isActive()) {
 						let canLeave = await other.canDeactivateAsync();
-						if (t.cancelled || navSignal.aborted || router.isUnlinked()) return;
+						if (t.cancelled || navIdx !== router._navIdx || router.isUnlinked())
+							return;
 						if (!canLeave) {
 							// Activity blocked navigation, abort the entire navigation
-							router._navAbort?.abort();
+							router._navIdx++;
 							return;
 						}
 						other.deactivate();
@@ -170,7 +170,7 @@ export class ActivityRouter extends ObservableObject {
 		}
 		function activate() {
 			if (
-				!navSignal.aborted &&
+				navIdx === router._navIdx &&
 				!router.isUnlinked() &&
 				!toActivate?.isUnlinked() &&
 				!toActivate!.isActive()
@@ -208,7 +208,7 @@ export class ActivityRouter extends ObservableObject {
 	}
 
 	private _disabled?: boolean;
-	private _navAbort?: AbortController;
+	private _navIdx = 0;
 	private _queue?: AsyncTaskQueue;
 	private _list: ObservableList<Activity>;
 }

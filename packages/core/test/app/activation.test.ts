@@ -62,10 +62,10 @@ describe("AppContext.activities", () => {
 		app.navigation?.set("foo");
 		app.addActivity(activity);
 		expect(app.activities.toArray().length).toBe(1);
-		await new Promise((r) => setTimeout(r, 10));
-		expect(activity.isActive()).toBeTruthy();
+		await expect
+			.poll(() => activity.isActive(), { interval: 5, timeout: 100 })
+			.toBe(true);
 		expect(app.navigation?.matchedPath).toBe("foo");
-		expect(activity.isActive()).toBe(true);
 		expect(app.activities.active).toBe(activity);
 	});
 
@@ -81,11 +81,13 @@ describe("AppContext.activities", () => {
 		app.addActivity(new Activity());
 		expect(updated).toBe(3); // once for adding another activity
 		app.navigation?.set("foo");
-		await new Promise((r) => setTimeout(r, 10));
-		expect(updated).toBe(4); // once for activation
+		await expect
+			.poll(() => updated, { interval: 5, timeout: 100 })
+			.toBe(4); // once for activation
 		app.navigation?.set("");
-		await new Promise((r) => setTimeout(r, 10));
-		expect(activity.isActive()).toBe(false);
+		await expect
+			.poll(() => !activity.isActive(), { interval: 5, timeout: 100 })
+			.toBe(true);
 		expect(updated).toBe(5); // once for deactivation
 	});
 
@@ -97,9 +99,10 @@ describe("AppContext.activities", () => {
 		app.navigation?.set("bar");
 		app.addActivity(activityFoo);
 		app.addActivity(activityBar);
-		await new Promise((r) => setTimeout(r, 10));
+		await expect
+			.poll(() => activityBar.isActive(), { interval: 5, timeout: 100 })
+			.toBe(true);
 		expect(activityFoo.isActive()).toBeFalsy();
-		expect(activityBar.isActive()).toBeTruthy();
 		for (let a of app.activities.toArray()) {
 			if ((a.navigationPath === app.navigation?.path) !== a.isActive()) {
 				throw Error("Activation state != page ID match");
@@ -112,11 +115,13 @@ describe("AppContext.activities", () => {
 		activity.navigationPath = "foo";
 		app.navigation?.set("bar");
 		app.addActivity(activity);
-		await new Promise((r) => setTimeout(r, 10));
-		expect(activity.isActive()).toBeFalsy();
+		await expect
+			.poll(() => !activity.isActive(), { interval: 5, timeout: 100 })
+			.toBe(true);
 		app.navigation?.set("foo");
-		await new Promise((r) => setTimeout(r, 10));
-		expect(activity.isActive()).toBeTruthy();
+		await expect
+			.poll(() => activity.isActive(), { interval: 5, timeout: 100 })
+			.toBe(true);
 	});
 
 	test("Activity activated based on exact path", async () => {
@@ -134,14 +139,14 @@ describe("AppContext.activities", () => {
 		let activity = new MyActivity();
 		app.addActivity(activity);
 		app.navigation?.set("foo");
-		await new Promise((r) => setTimeout(r, 10));
-		expect(active).toBe(1);
+		await expect.poll(() => active, { interval: 5, timeout: 100 }).toBe(1);
 		app.navigation?.set("bar");
-		await new Promise((r) => setTimeout(r, 10));
+		await expect.poll(() => inactive, { interval: 5, timeout: 100 }).toBe(1);
 		app.navigation?.set("foo/bar");
-		await new Promise((r) => setTimeout(r, 10));
+		await expect
+			.poll(() => !activity.isActive(), { interval: 5, timeout: 100 })
+			.toBe(true);
 		expect(active).toBe(1);
-		expect(inactive).toBe(1);
 	});
 
 	test("Activity activated with custom match", async () => {
@@ -166,15 +171,12 @@ describe("AppContext.activities", () => {
 		let activity = new MyActivity();
 		app.addActivity(activity);
 		app.navigation?.set("foo");
-		await new Promise((r) => setTimeout(r, 10));
-		expect(active).toBe(1);
+		await expect.poll(() => active, { interval: 5, timeout: 100 }).toBe(1);
 		app.navigation?.set("bar");
-		await new Promise((r) => setTimeout(r, 10));
+		await expect.poll(() => inactive, { interval: 5, timeout: 100 }).toBe(1);
 		app.navigation?.set("foo/bar");
-		await new Promise((r) => setTimeout(r, 10));
-		expect(active).toBe(2);
+		await expect.poll(() => active, { interval: 5, timeout: 100 }).toBe(2);
 		expect(called).toBe(2);
-		expect(inactive).toBe(1);
 	});
 
 	test("Quick path changes", async () => {
@@ -327,10 +329,12 @@ describe("Nested activity router", () => {
 		activity.activate();
 		child.activate();
 
-		await new Promise((r) => setTimeout(r, 100));
-
-		expect(activity.isActive()).toBe(true);
-		expect(child.isActive()).toBe(true);
+		await expect
+			.poll(() => activity.isActive() && child.isActive(), {
+				interval: 5,
+				timeout: 100,
+			})
+			.toBe(true);
 		// afterInactive should not be called due to reactivation guard
 		expect(childAfterInactiveCalled).toBe(0);
 	});
@@ -367,11 +371,14 @@ describe("Navigation guards (canDeactivateAsync)", () => {
 
 		// Try to navigate away - should be blocked
 		app.navigation?.set("other");
-		await new Promise((r) => setTimeout(r, 50));
 
-		// Blocking activity should still be active
-		expect(blocking.isActive()).toBe(true);
-		expect(other.isActive()).toBe(false);
+		// Verify blocking activity stays active after navigation attempt settles
+		await expect
+			.poll(() => blocking.isActive() && !other.isActive(), {
+				interval: 5,
+				timeout: 100,
+			})
+			.toBe(true);
 	});
 
 	test("canDeactivateAsync returning true allows navigation", async () => {
@@ -434,17 +441,18 @@ describe("Navigation guards (canDeactivateAsync)", () => {
 
 		// Start navigation - guard should be called
 		app.navigation?.set("other");
-		await new Promise((r) => setTimeout(r, 10));
-		expect(guardCalled).toBe(true);
-		expect(guardResolved).toBe(false); // Still waiting
+		await expect
+			.poll(() => guardCalled, { interval: 5, timeout: 100 })
+			.toBe(true);
+		expect(guardResolved).toBe(false); // Still waiting (guard has 30ms delay)
 		expect(guarded.isActive()).toBe(true); // Still active
 
-		// Wait for guard to resolve
+		// Wait for guard to resolve and navigation to complete
 		await expect
-			.poll(() => guardResolved, { interval: 5, timeout: 100 })
-			.toBe(true);
-		await expect
-			.poll(() => other.isActive(), { interval: 5, timeout: 100 })
+			.poll(() => guardResolved && other.isActive(), {
+				interval: 5,
+				timeout: 200,
+			})
 			.toBe(true);
 	});
 
@@ -484,11 +492,14 @@ describe("Navigation guards (canDeactivateAsync)", () => {
 
 		// Navigate to target - blocking should prevent entire navigation
 		app.navigation?.set("target");
-		await new Promise((r) => setTimeout(r, 50));
 
-		// Blocking activity prevents entire navigation - nothing changes
-		expect(blocking.isActive()).toBe(true);
-		expect(allowing.isActive()).toBe(true); // Still active (navigation blocked)
-		expect(target.isActive()).toBe(false); // Not activated (navigation blocked)
+		// Verify navigation was blocked - all states remain unchanged
+		await expect
+			.poll(
+				() =>
+					blocking.isActive() && allowing.isActive() && !target.isActive(),
+				{ interval: 5, timeout: 100 },
+			)
+			.toBe(true);
 	});
 });

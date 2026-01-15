@@ -10,6 +10,28 @@ import { AsyncTaskQueue } from "./Scheduler.js";
 import { View } from "./View.js";
 import type { ViewBuilder } from "./ViewBuilder.js";
 
+// Minimal AbortController stub for pre-2018 browsers:
+class _AbortSignalStub {
+	aborted = false;
+	addEventListener(type: string, handler: () => void) {
+		if (type === "abort") this._handlers.push(handler);
+	}
+	_handlers: Array<() => void> = [];
+}
+class _AbortControllerStub {
+	signal = new _AbortSignalStub();
+	abort() {
+		if (!this.signal.aborted) {
+			this.signal.aborted = true;
+			for (let h of this.signal._handlers) safeCall(h);
+		}
+	}
+}
+const _AbortController: typeof AbortController =
+	typeof AbortController !== "undefined"
+		? AbortController
+		: (_AbortControllerStub as any);
+
 /** Global list of activity instances for (old) activity class, for HMR */
 const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
 
@@ -168,7 +190,7 @@ export class Activity extends ObservableObject {
 			this.listen({ unlinked: () => this._hotInstances!.delete(this) });
 		}
 
-		this._abortController = new AbortController();
+		this._abortController = new _AbortController();
 		this._active = true;
 		this.emitChange("Active");
 
@@ -479,7 +501,7 @@ export class Activity extends ObservableObject {
 	private _active = false;
 
 	/** @internal Abort controller for current activation */
-	private _abortController = new AbortController();
+	private _abortController = new _AbortController();
 
 	/** @internal Render placement options, modified using setRenderMode */
 	private _renderOptions: RenderContext.PlacementOptions = { mode: "page" };
