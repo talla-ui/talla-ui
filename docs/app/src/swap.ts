@@ -1,15 +1,14 @@
 import { app } from "talla-ui";
 
 const SWAP_TIMEOUT = 500;
-const MAX_PREFETCH = 3;
+const BURST_LIMIT = 3;
+const BURST_RESET_DELAY = 2000;
+const THROTTLE_DELAY = 300;
 
 type HistoryState = {
 	_url?: string;
 	_scroll?: number;
 };
-
-let nPrefetch = 0;
-let prefetched: { [url: string]: true | undefined } = {};
 
 export function initializeSwap() {
 	if (!history.state?._url) {
@@ -56,15 +55,39 @@ function initPage() {
 	// }
 }
 
+let prefetched: { [url: string]: true | undefined } = {};
+let burstCount = 0;
+let burstResetTimer: unknown;
+let throttleTimer: unknown;
+let pendingPrefetch: string | undefined;
+
 function prefetch(event: Event) {
-	let url = (event.target as HTMLAnchorElement).href;
-	if (url && nPrefetch < MAX_PREFETCH && !prefetched[url]) {
-		nPrefetch++;
+	const url = (event.target as HTMLAnchorElement).href;
+	if (!url || prefetched[url]) return;
+
+	// prefetch quickly up to a limit
+	clearTimeout(burstResetTimer as any);
+	burstResetTimer = setTimeout(() => {
+		burstCount = 0;
+	}, BURST_RESET_DELAY);
+	if (burstCount < BURST_LIMIT) {
+		burstCount++;
 		prefetched[url] = true;
-		fetch(url)
-			.catch(() => {})
-			.then(() => nPrefetch--);
+		fetch(url).catch(() => {});
+		return;
 	}
+
+	// if the user is moving quickly, debounce prefetches
+	pendingPrefetch = url;
+	if (throttleTimer) return;
+	throttleTimer = setTimeout(() => {
+		throttleTimer = undefined;
+		if (pendingPrefetch && !prefetched[pendingPrefetch]) {
+			prefetched[pendingPrefetch] = true;
+			fetch(pendingPrefetch).catch(() => {});
+		}
+		pendingPrefetch = undefined;
+	}, THROTTLE_DELAY);
 }
 
 export async function swapPageAsync(url: string, back?: HistoryState) {
