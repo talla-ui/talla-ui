@@ -6,14 +6,7 @@ import {
 	useTestContext,
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
-import {
-	Activity,
-	app,
-	ComponentView,
-	ComponentViewBuilder,
-	UI,
-	UIButton,
-} from "../../dist/index.js";
+import { Activity, app, UI, UIButton, Widget } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext((options) => {
@@ -76,11 +69,11 @@ test("Rendered with text", async () => {
 });
 
 test("Rendered with fmt", async () => {
+	class MyButtonWidget extends Widget {
+		bar = "bar";
+	}
 	function MyButton() {
-		class MyButtonView extends ComponentView {
-			bar = "bar";
-		}
-		return ComponentViewBuilder(MyButtonView, (v) =>
+		return MyButtonWidget.builder((v) =>
 			UI.Button.fmt("foo {}", v.bind("bar")),
 		);
 	}
@@ -294,11 +287,11 @@ test("Button default styleName", async () => {
 });
 
 test("Button style with binding (styleName)", async () => {
+	class MyButtonWidget extends Widget {
+		buttonStyle = "default";
+	}
 	function MyButton() {
-		class MyButtonView extends ComponentView {
-			buttonStyle = "default";
-		}
-		return ComponentViewBuilder(MyButtonView, (v) =>
+		return MyButtonWidget.builder((v) =>
 			UI.Button("Dynamic style").style(v.bind("buttonStyle")),
 		);
 	}
@@ -320,11 +313,11 @@ test("Button style with binding (styleName)", async () => {
 });
 
 test("Button style overrides with binding", async () => {
+	class MyButtonWidget extends Widget {
+		isBold = false;
+	}
 	function MyButton() {
-		class MyButtonView extends ComponentView {
-			isBold = false;
-		}
-		return ComponentViewBuilder(MyButtonView, (v) =>
+		return MyButtonWidget.builder((v) =>
 			UI.Button("Bold toggle").bold(v.bind("isBold")),
 		);
 	}

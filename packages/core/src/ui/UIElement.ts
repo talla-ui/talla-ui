@@ -240,6 +240,51 @@ export namespace UIElement {
 			return modifier ? modifier(this) : (this as any);
 		}
 
+		/**
+		 * Extends this builder with custom methods, returning a new builder object.
+		 * - The returned object inherits all base builder methods via prototype chain.
+		 * - Extension methods can access base builder methods via `this`. Note that all extension methods **must** return `this`.
+		 * - The optional `defer` callback runs exactly once, on the first call to `build()`.
+		 * - Use `defer` to finalize configuration that depends on closure variables set by custom methods.
+		 * @param extensions An object containing custom methods to add to the builder.
+		 * @param defer Optional callback invoked once before building, receives the extended builder as well as the original (in case builder methods were overridden).
+		 * @returns A new builder with both the original and extension methods.
+		 *
+		 * @example
+		 * function Card(title: string) {
+		 *   let content: ViewBuilder[] = [];
+		 *   return UI.Column()
+		 *     .padding(16)
+		 *     .border(1)
+		 *     .extend({
+		 *       content(...views: ViewBuilder[]) {
+		 *         content = views;
+		 *         return this;
+		 *       },
+		 *       accent() {
+		 *         this.background("accent");
+		 *         return this;
+		 *       },
+		 *     }, (b) => {
+		 *       b.with(UI.Text(title).style("title"), ...content);
+		 *     });
+		 * }
+		 */
+		extend<E extends object>(
+			extensions: E & ThisType<this & E>,
+			defer?: (result: this & E, base: this) => void,
+		): this & E {
+			const result = Object.create(this);
+			Object.defineProperties(result, Object.getOwnPropertyDescriptors(this));
+			return Object.assign(result, extensions, {
+				build: () => {
+					if (defer) defer(result, this);
+					defer = undefined;
+					return this.build.call(result);
+				},
+			});
+		}
+
 		// --- base properties
 
 		/**

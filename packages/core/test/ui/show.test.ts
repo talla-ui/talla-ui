@@ -10,8 +10,6 @@ import {
 	Activity,
 	app,
 	Binding,
-	ComponentView,
-	ComponentViewBuilder,
 	ObservableObject,
 	UI,
 	UICell,
@@ -20,6 +18,7 @@ import {
 	UIShowView,
 	UIText,
 	UITextField,
+	Widget,
 } from "../../dist/index.js";
 
 beforeEach(() => {
@@ -102,14 +101,12 @@ test("Body view events are propagated", async () => {
 
 test("Rendering content using bound state", async () => {
 	// Create a simple object with observable state
-	function TestView() {
-		class TestView extends ComponentView {
+	const TestView = () =>
+		class extends Widget {
 			condition = false;
-		}
-		return ComponentViewBuilder(TestView, (v) =>
-			UI.Cell(UI.ShowWhen(v.bind("condition"), UI.Text("foo"))),
-		);
-	}
+		}.builder((v) => {
+			return UI.Cell(UI.ShowWhen(v.bind("condition"), UI.Text("foo")));
+		});
 
 	console.log("Creating view");
 	useTestContext();
@@ -190,20 +187,18 @@ test("Rendering parent as inserted view fails silently", async () => {
 	await expectOutputAsync({ text: "foo" }); // text rendered, no errors
 });
 
-test("Set inserted view using component view, and render", async () => {
-	// Create a component view builder function
-	function MyContent() {
-		class MyContentView extends ComponentView {
-			text = StringConvertible.EMPTY;
-		}
-		return {
-			...ComponentViewBuilder(MyContentView, (v) => UI.Text(v.bind("text"))),
+test("Set inserted view using widget, and render", async () => {
+	// Create a widget builder function
+	class MyContentWidget extends Widget {
+		text = StringConvertible.EMPTY;
+	}
+	const MyContent = () =>
+		MyContentWidget.builder((v) => UI.Text(v.bind("text"))).extend({
 			text(text: StringConvertible) {
 				this.initializer.set("text", text);
 				return this;
 			},
-		};
-	}
+		});
 
 	class MyActivity extends Activity {
 		static override View() {

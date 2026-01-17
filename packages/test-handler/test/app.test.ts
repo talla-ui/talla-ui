@@ -2,13 +2,12 @@ import {
 	Activity,
 	app,
 	Binding,
-	ComponentView,
-	ComponentViewBuilder,
 	MessageDialogOptions,
 	UI,
 	UIText,
 	UITextField,
 	ViewEvent,
+	Widget,
 } from "@talla-ui/core";
 import { StringConvertible } from "@talla-ui/util";
 import { beforeEach, expect, test } from "vitest";
@@ -60,16 +59,12 @@ test("Single control is rendered", async () => {
 	await expectOutputAsync({ text: "FOO" });
 });
 
-test("Single component view with binding is rendered", async () => {
+test("Single widget with binding is rendered", async () => {
+	class MyWidget extends Widget {
+		title = StringConvertible.EMPTY;
+	}
 	function MyView() {
-		return {
-			...ComponentViewBuilder(
-				class extends ComponentView {
-					title = StringConvertible.EMPTY;
-				},
-				(v) => UI.Text(v.bind("title")),
-			),
-		};
+		return MyWidget.builder((v) => UI.Text(v.bind("title")));
 	}
 	let myView = MyView().build();
 	myView.title = "TEST";

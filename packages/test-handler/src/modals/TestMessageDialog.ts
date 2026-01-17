@@ -1,16 +1,16 @@
 import {
 	app,
-	ComponentView,
 	MessageDialogOptions,
 	ModalFactory,
 	RenderContext,
 	UI,
+	Widget,
 } from "@talla-ui/core";
 import { fmt, StringConvertible } from "@talla-ui/util";
 
 /** @internal Limited implementation of a message dialog controller, that can be used to test for message display and button presses */
 export class TestMessageDialog
-	extends ComponentView
+	extends Widget
 	implements
 		ModalFactory.AlertDialogController,
 		ModalFactory.ConfirmDialogController

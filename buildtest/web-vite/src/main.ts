@@ -4,9 +4,6 @@ import {
 	app,
 	Binding,
 	BindingOrValue,
-	ComponentView,
-	ComponentViewBuilder,
-	DeferredViewBuilder,
 	fmt,
 	FormState,
 	ModalMenuOptions,
@@ -15,99 +12,119 @@ import {
 	UI,
 	UIButton,
 	UIIconResource,
+	UIText,
 	UITextField,
 	ViewBuilder,
 	ViewBuilderEventHandler,
 	ViewBuilderFunction,
 	ViewEvent,
+	Widget,
 } from "talla-ui";
 
+// NEW Simple pattern: defer() + extend() for stateless reusable views
 export function CardLayout(title: StringConvertible) {
+	let titleModifier: ViewBuilderFunction<UIText.TextBuilder> | undefined;
 	let content: ViewBuilder[] = [];
-	return {
-		...new DeferredViewBuilder(() =>
-			// This runs only once, before the first view is created
-			UI.Column()
-				.dropShadow()
-				.border(1)
-				.borderRadius(16)
-				.padding(16)
-				.gap()
-				.maxWidth("100%")
-				.with(UI.Text(title).style("title"), ...content),
-		),
-		with(...cardContent: ViewBuilder[]) {
-			content = cardContent;
-			return this;
-		},
-	};
+	return UI.Column()
+		.dropShadow()
+		.border(1)
+		.padding(16)
+		.gap()
+		.maxWidth("100%")
+		.borderRadius(16)
+		.extend(
+			{
+				with(...viewBuilders: ViewBuilder[]) {
+					content = viewBuilders;
+					return this;
+				},
+				blue() {
+					this.background(UI.colors.blue);
+					return this;
+				},
+				applyTitle(f: ViewBuilderFunction<UIText.TextBuilder>) {
+					titleModifier = f;
+					return this;
+				},
+			},
+			(_, base) => {
+				base.with(
+					UI.Text(title).style("title").apply(titleModifier),
+					...content,
+				);
+			},
+		);
 }
 
-function Collapsible(text: StringConvertible, ...content: ViewBuilder[]) {
-	class CollapsibleView extends ComponentView {
-		width = width;
-		expanded = false;
-		onToggle() {
-			this.expanded = !this.expanded;
-		}
+// The widget class represents the state and event handlers
+class CollapsibleWidget extends Widget {
+	expanded = false;
+	onToggle() {
+		this.expanded = !this.expanded;
 	}
+}
 
+// The view builder determines the presentation only
+function CollapsibleView(
+	v: Binding<CollapsibleWidget>,
+	text: StringConvertible,
+	width: number,
+	content: ViewBuilder[],
+) {
+	return UI.Column()
+		.width(width, undefined, "100%")
+		.with(
+			UI.Text(text)
+				.icon(v.bind("expanded").then("chevronDown", "chevronNext"))
+				.cursor("pointer")
+				.background("text")
+				.fg("background")
+				.padding()
+				.onClick("Toggle"),
+			UI.ShowWhen(v.bind("expanded"), UI.Column(...content)),
+		);
+}
+
+// The builder function puts the view and widget together using Widget.builder()
+function Collapsible(text: StringConvertible, ...content: ViewBuilder[]) {
 	let width = 300;
-	return {
-		...ComponentViewBuilder(CollapsibleView, (v) =>
-			UI.Column()
-				.width(v.bind("width"), undefined, "100%")
-				.with(
-					UI.Text(text)
-						.icon(v.bind("expanded").then("chevronDown", "chevronNext"))
-						.cursor("pointer")
-						.background("text")
-						.fg("background")
-						.padding()
-						.onClick("Toggle"),
-					UI.ShowWhen(v.bind("expanded"), UI.Column(...content)),
-				),
-		),
-		/** Set the expanded state of the view */
-		expand(expanded = true) {
-			this.initializer.set("expanded", expanded);
+	return CollapsibleWidget.builder((v) =>
+		CollapsibleView(v, text, width, content),
+	).extend({
+		/** Expands (default) or collapses the widget */
+		expand(set = true) {
+			this.initializer.set("expanded", set);
 			return this;
 		},
 		width(w: number) {
 			width = w;
 			return this;
 		},
-	};
+	});
 }
 
+// Using extend() with defer for stateless deferred views
 function MyTitle(text?: StringConvertible) {
-	let width: BindingOrValue<number | undefined>;
-	return {
-		...DeferredViewBuilder(() =>
-			UI.Text(text)
-				.style("title")
-				.padding({ bottom: 8 })
-				.width(width)
-				.allowKeyboardFocus()
-				.onClick("Select")
-				.handleKey("Enter", "Select")
-				.handle("Select", async function (_, text) {
-					text.text = "Confirming...";
-					let choice = await app.showConfirmDialogAsync([
-						"Are you sure you want to click this button?",
-					]);
-					console.log("Select", choice);
-				}),
-		),
-		text(l: BindingOrValue<StringConvertible | undefined>) {
-			text = l;
-			return this;
-		},
-		width(w: BindingOrValue<number | undefined>) {
-			width = w;
-			return this;
-		},
-	};
+	return UI.Text(text)
+		.style("title")
+		.padding({ bottom: 8 })
+		.allowKeyboardFocus()
+		.onClick("Select")
+		.handleKey("Enter", "Select")
+		.handle("Select", async function (_, view) {
+			view.text = "Confirming...";
+			let choice = await app.showConfirmDialogAsync([
+				"Are you sure you want to click this button?",
+			]);
+			console.log("Select", choice);
+			view.text = text;
+		})
+		.extend({
+			text(t: BindingOrValue<StringConvertible | undefined>) {
+				text = t;
+				return this;
+			},
+		});
 }
 
 class CountService extends ObservableObject {
@@ -135,33 +152,33 @@ type ButtonSwitchOption = {
 
 const SwitchButton = () => UI.Button().style("toggleButton");
 
-class ButtonSwitchView extends ComponentView {
-	value: unknown = undefined;
-	protected onSetValue(e: ViewEvent) {
-		if (!e.data.value) return;
-		if (this.value === e.data.value) return;
-		this.value = e.data.value;
-		this.emitChange("Change", { value: this.value });
-	}
-}
-
+// The widget class can also be moved into the closure, at a slight perf hit
 function ButtonSwitch(options: ButtonSwitchOption[]) {
+	class ButtonSwitchWidget extends Widget {
+		value: unknown = undefined;
+		protected onSetValue(e: ViewEvent) {
+			if (!e.data.value) return;
+			if (this.value === e.data.value) return;
+			this.value = e.data.value;
+			this.emitChange("Change", { value: this.value });
+		}
+	}
+
 	let Button = SwitchButton;
-	return {
-		...ComponentViewBuilder(ButtonSwitchView, (v) =>
-			UI.Row().with(
-				...options.map((option) =>
-					Button()
-						.text(option.text)
-						.icon(option.icon)
-						.value(option.value)
-						.pressed(v.bind("value").equals(option.value))
-						.disabled(option.disabled ?? false)
-						.onClick("SetValue")
-						.onPress("SetValue"),
-				),
+	return ButtonSwitchWidget.builder((v) =>
+		UI.Row().with(
+			...options.map((option) =>
+				Button()
+					.text(option.text)
+					.icon(option.icon)
+					.value(option.value)
+					.pressed(v.bind("value").equals(option.value))
+					.disabled(option.disabled ?? false)
+					.onClick("SetValue")
+					.onPress("SetValue"),
 			),
 		),
+	).extend({
 		value(value: BindingOrValue<unknown>) {
 			this.initializer.set("value", value);
 			return this;
@@ -170,7 +187,7 @@ function ButtonSwitch(options: ButtonSwitchOption[]) {
 			this.initializer.observeFormState(formState, formField, "value");
 			return this;
 		},
-		onChange(handle: string | ViewBuilderEventHandler<ButtonSwitchView>) {
+		onChange(handle: string | ViewBuilderEventHandler<ButtonSwitchWidget>) {
 			this.initializer.handle("Change", handle);
 			return this;
 		},
@@ -178,7 +195,7 @@ function ButtonSwitch(options: ButtonSwitchOption[]) {
 			Button = () => fn(Button());
 			return this;
 		},
-	};
+	});
 }
 
 function MainView(v: Binding<MainActivity>) {
@@ -612,40 +629,43 @@ export class SubActivity extends Activity {
 	}
 }
 
-function TextFieldGroup(
-	text: StringConvertible,
-	type: "text" | "password" = "text",
-) {
-	class TextFieldGroupView extends ComponentView {
-		text?: string = undefined;
-		error?: any;
-		onInput(e: ViewEvent<UITextField>) {
-			this.text = e.source.value;
-		}
+// This pattern is more OO but less readable:
+class TextFieldGroupWidget extends Widget {
+	text?: string = undefined;
+	error?: any;
+	onInput(e: ViewEvent<UITextField>) {
+		this.text = e.source.value;
 	}
 
-	return {
-		...ComponentViewBuilder(TextFieldGroupView, (v) =>
+	static TextFieldGroup(
+		text: StringConvertible,
+		type: "text" | "password" = "text",
+	) {
+		return TextFieldGroupWidget.builder((v) =>
 			UI.Column()
 				.gap()
 				.with(
 					UI.Text(text).dim(),
 					UI.TextField().trim().value(v.bind("text")).type(type),
-					UI.Text(v.bind("error")).hideWhen(v.bind("error").not()).fg("danger"),
+					UI.Text.fmt("Error: {}", v.bind("error"))
+						.hideWhen(v.bind("error").not())
+						.fg("danger"),
 				),
-		),
-		bindFormState(
-			formState: Binding<FormState | undefined>,
-			formField: string,
-		) {
-			this.initializer.observeFormState(formState, formField, "text", (f) =>
-				String(f.values[formField] ?? ""),
-			);
-			this.initializer.set("error", formState.bind("errors").bind(formField));
-			return this;
-		},
-	};
+		).extend({
+			bindFormState(
+				formState: Binding<FormState | undefined>,
+				formField: string,
+			) {
+				this.initializer.observeFormState(formState, formField, "text", (f) =>
+					String(f.values[formField] ?? ""),
+				);
+				this.initializer.set("error", formState.bind("errors").bind(formField));
+				return this;
+			},
+		});
+	}
 }
+const TextFieldGroup = TextFieldGroupWidget.TextFieldGroup;
 
 function OtherView(v: Binding<OtherActivity>) {
 	return UI.Column()

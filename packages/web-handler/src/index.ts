@@ -1,7 +1,7 @@
 import * as core from "@talla-ui/core";
 import { setWebTheme, useWebContext } from "./setup.js";
 import { WebContextOptions } from "./WebContextOptions.js";
-import { WebModalComponents } from "./WebModalFactory.js";
+import { WebModalViews } from "./WebModalFactory.js";
 import { WebNavigationContext } from "./WebNavigationContext.js";
 import { WebRenderer } from "./WebRenderer.js";
 import { WebTheme } from "./WebTheme.js";
@@ -9,7 +9,7 @@ export {
 	setWebTheme,
 	useWebContext,
 	WebContextOptions,
-	WebModalComponents,
+	WebModalViews,
 	WebNavigationContext,
 	WebRenderer,
 	WebTheme,

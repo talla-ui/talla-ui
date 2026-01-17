@@ -1,20 +1,17 @@
 import {
 	app,
 	Binding,
-	ComponentView,
 	ModalFactory,
 	RenderContext,
 	UI,
 	UIContainer,
 	View,
 	ViewEvent,
+	Widget,
 } from "@talla-ui/core";
 
 /** @internal Default modal dialog view; shown synchronously, removed when view is unlinked */
-export class Dialog
-	extends ComponentView
-	implements ModalFactory.DialogController
-{
+export class Dialog extends Widget implements ModalFactory.DialogController {
 	static Container(): UIContainer.ContainerBuilder {
 		return UI.Cell()
 			.accessibleRole("dialog")

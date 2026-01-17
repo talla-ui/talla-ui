@@ -194,3 +194,55 @@ test("isHovered() returns false after mouseleave", async () => {
 	out.getSingle().sendPlatformEvent("mouseleave");
 	expect(cell.isHovered()).toBe(false);
 });
+
+test("View builder with extend adds custom methods", () => {
+	function Card() {
+		return UI.Cell().extend({
+			highlight() {
+				this.background("accent");
+				return this;
+			},
+		});
+	}
+	let cell = Card().highlight().build();
+	expect(cell.style?.background).toBe(UI.colors.accent);
+});
+
+test("View builder with extend and defer finalizes closure variables", () => {
+	function Card() {
+		let content: string = "";
+		return UI.Cell()
+			.padding(16)
+			.extend(
+				{
+					content(text: string) {
+						content = text;
+						return this;
+					},
+				},
+				(b) => {
+					b.with(UI.Text(content));
+				},
+			);
+	}
+	let cell = Card().content("Hello").build();
+	expect(cell.style?.padding).toBe(16);
+	expect(cell.content.toArray()).toHaveLength(1);
+	let text = cell.content.first() as UIText;
+	expect(text.text).toBe("Hello");
+});
+
+test("View builder extend defer runs once per builder", () => {
+	let deferCount = 0;
+	function Card() {
+		return UI.Cell().extend({}, () => {
+			deferCount++;
+		});
+	}
+	let builder = Card();
+	expect(deferCount).toBe(0);
+	builder.build();
+	expect(deferCount).toBe(1);
+	builder.build();
+	expect(deferCount).toBe(1);
+});

@@ -1,9 +1,9 @@
 import {
-	ComponentView,
 	View,
 	ViewBuilder,
 	ViewBuilderEventHandler,
 	ViewEvent,
+	Widget,
 } from "../../app/index.js";
 import { ERROR, err, safeCall } from "../../errors.js";
 import {
@@ -60,7 +60,7 @@ export type UIListViewEvent<T = unknown> = ObservableEvent<
  */
 export class UIListView<
 	TItem extends ObservableObject = ObservableObject,
-> extends ComponentView {
+> extends Widget {
 	static {
 		// Disable bindings on UIListView itself
 		UIListView.disableBindings();
@@ -437,7 +437,7 @@ export namespace UIListView {
 	 * - The {@link getListItemView()} method returns the current view, i.e. the view body.
 	 * @see {@link UIListView}
 	 */
-	export class ItemControllerView<TItem> extends ComponentView {
+	export class ItemControllerView<TItem> extends Widget {
 		/**
 		 * Creates a new item controller view object
 		 * - This constructor is used by {@link UIListView} and should not be used directly by an application.

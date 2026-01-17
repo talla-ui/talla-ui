@@ -1,7 +1,7 @@
 import { Dialog } from "./modals/Dialog.js";
 import { MessageDialog } from "./modals/MessageDialog.js";
 import { ModalMenu } from "./modals/ModalMenu.js";
-import { WebModalComponents } from "./WebModalFactory.js";
+import { WebModalViews } from "./WebModalFactory.js";
 
 /**
  * A class that contains configuration options for the web handler.
@@ -52,11 +52,11 @@ export class WebContextOptions {
 	importCSS: string[] = [];
 
 	/**
-	 * The view builder components used by modal views.
-	 * - Includes components for dialogs, message dialogs, and context menus.
-	 * - Modify individual properties to customize modal appearance.
+	 * A set of functions that return view builders used by modal views.
+	 * - Includes functions that return builders for individual parts of dialogs, message dialogs, and context menus.
+	 * - Modify the properties of this object directly to customize modal appearance.
 	 */
-	modalComponents: WebModalComponents = {
+	modalViews: WebModalViews = {
 		DialogContainer: Dialog.Container,
 		MessageDialogContainer: MessageDialog.Container,
 		MessageContainer: MessageDialog.MessageContainer,

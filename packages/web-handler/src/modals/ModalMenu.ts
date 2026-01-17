@@ -1,5 +1,4 @@
 import {
-	ComponentView,
 	ModalFactory,
 	ModalMenuOptions,
 	RenderContext,
@@ -10,6 +9,7 @@ import {
 	UIText,
 	ViewBuilder,
 	ViewEvent,
+	Widget,
 	app,
 } from "@talla-ui/core";
 import { reduceElementMotion } from "../WebOutputTransform.js";
@@ -21,10 +21,7 @@ const DEFAULT_WIDTH = 260;
 const DEFAULT_ICON_STYLE: UIText.IconStyle = { margin: "gap" };
 
 /** @internal Default modal menu view; shown asynchronously and resolves a promise */
-export class ModalMenu
-	extends ComponentView
-	implements ModalFactory.MenuController
-{
+export class ModalMenu extends Widget implements ModalFactory.MenuController {
 	/** Defaults for vertical menu offset, applied to new {@link WebTheme} instances */
 	static readonly OFFSET_DEFAULT = 2;
 

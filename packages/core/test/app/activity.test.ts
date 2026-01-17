@@ -6,13 +6,12 @@ import {
 	AppContext,
 	AsyncTaskQueue,
 	Binding,
-	ComponentView,
-	ComponentViewBuilder,
 	ObservableObject,
 	UI,
 	UICell,
 	UIText,
 	ViewBuilder,
+	Widget,
 } from "../../dist/index.js";
 
 beforeEach(() => {
@@ -396,14 +395,14 @@ describe("View rendering", () => {
 	});
 
 	test("Nested views with bindings", async () => {
-		class MyComponentView extends ComponentView {
+		class MyWidget extends Widget {
 			foo = 2;
 		}
-		function MyComponent(
+		function MyWidgetBuilder(
 			foo: number,
 			...content: Array<ViewBuilder | undefined>
 		) {
-			let builder = ComponentViewBuilder(MyComponentView, (v) =>
+			let builder = MyWidget.builder((v) =>
 				UI.Column(UI.Text(v.bind("foo")), ...content),
 			);
 			builder.initializer.set("foo", foo);
@@ -413,7 +412,7 @@ describe("View rendering", () => {
 			static override View(v: Binding<MyActivity>) {
 				return UI.Cell(
 					UI.Text(v.bind("foo")),
-					MyComponent(2, UI.Text(v.bind("foo")), UI.Text(v.bind("bar"))),
+					MyWidgetBuilder(2, UI.Text(v.bind("foo")), UI.Text(v.bind("bar"))),
 				);
 			}
 

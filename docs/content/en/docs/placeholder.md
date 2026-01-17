@@ -14,10 +14,8 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link Binding} +
 - {@link BindingOrValue} +
 - {@link clickOutputAsync} +
-- {@link ComponentView} +
-- {@link ComponentViewBuilder} +
+- {@link Widget} +
 - {@link DeferredString} +
-- {@link DeferredViewBuilder} +
 - {@link enterTextOutputAsync} +
 - {@link expectMessageDialogAsync} +
 - {@link expectNavAsync} +
@@ -81,7 +79,7 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link ViewEvent} +
 - {@link Viewport} +
 - {@link WebContextOptions} +
-- {@link WebModalComponents} +
+- {@link WebModalViews} +
 - {@link WebNavigationContext} +
 - {@link WebRenderer} +
 - {@link WebTheme} +

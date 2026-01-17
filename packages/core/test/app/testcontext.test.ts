@@ -12,8 +12,6 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import {
 	Activity,
 	AppContext,
-	ComponentView,
-	ComponentViewBuilder,
 	LocalData,
 	MessageDialogOptions,
 	ModalMenuOptions,
@@ -22,6 +20,7 @@ import {
 	UICell,
 	UIText,
 	ViewEvent,
+	Widget,
 	app,
 } from "../../dist/index.js";
 
@@ -191,9 +190,9 @@ describe("Rendering views", () => {
 		await app.renderer.expectOutputAsync({ source: view });
 	});
 
-	test("Cell view from single component view", async () => {
-		const MyView = ComponentViewBuilder(ComponentView, () => UI.Cell());
-		let view = MyView.build();
+	test("Cell view from single widget", async () => {
+		const MyWidget = Widget.builder(() => UI.Cell());
+		let view = MyWidget.build();
 		let app = useTestContext();
 		renderTestView(view);
 		await app.renderer.expectOutputAsync({
@@ -202,16 +201,16 @@ describe("Rendering views", () => {
 		});
 	});
 
-	test("Cell view from single component view, handle events async", async () => {
-		class CellView extends ComponentView {
+	test("Cell view from single widget, handle events async", async () => {
+		class CellWidget extends Widget {
 			async onClick(e: ViewEvent) {
 				expect(e.source).toBeInstanceOf(UICell);
 				await Promise.resolve();
 				throw Error("Catch me");
 			}
 		}
-		const MyView = ComponentViewBuilder(CellView, () => UI.Cell());
-		let view = MyView.build();
+		const MyWidget = CellWidget.builder(() => UI.Cell());
+		let view = MyWidget.build();
 		useTestContext((options) => {
 			options.throwUncaughtErrors = false;
 		});
@@ -225,8 +224,8 @@ describe("Rendering views", () => {
 	});
 
 	test("Remove view after rendering", async () => {
-		const MyView = ComponentViewBuilder(ComponentView, () => UI.Cell());
-		let view = MyView.build();
+		const MyWidget = Widget.builder(() => UI.Cell());
+		let view = MyWidget.build();
 		let app = useTestContext();
 		let rendered = app.render(view);
 		await app.renderer.expectOutputAsync({

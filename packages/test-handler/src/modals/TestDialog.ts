@@ -1,16 +1,16 @@
 import {
 	app,
 	Binding,
-	ComponentView,
 	ModalFactory,
 	RenderContext,
 	UI,
 	View,
+	Widget,
 } from "@talla-ui/core";
 
 /** @internal Limited implementation of a dialog controller */
 export class TestDialog
-	extends ComponentView
+	extends Widget
 	implements ModalFactory.DialogController
 {
 	constructor(public dialogView: View) {

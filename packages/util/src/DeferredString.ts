@@ -39,7 +39,7 @@ export type StringConvertible = string | { toString(): string };
 export namespace StringConvertible {
 	/**
 	 * The empty string, typed as {@link StringConvertible}
-	 * - This constant can be used in place of an empty string, forcing a property type to `StringConvertible`, e.g. for use with component views.
+	 * - This constant can be used in place of an empty string, forcing a property type to `StringConvertible`.
 	 */
 	export const EMPTY: StringConvertible = "";
 }
@@ -239,7 +239,7 @@ export namespace DeferredString {
 
 		/**
 		 * Returns the current (user) culture preferences and/or locale defaults
-		 * - This method should return an object with culture-specific options, as used by localizable components. The exact properties of this object are intentionally application and platform specific. They may be initialized from defaults for the selected language and region, and extended with user preferences (to allow for e.g. `en-US` language with non-US date formatting).
+		 * - This method should return an object with culture-specific options, as used by e.g. localizable widgets. The exact properties of this object are intentionally application and platform specific. They may be initialized from defaults for the selected language and region, and extended with user preferences (to allow for e.g. `en-US` language with non-US date formatting).
 		 * - The framework renderer itself may use at least the `textDirection` property, if present, to determine whether the current locale uses right-to-left script.
 		 */
 		getCulture(): Record<string, any>;

@@ -1,11 +1,11 @@
 import {
 	app,
-	ComponentView,
 	MessageDialogOptions,
 	ModalFactory,
 	RenderContext,
 	UI,
 	UIContainer,
+	Widget,
 } from "@talla-ui/core";
 import { fmt, StringConvertible } from "@talla-ui/util";
 import { applyDragModal } from "../drag/modal.js";
@@ -13,7 +13,7 @@ import { Dialog } from "./Dialog.js";
 
 /** @internal Default modal message dialog view; shown asynchronously and resolves a promise */
 export class MessageDialog
-	extends ComponentView
+	extends Widget
 	implements
 		ModalFactory.AlertDialogController,
 		ModalFactory.ConfirmDialogController

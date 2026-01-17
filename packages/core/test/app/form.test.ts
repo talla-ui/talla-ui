@@ -8,8 +8,6 @@ import {
 	AppContext,
 	Binding,
 	BindingOrValue,
-	ComponentView,
-	ComponentViewBuilder,
 	FormState,
 	ObservableEvent,
 	UI,
@@ -17,6 +15,7 @@ import {
 	UIText,
 	UITextField,
 	ViewBuilder,
+	Widget,
 } from "../../dist/index.js";
 
 beforeEach(() => {
@@ -129,7 +128,7 @@ test("Validation using existing InputValidator", () => {
 	expect(ctx.valid).toBe(true);
 });
 
-test("Component view, binding to value and error", () => {
+test("Widget, binding to value and error", () => {
 	useTestContext();
 	let ERR = "Foo must have at least 3 characters";
 	let ctx = new FormState(
@@ -150,11 +149,11 @@ test("Component view, binding to value and error", () => {
 		.accessibleLabel("Foo")
 		.bold();
 
-	class FormView extends ComponentView {
+	class FormWidget extends Widget {
 		form = undefined as FormState | undefined;
 	}
 	const MyComp = () =>
-		ComponentViewBuilder(FormView, (v) =>
+		FormWidget.builder((v) =>
 			UI.Row(
 				UI.Text(v.bind("form.errors.foo")),
 				UI.TextField().formStateValue(v.bind("form"), "foo"),
@@ -185,16 +184,14 @@ test("Component view, binding to value and error", () => {
 test("Custom form container, rendered", async () => {
 	useTestContext();
 
+	class FormContainerWidget extends Widget {
+		form?: FormState;
+	}
 	function FormContainer(
 		formContext: BindingOrValue<FormState | undefined>,
 		content: (v: Binding<{ form?: FormState }>) => ViewBuilder[],
 	) {
-		let b = ComponentViewBuilder(
-			class extends ComponentView {
-				form?: FormState;
-			},
-			(v) => UI.Column(...content(v)),
-		);
+		let b = FormContainerWidget.builder((v) => UI.Column(...content(v)));
 		b.initializer.set("form", formContext);
 		return b;
 	}

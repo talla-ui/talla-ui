@@ -1,17 +1,17 @@
 import {
 	app,
-	ComponentView,
 	ModalFactory,
 	ModalMenuOptions,
 	RenderContext,
 	UI,
 	ViewBuilder,
 	ViewEvent,
+	Widget,
 } from "@talla-ui/core";
 
 /** @internal Limited implementation of a menu controller, that can be used to test menu selection using text element clicks */
 export class TestModalMenu
-	extends ComponentView
+	extends Widget
 	implements ModalFactory.MenuController
 {
 	constructor(public options: ModalMenuOptions) {

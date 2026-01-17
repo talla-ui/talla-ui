@@ -4,13 +4,7 @@ import {
 	useTestContext,
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
-import {
-	ComponentView,
-	UI,
-	UIButton,
-	UICell,
-	ViewEvent,
-} from "../../dist/index.js";
+import { UI, UIButton, UICell, ViewEvent, Widget } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
@@ -33,13 +27,13 @@ test("Single element, request focus", async () => {
 	await expectOutputAsync({ type: "cell", focused: true });
 });
 
-test("Single component view, request focus", async () => {
-	class MyView extends ComponentView {
+test("Single widget, request focus", async () => {
+	class MyWidget extends Widget {
 		protected override get body() {
 			return UI.Cell().allowFocus().build();
 		}
 	}
-	let view = new MyView();
+	let view = new MyWidget();
 	renderTestView(view);
 	await expectOutputAsync({ type: "cell" });
 	view.requestFocus();
@@ -65,7 +59,7 @@ test("Focus requests", async () => {
 test("Focusing one element blurs another", async () => {
 	let events: string[] = [];
 	let done = false;
-	class MyView extends ComponentView {
+	class FocusTestWidget extends Widget {
 		cell2?: UICell;
 
 		protected override get body() {
@@ -94,7 +88,7 @@ test("Focusing one element blurs another", async () => {
 			done = true;
 		}
 	}
-	renderTestView(new MyView());
+	renderTestView(new FocusTestWidget());
 	await expect.poll(() => done).toBeTruthy();
 	expect(events).toEqual(["FocusIn", "FocusOut"]);
 });

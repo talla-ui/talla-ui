@@ -360,7 +360,7 @@ export class ObservableObject {
 	 * @returns The target parameter
 	 *
 	 * @example
-	 * class SomeView extends ComponentView {
+	 * class SomeWidget extends Widget {
 	 *   constructor() {
 	 *     super();
 	 *

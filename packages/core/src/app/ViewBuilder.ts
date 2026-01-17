@@ -5,12 +5,8 @@ import {
 	ObservableEvent,
 	ObservableObject,
 } from "../object/index.js";
-import type { ComponentView } from "./ComponentView.js";
 import type { FormState } from "./FormState.js";
 import type { View } from "./View.js";
-
-/** Cache of created view builders */
-const _deferredBuilders = new WeakMap<Function, ViewBuilder>();
 
 /**
  * An interface for objects that build pre-configured view instances
@@ -18,8 +14,7 @@ const _deferredBuilders = new WeakMap<Function, ViewBuilder>();
  * @description
  * Classes that extend this type (such as {@link UIButton.ButtonBuilder}) typically provide a fluent interface for creating and configuring views. They use a {@link ViewBuilder.Initializer} to configure the initialization logic, including property setting, binding, event interception, and initialization callbacks (e.g. for adding content to container views), and expose this functionality using methods on the builder class.
  *
- * @see {@link DeferredViewBuilder}
- * @see {@link ComponentViewBuilder}
+ * @see {@link Widget.builder}
  */
 export interface ViewBuilder<TView extends View = View> {
 	/**
@@ -34,7 +29,7 @@ export namespace ViewBuilder {
 	 * A class that handles the initialization and configuration of views, as part of a view builder
 	 *
 	 * @description
-	 * The Initializer class provides methods to configure view properties, bindings, event handlers, and initialization callbacks. It provides the implementation for fluent configuration methods on {@link ViewBuilder} interfaces, for many types of built-in view builders as well as component view classes.
+	 * The Initializer class provides methods to configure view properties, bindings, event handlers, and initialization callbacks. It provides the implementation for fluent configuration methods on {@link ViewBuilder} interfaces, for many types of built-in view builders as well as widget classes.
 	 */
 	export class Initializer<TView extends View> {
 		/**
@@ -207,137 +202,3 @@ export type ViewBuilderEventHandler<TView extends View = View, TData = {}> = (
 	event: ObservableEvent<View, Record<string, unknown> & TData>,
 	view: TView,
 ) => void;
-
-/**
- * A view builder that encapsulates a function to define a view builder lazily
- * - This function is helpful for creating view builders that may require further configuration after being returned from a function.
- * - The encapsulated function is called only once, before the first view is created.
- *
- * @example
- * function MyButton() {
- *   let text = "";
- *   return {
- *     ...DeferredViewBuilder(() => UI.Button(text)),
- *     text(text: BindingOrValue<StringConvertible>) {
- *       text = text;
- *       return this;
- *     },
- *   }
- * }
- */
-export const DeferredViewBuilder = function (define: () => ViewBuilder) {
-	return {
-		build() {
-			let builder = _deferredBuilders.get(define);
-			if (!builder) _deferredBuilders.set(define, (builder = define()));
-			return builder.build();
-		},
-	};
-} as DeferredViewBuilder.Type;
-
-export declare namespace DeferredViewBuilder {
-	/** The type of the DeferredViewBuilder function, usable both as a function and constructor */
-	export interface Type {
-		new <TView extends View = View>(
-			define: () => ViewBuilder<TView>,
-		): ViewBuilder<TView>;
-		<TView extends View = View>(
-			define: () => ViewBuilder<TView>,
-		): ViewBuilder<TView>;
-	}
-}
-
-/**
- * A view builder for a component view class with a function to define its body
- * - The view class is used to create each view instance.
- * - The encapsulated view builder function is called only once, before the first view is created, to define the body of the view.
- *
- * @example
- * class MyWrapper extends ComponentView {
- *   text = "";
- * }
- *
- * function MyWrapper() {
- *   return {
- *     ...ComponentViewBuilder(MyWrapper, (v) => UI.Button(v.bind("text"))),
- *     text(text: BindingOrValue<StringConvertible>) {
- *       this.initializer.set("text", text);
- *       return this;
- *     },
- *   }
- * }
- */
-export const ComponentViewBuilder = function (
-	ViewClass: new () => View,
-	viewBuilder?: (binding: Binding) => ViewBuilder,
-) {
-	let symbol = Symbol("ComponentView");
-	let initializer = new ViewBuilder.Initializer(ViewClass, (view) => {
-		// add a symbol property to the view for binding to the view instance
-		Object.defineProperty(view, symbol, { value: view });
-	});
-	if (viewBuilder) {
-		initializer.initialize((view) => {
-			let body: View | undefined;
-			Object.defineProperty(view, "body", {
-				get() {
-					if (body) return body;
-					let builder = _deferredBuilders.get(viewBuilder);
-					if (!builder) {
-						builder = viewBuilder(new Binding(symbol));
-						_deferredBuilders.set(viewBuilder, builder);
-					}
-					return (body = builder.build());
-				},
-			});
-		});
-	}
-	return {
-		initializer,
-		build: initializer.build.bind(initializer),
-		apply: function (f) {
-			return f ? f(this) : this;
-		},
-	};
-} as ComponentViewBuilder.Type;
-
-export declare namespace ComponentViewBuilder {
-	/** The type of the ComponentViewBuilder function, usable both as a function and constructor */
-	export interface Type {
-		new <TView extends ComponentView = ComponentView>(
-			ViewClass: new () => TView,
-			viewBuilder?: (binding: Binding<TView>) => ViewBuilder,
-		): ComponentViewBuilder<TView>;
-		<TView extends ComponentView = ComponentView>(
-			ViewClass: new () => TView,
-			viewBuilder?: (binding: Binding<TView>) => ViewBuilder,
-		): ComponentViewBuilder<TView>;
-	}
-}
-
-export interface ComponentViewBuilder<
-	TView extends ComponentView = ComponentView,
-> {
-	/** An initializer for each view to be created */
-	initializer: ViewBuilder.Initializer<TView>;
-
-	/**
-	 * Creates a new instance of the component view along with its body
-	 * @returns A newly created and initialized component view instance
-	 */
-	build: () => TView;
-
-	/**
-	 * Applies a view builder function, returning its result
-	 *
-	 * @description
-	 * This method provides a convenient way to call a function from within a chain of other method calls. The modifier may call additional methods on the builder, use its initializer directly, or return a new builder that encapsulates the current one.
-	 *
-	 * @param modifier A function that takes the current builder instance and applies configurations.
-	 * @returns The result of the function.
-	 */
-	apply<TBuilder extends ViewBuilder, TResult extends ViewBuilder = TBuilder>(
-		this: TBuilder,
-		modifier?: ViewBuilderFunction<TResult, TBuilder>,
-	): TResult;
-}

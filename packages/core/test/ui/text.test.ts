@@ -4,13 +4,7 @@ import {
 	useTestContext,
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
-import {
-	ComponentView,
-	ComponentViewBuilder,
-	UI,
-	UICell,
-	UIText,
-} from "../../dist/index.js";
+import { UI, UICell, UIText, Widget } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
@@ -92,13 +86,11 @@ test("Rendered with text", async () => {
 });
 
 test("Rendered with fmt", async () => {
+	class MyTextWidget extends Widget {
+		bar = "bar";
+	}
 	function MyText() {
-		return ComponentViewBuilder(
-			class extends ComponentView {
-				bar = "bar";
-			},
-			(v) => UI.Text.fmt("foo {}", v.bind("bar")),
-		);
+		return MyTextWidget.builder((v) => UI.Text.fmt("foo {}", v.bind("bar")));
 	}
 	let myText = MyText().build();
 	renderTestView(myText);
@@ -145,11 +137,11 @@ test("Text with style name and additional overrides", async () => {
 });
 
 test("Text with dynamic style binding", async () => {
+	class MyTextWidget extends Widget {
+		textStyle = "default";
+	}
 	function MyText() {
-		class MyTextView extends ComponentView {
-			textStyle = "default";
-		}
-		return ComponentViewBuilder(MyTextView, (v) =>
+		return MyTextWidget.builder((v) =>
 			UI.Text("Dynamic").style(v.bind("textStyle")),
 		);
 	}

@@ -16,7 +16,7 @@ export type ViewEvent<
  * Views are typically expressed using functions that return view _builders_ (i.e. 'blueprints' or templates that define a view with a particular configuration and content). Afterwards, views can be rendered on their own (using {@link AppContext.render app.render()}), included as content within another view, or used by an activity (setting its static `view` property).
  *
  * @see {@link UIElement}
- * @see {@link ComponentView}
+ * @see {@link Widget}
  *
  * @docgen {hideconstructor}
  */

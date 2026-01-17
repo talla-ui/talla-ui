@@ -15,10 +15,10 @@ import { MessageDialog } from "./modals/MessageDialog.js";
 import { ModalMenu } from "./modals/ModalMenu.js";
 
 /**
- * Components that are used by the default modal views (dialog, message dialog, and modal menu)
- * - View builder functions can be changed directly on this object.
+ * Functions that are used by default modal views (dialog, message dialog, and modal menu)
+ * - View builder functions can be changed directly on this object, to customize modal appearance.
  */
-export interface WebModalComponents {
+export interface WebModalViews {
 	DialogContainer(): UIContainer.ContainerBuilder;
 	MessageDialogContainer(): UIContainer.ContainerBuilder;
 	MessageContainer(): UIContainer.ContainerBuilder;
@@ -38,21 +38,21 @@ export interface WebModalComponents {
 /** @internal Modal factory interface */
 export class WebModalFactory implements ModalFactory {
 	constructor(options: WebContextOptions) {
-		let modalComponents = options.modalComponents;
-		Dialog.Container = modalComponents.DialogContainer;
-		MessageDialog.Container = modalComponents.MessageDialogContainer;
-		MessageDialog.MessageContainer = modalComponents.MessageContainer;
-		MessageDialog.ButtonContainer = modalComponents.MessageButtonContainer;
-		MessageDialog.FirstMessageText = modalComponents.FirstMessageText;
-		MessageDialog.MessageText = modalComponents.MessageText;
-		MessageDialog.ConfirmButton = modalComponents.MessageConfirmButton;
-		MessageDialog.Button = modalComponents.MessageButton;
-		ModalMenu.Container = modalComponents.MenuContainer;
-		ModalMenu.ItemCell = modalComponents.MenuItemCell;
-		ModalMenu.ItemText = modalComponents.MenuItemText;
-		ModalMenu.ItemHint = modalComponents.MenuItemHint;
-		ModalMenu.TitleText = modalComponents.MenuTitleText;
-		ModalMenu.Divider = modalComponents.MenuDivider;
+		let modalViews = options.modalViews;
+		Dialog.Container = modalViews.DialogContainer;
+		MessageDialog.Container = modalViews.MessageDialogContainer;
+		MessageDialog.MessageContainer = modalViews.MessageContainer;
+		MessageDialog.ButtonContainer = modalViews.MessageButtonContainer;
+		MessageDialog.FirstMessageText = modalViews.FirstMessageText;
+		MessageDialog.MessageText = modalViews.MessageText;
+		MessageDialog.ConfirmButton = modalViews.MessageConfirmButton;
+		MessageDialog.Button = modalViews.MessageButton;
+		ModalMenu.Container = modalViews.MenuContainer;
+		ModalMenu.ItemCell = modalViews.MenuItemCell;
+		ModalMenu.ItemText = modalViews.MenuItemText;
+		ModalMenu.ItemHint = modalViews.MenuItemHint;
+		ModalMenu.TitleText = modalViews.MenuTitleText;
+		ModalMenu.Divider = modalViews.MenuDivider;
 	}
 
 	buildDialog(view: View): Dialog {

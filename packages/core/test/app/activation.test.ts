@@ -81,9 +81,7 @@ describe("AppContext.activities", () => {
 		app.addActivity(new Activity());
 		expect(updated).toBe(3); // once for adding another activity
 		app.navigation?.set("foo");
-		await expect
-			.poll(() => updated, { interval: 5, timeout: 100 })
-			.toBe(4); // once for activation
+		await expect.poll(() => updated, { interval: 5, timeout: 100 }).toBe(4); // once for activation
 		app.navigation?.set("");
 		await expect
 			.poll(() => !activity.isActive(), { interval: 5, timeout: 100 })
@@ -496,8 +494,7 @@ describe("Navigation guards (canDeactivateAsync)", () => {
 		// Verify navigation was blocked - all states remain unchanged
 		await expect
 			.poll(
-				() =>
-					blocking.isActive() && allowing.isActive() && !target.isActive(),
+				() => blocking.isActive() && allowing.isActive() && !target.isActive(),
 				{ interval: 5, timeout: 100 },
 			)
 			.toBe(true);
