@@ -135,7 +135,6 @@ export function initializeCSS(
 
 	// add named styles, if any
 	if (namedStyles) {
-		console.log("Adding named styles", namedStyles);
 		for (let elementType in namedStyles) {
 			for (let styleName in namedStyles[elementType]) {
 				let style = namedStyles[elementType][styleName]!;
@@ -149,7 +148,6 @@ export function initializeCSS(
 	let update = ++_cssPending;
 	setTimeout(() => {
 		if (_cssPending !== update) return;
-		console.log("APPLYING CSS", allCss);
 		_updateStyleSheets(allCss, importCSS);
 	});
 }
