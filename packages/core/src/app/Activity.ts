@@ -97,7 +97,10 @@ export class Activity extends ObservableObject {
 				if (Updated.prototype instanceof Activity) {
 					let instances = _hotInstances.get(Old);
 					if (instances) {
-						for (let activity of instances) activity._showView(true);
+						for (let activity of instances) {
+							if (activity.isUnlinked() || !activity._active) continue;
+							activity._showView(true);
+						}
 					}
 				}
 			});
@@ -183,13 +186,6 @@ export class Activity extends ObservableObject {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 		if (!AppContext.whence(this)) throw err(ERROR.Activity_NotAttached);
 
-		// HMR tracking
-		if (this._hotInstances && !this._isHot) {
-			this._isHot = true;
-			this._hotInstances.add(this);
-			this.listen({ unlinked: () => this._hotInstances!.delete(this) });
-		}
-
 		this._abortController = new _AbortController();
 		this._active = true;
 		this.emitChange("Active");
@@ -198,6 +194,14 @@ export class Activity extends ObservableObject {
 		let signal = this._abortController.signal;
 		AppContext.getInstance().schedule(async () => {
 			if (signal.aborted) return;
+
+			// HMR tracking (async to allow hotReload setup to complete first)
+			if (this._hotInstances && !this._isHot) {
+				this._isHot = true;
+				this._hotInstances.add(this);
+				this.listen({ unlinked: () => this._hotInstances!.delete(this) });
+			}
+
 			this._showView();
 			try {
 				await this.afterActive(signal);
@@ -297,7 +301,6 @@ export class Activity extends ObservableObject {
 
 	/** Creates and/or renders the activity's view, called automatically after activation */
 	private _showView(force?: boolean) {
-		if (!this.isActive()) return;
 		let view = this.view;
 
 		// create view and attach it
