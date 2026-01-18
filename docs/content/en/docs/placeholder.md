@@ -42,7 +42,6 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link renderTestView} +
 - {@link Scheduler} +
 - {@link StringConvertible} +
-- {@link StringFormatBinding} +
 - {@link StyleOverrides} +
 - {@link TestAppContext} +
 - {@link TestContextOptions} +

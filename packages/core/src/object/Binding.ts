@@ -45,13 +45,11 @@ export namespace BindingOrValue {
  *
  * As a concrete example, a binding can be used to update the `text` property of a {@link UIText} view, with the value of a string property `someText` of the activity. Or perhaps the property `name` of a `user` object referenced by the activity (see example below). Whenever the data in the activity changes, so does the text.
  *
- * **Creating bindings** — To create a binding, use the {@link Binding} constructor to bind a single property, use the {@link Binding.either()} or {@link Binding.neither()} methods to combine bindings, or use the {@link Binding.fmt()} function to bind a string composed using a format string and one or more embedded bindings.
+ * **Creating bindings** — To create a binding, use the {@link Binding} constructor to bind a single property, use methods like {@link Binding.all()}, {@link Binding.any()}, or {@link Binding.none()} to combine bindings, or use the {@link Binding.fmt()} function to bind a string composed using a format string and one or more embedded bindings.
  *
  * **Applying bindings** — To use a binding, pass it to a UI view builder function, e.g. `UI.Text(v.bind("someText"))`. To apply a binding to any other observable object directly, use the {@link ObservableObject.observe()} method.
  *
- * **Adding transformations** — To convert the value of the original property, or to combine multiple bindings using boolean operations (and/or), use one of the Binding methods such as {@link Binding.map map()} and {@link Binding.or or()}.
- *
- * @see {@link StringFormatBinding}
+ * **Adding transformations** — To convert the value of the original property, or to combine multiple bindings using boolean operations (and/or), use one of the Binding methods such as {@link Binding.map map()}, {@link Binding.all()}, and {@link Binding.any()}.
  */
 export class Binding<T = any> {
 	/**
@@ -61,6 +59,123 @@ export class Binding<T = any> {
 	 */
 	static from<T>(value: BindingOrValue<T>): Binding<T> {
 		return isBinding(value) ? value.clone() : new Binding(undefined, value);
+	}
+
+	/**
+	 * Creates a new binding that combines multiple bindings using AND semantics
+	 * @summary Returns the last value if all values are truthy, otherwise returns the first falsy value. Returns true if no valid sources remain after filtering.
+	 * @param sources One or more instances of {@link Binding} or source paths; undefined/null values are filtered out
+	 * @returns A new {@link Binding} object
+	 */
+	static all<A extends Array<undefined | null | string | Binding<any>>>(
+		...sources: A
+	): Binding<A[number] extends Binding<infer T> ? T : any>;
+	static all(
+		...sources: Array<undefined | null | string | Binding<any>>
+	): Binding<any> {
+		let filtered = sources.filter((s): s is string | Binding => s != null);
+		if (!filtered.length) return new Binding(undefined, true);
+		return Binding.combine(filtered, (...values) => {
+			for (let v of values) if (!v) return v;
+			return values[values.length - 1];
+		});
+	}
+
+	/**
+	 * Creates a new binding that combines multiple bindings using OR semantics
+	 * @summary Returns the first truthy value, or the last falsy value if none are truthy. Returns undefined if no valid sources remain after filtering.
+	 * @param sources One or more instances of {@link Binding} or source paths; undefined/null values are filtered out
+	 * @returns A new {@link Binding} object
+	 */
+	static any<A extends Array<undefined | null | string | Binding<any>>>(
+		...sources: A
+	): Binding<A[number] extends Binding<infer T> ? T : any>;
+	static any(
+		...sources: Array<undefined | null | string | Binding<any>>
+	): Binding<any> {
+		let filtered = sources.filter((s): s is string | Binding => s != null);
+		if (!filtered.length) return new Binding();
+		return Binding.combine(
+			filtered,
+			(...values) => {
+				for (let v of values) if (v) return v;
+				return values[values.length - 1];
+			},
+			true,
+		);
+	}
+
+	/**
+	 * Creates a new binding that returns true if none of the combined bindings are truthy
+	 * @summary Returns true only when all bindings are bound and none of the values are truthy. Returns true if no valid sources remain after filtering.
+	 * @param sources One or more instances of {@link Binding} or source paths; undefined/null values are filtered out
+	 * @returns A new {@link Binding} object
+	 */
+	static none(
+		...sources: Array<undefined | null | string | Binding>
+	): Binding<boolean> {
+		let filtered = sources.filter((s): s is string | Binding => s != null);
+		if (!filtered.length) return new Binding(undefined, true);
+		return Binding.combine<boolean>(
+			filtered,
+			(...values) => !values.some((v) => v),
+		);
+	}
+
+	/**
+	 * Creates a new binding that returns true if all combined binding values are equal
+	 * @summary Returns true only when all bindings are bound and all values are strictly equal to the first. Returns true if no valid sources remain after filtering.
+	 * @param sources Two or more instances of {@link Binding} or source paths; undefined/null values are filtered out
+	 * @returns A new {@link Binding} object
+	 */
+	static equal(
+		...sources: Array<undefined | null | string | Binding>
+	): Binding<boolean> {
+		let filtered = sources.filter((s): s is string | Binding => s != null);
+		if (!filtered.length) return new Binding(undefined, true);
+		return Binding.combine<boolean>(filtered, (...values) =>
+			values.every((v) => v === values[0]),
+		);
+	}
+
+	/**
+	 * Creates a new binding by combining multiple bindings into a single value.
+	 * @summary The callback receives the latest values from all sources and returns the combined result.
+	 * @param sources One or more bindings or source paths to combine
+	 * @param callback Function that maps source values to the combined result
+	 * @param allowPartial If true, the callback may run before all sources are bound
+	 * @returns A new {@link Binding} object
+	 */
+	static combine<R>(
+		sources: Array<string | Binding>,
+		callback: (...values: any[]) => R,
+		allowPartial?: boolean,
+	): Binding<R> {
+		let bindings = sources.map((s) => (isBinding(s) ? s : new Binding<any>(s)));
+		let result = new Binding<R>();
+		result[$_bind_apply] = function (target, update) {
+			let n = bindings.length;
+			let boundCount = 0;
+			let values: any[] = new Array(n);
+			let currentResult: any = NO_VALUE;
+			for (let i = 0; i < n; i++) {
+				let wasBound = false;
+				bindings[i]![$_bind_apply](target, (value, isBound) => {
+					values[i] = value;
+					if (isBound && !wasBound) {
+						wasBound = true;
+						boundCount++;
+					}
+					if (!allowPartial && boundCount < n) return;
+					let newValue = callback(...values);
+					if (newValue !== currentResult) {
+						currentResult = newValue;
+						update(newValue, true);
+					}
+				});
+			}
+		};
+		return result;
 	}
 
 	/**
@@ -76,6 +191,51 @@ export class Binding<T = any> {
 	): Binding<TObject[K]> {
 		if (!(propertyName in object)) (object as any)[propertyName] = undefined;
 		return new Binding({ path: [propertyName], origin: object });
+	}
+
+	/**
+	 * Creates a new binding for a string-formatted value
+	 * @summary This function is used to create a new binding for a string-formatted value with further embedded bindings.
+	 * @param format The format string, containing placeholders similar to {@link fmt()}
+	 * @param args A list of associated bindings
+	 * @returns A new {@link Binding} object
+	 */
+	static fmt(
+		format: StringConvertible,
+		...args: Binding[] | [{ [K: string]: Binding }]
+	): Binding<DeferredString> {
+		let base = new DeferredString(format);
+		let obj = !isBinding(args[0]) ? args[0] : undefined;
+		let bindings: Binding[];
+		let formatCallback: (...values: any[]) => DeferredString;
+
+		if (obj) {
+			let keys = Object.keys(obj);
+			bindings = keys.map((key) =>
+				isBinding(obj[key]) ? obj[key] : new Binding(undefined, obj[key]!),
+			);
+			formatCallback = (...values) => {
+				let valueObj: any = {};
+				for (let i = 0; i < keys.length; i++) {
+					valueObj[keys[i]!] = values[i];
+				}
+				return base.format(valueObj);
+			};
+		} else {
+			bindings = (args as Binding[]).map((arg) => Binding.from(arg));
+			formatCallback = (...values) => base.format(...values);
+		}
+
+		// shortcut if no interpolation arguments
+		if (!bindings.length) {
+			let result = new Binding<DeferredString>(undefined, base as any);
+			result._label = "Binding.fmt(...)";
+			return result;
+		}
+
+		let result = Binding.combine(bindings, formatCallback, true);
+		result._label = "Binding.fmt(...)";
+		return result;
 	}
 
 	/**
@@ -95,6 +255,7 @@ export class Binding<T = any> {
 		if (isBinding(source)) {
 			this._path = source._path;
 			this._origin = source._origin;
+			this._label = source._label;
 			this[$_bind_apply] = source[$_bind_apply];
 			return;
 		}
@@ -128,6 +289,9 @@ export class Binding<T = any> {
 
 	/** Binding origin object, if any */
 	private _origin?: ObservableObject;
+
+	/** Optional label for toString(), copied during clone */
+	private _label?: string;
 
 	/**
 	 * Creates a copy of this binding
@@ -250,71 +414,11 @@ export class Binding<T = any> {
 	}
 
 	/**
-	 * Transforms to a boolean, true if the bound value exactly equals another bound value
-	 *
-	 * @summary This method can be used to compare two bindings. If the original value matches the value of the provided binding, the bound value becomes true, otherwise false.
-	 *
-	 * To do the opposite, and substitute with false if the bindings match, use the {@link Binding.not not()} method afterwards.
-	 *
-	 * @param source Another instance of {@link Binding}, or a source path that will be passed to the constructor
-	 * @returns A new binding, typed as a boolean
-	 *
-	 * @example
-	 * // A cell that's rendered only if two bindings match
-	 * UI.ShowWhen(bind("item").matches("selectedItem"), UI.Cell(
-	 *   // ...
-	 * ))
-	 */
-	matches(source: Binding | string): Binding<boolean> {
-		return this._addBool(source, false, true) as any;
-	}
-
-	/**
-	 * Transforms the bound value and another binding, applying the `&&` operator
-	 *
-	 * @summary This method can be used to combine two bindings logically, using the `&&` operator. The resulting bound value is the value of the _other_ binding, if the current bound value is equal to true (according to the `==` operator). The result is the value of the current binding, if its value is equal to false.
-	 *
-	 * @param source Another instance of {@link Binding}, or a source path that will be passed to the constructor
-	 * @returns A new binding, typed as a union of both original types
-	 *
-	 * @example
-	 * // A simple boolean AND
-	 * v.bind("itemFound").and("hasPrice")
-	 *
-	 * // A conditional string binding
-	 * v.bind("showCustomer")
-	 *   .and(bind.fmt("Customer: {}", v.bind("customer.name")))
-	 */
-	and<U = any>(source: Binding<U> | string): Binding<T | U> {
-		return this._addBool(source, true) as any;
-	}
-
-	/**
-	 * Transforms the bound value and another binding, applying the `||` operator
-	 *
-	 * @summary This method can be used to combine two bindings logically, using the `||` operator. The resulting bound value is the value of the _other_ binding, if the current bound value is equal to false (according to the `==` operator). The result is the value of the current binding, if its value is equal to true.
-	 *
-	 * @param source Another instance of {@link Binding}, or a source path that will be passed to the constructor
-	 * @returns A new binding, typed as a union of both original types
-	 *
-	 * @example
-	 * // A simple boolean OR
-	 * v.bind("itemFound").or("hasDefault")
-	 *
-	 * // A conditional string binding
-	 * v.bind("customer.name")
-	 *   .or(bind.fmt("Default: {}", "defaultCustomer.name"))
-	 */
-	or<U = any>(source: Binding<U> | string): Binding<T | U> {
-		return this._addBool(source) as any;
-	}
-
-	/**
 	 * Returns a description of this binding, including its original source path, if any.
 	 * @returns The string description.
 	 */
 	toString() {
-		return "Binding(" + this._path.join(".") + ")";
+		return this._label || "Binding(" + this._path.join(".") + ")";
 	}
 
 	/**
@@ -335,50 +439,6 @@ export class Binding<T = any> {
 		target: ObservableObject,
 		update: (value: any, bound: boolean) => void,
 	) => void;
-
-	/** Implementation for `.and()`, `.or()`, and `.matches()` */
-	private _addBool(
-		other: string | Binding,
-		isAnd?: boolean,
-		isMatch?: boolean,
-	) {
-		// create other binding (if needed)
-		if (!isBinding(other)) {
-			other = new Binding({
-				path: other.split("."),
-				origin: this._origin,
-			});
-		}
-
-		// update apply method to also apply other binding
-		let result = this.clone();
-		let _apply = this[$_bind_apply];
-		result[$_bind_apply] = function (target, update) {
-			let currentValue = NO_VALUE;
-
-			// keep track of status, only update when both values known
-			let flags = 3;
-			function set(v1: any, v2: any, noUpdate: any, bound: boolean) {
-				if (noUpdate) return;
-				let newValue = isMatch ? v1 === v2 : isAnd ? v1 && v2 : v1 || v2;
-				if (newValue !== currentValue) {
-					currentValue = newValue;
-					update(newValue, bound);
-				}
-			}
-
-			// keep track of both values at the same time
-			let value1: any = undefined;
-			let value2: any = undefined;
-			_apply.call(this, target, (value, bound) =>
-				set((value1 = value), value2, (flags &= 2), bound),
-			);
-			other[$_bind_apply].call(other, target, (value, bound) =>
-				set(value1, (value2 = value), (flags &= 1), bound),
-			);
-		};
-		return result;
-	}
 
 	/** Implementation of bind method */
 	private _bindProperty(sourcePath: string) {
@@ -417,127 +477,6 @@ export class Binding<T = any> {
 }
 
 Binding.prototype.isBinding = _isBinding;
-
-/**
- * A class that represents a string-formatted binding with nested property bindings
- *
- * @description
- * String-formatted bindings use a 'format string' that contains one or more placeholders, along with a set of associated (nested) bindings. They can be used just like regular property bindings (see {@link Binding}).
- *
- * After binding to an object, the underlying string value is updated whenever any of the nested bindings change — inserting the bound values into the string.
- *
- * Instances of this class can be created using the {@link Binding.fmt} method.
- *
- * @example
- * // String-formatted bindings with positional arguments
- * bind.fmt("Today is {}", v.bind("dayOfTheWeek"))
- * bind.fmt("{} table {0:+/row/rows}, total {}", v.bind("rows.length"), v.bind("calcTotal"))
- *
- * @example
- * // String-formatted binding with object argument
- * bind.fmt(
- *   "{user} is {age} years old",
- *   {
- *     user: v.bind("user.name", fmt("Unknown user")),
- *     age: v.bind("user.age").map((age) => age ?? 99)
- *   }
- * )
- *
- * @example
- * // A text element with bound text
- * UI.Text(bind.fmt("Welcome, {}", v.bind("user.fullName")))
- */
-export class StringFormatBinding extends Binding<DeferredString> {
-	/**
-	 * Creates a new string-formatted binding using; use {@link Binding.fmt()} instead
-	 * @note Use the {@link Binding.fmt()} function to create {@link StringFormatBinding} objects rather than calling this constructor.
-	 * @param format The format string, containing placeholders similar to {@link fmt()}
-	 * @param args A list of associated bindings
-	 */
-	constructor(
-		format: StringConvertible,
-		...args: Binding[] | [{ [K: string]: Binding }]
-	) {
-		super(undefined);
-		this._format = format;
-		if (!format) return;
-		this._makeApply(format, args);
-	}
-
-	/** Returns a description of this binding, including its original format string. */
-	override toString() {
-		return "bind.fmt(" + JSON.stringify(this._format) + ")";
-	}
-
-	protected override clone(): StringFormatBinding {
-		let result = new StringFormatBinding("");
-		result._format = this._format;
-		result[$_bind_apply] = this[$_bind_apply];
-		return result;
-	}
-
-	/** Set the _apply method to update the bound string value */
-	private _makeApply(
-		format: StringConvertible,
-		args: Binding[] | [{ [K: string]: Binding }],
-	) {
-		let base = new DeferredString(format);
-		let obj = !isBinding(args[0]) ? args[0] : undefined;
-		if (obj) args = [];
-
-		// use shortcut if no interpolation arguments at all
-		if (!obj && !args.length) {
-			this[$_bind_apply] = (_, update) => update(base, false);
-			return;
-		}
-
-		// otherwise, use DeferredString.format whenever bindings are updated
-		this[$_bind_apply] = (target, update) => {
-			// keep track of all bound interpolation arguments
-			let values: any[] = [];
-			let nBindings = 0;
-			let n = 0;
-
-			// register all nested bindings, update when values change
-			function updateString() {
-				if (n >= nBindings) {
-					let newValue = base.format(...values);
-					update(newValue, true);
-				}
-			}
-			for (let i = 0; i < args.length; i++) {
-				let binding = args[i];
-				if (isBinding(binding)) {
-					nBindings++;
-					binding[$_bind_apply](target, (value) => {
-						n++;
-						if (!(i in values) || values[i] !== value) {
-							values[i] = value;
-							updateString();
-						}
-					});
-				}
-			}
-			if (obj) {
-				let valueObj: any = (values[0] = {});
-				for (let p in obj) {
-					if (isBinding(obj[p])) {
-						nBindings++;
-						obj[p]![$_bind_apply](target, (value: any) => {
-							n++;
-							if (!(p in valueObj) || valueObj[p] !== value) {
-								valueObj[p] = value;
-								updateString();
-							}
-						});
-					}
-				}
-			}
-		};
-	}
-
-	private _format: StringConvertible;
-}
 
 export namespace Binding {
 	/**
@@ -614,47 +553,4 @@ export namespace Binding {
 				? NonNullable<T>[P] | undefined
 				: NonNullable<T>[P]
 			: never;
-
-	/**
-	 * Creates a new binding for a string-formatted value
-	 * @summary This function is used to create a new binding for a string-formatted value with further embedded bindings.
-	 * @param format The format string, containing placeholders similar to {@link fmt()}
-	 * @param args A list of associated bindings
-	 * @returns A new {@link StringFormatBinding} object
-	 * @see {@link StringFormatBinding}
-	 */
-	export function fmt(
-		format: StringConvertible,
-		...args: Binding[] | [{ [K: string]: Binding }]
-	) {
-		return new StringFormatBinding(format, ...args);
-	}
-
-	/**
-	 * Creates a new binding, resulting in the first non-false value out of multiple bindings
-	 * - This function repeatedly calls {@link Binding.or} for each source and returns the resulting binding.
-	 * @param sources One or more instances of {@link Binding} or source paths that will be passed to the constructor
-	 */
-	export function either<A extends Array<undefined | string | Binding<any>>>(
-		...sources: A
-	): Binding<A[number] extends Binding<infer T> ? T : any>;
-	export function either(
-		...sources: Array<undefined | string | Binding<any>>
-	): Binding<any> {
-		let result: Binding | undefined;
-		while (sources.length) {
-			let b = sources.shift()!;
-			if (b) result = result ? result.or(b) : new Binding(b);
-		}
-		return result || new Binding(); // use undefined binding as fallback
-	}
-
-	/**
-	 * Creates a new binding, resulting in true if none of the specified bindings are true
-	 * - This function repeatedly calls {@link Binding.or} for each source and returns the negated resulting binding (using {@link Binding.not}).
-	 * @param sources One or more instances of {@link Binding} or source paths that will be passed to the constructor
-	 */
-	export function neither(...sources: Array<undefined | string | Binding>) {
-		return either(...sources).not();
-	}
 }

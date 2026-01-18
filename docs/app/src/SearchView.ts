@@ -41,7 +41,7 @@ export function SearchView(v: Binding<SearchActivity>) {
 					UI.Button().icon(UI.icons.close).style("text").onClick("Close"),
 				),
 			UI.Cell()
-				.hideWhen(v.bind("hasInput").and("loading").not())
+				.hideWhen(Binding.all(v.bind("hasInput"), "loading").not())
 				.padding({ y: 32 })
 				.with(UI.Text("Loading...")),
 			UI.List(v.bind("results"))

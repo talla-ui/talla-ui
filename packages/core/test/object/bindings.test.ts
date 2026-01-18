@@ -693,9 +693,9 @@ describe("Mapped/boolean bindings", () => {
 		parent.child.expectValue().toBe(false);
 	});
 
-	test("Matches", () => {
+	test("Binding.equal", () => {
 		let { parent } = setup();
-		parent.child.bindValue(new Binding("value1").matches("value2"));
+		parent.child.bindValue(Binding.equal("value1", "value2"));
 		parent.child.expectValue().toBe(false);
 		parent.value2 = parent.value1;
 		parent.child.expectValue().toBe(true);
@@ -703,9 +703,9 @@ describe("Mapped/boolean bindings", () => {
 		parent.child.expectValue().toBe(false);
 	});
 
-	test("And-binding", () => {
+	test("Binding.all", () => {
 		let { parent } = setup();
-		parent.child.bindValue(new Binding("value1").and(new Binding("value2")));
+		parent.child.bindValue(Binding.all("value1", new Binding("value2")));
 		parent.child.expectValue().toBe(2);
 		parent.value2 = 0;
 		parent.child.expectValue().toBe(0);
@@ -718,9 +718,9 @@ describe("Mapped/boolean bindings", () => {
 		expect(JSON.stringify(parent.child.updates)).toBe("[2,0]");
 	});
 
-	test("Or-binding", () => {
+	test("Binding.any", () => {
 		let { parent } = setup();
-		parent.child.bindValue(new Binding("value1").or(new Binding("value2")));
+		parent.child.bindValue(Binding.any("value1", new Binding("value2")));
 		parent.child.expectValue().toBe(1);
 		parent.value2 = 0;
 		parent.child.expectValue().toBe(1);
@@ -733,9 +733,9 @@ describe("Mapped/boolean bindings", () => {
 		expect(JSON.stringify(parent.child.updates)).toBe("[1,0,2]");
 	});
 
-	test("And-binding, 3 terms", () => {
+	test("Binding.all, 3 terms", () => {
 		let { parent } = setup();
-		parent.child.bindValue(new Binding("value1").and("value2").and("value3"));
+		parent.child.bindValue(Binding.all("value1", "value2", "value3"));
 		parent.child.expectValue().toBe(3);
 		parent.value2 = 0;
 		parent.child.expectValue().toBe(0);
@@ -745,19 +745,113 @@ describe("Mapped/boolean bindings", () => {
 		parent.child.expectValue().toBe(0);
 	});
 
-	test("Or-binding, 3 terms", () => {
+	test("Binding.all with undefined sources filtered", () => {
 		let { parent } = setup();
-		parent.child.bindValue(new Binding("value1").or("value2").or("value3"));
+		parent.child.bindValue(
+			Binding.all(undefined, "value1", null, "value2", undefined),
+		);
+		parent.child.expectValue().toBe(2);
+		parent.value1 = 0;
+		parent.child.expectValue().toBe(0);
+		parent.value1 = 1;
+		parent.child.expectValue().toBe(2);
+	});
+
+	test("Binding.all with all undefined sources", () => {
+		let { parent } = setup();
+		parent.child.bindValue(Binding.all(undefined, null));
+		// vacuously true when no valid sources
+		parent.child.expectValue().toBe(true);
+	});
+
+	test("Binding.any, 3 terms", () => {
+		let { parent } = setup();
+		parent.child.bindValue(Binding.any("value1", "value2", "value3"));
 		parent.value1 = 0;
 		parent.value2 = 0;
 		parent.value3 = 0;
 		expect(JSON.stringify(parent.child.updates)).toBe("[1,2,3,0]");
 	});
 
-	test("Either-binding, 3 terms", () => {
+	test("Binding.none", () => {
+		let { parent } = setup();
+		parent.child.bindValue(Binding.none("value1", "value2"));
+		parent.child.expectValue().toBe(false);
+		parent.value1 = 0;
+		parent.child.expectValue().toBe(false);
+		parent.value2 = 0;
+		parent.child.expectValue().toBe(true);
+		parent.value1 = 1;
+		parent.child.expectValue().toBe(false);
+	});
+
+	test("Binding.none, 3 terms", () => {
+		let { parent } = setup();
+		parent.child.bindValue(Binding.none("value1", "value2", "value3"));
+		parent.child.expectValue().toBe(false);
+		parent.value1 = 0;
+		parent.child.expectValue().toBe(false);
+		parent.value2 = 0;
+		parent.child.expectValue().toBe(false);
+		parent.value3 = 0;
+		parent.child.expectValue().toBe(true);
+		parent.value2 = 1;
+		parent.child.expectValue().toBe(false);
+	});
+
+	test("Binding.none with undefined sources filtered", () => {
 		let { parent } = setup();
 		parent.child.bindValue(
-			Binding.either("value1", "value2", new Binding("value3")),
+			Binding.none(undefined, "value1", null, "value2", undefined),
+		);
+		parent.child.expectValue().toBe(false);
+		parent.value1 = 0;
+		parent.value2 = 0;
+		parent.child.expectValue().toBe(true);
+	});
+
+	test("Binding.none with all undefined sources", () => {
+		let { parent } = setup();
+		parent.child.bindValue(Binding.none(undefined, null));
+		// vacuously true when no valid sources (none are truthy)
+		parent.child.expectValue().toBe(true);
+	});
+
+	test("Binding.equal, 3 terms", () => {
+		let { parent } = setup();
+		parent.child.bindValue(Binding.equal("value1", "value2", "value3"));
+		parent.child.expectValue().toBe(false);
+		parent.value2 = 1;
+		parent.child.expectValue().toBe(false);
+		parent.value3 = 1;
+		parent.child.expectValue().toBe(true);
+		parent.value1 = 2;
+		parent.child.expectValue().toBe(false);
+	});
+
+	test("Binding.equal with undefined sources filtered", () => {
+		let { parent } = setup();
+		parent.child.bindValue(
+			Binding.equal(undefined, "value1", null, "value2", undefined),
+		);
+		parent.child.expectValue().toBe(false);
+		parent.value2 = 1;
+		parent.child.expectValue().toBe(true);
+		parent.value1 = 2;
+		parent.child.expectValue().toBe(false);
+	});
+
+	test("Binding.equal with all undefined sources", () => {
+		let { parent } = setup();
+		parent.child.bindValue(Binding.equal(undefined, null));
+		// vacuously true when no valid sources (all are equal)
+		parent.child.expectValue().toBe(true);
+	});
+
+	test("Binding.any with undefined sources filtered", () => {
+		let { parent } = setup();
+		parent.child.bindValue(
+			Binding.any(undefined, "value1", "value2", new Binding("value3")),
 		);
 		parent.value1 = 0;
 		parent.value2 = 0;
@@ -765,27 +859,16 @@ describe("Mapped/boolean bindings", () => {
 		expect(JSON.stringify(parent.child.updates)).toBe("[1,2,3,0]");
 	});
 
-	test("Either-binding, 3 terms with undefined", () => {
+	test("Binding.any with all undefined sources", () => {
 		let { parent } = setup();
-		parent.child.bindValue(
-			Binding.either(undefined, "value1", "value2", new Binding("value3")),
-		);
-		parent.value1 = 0;
-		parent.value2 = 0;
-		parent.value3 = 0;
-		expect(JSON.stringify(parent.child.updates)).toBe("[1,2,3,0]");
-	});
-
-	test("Either-binding, undefined", () => {
-		let { parent } = setup();
-		parent.child.bindValue(Binding.either(undefined, undefined));
+		parent.child.bindValue(Binding.any(undefined, undefined));
 		expect(parent.child.updates).toEqual([]);
 	});
 
-	test("Neither-binding, 3 terms", () => {
+	test("Binding.any(...).not() for negated OR", () => {
 		let { parent } = setup();
 		parent.child.bindValue(
-			Binding.neither("value1", "value2", new Binding("value3")),
+			Binding.any("value1", "value2", new Binding("value3")).not(),
 		);
 		parent.value1 = 0;
 		parent.value2 = 0;
@@ -795,9 +878,12 @@ describe("Mapped/boolean bindings", () => {
 		);
 	});
 
-	test("And-Or-binding", () => {
+	test("Binding.all and Binding.any combined", () => {
 		let { parent } = setup();
-		parent.child.bindValue(new Binding("value1").and("value2").or("value3"));
+		// Using Binding.any with a Binding.all as first source
+		parent.child.bindValue(
+			Binding.any(Binding.all("value1", "value2"), "value3"),
+		);
 		parent.value1 = 0;
 		parent.value2 = 0;
 		parent.value3 = 0;
@@ -929,7 +1015,7 @@ describe("String format bindings", () => {
 	test("String binding without arguments", () => {
 		let { parent } = setup();
 		let binding = Binding.fmt("Abc");
-		expect(String(binding)).toBe('bind.fmt("Abc")');
+		expect(String(binding)).toBe("Binding.fmt(...)");
 		parent.child.bindValue(binding);
 		parent.child.expectStringValue().toBe("Abc");
 	});

@@ -365,7 +365,7 @@ export class ObservableObject {
 	 *     super();
 	 *
 	 *     // Observe a bound property
-	 *     this.observe(bind("foo"), (fooValue) => {
+	 *     this.observe(new Binding("foo"), (fooValue) => {
 	 *       // ... handle foo value, e.g. from an activity
 	 *     });
 	 *
