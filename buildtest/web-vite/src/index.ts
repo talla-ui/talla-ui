@@ -1,8 +1,18 @@
-import { setWebTheme, useWebContext, WebTheme } from "@talla-ui/web-handler";
+import {
+	setWebTheme,
+	useAnimationEffects,
+	useContainerEffects,
+	useDragEffects,
+	useWebContext,
+	WebTheme,
+} from "@talla-ui/web-handler";
 import { app, UI, UIColor } from "talla-ui";
 import { MainActivity } from "./main";
 
 useWebContext();
+useAnimationEffects();
+useDragEffects();
+useContainerEffects();
 setWebTheme(
 	new WebTheme()
 		.colors({

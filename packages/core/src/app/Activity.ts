@@ -281,7 +281,7 @@ export class Activity extends ObservableObject {
 	 * Set rendering mode and additional options
 	 * - By default, the activity view is rendered using the `page` rendering mode, as soon as the activity is activated. The mode can be changed using this method, or rendering can be disabled by specifying the `none` mode.
 	 * - Use the special `dialog` mode to render the view within a dialog as defined by the current modal factory.
-	 * - Additional options may be specified, including page/screen background color and transform animations.
+	 * - Additional options may be specified, including the page/screen background color.
 	 * @param mode The selected rendering mode
 	 * @param options Additional placement options, if any
 	 * @see {@link RenderContext.PlacementOptions}

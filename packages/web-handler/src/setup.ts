@@ -1,4 +1,4 @@
-import { app, UIAnimation, UIColor, UIIconResource } from "@talla-ui/core";
+import { app, UIColor, UIIconResource } from "@talla-ui/core";
 import { initializeCSS } from "./DOMStyle.js";
 import { WebContextOptions } from "./WebContextOptions.js";
 import { WebLocalData } from "./WebLocalData.js";
@@ -35,10 +35,9 @@ export function setWebTheme(theme: WebTheme): void {
 	let isDark = app.viewport?.prefersDark ?? false;
 	let data = theme.getThemeData(isDark) as WebThemeData;
 
-	// apply colors, icons, animations to global registries
+	// apply colors and icons to global registries
 	UIColor.setColors(data.colors);
 	UIIconResource.setIcons(data.icons);
-	UIAnimation.setAnimations(data.animations);
 
 	// apply style default configuration
 	UITextRenderer.defaultIconStyle = {
@@ -53,11 +52,6 @@ export function setWebTheme(theme: WebTheme): void {
 		data.options.pageBackground,
 		data.options.modalShadeBackground,
 	);
-	let reducedMotion =
-		data.options.reducedMotion ??
-		(typeof window !== "undefined" &&
-			window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
-	renderer.setReducedMotion(reducedMotion);
 
 	// remount to apply all changes
 	app.remount();

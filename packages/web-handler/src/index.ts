@@ -1,4 +1,7 @@
 import * as core from "@talla-ui/core";
+import { useAnimationEffects } from "./effects/animations.js";
+import { useContainerEffects } from "./effects/container.js";
+import { useDragEffects } from "./effects/drag.js";
 import { setWebTheme, useWebContext } from "./setup.js";
 import { WebContextOptions } from "./WebContextOptions.js";
 import { WebModalViews } from "./WebModalFactory.js";
@@ -7,6 +10,9 @@ import { WebRenderer } from "./WebRenderer.js";
 import { WebTheme } from "./WebTheme.js";
 export {
 	setWebTheme,
+	useAnimationEffects,
+	useContainerEffects,
+	useDragEffects,
 	useWebContext,
 	WebContextOptions,
 	WebModalViews,

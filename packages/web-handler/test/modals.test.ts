@@ -23,12 +23,7 @@ async function waitForSelector(
 }
 
 describe("Modal dialogs", () => {
-	beforeEach(() =>
-		setupWebContext((opts) => {
-			// Disable animations to avoid timer issues in tests
-			opts.reducedMotion = true;
-		}),
-	);
+	beforeEach(() => setupWebContext());
 	afterEach(() => {
 		app.clear();
 		return waitForRender();

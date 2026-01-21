@@ -20,6 +20,7 @@ import {
 	ViewEvent,
 	Widget,
 } from "talla-ui";
+import { EffectsDemo } from "./effects";
 
 // NEW Simple pattern: defer() + extend() for stateless reusable views
 export function CardLayout(title: StringConvertible) {
@@ -81,7 +82,10 @@ function CollapsibleView(
 				.fg("background")
 				.padding()
 				.onClick("Toggle"),
-			UI.ShowWhen(v.bind("expanded"), UI.Column(...content)),
+			UI.ShowWhen(
+				v.bind("expanded"),
+				UI.Column(...content).effect("fade-bottom"),
+			),
 		);
 }
 
@@ -202,6 +206,8 @@ function MainView(v: Binding<MainActivity>) {
 	return UI.Column()
 		.align("center")
 		.with(
+			UI.Spacer(32),
+			EffectsDemo(),
 			UI.Spacer(32),
 			MyTitle("Page title").width(400),
 			CardLayout("Card").with(

@@ -1,14 +1,25 @@
 import { app, View } from "@talla-ui/core";
-import { useWebContext, WebRenderer } from "../dist/index.js";
+import {
+	useAnimationEffects,
+	useContainerEffects,
+	useDragEffects,
+	useWebContext,
+	WebRenderer,
+} from "../dist/index.js";
 
 /**
  * Initialize web context with cleanup
+ * Registers all effects by default for testing
  * @param configure Optional configuration callback
  */
 export function setupWebContext(configure?: (opts: any) => void) {
 	document.body.innerHTML = "";
 	document.head.innerHTML = "";
-	return useWebContext(configure);
+	const ctx = useWebContext(configure);
+	useAnimationEffects();
+	useDragEffects();
+	useContainerEffects();
+	return ctx;
 }
 
 /**

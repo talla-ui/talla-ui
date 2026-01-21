@@ -40,6 +40,7 @@ export class WebModalFactory implements ModalFactory {
 	constructor(options: WebContextOptions) {
 		let modalViews = options.modalViews;
 		Dialog.Container = modalViews.DialogContainer;
+		Dialog.dialogEffect = options.dialogEffect;
 		MessageDialog.Container = modalViews.MessageDialogContainer;
 		MessageDialog.MessageContainer = modalViews.MessageContainer;
 		MessageDialog.ButtonContainer = modalViews.MessageButtonContainer;
@@ -48,6 +49,7 @@ export class WebModalFactory implements ModalFactory {
 		MessageDialog.ConfirmButton = modalViews.MessageConfirmButton;
 		MessageDialog.Button = modalViews.MessageButton;
 		ModalMenu.Container = modalViews.MenuContainer;
+		ModalMenu.menuEffect = options.menuEffect;
 		ModalMenu.ItemCell = modalViews.MenuItemCell;
 		ModalMenu.ItemText = modalViews.MenuItemText;
 		ModalMenu.ItemHint = modalViews.MenuItemHint;

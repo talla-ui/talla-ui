@@ -1,3 +1,4 @@
+import { RenderEffect } from "@talla-ui/core";
 import { Dialog } from "./modals/Dialog.js";
 import { MessageDialog } from "./modals/MessageDialog.js";
 import { ModalMenu } from "./modals/ModalMenu.js";
@@ -50,6 +51,20 @@ export class WebContextOptions {
 	 * - These stylesheets are loaded when the web context is initialized.
 	 */
 	importCSS: string[] = [];
+
+	/**
+	 * The animation effect used for dialog containers.
+	 * - Applied when dialogs (including message dialogs) are created/removed.
+	 * - Defaults to "fade-bottom".
+	 */
+	dialogEffect: RenderEffect.EffectName = "fade-bottom";
+
+	/**
+	 * The animation effect used for menu container.
+	 * - Applied when context menus are created/removed.
+	 * - Defaults to "scale".
+	 */
+	menuEffect: RenderEffect.EffectName = "scale";
 
 	/**
 	 * A set of functions that return view builders used by modal views.

@@ -300,27 +300,6 @@ export class AppContext extends ObservableObject {
 	}
 
 	/**
-	 * Runs an animation on the provided view output element
-	 *
-	 * @summary This method passes a renderer-specific transformation object to an asynchronous transformer, which may use methods on the transform object to animate a view.
-	 * @see {@link RenderContext.OutputTransformer}
-	 *
-	 * @param ref The UI element to be animated
-	 * @param animation An animation transformer (see {@link UIAnimation})
-	 * @error This method throws an error if the renderer hasn't been initialized yet.
-	 */
-	async animateAsync(
-		ref: { lastRenderOutput?: RenderContext.Output },
-		animation?: RenderContext.OutputTransformer,
-	) {
-		if (!this.renderer) throw err(ERROR.Render_Unavailable);
-		let out = ref.lastRenderOutput;
-		if (out && animation) {
-			await this.renderer.animateAsync(out, animation);
-		}
-	}
-
-	/**
 	 * Adds a hot-reload handler for the provided module handle, to update instances of a particular activity
 	 * - Where supported, hot-reloading the provided module will update instances of the specified activity: updating methods (but not properties), and re-rendering its view.
 	 * - If hot-reloading isn't supported, e.g. if the application is compiled in production mode, this method does nothing.

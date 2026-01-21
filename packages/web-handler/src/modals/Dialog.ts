@@ -3,6 +3,7 @@ import {
 	Binding,
 	ModalFactory,
 	RenderContext,
+	RenderEffect,
 	UI,
 	UIContainer,
 	View,
@@ -12,6 +13,9 @@ import {
 
 /** @internal Default modal dialog view; shown synchronously, removed when view is unlinked */
 export class Dialog extends Widget implements ModalFactory.DialogController {
+	/** Default dialog render effect, set from {@link WebContextOptions} */
+	static dialogEffect?: RenderEffect.EffectName;
+
 	static Container(): UIContainer.ContainerBuilder {
 		return UI.Cell()
 			.accessibleRole("dialog")
@@ -38,6 +42,7 @@ export class Dialog extends Widget implements ModalFactory.DialogController {
 
 	protected override get body() {
 		return Dialog.Container()
+			.effect(Dialog.dialogEffect)
 			.with(UI.Show(Binding.from(this.dialogView)))
 			.build();
 	}
@@ -54,10 +59,6 @@ export class Dialog extends Widget implements ModalFactory.DialogController {
 		app.render(this, {
 			mode: "modal",
 			shade: true,
-			transform: {
-				show: UI.animations.showDialog,
-				hide: UI.animations.hideDialog,
-			},
 			...place,
 		});
 	}

@@ -6,6 +6,7 @@ import {
 	CLASS_PAGE_WRAPPER,
 } from "./defaults/css.js";
 import { registerHandlers } from "./observers/events.js";
+import { awaitRemoval, isMarkedForRemoval } from "./removeAnimation.js";
 import type { WebRenderer } from "./WebRenderer.js";
 
 /** Next unique ID */
@@ -63,7 +64,6 @@ export class OutputMount {
 	createOverlayElement(
 		refElt?: HTMLElement,
 		refOffset?: number | [number, number],
-		reducedMotion?: boolean,
 		shadeBackground?: UIColor | string,
 		isModal?: boolean,
 	) {
@@ -88,7 +88,6 @@ export class OutputMount {
 			}
 		}
 		setTimeout(() => {
-			if (reducedMotion) shader.style.transition = "none";
 			shader.style.backgroundColor = String(shadeBackground);
 			if (isModal) {
 				setFocus();
@@ -229,6 +228,21 @@ export class OutputMount {
 	remove() {
 		this._remount = undefined;
 
+		// capture _inner reference now, before scheduling, to avoid race conditions
+		const inner = this._inner;
+
+		app.renderer?.schedule(() => {
+			// check if content element has an exit animation in progress
+			const contentEl = inner?.firstChild as HTMLElement | null;
+			if (contentEl && isMarkedForRemoval(contentEl)) {
+				awaitRemoval(contentEl).then(() => this._finalizeRemove());
+				return;
+			}
+			this._finalizeRemove();
+		}, true);
+	}
+
+	private _finalizeRemove() {
 		if (
 			this._lastElementId &&
 			this._inner &&

@@ -5,11 +5,12 @@ import {
 	UIColor,
 	UIIconResource,
 } from "@talla-ui/core";
+import defaultColors from "./defaults/colors.js";
+import defaultIcons from "./defaults/icons.js";
+import { registerTestEffects } from "./effects.js";
 import { TestContextOptions } from "./TestContextOptions.js";
 import { TestNavigationContext } from "./TestNavigationContext.js";
 import { TestRenderer } from "./TestRenderer.js";
-import defaultColors from "./defaults/colors.js";
-import defaultIcons from "./defaults/icons.js";
 
 /** Type definition for the global {@link app} context with test-specific render and activity contexts, set by the {@link useTestContext} function */
 export type TestAppContext = AppContext & {
@@ -51,6 +52,9 @@ export function useTestContext(
 	(app as any).renderer = new TestRenderer(options);
 	UIColor.setColors(defaultColors);
 	UIIconResource.setIcons(defaultIcons);
+
+	// register no-op effects for test compatibility
+	registerTestEffects();
 
 	// create test navigation path and set initial path
 	app.navigation?.unlink();

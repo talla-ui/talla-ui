@@ -11,7 +11,6 @@ import { UISpacer } from "./controls/UISpacer.js";
 import { UIText } from "./controls/UIText.js";
 import { UITextField } from "./controls/UITextField.js";
 import { UIToggle } from "./controls/UIToggle.js";
-import { UIAnimation } from "./style/UIAnimation.js";
 import { UIColor } from "./style/UIColor.js";
 import { UIIconResource } from "./style/UIIconResource.js";
 
@@ -95,23 +94,6 @@ export namespace UI {
 	 */
 	export function icon(name: string): UIIconResource {
 		return UIIconResource.getIcon(name);
-	}
-
-	/**
-	 * An object containing all available animation references.
-	 * @see {@link UIAnimation.defaults}
-	 * @see {@link UIAnimation.getAnimation}
-	 */
-	export const animations: typeof UIAnimation.defaults = UIAnimation.defaults;
-
-	/**
-	 * Returns an animation reference by name, including custom animations.
-	 * @param name The name of the animation to get.
-	 * @returns A {@link UIAnimation} instance that resolves to the named animation.
-	 * @see {@link UIAnimation.getAnimation}
-	 */
-	export function animation(name: string): UIAnimation {
-		return UIAnimation.getAnimation(name);
 	}
 
 	/**

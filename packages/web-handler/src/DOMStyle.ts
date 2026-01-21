@@ -4,6 +4,7 @@ import {
 	UIContainer,
 	UIElement,
 } from "@talla-ui/core";
+import { makeEffectCSS } from "./defaults/animations.js";
 import {
 	CLASS_CONTAINER,
 	CLASS_NAMED,
@@ -97,6 +98,7 @@ export function initializeCSS(
 	importCSS?: string[],
 ) {
 	let allCss = makeBaseCSS();
+	Object.assign(allCss, makeEffectCSS());
 
 	let logicalPxScale = options.logicalPxScale ?? 1;
 	let logicalPxScaleNarrow = options.logicalPxScaleNarrow ?? 16 / 14;
@@ -647,12 +649,17 @@ function _addCSSRules(css: { [spec: string]: any }, sheet: CSSStyleSheet) {
 		let declarations = css[selector];
 		if (!declarations) continue;
 		if (selector[0] === "@") {
-			// Handle media queries and other at-rules
+			// Handle all at-rules: combine nested rules into a single block
+			let nestedRules = "";
 			for (let nestedSelector in declarations) {
 				let nestedDeclarations = getCSSText(declarations[nestedSelector]);
-				if (!nestedDeclarations) continue;
+				if (nestedDeclarations) {
+					nestedRules += `${nestedSelector} { ${nestedDeclarations} } `;
+				}
+			}
+			if (nestedRules) {
 				sheet.insertRule(
-					`${selector} { ${nestedSelector} { ${nestedDeclarations} } }`,
+					`${selector} { ${nestedRules} }`,
 					sheet.cssRules.length,
 				);
 			}

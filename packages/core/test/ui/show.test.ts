@@ -282,5 +282,3 @@ test("Use activity view as inserted view and render", async () => {
 	});
 	out.containing({ text: "foo" }).toBeEmpty();
 });
-
-// NOTE: animations are not tested here because the test renderer does not support them

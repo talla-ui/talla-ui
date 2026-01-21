@@ -14,6 +14,7 @@ import {
 	ObservableEvent,
 	ObservableObject,
 } from "../object/index.js";
+import { RenderEffect } from "./RenderEffect.js";
 import { StyleOverrides, UIColor } from "./style/index.js";
 
 /** @internal Empty array, used for findViewContent. */
@@ -718,6 +719,23 @@ export namespace UIElement {
 				Object.assign(overrides, value);
 			}
 			return this;
+		}
+
+		/**
+		 * Applies a render effect to this element.
+		 * - Render effects handle lifecycle events including entry and exit, for animation or other purposes. Effects must be registered by the platform handler (using e.g. {@link useAnimationEffects()}), or by the application on startup.
+		 * - Effects do **not** handle showing and hiding elements using the {@link UIElement.hidden} property, only creation and removal by adding or removing elements from containers or {@link UIShowView}.
+		 * - Multiple effects can be chained (e.g., `.effect("fadeIn").effect("scaleOut")`).
+		 * @param name The name of the effect to apply.
+		 * @returns The builder instance for chaining.
+		 *
+		 * @example
+		 * UI.Cell(content).effect("fade")  // Fades in on render, fades out on removal
+		 * UI.Cell(content).effect("fadeIn").effect("scaleOut")  // Different enter/exit effects
+		 */
+		effect(name?: RenderEffect.EffectName) {
+			if (!name) return this;
+			return this.apply(RenderEffect.create(name));
 		}
 
 		// --- delayed initialization

@@ -2,6 +2,7 @@ import {
 	ModalFactory,
 	ModalMenuOptions,
 	RenderContext,
+	RenderEffect,
 	UI,
 	UICell,
 	UIContainer,
@@ -12,7 +13,6 @@ import {
 	Widget,
 	app,
 } from "@talla-ui/core";
-import { reduceElementMotion } from "../WebOutputTransform.js";
 
 /** The default width that's used if none is specified */
 const DEFAULT_WIDTH = 260;
@@ -27,6 +27,9 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 
 	/** Vertical menu offset, updated by {@link setWebTheme} */
 	static menuOffset = 2;
+
+	/** Default menu render effect, set from {@link WebContextOptions} */
+	static menuEffect?: RenderEffect.EffectName;
 
 	static Container(): UIContainer.ContainerBuilder {
 		return UI.Cell()
@@ -83,10 +86,6 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 		return new Promise<{ value: unknown } | undefined>((r) => {
 			app.render(this, {
 				mode: "modal",
-				transform: {
-					show: UI.animations.showMenu,
-					hide: UI.animations.hideMenu,
-				},
 				refOffset: [0, ModalMenu.menuOffset],
 				...place,
 			});
@@ -177,6 +176,7 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 		}
 
 		return ModalMenu.Container()
+			.effect(ModalMenu.menuEffect)
 			.width(this.options.width || DEFAULT_WIDTH)
 			.minWidth(this.options.minWidth)
 			.onRendered(() => {
@@ -267,10 +267,6 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 		if (isLow) {
 			elt.style.top = "auto";
 			elt.style.bottom = "100%";
-
-			// (try to) stop animation, since element is now at the top
-			elt.style.transition = "";
-			reduceElementMotion(elt);
 		}
 		if (isLhs) {
 			elt.style.left = "0";

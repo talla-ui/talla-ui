@@ -5,7 +5,14 @@ import { ELT_HND_PROP } from "./events.js";
 /** @internal Abstract observer class for all `UIElement` instances, to create output and call render callback; implemented for all types of UI elements */
 export abstract class BaseObserver<TUIViewElement extends UIElement> {
 	constructor(public observed: TUIViewElement) {
-		this._thisRenderedEvent = new ObservableEvent(
+		this._thisElementCreated = new ObservableEvent(
+			"ElementCreated",
+			observed,
+			undefined,
+			undefined,
+			true,
+		);
+		this._thisRendered = new ObservableEvent(
 			"Rendered",
 			observed,
 			undefined,
@@ -127,19 +134,26 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 			typeof event.data.render === "function" &&
 			event.source === this.observed
 		) {
+			let observed = this.observed;
+			let created: boolean | undefined;
 			if (!this.element || this._remounted !== WebRenderer.lastRemountIdx) {
 				// create output element if needed
 				let output = (this.output = this.getOutput());
-				this.element = output.element;
-				if (this.observed.name) {
-					this.element.dataset.name = this.observed.name;
+				let element = output.element;
+				this.element = element;
+				(element as any)[ELT_HND_PROP] = this;
+				if (observed.name) {
+					element.dataset.name = observed.name;
 				}
-				this.observed.lastRenderOutput = output;
-				(output.element as any)[ELT_HND_PROP] = this;
+				observed.lastRenderOutput = output;
+				created = true;
 			}
 
 			// update output element with data from source
 			this.update(this.element);
+
+			// emit ElementCreated event (once) for effects initialization
+			if (created) observed.emit(this._thisElementCreated);
 
 			// call render callback with new element
 			this._updateCallback = event.data.render.call(
@@ -155,7 +169,7 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 					}
 
 					// emit Rendered event
-					this.observed.emit(this._thisRenderedEvent);
+					observed.emit(this._thisRendered);
 				},
 			);
 		}
@@ -251,7 +265,8 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 	}
 
 	private _updateCallback?: RenderContext.RenderCallback;
-	private _thisRenderedEvent?: ObservableEvent;
+	private _thisRendered?: ObservableEvent;
+	private _thisElementCreated?: ObservableEvent;
 }
 
 /** Helper function to focus an element asynchronously, waiting for rendering to catch up */

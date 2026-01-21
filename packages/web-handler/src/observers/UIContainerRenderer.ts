@@ -18,6 +18,7 @@ import {
 	CLASS_SEPARATOR_SPACER,
 } from "../defaults/css.js";
 import { applyStyles, getCSSLength } from "../DOMStyle.js";
+import { isMarkedForRemoval } from "../removeAnimation.js";
 import { BaseObserver } from "./BaseObserver.js";
 
 /** @internal */
@@ -306,14 +307,15 @@ export class ContentUpdater {
 			if (!contentSet.has(it)) {
 				let out = this._output.get(it);
 				if (out) {
-					let elt = out.element as Node;
+					let elt = out.element as HTMLElement;
 					if (elt && elt.parentNode === element) {
 						if (!elt.previousSibling && hasSeparators && elt.nextSibling) {
 							// if first element, remove separator AFTER
 							element.removeChild(elt.nextSibling);
 						}
-						// remove element itself
-						element.removeChild(elt);
+						if (!isMarkedForRemoval(elt)) {
+							element.removeChild(elt);
+						}
 					}
 					this._output.delete(it);
 				}
@@ -353,10 +355,13 @@ export class ContentUpdater {
 			}
 		}
 
-		// STEP 3: remove all leftover elements
-		if (cur) {
-			while (cur.nextSibling) element.removeChild(cur.nextSibling);
-			element.removeChild(cur!);
+		// STEP 3: remove all leftover elements (except those marked for animated removal)
+		while (cur) {
+			const next = cur.nextSibling;
+			if (!isMarkedForRemoval(cur as HTMLElement)) {
+				element.removeChild(cur);
+			}
+			cur = next;
 		}
 		this._clearPromises();
 	}
@@ -407,7 +412,7 @@ export class ContentUpdater {
 				let lastElt = lastOutput && (lastOutput.element as HTMLElement);
 				lastOutput = output;
 				if (!output || !output.element) {
-					// no output... delete last element (and separator) now
+					// no output... delete last element (and separator)
 					let sep = this._separators.get(item);
 					if (sep && sep.parentNode === this.element) {
 						this.element.removeChild(sep);
@@ -417,7 +422,9 @@ export class ContentUpdater {
 						if (nextSep && (nextSep as HTMLElement).dataset.isSeparator) {
 							this.element.removeChild(nextSep);
 						}
-						this.element.removeChild(lastElt);
+						if (!isMarkedForRemoval(lastElt)) {
+							this.element.removeChild(lastElt);
+						}
 					}
 					scheduleAfter && scheduleAfter();
 				} else if (lastElt && lastElt.parentNode === this.element) {

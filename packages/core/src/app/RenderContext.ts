@@ -1,5 +1,5 @@
 import type { StringConvertible } from "@talla-ui/util";
-import { errorHandler, invalidArgErr, safeCall } from "../errors.js";
+import { invalidArgErr, safeCall } from "../errors.js";
 import { ObservableObject } from "../object/index.js";
 import type { UIColor } from "../ui/index.js";
 import { AppContext } from "./AppContext.js";
@@ -17,10 +17,6 @@ export abstract class RenderContext extends ObservableObject {
 	abstract getRenderCallback(): RenderContext.RenderCallback;
 	/** Creates a new renderer observer for the provided view object; do not use directly */
 	abstract createObserver<T extends View>(target: T): unknown;
-	/** Creates a new transformation object for the provided output, if supported */
-	abstract transform(
-		out: RenderContext.Output,
-	): RenderContext.OutputTransform | undefined | void;
 	/** Schedules execution of the provided function in the render queue */
 	abstract schedule(f: () => void, lowPriority?: boolean): void;
 	/** Clears all current root view output */
@@ -35,15 +31,6 @@ export abstract class RenderContext extends ObservableObject {
 	 * - This object is created automatically by the renderer, but may be updated by the application for custom modal views
 	 */
 	abstract modalFactory: ModalFactory;
-
-	/** Uses the provided output transformer to animate a rendered view */
-	async animateAsync(
-		out: RenderContext.Output,
-		transformer: RenderContext.OutputTransformer,
-	): Promise<void> {
-		let t = this.transform(out);
-		if (t) await transformer.applyTransform(t);
-	}
 
 	/**
 	 * Renders a view as root, until the view object is unlinked
@@ -81,7 +68,6 @@ export namespace RenderContext {
 	 * - `refOffset` — The offset (in pixels) from the reference output element, if any. May be a single number or two numbers for X and Y, and may also be negative.
 	 * - `shade` — True if the modal element should be surrounded by a backdrop shade.
 	 * - `background` — The screen (or page) background color.
-	 * - `transform` — A set of animations that should run for the view output. By default, showing and hiding (or removing) output can be animated.
 	 */
 	export type PlacementOptions = Readonly<{
 		mode: PlacementMode;
@@ -90,10 +76,6 @@ export namespace RenderContext {
 		refOffset?: number | [number, number];
 		shade?: boolean;
 		background?: UIColor;
-		transform?: Readonly<{
-			show?: OutputTransformer;
-			hide?: OutputTransformer;
-		}>;
 	}>;
 
 	/**
@@ -115,86 +97,6 @@ export namespace RenderContext {
 		| "modal"
 		| "overlay"
 		| "mount";
-
-	/**
-	 * An interface for an object that represents transformations to be applied to an output element
-	 *
-	 * @description
-	 * This object encapsulates a view output element, as well as any transformations that can be applied to it. The transformation methods stack particular transformations on top of each other. Timing functions can be used to control the animation speed and curve. To build complex animations that consist of multiple transformations, use a step-wise approach by chaining a call to `step()`.
-	 *
-	 * This interface is used to control animations within a {@link RenderContext.OutputTransformer}, which can be used on its own, with {@link AppContext.animateAsync app.animateAsync}, or from a {@link UIShowView}.
-	 *
-	 * @see {@link RenderContext.OutputTransformer}
-	 * @see {@link AppContext.animateAsync}
-	 */
-	export interface OutputTransform<TElement = unknown> {
-		/** Returns the output for which this transform has been created */
-		getOutput(): Output<TElement>;
-		/** Adds a specified delay (in milliseconds) before any transformation takes place */
-		delay(ms: number): this;
-		/** Sets the timing curve for the current step to linear, with the specified duration (in milliseconds) */
-		linear(ms: number): this;
-		/** Sets the timing curve for the current step to ease, with the specified duration (in milliseconds) */
-		ease(ms: number): this;
-		/** Sets the timing curve for the current step to ease-in, with the specified duration (in milliseconds) */
-		easeIn(ms: number): this;
-		/** Sets the timing curve for the current step to ease-out, with the specified duration (in milliseconds) */
-		easeOut(ms: number): this;
-		/** Sets a custom bezier timing curve for the current step, with the specified duration (in milliseconds) */
-		timing(ms: number, bezier: [number, number, number, number]): this;
-		/** Adds an opacity filter to the current step, with the specified target opacity */
-		fade(opacity: number): this;
-		/** Adds a blur filter to the current step, with the specified strength (in pixels) */
-		blur(strength: number): this;
-		/** Adds a (de)saturation filter to the current step, with the specified strength */
-		saturate(saturation: number): this;
-		/** Sets the transformation origin for the current step */
-		origin(x: number, y: number): this;
-		/** Adds a translation transformation to the current step */
-		offset(x?: number, y?: number): this;
-		/** Adds a scale transformation to the current step */
-		scale(x?: number, y?: number): this;
-		/** Adds a rotatation transformation to the current step */
-		rotate(deg: number): this;
-		/** Adds a skew transformation to the current step */
-		skew(xDeg?: number, yDeg?: number): this;
-		/**
-		 * Adds an alignment transformation to the current step
-		 * @param ref The view output element to which to align
-		 * @param origin The current output element (relative) origin to use for alignment ([0,0] - [1,1]), defaults to [0.5,0.5]
-		 * @param refOrigin The reference output element (relative) origin to use for alignment ([0,0] - [1,1]), defaults to [0.5,0.5]
-		 * @param scaleX The horizontal scale factor to apply
-		 * @param scaleY The vertical scale factor to apply
-		 */
-		align(
-			ref?: Output<TElement>,
-			origin?: [number, number],
-			refOrigin?: [number, number],
-			scaleX?: number,
-			scaleY?: number,
-		): this;
-		/**
-		 * Adds a smooth offset transition to the current step
-		 * - This method stores the _current_ position of the view output element, and animates a transition _from_ this position to the then-current position asynchronously when the transform is invoked.
-		 */
-		smoothOffset(): OutputTransform;
-		/**
-		 * Returns a new instance, to add an animation step
-		 * @returns A new {@link OutputTransform} instance, which is invoked only after the original instance has completed.
-		 */
-		step(): OutputTransform;
-		/** Returns a promise that's resolved when the transformation has completed */
-		waitAsync(): Promise<unknown>;
-	}
-
-	/**
-	 * An interface that describes an asynchronous transformer for a rendered output element
-	 * @see {@link RenderContext.OutputTransform}
-	 */
-	export interface OutputTransformer<TElement = unknown> {
-		/** Apply the transformer using the provided output transform object */
-		applyTransform(transform: OutputTransform<TElement>): Promise<unknown>;
-	}
 
 	/**
 	 * An object that encapsulates a rendered output element, created by the global rendering context
@@ -295,17 +197,12 @@ export namespace RenderContext {
 
 		/** Removes previously rendered output, asynchronously */
 		removeAsync() {
-			let out = this.lastRenderOutput;
-			if (!out) return;
+			if (!this.lastRenderOutput) return;
 			let seq = this._seq;
 			this.lastRenderOutput = undefined;
 			this._stopRenderListener?.();
 			return safeCall(async () => {
 				if (!this.callback) return;
-				let animation = out?.place?.transform?.hide;
-				if (animation) {
-					await this.renderer?.animateAsync(out!, animation);
-				}
 				if (seq === this._seq) await this._clear();
 			});
 		}
@@ -317,12 +214,6 @@ export namespace RenderContext {
 					if (output && place) output.place = place;
 					this.callback = callback(output, afterRender);
 					this.lastRenderOutput = output;
-					let animation = output?.place?.transform?.show;
-					if (animation) {
-						this.renderer?.animateAsync(output!, animation).catch((e) => {
-							errorHandler(e);
-						});
-					}
 					seq = ++this._seq;
 				}
 				return cb;

@@ -1,11 +1,4 @@
-import {
-	StyleOverrides,
-	UI,
-	UIAnimation,
-	UIColor,
-	UIIconResource,
-} from "@talla-ui/core";
-import { makeDefaultAnimations } from "./defaults/animations.js";
+import { StyleOverrides, UI, UIColor, UIIconResource } from "@talla-ui/core";
 import { makeDefaultColors } from "./defaults/colors.js";
 import { makeDefaultIcons } from "./defaults/icons.js";
 import { makeDefaultStyles } from "./defaults/styles.js";
@@ -14,7 +7,6 @@ import { UITextRenderer } from "./observers/UITextRenderer.js";
 
 /** @internal Theme options type for scalar configuration values. */
 export type WebThemeOptions = {
-	reducedMotion?: boolean;
 	updateBodyStyle: boolean;
 	pageBackground: UIColor | string;
 	modalShadeBackground: UIColor | string;
@@ -32,7 +24,6 @@ export type WebThemeOptions = {
 export type WebThemeData = {
 	colors: Record<string, UIColor>;
 	icons: Record<string, UIIconResource>;
-	animations: Record<string, UIAnimation>;
 	styles: Record<string, Record<string, WebTheme.StyleDefinition>>;
 	imports: string[];
 	options: WebThemeOptions;
@@ -41,7 +32,7 @@ export type WebThemeData = {
 /**
  * A class that represents a complete visual theme configuration.
  * - Create a new theme using `new WebTheme()` which initializes with all defaults.
- * - Use fluent methods to customize named colors, icons, animations, and styles.
+ * - Use fluent methods to customize named colors, icons, and styles.
  * - Apply a theme using {@link setWebTheme()}.
  *
  * @example
@@ -56,7 +47,7 @@ export type WebThemeData = {
 export class WebTheme {
 	/**
 	 * Creates a new theme initialized with all default values.
-	 * - Colors, icons, animations, and styles are copied from defaults.
+	 * - Colors, icons, and styles are copied from defaults.
 	 * - Each instance is independent; modifying one does not affect others.
 	 */
 	constructor() {
@@ -64,7 +55,6 @@ export class WebTheme {
 		this._darkColors = {};
 		this._icons = makeDefaultIcons();
 		this._darkIcons = {};
-		this._animations = makeDefaultAnimations();
 		this._styles = makeDefaultStyles();
 
 		// Initialize options with defaults
@@ -154,18 +144,6 @@ export class WebTheme {
 		overrides: Partial<Record<UIIconResource.IconName, UIIconResource>>,
 	): this {
 		Object.assign(this._darkIcons, overrides);
-		return this;
-	}
-
-	/**
-	 * Sets animation overrides, merged with existing animations.
-	 * @param overrides Animation name to animation mapping.
-	 * @returns The theme itself, for method chaining.
-	 */
-	animations(
-		overrides: Partial<Record<UIAnimation.AnimationName, UIAnimation>>,
-	): this {
-		Object.assign(this._animations, overrides);
 		return this;
 	}
 
@@ -300,18 +278,6 @@ export class WebTheme {
 	}
 
 	/**
-	 * Sets whether motion should be reduced.
-	 * - When true, animations are disabled for accessibility.
-	 * - If not used, this option is set based on the system's `prefers-reduced-motion` setting.
-	 * @param enabled True to reduce motion.
-	 * @returns The theme itself, for method chaining.
-	 */
-	setReducedMotion(enabled: boolean): this {
-		this._options.reducedMotion = enabled;
-		return this;
-	}
-
-	/**
 	 * Sets whether to update the body element style initially.
 	 * - When true (default), the body element's style is initialized to remove padding and margin, and to apply the background color.
 	 * @param update True to update the body element style.
@@ -349,7 +315,6 @@ export class WebTheme {
 		copy._darkColors = { ...this._darkColors };
 		copy._icons = { ...this._icons };
 		copy._darkIcons = { ...this._darkIcons };
-		copy._animations = { ...this._animations };
 		copy._imports = this._imports?.slice();
 		copy._options = { ...this._options };
 		if (this._options.controlTextStyle) {
@@ -366,7 +331,6 @@ export class WebTheme {
 		return {
 			colors: dark ? { ...this._colors, ...this._darkColors } : this._colors,
 			icons: dark ? { ...this._icons, ...this._darkIcons } : this._icons,
-			animations: this._animations,
 			styles: this._styles,
 			imports: [...(this._imports || [])],
 			options: { ...this._options },
@@ -384,9 +348,6 @@ export class WebTheme {
 
 	/** Dark mode icon overrides */
 	private _darkIcons: Record<string, UIIconResource>;
-
-	/** Animation overrides */
-	private _animations: Record<string, UIAnimation>;
 
 	/** Style definitions by element type and name */
 	private _styles: Partial<

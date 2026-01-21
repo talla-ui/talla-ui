@@ -12,9 +12,6 @@ import {
 	ObservableEvent,
 	ObservableObject,
 } from "../../object/index.js";
-import { UIAnimation } from "../style/index.js";
-
-const MIN_ANIM_REPEAT_MS = 8;
 
 /**
  * A view object that renders and controls a referenced view
@@ -22,8 +19,6 @@ const MIN_ANIM_REPEAT_MS = 8;
  * @description A `UIShowView` object renders its contained view object, when the {@link when} property is equal to true, and the {@link unless} property is equal to false.
  *
  * The contained view object can be created from a view builder, or referenced using a binding. In the latter case, the view object is not directly attached to the `UIShowView` object, but must be attached to another object, such as an activity.
- *
- * In addition, the `UIShowView` object can be used to play animations when the view is shown or hidden, or repeatedly.
  *
  * @online_docs Refer to the online documentation for more information on using this UI element class.
  */
@@ -117,18 +112,6 @@ export class UIShowView extends View {
 	 */
 	propagateInsertedEvents = false;
 
-	/** Animation that will be played automatically when the content view is shown */
-	showAnimation?: UIAnimation;
-
-	/** Animation that will be played when the content view is hidden */
-	hideAnimation?: UIAnimation;
-
-	/** Animation that will be played repeatedly after the content view is shown */
-	repeatAnimation?: UIAnimation;
-
-	/** True if first appearance should not be animated */
-	ignoreFirstShowAnimation?: boolean;
-
 	render(callback?: RenderContext.RenderCallback) {
 		// skip extra rendering if view didn't actually change
 		let view = this.body;
@@ -136,46 +119,12 @@ export class UIShowView extends View {
 
 		// create a new renderer if needed
 		this._renderer ||= new RenderContext.ViewController();
-		let isFirst = !this._renderer.isRendered();
 
 		// render (or remove) the body view
 		if (!view) {
 			this._renderer.removeAsync();
 		}
-		let show =
-			isFirst && this.ignoreFirstShowAnimation ? undefined : this.showAnimation;
-		let hide = this.hideAnimation;
-		this._renderer.render(
-			view,
-			callback,
-			show || hide
-				? { mode: "none" as const, transform: { show, hide } }
-				: undefined,
-		);
-		if (view && this.repeatAnimation) {
-			this.playAsync(this.repeatAnimation, true);
-		}
-	}
-
-	/** Plays the specified animation on the last output element rendered by the content view */
-	async playAsync(animation?: UIAnimation, repeat?: boolean) {
-		// prepare everything in advance
-		let renderer = this._renderer?.renderer;
-		let output = this._renderer?.lastRenderOutput;
-		if (!animation || !output || !renderer) return;
-
-		// loop if repeating, otherwise run transform just once
-		let update = this._updated;
-		await Promise.resolve();
-		while (this.body && this._updated === update) {
-			// use a promise to avoid a blocking infinite loop
-			let minRepeatPromise = repeat
-				? new Promise((r) => setTimeout(r, MIN_ANIM_REPEAT_MS))
-				: undefined;
-			await renderer.animateAsync(output, animation);
-			if (!repeat) return;
-			await minRepeatPromise;
-		}
+		this._renderer.render(view, callback);
 	}
 
 	/**
@@ -239,9 +188,6 @@ export class UIShowView extends View {
 
 	/** Stateful renderer wrapper, handles content view */
 	private _renderer?: RenderContext.ViewController;
-
-	/** Number of times the view has been updated */
-	private _updated = 0;
 
 	/** Callback to stop observing the inserted view */
 	private _stopInsertedView?: () => void;
@@ -399,63 +345,6 @@ export namespace UIShowView {
 
 		else(content: ViewBuilder | (() => ViewBuilder)) {
 			this._elseContent = content;
-			return this;
-		}
-
-		/**
-		 * Sets the animation to be played when the content is shown.
-		 * @param animation An animation name, a {@link UIAnimation} instance, or a binding.
-		 * @param ignoreFirst If `true`, the animation is skipped on the first appearance.
-		 * @returns The builder instance for chaining.
-		 */
-		showAnimation(
-			animation: BindingOrValue<
-				UIAnimation | UIAnimation.AnimationName | undefined
-			>,
-			ignoreFirst?: boolean,
-		) {
-			this.initializer.update(ignoreFirst, function (value) {
-				this.ignoreFirstShowAnimation = !!value;
-			});
-			return this._setAnimation("showAnimation", animation);
-		}
-
-		/**
-		 * Sets the animation to be played when the content is hidden.
-		 * @param animation An animation name, a {@link UIAnimation} instance, or a binding.
-		 * @returns The builder instance for chaining.
-		 */
-		hideAnimation(
-			animation: BindingOrValue<
-				UIAnimation | UIAnimation.AnimationName | undefined
-			>,
-		) {
-			return this._setAnimation("hideAnimation", animation);
-		}
-
-		/**
-		 * Sets an animation to be played repeatedly while the content is visible.
-		 * @param animation An animation name, a {@link UIAnimation} instance, or a binding.
-		 * @returns The builder instance for chaining.
-		 */
-		repeatAnimation(
-			animation: BindingOrValue<
-				UIAnimation | UIAnimation.AnimationName | undefined
-			>,
-		) {
-			return this._setAnimation("repeatAnimation", animation);
-		}
-
-		private _setAnimation(
-			k: "showAnimation" | "hideAnimation" | "repeatAnimation",
-			animation: BindingOrValue<
-				UIAnimation | UIAnimation.AnimationName | undefined
-			>,
-		) {
-			this.initializer.update(animation, function (value) {
-				if (typeof value === "string") value = UIAnimation.getAnimation(value);
-				this[k] = value;
-			});
 			return this;
 		}
 	}

@@ -20,6 +20,7 @@ import {
 	UIScrollView,
 } from "../containers/index.js";
 import { UISpacer } from "../controls/UISpacer.js";
+import { RenderEffect } from "../RenderEffect.js";
 
 const ASYNC_BATCH_SIZE = 100;
 const DEFAULT_MAX_DELAY_COUNT = 100;
@@ -120,7 +121,7 @@ export class UIListView<
 
 	/**
 	 * Render options, including asynchronous and delayed rendering
-	 * - These options can be used for staggered animation, or to avoid blocking other parts of the UI while rendering lists with many items all in one go.
+	 * - These options can be used for staggered rendering, or to avoid blocking other parts of the UI while rendering lists with many items all in one go.
 	 */
 	renderOptions?: UIListView.RenderOptions;
 
@@ -500,6 +501,13 @@ export namespace UIListView {
 		/** The initializer that is used to create each list view instance */
 		readonly initializer = new ViewBuilder.Initializer(UIListView, (view) => {
 			let containerBuilder = this._container || UIColumn.columnBuilder();
+			if (!this._container || !this._effectsApplied) {
+				for (let name of this._effects) {
+					containerBuilder = RenderEffect.create(name)(containerBuilder as any);
+				}
+				this._effectsApplied = true;
+			}
+
 			if (!this._itemBuilder) {
 				if (this._buildItem) {
 					// Create a view builder on first initialization
@@ -632,10 +640,24 @@ export namespace UIListView {
 			return this.handle("ListItemsChange", handle);
 		}
 
+		/**
+		 * Applies a render effect to the list container.
+		 * - This applies the effect to the container that holds the list items (e.g., for container effects like `stagger-content` or `animate-content`).
+		 * - Multiple effects can be chained.
+		 * @param name The name of the effect to apply.
+		 * @returns The builder instance for chaining.
+		 */
+		effect(name: RenderEffect.EffectName) {
+			this._effects.push(name);
+			return this;
+		}
+
 		private _itemProp = Symbol("UIListView");
 		private _buildItem?: (item: Binding) => ViewBuilder;
 		private _itemBuilder?: ViewBuilder;
 		private _container?: ViewBuilder;
 		private _emptyState?: ViewBuilder;
+		private _effects: RenderEffect.EffectName[] = [];
+		private _effectsApplied?: boolean;
 	}
 }

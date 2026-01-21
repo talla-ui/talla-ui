@@ -3,12 +3,12 @@ import {
 	MessageDialogOptions,
 	ModalFactory,
 	RenderContext,
+	RenderEffect,
 	UI,
 	UIContainer,
 	Widget,
 } from "@talla-ui/core";
 import { fmt, StringConvertible } from "@talla-ui/util";
-import { applyDragModal } from "../drag/modal.js";
 import { Dialog } from "./Dialog.js";
 
 /** @internal Default modal message dialog view; shown asynchronously and resolves a promise */
@@ -99,10 +99,6 @@ export class MessageDialog
 		app.render(this, {
 			mode: "modal",
 			shade: true,
-			transform: {
-				show: UI.animations.showDialog,
-				hide: UI.animations.hideDialog,
-			},
 			...place,
 		});
 		let confirmed = false;
@@ -143,13 +139,13 @@ export class MessageDialog
 				MessageDialog.Button().text(this.cancelText).onClick("Cancel"),
 			);
 		}
+		let messageContainer = MessageDialog.MessageContainer().with(...messages);
+		if (RenderEffect.has("drag-modal")) {
+			messageContainer = messageContainer.effect("drag-modal");
+		}
 		return MessageDialog.Container()
-			.with(
-				MessageDialog.MessageContainer()
-					.with(...messages)
-					.apply(applyDragModal),
-				MessageDialog.ButtonContainer().with(...buttons),
-			)
+			.effect(Dialog.dialogEffect)
+			.with(messageContainer, MessageDialog.ButtonContainer().with(...buttons))
 			.build();
 	}
 }
