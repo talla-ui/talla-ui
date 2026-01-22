@@ -265,7 +265,7 @@ export namespace RenderContext {
 	export interface UIElementRenderer {
 		/** Returns true if the element currently has input focus */
 		isFocused?(): boolean;
-		/** Returns true if the element is currently hovered (UICell only) */
+		/** Returns true if the element is currently hovered (UIContainer only) */
 		isHovered?(): boolean;
 		/** Returns true if content update is pending */
 		isContentPending?(): boolean;

@@ -81,7 +81,7 @@ export class WebContextOptions {
 		MessageConfirmButton: MessageDialog.ConfirmButton,
 		MessageButton: MessageDialog.Button,
 		MenuContainer: ModalMenu.Container,
-		MenuItemCell: ModalMenu.ItemCell,
+		MenuItemRow: ModalMenu.ItemRow,
 		MenuItemText: ModalMenu.ItemText,
 		MenuItemHint: ModalMenu.ItemHint,
 		MenuTitleText: ModalMenu.TitleText,

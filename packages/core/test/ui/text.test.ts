@@ -4,7 +4,7 @@ import {
 	useTestContext,
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
-import { UI, UICell, UIText, Widget } from "../../dist/index.js";
+import { UI, UIColumn, UIText, Widget } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
@@ -105,12 +105,12 @@ test("Rendered with fmt", async () => {
 
 test("Rendered, hidden and shown", async () => {
 	let text = new UIText("foo");
-	let view = new UICell();
+	let view = new UIColumn();
 	view.content.add(text);
 	renderTestView(view);
 	await expectOutputAsync({ type: "text", text: "foo" });
 	text.hidden = true;
-	let out = await expectOutputAsync({ type: "cell" });
+	let out = await expectOutputAsync({ type: "column" });
 	out.containing({ type: "text" }).toBeEmpty();
 	text.hidden = false;
 	await expectOutputAsync({ type: "text", text: "foo" });

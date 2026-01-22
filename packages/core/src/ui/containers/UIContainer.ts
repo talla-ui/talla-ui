@@ -1,4 +1,4 @@
-import { View, ViewBuilder } from "../../app/index.js";
+import { View, ViewBuilder, ViewBuilderEventHandler } from "../../app/index.js";
 import { BindingOrValue, ObservableList } from "../../object/index.js";
 import { StyleOverrides, UIColor } from "../style/index.js";
 import { UIElement } from "../UIElement.js";
@@ -14,6 +14,33 @@ export abstract class UIContainer extends UIElement {
 	 * - These options _override_ the defaults for the type of container.
 	 */
 	layout?: Readonly<UIContainer.Layout> = undefined;
+
+	/**
+	 * True if this container may receive direct input focus.
+	 * - This property can't be changed after rendering.
+	 */
+	allowFocus?: boolean;
+
+	/**
+	 * True if this container may receive input focus using the keyboard (e.g. Tab key).
+	 * - This property can't be changed after rendering.
+	 * - If this property is set to true, allowFocus is assumed to be true as well.
+	 */
+	allowKeyboardFocus?: boolean;
+
+	/**
+	 * True if hover state should be tracked for this container.
+	 * - Defaults to false. This property is automatically enabled when mouse enter/leave handlers are added using {@link UIContainer.ContainerBuilder.onMouseEnter onMouseEnter()} or {@link UIContainer.ContainerBuilder.onMouseLeave onMouseLeave()}.
+	 */
+	trackHover?: boolean;
+
+	/**
+	 * Returns true if this container is currently hovered by the mouse.
+	 * - Only works when {@link trackHover} is enabled.
+	 */
+	isHovered(): boolean {
+		return !!this.getRenderer()?.isHovered?.();
+	}
 
 	/** The list of all (attached) content view objects */
 	readonly content = this.attach(
@@ -82,7 +109,7 @@ export namespace UIContainer {
 
 	/**
 	 * An abstract builder class for `UIContainer` instances.
-	 * @note This class is used as a base class for container builders, such as the ones returned by `UI.Cell()` and `UI.Column()`. You should not use this class directly.
+	 * @note This class is used as a base class for container builders, such as the ones returned by `UI.Column()` and `UI.Row()`. You should not use this class directly.
 	 */
 	export abstract class ContainerBuilder<
 		T extends UIContainer = UIContainer,
@@ -136,6 +163,84 @@ export namespace UIContainer {
 				this.layout = { ...this.layout, clip: value };
 			});
 			return this;
+		}
+
+		/**
+		 * Allows the container to receive input focus.
+		 * @param allow If `true`, the container can be focused. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		allowFocus(allow = true) {
+			return this.setProperty("allowFocus", allow);
+		}
+
+		/**
+		 * Allows the container to receive input focus via the keyboard.
+		 * @param allow If `true`, the container can be focused with the keyboard. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		allowKeyboardFocus(allow = true) {
+			if (allow) this.allowFocus(true);
+			return this.setProperty("allowKeyboardFocus", allow);
+		}
+
+		/**
+		 * Enables hover state tracking for this container.
+		 * @param track If `true`, hover state will be tracked. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		trackHover(track = true) {
+			return this.setProperty("trackHover", track);
+		}
+
+		/**
+		 * Handles the `MouseEnter` event.
+		 * - Automatically enables hover tracking.
+		 * @param handle The function to call, or name of the event to emit instead.
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onMouseEnter(handle: string | ViewBuilderEventHandler<T>) {
+			this.trackHover(true);
+			return this.handle("MouseEnter", handle);
+		}
+
+		/**
+		 * Handles the `MouseLeave` event.
+		 * - Automatically enables hover tracking.
+		 * @param handle The function to call, or name of the event to emit instead.
+		 * @see {@link UIElement.ElementBuilder.handle()}
+		 */
+		onMouseLeave(handle: string | ViewBuilderEventHandler<T>) {
+			this.trackHover(true);
+			return this.handle("MouseLeave", handle);
+		}
+
+		/**
+		 * Centers content both horizontally and vertically.
+		 * - Shorthand for `.align("center", "center")`.
+		 * @returns The builder instance for chaining.
+		 */
+		center() {
+			this.initializer.update(undefined, function () {
+				this.layout = {
+					...this.layout,
+					gravity: "center",
+					distribution: "center",
+				};
+			});
+			return this;
+		}
+
+		/**
+		 * Applies flex-fill behavior with stacking context.
+		 * - Sets grow to 1, minHeight to 0, clips overflow, stretches to fill parent, and creates a stacking context (zIndex: 0).
+		 * @returns The builder instance for chaining.
+		 */
+		stretch() {
+			return this.grow(1)
+				.minHeight(0)
+				.clip(true)
+				.position({ gravity: "stretch", zIndex: 0 });
 		}
 	}
 }

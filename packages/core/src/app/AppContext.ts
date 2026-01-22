@@ -203,7 +203,7 @@ export class AppContext extends ObservableObject {
 	/**
 	 * Renders the provided view using specified placement options
 	 *
-	 * @summary This method can be used to render any view object to the screen (or in-memory test output, when called from a test function), such as a {@link UICell} or {@link Widget} instance.
+	 * @summary This method can be used to render any view object to the screen (or in-memory test output, when called from a test function), such as a {@link UIColumn} or {@link Widget} instance.
 	 *
 	 * @param view The view object to be rendered
 	 * @param place View placement options, as an object of type {@link RenderContext.PlacementOptions}; defaults to page placement

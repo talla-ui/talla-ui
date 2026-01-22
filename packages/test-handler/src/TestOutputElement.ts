@@ -313,7 +313,6 @@ export namespace TestOutputElement {
 		| "root"
 		| "placeholder"
 		| "container"
-		| "cell"
 		| "row"
 		| "column"
 		| "form"

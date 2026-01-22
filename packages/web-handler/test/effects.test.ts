@@ -63,8 +63,8 @@ describe("Effects", () => {
 		test.each(symmetricEffects)(
 			"%s applies %s class on render",
 			async (effectName, className) => {
-				const cell = UI.Cell(UI.Text("Content")).effect(effectName).build();
-				await renderView(cell);
+				const col = UI.Column(UI.Text("Content")).effect(effectName).build();
+				await renderView(col);
 
 				const el = document.querySelector(`.WebHandler-fx-${className}`);
 				expect(el).not.toBeNull();
@@ -81,8 +81,8 @@ describe("Effects", () => {
 		test.each(enterOnlyEffects)(
 			"%s applies %s class on render",
 			async (effectName, className) => {
-				const cell = UI.Cell(UI.Text("Content")).effect(effectName).build();
-				await renderView(cell);
+				const col = UI.Column(UI.Text("Content")).effect(effectName).build();
+				await renderView(col);
 
 				const el = document.querySelector(`.WebHandler-fx-${className}`);
 				expect(el).not.toBeNull();
@@ -92,8 +92,8 @@ describe("Effects", () => {
 
 	describe("Exit-only effects", () => {
 		test("fade-out does not apply class on render", async () => {
-			const cell = UI.Cell(UI.Text("Content")).effect("fade-out").build();
-			await renderView(cell);
+			const col = UI.Column(UI.Text("Content")).effect("fade-out").build();
+			await renderView(col);
 
 			// Exit-only effects don't add classes on enter
 			const el = document.querySelector(".WebHandler-fx-fade-out");
@@ -103,11 +103,11 @@ describe("Effects", () => {
 
 	describe("Multiple effects", () => {
 		test("Can apply multiple effects to same element", async () => {
-			const cell = UI.Cell(UI.Text("Content"))
+			const col = UI.Column(UI.Text("Content"))
 				.effect("fade-in")
 				.effect("scale-in")
 				.build();
-			await renderView(cell);
+			await renderView(col);
 
 			// Both classes should be on the SAME element
 			const fadeEl = document.querySelector(".WebHandler-fx-fade-in");
@@ -139,7 +139,9 @@ describe("Effects", () => {
 	describe("Exit animations", () => {
 		test("Symmetric effect adds exit class when element is removed", async () => {
 			// Use UIShowView to control visibility
-			const show = UI.Show(UI.Cell(UI.Text("Content")).effect("fade")).build();
+			const show = UI.Show(
+				UI.Column(UI.Text("Content")).effect("fade"),
+			).build();
 			show.when = true;
 			await renderView(show);
 
@@ -159,12 +161,12 @@ describe("Effects", () => {
 
 		test("Exit-only effect adds exit class when element is removed", async () => {
 			const show = UI.Show(
-				UI.Cell(UI.Text("Content")).name("exit-test").effect("fade-out"),
+				UI.Column(UI.Text("Content")).name("exit-test").effect("fade-out"),
 			).build();
 			show.when = true;
 			await renderView(show);
 
-			// Find the cell by its accessible name
+			// Find the column by its accessible name
 			const el = document.querySelector(
 				'[data-name="exit-test"]',
 			) as HTMLElement;
@@ -181,7 +183,7 @@ describe("Effects", () => {
 
 		test("Enter-only effect removes element immediately (no exit animation)", async () => {
 			const show = UI.Show(
-				UI.Cell(UI.Text("Content")).effect("fade-in"),
+				UI.Column(UI.Text("Content")).effect("fade-in"),
 			).build();
 			show.when = true;
 			await renderView(show);
@@ -203,8 +205,8 @@ describe("Effects", () => {
 
 	describe("CSS exiting class", () => {
 		test("Exiting class disables pointer events", async () => {
-			const cell = UI.Cell(UI.Text("Content")).effect("fade").build();
-			await renderView(cell);
+			const col = UI.Column(UI.Text("Content")).effect("fade").build();
+			await renderView(col);
 
 			const el = document.querySelector(
 				".WebHandler-fx-fade-in",
@@ -225,22 +227,22 @@ describe("Effects", () => {
 			const { effect, tracker } = createTestEffect();
 			RenderEffect.register("_test", effect);
 
-			const cell = UI.Cell(UI.Text("Content")).effect("_test").build();
-			await renderView(cell);
+			const col = UI.Column(UI.Text("Content")).effect("_test").build();
+			await renderView(col);
 
 			expect(tracker.elementCreatedCalls).toHaveLength(1);
-			expect(tracker.elementCreatedCalls[0]!.view).toBe(cell);
+			expect(tracker.elementCreatedCalls[0]!.view).toBe(col);
 		});
 
 		test("onRendered is called after element is in DOM", async () => {
 			const { effect, tracker } = createTestEffect();
 			RenderEffect.register("_test", effect);
 
-			const cell = UI.Cell(UI.Text("Content")).effect("_test").build();
-			await renderView(cell);
+			const col = UI.Column(UI.Text("Content")).effect("_test").build();
+			await renderView(col);
 
 			expect(tracker.renderedCalls).toHaveLength(1);
-			expect(tracker.renderedCalls[0]!.view).toBe(cell);
+			expect(tracker.renderedCalls[0]!.view).toBe(col);
 			// Element should be in DOM when onRendered is called
 			expect(document.contains(tracker.renderedCalls[0]!.element)).toBe(true);
 		});
@@ -252,7 +254,9 @@ describe("Effects", () => {
 			const { effect, tracker } = createTestEffect();
 			RenderEffect.register("_test", effect);
 
-			const show = UI.Show(UI.Cell(UI.Text("Content")).effect("_test")).build();
+			const show = UI.Show(
+				UI.Column(UI.Text("Content")).effect("_test"),
+			).build();
 			show.when = true;
 			await renderView(show);
 
@@ -271,7 +275,9 @@ describe("Effects", () => {
 			const { effect, tracker } = createTestEffect();
 			RenderEffect.register("_test", effect);
 
-			const show = UI.Show(UI.Cell(UI.Text("Content")).effect("_test")).build();
+			const show = UI.Show(
+				UI.Column(UI.Text("Content")).effect("_test"),
+			).build();
 			show.when = true;
 			await renderView(show);
 
@@ -294,11 +300,11 @@ describe("Effects", () => {
 
 	describe("markAnimateRemove mechanism", () => {
 		test("isMarkedForRemoval returns true after markAnimateRemove", async () => {
-			const cell = UI.Cell(UI.Text("Content")).name("test-cell").build();
-			await renderView(cell);
+			const col = UI.Column(UI.Text("Content")).name("test-col").build();
+			await renderView(col);
 
 			const el = document.querySelector(
-				'[data-name="test-cell"]',
+				'[data-name="test-col"]',
 			) as HTMLElement;
 			expect(el).not.toBeNull();
 
@@ -313,13 +319,13 @@ describe("Effects", () => {
 		test("Element stays in DOM when marked for removal (via onUnlinked)", async () => {
 			// Use symmetric effect which calls markAnimateRemove in onUnlinked
 			const show = UI.Show(
-				UI.Cell(UI.Text("Content")).name("fade-cell").effect("fade"),
+				UI.Column(UI.Text("Content")).name("fade-col").effect("fade"),
 			).build();
 			show.when = true;
 			await renderView(show);
 
 			const el = document.querySelector(
-				'[data-name="fade-cell"]',
+				'[data-name="fade-col"]',
 			) as HTMLElement;
 			expect(el).not.toBeNull();
 			expect(el.classList.contains("WebHandler-fx-fade-in")).toBe(true);
@@ -337,13 +343,13 @@ describe("Effects", () => {
 
 		test("Element is removed after animationend event", async () => {
 			const show = UI.Show(
-				UI.Cell(UI.Text("Content")).name("anim-cell").effect("fade"),
+				UI.Column(UI.Text("Content")).name("anim-col").effect("fade"),
 			).build();
 			show.when = true;
 			await renderView(show);
 
 			const el = document.querySelector(
-				'[data-name="anim-cell"]',
+				'[data-name="anim-col"]',
 			) as HTMLElement;
 			expect(el).not.toBeNull();
 
@@ -366,13 +372,13 @@ describe("Effects", () => {
 
 		test("Element is removed after transitionend event", async () => {
 			const show = UI.Show(
-				UI.Cell(UI.Text("Content")).name("trans-cell").effect("fade"),
+				UI.Column(UI.Text("Content")).name("trans-col").effect("fade"),
 			).build();
 			show.when = true;
 			await renderView(show);
 
 			const el = document.querySelector(
-				'[data-name="trans-cell"]',
+				'[data-name="trans-col"]',
 			) as HTMLElement;
 			expect(el).not.toBeNull();
 
@@ -389,8 +395,8 @@ describe("Effects", () => {
 		});
 
 		test("awaitRemoval resolves immediately for unmarked elements", async () => {
-			const cell = UI.Cell(UI.Text("Content")).name("unmarked").build();
-			await renderView(cell);
+			const col = UI.Column(UI.Text("Content")).name("unmarked").build();
+			await renderView(col);
 
 			const el = document.querySelector(
 				'[data-name="unmarked"]',
@@ -409,13 +415,13 @@ describe("Effects", () => {
 
 		test("awaitRemoval resolves after animation completes", async () => {
 			const show = UI.Show(
-				UI.Cell(UI.Text("Content")).name("await-cell").effect("fade"),
+				UI.Column(UI.Text("Content")).name("await-col").effect("fade"),
 			).build();
 			show.when = true;
 			await renderView(show);
 
 			const el = document.querySelector(
-				'[data-name="await-cell"]',
+				'[data-name="await-col"]',
 			) as HTMLElement;
 			expect(el).not.toBeNull();
 
@@ -442,7 +448,7 @@ describe("Effects", () => {
 
 		test("Mount container persists during exit animation then cleans up", async () => {
 			const show = UI.Show(
-				UI.Cell(UI.Text("Content")).name("mount-test").effect("fade"),
+				UI.Column(UI.Text("Content")).name("mount-test").effect("fade"),
 			).build();
 			show.when = true;
 			await renderView(show);
@@ -480,8 +486,8 @@ describe("Effects", () => {
 		test("Element with effect stays in DOM when removed from container", async () => {
 			// Create a column with content that can be removed
 			const column = UI.Column(
-				UI.Cell(UI.Text("Item 1")).name("item1").effect("fade"),
-				UI.Cell(UI.Text("Item 2")).name("item2"),
+				UI.Column(UI.Text("Item 1")).name("item1").effect("fade"),
+				UI.Column(UI.Text("Item 2")).name("item2"),
 			).build();
 			await renderView(column);
 
@@ -517,8 +523,8 @@ describe("Effects", () => {
 
 		test("Element without exit effect is removed immediately from container", async () => {
 			const column = UI.Column(
-				UI.Cell(UI.Text("Item 1")).name("item1").effect("fade-in"), // Enter-only
-				UI.Cell(UI.Text("Item 2")).name("item2"),
+				UI.Column(UI.Text("Item 1")).name("item1").effect("fade-in"), // Enter-only
+				UI.Column(UI.Text("Item 2")).name("item2"),
 			).build();
 			await renderView(column);
 
@@ -540,7 +546,7 @@ describe("Effects", () => {
 			RenderEffect.register("_test", effect);
 
 			const column = UI.Column(
-				UI.Cell(UI.Text("Item")).effect("_test"),
+				UI.Column(UI.Text("Item")).effect("_test"),
 			).build();
 			await renderView(column);
 
@@ -560,13 +566,13 @@ describe("Effects", () => {
 		test("Unregistered effect logs error but renders view", async () => {
 			// Using an effect name that is definitely not registered
 			// The error is logged via safeCall but doesn't prevent rendering
-			const cell = UI.Cell(UI.Text("Content"))
+			const col = UI.Column(UI.Text("Content"))
 				.name("error-test")
 				.effect("_nonexistent_effect_")
 				.build();
 
 			// Should not throw - error is caught and logged
-			await renderView(cell);
+			await renderView(col);
 
 			// Element should still render despite the effect error
 			const el = document.querySelector('[data-name="error-test"]');

@@ -50,7 +50,6 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link TestOutputElement} +
 - {@link TestRenderer} +
 - {@link UIButton} +
-- {@link UICell} +
 - {@link UIColor} +
 - {@link UIColumn} +
 - {@link UIContainer} +

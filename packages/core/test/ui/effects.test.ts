@@ -13,18 +13,18 @@ describe("Renderer effects (test-handler)", () => {
 
 	describe("Rendering with effects", () => {
 		test("View with effect renders without error", async () => {
-			const cell = UI.Cell(UI.Text("Content")).effect("fade").build();
-			renderTestView(cell);
-			await expectOutputAsync({ type: "cell" });
+			const column = UI.Column(UI.Text("Content")).effect("fade").build();
+			renderTestView(column);
+			await expectOutputAsync({ type: "column" });
 		});
 
 		test("View with multiple effects renders without error", async () => {
-			const cell = UI.Cell(UI.Text("Content"))
+			const column = UI.Column(UI.Text("Content"))
 				.effect("fade-in")
 				.effect("scale-out")
 				.build();
-			renderTestView(cell);
-			await expectOutputAsync({ type: "cell" });
+			renderTestView(column);
+			await expectOutputAsync({ type: "column" });
 		});
 
 		test("UIShowView with effect on content renders without error", async () => {
@@ -45,17 +45,17 @@ describe("Renderer effects (test-handler)", () => {
 
 	describe("Drag effects in test environment", () => {
 		test("drag-modal effect renders without error", async () => {
-			const cell = UI.Cell(UI.Text("Draggable")).effect("drag-modal").build();
-			renderTestView(cell);
-			await expectOutputAsync({ type: "cell" });
+			const column = UI.Column(UI.Text("Draggable")).effect("drag-modal").build();
+			renderTestView(column);
+			await expectOutputAsync({ type: "column" });
 		});
 
 		test("drag-relative effect renders without error", async () => {
-			const cell = UI.Cell(UI.Text("Draggable"))
+			const column = UI.Column(UI.Text("Draggable"))
 				.effect("drag-relative")
 				.build();
-			renderTestView(cell);
-			await expectOutputAsync({ type: "cell" });
+			renderTestView(column);
+			await expectOutputAsync({ type: "column" });
 		});
 	});
 });

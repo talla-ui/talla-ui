@@ -3,7 +3,7 @@ import { Activity, UI, UIIconResource } from "talla-ui";
 
 export class MainActivity extends Activity {
 	static override View() {
-		return UI.Cell(
+		return UI.Column(
 			UI.Text("Hello, world!").icon(new UIIconResource(globeSvg)).center(),
 		);
 	}

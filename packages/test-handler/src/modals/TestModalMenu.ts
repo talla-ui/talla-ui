@@ -49,13 +49,13 @@ export class TestModalMenu
 
 			// add a disabled item without event handlers
 			if (item.disabled) {
-				texts.push(UI.Cell().with(content));
+				texts.push(UI.Column(content));
 				continue;
 			}
 
 			// else, add the menu item with event handlers
 			texts.push(
-				UI.Cell()
+				UI.Column()
 					.accessibleRole("menuitem")
 					.onClick(() => {
 						this._resolve?.(item.value);
@@ -63,7 +63,7 @@ export class TestModalMenu
 					.with(content),
 			);
 		}
-		return UI.Cell()
+		return UI.Column()
 			.accessibleRole("menu")
 			.with(...texts)
 			.build();

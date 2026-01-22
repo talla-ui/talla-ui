@@ -356,6 +356,9 @@ function addPositionCSS(
 				result.position = "relative";
 			}
 	}
+	if (position.zIndex !== undefined) {
+		result.zIndex = String(position.zIndex);
+	}
 	return result;
 }
 

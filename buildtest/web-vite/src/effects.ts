@@ -236,7 +236,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					...SYMMETRIC_EFFECTS.map((name) =>
 						UI.ShowWhen(
 							v.bind("symmetricVisible").bind(name),
-							UI.Cell()
+							UI.Column()
 								.padding(16)
 								.borderRadius(8)
 								.background("accent")
@@ -274,7 +274,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					...NEW_EFFECTS.map((name) =>
 						UI.ShowWhen(
 							v.bind("newVisible").bind(name),
-							UI.Cell()
+							UI.Column()
 								.padding(16)
 								.borderRadius(8)
 								.background("danger")
@@ -312,7 +312,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					...SLOW_EFFECTS.map((name) =>
 						UI.ShowWhen(
 							v.bind("slowVisible").bind(name),
-							UI.Cell()
+							UI.Column()
 								.padding(16)
 								.borderRadius(8)
 								.background("text")
@@ -355,7 +355,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					...ASYMMETRIC_COMBOS.map((combo, i) =>
 						UI.ShowWhen(
 							v.bind("asymmetricVisible").bind(String(i)),
-							UI.Cell()
+							UI.Column()
 								.padding(16)
 								.borderRadius(8)
 								.background("success")
@@ -384,7 +384,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					UI.Button("Clear").onClick("ClearStaggerItems").style("ghost"),
 				),
 			UI.List(v.bind("staggerItems"), (item: Binding<ListItem>) =>
-				UI.Cell()
+				UI.Column()
 					.padding(12)
 					.borderRadius(8)
 					.background("accent")
@@ -404,7 +404,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					UI.Button("Clear").onClick("ClearStaggerSlowItems").style("ghost"),
 				),
 			UI.List(v.bind("staggerSlowItems"), (item: Binding<ListItem>) =>
-				UI.Cell()
+				UI.Column()
 					.padding(12)
 					.borderRadius(8)
 					.background("accent")
@@ -423,7 +423,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					UI.Button("Reverse").onClick("ReverseFlipItems").style("ghost"),
 				),
 			UI.List(v.bind("flipItems"), (item: Binding<ListItem>) =>
-				UI.Cell()
+				UI.Column()
 					.name(item.bind("label"))
 					.padding(16)
 					.borderRadius(8)
@@ -435,7 +435,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 				.outer(UI.Row().gap(8).minHeight(60))
 				.effect("animate-content"),
 			UI.List(v.bind("flipItems"), (item: Binding<ListItem>) =>
-				UI.Cell()
+				UI.Column()
 					.name(item.bind("label"))
 					.padding(16)
 					.borderRadius(8)

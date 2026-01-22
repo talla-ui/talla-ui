@@ -2,7 +2,7 @@ import { Binding, UI, UIColor } from "talla-ui";
 import { SearchActivity } from "./SearchActivity";
 
 export function SearchView(v: Binding<SearchActivity>) {
-	return UI.Cell()
+	return UI.Column()
 		.padding({ start: 16, end: 8 })
 		.width("100%")
 		.grow(false)
@@ -40,36 +40,36 @@ export function SearchView(v: Binding<SearchActivity>) {
 						.handleKey("Enter", "GoToFirstResult"),
 					UI.Button().icon(UI.icons.close).style("text").onClick("Close"),
 				),
-			UI.Cell()
+			UI.Column()
 				.hideWhen(Binding.all(v.bind("hasInput"), "loading").not())
 				.padding({ y: 32 })
 				.with(UI.Text("Loading...")),
 			UI.List(v.bind("results"))
 				.bounds(0, 50)
-				.outer(UI.Cell().grow(false).allowKeyboardFocus().scroll())
+				.outer(UI.Column().grow(false).allowKeyboardFocus().scroll())
 				.with((item) =>
-					UI.Cell()
+					UI.Column()
 						.allowFocus()
 						.padding({ x: 6, y: 4 })
 						.border(2, UI.colors.transparent)
 						.cursor("pointer")
-						.onFocusIn((_, cell) =>
-							cell.setStyle({
+						.onFocusIn((_, col) =>
+							col.setStyle({
 								borderColor: new UIColor("var(--accent-boldest)"),
 							}),
 						)
-						.onFocusOut((_, cell) =>
-							cell.setStyle({
+						.onFocusOut((_, col) =>
+							col.setStyle({
 								borderColor: UI.colors.transparent,
 							}),
 						)
-						.onMouseEnter((_, cell) =>
-							cell.setStyle({
+						.onMouseEnter((_, col) =>
+							col.setStyle({
 								background: new UIColor("var(--menu-hover-background)"),
 							}),
 						)
-						.onMouseLeave((_, cell) =>
-							cell.setStyle({
+						.onMouseLeave((_, col) =>
+							col.setStyle({
 								background: UI.colors.transparent,
 							}),
 						)

@@ -12,7 +12,6 @@ import {
 	Binding,
 	ObservableObject,
 	UI,
-	UICell,
 	UIColumn,
 	UIRow,
 	UIShowView,
@@ -26,21 +25,21 @@ beforeEach(() => {
 });
 
 test("Set state directly with when", () => {
-	let myShow = UI.Show(UI.Cell());
+	let myShow = UI.Show(UI.Column());
 	let show = myShow.build();
-	expect(show.body).toBeInstanceOf(UICell);
+	expect(show.body).toBeInstanceOf(UIColumn);
 	expect(ObservableObject.whence(show.body)).toBe(show);
 	show.when = false;
 	expect(show.body).toBeUndefined();
 });
 
 test("Set state directly with unless", () => {
-	let myShow = UI.ShowUnless(true, UI.Cell());
+	let myShow = UI.ShowUnless(true, UI.Column());
 	let show = myShow.build();
 	expect(show.body).toBeUndefined();
 
 	show.unless = false;
-	expect(show.body).toBeInstanceOf(UICell);
+	expect(show.body).toBeInstanceOf(UIColumn);
 	expect(ObservableObject.whence(show.body)).toBe(show);
 
 	show.unless = true;
@@ -48,7 +47,7 @@ test("Set state directly with unless", () => {
 });
 
 test("When both when and unless are set, unless takes precedence", () => {
-	let myShow = UI.Show(UI.Cell()).when(true).unless(true);
+	let myShow = UI.Show(UI.Column()).when(true).unless(true);
 	let show = myShow.build();
 	expect(show.body).toBeUndefined();
 
@@ -59,7 +58,7 @@ test("When both when and unless are set, unless takes precedence", () => {
 	expect(show.body).toBeUndefined();
 
 	show.when = true;
-	expect(show.body).toBeInstanceOf(UICell);
+	expect(show.body).toBeInstanceOf(UIColumn);
 });
 
 test("When and else", () => {
@@ -83,15 +82,15 @@ test("Unless and else", () => {
 });
 
 test("Body view events are propagated", async () => {
-	let myCell = UI.Cell(UI.Show(UI.Button("Click me").onClick("ButtonClick")));
+	let myColumn = UI.Column(UI.Show(UI.Button("Click me").onClick("ButtonClick")));
 
-	// create instance and listen for events on cell
+	// create instance and listen for events on column
 	let count = 0;
-	let cell = myCell.build();
-	cell.listen((e) => {
+	let column = myColumn.build();
+	column.listen((e) => {
 		if (e.name === "ButtonClick") count++;
 	});
-	renderTestView(cell);
+	renderTestView(column);
 	let expectButton = await expectOutputAsync({ type: "button" });
 
 	console.log("Clicking button");
@@ -105,7 +104,7 @@ test("Rendering content using bound state", async () => {
 		class extends Widget {
 			condition = false;
 		}.builder((v) => {
-			return UI.Cell(UI.ShowWhen(v.bind("condition"), UI.Text("foo")));
+			return UI.Column(UI.ShowWhen(v.bind("condition"), UI.Text("foo")));
 		});
 
 	console.log("Creating view");
@@ -115,10 +114,10 @@ test("Rendering content using bound state", async () => {
 	console.log("Rendering view");
 	renderTestView(testView);
 
-	// after rendering, there should be a cell but no text
-	console.log("Checking for cell but no text");
-	let expectCell = await expectOutputAsync({ type: "cell" });
-	expectCell.containing({ text: "foo" }).toBeEmpty();
+	// after rendering, there should be a column but no text
+	console.log("Checking for column but no text");
+	let expectColumn = await expectOutputAsync({ type: "column" });
+	expectColumn.containing({ text: "foo" }).toBeEmpty();
 
 	// when condition becomes true, text should be rendered
 	console.log("Setting state to true");
@@ -128,41 +127,41 @@ test("Rendering content using bound state", async () => {
 	// when condition becomes false, text should be removed
 	console.log("Setting state to false");
 	testView.condition = false;
-	expectCell = await expectOutputAsync({ type: "cell" });
-	expectCell.containing({ text: "foo" }).toBeEmpty();
+	expectColumn = await expectOutputAsync({ type: "column" });
+	expectColumn.containing({ text: "foo" }).toBeEmpty();
 });
 
 test("Build view using function and render", async () => {
-	let viewRenderer = UI.ShowWhen(true, () => UI.Cell(UI.Text("foo"))).build();
+	let viewRenderer = UI.ShowWhen(true, () => UI.Column(UI.Text("foo"))).build();
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ text: "foo" });
 	expect(viewRenderer.findViewContent(UIText)).toHaveLength(1);
 });
 
 test("Set inserted view and render", async () => {
-	let myCell = UI.Cell(UI.Text("foo"));
+	let myColumn = UI.Column(UI.Text("foo"));
 	let viewRenderer = new UIShowView();
-	viewRenderer.insert = myCell.build();
+	viewRenderer.insert = myColumn.build();
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ text: "foo" });
 	expect(viewRenderer.findViewContent(UIText)).toHaveLength(1);
 });
 
 test("Change inserted view after rendering", async () => {
-	let myCell1 = UI.Cell(UI.Text("foo"));
-	let myCell2 = UI.Cell(UI.Text("bar"));
+	let myColumn1 = UI.Column(UI.Text("foo"));
+	let myColumn2 = UI.Column(UI.Text("bar"));
 	let viewRenderer = new UIShowView();
-	viewRenderer.insert = myCell1.build();
+	viewRenderer.insert = myColumn1.build();
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ text: "foo" });
-	viewRenderer.insert = myCell2.build();
+	viewRenderer.insert = myColumn2.build();
 	await expectOutputAsync({ text: "bar" });
 });
 
 test("Unlink inserted view after rendering", async () => {
-	let myCell = UI.Cell(UI.Text("foo"));
+	let myColumn = UI.Column(UI.Text("foo"));
 	let viewRenderer = new UIShowView();
-	viewRenderer.insert = myCell.build();
+	viewRenderer.insert = myColumn.build();
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ text: "foo" });
 	viewRenderer.insert!.unlink();
@@ -179,7 +178,7 @@ test("Rendering self as inserted view fails silently", async () => {
 });
 
 test("Rendering parent as inserted view fails silently", async () => {
-	let parent = UI.Cell(UI.Text("foo")).build();
+	let parent = UI.Column(UI.Text("foo")).build();
 	let viewRenderer = new UIShowView();
 	parent.content.add(viewRenderer);
 	viewRenderer.insert = parent;
@@ -228,7 +227,7 @@ test("Use activity view as inserted view and render", async () => {
 	// activity that will be rendered as nested view
 	class MySecondActivity extends Activity {
 		static override View() {
-			return UI.Cell(UI.Button("foo").onClick("ButtonPress"));
+			return UI.Column(UI.Button("foo").onClick("ButtonPress"));
 		}
 		constructor() {
 			super();
@@ -242,7 +241,7 @@ test("Use activity view as inserted view and render", async () => {
 	// containing activity
 	class MyActivity extends Activity {
 		static override View() {
-			return UI.Cell()
+			return UI.Column()
 				.accessibleLabel("outer")
 				.with(UI.Show(new Binding("second.view"), true));
 		}
@@ -258,7 +257,7 @@ test("Use activity view as inserted view and render", async () => {
 	// view should only show up when `second` is activated
 	console.log("Testing without `second`...");
 	let out = await expectOutputAsync({
-		type: "cell",
+		type: "column",
 		accessibleLabel: "outer",
 	});
 	out.containing({ text: "foo" }).toBeEmpty();
@@ -277,7 +276,7 @@ test("Use activity view as inserted view and render", async () => {
 	activity.second!.unlink();
 	expect(activity.second).toHaveProperty("view", undefined);
 	out = await expectOutputAsync({
-		type: "cell",
+		type: "column",
 		accessibleLabel: "outer",
 	});
 	out.containing({ text: "foo" }).toBeEmpty();

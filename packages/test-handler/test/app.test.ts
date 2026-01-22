@@ -25,7 +25,7 @@ import {
 class CountActivity extends Activity {
 	override navigationPath = "count";
 	static override View(v: Binding<CountActivity>) {
-		return UI.Cell(
+		return UI.Column(
 			UI.TextField()
 				.value(v.bind("count"))
 				.onInput("SetCount")
@@ -93,12 +93,12 @@ test("Another path inactivates activity", async () => {
 });
 
 test("Activity shows view when active", async () => {
-	let expectCell = await expectOutputAsync({ type: "cell" });
-	expectCell.containing({ value: "0" }).toBeRendered();
-	let expectCellButton = expectCell.containing({ type: "button" });
-	expectCellButton.toBeRendered();
+	let expectColumn = await expectOutputAsync({ type: "column" });
+	expectColumn.containing({ value: "0" }).toBeRendered();
+	let expectColumnButton = expectColumn.containing({ type: "button" });
+	expectColumnButton.toBeRendered();
 	let expectButton = expectOutput({ type: "button" });
-	expect(expectCellButton.elements).toEqual(expectButton.elements);
+	expect(expectColumnButton.elements).toEqual(expectButton.elements);
 });
 
 test("Other filters are not matched", async () => {

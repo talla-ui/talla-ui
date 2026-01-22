@@ -43,7 +43,6 @@ const _listRolesPreventKeys: { [roleName: string]: boolean } = {
 	menu: true,
 	menuitem: true,
 	table: true,
-	cell: true,
 	option: true,
 };
 

@@ -6,7 +6,7 @@
 
 	class MainActivity extends tallaUI.Activity {
 		static View() {
-			return UI.Cell(UI.Text("Hello, world!").icon(globeIcon).center());
+			return UI.Column(UI.Text("Hello, world!").icon(globeIcon).center());
 		}
 	}
 

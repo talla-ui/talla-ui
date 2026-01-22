@@ -4,47 +4,47 @@ import {
 	useTestContext,
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
-import { UI, UIButton, UICell, ViewEvent, Widget } from "../../dist/index.js";
+import { UI, UIButton, UIColumn, ViewEvent, Widget } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
 });
 
 test("Single element, initial focus", async () => {
-	let myCell = UI.Cell().allowFocus().requestFocus();
-	let cell = myCell.build();
-	renderTestView(cell);
-	let elt = (await expectOutputAsync({ type: "cell" })).getSingle();
+	let myColumn = UI.Column().allowFocus().requestFocus();
+	let column = myColumn.build();
+	renderTestView(column);
+	let elt = (await expectOutputAsync({ type: "column" })).getSingle();
 	expect(elt.hasFocus()).toBeTruthy();
 });
 
 test("Single element, request focus", async () => {
-	let myCell = UI.Cell().allowFocus();
-	let cell = myCell.build();
-	renderTestView(cell);
-	await expectOutputAsync({ type: "cell" });
-	cell.requestFocus();
-	await expectOutputAsync({ type: "cell", focused: true });
+	let myColumn = UI.Column().allowFocus();
+	let column = myColumn.build();
+	renderTestView(column);
+	await expectOutputAsync({ type: "column" });
+	column.requestFocus();
+	await expectOutputAsync({ type: "column", focused: true });
 });
 
 test("Single widget, request focus", async () => {
 	class MyWidget extends Widget {
 		protected override get body() {
-			return UI.Cell().allowFocus().build();
+			return UI.Column().allowFocus().build();
 		}
 	}
 	let view = new MyWidget();
 	renderTestView(view);
-	await expectOutputAsync({ type: "cell" });
+	await expectOutputAsync({ type: "column" });
 	view.requestFocus();
-	await expectOutputAsync({ type: "cell", focused: true });
+	await expectOutputAsync({ type: "column", focused: true });
 });
 
 test("Focus requests", async () => {
-	let myCell = UI.Cell(UI.Button("first").requestFocus(), UI.Button("second"));
+	let myColumn = UI.Column(UI.Button("first").requestFocus(), UI.Button("second"));
 
 	console.log("Focusing first");
-	renderTestView(myCell.build());
+	renderTestView(myColumn.build());
 	let out = await expectOutputAsync({ text: "first", focused: true });
 
 	console.log("Focusing next");
@@ -60,29 +60,29 @@ test("Focusing one element blurs another", async () => {
 	let events: string[] = [];
 	let done = false;
 	class FocusTestWidget extends Widget {
-		cell2?: UICell;
+		column2?: UIColumn;
 
 		protected override get body() {
-			return UI.Cell(
-				UI.Cell()
+			return UI.Column(
+				UI.Column()
 					.allowFocus()
-					.onBeforeRender("Cell1Ref")
-					.onFocusIn("Cell1Focus")
-					.onFocusOut("Cell1Focus"),
-				UI.Cell().allowFocus().onBeforeRender("Cell2Ref").onFocusIn("Done"),
+					.onBeforeRender("Column1Ref")
+					.onFocusIn("Column1Focus")
+					.onFocusOut("Column1Focus"),
+				UI.Column().allowFocus().onBeforeRender("Column2Ref").onFocusIn("Done"),
 			).build();
 		}
 
-		onCell1Ref(e: ViewEvent<UICell>) {
+		onColumn1Ref(e: ViewEvent<UIColumn>) {
 			e.source.requestFocus();
 		}
-		onCell1Focus(e: ViewEvent) {
+		onColumn1Focus(e: ViewEvent) {
 			events.push(e.inner ? e.inner.name : "NO_INNER");
-			if (!this.cell2) expect.fail("Cell 2 not set");
-			else this.cell2.requestFocus();
+			if (!this.column2) expect.fail("Column 2 not set");
+			else this.column2.requestFocus();
 		}
-		onCell2Ref(e: ViewEvent<UICell>) {
-			this.cell2 = e.source;
+		onColumn2Ref(e: ViewEvent<UIColumn>) {
+			this.column2 = e.source;
 		}
 		onDone() {
 			done = true;
@@ -94,33 +94,33 @@ test("Focusing one element blurs another", async () => {
 });
 
 test("isFocused() returns false when not rendered", () => {
-	let cell = UI.Cell().allowFocus().build();
-	expect(cell.isFocused()).toBe(false);
+	let column = UI.Column().allowFocus().build();
+	expect(column.isFocused()).toBe(false);
 });
 
 test("isFocused() returns true after requestFocus()", async () => {
-	let cell = UI.Cell().allowFocus().build();
-	renderTestView(cell);
-	await expectOutputAsync({ type: "cell" });
-	cell.requestFocus();
-	await expectOutputAsync({ type: "cell", focused: true });
-	expect(cell.isFocused()).toBe(true);
+	let column = UI.Column().allowFocus().build();
+	renderTestView(column);
+	await expectOutputAsync({ type: "column" });
+	column.requestFocus();
+	await expectOutputAsync({ type: "column", focused: true });
+	expect(column.isFocused()).toBe(true);
 });
 
 test("isFocused() returns false after focus moves elsewhere", async () => {
-	let cell1 = UI.Cell().allowFocus().build();
-	let cell2 = UI.Cell().allowFocus().build();
-	let container = new UICell();
-	container.content.add(cell1, cell2);
+	let column1 = UI.Column().allowFocus().build();
+	let column2 = UI.Column().allowFocus().build();
+	let container = new UIColumn();
+	container.content.add(column1, column2);
 	renderTestView(container);
 
-	// Focus first cell
-	cell1.requestFocus();
-	await expectOutputAsync({ type: "cell", focused: true });
-	expect(cell1.isFocused()).toBe(true);
+	// Focus first column
+	column1.requestFocus();
+	await expectOutputAsync({ type: "column", focused: true });
+	expect(column1.isFocused()).toBe(true);
 
-	// Focus second cell, first should lose focus
-	cell2.requestFocus();
-	await expect.poll(() => cell2.isFocused()).toBe(true);
-	expect(cell1.isFocused()).toBe(false);
+	// Focus second column, first should lose focus
+	column2.requestFocus();
+	await expect.poll(() => column2.isFocused()).toBe(true);
+	expect(column1.isFocused()).toBe(false);
 });

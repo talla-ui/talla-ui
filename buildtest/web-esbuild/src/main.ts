@@ -3,7 +3,7 @@ import globeSvg from "./icons/globe.svg";
 
 export class MainActivity extends Activity {
 	static override View() {
-		return UI.Cell(
+		return UI.Column(
 			UI.Text("Hello, world!").icon(new UIIconResource(globeSvg)).center(),
 		);
 	}

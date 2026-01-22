@@ -1,15 +1,17 @@
 import {
 	app,
+	ObservableEvent,
 	RenderContext,
 	UI,
 	UIColumn,
 	UIContainer,
+	UIElement,
 	UIRow,
 	UIScrollView,
 	View,
+	ViewEvent,
 } from "@talla-ui/core";
 import {
-	CLASS_CELL,
 	CLASS_COLUMN,
 	CLASS_ROW,
 	CLASS_SCROLL,
@@ -27,7 +29,12 @@ export class UIContainerRenderer<
 > extends BaseObserver<TContainer> {
 	constructor(observed: TContainer) {
 		super(observed);
-		this.observeProperties("layout");
+		this.observeProperties(
+			"layout",
+			"allowFocus",
+			"allowKeyboardFocus",
+			"trackHover",
+		);
 		if (observed instanceof UIRow) {
 			(this as UIContainerRenderer<any>).observeProperties(
 				"reverse",
@@ -73,9 +80,10 @@ export class UIContainerRenderer<
 	}
 
 	getOutput() {
-		let isForm = this.observed.accessibleRole === "form";
+		let container = this.observed;
+		let isForm = container.accessibleRole === "form";
 		let elt = document.createElement(isForm ? "form" : "container");
-		let output = new RenderContext.Output(this.observed, elt);
+		let output = new RenderContext.Output(container, elt);
 
 		// add form submit handler, if needed
 		if (isForm) {
@@ -84,8 +92,44 @@ export class UIContainerRenderer<
 				if (this.observed) this.observed.emit("Submit", { event: e });
 			});
 		}
+
+		// make (keyboard) focusable, if needed
+		if (container.allowKeyboardFocus) elt.tabIndex = 0;
+		else if (container.allowFocus) elt.tabIndex = -1;
+
+		// add mouse handlers for hover tracking (events not propagated)
+		if (container.trackHover) {
+			elt.addEventListener("mouseenter", (e) => {
+				this._isHovered = true;
+				let event = new ObservableEvent(
+					"MouseEnter",
+					container,
+					{ event: e },
+					undefined,
+					true,
+				);
+				if (this.observed === container) container.emit(event);
+			});
+			elt.addEventListener("mouseleave", (e) => {
+				this._isHovered = false;
+				let event = new ObservableEvent(
+					"MouseLeave",
+					container,
+					{ event: e },
+					undefined,
+					true,
+				);
+				if (this.observed === container) container.emit(event);
+			});
+		}
 		return output;
 	}
+
+	isHovered(): boolean {
+		return this._isHovered;
+	}
+
+	private _isHovered = false;
 
 	override update(element: HTMLElement) {
 		if (this.contentUpdater) {
@@ -108,6 +152,16 @@ export class UIContainerRenderer<
 			reverse = container.reverse;
 		}
 		this.contentUpdater.update(container.content, reverse);
+
+		// reset tabindex if previously focused element is no longer in content
+		if (
+			container.allowKeyboardFocus &&
+			this.lastFocused &&
+			!container.content.includes(this.lastFocused)
+		) {
+			if (this.element) this.element.tabIndex = 0;
+			this.lastFocused = undefined;
+		}
 	}
 
 	contentUpdater?: ContentUpdater;
@@ -115,7 +169,7 @@ export class UIContainerRenderer<
 	override updateStyle(element: HTMLElement) {
 		// set styles based on type of container
 		let container = this.observed;
-		let systemClass: string;
+		let systemClass: string | undefined;
 		let layout = container.layout;
 		if (container instanceof UIRow) {
 			systemClass = CLASS_ROW;
@@ -141,9 +195,6 @@ export class UIContainerRenderer<
 			}
 		} else if (container instanceof UIScrollView) {
 			systemClass = CLASS_SCROLL;
-		} else {
-			// (use styles passed in by cell renderer)
-			systemClass = CLASS_CELL;
 		}
 
 		applyStyles(
@@ -181,6 +232,27 @@ export class UIContainerRenderer<
 			this.contentUpdater.setSeparator(options, horzAxis);
 		}
 	}
+
+	onFocusIn(e: ViewEvent<UIElement>) {
+		if (!this.element) return;
+		if (e.source !== this.observed && this.observed.allowKeyboardFocus) {
+			// temporarily disable keyboard focus on this parent
+			// to prevent shift-tab from selecting this element
+			this.element.tabIndex = -1;
+			this.lastFocused = e.source;
+		}
+	}
+
+	onFocusOut(e: ViewEvent) {
+		if (!this.element) return;
+		if (e.source !== this.observed && this.observed.allowKeyboardFocus) {
+			// make this parent focusable again
+			this.element.tabIndex = 0;
+			this.lastFocused = undefined;
+		}
+	}
+
+	lastFocused?: UIElement;
 }
 
 /** @internal Asynchronous container content updater */

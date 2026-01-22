@@ -171,7 +171,7 @@ test("Click event propagation", async () => {
 	let clicked = 0;
 	class MyActivity extends Activity {
 		static override View() {
-			return UI.Cell(UI.Button("Button").onClick("ButtonClicked"));
+			return UI.Column(UI.Button("Button").onClick("ButtonClicked"));
 		}
 		onButtonClicked() {
 			clicked++;

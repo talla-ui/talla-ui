@@ -8,7 +8,7 @@ import {
 	Binding,
 	ObservableObject,
 	UI,
-	UICell,
+	UIColumn,
 	UIText,
 	ViewBuilder,
 	Widget,
@@ -374,7 +374,7 @@ describe("View rendering", () => {
 	test("Rendered page view", async () => {
 		class MyActivity extends Activity {
 			static override View() {
-				return UI.Cell(UI.Text("Hello, world!"));
+				return UI.Column(UI.Text("Hello, world!"));
 			}
 		}
 		let activity = new MyActivity();
@@ -385,12 +385,12 @@ describe("View rendering", () => {
 	test("Find views", async () => {
 		class MyActivity extends Activity {
 			static override View() {
-				return UI.Cell(UI.Text("foo"), UI.Text("bar"));
+				return UI.Column(UI.Text("foo"), UI.Text("bar"));
 			}
 		}
 		let activity = new MyActivity();
 		app.addActivity(activity, true);
-		await expectOutputAsync({ timeout: 50, type: "cell" });
+		await expectOutputAsync({ timeout: 50, type: "column" });
 		expect(activity.findViewContent(UIText)).toHaveLength(2);
 	});
 
@@ -410,7 +410,7 @@ describe("View rendering", () => {
 		}
 		class MyActivity extends Activity {
 			static override View(v: Binding<MyActivity>) {
-				return UI.Cell(
+				return UI.Column(
 					UI.Text(v.bind("foo")),
 					MyWidgetBuilder(2, UI.Text(v.bind("foo")), UI.Text(v.bind("bar"))),
 				);
@@ -421,7 +421,7 @@ describe("View rendering", () => {
 		}
 		let activity = new MyActivity();
 		app.addActivity(activity, true);
-		await expectOutputAsync({ timeout: 50, type: "cell" });
+		await expectOutputAsync({ timeout: 50, type: "column" });
 		let texts = activity.findViewContent(UIText);
 		expect(texts.map((l) => l.text)).toEqual([1, 2, 1, 3]);
 	});
@@ -429,7 +429,7 @@ describe("View rendering", () => {
 	test("View is created asynchronously after activation", async () => {
 		class MyActivity extends Activity {
 			static override View() {
-				return UI.Cell();
+				return UI.Column();
 			}
 		}
 		let a = new MyActivity();
@@ -441,7 +441,7 @@ describe("View rendering", () => {
 
 		// Wait for schedule to run
 		await expect
-			.poll(() => a.view instanceof UICell, { interval: 5, timeout: 100 })
+			.poll(() => a.view instanceof UIColumn, { interval: 5, timeout: 100 })
 			.toBe(true);
 	});
 
@@ -450,7 +450,7 @@ describe("View rendering", () => {
 
 		class MyActivity extends Activity {
 			static override View() {
-				return UI.Cell(UI.Text("test"));
+				return UI.Column(UI.Text("test"));
 			}
 			protected override afterActive(signal: AbortSignal) {
 				viewInAfterActive = this.view;
@@ -469,7 +469,7 @@ describe("View rendering", () => {
 			.toBe(true);
 
 		// View should have been available in afterActive
-		expect(viewInAfterActive).toBeInstanceOf(UICell);
+		expect(viewInAfterActive).toBeInstanceOf(UIColumn);
 	});
 
 	test("View not created if deactivated before scheduler runs", async () => {
@@ -477,7 +477,7 @@ describe("View rendering", () => {
 		class MyActivity extends Activity {
 			static override View() {
 				viewCreated = true;
-				return UI.Cell();
+				return UI.Column();
 			}
 		}
 		let a = addActivity(new MyActivity());

@@ -71,8 +71,8 @@ describe("UIContainerRenderer", () => {
 
 	describe("Accessibility", () => {
 		test("accessibleLabel sets aria-label", async () => {
-			const cell = UI.Cell().accessibleLabel("Main content area").build();
-			await renderView(cell);
+			const col = UI.Column().accessibleLabel("Main content area").build();
+			await renderView(col);
 
 			expect(
 				document.querySelector("container")?.getAttribute("aria-label"),
@@ -135,20 +135,20 @@ describe("UIContainerRenderer", () => {
 	});
 });
 
-describe("UICellRenderer", () => {
+describe("UIContainerRenderer focus/hover", () => {
 	beforeEach(() => setupWebContext());
 	afterEach(() => app.clear());
 
-	test("Cell renders children", async () => {
-		const cell = UI.Cell(UI.Text("Cell content")).build();
-		await renderView(cell);
+	test("Column renders children", async () => {
+		const column = UI.Column(UI.Text("Column content")).build();
+		await renderView(column);
 
-		expect(document.querySelector("span")?.textContent).toBe("Cell content");
+		expect(document.querySelector("span")?.textContent).toBe("Column content");
 	});
 
 	test("allowKeyboardFocus sets tabIndex=0", async () => {
-		const cell = UI.Cell(UI.Text("Focusable")).allowKeyboardFocus().build();
-		await renderView(cell);
+		const column = UI.Column(UI.Text("Focusable")).allowKeyboardFocus().build();
+		await renderView(column);
 
 		expect((document.querySelector("container") as HTMLElement).tabIndex).toBe(
 			0,
@@ -158,12 +158,12 @@ describe("UICellRenderer", () => {
 	test("MouseEnter and MouseLeave events", async () => {
 		let entered = false;
 		let left = false;
-		const cell = UI.Cell(UI.Text("Hover me")).build();
-		cell.listen((e) => {
+		const column = UI.Column(UI.Text("Hover me")).trackHover().build();
+		column.listen((e) => {
 			if (e.name === "MouseEnter") entered = true;
 			if (e.name === "MouseLeave") left = true;
 		});
-		await renderView(cell);
+		await renderView(column);
 
 		const container = document.querySelector("container") as HTMLElement;
 		container.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
@@ -174,8 +174,10 @@ describe("UICellRenderer", () => {
 	});
 
 	test("tabIndex changes when child receives/loses focus", async () => {
-		const cell = UI.Cell(UI.Button("Focusable")).allowKeyboardFocus().build();
-		await renderView(cell);
+		const column = UI.Column(UI.Button("Focusable"))
+			.allowKeyboardFocus()
+			.build();
+		await renderView(column);
 
 		const container = document.querySelector("container") as HTMLElement;
 		const button = document.querySelector("button") as HTMLElement;

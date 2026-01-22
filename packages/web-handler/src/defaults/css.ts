@@ -24,8 +24,6 @@ export const CLASS_CONTAINER = "__C";
 export const CLASS_COLUMN = "__CC";
 /** @internal Additional row class name */
 export const CLASS_ROW = "__CR";
-/** @internal Additional cell class name */
-export const CLASS_CELL = "__Cl";
 /** @internal Additional scroll container class name */
 export const CLASS_SCROLL = "__CS";
 /** @internal Additional toggle wrapper class name */
@@ -88,15 +86,6 @@ export function makeBaseCSS(): Record<string, {}> {
 			alignSelf: "stretch",
 			flexShrink: "1",
 			flexGrow: "1",
-		},
-		[`.${CLASS_UI}.${CLASS_CELL}`]: {
-			alignSelf: "stretch",
-			justifyContent: "center",
-			overflow: "hidden",
-			top: "0",
-			minHeight: "0",
-			flexGrow: "1",
-			zIndex: "0", // every cell has its own stacking context
 		},
 
 		// set sensible placeholder style

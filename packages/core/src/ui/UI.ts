@@ -1,7 +1,6 @@
 import { Binding } from "../object/index.js";
 import { UIListView } from "./components/UIListView.js";
 import { UIShowView } from "./components/UIShowView.js";
-import { UICell } from "./containers/UICell.js";
 import { UIColumn } from "./containers/UIColumn.js";
 import { UIRow } from "./containers/UIRow.js";
 import { UIButton } from "./controls/UIButton.js";
@@ -20,9 +19,6 @@ import { UIIconResource } from "./style/UIIconResource.js";
  * - Each function returns a view builder that can be configured using method chaining.
  */
 export namespace UI {
-	/** Alias for {@link UICell.cellBuilder}. */
-	export const Cell = UICell.cellBuilder;
-
 	/** Alias for {@link UIColumn.columnBuilder}. */
 	export const Column = UIColumn.columnBuilder;
 

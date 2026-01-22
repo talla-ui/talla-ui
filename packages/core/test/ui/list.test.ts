@@ -279,11 +279,11 @@ test("Get indices for elements", async () => {
 });
 
 test("Request focus on list focuses previous item", async () => {
-	let myList = UI.Cell(
+	let myList = UI.Column(
 		UI.Button("button"),
 		UI.List(new ObservableList(...getObjects()))
 			.with(UI.Text(new Binding("item.name")).allowFocus(true))
-			.outer(UI.Cell().allowKeyboardFocus()),
+			.outer(UI.Column().allowKeyboardFocus()),
 	);
 	renderTestView(myList.build());
 	let out = await expectOutputAsync({ text: "a" });
@@ -296,7 +296,7 @@ test("Request focus on list focuses previous item", async () => {
 	await clickOutputAsync({ type: "button" });
 
 	console.log("Focus list again");
-	(await expectOutputAsync({ type: "cell", accessibleRole: "list" }))
+	(await expectOutputAsync({ type: "column", accessibleRole: "list" }))
 		.getSingle()
 		.focus();
 	await expectOutputAsync({ text: "a", focused: true });

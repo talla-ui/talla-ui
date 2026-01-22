@@ -4,7 +4,7 @@ import {
 	RenderContext,
 	RenderEffect,
 	UI,
-	UICell,
+	UIColumn,
 	UIContainer,
 	UIScrollView,
 	UIText,
@@ -32,7 +32,7 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 	static menuEffect?: RenderEffect.EffectName;
 
 	static Container(): UIContainer.ContainerBuilder {
-		return UI.Cell()
+		return UI.Column()
 			.accessibleRole("menu")
 			.scroll()
 			.style({
@@ -43,6 +43,7 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 				grow: 0,
 				dropShadow: 4,
 			})
+			.layout({ clip: true })
 			.position({
 				gravity: "overlay",
 				top: "100%",
@@ -51,8 +52,8 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 			});
 	}
 
-	static ItemCell() {
-		return UI.Cell().style("ModalMenu-item");
+	static ItemRow(): UIColumn.ColumnBuilder {
+		return UI.Column().style("ModalMenu-item");
 	}
 
 	static ItemText() {
@@ -152,25 +153,29 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 			// add a disabled item without event handlers
 			if (item.disabled) {
 				texts.push(
-					ModalMenu.ItemCell().bg("transparent").fg("text").with(content),
+					ModalMenu.ItemRow().bg("transparent").fg("text").with(content),
 				);
 				continue;
 			}
 
 			// else, add the menu item with event handlers
 			texts.push(
-				ModalMenu.ItemCell()
+				ModalMenu.ItemRow()
 					.accessibleRole("menuitem")
 					.allowKeyboardFocus()
-					.handleKey("ArrowDown", (_, self) => self.requestFocusNext())
-					.handleKey("ArrowUp", (_, self) => self.requestFocusPrevious())
+					.handleKey("ArrowDown", (_: any, self: UIColumn) =>
+						self.requestFocusNext(),
+					)
+					.handleKey("ArrowUp", (_: any, self: UIColumn) =>
+						self.requestFocusPrevious(),
+					)
 					.handleKey("Enter", "Click")
 					.handleKey("Spacebar", "Click")
-					.onRelease((_, self) => {
+					.onRelease((_: any, self: UIColumn) => {
 						if (Date.now() - shown < 200) return;
 						self.emit("Select", item);
 					})
-					.onClick((_, self) => self.emit("Select", item))
+					.onClick((_: any, self: UIColumn) => self.emit("Select", item))
 					.with(content),
 			);
 		}
@@ -190,14 +195,14 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 
 	onKeyDown(e: ViewEvent) {
 		let view = this.findViewContent(UIScrollView)[0]!;
-		let content = (view!.content.first() as UICell).content;
+		let content = (view!.content.first() as UIColumn).content;
 		let key = e.data.key;
 		if (typeof key !== "string") return;
 		switch (key) {
 			case "ArrowDown":
 				if (e.source !== view) return;
 				for (let item of content) {
-					if (item instanceof UICell) {
+					if (item instanceof UIColumn) {
 						item.requestFocus();
 						return;
 					}
@@ -206,7 +211,7 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 			case "ArrowUp":
 				if (e.source !== view) return;
 				let lastItem = content.last();
-				if (lastItem instanceof UICell) {
+				if (lastItem instanceof UIColumn) {
 					lastItem.requestFocus();
 				}
 				return true;
@@ -230,7 +235,7 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 					.toUpperCase()
 					.startsWith(buffer)
 			) {
-				UICell.whence(t)?.requestFocus();
+				UIColumn.whence(t)?.requestFocus();
 				return true;
 			}
 		}

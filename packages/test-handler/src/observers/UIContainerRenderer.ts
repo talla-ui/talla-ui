@@ -1,6 +1,5 @@
 import {
 	RenderContext,
-	UICell,
 	UIColumn,
 	UIContainer,
 	UIRow,
@@ -16,7 +15,12 @@ export class UIContainerRenderer<
 > extends TestBaseObserver<TContainer> {
 	constructor(observed: TContainer) {
 		super(observed);
-		this.observeProperties("layout");
+		this.observeProperties(
+			"layout",
+			"allowFocus",
+			"allowKeyboardFocus",
+			"trackHover",
+		);
 		if (observed instanceof UIRow) {
 			(this as UIContainerRenderer<any>).observeProperties(
 				"reverse",
@@ -60,17 +64,39 @@ export class UIContainerRenderer<
 	}
 
 	getOutput() {
+		let container = this.observed;
 		let type: TestOutputElement.TypeString;
-		if (this.observed.accessibleRole === "form") type = "form";
-		else if (this.observed instanceof UICell) type = "cell";
-		else if (this.observed instanceof UIRow) type = "row";
-		else if (this.observed instanceof UIColumn) type = "column";
+		if (container.accessibleRole === "form") type = "form";
+		else if (container instanceof UIRow) type = "row";
+		else if (container instanceof UIColumn) type = "column";
 		else type = "container";
 		let elt = new TestOutputElement(type);
-		let output = new RenderContext.Output(this.observed, elt);
+		let output = new RenderContext.Output(container, elt);
 		elt.output = output;
+
+		// make focusable if needed
+		if (container.allowFocus || container.allowKeyboardFocus) {
+			elt.focusable = true;
+		}
 		return output;
 	}
+
+	isHovered(): boolean {
+		return this._isHovered;
+	}
+
+	override handlePlatformEvent(
+		name: TestOutputElement.PlatformEvent,
+		data?: any,
+	) {
+		if (this.observed.trackHover) {
+			if (name === "mouseenter") this._isHovered = true;
+			else if (name === "mouseleave") this._isHovered = false;
+		}
+		super.handlePlatformEvent(name, data);
+	}
+
+	private _isHovered = false;
 
 	override update(element: TestOutputElement) {
 		if (this.contentUpdater) {
@@ -95,6 +121,11 @@ export class UIContainerRenderer<
 			reverse = container.reverse;
 		}
 		this.contentUpdater.update(container.content, reverse);
+
+		// update focusable state
+		if (container.allowFocus || container.allowKeyboardFocus) {
+			element.focusable = true;
+		}
 	}
 
 	contentUpdater?: ContentUpdater;

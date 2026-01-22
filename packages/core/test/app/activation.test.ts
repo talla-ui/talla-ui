@@ -308,7 +308,7 @@ describe("Nested activity router", () => {
 
 		class ChildActivity extends Activity {
 			static override View() {
-				return UI.Cell();
+				return UI.Column();
 			}
 			protected override afterInactive() {
 				childAfterInactiveCalled++;

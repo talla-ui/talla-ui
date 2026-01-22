@@ -82,10 +82,7 @@ function CollapsibleView(
 				.fg("background")
 				.padding()
 				.onClick("Toggle"),
-			UI.ShowWhen(
-				v.bind("expanded"),
-				UI.Column(...content).effect("fade-bottom"),
-			),
+			UI.ShowWhen(v.bind("expanded"), UI.Column(...content).effect("fade-top")),
 		);
 }
 

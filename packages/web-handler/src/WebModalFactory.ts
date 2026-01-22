@@ -3,7 +3,7 @@ import {
 	ModalFactory,
 	ModalMenuOptions,
 	UIButton,
-	UICell,
+	UIColumn,
 	UIContainer,
 	UIDivider,
 	UIText,
@@ -28,7 +28,7 @@ export interface WebModalViews {
 	MessageConfirmButton(): UIButton.ButtonBuilder;
 	MessageButton(): UIButton.ButtonBuilder;
 	MenuContainer(): UIContainer.ContainerBuilder;
-	MenuItemCell(): UICell.CellBuilder;
+	MenuItemRow(): UIColumn.ColumnBuilder;
 	MenuItemText(): UIText.TextBuilder;
 	MenuItemHint(): UIText.TextBuilder;
 	MenuTitleText(): UIText.TextBuilder;
@@ -50,7 +50,7 @@ export class WebModalFactory implements ModalFactory {
 		MessageDialog.Button = modalViews.MessageButton;
 		ModalMenu.Container = modalViews.MenuContainer;
 		ModalMenu.menuEffect = options.menuEffect;
-		ModalMenu.ItemCell = modalViews.MenuItemCell;
+		ModalMenu.ItemRow = modalViews.MenuItemRow;
 		ModalMenu.ItemText = modalViews.MenuItemText;
 		ModalMenu.ItemHint = modalViews.MenuItemHint;
 		ModalMenu.TitleText = modalViews.MenuTitleText;

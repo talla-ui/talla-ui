@@ -195,6 +195,8 @@ export namespace UIElement {
 		start?: string | number;
 		/** The end anchor: relative distance, or absolute position if `gravity` is "overlay" (in pixels or string with unit; defaults to `auto`); same as `right` for LTR text direction. */
 		end?: string | number;
+		/** The z-index for stacking order; takes precedence over gravity-based defaults. */
+		zIndex?: number;
 	};
 
 	/**
@@ -230,10 +232,10 @@ export namespace UIElement {
 		 * @returns The result of the function.
 		 *
 		 * @example
-		 * function limitCellWidth(b: UICell.CellBuilder) {
+		 * function limitColumnWidth(b: UIColumn.ColumnBuilder) {
 		 *   return b.width(200, 100).shrink();
 		 * }
-		 * let myCell = UI.Cell("Hello").apply(limitCellWidth);
+		 * let myColumn = UI.Column("Hello").apply(limitColumnWidth);
 		 */
 		apply<TResult extends ViewBuilder = this>(
 			modifier?: ViewBuilderFunction<TResult, this>,
@@ -730,8 +732,8 @@ export namespace UIElement {
 		 * @returns The builder instance for chaining.
 		 *
 		 * @example
-		 * UI.Cell(content).effect("fade")  // Fades in on render, fades out on removal
-		 * UI.Cell(content).effect("fadeIn").effect("scaleOut")  // Different enter/exit effects
+		 * UI.Column(content).effect("fade")  // Fades in on render, fades out on removal
+		 * UI.Column(content).effect("fadeIn").effect("scaleOut")  // Different enter/exit effects
 		 */
 		effect(name?: RenderEffect.EffectName) {
 			if (!name) return this;

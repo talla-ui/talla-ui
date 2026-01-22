@@ -17,8 +17,9 @@ export class Dialog extends Widget implements ModalFactory.DialogController {
 	static dialogEffect?: RenderEffect.EffectName;
 
 	static Container(): UIContainer.ContainerBuilder {
-		return UI.Cell()
+		return UI.Column()
 			.accessibleRole("dialog")
+			.layout({ clip: true })
 			.style({
 				background: UI.colors.background,
 				borderColor: UI.colors.text.alpha(0.2),

@@ -17,7 +17,7 @@ import {
 	ModalMenuOptions,
 	UI,
 	UIButton,
-	UICell,
+	UIColumn,
 	UIText,
 	ViewEvent,
 	Widget,
@@ -183,33 +183,33 @@ describe("Rendering views", () => {
 		await new Promise((r) => setTimeout(r, 1));
 	});
 
-	test("Cell view from single instance", async () => {
-		let view = new UICell();
+	test("Column view from single instance", async () => {
+		let view = new UIColumn();
 		let app = useTestContext();
 		renderTestView(view);
 		await app.renderer.expectOutputAsync({ source: view });
 	});
 
-	test("Cell view from single widget", async () => {
-		const MyWidget = Widget.builder(() => UI.Cell());
+	test("Column view from single widget", async () => {
+		const MyWidget = Widget.builder(() => UI.Column());
 		let view = MyWidget.build();
 		let app = useTestContext();
 		renderTestView(view);
 		await app.renderer.expectOutputAsync({
-			type: "cell",
-			source: view.findViewContent(UICell)[0]!,
+			type: "column",
+			source: view.findViewContent(UIColumn)[0]!,
 		});
 	});
 
-	test("Cell view from single widget, handle events async", async () => {
-		class CellWidget extends Widget {
+	test("Column view from single widget, handle events async", async () => {
+		class ColumnWidget extends Widget {
 			async onClick(e: ViewEvent) {
-				expect(e.source).toBeInstanceOf(UICell);
+				expect(e.source).toBeInstanceOf(UIColumn);
 				await Promise.resolve();
 				throw Error("Catch me");
 			}
 		}
-		const MyWidget = CellWidget.builder(() => UI.Cell());
+		const MyWidget = ColumnWidget.builder(() => UI.Column());
 		let view = MyWidget.build();
 		useTestContext((options) => {
 			options.throwUncaughtErrors = false;
@@ -217,27 +217,27 @@ describe("Rendering views", () => {
 		let mockErrorHandler = vi.fn();
 		AppContext.setErrorHandler(mockErrorHandler);
 		renderTestView(view);
-		expect(clickOutputAsync({ source: view.findViewContent(UICell)[0]! }))
+		expect(clickOutputAsync({ source: view.findViewContent(UIColumn)[0]! }))
 			.resolves;
 		await new Promise((r) => setTimeout(r, 10));
 		expect(mockErrorHandler).toHaveBeenCalled();
 	});
 
 	test("Remove view after rendering", async () => {
-		const MyWidget = Widget.builder(() => UI.Cell());
+		const MyWidget = Widget.builder(() => UI.Column());
 		let view = MyWidget.build();
 		let app = useTestContext();
 		let rendered = app.render(view);
 		await app.renderer.expectOutputAsync({
-			type: "cell",
-			source: view.findViewContent(UICell)[0]!,
+			type: "column",
+			source: view.findViewContent(UIColumn)[0]!,
 		});
 		await rendered.removeAsync();
-		app.renderer.expectOutput({ type: "cell" }).toBeEmpty();
+		app.renderer.expectOutput({ type: "column" }).toBeEmpty();
 	});
 
 	test("View is not rendered twice", async () => {
-		const view = new UICell();
+		const view = new UIColumn();
 		view.content.add(new UIText("Test"));
 		let app = useTestContext();
 		app.render(view);
@@ -248,10 +248,10 @@ describe("Rendering views", () => {
 		expect(out2.elements).toEqual(out1.elements);
 	});
 
-	test("Cell view from root activity", async () => {
+	test("Column view from root activity", async () => {
 		class MyActivity extends Activity {
 			static override View() {
-				return UI.Cell();
+				return UI.Column();
 			}
 		}
 		let activity = new MyActivity();
@@ -263,7 +263,7 @@ describe("Rendering views", () => {
 	test("Remove view by deactivating activity", async () => {
 		class MyActivity extends Activity {
 			static override View() {
-				return UI.Cell();
+				return UI.Column();
 			}
 		}
 		let activity = new MyActivity();
@@ -272,7 +272,7 @@ describe("Rendering views", () => {
 		await expect
 			.poll(() => !!activity.view, { interval: 5, timeout: 100 })
 			.toBe(true);
-		expect(activity.view).toBeInstanceOf(UICell);
+		expect(activity.view).toBeInstanceOf(UIColumn);
 		let view = activity.view!;
 		await app.renderer.expectOutputAsync({ source: view });
 		activity.deactivate();
@@ -287,7 +287,7 @@ describe("Rendering views", () => {
 	test("Show dialog", async () => {
 		class MyActivity extends Activity {
 			static override View() {
-				return UI.Cell(UI.Text("foo"));
+				return UI.Column(UI.Text("foo"));
 			}
 			constructor() {
 				super();
