@@ -11,7 +11,4 @@ export class TestContextOptions {
 
 	/** True (default) if uncaught errors should be thrown anyway, including async; sets global error handler */
 	throwUncaughtErrors = true;
-
-	/** Default persisted data, i.e. data made available through `app.localData`; must be serializable as JSON */
-	localData: Record<string, unknown> = {};
 }

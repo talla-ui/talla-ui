@@ -33,20 +33,6 @@ export class WebContextOptions {
 	insertHistory: boolean | "root" | "page" = false;
 
 	/**
-	 * The default data for specific keys of `app.localData`.
-	 * - Values are used only if no data has been written for the corresponding key yet.
-	 * - Data must be serializable as JSON and readable by {@link InputValidator}.
-	 */
-	defaultLocalData: Record<string, unknown> = {};
-
-	/**
-	 * The database name for storing `app.localData` objects in IndexedDB.
-	 * - Defaults to `"LocalData"`.
-	 * - Change this if multiple applications on the same page may use conflicting databases.
-	 */
-	localDataName = "LocalData";
-
-	/**
 	 * A list of URLs for external CSS files to import.
 	 * - These stylesheets are loaded when the web context is initialized.
 	 */

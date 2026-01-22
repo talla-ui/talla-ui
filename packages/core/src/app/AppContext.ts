@@ -10,7 +10,6 @@ import { ObservableObject } from "../object/index.js";
 import type { Activity } from "./Activity.js";
 import { ActivityRouter } from "./ActivityRouter.js";
 import { I18nContext } from "./I18nContext.js";
-import { LocalData } from "./LocalData.js";
 import { LogWriter } from "./LogWriter.js";
 import { MessageDialogOptions } from "./MessageDialogOptions.js";
 import { ModalMenuOptions } from "./ModalMenuOptions.js";
@@ -119,12 +118,6 @@ export class AppContext extends ObservableObject {
 	 */
 	navigation?: NavigationContext = undefined;
 
-	/**
-	 * Persisted key-value object data, made available as an instance of {@link LocalData}
-	 * - Data is persisted in a platform-dependent way. While testing, all data is _only_ persisted during the lifetime of the test handler.
-	 * - This property is set by the platform-specific renderer package.
-	 */
-	localData = new LocalData();
 
 	/**
 	 * Clears the state of the global application context

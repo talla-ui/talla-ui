@@ -1,7 +1,6 @@
 import { app, UIColor, UIIconResource } from "@talla-ui/core";
 import { initializeCSS } from "./DOMStyle.js";
 import { WebContextOptions } from "./WebContextOptions.js";
-import { WebLocalData } from "./WebLocalData.js";
 import { WebNavigationContext } from "./WebNavigationContext.js";
 import { WebRenderer } from "./WebRenderer.js";
 import { WebTheme, WebThemeData } from "./WebTheme.js";
@@ -89,9 +88,6 @@ export function useWebContext(config?: (opts: WebContextOptions) => void) {
 
 	// Clear the current app properties first
 	app.clear();
-
-	// Initialize local data
-	app.localData = new WebLocalData(options);
 
 	// Create DOM renderer and viewport
 	let renderer = new WebRenderer(options);

@@ -3,7 +3,6 @@ export * from "./ActivityRouter.js";
 export * from "./AppContext.js";
 export * from "./AppException.js";
 export * from "./FormState.js";
-export * from "./LocalData.js";
 export * from "./LogWriter.js";
 export * from "./MessageDialogOptions.js";
 export * from "./ModalFactory.js";

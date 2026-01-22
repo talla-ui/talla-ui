@@ -1,10 +1,4 @@
-import {
-	app,
-	AppContext,
-	LocalData,
-	UIColor,
-	UIIconResource,
-} from "@talla-ui/core";
+import { app, AppContext, UIColor, UIIconResource } from "@talla-ui/core";
 import defaultColors from "./defaults/colors.js";
 import defaultIcons from "./defaults/icons.js";
 import { registerTestEffects } from "./effects.js";
@@ -59,9 +53,6 @@ export function useTestContext(
 	// create test navigation path and set initial path
 	app.navigation?.unlink();
 	app.navigation = new TestNavigationContext(options);
-
-	// reset local data
-	app.localData = new LocalData(options.localData);
 
 	return app as TestAppContext;
 }

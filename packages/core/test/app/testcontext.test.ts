@@ -12,7 +12,6 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import {
 	Activity,
 	AppContext,
-	LocalData,
 	MessageDialogOptions,
 	ModalMenuOptions,
 	UI,
@@ -28,44 +27,6 @@ test("useTestContext result", () => {
 	let app = useTestContext();
 	expect(app.renderer).toBeInstanceOf(TestRenderer);
 	expect(app.navigation).toBeInstanceOf(TestNavigationContext);
-});
-
-describe("Local data", () => {
-	test("Empty data", async () => {
-		let app = useTestContext();
-		expect(app.localData).toBeInstanceOf(LocalData);
-		let read = await app.localData.readAsync("test", (b) => b.string());
-		expect(read?.data).toBeUndefined();
-	});
-
-	test("Specified local data", async () => {
-		let app = useTestContext((options) => {
-			options.localData = { test: { foo: 123 } };
-		});
-		let read = await app.localData.readAsync("test", (b) =>
-			b.object({ foo: b.number() }),
-		);
-		expect(read?.data).toHaveProperty("foo", 123);
-	});
-
-	test("Write and read local data", async () => {
-		let app = useTestContext((options) => {
-			options.localData = { foo: 123, test: { foo: 123 }, other: { foo: 456 } };
-		});
-		await app.localData.writeAsync("foo", 321);
-		let readFoo = await app.localData.readAsync("foo", (b) => b.number());
-		expect(readFoo?.errors).toBeUndefined();
-		expect(readFoo?.data).toBe(321);
-		await app.localData.writeAsync("test", { foo: 321 });
-		let readTest = await app.localData.readAsync("test", (b) =>
-			b.object({ foo: b.number() }),
-		);
-		expect(readTest?.data).toHaveProperty("foo", 321);
-		let def = await app.localData.readAsync("other", (b) =>
-			b.object({ foo: b.number() }),
-		);
-		expect(def?.data).toHaveProperty("foo", 456);
-	});
 });
 
 describe("Navigation paths", () => {

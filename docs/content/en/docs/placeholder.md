@@ -25,7 +25,6 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link FormState} +
 - {@link I18nContext} +
 - {@link InputValidator} +
-- {@link LocalData} +
 - {@link LogWriter} +
 - {@link MessageDialogOptions} +
 - {@link ModalFactory} +
