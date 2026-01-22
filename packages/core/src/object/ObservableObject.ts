@@ -441,6 +441,147 @@ export class ObservableObject {
 	}
 
 	/**
+	 * Observes one or more targets asynchronously, batching or debouncing/throttling updates
+	 * - Use this method to observe multiple targets or to debounce/throttle updates.
+	 * - The observer function is called asynchronously after changes are batched.
+	 * @param target A property name, binding, or array of property names and/or bindings
+	 * @param observer A function that will be called with the current values, or an object with update, debounce, and/or throttle options
+	 *
+	 * @example
+	 * // Observe multiple targets, batching updates
+	 * this.observeAsync(["foo", "bar"], (foo, bar) => {
+	 *   // called once per tick when foo and/or bar change
+	 * });
+	 *
+	 * @example
+	 * // Debounce a single target (e.g., search-as-you-type)
+	 * this.observeAsync("searchQuery", {
+	 *   update: (query) => this.search(query),
+	 *   debounce: 300,
+	 * });
+	 *
+	 * @example
+	 * // Throttle updates (e.g., resize handlers)
+	 * this.observeAsync(new Binding("viewport.width"), {
+	 *   update: (width) => this.handleResize(width),
+	 *   throttle: 100,
+	 * });
+	 */
+	observeAsync<T extends (string & keyof this) | Binding>(
+		target: T,
+		observer: ObservableObject.AsyncObserver<
+			[ObservableObject.InferObservedValue<this, T>]
+		>,
+	): void;
+	observeAsync<T1 extends (string & keyof this) | Binding>(
+		targets: [T1],
+		observer: ObservableObject.AsyncObserver<
+			[ObservableObject.InferObservedValue<this, T1>]
+		>,
+	): void;
+	observeAsync<
+		T1 extends (string & keyof this) | Binding,
+		T2 extends (string & keyof this) | Binding,
+	>(
+		targets: [T1, T2],
+		observer: ObservableObject.AsyncObserver<
+			[
+				ObservableObject.InferObservedValue<this, T1>,
+				ObservableObject.InferObservedValue<this, T2>,
+			]
+		>,
+	): void;
+	observeAsync<
+		T1 extends (string & keyof this) | Binding,
+		T2 extends (string & keyof this) | Binding,
+		T3 extends (string & keyof this) | Binding,
+	>(
+		targets: [T1, T2, T3],
+		observer: ObservableObject.AsyncObserver<
+			[
+				ObservableObject.InferObservedValue<this, T1>,
+				ObservableObject.InferObservedValue<this, T2>,
+				ObservableObject.InferObservedValue<this, T3>,
+			]
+		>,
+	): void;
+	observeAsync<
+		T1 extends (string & keyof this) | Binding,
+		T2 extends (string & keyof this) | Binding,
+		T3 extends (string & keyof this) | Binding,
+		T4 extends (string & keyof this) | Binding,
+	>(
+		targets: [T1, T2, T3, T4],
+		observer: ObservableObject.AsyncObserver<
+			[
+				ObservableObject.InferObservedValue<this, T1>,
+				ObservableObject.InferObservedValue<this, T2>,
+				ObservableObject.InferObservedValue<this, T3>,
+				ObservableObject.InferObservedValue<this, T4>,
+			]
+		>,
+	): void;
+	observeAsync(
+		targets: (string | Binding)[],
+		observer: ObservableObject.AsyncObserver<any[]>,
+	): void;
+	observeAsync(
+		target: string | Binding | (string | Binding)[],
+		observer: ObservableObject.AsyncObserver<any[]>,
+	) {
+		if (this[$_unlinked]) throw err(ERROR.Object_Unlinked);
+		let { update, debounce, throttle } =
+			typeof observer === "function" ? { update: observer } : observer;
+
+		let targets = Array.isArray(target) ? target : [target];
+		let n = targets.length;
+		let values: unknown[] = new Array(n);
+
+		// keep track of a single timer
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		let lastRan = 0;
+		const invoke = () => {
+			timer = undefined;
+			if (this[$_unlinked]) return;
+			lastRan = Date.now();
+			safeCall(update, this, ...values);
+		};
+		const schedule = () => {
+			if (throttle! > 0) {
+				// throttle: schedule with remaining wait time, or 0 if time passed
+				if (timer === undefined) {
+					const wait = Math.max(0, throttle! - (Date.now() - lastRan));
+					timer = setTimeout(invoke, wait);
+				}
+				// (if timer already pending, do nothing; latest values will be used)
+			} else if (debounce! > 0) {
+				// debounce: reset timer on each change
+				if (timer !== undefined) clearTimeout(timer);
+				timer = setTimeout(invoke, debounce);
+			} else {
+				// default: batch via setTimeout 0
+				if (timer === undefined) {
+					timer = setTimeout(invoke, 0);
+				}
+			}
+		};
+
+		// start observing all targets and maintain values
+		for (let i = 0; i < n; i++) {
+			function scheduleWithValue(v: any) {
+				values[i] = v;
+				schedule();
+			}
+			let t = targets[i]!;
+			if (typeof t === "string") {
+				this.observe(t as any, scheduleWithValue);
+			} else {
+				t[$_bind_apply](this, scheduleWithValue);
+			}
+		}
+	}
+
+	/**
 	 * Attaches the specified observable object to this object
 	 * - This method makes the _current_ object the 'parent', or containing object for the target object. If the target object is already attached to another object, it's detached from that object first.
 	 *
@@ -506,6 +647,29 @@ export class ObservableObject {
 }
 
 export namespace ObservableObject {
+	/**
+	 * Infers the value type from a Binding or property key
+	 * - This type is used by {@link ObservableObject.observeAsync()} to determine callback argument types.
+	 */
+	export type InferObservedValue<TObj extends Record<string, any>, T> =
+		T extends Binding<infer V> ? V : T extends string ? TObj[T] : unknown;
+
+	/**
+	 * Type definition for an async observer callback or configuration object
+	 * - If a function is provided, the function is called asynchronously, with the current values as (multiple) arguments.
+	 * - If an object is provided, the `update` function is called with current values. The other properties determine optional debounce/throttle timing.
+	 */
+	export type AsyncObserver<TArgs extends any[]> =
+		| ((...args: TArgs) => Promise<void> | void)
+		| {
+				/** Function called when observed values change */
+				update: (...args: TArgs) => Promise<void> | void;
+				/** Debounce time in ms - resets timer on each change, only last update runs */
+				debounce?: number;
+				/** Throttle time in ms - minimum time between updates */
+				throttle?: number;
+		  };
+
 	/**
 	 * Type definition for a callback, or set of callbacks that can be passed to the {@link ObservableObject.listen} method
 	 * - If a single function is provided, it will be called for all events emitted by the object.

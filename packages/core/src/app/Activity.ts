@@ -480,26 +480,6 @@ export class Activity extends ObservableObject {
 		return queue;
 	}
 
-	/**
-	 * Creates an active state object, an object that's updated asynchronously while the activity is active
-	 * - The state object is updated using the provided update function, which is called with the current values of the observed objects or bindings.
-	 * - Nested state objects are automatically unlinked when the property referencing them is overwritten.
-	 * - Additional objects or bindings can be observed, updating the same state object, using the `watch` method on the resulting state object.
-	 * @param observe An array of objects, or strings to create bindings to observe
-	 * @param update A function that's called with the current values of the observed objects or bindings, and should return updated state object property values
-	 * @returns The resulting active state object
-	 */
-	protected createActiveState<T extends Record<string, any>>(
-		observe: (string | Binding | ObservableObject)[],
-		update: (...args: any[]) => T | Promise<T>,
-	): Activity.ActiveStateObject & Partial<T> {
-		let result = new Activity.ActiveStateObject(
-			this,
-			this.createActiveTaskQueue(),
-		);
-		return this.attach(result.watch(observe, update));
-	}
-
 	/** @internal Activation state */
 	private _active = false;
 
@@ -520,67 +500,4 @@ export class Activity extends ObservableObject {
 
 	/** @internal Set to true if a listener was added to remove this instance from the hot-reloaded list */
 	private _isHot?: boolean;
-}
-
-export namespace Activity {
-	/**
-	 * An active state object, the result of {@link Activity.createActiveState()}
-	 * @docgen {hideconstructor}
-	 */
-	export class ActiveStateObject extends ObservableObject {
-		/** Create a new active state object for the specified activity */
-		constructor(
-			private _activity: Activity,
-			private _queue: AsyncTaskQueue,
-		) {
-			super();
-		}
-
-		/** Observe additional objects or bindings, updating the same state object */
-		watch<T extends Record<string, any>>(
-			observe: (string | Binding | ObservableObject)[],
-			update: (...args: any[]) => T | Promise<T>,
-		): this & Partial<T> {
-			// start observing given objects or bindings, async
-			let values: any[] = [];
-			let scheduled = false;
-			const schedule = () => {
-				scheduled = true;
-				this._queue.add(async () => {
-					if (this.isUnlinked()) return;
-					scheduled = false;
-					this._update(await update(...values));
-				});
-			};
-			this._queue.add(() =>
-				observe.forEach((o, i) =>
-					this.observe(
-						typeof o === "string" ? new Binding(o) : (o as any),
-						(value) => {
-							values[i] = value;
-							if (!scheduled) schedule();
-						},
-					),
-				),
-			);
-			return this as any;
-		}
-
-		/** Update this object using the given data */
-		private _update(data: any) {
-			let added = false;
-			for (let key in data) {
-				let old = (this as any)[key];
-				if (old !== data[key]) {
-					if (!(key in this)) added = true;
-					(this as any)[key] = data[key];
-					if (old?.watch?.activity === this._activity) {
-						// unlink overwritten state object
-						old.unlink();
-					}
-				}
-			}
-			if (added) this.emitChange();
-		}
-	}
 }

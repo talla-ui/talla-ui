@@ -536,15 +536,10 @@ function SubView(v: Binding<SubActivity>) {
 		.with(
 			UI.Spacer(32),
 			UI.Text().fmt("Sub activity created {}", v.bind("created")),
-			UI.Text().fmt("Changes: {}", v.bind("activeCount.changes")),
-			UI.Text().fmt("Count: {}", v.bind("activeCount.state.count")),
-			UI.Text().fmt("Count * 2: {}", v.bind("activeCount.state.countTimesTwo")),
-			UI.Text(
-				Binding.fmt(
-					"Count is non-zero? {}",
-					v.bind("activeCount.state.countIsNonZero"),
-				),
-			),
+			UI.Text().fmt("Changes: {}", v.bind("changes")),
+			UI.Text().fmt("Count: {}", v.bind("count")),
+			UI.Text().fmt("Count * 2: {}", v.bind("countTimesTwo")),
+			UI.Text(Binding.fmt("Count is non-zero? {}", v.bind("countIsNonZero"))),
 			UI.Spacer(8),
 			UI.Text(
 				Binding.fmt(
@@ -555,10 +550,7 @@ function SubView(v: Binding<SubActivity>) {
 			),
 			UI.Spacer(8),
 			UI.Row(
-				UI.TextField()
-					.value(v.bind("activeCount.state.count"))
-					.onInput("SetCount")
-					.trim(),
+				UI.TextField().value(v.bind("count")).onInput("SetCount").trim(),
 				UI.Button("Reset").onClick("ResetCount"),
 			).padding(8),
 			UI.Row(
@@ -573,53 +565,32 @@ export class SubActivity extends Activity {
 
 	constructor(public readonly countService: CountService) {
 		super();
+		// Observe countService changes asynchronously, incrementing changes counter
+		this.observeAsync("countService", (service) => {
+			console.log("countService updated; count=", service.count);
+			this.changes++;
+		});
+		// Observe count directly and update derived state
+		this.observeAsync(
+			[new Binding<number>("countService.count"), "countService"],
+			(count, service) => {
+				console.log("count updated:", count, countService.count);
+				this.count = count;
+				this.countTimesTwo = count * 2;
+				this.countIsNonZero = count !== 0;
+			},
+		);
 	}
 
 	created = new Date();
-
-	activeCount = this.createActiveState(
-		["countService"],
-		async (): Promise<{
-			service: CountService;
-			changes: number;
-			state: {
-				count?: number;
-				countTimesTwo?: number;
-				countIsNonZero?: boolean;
-			};
-		}> => {
-			console.log("countService updated");
-			let changes: number = this.activeCount.changes || 0;
-			return {
-				service: this.countService,
-				changes: changes + 1,
-				state: this.createActiveState(
-					["activeCount.service.count"],
-					(count) => {
-						console.log("activeCount.state updated", count);
-						return {
-							count: count,
-							countTimesTwo: count * 2,
-							countIsNonZero: count !== 0,
-						};
-					},
-				),
-			};
-		},
-	).watch(["countService"], (service: CountService) => {
-		console.log("countService changed here too:", service);
-		return { updated: true };
-	});
-
-	fooState = this.createActiveState(["foo"], () => {
-		return { foo: this.foo };
-	});
-	foo = "bar";
+	changes = 0;
+	count = 0;
+	countTimesTwo = 0;
+	countIsNonZero = false;
 
 	protected onSetCount(e: ViewEvent<UITextField>) {
 		console.log("onSetCount", e.source.value);
 		this.countService.count = +e.source.value! || 0;
-		// this.countService.emitChange();
 	}
 
 	onResetCount() {

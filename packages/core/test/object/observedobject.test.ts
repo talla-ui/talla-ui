@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import {
 	AppContext,
+	Binding,
 	ObservableEvent,
 	ObservableObject,
 } from "../../dist/index.js";
@@ -354,5 +355,182 @@ describe("Basic attached observable objects", () => {
 		let parent = new ObservableObject();
 		(parent as any).attach(root);
 		expect(() => ObservableObject.makeRoot(root)).toThrowError();
+	});
+});
+
+describe("observeAsync", () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	test("Batches multiple sync changes via microtask", async () => {
+		class MyObject extends ObservableObject {
+			foo = 0;
+		}
+		let obj = new MyObject();
+		let values: number[] = [];
+		obj.observeAsync("foo", (value) => {
+			values.push(value);
+		});
+		obj.foo = 1;
+		obj.foo = 2;
+		obj.foo = 3;
+		expect(values).toEqual([]);
+		await vi.advanceTimersByTimeAsync(10);
+		expect(values).toEqual([3]);
+	});
+
+	test("Debounces with debounce option", async () => {
+		class MyObject extends ObservableObject {
+			foo = 0;
+		}
+		let obj = new MyObject();
+		let values: number[] = [];
+		obj.observeAsync("foo", {
+			update: (value) => {
+				values.push(value);
+			},
+			debounce: 100,
+		});
+		obj.foo = 1;
+		await vi.advanceTimersByTimeAsync(50);
+		obj.foo = 2;
+		await vi.advanceTimersByTimeAsync(50);
+		obj.foo = 3;
+		await vi.advanceTimersByTimeAsync(50);
+		expect(values).toEqual([]);
+		await vi.advanceTimersByTimeAsync(60);
+		expect(values).toEqual([3]);
+	});
+
+	test("Throttles with throttle option", async () => {
+		class MyObject extends ObservableObject {
+			foo = 0;
+		}
+		let obj = new MyObject();
+		let values: number[] = [];
+		obj.observeAsync("foo", {
+			update: (value) => {
+				values.push(value);
+			},
+			throttle: 100,
+		});
+		obj.foo = 1;
+		await vi.advanceTimersByTimeAsync(10);
+		expect(values).toEqual([1]);
+		obj.foo = 2;
+		obj.foo = 3;
+		await vi.advanceTimersByTimeAsync(50);
+		expect(values).toEqual([1]);
+		await vi.advanceTimersByTimeAsync(60);
+		expect(values).toEqual([1, 3]);
+	});
+
+	test("Stop method stops pending updates", async () => {
+		class MyObject extends ObservableObject {
+			foo = 0;
+		}
+		let obj = new MyObject();
+		let values: number[] = [];
+		let observer = obj.observeAsync("foo", (value) => {
+			values.push(value);
+		});
+		obj.foo = 1;
+		observer.stop();
+		await vi.advanceTimersByTimeAsync(10);
+		expect(values).toEqual([]);
+	});
+
+	test("Stops when object unlinked", async () => {
+		class MyObject extends ObservableObject {
+			foo = 0;
+		}
+		let obj = new MyObject();
+		let values: number[] = [];
+		obj.observeAsync("foo", (value) => {
+			values.push(value);
+		});
+		obj.foo = 1;
+		obj.unlink();
+		await vi.advanceTimersByTimeAsync(10);
+		expect(values).toEqual([]);
+	});
+
+	test("Cannot observe on unlinked object", () => {
+		let obj = new ObservableObject();
+		obj.unlink();
+		expect(() => obj.observeAsync("foo" as any, () => {})).toThrowError();
+	});
+
+	test("Batches changes from multiple targets", async () => {
+		class MyObject extends ObservableObject {
+			foo = 0;
+			bar = "";
+		}
+		let obj = new MyObject();
+		let updates: [number, string][] = [];
+		obj.observeAsync(["foo", "bar"], (foo, bar) => {
+			updates.push([foo, bar]);
+		});
+		obj.foo = 1;
+		obj.bar = "a";
+		obj.foo = 2;
+		obj.bar = "b";
+		expect(updates).toEqual([]);
+		await vi.advanceTimersByTimeAsync(10);
+		expect(updates).toEqual([[2, "b"]]);
+	});
+
+	test("Works with Binding targets from parent", async () => {
+		class Parent extends ObservableObject {
+			value = 0;
+			child: Child;
+			constructor() {
+				super();
+				this.child = (this as any).attach(new Child());
+			}
+		}
+		class Child extends ObservableObject {}
+		let parent = new Parent();
+		let values: number[] = [];
+		// Binding looks for "value" on parent (the attached origin)
+		parent.child.observeAsync(new Binding<number>("value"), (value) => {
+			values.push(value);
+		});
+		parent.value = 1;
+		parent.value = 2;
+		parent.value = 3;
+		await vi.advanceTimersByTimeAsync(10);
+		expect(values).toEqual([3]);
+	});
+
+	test("Works with mixed string and Binding targets", async () => {
+		class Parent extends ObservableObject {
+			foo = 0;
+			child: Child;
+			constructor() {
+				super();
+				this.child = (this as any).attach(new Child());
+			}
+		}
+		class Child extends ObservableObject {
+			bar = "";
+		}
+		let parent = new Parent();
+		let updates: [string, number][] = [];
+		// "bar" is on child, Binding("foo") looks up to parent
+		parent.child.observeAsync(["bar", new Binding("foo")], (bar, foo) => {
+			updates.push([bar, foo]);
+		});
+		parent.child.bar = "a";
+		parent.foo = 1;
+		parent.child.bar = "b";
+		parent.foo = 2;
+		await vi.advanceTimersByTimeAsync(10);
+		expect(updates).toEqual([["b", 2]]);
 	});
 });
