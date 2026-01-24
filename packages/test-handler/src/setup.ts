@@ -43,7 +43,7 @@ export function useTestContext(
 	app.clear();
 
 	// create test renderer and set colors/icons
-	(app as any).renderer = new TestRenderer(options);
+	(app as any).renderer = new TestRenderer();
 	UIColor.setColors(defaultColors);
 	UIIconResource.setIcons(defaultIcons);
 

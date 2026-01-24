@@ -120,8 +120,8 @@ export abstract class TestBaseObserver<TUIViewElement extends UIElement> {
 	) {
 		if (updateContent) this._asyncContentUp = updateContent;
 		if (updateStyle) this._asyncStyleUp = updateStyle;
-		if (!this._asyncUp && app.renderer) {
-			app.renderer.schedule(() => {
+		if (!this._asyncUp) {
+			app.schedule(() => {
 				if (this.observed.isUnlinked()) return;
 				this._asyncUp = false;
 				if (this._asyncContentUp) this.updateContent(this._asyncContentUp);
@@ -139,7 +139,7 @@ export abstract class TestBaseObserver<TUIViewElement extends UIElement> {
 
 	/** Schedules an asynchronous update to show or hide the output */
 	scheduleHide(hidden?: boolean) {
-		app.renderer?.schedule(() => {
+		app.schedule(() => {
 			let elt = this.element;
 			if (!elt) return;
 			this._hidden = hidden;

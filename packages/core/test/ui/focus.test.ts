@@ -114,6 +114,9 @@ test("isFocused() returns false after focus moves elsewhere", async () => {
 	container.content.add(column1, column2);
 	renderTestView(container);
 
+	// Wait for columns to render before requesting focus
+	await expectOutputAsync({ type: "column" });
+
 	// Focus first column
 	column1.requestFocus();
 	await expectOutputAsync({ type: "column", focused: true });

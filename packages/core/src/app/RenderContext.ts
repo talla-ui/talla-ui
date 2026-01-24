@@ -17,8 +17,6 @@ export abstract class RenderContext extends ObservableObject {
 	abstract getRenderCallback(): RenderContext.RenderCallback;
 	/** Creates a new renderer observer for the provided view object; do not use directly */
 	abstract createObserver<T extends View>(target: T): unknown;
-	/** Schedules execution of the provided function in the render queue */
-	abstract schedule(f: () => void, lowPriority?: boolean): void;
 	/** Clears all current root view output */
 	abstract clear(): this;
 	/** Re-renders output, and relocates existing mounted view output if needed */

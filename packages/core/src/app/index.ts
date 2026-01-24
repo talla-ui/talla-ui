@@ -9,7 +9,7 @@ export * from "./ModalFactory.js";
 export * from "./ModalMenuOptions.js";
 export * from "./NavigationContext.js";
 export * from "./RenderContext.js";
-export * from "./Scheduler.js";
+export * from "./AppQueue.js";
 export * from "./View.js";
 export * from "./ViewBuilder.js";
 export * from "./Viewport.js";

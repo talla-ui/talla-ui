@@ -165,7 +165,8 @@ test("Unlink inserted view after rendering", async () => {
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ text: "foo" });
 	viewRenderer.insert!.unlink();
-	await new Promise((resolve) => setTimeout(resolve, 20));
+	await app.queue.waitAsync();
+	await new Promise((resolve) => setTimeout(resolve, 50));
 	expect((app.renderer as TestRenderer).hasOutput()).toBeFalsy();
 });
 

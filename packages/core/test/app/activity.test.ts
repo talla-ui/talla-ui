@@ -4,7 +4,6 @@ import {
 	Activity,
 	app,
 	AppContext,
-	AsyncTaskQueue,
 	Binding,
 	ObservableObject,
 	UI,
@@ -302,47 +301,6 @@ describe("Activation and deactivation, standalone", () => {
 		await expect
 			.poll(() => afterInactiveCount, { interval: 5, timeout: 100 })
 			.toBe(1); // Only the last deactivation
-	});
-});
-
-describe("Active task queue", () => {
-	class MyActivity extends Activity {
-		q = this.createActiveTaskQueue({ maxSyncTime: 10 });
-	}
-
-	test("Queue starts when activated", async () => {
-		let task = 0;
-		let activity = addActivity(new MyActivity());
-		expect(activity.q).toBeInstanceOf(AsyncTaskQueue);
-		expect(activity.q.options.maxSyncTime).toBe(10);
-		activity.q.add(() => {
-			task++;
-		});
-		expect(activity.q.isPaused()).toBeTruthy();
-		activity.activate();
-		expect(activity.q.isPaused()).toBeFalsy();
-		await activity.q.waitAsync();
-		expect(task).toBe(1);
-	});
-
-	test("Queue pauses when inactivated", async () => {
-		let activity = addActivity(new MyActivity());
-		activity.activate();
-		await activity.q.waitAsync();
-		activity.deactivate();
-		expect(activity.q.isPaused()).toBeTruthy();
-	});
-
-	test("Queue stops when unlinked", async () => {
-		let task = 0;
-		let activity = addActivity(new MyActivity());
-		activity.activate();
-		activity.q.add(() => {
-			task++;
-		});
-		let p = activity.q.waitAsync().catch((err) => err);
-		activity.unlink();
-		expect(String(await p)).toMatch(/stopped/);
 	});
 });
 

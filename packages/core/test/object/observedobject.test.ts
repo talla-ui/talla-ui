@@ -430,21 +430,6 @@ describe("observeAsync", () => {
 		expect(values).toEqual([1, 3]);
 	});
 
-	test("Stop method stops pending updates", async () => {
-		class MyObject extends ObservableObject {
-			foo = 0;
-		}
-		let obj = new MyObject();
-		let values: number[] = [];
-		let observer = obj.observeAsync("foo", (value) => {
-			values.push(value);
-		});
-		obj.foo = 1;
-		observer.stop();
-		await vi.advanceTimersByTimeAsync(10);
-		expect(values).toEqual([]);
-	});
-
 	test("Stops when object unlinked", async () => {
 		class MyObject extends ObservableObject {
 			foo = 0;

@@ -27,13 +27,14 @@ export function setupWebContext(configure?: (opts: any) => void) {
  * Waits for microtasks and timers to allow event propagation and deferred operations
  */
 export async function waitForRender(): Promise<void> {
-	// Allow pending microtasks (event handlers, scheduled renders) to complete
+	// ...allow pending microtasks (event handlers, scheduled renders) to complete
 	await Promise.resolve();
-	await Promise.resolve();
-	// Allow setTimeout(0) callbacks to run (used by CSS debouncing)
+	// ...allow setTimeout(0) callbacks to run (used by CSS debouncing)
 	await new Promise((r) => setTimeout(r, 0));
-	const queue = app.scheduler.getQueue("WebRenderer");
-	if (queue?.run().length) await queue.waitAsync();
+	await Promise.resolve();
+	// ..run pending queue tasks
+	await app.queue.waitAsync();
+	await Promise.resolve();
 }
 
 /**

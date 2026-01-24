@@ -224,25 +224,37 @@ export class OutputMount {
 		}
 	}
 
-	/** Removes the last output from the document */
-	remove() {
+	/** Removes the last output from the document, returns a promise that resolves when complete */
+	remove(): Promise<void> {
 		this._remount = undefined;
 
 		// capture _inner reference now, before scheduling, to avoid race conditions
 		const inner = this._inner;
+		const startTime = Date.now();
 
-		app.renderer?.schedule(() => {
-			// check if content element has an exit animation in progress
-			const contentEl = inner?.firstChild as HTMLElement | null;
-			if (contentEl && isMarkedForRemoval(contentEl)) {
-				awaitRemoval(contentEl).then(() => this._finalizeRemove());
-				return;
-			}
-			this._finalizeRemove();
-		}, true);
+		// start fading out the shader early, in parallel with exit animation
+		if (this._shader) {
+			setTimeout(() => {
+				if (this._shader) this._shader.style.background = "";
+			}, 60);
+		}
+
+		return new Promise((resolve) => {
+			app.schedule(() => {
+				// check if content element has an exit animation in progress
+				const contentEl = inner?.firstChild as HTMLElement | null;
+				if (contentEl && isMarkedForRemoval(contentEl)) {
+					awaitRemoval(contentEl)
+						.then(() => this._finalizeRemove(startTime))
+						.then(resolve);
+					return;
+				}
+				this._finalizeRemove(startTime).then(resolve);
+			});
+		});
 	}
 
-	private _finalizeRemove() {
+	private _finalizeRemove(startTime: number): Promise<void> {
 		if (
 			this._lastElementId &&
 			this._inner &&
@@ -255,7 +267,7 @@ export class OutputMount {
 			elt.innerHTML = "";
 			(elt as any)[ELT_EVT_PROP] = false;
 			elt.parentNode?.replaceChild(elt.cloneNode(), elt);
-			return;
+			return Promise.resolve();
 		}
 
 		// remove the inner element (if it's not the same as outer)
@@ -265,19 +277,29 @@ export class OutputMount {
 		}
 
 		if (this._shader) {
-			// fade out background (within 200ms, see below)
+			// fade out background (in case it wasn't started yet)
 			this._shader.style.background = "";
 		}
 
-		// remove the outer element, asynchronously
-		setTimeout(
-			() => {
-				if (typeof document === "undefined") return;
-				this._outer!.remove();
-				this._updateTitle();
-			},
-			this._shader ? 200 : 20,
-		);
+		// remove outer element after shader fade completes
+		// (shader fade starts at 60ms and takes 200ms, so completes at 260ms)
+		const elapsed = Date.now() - startTime;
+		const remainingWait = this._shader ? Math.max(20, 260 - elapsed) : 20;
+
+		return new Promise((resolve) => {
+			setTimeout(
+				() => {
+					if (typeof document === "undefined") {
+						resolve();
+						return;
+					}
+					this._outer!.remove();
+					this._updateTitle();
+					resolve();
+				},
+				remainingWait,
+			);
+		});
 	}
 
 	/** Overrides the outer element location (if mounted as full page or overlay) */

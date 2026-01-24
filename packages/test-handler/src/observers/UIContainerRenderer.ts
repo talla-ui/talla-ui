@@ -247,7 +247,7 @@ export class ContentUpdater {
 				const scheduleAfter =
 					afterRender &&
 					(() => {
-						if (afterRender && app.renderer) app.renderer.schedule(afterRender);
+						if (afterRender) app.schedule(afterRender);
 					});
 				if (this._stopped) return callback;
 				if (output && lastOutput !== output) {
@@ -334,8 +334,7 @@ export class ContentUpdater {
 		this._updateP = new Promise((r) => {
 			this._updateResolve = r;
 		});
-		if (app.renderer) app.renderer.schedule(() => this.update());
-		else this.update();
+		app.schedule(() => this.update());
 		return this._updateP;
 	}
 

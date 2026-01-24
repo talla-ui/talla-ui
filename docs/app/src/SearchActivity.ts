@@ -16,13 +16,22 @@ export class SearchActivity extends Activity {
 	constructor() {
 		super();
 		this.setRenderMode("mount", { mountId: "docpage-search" });
+		this.observeAsync("searchQuery", {
+			update: async (query) => {
+				if (this.loading) await this.loading;
+				if (!(this.hasInput = !!query)) return;
+				this.findViewContent(UIScrollView)[0]?.scrollToTop();
+				this.results = this.search.query(query)?.getResults() || [];
+			},
+			debounce: 30,
+		});
 	}
 
 	search = new Search();
 	hasInput = false;
 	loading?: Promise<void> = undefined;
 	results?: SearchResult[] = undefined;
-	searchDebounce = this.createActiveTaskQueue();
+	searchQuery = "";
 
 	clear() {
 		let input = this.findViewContent(UITextField)[0];
@@ -36,20 +45,8 @@ export class SearchActivity extends Activity {
 		})();
 	}
 
-	protected async onSearchInput(e: ViewEvent<UITextField>) {
-		let searchText = e.source.value || "";
-		if (this.loading) {
-			await this.loading;
-			searchText = e.source.value || "";
-		}
-
-		this.searchDebounce.debounce(async () => {
-			if (!(this.hasInput = !!searchText)) return;
-			this.hasInput = true;
-			this.findViewContent(UIScrollView)[0]?.scrollToTop();
-			let results = this.search.query(searchText)?.getResults() || [];
-			this.results = results;
-		}, 30);
+	protected onSearchInput(e: ViewEvent<UITextField>) {
+		this.searchQuery = e.source.value || "";
 	}
 
 	protected async onClose() {

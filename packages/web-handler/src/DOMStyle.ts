@@ -1,4 +1,5 @@
 import {
+	app,
 	StyleOverrides,
 	UIColor,
 	UIContainer,
@@ -148,7 +149,7 @@ export function initializeCSS(
 
 	// update or create style sheets with new CSS
 	let update = ++_cssPending;
-	setTimeout(() => {
+	app.schedule(() => {
 		if (_cssPending !== update) return;
 		_updateStyleSheets(allCss, importCSS);
 	});

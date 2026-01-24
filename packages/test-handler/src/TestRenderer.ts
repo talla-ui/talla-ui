@@ -1,21 +1,11 @@
-import {
-	AsyncTaskQueue,
-	ModalFactory,
-	RenderContext,
-	View,
-	app,
-} from "@talla-ui/core";
+import { ModalFactory, RenderContext, View, app } from "@talla-ui/core";
 import { makeObserver } from "./observers/observers.js";
 import { OutputAssertion, OutputSelectFilter } from "./OutputAssertion.js";
-import { TestContextOptions } from "./TestContextOptions.js";
 import { TestModalFactory } from "./TestModalFactory.js";
 import { TestOutputElement } from "./TestOutputElement.js";
 
 /** Default timeout for output assertions */
 const DEFAULT_OUTPUT_TIMEOUT = 200;
-
-/** Max run time for scheduled render functions */
-const MAX_SCHED_RUNTIME = 30;
 
 /**
  * A class that represents a rendered message dialog (for testing)
@@ -73,16 +63,9 @@ export class TestRenderer extends RenderContext {
 	static lastRemountIdx = 0;
 
 	/** Creates a new render context instance, used by {@link useTestContext()} */
-	constructor(options: TestContextOptions) {
+	constructor() {
 		super();
 		this.modalFactory = new TestModalFactory();
-		this._queue = app.scheduler.createQueue(
-			"TestRenderer",
-			true,
-			(queueOptions) => {
-				queueOptions.maxSyncTime = MAX_SCHED_RUNTIME;
-			},
-		);
 	}
 
 	/** Flag for duck typing */
@@ -91,18 +74,13 @@ export class TestRenderer extends RenderContext {
 	/** The default modal factory */
 	modalFactory: ModalFactory;
 
-	/** Schedules the provided callback in the rendering queue */
-	schedule(f: () => void, lowPriority?: boolean) {
-		this._queue.add(f, lowPriority ? 1 : 0);
-	}
-
 	/** Returns a global render callback, which adds new output to the root element */
 	getRenderCallback() {
 		let lastOutput: RenderContext.Output | undefined;
 		let self = this;
 		return <RenderContext.RenderCallback>(
 			function callback(output, afterRender) {
-				self.schedule(() => {
+				app.schedule(() => {
 					if (lastOutput && lastOutput !== output && lastOutput.element) {
 						(lastOutput.element as TestOutputElement).remove();
 					}
@@ -136,15 +114,16 @@ export class TestRenderer extends RenderContext {
 		if (!element) return;
 		this._elementToFocus = element;
 		let loop = 0;
-		const tryFocus = () => {
+		const tryFocus = async () => {
+			await app.queue.waitAsync();
 			if (!element.hasFocus() && element === this._elementToFocus) {
 				element.focus();
 				if (loop++ < 2) {
-					setTimeout(() => this.schedule(tryFocus, true), 1);
+					setTimeout(tryFocus, 1);
 				}
 			}
 		};
-		this.schedule(tryFocus, true);
+		tryFocus();
 	}
 	private _elementToFocus?: TestOutputElement;
 
@@ -253,19 +232,17 @@ export class TestRenderer extends RenderContext {
 		let timeout = select.timeout || DEFAULT_OUTPUT_TIMEOUT;
 		let startT = Date.now();
 		return new Promise<OutputAssertion>((resolve, reject) => {
-			let poll = () => {
-				// schedule render callback as low priority to land *after* rendering
-				this._queue.add(() => {
-					if (this._queue.length <= 1) {
-						// resolve with assertion if matches
-						let assertion = this.expectOutput(select, ...nested);
-						if (assertion.elements.length) return resolve(assertion);
-					}
-					if (timeout && Date.now() > startT + timeout) {
-						return reject(timeoutError);
-					}
-					poll();
-				}, 2);
+			let poll = async () => {
+				// wait for queue to drain, then check for matches
+				await app.queue.waitAsync();
+				if (app.queue.length === 0) {
+					let assertion = this.expectOutput(select, ...nested);
+					if (assertion.elements.length) return resolve(assertion);
+				}
+				if (timeout && Date.now() > startT + timeout) {
+					return reject(timeoutError);
+				}
+				setTimeout(poll, 1);
 			};
 			poll();
 		});
@@ -322,6 +299,5 @@ export class TestRenderer extends RenderContext {
 		return elements.map((elt) => elt.toJSON());
 	}
 
-	private _queue: AsyncTaskQueue;
 	private _root = new TestOutputElement("root");
 }

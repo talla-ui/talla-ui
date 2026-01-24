@@ -9,13 +9,13 @@ import {
 import { ObservableObject } from "../object/index.js";
 import type { Activity } from "./Activity.js";
 import { ActivityRouter } from "./ActivityRouter.js";
+import { AppQueue } from "./AppQueue.js";
 import { I18nContext } from "./I18nContext.js";
 import { LogWriter } from "./LogWriter.js";
 import { MessageDialogOptions } from "./MessageDialogOptions.js";
 import { ModalMenuOptions } from "./ModalMenuOptions.js";
 import type { NavigationContext } from "./NavigationContext.js";
 import type { RenderContext } from "./RenderContext.js";
-import { AsyncTaskQueue, Scheduler } from "./Scheduler.js";
 import type { View } from "./View.js";
 import type { Viewport } from "./Viewport.js";
 
@@ -90,12 +90,11 @@ export class AppContext extends ObservableObject {
 	readonly i18n = new I18nContext();
 
 	/**
-	 * The global asynchronous task scheduler, an instance of {@link Scheduler}
-	 * - You can use `app.scheduler` to create and manage queues for scheduling asynchronous (background) tasks.
-	 * - You can use {@link schedule()} to schedule a task on the default queue of this scheduler.
-	 * - Refer to {@link Scheduler} for available methods of `app.scheduler`.
+	 * The global task queue, an instance of {@link AppQueue}
+	 * - You can use `app.queue` to schedule tasks and wait for completion.
+	 * - You can use {@link schedule()} as a shortcut for `app.queue.schedule()`.
 	 */
-	readonly scheduler = new Scheduler();
+	readonly queue = new AppQueue();
 
 	/**
 	 * The current application output renderer, an instance of {@link RenderContext}
@@ -118,13 +117,12 @@ export class AppContext extends ObservableObject {
 	 */
 	navigation?: NavigationContext = undefined;
 
-
 	/**
 	 * Clears the state of the global application context
 	 * @summary This method is used to reset the app to its initial state. It's called automatically by context initialization functions such as `useTestContext()` and `useWebContext()`, before setting up a new global application context with platform-specific details. The following actions take place:
 	 * 1. All activities are unlinked and removed;
 	 * 2. The current renderer's output is cleared;
-	 * 3. All scheduler queues are stopped and removed;
+	 * 3. The task queue is cleared;
 	 * 4. Log sink handlers are removed;
 	 * 5. The i18n context is cleared, and the current locale is reset;
 	 */
@@ -132,19 +130,19 @@ export class AppContext extends ObservableObject {
 		this.activities.clear();
 		this.navigation?.clear();
 		this.renderer?.clear();
-		this.scheduler.clear();
+		this.queue.clear();
 		this.log.removeHandlers();
 		this.i18n.clear();
 		return this;
 	}
 
 	/**
-	 * Schedules a task on the default queue of the global scheduler
-	 * @param f An (async) function that accepts a single argument, an instance of {@link AsyncTaskQueue.Task}
-	 * @param priority The priority of the task (higher values _deprioritize_ the task)
+	 * Schedules a task on the global queue
+	 * @param f A function to execute
 	 */
-	schedule(f: (t: AsyncTaskQueue.Task) => Promise<void> | void, priority = 0) {
-		this.scheduler.getDefault().add(f, priority);
+	schedule(f: () => void) {
+		this.queue.schedule(f);
+		return this;
 	}
 
 	/**
@@ -313,5 +311,6 @@ export class AppContext extends ObservableObject {
 	 */
 	remount() {
 		this.renderer?.remount();
+		return this;
 	}
 }

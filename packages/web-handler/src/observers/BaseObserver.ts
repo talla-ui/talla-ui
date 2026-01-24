@@ -88,8 +88,8 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 	scheduleUpdate(updateContent?: HTMLElement, updateStyle?: HTMLElement) {
 		if (updateContent) this._asyncContentUp = updateContent;
 		if (updateStyle) this._asyncStyleUp = updateStyle;
-		if (!this._asyncUp && app.renderer) {
-			app.renderer.schedule(() => {
+		if (!this._asyncUp) {
+			app.schedule(() => {
 				if (this.observed.isUnlinked()) return;
 				try {
 					if (this._asyncContentUp) this.updateContent(this._asyncContentUp);
@@ -110,7 +110,7 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 
 	/** Schedules an asynchronous update to show or hide the output */
 	scheduleHide(hidden?: boolean) {
-		app.renderer?.schedule(() => {
+		app.schedule(() => {
 			let elt = this.element;
 			if (!elt) return;
 			this._hidden = hidden;
@@ -274,19 +274,17 @@ function _tryFocusElement(element?: HTMLElement | null) {
 	if (!element) return;
 	_elementToFocus = element;
 	let loop = 0;
-	const tryFocus = () => {
+	const tryFocus = async () => {
+		await app.queue.waitAsync();
 		let focused = document.activeElement;
 		if (focused !== element && element === _elementToFocus) {
 			element.focus();
 			if (loop++ < 3) {
-				setTimeout(
-					() => app.renderer?.schedule(tryFocus, true),
-					Math.pow(10, loop),
-				);
+				setTimeout(tryFocus, Math.pow(10, loop));
 			}
 		}
 	};
-	app.renderer?.schedule(tryFocus, true);
+	tryFocus();
 }
 
 let _elementToFocus: HTMLElement | undefined;

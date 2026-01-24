@@ -499,4 +499,44 @@ describe("Navigation guards (canDeactivateAsync)", () => {
 			)
 			.toBe(true);
 	});
+
+	test("canDeactivateAsync returning false emits no navigation events", async () => {
+		let matchEvents = 0;
+		let notFoundEvents = 0;
+
+		class BlockingActivity extends Activity {
+			override navigationPath = "blocking";
+			override async canDeactivateAsync() {
+				return false;
+			}
+		}
+		class OtherActivity extends Activity {
+			override navigationPath = "other";
+		}
+
+		let blocking = new BlockingActivity();
+		let other = new OtherActivity();
+		app.addActivity(blocking);
+		app.addActivity(other);
+
+		app.navigation?.listen((e) => {
+			if (e.name === "Match") matchEvents++;
+			if (e.name === "NotFound") notFoundEvents++;
+		});
+
+		app.navigation?.set("blocking");
+		await expect
+			.poll(() => blocking.isActive(), { interval: 5, timeout: 100 })
+			.toBe(true);
+
+		let initialMatchEvents = matchEvents;
+
+		// Try to navigate away - should be blocked, no events
+		app.navigation?.set("other");
+		await new Promise((r) => setTimeout(r, 50));
+
+		// No new events should have been emitted
+		expect(matchEvents).toBe(initialMatchEvents);
+		expect(blocking.isActive()).toBe(true);
+	});
 });

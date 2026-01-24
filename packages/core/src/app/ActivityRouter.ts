@@ -1,7 +1,6 @@
+import { err, ERROR, safeCall } from "../errors.js";
 import { ObservableList, ObservableObject } from "../object/index.js";
 import type { Activity } from "./Activity.js";
-import { AppContext } from "./AppContext.js";
-import type { AsyncTaskQueue } from "./Scheduler.js";
 
 /**
  * A class that facilitates activating and deactivating a set of activities
@@ -92,7 +91,7 @@ export class ActivityRouter extends ObservableObject {
 
 	/**
 	 * Adds an activity to this router
-	 * - This method adds the activity to the list of activities that are considered by {@link matchNavigationPath()}.
+	 * - This method adds the activity to the list of activities that are considered by {@link routeAsync()}.
 	 * @param activity The activity to be added
 	 * @param activate True if the activity should be activated immediately
 	 */
@@ -113,17 +112,17 @@ export class ActivityRouter extends ObservableObject {
 		return this.add(activity, activate);
 	}
 
-	/** Removes all activities and stops all pending asynchronous activations and deactivations */
+	/** Removes all activities and cancels pending navigation */
 	clear() {
 		this._list.clear();
-		this._queue?.stop();
-		this._queue = undefined;
+		this._navIdx++;
+		this._hasMatched = false;
 		return this;
 	}
 
 	/**
 	 * Disables or enables path matching for this router
-	 * - When disabled, calls to {@link matchNavigationPath()} will be ignored. The router created by {@link Activity.createActiveRouter} automatically disables and enables path matching when the containing activity is deactivated or activated, using this method.
+	 * - When disabled, calls to {@link routeAsync()} will be ignored. The router created by {@link Activity.createActiveRouter} automatically disables and enables path matching when the containing activity is deactivated or activated, using this method.
 	 * @param disable True (default) to disable path matching; false to enable
 	 */
 	disableMatch(disable = true) {
@@ -131,84 +130,72 @@ export class ActivityRouter extends ObservableObject {
 	}
 
 	/**
-	 * Checks for activation of all contained activities using the provided path, and activates the first activity that matches
-	 * - This method calls {@link Activity.matchNavigationPath()} on all contained activities, and activates the first activity that returns a value that equals to true.
-	 * - All other activities are deactivated _before_ activating the matching activity; unless no activity had matched before. This enables 'path routing' only after the first successful match.
-	 * - Activities can prevent deactivation by returning false from {@link Activity.canDeactivateAsync()}.
-	 * - If the matching {@link Activity.matchNavigationPath()} method returned a function, the function will be invoked after the activity has been activated.
-	 * @param path The path to pass to all contained activities
-	 * @returns The activity that will be activated, if any
+	 * Routes to the matching activity for the given path
+	 * - This method calls {@link Activity.matchNavigationPath()} on all contained activities. It then activates the first activity that returns a truthy value, after checking {@link Activity.canDeactivateAsync()} on currently active activities, if any.
+	 * - If the matching {@link Activity.matchNavigationPath()} returned a function, this method calls it after activation
+	 * @param path The path to route to
+	 * @returns The activity that was activated, or undefined if no match
+	 * @error This method throws an error if an activity blocks deactivation via {@link Activity.canDeactivateAsync}.
 	 */
-	matchNavigationPath(path: string) {
+	async routeAsync(path: string): Promise<Activity | undefined> {
 		let list = this._list.toArray();
 		if (this._disabled || this.isUnlinked() || !list.length) return;
 
-		// Increment navigation index to invalidate prior navigations
-		let navIdx = ++this._navIdx;
-
-		// prepare functions to activate and deactivate
-		let router = this;
+		// find matching activity
 		let toActivate: Activity | undefined;
-		async function deactivateOthersAsync(t: AsyncTaskQueue.Task) {
-			for (let other of list) {
-				if (other !== toActivate) {
-					if (t.cancelled || navIdx !== router._navIdx || router.isUnlinked())
-						return;
-					if (other.isActive()) {
-						let canLeave = await other.canDeactivateAsync();
-						if (t.cancelled || navIdx !== router._navIdx || router.isUnlinked())
-							return;
-						if (!canLeave) {
-							// Activity blocked navigation, abort the entire navigation
-							router._navIdx++;
-							return;
-						}
-						other.deactivate();
-					}
-				}
-			}
-		}
-		function activate() {
-			if (
-				navIdx === router._navIdx &&
-				!router.isUnlinked() &&
-				!toActivate?.isUnlinked() &&
-				!toActivate!.isActive()
-			) {
-				toActivate!.activate();
-			}
-		}
-
-		// go through the list and find a matching activity
+		let postActivate: (() => void) | undefined;
 		for (let activity of list) {
-			let activate_ = activity.matchNavigationPath(path);
-			if (activate_) {
+			let match = activity.matchNavigationPath(path);
+			if (match) {
 				toActivate = activity;
-				let q = this._getQueue();
-				q.stop();
-				q.add(deactivateOthersAsync);
-				q.add(activate);
-				if (typeof activate_ === "function") q.add(activate_);
-				return activity;
+				if (typeof match === "function") postActivate = match;
+				break;
 			}
 		}
 
-		// if nothing matched, deactivate all if activated once before
-		this._queue?.add(deactivateOthersAsync);
+		// navigate only if activity matched, or if routing was previously active
+		if (!toActivate && !this._hasMatched) return;
+		if (toActivate) this._hasMatched = true;
+
+		// deactivate others first
+		let navIdx = ++this._navIdx;
+		let success = await this._deactivateOthersAsync(list, toActivate, navIdx);
+		if (!success) {
+			throw err(ERROR.Route_Cancelled);
+		}
+
+		// activate the target, if not cancelled or stale
+		if (navIdx !== this._navIdx || this.isUnlinked()) return;
+		if (toActivate && !toActivate.isUnlinked() && !toActivate.isActive()) {
+			toActivate.activate();
+		}
+		postActivate?.();
+
+		return toActivate;
 	}
 
-	/** Retrieves or initializes the activation queue */
-	private _getQueue() {
-		if (!this._queue) {
-			this._queue = AppContext.getInstance().scheduler.createQueue(
-				Symbol("route"),
-			);
+	/** Deactivates all activities except the target; returns false if blocked or stale */
+	private async _deactivateOthersAsync(
+		list: Activity[],
+		except: Activity | undefined,
+		navIdx: number,
+	) {
+		for (let activity of list) {
+			if (navIdx !== this._navIdx || this.isUnlinked()) return false;
+			if (activity === except || !activity.isActive()) continue;
+			let canLeave = await safeCall(activity.canDeactivateAsync, activity);
+			if (navIdx !== this._navIdx || this.isUnlinked()) return false;
+			if (canLeave === false) {
+				this._navIdx++;
+				return false;
+			}
+			activity.deactivate();
 		}
-		return this._queue;
+		return true;
 	}
 
 	private _disabled?: boolean;
+	private _hasMatched?: boolean;
 	private _navIdx = 0;
-	private _queue?: AsyncTaskQueue;
 	private _list: ObservableList<Activity>;
 }

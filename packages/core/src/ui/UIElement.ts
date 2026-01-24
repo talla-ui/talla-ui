@@ -747,7 +747,7 @@ export namespace UIElement {
 		 */
 		requestFocus() {
 			this.initializer.finalize((view) => {
-				setTimeout(() => view.requestFocus(), 1);
+				AppContext.getInstance().schedule(() => view.requestFocus());
 			});
 			return this;
 		}

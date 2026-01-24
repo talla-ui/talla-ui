@@ -9,8 +9,8 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link Activity} +
 - {@link AppContext} +
 - {@link AppException} +
+- {@link AppQueue} +
 - {@link app} +
-- {@link AsyncTaskQueue} +
 - {@link BindingOrValue} +
 - {@link Binding} +
 - {@link clickOutputAsync} +
@@ -39,7 +39,6 @@ abstract: This is a temporary placeholder document for all indexed API documenta
 - {@link RenderedTestMessageDialog} +
 - {@link RenderEffect} +
 - {@link renderTestView} +
-- {@link Scheduler} +
 - {@link setWebTheme} +
 - {@link StringConvertible} +
 - {@link StyleOverrides} +

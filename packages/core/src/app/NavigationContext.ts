@@ -1,6 +1,7 @@
 import { StringConvertible } from "@talla-ui/util";
 import { invalidArgErr, safeCall } from "../errors.js";
 import { ObservableObject } from "../object/index.js";
+import type { Activity } from "./Activity.js";
 import { AppContext } from "./AppContext.js";
 
 /**
@@ -74,9 +75,15 @@ export abstract class NavigationContext extends ObservableObject {
 
 		// use the root activity router to activate
 		let router = AppContext.getInstance().activities;
-		let matched = router.matchNavigationPath(path);
+		let matched: Activity | undefined;
+		try {
+			matched = await router.routeAsync(path);
+		} catch {
+			// navigation was cancelled by canDeactivateAsync returning false
+			return;
+		}
 
-		// if moved on, don't bother to emit
+		// if path changed during routing, don't emit stale events
 		if (this._path !== path) return;
 		if (matched) {
 			this.matchedPath = path;

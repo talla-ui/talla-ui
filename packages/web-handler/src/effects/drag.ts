@@ -166,7 +166,7 @@ const dragRelativeEffect: RenderEffect<HTMLElement> = {
 			lastScrollLeft = parentElts.reduce((s, p) => s + p.scrollLeft, 0);
 			lastScrollTop = parentElts.reduce((s, p) => s + p.scrollTop, 0);
 			if (pending) return;
-			app.renderer!.schedule(() => {
+			app.schedule(() => {
 				pending = false;
 				if (!lastEvent || !lastRect || !lastParentRect) return;
 				let clientX =
@@ -188,7 +188,7 @@ const dragRelativeEffect: RenderEffect<HTMLElement> = {
 					parentRight: lastParentWidth - parentLeft,
 					parentBottom: lastParentHeight - parentTop,
 				});
-			}, true);
+			});
 			pending = true;
 		}
 

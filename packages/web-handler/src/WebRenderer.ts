@@ -1,6 +1,5 @@
 import {
 	Activity,
-	AsyncTaskQueue,
 	ModalFactory,
 	ObservableEvent,
 	RenderContext,
@@ -26,78 +25,37 @@ export class WebRenderer extends RenderContext {
 		super();
 		this.modalFactory = new WebModalFactory(options);
 		this._mounts = new Map();
-		this._queue = app.scheduler.createQueue(
-			"WebRenderer",
-			true,
-			(queueOptions) => {
-				queueOptions.maxSyncTime = options.missedFrameTime * 0.75;
-				queueOptions.delayTime = options.missedFrameTime * 1.5;
-			},
-		);
+		this._delay = options.missedFrameTime;
+		app.queue.setScheduleCallback(() => this._ensureRAF());
 	}
 
 	/** The default modal factory */
 	modalFactory: ModalFactory;
-
-	/** Schedules the provided callback in the rendering queue */
-	schedule(f: () => void, lowPriority?: boolean) {
-		this._queue.add(f, lowPriority ? 1 : 0);
-		if (!this._raf) {
-			try {
-				this._raf = window.requestAnimationFrame(() => {
-					this._raf = undefined;
-					this._queue.run();
-				});
-			} catch {}
-		}
-	}
 
 	/** Retrieves a render callback for root output */
 	getRenderCallback() {
 		let mount: OutputMount | undefined;
 		let prevFocus: HTMLElement | undefined;
 		let callback: RenderContext.RenderCallback = (output, afterRender) => {
-			this.schedule(() => {
+			app.schedule(() => {
 				if (!output) {
-					// remove current output, if any
-					if (mount) {
-						if (this._mounts.has(mount.id)) {
-							mount.remove();
-							this._mounts.delete(mount.id);
-						}
-						mount = undefined;
+					if (mount && this._mounts.has(mount.id)) {
+						this._mounts.delete(mount.id);
+						mount.remove().then(() => this._restoreFocus(prevFocus));
 					}
-
-					// restore previously focused element, if possible
-					if (prevFocus) {
-						let restoreFocus = prevFocus;
-						setTimeout(() => {
-							if (
-								(!document.activeElement ||
-									document.activeElement === document.body) &&
-								document.body.compareDocumentPosition(restoreFocus!) &
-									Node.DOCUMENT_POSITION_CONTAINED_BY
-							) {
-								restoreFocus.focus();
-							}
-						}, 210); // (after fade out & remove mount element)
-					}
-				} else {
-					// mount output for given placement mode
-					if (!mount && output.element) {
-						mount = this._createMount(output);
-						if (output.place?.mode === "modal") {
-							prevFocus = document.activeElement as any;
-						}
-					}
-
-					// update with given output element
-					if (mount) mount.update(output as any);
+					mount = undefined;
+					if (afterRender) afterRender(output);
+					return;
 				}
-
-				// invoke callback now that element is in place
+				if (!mount && output.element) {
+					mount = this._createMount(output);
+					if (output.place?.mode === "modal") {
+						prevFocus = document.activeElement as any;
+					}
+				}
+				if (mount) mount.update(output as any);
 				if (afterRender) afterRender(output);
-			}, true);
+			});
 			return callback;
 		};
 		return callback;
@@ -211,8 +169,40 @@ export class WebRenderer extends RenderContext {
 		}
 	}
 
+	/** Runs the app queue with time budget and schedules next RAF if needed */
+	private _runQueue() {
+		if (this.isUnlinked()) return;
+		app.queue.run(this._delay, this._delay);
+		if (app.queue.length > 0) {
+			this._ensureRAF();
+		}
+	}
+
+	/** Requests a RAF to run the queue if one isn't already pending */
+	private _ensureRAF() {
+		if (this._raf) return;
+		try {
+			this._raf = window.requestAnimationFrame(() => {
+				this._raf = undefined;
+				this._runQueue();
+			});
+		} catch {}
+	}
+
+	/** Restores focus to an element if no other element is focused */
+	private _restoreFocus(element?: HTMLElement) {
+		if (
+			element &&
+			(!document.activeElement || document.activeElement === document.body) &&
+			document.body.compareDocumentPosition(element) &
+				Node.DOCUMENT_POSITION_CONTAINED_BY
+		) {
+			element.focus();
+		}
+	}
+
 	private _mounts: Map<number, OutputMount>;
-	private _queue: AsyncTaskQueue;
+	private _delay: number;
 	private _pageBackground: UIColor | string = "background";
 	private _modalBackground: UIColor | string = "transparent";
 	private _raf?: any;

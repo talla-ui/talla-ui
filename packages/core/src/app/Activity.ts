@@ -6,7 +6,6 @@ import { ActivityRouter } from "./ActivityRouter.js";
 import { AppContext } from "./AppContext.js";
 import type { NavigationContext } from "./NavigationContext.js";
 import type { RenderContext } from "./RenderContext.js";
-import { AsyncTaskQueue } from "./Scheduler.js";
 import { View } from "./View.js";
 import type { ViewBuilder } from "./ViewBuilder.js";
 
@@ -443,41 +442,6 @@ export class Activity extends ObservableObject {
 			}
 		});
 		return result;
-	}
-
-	/**
-	 * Creates a task queue that's started, paused, resumed, and stopped automatically based on the state of this activity
-	 * - Use this method to create an {@link AsyncTaskQueue} instance to run background tasks only while the activity is active, e.g. when the user is viewing a particular screen of the application.
-	 * @param config An {@link AsyncTaskQueue.Options} object or configuration function (optional)
-	 * @returns A new {@link AsyncTaskQueue} instance
-	 * @error This method throws an error if the activity has been unlinked.
-	 */
-	protected createActiveTaskQueue(
-		config?:
-			| Partial<AsyncTaskQueue.Options>
-			| ((options: AsyncTaskQueue.Options) => void),
-	) {
-		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
-
-		// create queue with given options, pause if activity is not active
-		let queue = AppContext.getInstance().scheduler.createQueue(
-			Symbol("ActiveTaskQueue"),
-			false,
-			config,
-		);
-		if (!this._active) queue.pause();
-
-		// listen for active/inactive events to pause/resume queue
-		this.listen({
-			handler(_, event) {
-				if (event.name === "Active") queue.resume();
-				else if (event.name === "Inactive") queue.pause();
-			},
-			unlinked() {
-				queue.stop();
-			},
-		});
-		return queue;
 	}
 
 	/** @internal Activation state */

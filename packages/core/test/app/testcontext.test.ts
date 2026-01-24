@@ -178,9 +178,8 @@ describe("Rendering views", () => {
 		let mockErrorHandler = vi.fn();
 		AppContext.setErrorHandler(mockErrorHandler);
 		renderTestView(view);
-		expect(clickOutputAsync({ source: view.findViewContent(UIColumn)[0]! }))
-			.resolves;
-		await new Promise((r) => setTimeout(r, 10));
+		await clickOutputAsync({ source: view.findViewContent(UIColumn)[0]! });
+		await new Promise((r) => setTimeout(r, 50));
 		expect(mockErrorHandler).toHaveBeenCalled();
 	});
 
