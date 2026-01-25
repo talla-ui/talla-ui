@@ -1,15 +1,15 @@
 import { err, ERROR, safeCall } from "../errors.js";
-import { ObservableList, ObservableObject } from "../object/index.js";
-import type { Activity } from "./Activity.js";
+import { Binding, ObservableList, ObservableObject } from "../object/index.js";
+import { Activity } from "./Activity.js";
 
 /**
  * A class that facilitates activating and deactivating a set of activities
  *
- * An activity router can be used to switch between active {@link Activity} instances, or add multiple active activities. The application context contains a root activity router as {@link AppContext.activities app.activities}, but you can also use nested routers to any activity to support 'sub activities' — either for sub path routing, list-detail views, or modal dialog activities.
+ * An activity router can be used to switch between active {@link Activity} instances, or add multiple active activities. The application context contains a root activity router as {@link AppContext.activities app.activities}, but you can also use nested routers attached to any activity to support 'sub activities' — either for sub path routing, list-detail views, or modal dialog activities.
  *
  * If an activity is added to the root activity router, its {@link Activity.matchNavigationPath()} method is used to determine if the activity should be activated in response to navigation path changes. The default implementation of that method checks for exact path matches against {@link Activity.navigationPath}.
  *
- * For nested routers, use the {@link Activity.createActiveRouter} method. The resulting router only matches activities while the containing activity is active, and automatically deactivates contained activities when the containing activity is deactivated.
+ * For nested routers, simply attach the router to the parent activity using {@link ObservableObject.attach attach()}. The router automatically detects when it's nested inside an Activity and deactivates all contained activities when the parent Activity becomes inactive.
  *
  * @example
  * // Add an activity to the root activity router, and activate it
@@ -17,10 +17,10 @@ import type { Activity } from "./Activity.js";
  * // ... same as:
  * app.activities.add(myActivity, true)
  *
- * // Use a nested activity router to display a model dialog
+ * // Use a nested activity router to display a modal dialog
  * class MyActivity extends Activity {
  *   // ...
- *   private _dialogRouter = this.createActiveRouter();
+ *   private _dialogRouter = this.attach(new ActivityRouter());
  *   protected onShowDialog() {
  *     let myDialog = new MyDialogActivity();
  *     myDialog.setRenderMode("dialog"); // ... or do this in constructor
@@ -36,7 +36,7 @@ import type { Activity } from "./Activity.js";
  *   // ...
  *
  *   // In a view, bind to "detail.active.view" (else show empty state)
- *   detail = this.createActiveRouter();
+ *   detail = this.attach(new ActivityRouter());
  *
  *   navigationPath = "list";
  *   matchNavigationPath(path: string) {
@@ -55,6 +55,18 @@ export class ActivityRouter extends ObservableObject {
 	/** Create a new activity router */
 	constructor() {
 		super();
+
+		// listen for parent Activity's Inactive event to deactivate all nested activities
+		let parentActivity: Activity | undefined;
+		this.observe(new Binding("appContext"), () => {
+			let activity = Activity.whence(this);
+			if (activity && activity !== parentActivity && !activity.isUnlinked()) {
+				parentActivity = activity;
+				activity.listen((e) => {
+					if (e.name === "Inactive") this.deactivateAll();
+				});
+			}
+		});
 
 		// attach the list of activities, and watch for updates
 		this._list = this.attach(
@@ -112,21 +124,17 @@ export class ActivityRouter extends ObservableObject {
 		return this.add(activity, activate);
 	}
 
+	/** Deactivates all activities */
+	deactivateAll() {
+		this._list.toArray().forEach((a) => a.deactivate());
+	}
+
 	/** Removes all activities and cancels pending navigation */
 	clear() {
 		this._list.clear();
 		this._navIdx++;
 		this._hasMatched = false;
 		return this;
-	}
-
-	/**
-	 * Disables or enables path matching for this router
-	 * - When disabled, calls to {@link routeAsync()} will be ignored. The router created by {@link Activity.createActiveRouter} automatically disables and enables path matching when the containing activity is deactivated or activated, using this method.
-	 * @param disable True (default) to disable path matching; false to enable
-	 */
-	disableMatch(disable = true) {
-		this._disabled = disable;
 	}
 
 	/**
@@ -139,7 +147,7 @@ export class ActivityRouter extends ObservableObject {
 	 */
 	async routeAsync(path: string): Promise<Activity | undefined> {
 		let list = this._list.toArray();
-		if (this._disabled || this.isUnlinked() || !list.length) return;
+		if (this.isUnlinked() || !list.length) return;
 
 		// find matching activity
 		let toActivate: Activity | undefined;
@@ -194,7 +202,6 @@ export class ActivityRouter extends ObservableObject {
 		return true;
 	}
 
-	private _disabled?: boolean;
 	private _hasMatched?: boolean;
 	private _navIdx = 0;
 	private _list: ObservableList<Activity>;

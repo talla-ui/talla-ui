@@ -2,6 +2,7 @@ import { expectOutputAsync, useTestContext } from "@talla-ui/test-handler";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import {
 	Activity,
+	ActivityRouter,
 	app,
 	Binding,
 	NavigationContext,
@@ -249,7 +250,7 @@ describe("Nested activity router", () => {
 		constructor(public text: string) {
 			super();
 		}
-		router = this.createActiveRouter();
+		router = this.attach(new ActivityRouter());
 	}
 
 	test("Add nested activity", async () => {
