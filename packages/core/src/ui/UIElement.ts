@@ -10,7 +10,7 @@ import {
 import { err, ERROR } from "../errors.js";
 import { BindingOrValue, isBinding, ObservableEvent } from "../object/index.js";
 import { RenderEffect } from "./RenderEffect.js";
-import { StyleOverrides, UIColor } from "./style/index.js";
+import { StyleOverrides, UIColor, UIIconResource } from "./style/index.js";
 
 /** @internal Empty array, used for findViewContent. */
 const _emptyViewContent: any[] = Object.freeze([]) as any;
@@ -932,6 +932,29 @@ export namespace UIElement {
 				) as any;
 			}
 			return this;
+		}
+
+		/** @internal Helper method to set icon and iconStyle properties. */
+		protected setIconProperty(
+			icon: BindingOrValue<
+				UIIconResource | UIIconResource.IconName | undefined
+			>,
+			iconStyle?: BindingOrValue<{ size?: string | number }> | number,
+		) {
+			if (iconStyle != null) {
+				this.initializer.update(iconStyle, function (value) {
+					(this as any).iconStyle =
+						typeof value === "number" ? { size: value } : value;
+				});
+			}
+			if (typeof icon === "string") {
+				icon = UIIconResource.getIcon(icon);
+			} else if (isBinding(icon)) {
+				icon = icon.map((value) =>
+					typeof value === "string" ? UIIconResource.getIcon(value) : value,
+				);
+			}
+			return this.setProperty("icon" as any, icon);
 		}
 
 		/** @internal Creates or returns style overrides that are applied using a callback. */

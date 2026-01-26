@@ -151,19 +151,7 @@ export namespace UIText {
 			>,
 			iconStyle?: BindingOrValue<UIText.IconStyle> | number,
 		) {
-			if (iconStyle != null) {
-				this.initializer.update(iconStyle, function (value) {
-					this.iconStyle = typeof value === "number" ? { size: value } : value;
-				});
-			}
-			if (typeof icon === "string") {
-				icon = UIIconResource.getIcon(icon);
-			} else if (isBinding(icon)) {
-				icon = icon.map((value) =>
-					typeof value === "string" ? UIIconResource.getIcon(value) : value,
-				);
-			}
-			return this.setProperty("icon", icon);
+			return this.setIconProperty(icon, iconStyle);
 		}
 
 		/**
