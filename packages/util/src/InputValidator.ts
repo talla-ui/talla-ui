@@ -40,8 +40,8 @@ const SYM_PARSE = Symbol("parse");
  * }
  */
 export class InputValidator<
-	TSchema extends
-		InputValidator.ValidationBuilder = InputValidator.ValidationBuilder,
+	TSchema extends InputValidator.ValidationBuilder =
+		InputValidator.ValidationBuilder,
 > {
 	/** Default error messages, can be changed to localizable messages at application startup */
 	static errors = {

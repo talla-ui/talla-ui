@@ -82,7 +82,9 @@ test("Unless and else", () => {
 });
 
 test("Body view events are propagated", async () => {
-	let myColumn = UI.Column(UI.Show(UI.Button("Click me").onClick("ButtonClick")));
+	let myColumn = UI.Column(
+		UI.Show(UI.Button("Click me").onClick("ButtonClick")),
+	);
 
 	// create instance and listen for events on column
 	let count = 0;

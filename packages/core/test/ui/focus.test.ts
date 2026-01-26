@@ -41,7 +41,10 @@ test("Single widget, request focus", async () => {
 });
 
 test("Focus requests", async () => {
-	let myColumn = UI.Column(UI.Button("first").requestFocus(), UI.Button("second"));
+	let myColumn = UI.Column(
+		UI.Button("first").requestFocus(),
+		UI.Button("second"),
+	);
 
 	console.log("Focusing first");
 	renderTestView(myColumn.build());

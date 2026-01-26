@@ -589,9 +589,8 @@ describe("Effects", () => {
 			RenderEffect.clear();
 
 			// Import useWebContext and useAnimationEffects only (not useDragEffects)
-			const { useWebContext, useAnimationEffects } = await import(
-				"../dist/index.js"
-			);
+			const { useWebContext, useAnimationEffects } =
+				await import("../dist/index.js");
 			useWebContext();
 			useAnimationEffects(); // Register animation effects but NOT drag effects
 

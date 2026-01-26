@@ -45,7 +45,9 @@ describe("Renderer effects (test-handler)", () => {
 
 	describe("Drag effects in test environment", () => {
 		test("drag-modal effect renders without error", async () => {
-			const column = UI.Column(UI.Text("Draggable")).effect("drag-modal").build();
+			const column = UI.Column(UI.Text("Draggable"))
+				.effect("drag-modal")
+				.build();
 			renderTestView(column);
 			await expectOutputAsync({ type: "column" });
 		});

@@ -287,18 +287,15 @@ export class OutputMount {
 		const remainingWait = this._shader ? Math.max(20, 260 - elapsed) : 20;
 
 		return new Promise((resolve) => {
-			setTimeout(
-				() => {
-					if (typeof document === "undefined") {
-						resolve();
-						return;
-					}
-					this._outer!.remove();
-					this._updateTitle();
+			setTimeout(() => {
+				if (typeof document === "undefined") {
 					resolve();
-				},
-				remainingWait,
-			);
+					return;
+				}
+				this._outer!.remove();
+				this._updateTitle();
+				resolve();
+			}, remainingWait);
 		});
 	}
 
