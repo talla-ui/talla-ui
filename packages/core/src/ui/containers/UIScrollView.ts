@@ -227,27 +227,27 @@ export namespace UIScrollView {
 		/**
 		 * Handles the `Scroll` event
 		 * @param handle The function to call, or name of the event to emit instead
-		 * @see {@link UIElement.ElementBuilder.handle()}
+		 * @see {@link UIElement.ElementBuilder.on}
 		 */
 		onScroll(
 			handle:
 				| string
 				| ((event: UIScrollView.ScrollEvent, object: UIScrollView) => void),
 		) {
-			return this.handle("Scroll", handle as any);
+			return this.on("Scroll", handle as any);
 		}
 
 		/**
 		 * Handles the `ScrollEnd` event
 		 * @param handle The function to call, or name of the event to emit instead
-		 * @see {@link UIElement.ElementBuilder.handle()}
+		 * @see {@link UIElement.ElementBuilder.on}
 		 */
 		onScrollEnd(
 			handle:
 				| string
 				| ((event: UIScrollView.ScrollEvent, object: UIScrollView) => void),
 		) {
-			return this.handle("ScrollEnd", handle as any);
+			return this.on("ScrollEnd", handle as any);
 		}
 	}
 }

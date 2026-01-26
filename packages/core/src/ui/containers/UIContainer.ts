@@ -197,22 +197,22 @@ export namespace UIContainer {
 		 * Handles the `MouseEnter` event.
 		 * - Automatically enables hover tracking.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link UIElement.ElementBuilder.handle()}
+		 * @see {@link UIElement.ElementBuilder.on}
 		 */
 		onMouseEnter(handle: string | ViewBuilderEventHandler<T>) {
 			this.trackHover(true);
-			return this.handle("MouseEnter", handle);
+			return this.on("MouseEnter", handle);
 		}
 
 		/**
 		 * Handles the `MouseLeave` event.
 		 * - Automatically enables hover tracking.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link UIElement.ElementBuilder.handle()}
+		 * @see {@link UIElement.ElementBuilder.on}
 		 */
 		onMouseLeave(handle: string | ViewBuilderEventHandler<T>) {
 			this.trackHover(true);
-			return this.handle("MouseLeave", handle);
+			return this.on("MouseLeave", handle);
 		}
 
 		/**

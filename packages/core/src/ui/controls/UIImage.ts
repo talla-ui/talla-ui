@@ -101,7 +101,7 @@ export namespace UIImage {
 		 * @returns The builder instance for chaining.
 		 */
 		onLoad(handle: string | ViewBuilderEventHandler<UIImage>) {
-			return this.handle("Load", handle);
+			return this.on("Load", handle);
 		}
 
 		/**
@@ -110,7 +110,7 @@ export namespace UIImage {
 		 * @returns The builder instance for chaining.
 		 */
 		onLoadError(handle: string | ViewBuilderEventHandler<UIImage>) {
-			return this.handle("LoadError", handle);
+			return this.on("LoadError", handle);
 		}
 	}
 }

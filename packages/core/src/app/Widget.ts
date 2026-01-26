@@ -248,8 +248,9 @@ export namespace Widget {
 	 * `builder()` method on Widget subclasses. It provides a fluent interface
 	 * for configuring widget instances.
 	 */
-	export interface Builder<TView extends Widget = Widget>
-		extends ViewBuilder<TView> {
+	export interface Builder<
+		TView extends Widget = Widget,
+	> extends ViewBuilder<TView> {
 		/** The initializer instance that handles view configuration */
 		initializer: ViewBuilder.Initializer<TView>;
 

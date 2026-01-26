@@ -7,7 +7,7 @@ export function SearchView(v: Binding<SearchActivity>) {
 		.width("100%")
 		.grow(false)
 		.shrink(true)
-		.handleKey("Escape", "Close")
+		.onKey("Escape", "Close")
 		.with(
 			UI.Row()
 				.height(72)
@@ -36,8 +36,8 @@ export function SearchView(v: Binding<SearchActivity>) {
 						.requestFocus()
 						.disableSpellCheck()
 						.onInput("SearchInput")
-						.handleKey("ArrowDown", "ArrowDownOnInput")
-						.handleKey("Enter", "GoToFirstResult"),
+						.onKey("ArrowDown", "ArrowDownOnInput")
+						.onKey("Enter", "GoToFirstResult"),
 					UI.Button().icon(UI.icons.close).style("text").onClick("Close"),
 				),
 			UI.Column()
@@ -74,9 +74,9 @@ export function SearchView(v: Binding<SearchActivity>) {
 							}),
 						)
 						.onClick("GoToResult")
-						.handleKey("Enter", "GoToResult")
-						.handleKey("ArrowUp", "FocusPrevious")
-						.handleKey("ArrowDown", "FocusNext")
+						.onKey("Enter", "GoToResult")
+						.onKey("ArrowUp", "FocusPrevious")
+						.onKey("ArrowDown", "FocusNext")
 						.with(
 							UI.Column().with(
 								UI.Row(

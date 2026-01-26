@@ -356,7 +356,7 @@ export namespace UIButton {
 				| string
 				| ViewBuilderEventHandler<UIButton, ModalMenuOptions.MenuItem>,
 		) {
-			return this.handle("MenuItemSelect", select);
+			return this.on("MenuItemSelect", select);
 		}
 
 		/**

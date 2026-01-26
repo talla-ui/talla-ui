@@ -285,16 +285,16 @@ export namespace UIShowView {
 
 		/**
 		 * Handles propagated events from the nested view
-		 * - This method can be used to handle events before they're propagated from the nested view to this view.
+		 * - This method can be used to handle events before they're propagated from the nested view to this view. It works in the same manner as {@link UIElement.ElementBuilder.on()} for UI elements.
 		 * @param eventName The name of the event to handle
-		 * @param handle The function to call, or name of the event to emit instead
+		 * @param handler The function to call, or name of the event to emit instead
 		 * @returns The builder instance for chaining.
 		 */
-		handle(
+		on(
 			eventName: string,
-			handle: string | ViewBuilderEventHandler<UIShowView>,
+			handler: string | ViewBuilderEventHandler<UIShowView>,
 		) {
-			this.initializer.handle(eventName, handle);
+			this.initializer.on(eventName, handler);
 			return this;
 		}
 

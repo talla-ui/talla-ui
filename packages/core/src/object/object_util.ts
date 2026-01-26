@@ -16,11 +16,11 @@ export const $_root = Symbol("root");
 /** @internal Property that is set to true (on the object prototype) if properties of this object should not be bound */
 export const $_nobind = Symbol("nobind");
 
-/** @internal Property that refers to a list of event interceptors */
-export const $_intercept = Symbol("intercept");
-
 /** @internal Non-existent property, trap is invoked when an event is emitted */
 export const $_traps_event = Symbol("event");
+
+/** @internal Non-existent property, trap is invoked for delegate handlers after regular event traps */
+export const $_traps_delegate = Symbol("delegate");
 
 /** @internal Symbol for a property that references the method to apply a binding to a target object */
 export const $_bind_apply = Symbol("bind_apply");
@@ -176,7 +176,11 @@ export function removeTrap(trap?: TrapRef) {
 	}
 }
 
-/** @internal Invoke all trap functions for a given object and property, with given value */
+/**
+ * @internal Invoke all trap functions for a given object and property, with given value.
+ * For event traps, delegate traps run after regular traps, allowing listeners to call
+ * `stopPropagation()` before delegation occurs.
+ */
 export function invokeTrap(
 	observedObject: ObservableObject,
 	p: string | number | symbol,
@@ -185,6 +189,14 @@ export function invokeTrap(
 	let list = _traps.get(observedObject);
 	if (list && list[p]) {
 		for (let t of list[p]!.slice()) {
+			if (t && !observedObject[$_unlinked]) {
+				t.t(observedObject, value);
+			}
+		}
+	}
+	// Run delegate traps after regular event traps
+	if (p === $_traps_event && list && list[$_traps_delegate]) {
+		for (let t of list[$_traps_delegate]!.slice()) {
 			if (t && !observedObject[$_unlinked]) {
 				t.t(observedObject, value);
 			}
@@ -210,6 +222,7 @@ function getTrapList(target: ObservableObject, p: string | number | symbol) {
 	if (!lookup) {
 		lookup = Object.create(null);
 		lookup[$_traps_event] = [];
+		lookup[$_traps_delegate] = [];
 		lookup[$_origin] = [];
 		setTrapDescriptor(target, $_origin, {
 			writable: true,
@@ -312,7 +325,12 @@ export function unlinkObject(observedObject: ObservableObject) {
 }
 
 /**
- * @internal Attach given target to an observable object, and start observing it
+ * @internal Attach given target to an observable object, and start observing it.
+ * @param origin The parent object to attach to
+ * @param target The object being attached
+ * @param listen Event handler for the attached object
+ * @param detach Callback when detached
+ * @param isDelegate If true, the handler is added as a delegate trap (runs after regular listeners)
  * @error Throws an error if a loop is detected
  */
 export function attachObject(
@@ -320,6 +338,7 @@ export function attachObject(
 	target: ObservableObject,
 	listen?: (target: ObservableObject, event: ObservableEvent) => void,
 	detach?: (target: ObservableObject) => void,
+	isDelegate?: boolean,
 ): ObservableObject | undefined {
 	// check if target is already unlinked
 	if (target[$_unlinked]) throw err(ERROR.Object_Unlinked, "target");
@@ -344,8 +363,10 @@ export function attachObject(
 	// observe for unlinking, events, and detachment
 	// (stop listening when target is moved to other parent)
 	if (detach || listen) {
+		// Delegate handlers use $_traps_delegate so they run after regular listeners
+		let trapSymbol = isDelegate ? $_traps_delegate : $_traps_event;
 		let eventTrap = listen
-			? addTrap(target, $_traps_event, listen as any)
+			? addTrap(target, trapSymbol, listen as any)
 			: undefined;
 		let detachTrap = addTrap(
 			target,

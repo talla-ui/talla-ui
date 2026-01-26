@@ -307,8 +307,8 @@ test("Arrow key focus, single list", async () => {
 		new ObservableList(...getObjects()),
 		UI.Text(new Binding("item.name"))
 			.allowFocus()
-			.handleKey("ArrowDown", "FocusNext")
-			.handleKey("ArrowUp", "FocusPrevious"),
+			.onKey("ArrowDown", "FocusNext")
+			.onKey("ArrowUp", "FocusPrevious"),
 	);
 	let list = myList.build();
 	renderTestView(list);

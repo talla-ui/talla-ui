@@ -150,8 +150,8 @@ test("Rendered and clicked, event has value", async () => {
 });
 
 test("Rendered and clicked, using callback function", async () => {
-	let myButton = UI.Button("Foo button").onClick((e, button) => {
-		button.emit(e, true);
+	let myButton = UI.Button("Foo button").onClick((_e, button) => {
+		// Click event is emitted automatically, handler adds Foo event
 		button.emit("Foo", { value: "foo" });
 	});
 	let btn = myButton.build();
@@ -180,6 +180,64 @@ test("Click event propagation", async () => {
 	app.addActivity(new MyActivity(), true);
 	await clickOutputAsync({ text: "Button" });
 	expect(clicked).toBe(1);
+});
+
+test("Multiple onClick handlers are additive", async () => {
+	let count1 = 0,
+		count2 = 0;
+	let btn = UI.Button("Test")
+		.onClick(() => {
+			count1++;
+		})
+		.onClick(() => {
+			count2++;
+		})
+		.build();
+	renderTestView(btn);
+	await clickOutputAsync({ type: "button" });
+	expect(count1).toBe(1);
+	expect(count2).toBe(1);
+});
+
+test("String onClick propagates only transformed event to parent", async () => {
+	let parentEvents: string[] = [];
+	class MyActivity extends Activity {
+		static override View() {
+			return UI.Column(UI.Button("Test").onClick("CustomClick"));
+		}
+		onClick() {
+			parentEvents.push("Click");
+		}
+		onCustomClick() {
+			parentEvents.push("CustomClick");
+		}
+	}
+	app.addActivity(new MyActivity(), true);
+	await clickOutputAsync({ type: "button" });
+	expect(parentEvents).not.toContain("Click");
+	expect(parentEvents).toContain("CustomClick");
+});
+
+test("Handler returning true stops propagation", async () => {
+	let clicked = 0;
+	let handlerCalled = false;
+	class MyActivity extends Activity {
+		static override View() {
+			return UI.Column(
+				UI.Button("Button").onClick(() => {
+					handlerCalled = true;
+					return true; // stop propagation
+				}),
+			);
+		}
+		onButtonClicked() {
+			clicked++;
+		}
+	}
+	app.addActivity(new MyActivity(), true);
+	await clickOutputAsync({ text: "Button" });
+	expect(handlerCalled).toBe(true);
+	expect(clicked).toBe(0);
 });
 
 test("Button navigation with navigateTo", async () => {

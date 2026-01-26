@@ -163,19 +163,21 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 				ModalMenu.ItemRow()
 					.accessibleRole("menuitem")
 					.allowKeyboardFocus()
-					.handleKey("ArrowDown", (_: any, self: UIColumn) =>
+					.onKey("ArrowDown", (_: any, self: UIColumn) =>
 						self.requestFocusNext(),
 					)
-					.handleKey("ArrowUp", (_: any, self: UIColumn) =>
+					.onKey("ArrowUp", (_: any, self: UIColumn) =>
 						self.requestFocusPrevious(),
 					)
-					.handleKey("Enter", "Click")
-					.handleKey("Spacebar", "Click")
+					.onKey("Enter", "Click")
+					.onKey("Spacebar", "Click")
 					.onRelease((_: any, self: UIColumn) => {
 						if (Date.now() - shown < 200) return;
 						self.emit("Select", item);
 					})
-					.onClick((_: any, self: UIColumn) => self.emit("Select", item))
+					.onClick((_: any, self: UIColumn) => {
+						self.emit("Select", item);
+					})
 					.with(content),
 			);
 		}
@@ -188,7 +190,7 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 				shown = Date.now();
 				this._fixPosition();
 			})
-			.handle("Select", (e) => this._resolve?.(e.data.value))
+			.on("Select", (e) => this._resolve?.(e.data.value))
 			.with(...texts)
 			.build();
 	}

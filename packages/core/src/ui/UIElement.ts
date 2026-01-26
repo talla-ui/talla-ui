@@ -8,12 +8,7 @@ import {
 	ViewBuilderFunction,
 } from "../app/index.js";
 import { err, ERROR } from "../errors.js";
-import {
-	BindingOrValue,
-	isBinding,
-	ObservableEvent,
-	ObservableObject,
-} from "../object/index.js";
+import { BindingOrValue, isBinding, ObservableEvent } from "../object/index.js";
 import { RenderEffect } from "./RenderEffect.js";
 import { StyleOverrides, UIColor } from "./style/index.js";
 
@@ -212,8 +207,7 @@ export namespace UIElement {
 	export abstract class ElementBuilder<
 		TView extends UIElement,
 		TStyleName extends string = string,
-	> implements ViewBuilder<TView>
-	{
+	> implements ViewBuilder<TView> {
 		/** The initializer instance that handles the actual view configuration. */
 		abstract readonly initializer: ViewBuilder.Initializer<TView>;
 
@@ -754,162 +748,155 @@ export namespace UIElement {
 
 		/**
 		 * Adds an event handler to all instances of the UI element.
-		 * - Intercepts events on all instances of the UI element, including events propagated from nested views.
-		 * - Uses {@link ObservableObject.intercept()} to intercept events.
-		 * - If a handler needs to re-emit the original event, call {@link ObservableObject.emit()} with `noIntercept` set to true.
+		 * - Listens for events on all instances of the UI element, including events propagated from nested views.
+		 * - Multiple handlers can be added.
+		 * - String handlers emit a transformed event; the original is still emitted on the view but does not propagate to parents.
+		 * - Function handlers can return `true` or call `event.stopPropagation()` to stop propagation.
 		 * @param eventName The name of the event to handle.
-		 * @param handle The function to call, or name of the event to emit instead.
+		 * @param handler The function to call, or name of the transformed event to emit.
 		 * @returns The builder instance for chaining.
 		 */
-		handle(
+		on(
 			eventName: string,
-			handle: string | ViewBuilderEventHandler<TView, any>,
+			handler: string | ViewBuilderEventHandler<TView, any>,
 		) {
-			this.initializer.handle(eventName, handle);
+			this.initializer.on(eventName, handler);
 			return this;
 		}
 
 		/**
 		 * Adds an event handler for `KeyDown` events with the specified key name.
 		 * - Key names are case sensitive (e.g. "Enter", "Escape", "ArrowUp", "Backspace").
-		 * - Adds an event listener rather than intercepting, to avoid conflicts with other handlers.
 		 * @param key The name of the key to handle.
-		 * @param handle The function to call, or name of an event to emit.
+		 * @param handler The function to call, or name of an event to emit.
 		 * @returns The builder instance for chaining.
 		 */
-		handleKey(key: string, handle: string | ViewBuilderEventHandler<TView>) {
-			if (!this._keyHandlers) {
-				this._keyHandlers = {};
-				this.initializer.finalize((view) => {
-					view.listen((e) => {
-						if (e.name !== "KeyDown") return;
-						let handler = this._keyHandlers![e.data.key as string];
-						if (typeof handler === "string") view.emit(handler, e.data);
-						else if (handler) handler(e as any, view);
-					});
-				});
-			}
-			this._keyHandlers![key] = handle;
-			return this;
+		onKey(key: string, handler: string | ViewBuilderEventHandler<TView>) {
+			return this.on("KeyDown", (e, view) => {
+				if (e.data.key === key) {
+					if (typeof handler === "string") view.emit(handler, e.data);
+					else return handler(e as any, view);
+				}
+			});
 		}
 
 		/**
 		 * Handles the `Click` event.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link ElementBuilder.handle}
+		 * @see {@link ElementBuilder.on}
 		 */
 		onClick(handle: string | ViewBuilderEventHandler<TView>) {
-			return this.handle("Click", handle);
+			return this.on("Click", handle);
 		}
 
 		/**
 		 * Handles the `DoubleClick` event.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link ElementBuilder.handle}
+		 * @see {@link ElementBuilder.on}
 		 */
 		onDoubleClick(handle: string | ViewBuilderEventHandler<TView>) {
-			return this.handle("DoubleClick", handle);
+			return this.on("DoubleClick", handle);
 		}
 
 		/**
 		 * Handles the `ContextMenu` event.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link ElementBuilder.handle}
+		 * @see {@link ElementBuilder.on}
 		 */
 		onContextMenu(handle: string | ViewBuilderEventHandler<TView>) {
-			return this.handle("ContextMenu", handle);
+			return this.on("ContextMenu", handle);
 		}
 
 		/**
 		 * Handles the `Press` event.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link ElementBuilder.handle}
+		 * @see {@link ElementBuilder.on}
 		 */
 		onPress(handle: string | ViewBuilderEventHandler<TView>) {
-			return this.handle("Press", handle);
+			return this.on("Press", handle);
 		}
 
 		/**
 		 * Handles the `Release` event.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link ElementBuilder.handle}
+		 * @see {@link ElementBuilder.on}
 		 */
 		onRelease(handle: string | ViewBuilderEventHandler<TView>) {
-			return this.handle("Release", handle);
+			return this.on("Release", handle);
 		}
 
 		/**
 		 * Handles the `KeyDown` event.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link ElementBuilder.handle}
+		 * @see {@link ElementBuilder.on}
 		 */
 		onKeyDown(
 			handle: string | ViewBuilderEventHandler<TView, { key: string }>,
 		) {
-			return this.handle("KeyDown", handle);
+			return this.on("KeyDown", handle);
 		}
 
 		/**
 		 * Handles the `KeyUp` event.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link ElementBuilder.handle}
+		 * @see {@link ElementBuilder.on}
 		 */
 		onKeyUp(handle: string | ViewBuilderEventHandler<TView, { key: string }>) {
-			return this.handle("KeyUp", handle);
+			return this.on("KeyUp", handle);
 		}
 
 		/**
 		 * Handles the `FocusIn` event.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link ElementBuilder.handle}
+		 * @see {@link ElementBuilder.on}
 		 */
 		onFocusIn(handle: string | ViewBuilderEventHandler<TView>) {
-			return this.handle("FocusIn", handle);
+			return this.on("FocusIn", handle);
 		}
 
 		/**
 		 * Handles the `FocusOut` event.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link ElementBuilder.handle}
+		 * @see {@link ElementBuilder.on}
 		 */
 		onFocusOut(handle: string | ViewBuilderEventHandler<TView>) {
-			return this.handle("FocusOut", handle);
+			return this.on("FocusOut", handle);
 		}
 
 		/**
 		 * Handles the `Change` event.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link ElementBuilder.handle}
+		 * @see {@link ElementBuilder.on}
 		 */
 		onChange(handle: string | ViewBuilderEventHandler<TView>) {
-			return this.handle("Change", handle);
+			return this.on("Change", handle);
 		}
 
 		/**
 		 * Handles the `Input` event.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link ElementBuilder.handle}
+		 * @see {@link ElementBuilder.on}
 		 */
 		onInput(handle: string | ViewBuilderEventHandler<TView>) {
-			return this.handle("Input", handle);
+			return this.on("Input", handle);
 		}
 
 		/**
 		 * Handles the `BeforeRender` event, emitted before the element is rendered for the first time.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link ElementBuilder.handle}
+		 * @see {@link ElementBuilder.on}
 		 */
 		onBeforeRender(handle: string | ViewBuilderEventHandler<TView>) {
-			return this.handle("BeforeRender", handle);
+			return this.on("BeforeRender", handle);
 		}
 
 		/**
 		 * Handles the `Rendered` event, emitted when the element has been rendered.
 		 * @param handle The function to call, or name of the event to emit instead.
-		 * @see {@link ElementBuilder.handle}
+		 * @see {@link ElementBuilder.on}
 		 */
 		onRendered(handle: string | ViewBuilderEventHandler<TView>) {
-			return this.handle("Rendered", handle);
+			return this.on("Rendered", handle);
 		}
 
 		// --- helper functions
@@ -960,10 +947,5 @@ export namespace UIElement {
 
 		/** @internal Combined style overrides to be applied once on finalization. */
 		private _styleOverrides?: StyleOverrides;
-
-		/** @internal Key handlers, if interceptor has been added. */
-		private _keyHandlers?: {
-			[key: string]: string | ViewBuilderEventHandler<TView>;
-		};
 	}
 }

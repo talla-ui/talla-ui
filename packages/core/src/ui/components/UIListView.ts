@@ -458,6 +458,7 @@ export namespace UIListView {
 			// instantiate the body view (and shortcut event handling here)
 			Object.defineProperty(this, "body", {
 				value: this.attach(body.build(), (event) => {
+					if (event.noPropagation) return;
 					this.emit(
 						new ObservableEvent(
 							event.name,
@@ -537,16 +538,17 @@ export namespace UIListView {
 
 		/**
 		 * Handles events from all list item views
-		 * - This method can be used to handle events before they're propagated from list item views to the list view itself.
+		 * - This method can be used to handle events before they're propagated from list item views to the list view itself. It works in the same manner as {@link UIElement.ElementBuilder.on()} for UI elements.
 		 * @param eventName The name of the event to handle
-		 * @param handle The function to call, or name of the event to emit instead
+		 * @param handler The function to call, or name of the event to emit instead
 		 * @returns The builder instance for chaining.
+		 * @see {@link UIElement.ElementBuilder.on}
 		 */
-		handle(
+		on(
 			eventName: string,
-			handle: string | ViewBuilderEventHandler<UIListView>,
+			handler: string | ViewBuilderEventHandler<UIListView>,
 		) {
-			this.initializer.handle(eventName, handle);
+			this.initializer.on(eventName, handler);
 			return this;
 		}
 
@@ -634,10 +636,11 @@ export namespace UIListView {
 		/**
 		 * Handles the `ListItemsChange` event
 		 * @param handle The function to call, or name of the event to emit instead
-		 * @see {@link UIElement.ElementBuilder.handle()}
+		 * @see {@link on}
 		 */
-		onListItemsChange(handle: string | ViewBuilderEventHandler<UIListView>) {
-			return this.handle("ListItemsChange", handle);
+		onListItemsChange(handler: string | ViewBuilderEventHandler<UIListView>) {
+			this.initializer.on("ListItemsChange", handler);
+			return this;
 		}
 
 		/**

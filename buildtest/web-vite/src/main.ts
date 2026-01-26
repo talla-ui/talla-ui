@@ -111,8 +111,8 @@ function MyTitle(text?: StringConvertible) {
 		.padding({ bottom: 8 })
 		.allowKeyboardFocus()
 		.onClick("Select")
-		.handleKey("Enter", "Select")
-		.handle("Select", async function (_, view) {
+		.onKey("Enter", "Select")
+		.on("Select", async function (_, view) {
 			view.text = "Confirming...";
 			let choice = await app.showConfirmDialogAsync([
 				"Are you sure you want to click this button?",
@@ -188,8 +188,8 @@ function ButtonSwitch(options: ButtonSwitchOption[]) {
 			this.initializer.observeFormState(formState, formField, "value");
 			return this;
 		},
-		onChange(handle: string | ViewBuilderEventHandler<ButtonSwitchWidget>) {
-			this.initializer.handle("Change", handle);
+		onChange(handler: string | ViewBuilderEventHandler<ButtonSwitchWidget>) {
+			this.initializer.on("Change", handler);
 			return this;
 		},
 		button(fn: ViewBuilderFunction<UIButton.ButtonBuilder>) {

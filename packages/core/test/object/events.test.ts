@@ -59,52 +59,41 @@ describe("Emitting events", () => {
 		expect(count).toBe(2);
 	});
 
-	test("Event intercept", () => {
-		let count = 0;
-		let c = new TestObject();
-		ObservableObject.intercept(c, "Testing", (event, self) => {
-			try {
-				count++;
-				expect(event).toBeInstanceOf(ObservableEvent);
-				expect(self).toBe(c);
-				let newEvent = new ObservableEvent("Intercepted", c);
-				self.emit(newEvent);
-			} catch (err) {
-				expect.fail(String(err));
+	test("stopPropagation() prevents delegation", () => {
+		class Parent extends ObservableObject {
+			delegated = 0;
+			child = this.attach(new TestObject(), { delegate: this });
+			delegate(event: ObservableEvent) {
+				this.delegated++;
+			}
+		}
+		let parent = new Parent();
+		parent.child.listen((event) => {
+			if (event.name === "Stopped") {
+				event.stopPropagation();
 			}
 		});
-		c.listen((event: any) => {
-			try {
-				expect(event).toBeInstanceOf(ObservableEvent);
-				expect(event).toHaveProperty("name", "Intercepted");
-			} catch (err) {
-				expect.fail(String(err));
-			}
-		});
-		c.emit("Testing");
-		c.emit("Testing");
-		expect(count).toBe(2);
+		parent.child.emit("Stopped");
+		parent.child.emit("NotStopped");
+		expect(parent.delegated).toBe(1);
 	});
 
-	test("Intercept accepts only one handler", () => {
-		let c = new TestObject();
-		let handled = 0;
-		let listened = 0;
-		ObservableObject.intercept(c, "Testing", (event) => {
-			handled = 1;
-			c.emit(event, true);
-		});
-		ObservableObject.intercept(c, "Testing", (event) => {
-			handled = 2;
-			c.emit(event, true);
-		});
-		c.listen((event) => {
-			expect(event).toHaveProperty("name", "Testing");
-			expect(handled).toBe(2);
-			listened++;
-		});
-		c.emit("Testing");
-		expect(listened).toBe(1);
+	test("noPropagation getter reflects stopPropagation() call", () => {
+		let event = new ObservableEvent("Test", new TestObject());
+		expect(event.noPropagation).toBe(false);
+		event.stopPropagation();
+		expect(event.noPropagation).toBe(true);
+	});
+
+	test("noPropagation constructor parameter", () => {
+		let event = new ObservableEvent(
+			"Test",
+			new TestObject(),
+			undefined,
+			undefined,
+			true,
+		);
+		expect(event.noPropagation).toBe(true);
 	});
 
 	test("Error handling", () => {

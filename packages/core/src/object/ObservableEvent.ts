@@ -3,6 +3,10 @@ import type { ObservableObject } from "./ObservableObject.js";
 // Reuse the same frozen object for events without data
 const NO_DATA = Object.freeze({});
 
+// WeakMaps for tracking propagation state without mutating frozen events
+const _noPropagationInit = new WeakMap<ObservableEvent, true>();
+const _stoppedPropagation = new WeakMap<ObservableEvent, true>();
+
 /**
  * An object that represents an event, to be emitted on an {@link ObservableObject}
  *
@@ -78,7 +82,7 @@ export class ObservableEvent<
 		this.source = source;
 		this.data = data || (NO_DATA as TData);
 		this.inner = inner;
-		this.noPropagation = noPropagation;
+		if (noPropagation) _noPropagationInit.set(this, true);
 		Object.freeze(this);
 	}
 
@@ -93,6 +97,21 @@ export class ObservableEvent<
 	readonly data: Readonly<TData>;
 	/** The original event, if the event was propagated */
 	readonly inner?: ObservableEvent;
-	/** True if the event should not be propagated (by observable lists, activities, views, etc.) */
-	readonly noPropagation?: boolean;
+
+	/**
+	 * True if propagation is stopped (via constructor OR stopPropagation())
+	 * - Check this property in event handlers that re-emit events to parent objects.
+	 */
+	get noPropagation(): boolean {
+		return _noPropagationInit.has(this) || _stoppedPropagation.has(this);
+	}
+
+	/**
+	 * Stops propagation of this event to parent objects
+	 * - Call this method in an event handler to prevent the event from being re-emitted on parent objects.
+	 * - Must be called before any `await` in async handlers, since propagation is checked synchronously.
+	 */
+	stopPropagation(): void {
+		_stoppedPropagation.set(this, true);
+	}
 }

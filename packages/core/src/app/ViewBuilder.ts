@@ -3,7 +3,6 @@ import {
 	BindingOrValue,
 	isBinding,
 	ObservableEvent,
-	ObservableObject,
 } from "../object/index.js";
 import type { FormState } from "./FormState.js";
 import type { View } from "./View.js";
@@ -12,7 +11,7 @@ import type { View } from "./View.js";
  * An interface for objects that build pre-configured view instances
  *
  * @description
- * Classes that extend this type (such as {@link UIButton.ButtonBuilder}) typically provide a fluent interface for creating and configuring views. They use a {@link ViewBuilder.Initializer} to configure the initialization logic, including property setting, binding, event interception, and initialization callbacks (e.g. for adding content to container views), and expose this functionality using methods on the builder class.
+ * Classes that extend this type (such as {@link UIButton.ButtonBuilder}) typically provide a fluent interface for creating and configuring views. They use a {@link ViewBuilder.Initializer} to configure the initialization logic, including property setting, binding, event handling, and initialization callbacks (e.g. for adding content to container views), and expose this functionality using methods on the builder class.
  *
  * @see {@link Widget.builder}
  */
@@ -146,26 +145,36 @@ export namespace ViewBuilder {
 		}
 
 		/**
-		 * Intercepts events with the specified name on all view instances
+		 * Adds an event listener for the specified event name
 		 *
 		 * @description
-		 * This method intercepts events with the specified name on all view instances, and calls the provided function when the event would be emitted. The function is called with the event and the view instance itself as arguments.
+		 * This method adds a listener for events with the specified name on all view instances. Multiple listeners can be added for the same event.
 		 *
-		 * If a string is provided instead, a new event with that name is emitted, replacing the original event. The new event may be intercepted by another handler on the same view, and retains the original event data.
+		 * If a string is provided, a transformed event with that name is emitted. The original event is still emitted on the view (other listeners on the same view will see it), but it does not propagate to parent objects — only the transformed event does. The new event includes the original event data and references the original event via the `inner` property.
 		 *
-		 * The handler function may re-emit the original event as well as any other events. To avoid an endless loop, the function should only emit events with the same name (including the original event) with the `noIntercept` parameter set to true in the call to {@link ObservableObject.emit()}.
+		 * If a function is provided, it will be called with the event and the view instance. The function can return `true` or call `event.stopPropagation()` to stop the event from propagating to parent objects.
 		 *
-		 * @param eventName The name of the event to intercept
-		 * @param handle The function to call, or name of the event to emit instead
-		 *
-		 * @see {@link ObservableObject.intercept}
+		 * @param eventName The name of the event to listen for
+		 * @param handle The function to call, or name of the transformed event to emit
 		 */
-		handle(
+		on(
 			eventName: string,
 			handle: string | ViewBuilderEventHandler<TView, any>,
 		) {
 			this._final.push((view) => {
-				ObservableObject.intercept(view, eventName, handle as any);
+				view.listen((event) => {
+					if (event.name !== eventName) return;
+					if (typeof handle === "string") {
+						// emit transformed event, original does not propagate
+						event.stopPropagation();
+						view.emit(new ObservableEvent(handle, view, event.data, event));
+					} else {
+						// call handler, check return value
+						if (handle(event as any, view) === true) {
+							event.stopPropagation();
+						}
+					}
+				});
 			});
 		}
 
@@ -197,8 +206,9 @@ export type ViewBuilderFunction<TResult extends ViewBuilder, TArg = TResult> = (
 /**
  * A type of event handler that can be added by a view builder
  * @note The view that the handler listens to (passed as a second argument) may not be the event source, since an event may have originated from within the view hierarchy.
+ * @note The handler can return `true` or call `event.stopPropagation()` to stop the event from propagating to parent objects.
  */
 export type ViewBuilderEventHandler<TView extends View = View, TData = {}> = (
 	event: ObservableEvent<View, Record<string, unknown> & TData>,
 	view: TView,
-) => void;
+) => boolean | void | Promise<void>;
