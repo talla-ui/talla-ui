@@ -47,15 +47,6 @@ test("Write message using multiple args", () => {
 	app.log.information("Hello", "world");
 });
 
-test("Dump data using multiple args", () => {
-	let a = { a: 1 };
-	let b = { b: 2 };
-	app.log.addHandler(0, (data) => {
-		expect(data.data).toEqual([a, b]);
-	});
-	app.log.dump(a, b);
-});
-
 test("Write message using fmt, named property", () => {
 	app.log.addHandler(0, (data) => {
 		expect(data.message).toBe("Hello, world!");

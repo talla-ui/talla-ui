@@ -65,16 +65,6 @@ export class LogWriter {
 	}
 
 	/**
-	 * Writes a log message with severity 'debug' (1) and the specified data
-	 * @example
-	 * // Write an object as a debug message
-	 * app.log.dump(userData);
-	 */
-	dump(...data: unknown[]) {
-		this._write(1, "=", ...data);
-	}
-
-	/**
 	 * Writes a log message with severity 'information' (2)
 	 * - The specified message may be a string, a {@link DeferredString} (the result of {@link fmt()}), an Error instance, or any other value that can be converted to a string.
 	 * - For {@link DeferredString} and {@link AppException} messages, placeholder values are included in the message data so that they can be stored separately in a structured log.
@@ -162,12 +152,14 @@ export class LogWriter {
 
 	/** Private implementation to emit a log message event, or write to the console */
 	private _write(level: number, ...data: unknown[]) {
-		let obj = makeEventData(level, ...data);
 		if (this._default) {
 			if (level >= 4) console.error(...data);
 			else console.log(...data);
 		}
-		for (let s of this._sink) s(obj);
+		if (this._sink.length) {
+			let obj = makeEventData(level, ...data);
+			for (let s of this._sink) s(obj);
+		}
 	}
 
 	/** A list of log sink handlers, if any */

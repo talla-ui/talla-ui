@@ -45,7 +45,7 @@ export class AppContext extends ObservableObject {
 	 * Sets a global unhandled error handler
 	 * - This method _replaces_ the current handler, if any, and is not cleared by {@link AppContext.clear()}.
 	 * - The default error handler logs all errors using {@link LogWriter.error()} (i.e. `app.log.error(...)`). Consider using a log sink instead of changing this behavior — refer to {@link LogWriter.addHandler}.
-	 * - In a test handler context, the global error handler is overridden to catch all unhandled errors during tests.
+	 * - In a test handler context, the global error handler may be overridden to re-throw errors during tests.
 	 * @param f A handler function, which should accept a single error argument (with `unknown` type)
 	 */
 	static setErrorHandler(f: (err: unknown) => void) {
@@ -64,6 +64,10 @@ export class AppContext extends ObservableObject {
 
 		// Link up deferred string i18n provider
 		DeferredString.setI18nInterface(this.i18n);
+
+		// Set default error handler to use LogWriter
+		setErrorHandler((err) => this.log.error(err));
+		DeferredString.setErrorHandler((err) => this.log.error(err));
 	}
 
 	/** @internal A reference to the application context itself */

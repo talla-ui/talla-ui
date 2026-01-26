@@ -33,11 +33,13 @@ export function useTestContext(
 	let options = new TestContextOptions();
 	config?.(options);
 
-	// set error handler
-	AppContext.setErrorHandler((e) => {
-		app.log.error(e);
-		if (options.throwUncaughtErrors) throw e;
-	});
+	// set error handler to re-throw if configured (logging is handled by core)
+	if (options.throwUncaughtErrors) {
+		AppContext.setErrorHandler((e) => {
+			app.log.error(e);
+			throw e;
+		});
+	}
 
 	// clear the current app properties first
 	app.clear();
