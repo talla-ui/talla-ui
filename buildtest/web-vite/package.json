@@ -9,6 +9,7 @@
 	},
 	"devDependencies": {
 		"talla-ui": "../../",
+		"@talla-ui/hmr": "../../packages/hmr",
 		"@talla-ui/web-handler": "../../packages/web-handler",
 		"@talla-ui/test-handler": "../../packages/test-handler",
 		"typescript": "^5.4.5",

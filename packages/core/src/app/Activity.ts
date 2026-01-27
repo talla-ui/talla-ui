@@ -30,9 +30,6 @@ const _AbortController: typeof AbortController =
 		? AbortController
 		: (_AbortControllerStub as any);
 
-/** Global list of activity instances for (old) activity class, for HMR */
-const _hotInstances = new WeakMap<typeof Activity, Set<Activity>>();
-
 /** A cache of activity view builders, by function */
 const _viewBuilders = new WeakMap<Function, ViewBuilder>();
 
@@ -64,47 +61,6 @@ const $_activity = Symbol("activity");
  * app.addActivity(new MyActivity(), true);
  */
 export class Activity extends ObservableObject {
-	/** @internal Update prototype for given class with newer prototype, and rebuild view */
-	static _$hotReload(
-		Old: undefined | typeof Activity,
-		Updated: typeof Activity,
-	) {
-		// add new set of instances for the (updated) activity
-		_hotInstances.set(Updated, (Updated.prototype._hotInstances = new Set()));
-
-		// update old class, if any
-		if (Old) {
-			// check if need to recurse for previous versions
-			if (Object.prototype.hasOwnProperty.call(Old.prototype, "_OrigClass")) {
-				this._$hotReload(Old.prototype._OrigClass, Updated);
-			}
-
-			// run async to allow module to complete if needed
-			safeCall(async () => {
-				await Promise.resolve();
-
-				// update prototype with new properties (methods)
-				let desc = Object.getOwnPropertyDescriptors(Updated.prototype) as any;
-				for (let p in desc) Object.defineProperty(Old.prototype, p, desc[p]);
-
-				// update view function on old class to create new views
-				Old.View = Updated.View;
-
-				// keep a reference to the old class to be able to recurse next time
-				Updated.prototype._OrigClass = Old;
-				if (Updated.prototype instanceof Activity) {
-					let instances = _hotInstances.get(Old);
-					if (instances) {
-						for (let activity of instances) {
-							if (activity.isUnlinked() || !activity._active) continue;
-							activity._showView(true);
-						}
-					}
-				}
-			});
-		}
-	}
-
 	/**
 	 * Returns a view builder for the activity's view, to be set for each activity class
 	 * - The function is called with a binding that refers to the activity instance, when the view is created.
@@ -188,18 +144,17 @@ export class Activity extends ObservableObject {
 		this._active = true;
 		this.emitChange("Active");
 
+		// HMR tracking, using hidden Set that's initialized in dev mode only
+		if (this._$hotInstances && !this._$isHot) {
+			this._$isHot = true;
+			this._$hotInstances.add(this);
+			this.listen({ unlinked: () => this._$hotInstances!.delete(this) });
+		}
+
 		// create view and run handler asynchronously, to allow processing or redirection
 		let signal = this._abortController.signal;
 		AppContext.getInstance().schedule(async () => {
 			if (signal.aborted) return;
-
-			// HMR tracking (async to allow hotReload setup to complete first)
-			if (this._hotInstances && !this._isHot) {
-				this._isHot = true;
-				this._hotInstances.add(this);
-				this.listen({ unlinked: () => this._hotInstances!.delete(this) });
-			}
-
 			this._showView();
 			try {
 				await this.afterActive(signal);
@@ -435,12 +390,9 @@ export class Activity extends ObservableObject {
 	/** @internal True if the view should be rendered within a dialog */
 	private _renderDialog?: boolean;
 
-	/** @internal Original class that's been updated using hot reload (set on prototype) */
-	declare private _OrigClass?: typeof Activity;
-
-	/** @internal Set of instances, if hot reload has been enabled for this activity (set on prototype) */
-	declare private _hotInstances?: Set<Activity>;
+	/** @internal Set of instances, if hot reload has been enabled for this activity (set on prototype by external HMR) */
+	declare private _$hotInstances?: Set<Activity>;
 
 	/** @internal Set to true if a listener was added to remove this instance from the hot-reloaded list */
-	private _isHot?: boolean;
+	private _$isHot?: boolean;
 }

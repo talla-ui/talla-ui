@@ -1,0 +1,64 @@
+{
+	"name": "@talla-ui/hmr",
+	"version": "4.0.0-dev.105",
+	"publishConfig": {
+		"tag": "next",
+		"access": "public"
+	},
+	"description": "Tälla UI framework: hot module replacement",
+	"author": "Jelmer Cormont",
+	"license": "MIT",
+	"homepage": "https://talla-ui.com",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/talla-ui/talla-ui"
+	},
+	"type": "module",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": "./dist/index.js",
+		"./vite": "./dist/vite.js"
+	},
+	"sideEffects": false,
+	"scripts": {
+		"clean": "rimraf dist",
+		"prebuild": "npm run clean",
+		"build": "tsc -p src",
+		"postbuild": "prettier --log-level error --write \"dist/**/*.d.ts\"",
+		"test": "vitest run --silent",
+		"check-format": "prettier -l \"{src,test}/**/*.ts\"",
+		"format": "prettier --write \"{src,test}/**/*.ts\""
+	},
+	"prettier": {
+		"useTabs": true,
+		"trailingComma": "all",
+		"endOfLine": "lf",
+		"plugins": [
+			"prettier-plugin-organize-imports"
+		]
+	},
+	"files": [
+		"dist"
+	],
+	"peerDependencies": {
+		"@talla-ui/core": "4.0.0-dev.105",
+		"vite": "^5.0.0 || ^6.0.0"
+	},
+	"peerDependenciesMeta": {
+		"vite": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"@talla-ui/core": "file:../core",
+		"@talla-ui/util": "file:../util",
+		"@types/node": "20",
+		"prettier": "^3.4.2",
+		"prettier-plugin-organize-imports": "^4.1.0",
+		"rimraf": "^6.0.1",
+		"typescript": "^5.6.3",
+		"vitest": "^3.0.3"
+	}
+}

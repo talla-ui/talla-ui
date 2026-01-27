@@ -61,7 +61,6 @@ export function setWebTheme(theme: WebTheme): void {
  * - Clears any existing context using {@link AppContext.clear()} before initialization.
  * - Applies a default theme automatically; use {@link setWebTheme()} in the callback to customize.
  * - Sets up automatic dark mode handling when the system color scheme changes.
- * - Enables hot module reload for activities when using a compatible bundler.
  *
  * Call this function once at application startup to configure the web handler. It can also
  * be called again to reset application state, for example after logging out the current user.
@@ -111,23 +110,6 @@ export function useWebContext(config?: (opts: WebContextOptions) => void) {
 	// Create navigation context
 	app.navigation?.unlink();
 	app.navigation = new WebNavigationContext(options);
-
-	// Enable hot module reload for activities
-	// handle is either module, module.hot, or import.meta.hot
-	app.hotReload = function (handle, ActivityClass) {
-		if (handle && handle.hot) handle = handle.hot;
-		if (
-			handle &&
-			typeof handle.accept === "function" &&
-			typeof handle.dispose === "function"
-		) {
-			handle.accept();
-			(ActivityClass as any)._$hotReload(handle.data?.activity, ActivityClass);
-			handle.dispose((data: any) => {
-				data.activity = ActivityClass;
-			});
-		}
-	};
 
 	// Return a reference to the app context
 	return app;

@@ -18,6 +18,7 @@ export default defineConfig({
 			"packages/core",
 			"packages/test-handler",
 			"packages/web-handler",
+			"packages/hmr",
 		],
 	},
 });

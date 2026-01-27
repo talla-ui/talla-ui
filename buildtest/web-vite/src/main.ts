@@ -204,7 +204,7 @@ function MainView(v: Binding<MainActivity>) {
 		.align("center")
 		.with(
 			UI.Spacer(32),
-			EffectsDemo(),
+			Collapsible("Effects demo", EffectsDemo()).width(500),
 			UI.Spacer(32),
 			MyTitle("Page title").width(400),
 			CardLayout("Card").with(
@@ -465,11 +465,6 @@ function MainView(v: Binding<MainActivity>) {
 }
 
 export class MainActivity extends Activity {
-	static {
-		import.meta.hot?.accept(); // for Vite
-		app.hotReload(import.meta, this);
-	}
-
 	static View = MainView;
 	viewDefined = new Date();
 

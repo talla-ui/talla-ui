@@ -295,21 +295,6 @@ export class AppContext extends ObservableObject {
 	}
 
 	/**
-	 * Adds a hot-reload handler for the provided module handle, to update instances of a particular activity
-	 * - Where supported, hot-reloading the provided module will update instances of the specified activity: updating methods (but not properties), and re-rendering its view.
-	 * - If hot-reloading isn't supported, e.g. if the application is compiled in production mode, this method does nothing.
-	 * @param handle The module that contains the activity to be hot-reloaded, or hot-reload handle (e.g. `import.meta.hot`, depending on build system)
-	 * @param ActivityClass The activity that should be updated and re-rendered
-	 */
-	hotReload(handle: any, ActivityClass: new (...args: any[]) => Activity) {
-		// if this method is not overridden (yet), try again after a while
-		let f = this.hotReload;
-		Promise.resolve().then(() => {
-			if (this.hotReload !== f) this.hotReload(handle, ActivityClass);
-		});
-	}
-
-	/**
 	 * Re-renders output, and relocates existing mounted view output if needed
 	 * - Use this method to force a full re-render of all output, e.g. when colors have been updated, or when the current locale/language changes after some views have already been rendered.
 	 */
