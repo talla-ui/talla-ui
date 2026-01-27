@@ -48,7 +48,7 @@ export async function expectNavAsync(expect: ExpectNavOptions) {
 			error.message += ", but location is " + app.navigation?.path;
 			throw error;
 		}
-		await new Promise((r) => setTimeout(r, 5));
+		await new Promise<void>((r) => app.schedule(r, 5));
 	}
 }
 

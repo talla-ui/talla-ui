@@ -11,6 +11,7 @@ import {
 	View,
 	ViewEvent,
 } from "@talla-ui/core";
+import { isMarkedForRemoval } from "../awaitRemove.js";
 import {
 	CLASS_COLUMN,
 	CLASS_ROW,
@@ -20,7 +21,6 @@ import {
 	CLASS_SEPARATOR_SPACER,
 } from "../defaults/css.js";
 import { applyStyles, getCSSLength } from "../DOMStyle.js";
-import { isMarkedForRemoval } from "../removeAnimation.js";
 import { BaseObserver } from "./BaseObserver.js";
 
 /** @internal */

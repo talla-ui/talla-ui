@@ -167,8 +167,9 @@ test("Unlink inserted view after rendering", async () => {
 	renderTestView(viewRenderer);
 	await expectOutputAsync({ text: "foo" });
 	viewRenderer.insert!.unlink();
+	await new Promise((r) => setTimeout(r, 0));
+	app.queue.run();
 	await app.queue.waitAsync();
-	await new Promise((resolve) => setTimeout(resolve, 50));
 	expect((app.renderer as TestRenderer).hasOutput()).toBeFalsy();
 });
 
@@ -176,7 +177,9 @@ test("Rendering self as inserted view fails silently", async () => {
 	let viewRenderer = new UIShowView();
 	viewRenderer.insert = viewRenderer;
 	renderTestView(viewRenderer);
-	await new Promise((resolve) => setTimeout(resolve, 20));
+	await new Promise((r) => setTimeout(r, 0));
+	app.queue.run();
+	await app.queue.waitAsync();
 	expect((app.renderer as TestRenderer).hasOutput()).toBeFalsy();
 });
 

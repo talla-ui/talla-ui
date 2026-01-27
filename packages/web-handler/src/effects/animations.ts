@@ -1,6 +1,6 @@
 import { RenderEffect } from "@talla-ui/core";
+import { markAnimateRemove } from "../awaitRemove.js";
 import { CLASS_FX_EXITING, CLASS_FX_PREFIX } from "../defaults/animations.js";
-import { markAnimateRemove } from "../removeAnimation.js";
 
 /** Helper function to register all effects for a specified name */
 function _registerEffect(name: string) {

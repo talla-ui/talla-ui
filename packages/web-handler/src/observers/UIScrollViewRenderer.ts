@@ -1,4 +1,4 @@
-import { ObservableEvent, UIScrollView } from "@talla-ui/core";
+import { app, ObservableEvent, UIScrollView } from "@talla-ui/core";
 import { UIContainerRenderer } from "./UIContainerRenderer.js";
 
 const EMIT_INTERVAL = 100;
@@ -25,9 +25,9 @@ export class UIScrollViewRenderer extends UIContainerRenderer<UIScrollView> {
 		let element = this.element;
 		let lastTop = scrollViewCache.get(this.observed!);
 		if (lastTop != null && element) {
-			setTimeout(() => {
+			app.schedule(() => {
 				element.scrollTop = lastTop;
-			}, 0);
+			});
 		}
 	}
 
@@ -68,9 +68,9 @@ export class UIScrollViewRenderer extends UIContainerRenderer<UIScrollView> {
 		let wentXStart: boolean | undefined;
 		let wentXEnd: boolean | undefined;
 		let checkAndEmit = () => {
-			let element = this.element!;
-			let scrollContainer = this.observed!;
-			if (!scrollContainer) return;
+			let element = this.element;
+			let scrollContainer = this.observed;
+			if (!element || !scrollContainer) return;
 			let tDiffSec = (Date.now() - lastT) / 1000;
 			let vertDist = element.scrollTop - lastTop;
 			let horzDist = Math.abs(element.scrollLeft) - lastLeft;
@@ -107,7 +107,7 @@ export class UIScrollViewRenderer extends UIContainerRenderer<UIScrollView> {
 				scrollContainer.emit("ScrollEnd", eventData);
 				pending = false;
 			} else {
-				setTimeout(checkAndEmit, EMIT_INTERVAL);
+				app.schedule(checkAndEmit, EMIT_INTERVAL);
 				pending = true;
 			}
 		};

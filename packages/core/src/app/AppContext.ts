@@ -143,9 +143,10 @@ export class AppContext extends ObservableObject {
 	/**
 	 * Schedules a task on the global queue
 	 * @param f A function to execute
+	 * @param delay Optional delay in milliseconds before adding to queue
 	 */
-	schedule(f: () => void) {
-		this.queue.schedule(f);
+	schedule(f: () => void, delay?: number) {
+		this.queue.schedule(f, delay);
 		return this;
 	}
 

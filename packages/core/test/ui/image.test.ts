@@ -4,7 +4,7 @@ import {
 	useTestContext,
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
-import { UI, UIIconResource, UIImage } from "../../dist/index.js";
+import { app, UI, UIIconResource, UIImage } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
@@ -79,8 +79,14 @@ test("Image load event with URL source", async () => {
 	});
 	renderTestView(image);
 
-	// Wait for the simulated load event (renderer waits 10ms)
-	await new Promise((resolve) => setTimeout(resolve, 20));
+	// Wait for the simulated load event (renderer schedules after 10ms)
+	await new Promise((r) => setTimeout(r, 0));
+	app.queue.run();
+	await app.queue.waitAsync();
+	// Give a bit more time for the delayed scheduled event
+	await new Promise((r) => setTimeout(r, 15));
+	app.queue.run();
+	await app.queue.waitAsync();
 	expect(loadFired).toBe(true);
 });
 
@@ -94,7 +100,13 @@ test("Image load event with icon source", async () => {
 	});
 	renderTestView(image);
 
-	// Wait for the simulated load event (renderer waits 10ms)
-	await new Promise((resolve) => setTimeout(resolve, 20));
+	// Wait for the simulated load event (renderer schedules after 10ms)
+	await new Promise((r) => setTimeout(r, 0));
+	app.queue.run();
+	await app.queue.waitAsync();
+	// Give a bit more time for the delayed scheduled event
+	await new Promise((r) => setTimeout(r, 15));
+	app.queue.run();
+	await app.queue.waitAsync();
 	expect(loadFired).toBe(true);
 });

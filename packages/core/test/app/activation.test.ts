@@ -534,7 +534,9 @@ describe("Navigation guards (canDeactivateAsync)", () => {
 
 		// Try to navigate away - should be blocked, no events
 		app.navigation?.set("other");
-		await new Promise((r) => setTimeout(r, 50));
+		await app.queue.waitAsync();
+		await new Promise((r) => setTimeout(r, 10));
+		await app.queue.waitAsync();
 
 		// No new events should have been emitted
 		expect(matchEvents).toBe(initialMatchEvents);

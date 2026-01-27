@@ -1,4 +1,4 @@
-import { UIElement } from "@talla-ui/core";
+import { app, UIElement } from "@talla-ui/core";
 import type { BaseObserver } from "./BaseObserver.js";
 
 /** @internal Unique ID that's used as a property name for output references on DOM elements */
@@ -118,7 +118,7 @@ function detractFocus(this: HTMLElement, e: Event) {
 			!(pos & Node.DOCUMENT_POSITION_FOLLOWING)
 		) {
 			e.preventDefault();
-			setTimeout(() => {
+			app.schedule(() => {
 				let detractor = document.createElement("div");
 				detractor.tabIndex = -1;
 				lastFullElt.insertBefore(detractor, lastFullElt.firstChild);

@@ -32,7 +32,8 @@ export async function waitForRender(): Promise<void> {
 	// ...allow setTimeout(0) callbacks to run (used by CSS debouncing)
 	await new Promise((r) => setTimeout(r, 0));
 	await Promise.resolve();
-	// ..run pending queue tasks
+	// ..run pending queue tasks immediately (don't wait for RAF in jsdom)
+	app.queue.run();
 	await app.queue.waitAsync();
 	await Promise.resolve();
 }

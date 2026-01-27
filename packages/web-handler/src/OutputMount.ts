@@ -1,4 +1,5 @@
 import { app, RenderContext, UI, UIColor, View } from "@talla-ui/core";
+import { awaitRemove, isMarkedForRemoval } from "./awaitRemove.js";
 import {
 	CLASS_OVERLAY_SHADER,
 	CLASS_OVERLAY_WRAPPER,
@@ -6,7 +7,6 @@ import {
 	CLASS_PAGE_WRAPPER,
 } from "./defaults/css.js";
 import { registerHandlers } from "./observers/events.js";
-import { awaitRemoval, isMarkedForRemoval } from "./removeAnimation.js";
 import type { WebRenderer } from "./WebRenderer.js";
 
 /** Next unique ID */
@@ -79,7 +79,6 @@ export class OutputMount {
 
 		// darken shader after rendering, and focus
 		function setFocus() {
-			if (typeof document === "undefined") return;
 			if (!document.activeElement || document.activeElement === document.body) {
 				shader.focus();
 			} else {
@@ -87,14 +86,14 @@ export class OutputMount {
 				if (!(pos & Node.DOCUMENT_POSITION_CONTAINED_BY)) shader.focus();
 			}
 		}
-		setTimeout(() => {
+		app.schedule(() => {
 			shader.style.backgroundColor = String(shadeBackground);
 			if (isModal) {
 				setFocus();
-				setTimeout(setFocus, 10);
-				setTimeout(setFocus, 100);
+				app.schedule(setFocus, 10);
+				app.schedule(setFocus, 100);
 			}
-		}, 0);
+		});
 
 		// create a flex wrapper to contain content
 		let wrapper = (this._inner = document.createElement("div"));
@@ -115,7 +114,7 @@ export class OutputMount {
 			let prev = "";
 			let interval = 128;
 			const updateRect = () => {
-				if (typeof document === "undefined" || !this._inner) return;
+				if (!this._inner) return;
 				let rect = refElt!.getBoundingClientRect();
 				let scr = shader.getBoundingClientRect();
 				let styles = [
@@ -138,7 +137,7 @@ export class OutputMount {
 				}
 				if (changed) interval = 16;
 				else if (interval < 256) interval <<= 1;
-				setTimeout(updateRect, interval);
+				app.schedule(updateRect, interval);
 			};
 			updateRect();
 		}
@@ -234,8 +233,9 @@ export class OutputMount {
 
 		// start fading out the shader early, in parallel with exit animation
 		if (this._shader) {
-			setTimeout(() => {
-				if (this._shader) this._shader.style.background = "";
+			let shader = this._shader;
+			app.schedule(() => {
+				shader.style.background = "";
 			}, 60);
 		}
 
@@ -244,7 +244,7 @@ export class OutputMount {
 				// check if content element has an exit animation in progress
 				const contentEl = inner?.firstChild as HTMLElement | null;
 				if (contentEl && isMarkedForRemoval(contentEl)) {
-					awaitRemoval(contentEl)
+					awaitRemove(contentEl)
 						.then(() => this._finalizeRemove(startTime))
 						.then(resolve);
 					return;
@@ -287,11 +287,7 @@ export class OutputMount {
 		const remainingWait = this._shader ? Math.max(20, 260 - elapsed) : 20;
 
 		return new Promise((resolve) => {
-			setTimeout(() => {
-				if (typeof document === "undefined") {
-					resolve();
-					return;
-				}
+			app.schedule(() => {
 				this._outer!.remove();
 				this._updateTitle();
 				resolve();

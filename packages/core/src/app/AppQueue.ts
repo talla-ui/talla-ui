@@ -14,6 +14,7 @@ export class AppQueue {
 	private _tasks: (() => void)[] = [];
 	private _waiters: (() => void)[] = [];
 	private _timer?: ReturnType<typeof setTimeout>;
+	private _delayedTimers = new Set<ReturnType<typeof setTimeout>>();
 	private _delay = 0;
 	private _onSchedule?: () => void;
 
@@ -25,8 +26,17 @@ export class AppQueue {
 	/**
 	 * Adds a task to the queue
 	 * @param f The function to execute
+	 * @param delay Optional delay in milliseconds before adding to queue
 	 */
-	schedule(f: () => void) {
+	schedule(f: () => void, delay?: number) {
+		if (delay !== undefined) {
+			let timer = setTimeout(() => {
+				this._delayedTimers.delete(timer);
+				this.schedule(f);
+			}, delay);
+			this._delayedTimers.add(timer);
+			return;
+		}
 		let wasEmpty = this._tasks.length === 0;
 		this._tasks.push(f);
 		if (this._timer == null) {
@@ -91,6 +101,10 @@ export class AppQueue {
 	/** Clears all pending tasks and resets the timer */
 	clear() {
 		clearTimeout(this._timer);
+		for (let timer of this._delayedTimers) {
+			clearTimeout(timer);
+		}
+		this._delayedTimers.clear();
 		this._timer = undefined;
 		this._tasks = [];
 		this._waiters = [];

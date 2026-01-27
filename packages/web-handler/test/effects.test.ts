@@ -1,10 +1,10 @@
 import { app, RenderEffect, UI, View } from "@talla-ui/core";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import * as removeAnimation from "../dist/removeAnimation.js";
+import * as awaitRemoveJs from "../dist/awaitRemove.js";
 import { renderView, setupWebContext, waitForRender } from "./helpers.js";
 
-const { awaitRemoval, isMarkedForRemoval, markAnimateRemove } =
-	removeAnimation as any;
+const { awaitRemove, isMarkedForRemoval, markAnimateRemove } =
+	awaitRemoveJs as any;
 
 /** Tracker for test effect lifecycle calls */
 interface EffectTracker {
@@ -394,7 +394,7 @@ describe("Effects", () => {
 			expect(document.contains(el)).toBe(false);
 		});
 
-		test("awaitRemoval resolves immediately for unmarked elements", async () => {
+		test("awaitRemove resolves immediately for unmarked elements", async () => {
 			const col = UI.Column(UI.Text("Content")).name("unmarked").build();
 			await renderView(col);
 
@@ -406,14 +406,14 @@ describe("Effects", () => {
 
 			// Should resolve immediately
 			let resolved = false;
-			awaitRemoval(el).then(() => {
+			awaitRemove(el).then(() => {
 				resolved = true;
 			});
 			await Promise.resolve();
 			expect(resolved).toBe(true);
 		});
 
-		test("awaitRemoval resolves after animation completes", async () => {
+		test("awaitRemove resolves after animation completes", async () => {
 			const show = UI.Show(
 				UI.Column(UI.Text("Content")).name("await-col").effect("fade"),
 			).build();
@@ -431,9 +431,9 @@ describe("Effects", () => {
 
 			expect(isMarkedForRemoval(el)).toBe(true);
 
-			// awaitRemoval should not resolve yet
+			// awaitRemove should not resolve yet
 			let resolved = false;
-			awaitRemoval(el).then(() => {
+			awaitRemove(el).then(() => {
 				resolved = true;
 			});
 			await Promise.resolve();
@@ -476,8 +476,9 @@ describe("Effects", () => {
 			// Element should be removed
 			expect(document.contains(el)).toBe(false);
 
-			// Wait for mount cleanup (has 20ms delay)
+			// Wait for mount cleanup (has 20ms delay, then queue processes)
 			await new Promise((r) => setTimeout(r, 50));
+			await waitForRender();
 			expect(document.contains(mount)).toBe(false);
 		});
 	});

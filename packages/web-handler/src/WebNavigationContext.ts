@@ -74,7 +74,7 @@ export class WebNavigationContext extends NavigationContext {
 			window.history.back();
 			if (target) {
 				// after going back, navigate to given path
-				await new Promise((r) => setTimeout(r, 1));
+				await new Promise<void>((r) => app.schedule(r, 1));
 				return this.navigateAsync(target, { ...mode, back: false });
 			}
 			return;

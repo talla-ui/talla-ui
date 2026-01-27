@@ -119,7 +119,7 @@ export class TestRenderer extends RenderContext {
 			if (!element.hasFocus() && element === this._elementToFocus) {
 				element.focus();
 				if (loop++ < 2) {
-					setTimeout(tryFocus, 1);
+					app.schedule(tryFocus, 1);
 				}
 			}
 		};
@@ -242,7 +242,7 @@ export class TestRenderer extends RenderContext {
 				if (timeout && Date.now() > startT + timeout) {
 					return reject(timeoutError);
 				}
-				setTimeout(poll, 1);
+				app.schedule(poll, 1);
 			};
 			poll();
 		});

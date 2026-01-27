@@ -141,7 +141,7 @@ describe("Navigation paths", () => {
 describe("Rendering views", () => {
 	afterEach(async () => {
 		app.clear();
-		await new Promise((r) => setTimeout(r, 1));
+		await app.queue.waitAsync();
 	});
 
 	test("Column view from single instance", async () => {
@@ -179,7 +179,8 @@ describe("Rendering views", () => {
 		AppContext.setErrorHandler(mockErrorHandler);
 		renderTestView(view);
 		await clickOutputAsync({ source: view.findViewContent(UIColumn)[0]! });
-		await new Promise((r) => setTimeout(r, 50));
+		await new Promise((r) => setTimeout(r, 10));
+		await app.queue.waitAsync();
 		expect(mockErrorHandler).toHaveBeenCalled();
 	});
 

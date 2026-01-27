@@ -1,4 +1,4 @@
-import { NavigationContext } from "@talla-ui/core";
+import { app, NavigationContext } from "@talla-ui/core";
 import { StringConvertible } from "@talla-ui/util";
 import { TestContextOptions } from "./TestContextOptions.js";
 
@@ -111,7 +111,7 @@ export class TestNavigationContext extends NavigationContext {
 	}
 
 	private async _simulateDelay() {
-		await new Promise((r) => setTimeout(r, this._delay));
+		await new Promise<void>((r) => app.schedule(r, this._delay));
 	}
 
 	private _delay: number;

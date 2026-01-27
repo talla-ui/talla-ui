@@ -280,7 +280,7 @@ function _tryFocusElement(element?: HTMLElement | null) {
 		if (focused !== element && element === _elementToFocus) {
 			element.focus();
 			if (loop++ < 3) {
-				setTimeout(tryFocus, Math.pow(10, loop));
+				app.schedule(tryFocus, Math.pow(10, loop));
 			}
 		}
 	};

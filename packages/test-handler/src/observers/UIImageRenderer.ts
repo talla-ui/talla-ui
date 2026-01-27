@@ -1,4 +1,4 @@
-import { RenderContext, UIIconResource, UIImage } from "@talla-ui/core";
+import { app, RenderContext, UIIconResource, UIImage } from "@talla-ui/core";
 import { TestOutputElement } from "../TestOutputElement.js";
 import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 
@@ -43,7 +43,7 @@ export class UIImageRenderer extends TestBaseObserver<UIImage> {
 
 		// simulate load event
 		if (this.observed.source) {
-			setTimeout(() => {
+			app.schedule(() => {
 				this.observed.emit("Load");
 			}, 10);
 		}

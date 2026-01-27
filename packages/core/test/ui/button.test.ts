@@ -133,7 +133,9 @@ test("Disabled button does not emit click event", async () => {
 	});
 	renderTestView(btn);
 	await clickOutputAsync({ type: "button" });
-	await new Promise((r) => setTimeout(r, 20));
+	await new Promise((r) => setTimeout(r, 0));
+	app.queue.run();
+	await app.queue.waitAsync();
 	expect(hasEmitted).toBe(false);
 });
 

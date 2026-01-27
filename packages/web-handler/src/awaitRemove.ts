@@ -1,3 +1,5 @@
+import { app } from "@talla-ui/core";
+
 /** Timeout for all animations */
 const FALLBACK_TIMEOUT = 2000;
 
@@ -40,7 +42,7 @@ export function markAnimateRemove(element: HTMLElement) {
 		};
 		element.addEventListener("animationend", done);
 		element.addEventListener("transitionend", done);
-		setTimeout(done, FALLBACK_TIMEOUT);
+		app.schedule(done, FALLBACK_TIMEOUT);
 	});
 	promise.then(remove);
 	pendingRemovals.set(element, promise);
@@ -55,7 +57,7 @@ export function isMarkedForRemoval(element: HTMLElement): boolean {
  * @internal Returns a promise that resolves when the element's exit animation completes.
  * - If the element is not marked for removal, resolves immediately.
  */
-export function awaitRemoval(element: HTMLElement): Promise<void> {
+export function awaitRemove(element: HTMLElement): Promise<void> {
 	const promise = pendingRemovals.get(element);
 	return promise || Promise.resolve();
 }

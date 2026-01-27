@@ -68,6 +68,10 @@ export class WebRenderer extends RenderContext {
 
 	/** Clears all output from the DOM */
 	clear() {
+		if (this._raf) {
+			window.cancelAnimationFrame(this._raf);
+			this._raf = undefined;
+		}
 		for (let mount of this._mounts.values()) {
 			mount.remove();
 		}

@@ -66,13 +66,18 @@ export class WebViewport extends ObservableObject implements Viewport {
 		if (_handlerAdded) return;
 		_handlerAdded = true;
 		function update() {
+			if (typeof window === "undefined") return false;
 			if (app.viewport instanceof WebViewport) {
 				app.viewport._updateSize();
 			}
 			return false;
 		}
 		window.addEventListener("resize", update);
-		setInterval(update, 800);
+		const poll = () => {
+			update();
+			app.schedule(poll, 800);
+		};
+		app.schedule(poll, 800);
 		window
 			.matchMedia?.("(prefers-color-scheme: dark)")
 			?.addEventListener("change", () => {

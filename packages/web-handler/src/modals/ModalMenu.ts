@@ -286,7 +286,6 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 		// after rendering the menu, check that it fits on the screen
 		// (vertically), and move it up or down if needed
 		function checkFit() {
-			if (typeof document === "undefined") return;
 			let menuBounds = elt.getBoundingClientRect();
 			if (menuBounds.top < 0) {
 				elt.style.bottom = "auto";
@@ -302,7 +301,7 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 			// now that animation is completed, make shader scrollable again
 			modalShader.style.overflow = "auto";
 		}
-		setTimeout(checkFit, 250);
+		app.schedule(checkFit, 250);
 	}
 
 	private _keyBuffer?: string;
