@@ -26,15 +26,6 @@ export function makeDefaultStyles() {
 		lineBreakMode: "nowrap",
 		minWidth: "6.5rem",
 		shrink: 1,
-		"+hover": {
-			background: colors.text.alpha(0.1),
-		},
-		"+focus": {
-			background: colors.text.alpha(0.1),
-		},
-		"+pressed": {
-			background: colors.text.alpha(0.2),
-		},
 		"+disabled": {
 			opacity: 0.5,
 			cursor: "default",
@@ -50,23 +41,21 @@ export function makeDefaultStyles() {
 		borderWidth: 0,
 		lineHeight: 1,
 		fontSize: 0,
+		"+disabled": {
+			opacity: 0.5,
+			cursor: "default",
+		},
 	};
 
 	result.button = {
-		default: defaultButtonStyles,
+		default: {
+			...defaultButtonStyles,
+			css: { "--button-state-opacity": "0.05" } as {},
+		},
 		accent: {
 			...defaultButtonStyles,
 			background: colors.accent,
 			textColor: colors.accent.text(),
-			"+hover": {
-				background: colors.accent.contrast(-0.1, 0.2),
-			},
-			"+focus": {
-				background: colors.accent.contrast(-0.1, 0.2),
-			},
-			"+pressed": {
-				background: colors.accent.contrast(-0.2, 0.2),
-			},
 			"+disabled": {
 				opacity: 0.5,
 				cursor: "default",
@@ -76,15 +65,6 @@ export function makeDefaultStyles() {
 			...defaultButtonStyles,
 			background: colors.success,
 			textColor: colors.success.text(),
-			"+hover": {
-				background: colors.success.brighten(-0.1),
-			},
-			"+focus": {
-				background: colors.success.brighten(-0.1),
-			},
-			"+pressed": {
-				background: colors.success.brighten(-0.2),
-			},
 			"+disabled": {
 				opacity: 0.5,
 				cursor: "default",
@@ -94,6 +74,7 @@ export function makeDefaultStyles() {
 			...defaultButtonStyles,
 			background: colors.danger.alpha(0.15),
 			textColor: colors.danger,
+			css: { "--button-state-opacity": "0" } as {},
 			"+hover": {
 				background: colors.danger,
 				textColor: colors.danger.text(),
@@ -115,15 +96,7 @@ export function makeDefaultStyles() {
 			...defaultButtonStyles,
 			minWidth: 0,
 			background: "transparent",
-			"+hover": {
-				background: colors.text.alpha(0.1),
-			},
-			"+focus": {
-				background: colors.text.alpha(0.1),
-			},
-			"+pressed": {
-				background: colors.text.alpha(0.2),
-			},
+			css: { "--button-state-opacity": "0.05" } as {},
 			"+disabled": {
 				opacity: 0.5,
 				cursor: "default",
@@ -135,15 +108,7 @@ export function makeDefaultStyles() {
 			padding: "0.25rem",
 			borderRadius: 0,
 			background: "transparent",
-			"+hover": {
-				background: "transparent",
-			},
-			"+focus": {
-				background: "transparent",
-			},
-			"+pressed": {
-				background: "transparent",
-			},
+			css: { "--button-state-opacity": "0" } as {},
 			"+disabled": {
 				opacity: 0.5,
 				cursor: "default",
@@ -156,15 +121,6 @@ export function makeDefaultStyles() {
 			textColor: colors.link,
 			background: "transparent",
 			cursor: "pointer",
-			"+hover": {
-				background: colors.link.alpha(0.1),
-			},
-			"+focus": {
-				background: colors.link.alpha(0.1),
-			},
-			"+pressed": {
-				background: colors.link.alpha(0.2),
-			},
 			"+disabled": {
 				opacity: 0.5,
 				cursor: "default",
@@ -176,61 +132,21 @@ export function makeDefaultStyles() {
 			padding: "0.125rem 0.375rem",
 			minWidth: "5rem",
 		},
-		icon: {
-			...iconButtonStyles,
-			"+hover": {
-				background: colors.text.alpha(0.1),
-			},
-			"+focus": {
-				background: colors.text.alpha(0.1),
-			},
-			"+pressed": {
-				background: colors.text.alpha(0.2),
-			},
-			"+disabled": {
-				opacity: 0.5,
-				cursor: "default",
-			},
-		},
+		icon: iconButtonStyles,
 		accentIcon: {
 			...iconButtonStyles,
 			background: colors.accent,
 			textColor: colors.accent.text(),
-			"+hover": {
-				background: colors.accent.contrast(-0.1),
-			},
-			"+focus": {
-				background: colors.accent.contrast(-0.1),
-			},
-			"+pressed": {
-				background: colors.accent.contrast(-0.2),
-			},
-			"+disabled": {
-				opacity: 0.5,
-				cursor: "default",
-			},
 		},
 		successIcon: {
 			...iconButtonStyles,
 			background: colors.success,
 			textColor: colors.success.text(),
-			"+hover": {
-				background: colors.success.brighten(-0.1),
-			},
-			"+focus": {
-				background: colors.success.brighten(-0.1),
-			},
-			"+pressed": {
-				background: colors.success.brighten(-0.2),
-			},
-			"+disabled": {
-				opacity: 0.5,
-				cursor: "default",
-			},
 		},
 		dangerIcon: {
 			...iconButtonStyles,
 			textColor: colors.danger,
+			css: { "--button-state-opacity": "0" } as {},
 			"+hover": {
 				background: colors.danger,
 				textColor: colors.danger.text(),
@@ -249,7 +165,7 @@ export function makeDefaultStyles() {
 			},
 		},
 		iconTop: {
-			...iconButtonStyles,
+			...defaultButtonStyles,
 			padding: "1rem 0.75rem 0.25rem",
 			css: {
 				display: "flex",
@@ -260,7 +176,7 @@ export function makeDefaultStyles() {
 			},
 		},
 		iconTopStart: {
-			...iconButtonStyles,
+			...defaultButtonStyles,
 			padding: "1rem 0.75rem 0.25rem",
 			css: {
 				display: "flex",
@@ -271,7 +187,7 @@ export function makeDefaultStyles() {
 			},
 		},
 		iconTopEnd: {
-			...iconButtonStyles,
+			...defaultButtonStyles,
 			padding: "1rem 0.75rem 0.25rem",
 			css: {
 				display: "flex",

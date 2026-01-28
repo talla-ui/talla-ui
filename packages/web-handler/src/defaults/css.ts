@@ -113,8 +113,31 @@ export function makeBaseCSS(): Record<string, {}> {
 		[`button.${CLASS_UI},a.${CLASS_UI}`]: {
 			position: "relative",
 			overflow: "hidden",
-			transition: "background 0.1s ease-in-out",
 		},
+
+		// State layer pseudo-element for button hover/focus/pressed feedback
+		[`button.${CLASS_UI}::after,a.${CLASS_UI}::after`]: {
+			content: "''",
+			position: "absolute",
+			inset: "0",
+			borderRadius: "inherit",
+			background: "var(--button-state-color,currentColor)",
+			opacity: "0",
+			pointerEvents: "none",
+			transition: "opacity 0.1s ease-in-out",
+		},
+		[`button.${CLASS_UI}:hover:not([disabled])::after,a.${CLASS_UI}:hover:not([disabled])::after`]:
+			{
+				opacity: "var(--button-state-opacity,0.1)",
+			},
+		[`button.${CLASS_UI}:focus:not([disabled])::after,a.${CLASS_UI}:focus:not([disabled])::after`]:
+			{
+				opacity: "var(--button-state-opacity,0.1)",
+			},
+		[`button.${CLASS_UI}:active:not([disabled])::after,a.${CLASS_UI}:active:not([disabled])::after,button.${CLASS_UI}[aria-pressed=true]:not([disabled])::after,a.${CLASS_UI}[aria-pressed=true]:not([disabled])::after`]:
+			{
+				opacity: "calc(var(--button-state-opacity,0.1) * 1.5)",
+			},
 		[`.${CLASS_UI} icon`]: {
 			display: "inline-flex",
 			alignItems: "center",

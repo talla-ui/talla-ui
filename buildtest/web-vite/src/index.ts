@@ -24,11 +24,12 @@ setWebTheme(
 		})
 		// Custom button style for toggle/switch buttons (extends default)
 		.customStyle("button", "default", "toggleButton", {
-			borderRadius: "0.5rem",
+			borderRadius: 4,
 			minWidth: "0",
 			"+pressed": {
 				background: UI.colors.accent,
 				textColor: UI.colors.accent.text(),
+				css: { "--button-state-opacity": "0" } as {},
 			},
 		}),
 );
