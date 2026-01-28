@@ -277,26 +277,31 @@ export class Activity extends ObservableObject {
 			view = newView;
 		}
 
-		// assert that view makes sense
-		if (view[$_origin] !== this) {
-			throw err(ERROR.View_NotAttached);
-		}
-		let renderer = AppContext.getInstance().renderer;
-		if (!renderer) throw err(ERROR.Render_Unavailable);
+		// schedule rendering (allows afterActive to set render options)
+		AppContext.getInstance().schedule(() => {
+			if (!this._active || this.view !== view) return;
 
-		// render view using modal dialog controller if needed
-		let renderOptions = this._renderOptions;
-		if (this._renderDialog) {
-			let controller = renderer.modalFactory.buildDialog?.(view);
-			if (!controller) throw err(ERROR.Render_Unavailable);
-			controller.show(renderOptions);
-			return this;
-		}
+			// assert that view makes sense
+			if (view![$_origin] !== this) {
+				throw err(ERROR.View_NotAttached);
+			}
+			let renderer = AppContext.getInstance().renderer;
+			if (!renderer) throw err(ERROR.Render_Unavailable);
 
-		// render view normally if placed
-		if (renderOptions.mode !== "none") {
-			renderer.render(view, renderOptions);
-		}
+			// render view using modal dialog controller if needed
+			let renderOptions = this._renderOptions;
+			if (this._renderDialog) {
+				let controller = renderer.modalFactory.buildDialog?.(view!);
+				if (!controller) throw err(ERROR.Render_Unavailable);
+				controller.show(renderOptions);
+				return;
+			}
+
+			// render view normally if placed
+			if (renderOptions.mode !== "none") {
+				renderer.render(view!, renderOptions);
+			}
+		});
 		return this;
 	}
 

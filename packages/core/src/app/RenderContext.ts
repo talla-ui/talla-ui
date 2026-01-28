@@ -6,6 +6,9 @@ import { AppContext } from "./AppContext.js";
 import { ModalFactory } from "./ModalFactory.js";
 import { View } from "./View.js";
 
+/** A map of views to their corresponding view controllers */
+const _viewControllers = new WeakMap<View, RenderContext.ViewController>();
+
 /**
  * An abstract class that supports global view rendering, part of the global application context
  * - This class is implemented by a platform renderer, e.g. to render UI elements to the browser DOM, or in-memory (for testing). Most of these methods should not be used directly by an application.
@@ -33,16 +36,17 @@ export abstract class RenderContext extends ObservableObject {
 	/**
 	 * Renders a view as root, until the view object is unlinked
 	 * - This method is available as {@link AppContext.render app.render()}, which should typically be used instead.
+	 * - If the same view is rendered again, the previous render is removed first.
 	 * @param view The view object to render
 	 * @param place Global rendering placement options
 	 * @returns A {@link RenderContext.ViewController} object that can be used to manage the rendered view
 	 */
 	render(view: View, place?: RenderContext.PlacementOptions) {
-		return new RenderContext.ViewController(this).render(
-			view,
-			this.getRenderCallback(),
-			place,
-		);
+		_viewControllers.get(view)?.removeAsync();
+		let vc = new RenderContext.ViewController(this);
+		_viewControllers.set(view, vc);
+		vc.render(view, this.getRenderCallback(), place);
+		return vc;
 	}
 }
 
