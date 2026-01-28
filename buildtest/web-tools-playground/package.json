@@ -1,0 +1,17 @@
+{
+	"name": "web-tools-playground",
+	"version": "0.0.0",
+	"description": "A playground for testing web-tools",
+	"type": "module",
+	"scripts": {
+		"start": "vite --host"
+	},
+	"devDependencies": {
+		"talla-ui": "../../",
+		"@talla-ui/hmr": "../../packages/hmr",
+		"@talla-ui/web-handler": "../../packages/web-handler",
+		"@talla-ui/web-tools": "../../packages/web-tools",
+		"typescript": "^5.4.5",
+		"vite": "^6.0.7"
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noUncheckedIndexedAccess": true,
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"target": "ES6",
+		"noEmit": true,
+		"isolatedModules": true,
+		"moduleDetection": "force",
+		"lib": ["dom", "esnext"],
+		"skipLibCheck": true,
+		"types": ["vite/client"]
+	}
+}
