@@ -33,7 +33,9 @@ export class OutputMount {
 
 		// For page mode (scroll=true), create a wrapper to unpin height
 		if (scroll) {
-			let wrapper = (this._inner = document.createElement("div"));
+			let wrapper = (this._inner = document.createElement(
+				"web-handler-page-wrapper",
+			));
 			wrapper.className = CLASS_PAGE_WRAPPER;
 			elt.appendChild(wrapper);
 		} else {
@@ -96,7 +98,9 @@ export class OutputMount {
 		});
 
 		// create a flex wrapper to contain content
-		let wrapper = (this._inner = document.createElement("div"));
+		let wrapper = (this._inner = document.createElement(
+			"web-handler-overlay-wrapper",
+		));
 		let culture = app.i18n.getCulture();
 		wrapper.className = CLASS_OVERLAY_WRAPPER;
 		wrapper.dir = culture.textDirection || "ltr";
@@ -300,7 +304,9 @@ export class OutputMount {
 		if (this._lastElementId || !this._outer) return;
 		let hasOverride = !!(
 			override?.top ||
+			override?.bottom ||
 			override?.left ||
+			override?.right ||
 			override?.width ||
 			override?.height
 		);
