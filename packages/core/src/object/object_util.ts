@@ -637,7 +637,11 @@ class Bound {
 			// use new value to invoke binding or keep looking
 			if (last) {
 				// last part of path: watch for change events and invoke
-				if (typeof value === "object" && $_origin in value) {
+				if (
+					typeof value === "object" &&
+					$_origin in value &&
+					!(value as ObservableObject)[$_unlinked]
+				) {
 					self._trapChangeEvent(value, next, false);
 				}
 				self._invoke(value);
