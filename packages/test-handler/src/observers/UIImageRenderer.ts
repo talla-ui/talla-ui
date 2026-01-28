@@ -1,6 +1,6 @@
 import { app, RenderContext, UIIconResource, UIImage } from "@talla-ui/core";
 import { TestOutputElement } from "../TestOutputElement.js";
-import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
+import { applyElementStyle, TestBaseObserver } from "./TestBaseObserver.js";
 
 /** @internal */
 export class UIImageRenderer extends TestBaseObserver<UIImage> {

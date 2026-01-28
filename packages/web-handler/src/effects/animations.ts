@@ -33,9 +33,18 @@ function _registerEffect(name: string) {
 	let animIn = CLASS_FX_PREFIX + name + "-in";
 	let animOut = CLASS_FX_PREFIX + name + "-out";
 	for (let s of ["", "-slow"]) {
-		RenderEffect.register(name + s, makeEffect(animIn + s, animOut + s, animIn));
-		RenderEffect.register(name + "-in" + s, makeEffect(animIn + s, undefined, animIn));
-		RenderEffect.register(name + "-out" + s, makeEffect(undefined, animOut + s));
+		RenderEffect.register(
+			name + s,
+			makeEffect(animIn + s, animOut + s, animIn),
+		);
+		RenderEffect.register(
+			name + "-in" + s,
+			makeEffect(animIn + s, undefined, animIn),
+		);
+		RenderEffect.register(
+			name + "-out" + s,
+			makeEffect(undefined, animOut + s),
+		);
 	}
 }
 

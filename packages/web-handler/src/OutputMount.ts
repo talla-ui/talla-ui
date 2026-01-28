@@ -298,6 +298,17 @@ export class OutputMount {
 	/** Overrides the outer element location (if mounted as full page or overlay) */
 	setLocationOverride(override?: WebRenderer.ViewportLocation) {
 		if (this._lastElementId || !this._outer) return;
+		let hasOverride = !!(
+			override?.top ||
+			override?.left ||
+			override?.width ||
+			override?.height
+		);
+		if (hasOverride) {
+			this._outer.dataset.viewportOverride = "";
+		} else {
+			delete this._outer.dataset.viewportOverride;
+		}
 		this._outer.style.top = override?.top ? override.top + "px" : "";
 		this._outer.style.bottom = override?.bottom ? override.bottom + "px" : "";
 		this._outer.style.left = override?.left ? override.left + "px" : "";
