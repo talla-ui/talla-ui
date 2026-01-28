@@ -5,6 +5,7 @@ import {
 	RenderContext,
 	UI,
 	UIContainer,
+	View,
 	Widget,
 } from "@talla-ui/core";
 import { fmt, StringConvertible } from "@talla-ui/util";
@@ -118,6 +119,7 @@ export class MessageDialog
 	}
 
 	protected override get body() {
+		if (this._body) return this._body;
 		let messages = this.options.messages.map((text, i) =>
 			(i ? MessageDialog.MessageText : MessageDialog.FirstMessageText)().text(
 				text,
@@ -139,12 +141,14 @@ export class MessageDialog
 				MessageDialog.Button().text(this.cancelText).onClick("Cancel"),
 			);
 		}
-		return MessageDialog.Container()
+		this._body = MessageDialog.Container()
 			.effect(Dialog.dialogEffect)
 			.with(
 				MessageDialog.MessageContainer().with(...messages),
 				MessageDialog.ButtonContainer().with(...buttons),
 			)
 			.build();
+		return this._body;
 	}
+	private _body?: View;
 }

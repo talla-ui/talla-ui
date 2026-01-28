@@ -8,6 +8,7 @@ import {
 	UIContainer,
 	UIScrollView,
 	UIText,
+	View,
 	ViewBuilder,
 	ViewEvent,
 	Widget,
@@ -98,6 +99,7 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 	}
 
 	protected override get body() {
+		if (this._body) return this._body;
 		let shown = Date.now();
 
 		// Add blank icons to items in groups that have at least one icon
@@ -182,7 +184,7 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 			);
 		}
 
-		return ModalMenu.Container()
+		this._body = ModalMenu.Container()
 			.effect(ModalMenu.menuEffect)
 			.width(this.options.width || DEFAULT_WIDTH)
 			.minWidth(this.options.minWidth)
@@ -193,7 +195,9 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 			.on("Select", (e) => this._resolve?.(e.data.value))
 			.with(...texts)
 			.build();
+		return this._body;
 	}
+	private _body?: View;
 
 	onKeyDown(e: ViewEvent) {
 		let view = this.findViewContent(UIScrollView)[0]!;
