@@ -245,6 +245,8 @@ export class ObservableObject {
 	 * });
 	 */
 	listen(listener: ObservableObject.Listener<this>) {
+		if (this[$_unlinked]) throw err(ERROR.Object_Unlinked);
+
 		// add a single handler if provided
 		if (typeof listener === "function") {
 			addTrap(this, $_traps_event, safeCall.bind(undefined, listener as any));

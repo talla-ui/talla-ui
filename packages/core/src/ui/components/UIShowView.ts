@@ -165,6 +165,9 @@ export class UIShowView extends View {
 				parent = ObservableObject.whence(parent);
 			}
 			if (parent === view) view = undefined;
+
+			// check if the view is already unlinked
+			if (view?.isUnlinked()) view = undefined;
 		}
 
 		// stop observing the old inserted view, if any
