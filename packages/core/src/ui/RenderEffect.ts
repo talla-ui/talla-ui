@@ -27,7 +27,7 @@ export namespace RenderEffect {
 	/**
 	 * Type definition for a set of default effect names.
 	 * - Custom effects can be registered with any string name. This type definition is only included for convenience (autocomplete).
-	 * - Symmetric effects (fade-up, fade-down, etc.) reverse direction on exit. Enter-only effects (fade-up-in, etc.) animate only on enter, and exit-only effects (fade-up-out, etc.) animate only on exit.
+	 * - Symmetric effects (fade-top, fade-bottom, etc.) reverse direction on exit. Enter-only effects (fade-top-in, etc.) animate only on enter, and exit-only effects (fade-top-out, etc.) animate only on exit.
 	 * - Add `-slow` suffix for 2x duration (e.g., `fade-slow`, `fade-up-in-slow`).
 	 */
 	export type EffectName =
@@ -37,12 +37,12 @@ export namespace RenderEffect {
 		| "fade-out"
 		| "fade-slow"
 		// Fade + direction effects
-		| "fade-up"
-		| "fade-up-in"
-		| "fade-up-out"
-		| "fade-down"
-		| "fade-down-in"
-		| "fade-down-out"
+		| "fade-top"
+		| "fade-top-in"
+		| "fade-top-out"
+		| "fade-bottom"
+		| "fade-bottom-in"
+		| "fade-bottom-out"
 		| "fade-start"
 		| "fade-start-in"
 		| "fade-start-out"
@@ -58,8 +58,8 @@ export namespace RenderEffect {
 		| "pop-in"
 		| "pop-out"
 		// Slide effects (full slide, no fade)
-		| "slide-up"
-		| "slide-down"
+		| "slide-top"
+		| "slide-bottom"
 		| "slide-start"
 		| "slide-end"
 		// Blur effects
