@@ -210,7 +210,7 @@ export class Widget extends View {
 	 * A method that's called before the view is rendered, to be overridden if needed
 	 * - The default implementation emits a `BeforeRender` event. The event is never propagated because of the {@link ObservableEvent.noPropagation} flag.
 	 */
-	protected beforeRender() {
+	protected beforeRender(view: View) {
 		this.emit(
 			new ObservableEvent("BeforeRender", this, undefined, undefined, true),
 		);
@@ -222,8 +222,10 @@ export class Widget extends View {
 	 * - This method may be overridden to render custom platform-dependent content.
 	 */
 	render(callback: RenderContext.RenderCallback) {
-		let view = this.body;
-		if (!view || !(view instanceof View)) throw err(ERROR.View_Invalid);
+		let view = this._rendered || this.body;
+		if (!view || !(view instanceof View) || view.isUnlinked()) {
+			throw err(ERROR.View_Invalid);
+		}
 
 		// attach view body if needed
 		let origin = ObservableObject.whence(view);
@@ -231,7 +233,7 @@ export class Widget extends View {
 		else if (origin !== this) throw err(ERROR.View_NotAttached);
 
 		// invoke beforeRender if needed and render body
-		if (!this._rendered) this.beforeRender();
+		if (!this._rendered) this.beforeRender(view);
 		this._rendered = view;
 		view.render(callback);
 	}
