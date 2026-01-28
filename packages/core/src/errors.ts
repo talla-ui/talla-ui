@@ -50,7 +50,8 @@ export const enum ERROR {
 	Render_Unavailable,
 	View_Invalid,
 	View_NotAttached,
-	UIViewElement_NoRenderer,
+	RenderEffect_Invalid,
+	UIElement_NoRenderer,
 	UIList_Invalid,
 }
 
@@ -68,6 +69,7 @@ const messages = [
 	"No renderer available",
 	"Invalid body view type",
 	"View is not attached",
+	"Render effect not registered",
 	"No renderer for this UI element",
 	"Invalid list type",
 ] as const;

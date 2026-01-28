@@ -131,7 +131,7 @@ export abstract class UIElement extends View {
 	render(callback: RenderContext.RenderCallback) {
 		if (!this._renderer) {
 			let renderer = AppContext.getInstance().renderer?.createObserver(this);
-			if (!renderer) throw err(ERROR.UIViewElement_NoRenderer);
+			if (!renderer) throw err(ERROR.UIElement_NoRenderer);
 			this._renderer = renderer;
 			emitRendered(this, "BeforeRender");
 		}
@@ -723,15 +723,16 @@ export namespace UIElement {
 		 * - Effects do **not** handle showing and hiding elements using the {@link UIElement.hidden} property, only creation and removal by adding or removing elements from containers or {@link UIShowView}.
 		 * - Multiple effects can be chained (e.g., `.effect("fadeIn").effect("scaleOut")`).
 		 * @param name The name of the effect to apply.
+		 * @param optional True if the effect is optional, and missing effects should not be logged.
 		 * @returns The builder instance for chaining.
 		 *
 		 * @example
 		 * UI.Column(content).effect("fade")  // Fades in on render, fades out on removal
 		 * UI.Column(content).effect("fadeIn").effect("scaleOut")  // Different enter/exit effects
 		 */
-		effect(name?: RenderEffect.EffectName) {
+		effect(name?: RenderEffect.EffectName, optional?: boolean) {
 			if (!name) return this;
-			return this.apply(RenderEffect.create(name));
+			return this.apply(RenderEffect.create(name, optional));
 		}
 
 		// --- delayed initialization

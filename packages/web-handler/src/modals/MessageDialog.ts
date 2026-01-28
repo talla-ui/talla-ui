@@ -3,7 +3,6 @@ import {
 	MessageDialogOptions,
 	ModalFactory,
 	RenderContext,
-	RenderEffect,
 	UI,
 	UIContainer,
 	Widget,
@@ -28,7 +27,8 @@ export class MessageDialog
 		return UI.Column()
 			.padding({ top: 32, bottom: 24, x: 16 })
 			.gap(8)
-			.align("center");
+			.align("center")
+			.effect("drag-modal", true);
 	}
 
 	static ButtonContainer(): UIContainer.ContainerBuilder {
@@ -139,13 +139,12 @@ export class MessageDialog
 				MessageDialog.Button().text(this.cancelText).onClick("Cancel"),
 			);
 		}
-		let messageContainer = MessageDialog.MessageContainer().with(...messages);
-		if (RenderEffect.has("drag-modal")) {
-			messageContainer = messageContainer.effect("drag-modal");
-		}
 		return MessageDialog.Container()
 			.effect(Dialog.dialogEffect)
-			.with(messageContainer, MessageDialog.ButtonContainer().with(...buttons))
+			.with(
+				MessageDialog.MessageContainer().with(...messages),
+				MessageDialog.ButtonContainer().with(...buttons),
+			)
 			.build();
 	}
 }

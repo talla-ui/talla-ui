@@ -1,10 +1,13 @@
 import type { RenderContext, View, ViewBuilder } from "../app/index.js";
-import { safeCall } from "../errors.js";
+import { err, ERROR, errorHandler } from "../errors.js";
 import { ObservableEvent } from "../object/index.js";
 import type { UIElement } from "./UIElement.js";
 
 /** Registry of named effects */
 const _effects = new Map<string, RenderEffect>();
+
+/** Registry of effects for which an error was logged */
+const _errors = new Set<string>();
 
 /**
  * An interface for render effects that can be applied to UI elements.
@@ -103,19 +106,21 @@ export namespace RenderEffect {
 	 * - Prefer using {@link UIElement.ElementBuilder.effect} on a UI element builder instead.
 	 *
 	 * @param name The name of the effect to apply.
+	 * @param optional True if the effect is optional, and missing effects should not be logged.
 	 * @returns A function that can be passed to {@link UIElement.ElementBuilder.apply}.
 	 * @error This method throws an error if the effect has not been registered.
 	 */
 	export function create<
 		T extends ViewBuilder & { initializer: ViewBuilder.Initializer<any> },
-	>(name: EffectName): (builder: T) => T {
+	>(name: EffectName, optional?: boolean): (builder: T) => T {
 		return (builder) => {
 			builder.initializer.finalize((view: View) => {
 				const impl = _effects.get(name);
 				if (!impl) {
-					safeCall(() => {
-						throw Error(`Effect "${name}" not registered`);
-					});
+					if (!optional && !_errors.has(name)) {
+						errorHandler(err(ERROR.RenderEffect_Invalid, name));
+						_errors.add(name);
+					}
 					return;
 				}
 
