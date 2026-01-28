@@ -1,6 +1,9 @@
 import { app, RenderEffect } from "@talla-ui/core";
 import { CLASS_OVERLAY_WRAPPER } from "../defaults/css.js";
 
+// Check if browser supports the CSS `translate` property (separate from transform)
+const supportsTranslate = CSS.supports?.("translate", "0px") ?? false;
+
 // Debounce drag start by keeping track of the last start time
 let _dragStart = 0;
 
@@ -91,7 +94,11 @@ const dragModalEffect: RenderEffect<HTMLElement> = {
 				dragElt!.style.transition = "none";
 				let tX = (dragged.x = initial.x + diffX);
 				let tY = (dragged.y = initial.y + diffY);
-				dragElt!.style.transform = `translate(${tX}px, ${tY}px)`;
+				if (supportsTranslate) {
+					dragElt!.style.translate = `${tX}px ${tY}px`;
+				} else {
+					dragElt!.style.transform = `translateX(${tX}px) translateY(${tY}px)`;
+				}
 				moved = true;
 				e.preventDefault();
 				e.stopPropagation();

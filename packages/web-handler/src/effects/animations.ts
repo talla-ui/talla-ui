@@ -7,8 +7,20 @@ function _registerEffect(name: string) {
 	const makeEffect = (
 		inC?: string,
 		outC?: string,
+		animIn?: string,
 	): RenderEffect<HTMLElement> => ({
-		onElementCreated: inC ? (_, o) => o.element.classList.add(inC) : undefined,
+		onElementCreated: inC
+			? (_, o) => {
+					let el = o.element;
+					el.classList.add(inC);
+					let cleanup = (e: AnimationEvent) => {
+						if (e.animationName !== animIn) return;
+						el.classList.remove(inC);
+						el.removeEventListener("animationend", cleanup);
+					};
+					el.addEventListener("animationend", cleanup);
+				}
+			: undefined,
 		onUnlinked: (_, o) => {
 			let el = o.element;
 			if (inC) el.classList.remove(inC);
@@ -18,12 +30,12 @@ function _registerEffect(name: string) {
 			}
 		},
 	});
+	let animIn = CLASS_FX_PREFIX + name + "-in";
+	let animOut = CLASS_FX_PREFIX + name + "-out";
 	for (let s of ["", "-slow"]) {
-		let nameIn = CLASS_FX_PREFIX + name + "-in" + s;
-		let outC = CLASS_FX_PREFIX + name + "-out" + s;
-		RenderEffect.register(name + s, makeEffect(nameIn, outC));
-		RenderEffect.register(name + "-in" + s, makeEffect(nameIn));
-		RenderEffect.register(name + "-out" + s, makeEffect(undefined, outC));
+		RenderEffect.register(name + s, makeEffect(animIn + s, animOut + s, animIn));
+		RenderEffect.register(name + "-in" + s, makeEffect(animIn + s, undefined, animIn));
+		RenderEffect.register(name + "-out" + s, makeEffect(undefined, animOut + s));
 	}
 }
 
