@@ -111,7 +111,8 @@ const dragModalEffect: RenderEffect<HTMLElement> = {
 					_draggedElements.set(dragElt!, dragged);
 				}
 				_dragStart = 0;
-				removeAllListeners();
+				// defer cleanup so click event can still be captured after mouseup
+				setTimeout(removeAllListeners, 0);
 			}
 
 			window.addEventListener("touchmove", moveHandler, true);
