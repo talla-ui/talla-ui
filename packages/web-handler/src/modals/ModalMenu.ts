@@ -185,7 +185,7 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 		}
 
 		this._body = ModalMenu.Container()
-			.effect(ModalMenu.menuEffect)
+			.effect(ModalMenu.menuEffect, true)
 			.width(this.options.width || DEFAULT_WIDTH)
 			.minWidth(this.options.minWidth)
 			.onRendered(() => {
