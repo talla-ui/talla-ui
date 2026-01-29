@@ -26,11 +26,11 @@ export class WebContextOptions {
 
 	/**
 	 * The history insertion mode for direct navigation to pages or detail paths.
-	 * - Set to true or `"page"` to insert the page path into history when navigating directly to a detail path.
-	 * - Set to `"root"` to also insert the root path (`""`) into history.
-	 * - Allows users to navigate back to the page even if they opened a detail path directly.
+	 * - Setting the history insertion mode allows users to navigate back within the application even if they opened a sub path directly.
+	 * - Set to true or `"first"` to insert the first parth of the path into history when navigating directly to a longer path (e.g. `/first/second/third` inserts `/first`).
+	 * - Set to `"root"` to _also_ insert the root path into history (e.g. `/first/second/third` inserts `/` and then `/first`).
 	 */
-	insertHistory: boolean | "root" | "page" = false;
+	insertHistory: boolean | "root" | "first" = false;
 
 	/**
 	 * A list of URLs for external CSS files to import.
