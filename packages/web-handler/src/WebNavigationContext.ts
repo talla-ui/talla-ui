@@ -5,6 +5,20 @@ import { WebContextOptions } from "./WebContextOptions.js";
 /** Global flag for global (window) event listener, see constructor */
 let _eventListenerAdded = false;
 
+/** Timestamp of last direct navigation, used for scroll restoration logic */
+let _lastDirectNavTime = 0;
+
+/** Duration in ms to suppress scroll restoration after direct navigation */
+const DIRECT_NAV_WINDOW = 500;
+
+/**
+ * Returns true if scroll restoration should be skipped (recent direct navigation)
+ * @internal
+ */
+export function shouldSkipScrollRestore(): boolean {
+	return Date.now() - _lastDirectNavTime < DIRECT_NAV_WINDOW;
+}
+
 /**
  * A class that manages the application navigation path using DOM methods
  * - This class is created automatically by {@link useWebContext()}. You shouldn't need to interact with it directly.
@@ -39,6 +53,7 @@ export class WebNavigationContext extends NavigationContext {
 		// set event listener for back/forward navigation
 		if (!_eventListenerAdded) {
 			window.addEventListener(useHistoryAPI ? "popstate" : "hashchange", () => {
+				_lastDirectNavTime = 0; // clear to allow scroll restoration
 				if (!this.isUnlinked()) this.update();
 			});
 			_eventListenerAdded = true;
@@ -103,6 +118,7 @@ export class WebNavigationContext extends NavigationContext {
 			// push path on history stack
 			window.history.pushState({}, document.title, href);
 		}
+		_lastDirectNavTime = Date.now(); // mark direct navigation for scroll logic
 		this.update();
 	}
 

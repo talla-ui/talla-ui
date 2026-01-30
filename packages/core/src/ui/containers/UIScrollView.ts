@@ -25,6 +25,9 @@ export class UIScrollView extends UIContainer {
 	/** True if horizontal scrolling should be enabled if necessary, defaults to true */
 	horizontalScroll = true;
 
+	/** Key for persisting scroll position, to restore across navigation */
+	restoreScrollKey?: string;
+
 	/**
 	 * Scrolls to the specified pair of vertical and horizontal offset values
 	 * @note Positioning is platform dependent and may also change with text direction. Use only offset values taken from {@link UIScrollView.ScrollEventData}.
@@ -222,6 +225,16 @@ export namespace UIScrollView {
 		 */
 		horizontalScroll(horizontalScroll: BindingOrValue<boolean> = true) {
 			return this.setProperty("horizontalScroll", horizontalScroll);
+		}
+
+		/**
+		 * Enables scroll position restoration across navigation
+		 * - When set, the scroll position is saved by the platform handler on scroll and restored when the view is recreated, if possible.
+		 * @param key A unique key to identify this scroll view's position in storage, defaults to "page"
+		 * @returns The builder instance for chaining
+		 */
+		restoreScroll(key: BindingOrValue<string | undefined> = "page") {
+			return this.setProperty("restoreScrollKey", key);
 		}
 
 		/**
