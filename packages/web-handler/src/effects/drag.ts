@@ -2,7 +2,7 @@ import { app, RenderEffect } from "@talla-ui/core";
 import { CLASS_OVERLAY_WRAPPER } from "../defaults/css.js";
 
 // Check if browser supports the CSS `translate` property (separate from transform)
-const supportsTranslate = CSS.supports?.("translate", "0px") ?? false;
+const supportsTranslate = CSS?.supports?.("translate", "0px") ?? false;
 
 // Debounce drag start by keeping track of the last start time
 let _dragStart = 0;
