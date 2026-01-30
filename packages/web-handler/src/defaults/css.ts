@@ -175,7 +175,7 @@ export function makeBaseCSS(): Record<string, {}> {
 			flexDirection: "column",
 			cursor: "default",
 		},
-		["web-handler-page-root:only-of-type:not([data-viewport-override])"]: {
+		["web-handler-page-root[data-mode=page]:only-of-type:not([data-viewport-override])"]: {
 			position: "relative",
 			minHeight: "100vh",
 			top: "auto",

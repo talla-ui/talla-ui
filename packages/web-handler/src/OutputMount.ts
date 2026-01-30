@@ -29,6 +29,7 @@ export class OutputMount {
 		elt.ariaAtomic = "true";
 		elt.className = CLASS_PAGE_ROOT;
 		elt.dataset.title = title || "";
+		elt.dataset.mode = scroll ? "page" : "screen";
 		if (scroll) elt.style.overflow = "auto";
 
 		// For page mode (scroll=true), create a wrapper to unpin height
