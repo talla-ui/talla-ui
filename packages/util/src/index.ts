@@ -1,2 +1,2 @@
 export * from "./DeferredString.js";
-export * from "./InputValidator.js";
+export * from "./Schema.js";

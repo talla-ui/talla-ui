@@ -1,5 +1,5 @@
 import { expectOutputAsync, useTestContext } from "@talla-ui/test-handler";
-import { fmt, InputValidator } from "@talla-ui/util";
+import { fmt, Schema } from "@talla-ui/util";
 import { beforeEach } from "node:test";
 import { expect, test } from "vitest";
 import {
@@ -112,8 +112,8 @@ test("Validation", () => {
 	expect(counter.changes, "Change counter").toBe(6);
 });
 
-test("Validation using existing InputValidator", () => {
-	let validator = new InputValidator((b) =>
+test("Validation using existing Schema", () => {
+	let validator = new Schema((b) =>
 		b.object({
 			foo: b.string(),
 		}),

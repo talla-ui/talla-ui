@@ -1,4 +1,4 @@
-import { InputValidator, StringConvertible } from "@talla-ui/util";
+import { Schema, StringConvertible } from "@talla-ui/util";
 import { ObservableObject } from "../object/index.js";
 
 /**
@@ -9,7 +9,7 @@ import { ObservableObject } from "../object/index.js";
  *
  * The form state object provides methods to get, set, and clear field values, as well as a way to validate current values according to a schema or custom validation functions. Form values and validation errors can be bound to any other view properties to be displayed in the UI.
  *
- * Validation is performed using an {@link InputValidator} instance. Errors must be added as strings or {@link StringConvertible} values (e.g. the result of {@link fmt()}) using the `required()` or `error()` methods of each field in the schema.
+ * Validation is performed using a {@link Schema} instance. Errors must be added as strings or {@link StringConvertible} values (e.g. the result of {@link fmt()}) using the `required()` or `error()` methods of each field in the schema.
  *
  * To use a FormState object with {@link UITextField} or {@link UIToggle} input elements, use their `.formStateValue()` builder method.
  *
@@ -45,11 +45,11 @@ export class FormState<
 > extends ObservableObject {
 	/** Creates a new instance with the provided validation schema and/or values */
 	constructor(
-		fields?: InputValidator.Initializer<TSchema>,
+		fields?: Schema.Initializer<TSchema>,
 		values?: Partial<Record<keyof TSchema, unknown>>,
 	) {
 		super();
-		if (fields) this._validator = new InputValidator(fields);
+		if (fields) this._validator = new Schema(fields);
 		if (values) Object.assign(this._values, values);
 	}
 
@@ -133,12 +133,17 @@ export class FormState<
 		let validator = this._validator;
 		if (!validator) return;
 		let wasValid = this._valid;
-		let { data, errors } = validator.safeParse(this._values);
-		this._errors = errors || Object.create(null);
-		this._valid = !errors;
+		let result = validator.safeParse(this._values);
 		this._validated = true;
-		if (!wasValid || errors) this.emitChange();
-		if (data) return data;
+		if (result.success) {
+			this._errors = Object.create(null);
+			this._valid = true;
+			if (!wasValid) this.emitChange();
+			return result.data;
+		}
+		this._errors = result.errors || Object.create(null);
+		this._valid = false;
+		this.emitChange();
 	}
 
 	/**
@@ -154,12 +159,15 @@ export class FormState<
 		let fieldSchema = this._validator?.schema?.shape?.[name];
 		if (!fieldSchema) return value;
 
-		let validator = new InputValidator(() => fieldSchema);
+		let validator = new Schema(() => fieldSchema);
 		let result = validator.safeParse(value);
-		if (result.success) delete this._errors[name];
-		else this._errors[name] = result.error;
-		this._valid = !Object.keys(this._errors).length;
-		return result.data;
+		if (result.success) {
+			delete this._errors[name];
+			this._valid = !Object.keys(this._errors).length;
+			return result.data;
+		}
+		this._errors[name] = result.error;
+		this._valid = false;
 	}
 
 	/**
@@ -176,7 +184,7 @@ export class FormState<
 		return this;
 	}
 
-	private _validator?: InputValidator<any>;
+	private _validator?: Schema<Schema.Builder<TSchema>>;
 	private _validated = false;
 	private _immediate?: boolean;
 }
