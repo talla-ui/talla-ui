@@ -175,17 +175,19 @@ export function makeBaseCSS(): Record<string, {}> {
 			flexDirection: "column",
 			cursor: "default",
 		},
-		["web-handler-page-root[data-mode=page]:only-of-type:not([data-viewport-override])"]: {
-			position: "relative",
-			minHeight: "100vh",
-			top: "auto",
-			bottom: "auto",
-			left: "auto",
-			right: "auto",
-		},
-		[`web-handler-page-root:not([data-viewport-override]) .${CLASS_PAGE_WRAPPER}`]: {
-			minHeight: "100vh",
-		},
+		["web-handler-page-root[data-mode=page]:only-of-type:not([data-viewport-override])"]:
+			{
+				position: "relative",
+				minHeight: "100vh",
+				top: "auto",
+				bottom: "auto",
+				left: "auto",
+				right: "auto",
+			},
+		[`web-handler-page-root:not([data-viewport-override]) .${CLASS_PAGE_WRAPPER}`]:
+			{
+				minHeight: "100vh",
+			},
 		[`.${CLASS_PAGE_WRAPPER}`]: {
 			display: "flex",
 			flexDirection: "column",
