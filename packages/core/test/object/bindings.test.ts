@@ -607,6 +607,27 @@ describe("Mapped/boolean bindings", () => {
 		parent.child.expectValue().toBe(true);
 	});
 
+	test("Convert: and", () => {
+		let { parent } = setup();
+		parent.child.bindValue(new Binding("value1").and(new Binding("value2")));
+		parent.child.expectValue().toBe(2);
+		parent.value1 = 0;
+		parent.child.expectValue().toBe(0);
+		parent.value1 = 1;
+		parent.value2 = 0;
+		parent.child.expectValue().toBe(0);
+	});
+
+	test("Convert: or", () => {
+		let { parent } = setup();
+		parent.child.bindValue(new Binding("value1").or(new Binding("value2")));
+		parent.child.expectValue().toBe(1);
+		parent.value1 = 0;
+		parent.child.expectValue().toBe(2);
+		parent.value2 = 0;
+		parent.child.expectValue().toBe(0);
+	});
+
 	test("Convert: then", () => {
 		let { parent } = setup();
 		parent.child.bindValue(new Binding("value1").then(1, 2));

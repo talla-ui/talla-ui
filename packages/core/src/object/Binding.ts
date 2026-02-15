@@ -323,6 +323,26 @@ export class Binding<T = any> {
 	}
 
 	/**
+	 * Combines this binding with another using AND semantics
+	 * @summary Returns the last value if both are truthy, otherwise returns the first falsy value.
+	 * @param other Another binding to combine with
+	 * @returns A new binding with AND logic applied
+	 */
+	and(other: Binding): Binding<T> {
+		return Binding.all(this, other) as Binding<T>;
+	}
+
+	/**
+	 * Combines this binding with another using OR semantics
+	 * @summary Returns the first truthy value, or the last falsy value if neither is truthy.
+	 * @param other Another binding to combine with
+	 * @returns A new binding with OR logic applied
+	 */
+	or(other: Binding): Binding<T> {
+		return Binding.any(this, other) as Binding<T>;
+	}
+
+	/**
 	 * Transforms the bound value, using the provided function
 	 * @param f A function that maps the bound value to a new value
 	 * @returns A new binding, typed as the new value
