@@ -52,10 +52,11 @@ export class TestNavigationContext extends NavigationContext {
 			let currentPath = this._history[this._history.length - 1]!;
 			if (mode.replace === "prefix") {
 				let prefix = String(mode.prefix || "");
-				replaceMode = prefix.endsWith("/")
-					? currentPath.path.startsWith(prefix)
-					: currentPath.path.startsWith(prefix + "/") ||
-						currentPath.path === prefix;
+				// empty prefix matches any non-root path;
+				// other prefixes match the prefix itself and sub-paths
+				replaceMode = prefix
+					? currentPath.path.startsWith(prefix + "/")
+					: currentPath.path.length > 0;
 			}
 		}
 		if (replaceMode) {

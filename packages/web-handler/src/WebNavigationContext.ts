@@ -106,9 +106,11 @@ export class WebNavigationContext extends NavigationContext {
 			let currentPath = this._getPath();
 			if (mode.replace === "prefix") {
 				let prefix = String(mode.prefix || "");
-				replaceMode = prefix.endsWith("/")
-					? currentPath.startsWith(prefix)
-					: currentPath.startsWith(prefix + "/") || currentPath === prefix;
+				// empty prefix matches any non-root path;
+				// other prefixes match the prefix itself and sub-paths
+				replaceMode = prefix
+					? currentPath.startsWith(prefix + "/")
+					: currentPath.length > 0;
 			}
 		}
 		if (replaceMode) {

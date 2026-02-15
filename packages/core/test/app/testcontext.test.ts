@@ -117,24 +117,28 @@ describe("Navigation paths", () => {
 		).rejects.toThrowError(/exit/);
 	});
 
-	test("Navigation history: replace 'prefix' without slash", async () => {
+	test("Navigation history: replace 'prefix'", async () => {
 		let app = useTestContext();
 		let nav = app.navigation;
 		let R = { replace: "prefix", prefix: "foo" } as const;
-		await nav.navigateAsync("foo", R);
+		await nav.navigateAsync("foo", R); // from root, push
 		expect(nav.getHistory()).toEqual(["", "foo"]);
-		await nav.navigateAsync("foo/1", R);
-		expect(nav.getHistory()).toEqual(["", "foo/1"]);
+		await nav.navigateAsync("foo/1", R); // from prefix itself, push
+		expect(nav.getHistory()).toEqual(["", "foo", "foo/1"]);
+		await nav.navigateAsync("foo/2", R); // from sub-path, replace
+		expect(nav.getHistory()).toEqual(["", "foo", "foo/2"]);
 	});
 
-	test("Navigation history: replace 'prefix' with slash", async () => {
+	test("Navigation history: replace root prefix ''", async () => {
 		let app = useTestContext();
 		let nav = app.navigation;
-		let R = { replace: "prefix", prefix: "foo/" } as const;
-		await nav.navigateAsync("foo/", R); // slash will be stripped
-		expect(nav.getHistory()).toEqual(["", "foo"]);
-		await nav.navigateAsync("foo/1", R); // not replaced, foo itself doesn't match
-		expect(nav.getHistory()).toEqual(["", "foo", "foo/1"]);
+		let R = { replace: "prefix", prefix: "" } as const;
+		await nav.navigateAsync("a", R); // from root, push
+		expect(nav.getHistory()).toEqual(["", "a"]);
+		await nav.navigateAsync("b", R); // from non-root, replace
+		expect(nav.getHistory()).toEqual(["", "b"]);
+		await nav.navigateAsync("b/c", R); // from non-root, replace
+		expect(nav.getHistory()).toEqual(["", "b/c"]);
 	});
 });
 

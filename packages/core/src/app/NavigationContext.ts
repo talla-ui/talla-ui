@@ -105,7 +105,7 @@ export namespace NavigationContext {
 	 * - Set the `back` property to `true` to navigate back in history **before** navigating to the new path.
 	 * - Set the `replace` property to `true` to **replace** the current path if possible; afterwards, going back in history won't result in the current navigation path, but the one before it.
 	 * - Set both properties to `true` to navigate back first, and then replace the (previous) navigation path.
-	 * - Set the `replace` property to `"prefix"` to replace the current path _only_ if the current path matches the provided prefix. If the prefix ends with a slash, it matches if the current path starts with the prefix. If the prefix does not end with a slash, it matches both if the current path is equal to the prefix, and if the current path is a sub path of the prefix (i.e. `"foo"` matches both `"foo"` and `"foo/bar"`, but `"foo/"` matches only `"foo/bar"`, not `"foo"` itself). This can be used to implement a list-detail navigation pattern, or a tabbed navigation pattern.
+	 * - Set the `replace` property to `"prefix"` to replace the current path _only_ if the current path is a sub-path of the provided prefix (i.e. `"foo"` matches `"foo/bar"` and `"foo/bar/baz"`, but not `"foo"` itself or `"foobar"`). To match any non-root path (for root-level tabs or list-detail), set the prefix to an empty string. This can be used to implement a list-detail navigation pattern, or a tabbed navigation pattern.
 	 */
 	export type NavigationMode = {
 		back?: boolean;
