@@ -153,6 +153,19 @@ export class TestOutputElement {
 	}
 
 	/**
+	 * Simulates a user double-click event
+	 * - This method sends `mousedown`, `mouseup`, `click`, `mousedown`, `mouseup`, `click`, and `dblclick` events immediately after each other.
+	 * - This method also takes care of switching `toggle` checked states, and sets focus on a (parent) focusable element.
+	 * - An error is thrown if the element is hidden or currently not part of rendered output (see {@link isOutput()}).
+	 */
+	doubleClick() {
+		this.click();
+		this.click();
+		this.sendPlatformEvent("dblclick");
+		return this;
+	}
+
+	/**
 	 * Simulates text input on a text field element
 	 * - This method sets input focus on a text field, sets its value to the provided text, and sends the `input` platform event.
 	 * - Nothing happens if the element isn't a text field.
