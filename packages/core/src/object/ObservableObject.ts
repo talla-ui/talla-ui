@@ -281,6 +281,80 @@ export class ObservableObject {
 	}
 
 	/**
+	 * Returns a promise for a single event with the provided name
+	 *
+	 * @param name The name of the event
+	 * @param signal An optional AbortSignal that can be used to cancel the listener (or a polyfill)
+	 * @returns A promise that resolves with the first matching event
+	 *
+	 * @description
+	 * This method adds a listener for a single event with the specified name. When the event is emitted, the listener is removed and the returned promise resolves with the event.
+	 *
+	 * The promise rejects with an error with `name` set to `AbortError` if:
+	 * - The provided signal is already aborted, or becomes aborted
+	 * - The object is unlinked before the event is emitted
+	 *
+	 * @see {@link ObservableObject.listen}
+	 * @see {@link ObservableObject.listenAsync}
+	 *
+	 * @example
+	 * // Wait for a single event
+	 * let event = await someObject.listenOnce("Loaded");
+	 *
+	 * @example
+	 * // Cancel using an abort signal (e.g. in afterActive)
+	 * async afterActive(signal: AbortSignal) {
+	 *   let event = await someObject.listenOnce("Loaded", signal);
+	 *   // ... (not reached if deactivated before event)
+	 * }
+	 */
+	listenOnce(
+		name: string,
+		signal?: AbortSignal,
+	): Promise<ObservableEvent<this>> {
+		if (this[$_unlinked]) throw err(ERROR.Object_Unlinked);
+		function abort() {
+			let e = err(ERROR.Object_EventAborted, name);
+			e.name = "AbortError";
+			return e;
+		}
+		if (signal?.aborted) return Promise.reject(abort());
+		return new Promise((resolve, reject) => {
+			let settled = false;
+			let onAbort = () => {
+				// given signal aborted, remove trap and reject promise
+				if (!settled) {
+					settled = true;
+					removeTrap(trap);
+					reject(abort());
+				}
+			};
+			signal?.addEventListener("abort", onAbort);
+			let trap = addTrap(
+				this,
+				$_traps_event,
+				(_, event) => {
+					// check if event matches and remove trap, resolve promise
+					if (!settled && (event as ObservableEvent).name === name) {
+						settled = true;
+						removeTrap(trap);
+						signal?.removeEventListener?.("abort", onAbort);
+						resolve(event as any);
+					}
+				},
+				() => {
+					// unlinked, throw AbortError
+					if (!settled) {
+						settled = true;
+						signal?.removeEventListener?.("abort", onAbort);
+						reject(abort());
+					}
+				},
+			);
+		});
+	}
+
+	/**
 	 * Adds a handler for all events emitted by this object, and returns an async iterable
 	 *
 	 * @description

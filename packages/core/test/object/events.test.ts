@@ -178,3 +178,147 @@ describe("Async iterator listeners", () => {
 		expect(errors).toBe(1);
 	});
 });
+
+describe("listenOnce", () => {
+	test("Resolves with first matching event", async () => {
+		let c = new ObservableObject();
+		let p = c.listenOnce("Foo");
+		c.emit("Foo");
+		let event = await p;
+		expect(event).toBeInstanceOf(ObservableEvent);
+		expect(event.name).toBe("Foo");
+		expect(event.source).toBe(c);
+	});
+
+	test("Ignores non-matching events", async () => {
+		let c = new ObservableObject();
+		let p = c.listenOnce("Foo");
+		c.emit("Bar");
+		c.emit("Baz");
+		c.emit("Foo");
+		let event = await p;
+		expect(event.name).toBe("Foo");
+	});
+
+	test("Only resolves once", async () => {
+		let c = new ObservableObject();
+		let p = c.listenOnce("Foo");
+		c.emit("Foo");
+		c.emit("Foo");
+		let event = await p;
+		expect(event.name).toBe("Foo");
+	});
+
+	test("Includes event data", async () => {
+		let c = new ObservableObject();
+		let p = c.listenOnce("Foo");
+		c.emit("Foo", { bar: 123 });
+		let event = await p;
+		expect(event.data).toHaveProperty("bar", 123);
+	});
+
+	test("Rejects with AbortError on unlink", async () => {
+		let c = new ObservableObject();
+		let p = c.listenOnce("Foo");
+		c.unlink();
+		try {
+			await p;
+			expect.fail("Should have rejected");
+		} catch (err: any) {
+			expect(err.name).toBe("AbortError");
+			expect(err.message).toContain("Foo");
+		}
+	});
+
+	test("Rejects with AbortError on deferred unlink", async () => {
+		let c = new ObservableObject();
+		let p = c.listenOnce("Foo");
+		new Promise((r) => setTimeout(r, 10)).then(() => c.unlink());
+		try {
+			await p;
+			expect.fail("Should have rejected");
+		} catch (err: any) {
+			expect(err.name).toBe("AbortError");
+			expect(err.message).toContain("Foo");
+		}
+	});
+
+	test("Throws on already-unlinked object", () => {
+		let c = new ObservableObject();
+		c.unlink();
+		expect(() => c.listenOnce("Foo")).toThrow();
+	});
+
+	test("Rejects immediately if signal already aborted", async () => {
+		let c = new ObservableObject();
+		let ac = new AbortController();
+		ac.abort();
+		try {
+			await c.listenOnce("Foo", ac.signal);
+			expect.fail("Should have rejected");
+		} catch (err: any) {
+			expect(err.name).toBe("AbortError");
+			expect(err.message).toContain("Foo");
+		}
+	});
+
+	test("Rejects with AbortError when signal aborts", async () => {
+		let c = new ObservableObject();
+		let ac = new AbortController();
+		let p = c.listenOnce("Foo", ac.signal);
+		ac.abort();
+		try {
+			await p;
+			expect.fail("Should have rejected");
+		} catch (err: any) {
+			expect(err.name).toBe("AbortError");
+			expect(err.message).toContain("Foo");
+		}
+	});
+
+	test("Rejects with AbortError when signal aborts (deferred)", async () => {
+		let c = new ObservableObject();
+		let ac = new AbortController();
+		let p = c.listenOnce("Foo", ac.signal);
+		new Promise((r) => setTimeout(r, 10)).then(() => ac.abort());
+		try {
+			await p;
+			expect.fail("Should have rejected");
+		} catch (err: any) {
+			expect(err.name).toBe("AbortError");
+			expect(err.message).toContain("Foo");
+		}
+	});
+
+	test("Works with duck-typed signal", async () => {
+		let c = new ObservableObject();
+		let handlers: Array<() => void> = [];
+		let signal = {
+			aborted: false,
+			addEventListener(type: string, handler: () => void) {
+				if (type === "abort") handlers.push(handler);
+			},
+		};
+		let p = c.listenOnce("Foo", signal as any);
+		signal.aborted = true;
+		for (let h of handlers) h();
+		try {
+			await p;
+			expect.fail("Should have rejected");
+		} catch (err: any) {
+			expect(err.name).toBe("AbortError");
+			expect(err.message).toContain("Foo");
+		}
+	});
+
+	test("Event resolves before signal abort", async () => {
+		let c = new ObservableObject();
+		let ac = new AbortController();
+		let p = c.listenOnce("Foo", ac.signal);
+		c.emit("Foo");
+		let event = await p;
+		expect(event.name).toBe("Foo");
+		// aborting after resolve should be a no-op
+		ac.abort();
+	});
+});
