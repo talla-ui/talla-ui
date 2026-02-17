@@ -742,7 +742,7 @@ export namespace UIElement {
 		 */
 		requestFocus() {
 			this.initializer.finalize((view) => {
-				AppContext.getInstance().schedule(() => view.requestFocus());
+				view.listenOnce("Rendered").then(() => view.requestFocus());
 			});
 			return this;
 		}
