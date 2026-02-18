@@ -188,6 +188,9 @@ export function makeBaseCSS(): Record<string, {}> {
 			{
 				minHeight: "100vh",
 			},
+		[`web-handler-page-root[data-viewport-override] .${CLASS_PAGE_WRAPPER}`]: {
+			minHeight: "100%",
+		},
 		[`.${CLASS_PAGE_WRAPPER}`]: {
 			display: "flex",
 			flexDirection: "column",
