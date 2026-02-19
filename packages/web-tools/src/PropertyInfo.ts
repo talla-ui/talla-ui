@@ -112,7 +112,7 @@ export class PropertyInfo extends ObservableObject {
 			return "<LazyString> " + value.toString();
 		}
 		if (value instanceof UIColor) {
-			return "<UIColor> " + value.toString();
+			return "<UIColor> " + value.output().rgbaString();
 		}
 		if (value instanceof UIElement) {
 			return (
@@ -186,7 +186,8 @@ export class PropertyInfo extends ObservableObject {
 			}
 			if (value instanceof UIColor) {
 				return new Map([
-					["toString()", (it) => it.setValue(value.toString(), true)],
+					["output().rgbaString()", (it) => it.setValue(value.output().rgbaString(), true)],
+					["output().oklchString()", (it) => it.setValue(value.output().oklchString(), true)],
 				]);
 			}
 			if (value instanceof DeferredString) {

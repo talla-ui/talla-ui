@@ -10,7 +10,12 @@ import {
 import { err, ERROR } from "../errors.js";
 import { BindingOrValue, isBinding, ObservableEvent } from "../object/index.js";
 import { RenderEffect } from "./RenderEffect.js";
-import { StyleOverrides, UIColor, UIIconResource } from "./style/index.js";
+import {
+	StyleOverrides,
+	UIColor,
+	UIIconResource,
+} from "./style/index.js";
+import type { UIGradient } from "./style/index.js";
 
 /** @internal Empty array, used for findViewContent. */
 const _emptyViewContent: any[] = Object.freeze([]) as any;
@@ -513,12 +518,20 @@ export namespace UIElement {
 		 * @param color A {@link UIColor} instance, or a color name (e.g. "background", "accent").
 		 * @returns The builder instance for chaining.
 		 */
-		background(color: BindingOrValue<UIColor | UIColor.ColorName | undefined>) {
+		background(
+			color: BindingOrValue<
+				UIColor | UIColor.ColorName | UIGradient | undefined
+			>,
+		) {
 			return this.setStyleOverride("background", color, true);
 		}
 
 		/** Alias for {@link background}; sets the background color. */
-		bg(color?: BindingOrValue<UIColor | UIColor.ColorName | undefined>) {
+		bg(
+			color?: BindingOrValue<
+				UIColor | UIColor.ColorName | UIGradient | undefined
+			>,
+		) {
 			return this.background(color);
 		}
 

@@ -1,3 +1,4 @@
+import type { UIGradient } from "@talla-ui/core";
 import {
 	app,
 	StyleOverrides,
@@ -81,10 +82,72 @@ let _currentLogicalPxScaleNarrow = 1;
 /** Current gap size in pixels */
 let _currentGap = 8;
 
+/** Cached oklch CSS support detection */
+let _oklchSupported: boolean | undefined;
+function _supportsOklch(): boolean {
+	return (_oklchSupported ??=
+		typeof CSS !== "undefined" &&
+		CSS.supports?.("color", "oklch(0 0 0)") === true);
+}
+
+/** @internal Convert a UIColor to a CSS color string, using oklch when supported. */
+export function colorToCSS(color: UIColor): string {
+	let out = color.output();
+	if (out.raw !== undefined) return out.raw;
+	return _supportsOklch() ? out.oklchString() : out.rgbaString();
+}
+
+/** @internal Convert a UIColor, UIGradient, or string to a CSS background string. */
+export function backgroundToCSS(
+	background: UIColor | UIGradient | string,
+): string {
+	if (background instanceof UIColor) return colorToCSS(background);
+	if ((background as any).isUIGradient) return gradientToCSS(background as UIGradient);
+	return String(background);
+}
+
+/** @internal Convert a UIGradient to a CSS gradient string. */
+function gradientToCSS(gradient: UIGradient): string {
+	let useOklch = _supportsOklch();
+	let stops = gradient.stops
+		.map((s) => {
+			let css = useOklch
+				? s.color.output().oklchString()
+				: s.color.output().rgbaString();
+			return css + " " + +(s.pos * 100).toFixed(2) + "%";
+		})
+		.join(", ");
+	let interpolation = useOklch ? " in oklch" : "";
+	switch (gradient.type) {
+		case "linear":
+			return (
+				"linear-gradient(" +
+				gradient.angle +
+				"deg" +
+				interpolation +
+				", " +
+				stops +
+				")"
+			);
+		case "radial":
+			return "radial-gradient(circle" + interpolation + ", " + stops + ")";
+		case "conic":
+			return (
+				"conic-gradient(from " +
+				gradient.angle +
+				"deg" +
+				interpolation +
+				", " +
+				stops +
+				")"
+			);
+	}
+}
+
 /** @internal Settings passed to initializeCSS from WebTheme */
 export type InitializeCSSOptions = {
 	updateBodyStyle?: boolean;
-	pageBackground?: UIColor | string;
+	pageBackground?: UIColor | UIGradient | string;
 	logicalPxScale?: number;
 	logicalPxScaleNarrow?: number;
 	gap?: number;
@@ -131,7 +194,7 @@ export function initializeCSS(
 			margin: "0",
 			padding: "0",
 			background: options.pageBackground
-				? String(options.pageBackground)
+				? backgroundToCSS(options.pageBackground)
 				: undefined,
 		};
 	}
@@ -453,25 +516,29 @@ function addDecorationStyleCSS(
 	decoration: StyleOverrides,
 ) {
 	let background = decoration.background;
-	if (background !== undefined) result.background = String(background);
+	if (background !== undefined) {
+		result.background = backgroundToCSS(background);
+	}
 	let textColor = decoration.textColor;
-	if (textColor !== undefined) result.color = String(textColor);
+	if (textColor !== undefined) result.color = colorToCSS(textColor);
 	let borderWidth = decoration.borderWidth;
 	if (borderWidth !== undefined) result.borderWidth = getCSSLength(borderWidth);
 	let borderColor = decoration.borderColor;
-	if (borderColor instanceof UIColor) result.borderColor = String(borderColor);
-	else if (borderColor !== undefined) {
+	if (borderColor instanceof UIColor) {
+		result.borderColor = colorToCSS(borderColor);
+	} else if (borderColor !== undefined) {
 		result.borderColor = [
 			borderColor.top,
 			borderColor.right,
 			borderColor.bottom,
 			borderColor.left,
 		]
-			.map((c) => String(c || "transparent"))
+			.map((c) => (c ? colorToCSS(c) : "transparent"))
 			.join(" ");
 		if (borderColor.start)
-			result.borderInlineStartColor = String(borderColor.start);
-		if (borderColor.end) result.borderInlineEndColor = String(borderColor.end);
+			result.borderInlineStartColor = colorToCSS(borderColor.start);
+		if (borderColor.end)
+			result.borderInlineEndColor = colorToCSS(borderColor.end);
 	}
 	let borderStyle = decoration.borderStyle;
 	if (borderStyle !== undefined) result.borderStyle = borderStyle;

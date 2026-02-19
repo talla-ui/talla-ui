@@ -76,7 +76,7 @@ export class DOMHighlight {
 		infoBox.style.padding = "4px";
 		infoBox.style.fontSize = "12px";
 		infoBox.style.fontFamily = "monospace";
-		infoBox.style.color = UI.colors.text.toString();
+		infoBox.style.color = UI.colors.text.output().rgbaString();
 		return infoBox;
 	}
 

@@ -3,7 +3,7 @@ import { UI, UIColor } from "@talla-ui/core";
 /** @internal Returns the default color set */
 export function makeDefaultColors(): Record<UIColor.ColorName, UIColor> {
 	return {
-		transparent: new UIColor("transparent"),
+		transparent: new UIColor("#00000000"),
 		black: new UIColor("#000000"),
 		darkerGray: new UIColor("#333333"),
 		darkGray: new UIColor("#777777"),
@@ -24,7 +24,10 @@ export function makeDefaultColors(): Record<UIColor.ColorName, UIColor> {
 		purple: new UIColor("#aa4488"),
 		magenta: new UIColor("#dd2299"),
 		divider: UI.colors.background.text().alpha(0.15),
-		accent: UI.colors.background.fg("#333333", "#555555"),
+		accent: UI.colors.background.fg(
+			new UIColor("#333333"),
+			new UIColor("#555555"),
+		),
 		background: UI.colors.white,
 		shade: UI.colors.background.contrast(-0.05),
 		text: UI.colors.background.text(),

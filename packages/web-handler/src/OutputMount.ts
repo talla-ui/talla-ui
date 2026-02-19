@@ -1,4 +1,6 @@
+import type { UIGradient } from "@talla-ui/core";
 import { app, RenderContext, UI, UIColor, View } from "@talla-ui/core";
+import { backgroundToCSS, colorToCSS } from "./DOMStyle.js";
 import { awaitRemove, isMarkedForRemoval } from "./awaitRemove.js";
 import {
 	CLASS_OVERLAY_SHADER,
@@ -21,7 +23,7 @@ export class OutputMount {
 
 	/** Creates a fixed full-page root element, i.e. for placement modes "screen" and "page" */
 	createPageElement(
-		background: UIColor | string,
+		background: UIColor | UIGradient | string,
 		scroll?: boolean,
 		title?: string,
 	) {
@@ -46,8 +48,8 @@ export class OutputMount {
 		this._remount = () => {
 			let culture = app.i18n.getCulture();
 			elt.dir = culture.textDirection || "ltr";
-			elt.style.background = String(background);
-			elt.style.color = String(UI.colors.text);
+			elt.style.background = backgroundToCSS(background);
+			elt.style.color = colorToCSS(UI.colors.text);
 			elt.style.colorScheme = UIColor.isBrightColor(UI.colors.background)
 				? "light"
 				: "dark";
@@ -67,7 +69,7 @@ export class OutputMount {
 	createOverlayElement(
 		refElt?: HTMLElement,
 		refOffset?: number | [number, number],
-		shadeBackground?: UIColor | string,
+		shadeBackground?: UIColor | UIGradient | string,
 		isModal?: boolean,
 	) {
 		let shader =
@@ -90,7 +92,9 @@ export class OutputMount {
 			}
 		}
 		app.schedule(() => {
-			shader.style.backgroundColor = String(shadeBackground);
+			shader.style.background = shadeBackground
+				? backgroundToCSS(shadeBackground)
+				: "";
 			if (isModal) {
 				setFocus();
 				app.schedule(setFocus, 10);
@@ -107,7 +111,7 @@ export class OutputMount {
 		wrapper.dir = culture.textDirection || "ltr";
 		wrapper.ariaModal = "true";
 		wrapper.ariaAtomic = "true";
-		wrapper.style.color = String(UI.colors.text);
+		wrapper.style.color = colorToCSS(UI.colors.text);
 		shader.appendChild(wrapper);
 
 		// match position of wrapper with reference element, if any
@@ -176,8 +180,10 @@ export class OutputMount {
 		// handle remount by setting colors again
 		this._remount = () => {
 			let culture = app.i18n.getCulture();
-			shader.style.backgroundColor = String(shadeBackground);
-			wrapper.style.color = String(UI.colors.text);
+			shader.style.background = shadeBackground
+				? backgroundToCSS(shadeBackground)
+				: "";
+			wrapper.style.color = colorToCSS(UI.colors.text);
 			wrapper.dir = culture.textDirection || "ltr";
 		};
 	}

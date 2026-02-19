@@ -1,3 +1,4 @@
+import type { UIGradient } from "@talla-ui/core";
 import { StyleOverrides, UI, UIColor, UIIconResource } from "@talla-ui/core";
 import { makeDefaultColors } from "./defaults/colors.js";
 import { makeDefaultIcons } from "./defaults/icons.js";
@@ -8,8 +9,8 @@ import { UITextRenderer } from "./observers/UITextRenderer.js";
 /** @internal Theme options type for scalar configuration values. */
 export type WebThemeOptions = {
 	updateBodyStyle: boolean;
-	pageBackground: UIColor | string;
-	modalShadeBackground: UIColor | string;
+	pageBackground: UIColor | UIGradient | string;
+	modalShadeBackground: UIColor | UIGradient | string;
 	logicalPxScale?: number;
 	logicalPxScaleNarrow?: number;
 	gap?: number;
@@ -216,7 +217,7 @@ export class WebTheme {
 	 * @param color The background color value.
 	 * @returns The theme itself, for method chaining.
 	 */
-	pageBackground(color: UIColor | string): this {
+	pageBackground(color: UIColor | UIGradient | string): this {
 		this._options.pageBackground = color;
 		return this;
 	}
@@ -226,7 +227,7 @@ export class WebTheme {
 	 * @param color The background color value.
 	 * @returns The theme itself, for method chaining.
 	 */
-	modalShadeBackground(color: UIColor | string): this {
+	modalShadeBackground(color: UIColor | UIGradient | string): this {
 		this._options.modalShadeBackground = color;
 		return this;
 	}

@@ -6,7 +6,7 @@ import {
 	UIText,
 } from "@talla-ui/core";
 import type { StringConvertible } from "@talla-ui/util";
-import { applyStyles, getCSSLength } from "../DOMStyle.js";
+import { applyStyles, colorToCSS, getCSSLength } from "../DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
 import { UITextRenderer } from "./UITextRenderer.js";
 
@@ -23,7 +23,7 @@ export function getIconElt(icon?: StringConvertible, style?: UIText.IconStyle) {
 		style?.size ?? UITextRenderer.defaultIconStyle.size,
 		"1.5rem",
 	);
-	let color = style?.color ? String(style.color) : "";
+	let color = style?.color ? colorToCSS(style.color) : "";
 	let iconSource = String(icon || "");
 	let memo = iconSource + ":" + size + ":" + color;
 	if (_memoizedIcons[memo]) {

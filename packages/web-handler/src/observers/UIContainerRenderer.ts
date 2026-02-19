@@ -20,7 +20,7 @@ import {
 	CLASS_SEPARATOR_LINE_VERT,
 	CLASS_SEPARATOR_SPACER,
 } from "../defaults/css.js";
-import { applyStyles, getCSSLength } from "../DOMStyle.js";
+import { applyStyles, colorToCSS, getCSSLength } from "../DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
 
 /** @internal */
@@ -304,7 +304,7 @@ export class ContentUpdater {
 					? "0 " + margin
 					: margin + " 0"
 				: "";
-			sep.style.borderColor = String(options.lineColor || UI.colors.divider);
+			sep.style.borderColor = colorToCSS(options.lineColor || UI.colors.divider);
 			this.element.style.columnGap = "";
 			this.element.style.rowGap = "";
 		} else if (options?.space) {

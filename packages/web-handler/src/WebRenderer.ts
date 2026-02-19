@@ -8,6 +8,7 @@ import {
 	View,
 	app,
 } from "@talla-ui/core";
+import type { UIGradient } from "@talla-ui/core";
 import type { StringConvertible } from "@talla-ui/util";
 import { makeObserver } from "./observers/index.js";
 import { OutputMount } from "./OutputMount.js";
@@ -103,8 +104,8 @@ export class WebRenderer extends RenderContext {
 	 * @param modalBackground Background color for modal shade (defaults to pageBackground)
 	 */
 	setBackgrounds(
-		pageBackground: UIColor | string = "background",
-		modalBackground: UIColor | string = pageBackground,
+		pageBackground: UIColor | UIGradient | string = "background",
+		modalBackground: UIColor | UIGradient | string = pageBackground,
 	) {
 		this._pageBackground = pageBackground;
 		this._modalBackground = modalBackground;
@@ -207,8 +208,8 @@ export class WebRenderer extends RenderContext {
 
 	private _mounts: Map<number, OutputMount>;
 	private _delay: number;
-	private _pageBackground: UIColor | string = "background";
-	private _modalBackground: UIColor | string = "transparent";
+	private _pageBackground: UIColor | UIGradient | string = "background";
+	private _modalBackground: UIColor | UIGradient | string = "transparent";
 	private _raf?: any;
 	private _viewportLocation?: WebRenderer.ViewportLocation;
 }

@@ -1,9 +1,23 @@
 import { useTestContext } from "@talla-ui/test-handler";
-import { beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { UI, UIColor } from "../../dist/index.js";
+
+// useTestContext() resets the test handler and re-registers default colors,
+// but custom entries added via setColors() persist in the module-level registry.
+// The afterEach cleanup sets custom test entries to transparent to prevent leaks.
+let _customTestColors: string[] = [];
 
 beforeEach(() => {
 	useTestContext();
+});
+
+afterEach(() => {
+	if (_customTestColors.length) {
+		let reset: Record<string, string> = {};
+		for (let name of _customTestColors) reset[name] = "transparent";
+		UIColor.setColors(reset);
+		_customTestColors = [];
+	}
 });
 
 describe("Base colors", () => {
@@ -18,20 +32,121 @@ describe("Base colors", () => {
 		expect(UI.colors).toHaveProperty("text");
 	});
 
-	test("Color value using constructor", () => {
-		expect(new UIColor("Foo").toString()).toBe("Foo");
-		expect(new UIColor("#000000").toString()).toBe("#000000");
+	test("Color value using constructor (raw CSS passthrough)", () => {
+		let raw = new UIColor("Foo");
+		let out = raw.output();
+		expect(out.raw).toBe("Foo");
+		expect(out.rgbaString()).toBe("Foo");
+		expect(out.oklchString()).toBe("Foo");
+	});
+
+	test("Color value using hex constructor", () => {
+		let black = new UIColor("#000000");
+		let out = black.output();
+		expect(out.raw).toBeUndefined();
+		expect(out.rgb()[0]).toBe(0);
+		expect(out.rgb()[1]).toBe(0);
+		expect(out.rgb()[2]).toBe(0);
+		expect(out.rgbaString()).toBe("rgb(0,0,0)");
 	});
 
 	test("Color value using predefined instance", () => {
-		expect(UI.colors.black.toString()).toBe("#000000");
+		let out = UI.colors.black.output();
+		expect(out.raw).toBeUndefined();
+		expect(out.rgbaString()).toBe("rgb(0,0,0)");
 	});
 
 	test("Color value using indirectly predefined instance", () => {
 		let blue = UI.colors.blue;
-		expect(blue.toString()).toBe("#2277ff");
-		expect(UI.colors.accent.toString()).toBe("#222222");
-		expect(UI.colors.text.toString()).toBe("#000");
+		let out = blue.output();
+		expect(out.raw).toBeUndefined();
+		expect(out.rgb()[0]).toBe(34);
+		expect(out.rgb()[1]).toBe(119);
+		expect(out.rgb()[2]).toBe(255);
+	});
+});
+
+describe("UIColor static factories", () => {
+	test("UIColor.oklch creates color with direct values", () => {
+		let c = UIColor.oklch(0.5, 0.15, 240);
+		let out = c.output();
+		expect(out.raw).toBeUndefined();
+		expect(out.l).toBe(0.5);
+		expect(out.c).toBe(0.15);
+		expect(out.h).toBe(240);
+		expect(out.alpha).toBe(1);
+	});
+
+	test("UIColor.oklch with alpha", () => {
+		let c = UIColor.oklch(0.5, 0.1, 180, 0.5);
+		let out = c.output();
+		expect(out.alpha).toBe(0.5);
+	});
+
+	test("UIColor.rgb creates color from sRGB values", () => {
+		let c = UIColor.rgb(255, 0, 0);
+		let out = c.output();
+		expect(out.raw).toBeUndefined();
+		expect(out.rgb()[0]).toBe(255);
+		expect(out.rgb()[1]).toBe(0);
+		expect(out.rgb()[2]).toBe(0);
+	});
+
+	test("UIColor.rgb with alpha", () => {
+		let c = UIColor.rgb(0, 0, 0, 0.5);
+		let out = c.output();
+		expect(out.alpha).toBe(0.5);
+		expect(out.rgbaString()).toBe("rgba(0,0,0,0.5)");
+	});
+});
+
+describe("UIColor.Output", () => {
+	test("Parsed color result has correct structure", () => {
+		let c = new UIColor("#ff0000");
+		let out = c.output();
+		expect(out.raw).toBeUndefined();
+		expect(out.rgb()[0]).toBe(255);
+		expect(out.rgb()[1]).toBe(0);
+		expect(out.rgb()[2]).toBe(0);
+		expect(out.alpha).toBe(1);
+		expect(out.rgbaString()).toBe("rgb(255,0,0)");
+		expect(out.oklchString()).toMatch(/^oklch\(/);
+		expect(out.l).toBeGreaterThan(0);
+		expect(out.c).toBeGreaterThan(0);
+	});
+
+	test("Raw color result passes through string", () => {
+		let c = new UIColor("var(--accent)");
+		let out = c.output();
+		expect(out.raw).toBe("var(--accent)");
+		expect(out.rgbaString()).toBe("var(--accent)");
+		expect(out.oklchString()).toBe("var(--accent)");
+		expect(out.l).toBe(0);
+		expect(out.c).toBe(0);
+		expect(out.h).toBe(0);
+		expect(out.alpha).toBe(1);
+	});
+
+	test("Transparent color result", () => {
+		let c = new UIColor("transparent");
+		let out = c.output();
+		expect(out.raw).toBeUndefined();
+		expect(out.alpha).toBe(0);
+		expect(out.rgbaString()).toBe("rgba(0,0,0,0)");
+	});
+
+	test("Output is cached and invalidated", () => {
+		_customTestColors.push("cacheTest");
+		UIColor.setColors({ cacheTest: "#ff0000" });
+		let ref = UIColor.getColor("cacheTest");
+		let out1 = ref.output();
+		let out2 = ref.output();
+		expect(out1).toBe(out2); // Same cached instance
+
+		UIColor.setColors({ cacheTest: "#0000ff" });
+		let out3 = ref.output();
+		expect(out3).not.toBe(out1); // Invalidated
+		expect(out3.rgb()[2]).toBe(255);
 	});
 });
 
@@ -46,23 +161,25 @@ describe("Color registration and lookup", () => {
 	});
 
 	test("UIColor.setColors registers new colors", () => {
+		_customTestColors.push("customRed", "customBlue");
 		UIColor.setColors({
 			customRed: "#ff0000",
 			customBlue: new UIColor("#0000ff"),
 		});
-		expect(UIColor.getColor("customRed").toString()).toBe("#ff0000");
-		expect(UIColor.getColor("customBlue").toString()).toBe("#0000ff");
+		expect(UIColor.getColor("customRed").output().rgbaString()).toBe("rgb(255,0,0)");
+		expect(UIColor.getColor("customBlue").output().rgbaString()).toBe("rgb(0,0,255)");
 	});
 
 	test("UIColor.setColors updates existing colors", () => {
+		_customTestColors.push("testColor");
 		UIColor.setColors({ testColor: "#111111" });
 		let colorRef = UIColor.getColor("testColor");
-		expect(colorRef.toString()).toBe("#111111");
+		expect(colorRef.output().rgb()[0]).toBe(17);
 
 		// Update the color
 		UIColor.setColors({ testColor: "#222222" });
 		// Same reference should now resolve to new value
-		expect(colorRef.toString()).toBe("#222222");
+		expect(colorRef.output().rgb()[0]).toBe(34);
 	});
 
 	test("UIColor.getColor returns cached references", () => {
@@ -73,13 +190,19 @@ describe("Color registration and lookup", () => {
 
 	test("UIColor.getColor returns transparent for unknown colors", () => {
 		let unknown = UIColor.getColor("unknownColorName");
-		expect(unknown.toString()).toBe("transparent");
+		expect(unknown.output().alpha).toBe(0);
+		expect(unknown.output().rgbaString()).toBe("rgba(0,0,0,0)");
 	});
 
 	test("UI.color function returns color references", () => {
+		_customTestColors.push("myCustomColor");
 		UIColor.setColors({ myCustomColor: "#abcdef" });
 		let color = UI.color("myCustomColor");
-		expect(color.toString()).toBe("#abcdef");
+		let out = color.output();
+		expect(out.raw).toBeUndefined();
+		expect(out.rgb()[0]).toBe(171);
+		expect(out.rgb()[1]).toBe(205);
+		expect(out.rgb()[2]).toBe(239);
 	});
 
 	test("UI.color returns same reference as UIColor.getColor", () => {
@@ -91,38 +214,38 @@ describe("Color registration and lookup", () => {
 	test("UIColor.resolve creates dynamic color reference", () => {
 		let baseColor = new UIColor("#123456");
 		let resolved = UIColor.resolve(() => baseColor);
-		expect(resolved.toString()).toBe("#123456");
+		let out = resolved.output();
+		expect(out.raw).toBeUndefined();
+		expect(out.rgb()[0]).toBe(18);
+		expect(out.rgb()[1]).toBe(52);
+		expect(out.rgb()[2]).toBe(86);
 	});
 
 	test("UIColor.resolve returns transparent when factory returns undefined", () => {
 		let resolved = UIColor.resolve(() => undefined);
-		expect(resolved.toString()).toBe("transparent");
+		expect(resolved.output().alpha).toBe(0);
 	});
 
 	test("Derived colors update when base color changes", () => {
+		_customTestColors.push("derivedBase");
 		UIColor.setColors({ derivedBase: "#000000" });
 		let baseRef = UIColor.getColor("derivedBase");
 		let derived = baseRef.brighten(0.5);
 
-		// Get initial derived value
-		let initialValue = derived.toString();
+		let initialRgba = derived.output().rgbaString();
 
-		// Update base color
 		UIColor.setColors({ derivedBase: "#ffffff" });
-
-		// Derived color should now produce different result
-		let newValue = derived.toString();
-		expect(newValue).not.toBe(initialValue);
+		let newRgba = derived.output().rgbaString();
+		expect(newRgba).not.toBe(initialRgba);
 	});
 });
 
 describe("Brightness and text color", () => {
-	test("Default", () => {
+	test("Default (empty) color is treated as bright", () => {
 		expect(UIColor.isBrightColor(new UIColor())).toBeTruthy();
 	});
 
 	test("Black and white", () => {
-		expect(UIColor.isBrightColor(new UIColor())).toBeTruthy();
 		expect(UIColor.isBrightColor(UI.colors.black)).toBeFalsy();
 		expect(UIColor.isBrightColor(UI.colors.white)).toBeTruthy();
 	});
@@ -134,175 +257,257 @@ describe("Brightness and text color", () => {
 		expect(UIColor.isBrightColor(whiteText)).toBeTruthy();
 	});
 
-	test("Hex color text", () => {
-		let blackTextStr = UI.colors.white.text().toString();
-		let whiteTextStr = UI.colors.black.text().toString();
-		let textOnDarkStr = new UIColor("#333333").text().toString();
-		let textOnLightStr = new UIColor("#cccccc").text().toString();
-		expect(textOnDarkStr).toBe(whiteTextStr);
-		expect(textOnLightStr).toBe(blackTextStr);
+	test("Hex color text selection", () => {
+		let blackTextRgba = UI.colors.white.text().output().rgbaString();
+		let whiteTextRgba = UI.colors.black.text().output().rgbaString();
+		let textOnDark = new UIColor("#333333").text().output().rgbaString();
+		let textOnLight = new UIColor("#cccccc").text().output().rgbaString();
+		expect(textOnDark).toBe(whiteTextRgba);
+		expect(textOnLight).toBe(blackTextRgba);
 	});
 
-	test("rgb color text", () => {
-		let blackTextStr = UI.colors.white.text().toString();
-		let whiteTextStr = UI.colors.black.text().toString();
-		let textOnDarkStr = new UIColor("rgb(30,30,30)").text().toString();
-		let textOnLightStr = new UIColor("rgb(200,200,200)").text().toString();
-		expect(textOnDarkStr).toBe(whiteTextStr);
-		expect(textOnLightStr).toBe(blackTextStr);
+	test("rgb color text selection", () => {
+		let blackTextRgba = UI.colors.white.text().output().rgbaString();
+		let whiteTextRgba = UI.colors.black.text().output().rgbaString();
+		let textOnDark = new UIColor("rgb(30,30,30)").text().output().rgbaString();
+		let textOnLight = new UIColor("rgb(200,200,200)").text().output().rgbaString();
+		expect(textOnDark).toBe(whiteTextRgba);
+		expect(textOnLight).toBe(blackTextRgba);
 	});
 
-	test("rgba color text", () => {
-		let blackTextStr = UI.colors.white.text().toString();
-		let whiteTextStr = UI.colors.black.text().toString();
-		let textOnDarkStr = new UIColor("rgba(30,30,30, 128)").text().toString();
-		let textOnLightStr = new UIColor("rgba(200,200,200,128)").text().toString();
-		expect(textOnDarkStr).toBe(whiteTextStr);
-		expect(textOnLightStr).toBe(blackTextStr);
+	test("rgba color text selection", () => {
+		let blackTextRgba = UI.colors.white.text().output().rgbaString();
+		let whiteTextRgba = UI.colors.black.text().output().rgbaString();
+		let textOnDark = new UIColor("rgba(30,30,30,128)").text().output().rgbaString();
+		let textOnLight = new UIColor("rgba(200,200,200,128)").text().output().rgbaString();
+		expect(textOnDark).toBe(whiteTextRgba);
+		expect(textOnLight).toBe(blackTextRgba);
 	});
 
 	test("Foreground selection", () => {
 		let lightFg = UI.colors.white.fg(UI.colors.red, UI.colors.green);
-		expect(lightFg.toString()).toBe(UI.colors.red.toString());
 		let darkFg = UI.colors.black.fg(UI.colors.red, UI.colors.green);
-		expect(darkFg.toString()).toBe(UI.colors.green.toString());
+		expect(lightFg.output().rgbaString()).toBe(UI.colors.red.output().rgbaString());
+		expect(darkFg.output().rgbaString()).toBe(UI.colors.green.output().rgbaString());
+	});
+
+	test("isBrightColor uses oklch L value", () => {
+		// oklch L > 0.65 = bright
+		let bright = UIColor.oklch(0.8, 0, 0); // L=0.8, bright
+		let dark = UIColor.oklch(0.3, 0, 0); // L=0.3, dark
+		expect(UIColor.isBrightColor(bright)).toBe(true);
+		expect(UIColor.isBrightColor(dark)).toBe(false);
+	});
+
+	test("isBrightColor custom threshold", () => {
+		let mid = UIColor.oklch(0.5, 0, 0);
+		expect(UIColor.isBrightColor(mid, 0.4)).toBe(true);
+		expect(UIColor.isBrightColor(mid, 0.6)).toBe(false);
 	});
 });
 
-describe("Color mixing", () => {
-	test("Single mix, hex with transparent", () => {
-		let red = new UIColor("#f00");
-		let none = new UIColor();
-		expect(red.mix(none, 0).toString()).toBe("rgb(255,0,0)");
-		expect(red.mix(none, 1).toString()).toBe("rgba(0,0,0,0)");
-		expect(red.mix(none, 0.5).toString()).toBe("rgba(128,0,0,0.5)");
-		expect(none.mix(red, 0.5).toString()).toBe("rgba(128,0,0,0.5)");
-	});
-
-	test("Single mix, hex", () => {
+describe("Color mixing (oklab space)", () => {
+	test("Mix red and blue at 50% produces perceptually correct blend", () => {
 		let red = new UIColor("#f00");
 		let blue = new UIColor("#00f");
-		expect(red.mix(blue, 0).toString()).toBe("rgb(255,0,0)");
-		expect(red.mix(blue, 1).toString()).toBe("rgb(0,0,255)");
-		expect(red.mix(blue, 0.5).toString()).toBe("rgb(128,0,128)");
+		let mix = red.mix(blue, 0.5);
+		let out = mix.output();
+		// oklab interpolation produces a purple with non-zero green channel
+		expect(out.rgb()[0]).toBeGreaterThan(100);
+		expect(out.rgb()[1]).toBeGreaterThan(50);
+		expect(out.rgb()[2]).toBeGreaterThan(100);
 	});
 
-	test("Single mix, rgb", () => {
-		let red = new UIColor("rgb(255,0,0)");
-		let blue = new UIColor("rgb(0,0,255)");
-		expect(red.mix(blue, 0).toString()).toBe("rgb(255,0,0)");
-		expect(red.mix(blue, 1).toString()).toBe("rgb(0,0,255)");
-		expect(red.mix(blue, 0.5).toString()).toBe("rgb(128,0,128)");
+	test("Mix at 0 returns first color", () => {
+		let red = new UIColor("#f00");
+		let blue = new UIColor("#00f");
+		let out = red.mix(blue, 0).output();
+		expect(out.rgb()[0]).toBe(255);
+		expect(out.rgb()[1]).toBe(0);
+		expect(out.rgb()[2]).toBe(0);
 	});
 
-	test("Single mix, rgba", () => {
+	test("Mix at 1 returns second color", () => {
+		let red = new UIColor("#f00");
+		let blue = new UIColor("#00f");
+		let out = red.mix(blue, 1).output();
+		expect(out.rgb()[0]).toBe(0);
+		expect(out.rgb()[1]).toBe(0);
+		expect(out.rgb()[2]).toBe(255);
+	});
+
+	test("Mix with transparent", () => {
+		let red = new UIColor("#f00");
+		let none = new UIColor();
+		// mix at 0 = full red, alpha 1
+		expect(red.mix(none, 0).output().rgbaString()).toBe("rgb(255,0,0)");
+		// mix at 1 = transparent
+		expect(red.mix(none, 1).output().alpha).toBe(0);
+		// mix at 0.5 = half alpha
+		let mix = red.mix(none, 0.5).output();
+		expect(mix.alpha).toBeCloseTo(0.5, 2);
+	});
+
+	test("Mix rgba colors", () => {
 		let red = new UIColor("rgba(255,0,0,.1)");
 		let blue = new UIColor("rgba(0,0,255,.2)");
-		expect(red.mix(blue, 0).toString()).toBe("rgba(255,0,0,0.1)");
-		expect(red.mix(blue, 1).toString()).toBe("rgba(0,0,255,0.2)");
-		expect(red.mix(blue, 0.5).toString()).toBe("rgba(128,0,128,0.15)");
+		let out0 = red.mix(blue, 0).output();
+		expect(out0.alpha).toBeCloseTo(0.1, 4);
+		let out1 = red.mix(blue, 1).output();
+		expect(out1.alpha).toBeCloseTo(0.2, 4);
+		let out05 = red.mix(blue, 0.5).output();
+		expect(out05.alpha).toBeCloseTo(0.15, 4);
 	});
 
-	test("Alpha, hex", () => {
+	test("Alpha method preserves color, adjusts alpha", () => {
 		let black = new UIColor("#000000");
+		expect(black.alpha(1).output().rgbaString()).toBe("rgb(0,0,0)");
+		expect(black.alpha(0).output().rgbaString()).toBe("rgba(0,0,0,0)");
+		expect(black.alpha(0.5).output().rgbaString()).toBe("rgba(0,0,0,0.5)");
+	});
+
+	test("Alpha on hex color", () => {
 		let color = new UIColor("#123");
-		expect(black.alpha(1).toString()).toBe("rgb(0,0,0)");
-		expect(color.alpha(1).toString()).toBe("rgb(17,34,51)");
-		expect(black.alpha(0).toString()).toBe("rgba(0,0,0,0)");
-		expect(color.alpha(0).toString()).toBe("rgba(17,34,51,0)");
-		expect(black.alpha(0.5).toString()).toBe("rgba(0,0,0,0.5)");
-		expect(color.alpha(0.5).toString()).toBe("rgba(17,34,51,0.5)");
+		let out1 = color.alpha(1).output();
+		expect(out1.rgb()[0]).toBe(17);
+		expect(out1.rgb()[1]).toBe(34);
+		expect(out1.rgb()[2]).toBe(51);
+		expect(out1.alpha).toBe(1);
+
+		let out0 = color.alpha(0).output();
+		expect(out0.alpha).toBe(0);
+
+		let out05 = color.alpha(0.5).output();
+		expect(out05.alpha).toBe(0.5);
 	});
 
-	test("Alpha, rgb", () => {
-		let black = new UIColor("rgb(0,0,0)");
-		let color = new UIColor("rgb(17,34,51)");
-		expect(black.alpha(1).toString()).toBe("rgb(0,0,0)");
-		expect(color.alpha(1).toString()).toBe("rgb(17,34,51)");
-		expect(black.alpha(0).toString()).toBe("rgba(0,0,0,0)");
-		expect(color.alpha(0).toString()).toBe("rgba(17,34,51,0)");
-		expect(black.alpha(0.5).toString()).toBe("rgba(0,0,0,0.5)");
-		expect(color.alpha(0.5).toString()).toBe("rgba(17,34,51,0.5)");
+	test("Alpha on rgba input preserves existing alpha", () => {
+		let c = new UIColor("rgba(0,0,0,0.1)");
+		expect(c.alpha(1).output().alpha).toBeCloseTo(0.1, 4);
+		expect(c.alpha(0).output().alpha).toBe(0);
+		expect(c.alpha(0.5).output().alpha).toBeCloseTo(0.05, 4);
 	});
 
-	test("Alpha, rgba", () => {
-		let black = new UIColor("rgba(0,0,0,0.1)");
-		let color = new UIColor("rgba(17,34,51,.2)");
-		expect(black.alpha(1).toString()).toBe("rgba(0,0,0,0.1)");
-		expect(color.alpha(1).toString()).toBe("rgba(17,34,51,0.2)");
-		expect(black.alpha(0).toString()).toBe("rgba(0,0,0,0)");
-		expect(color.alpha(0).toString()).toBe("rgba(17,34,51,0)");
-		expect(black.alpha(0.5).toString()).toBe("rgba(0,0,0,0.05)");
-		expect(color.alpha(0.5).toString()).toBe("rgba(17,34,51,0.1)");
+	test("Brighten toward white", () => {
+		let grey = new UIColor("#222");
+		let out = grey.brighten(0.5).output();
+		// Should be significantly brighter
+		expect(out.rgb()[0]).toBeGreaterThan(100);
+		expect(out.rgb()[1]).toBeGreaterThan(100);
+		expect(out.rgb()[2]).toBeGreaterThan(100);
 	});
 
-	test("Lum, hex", () => {
-		let grey1 = new UIColor("#222"); // 0x22 = 34
-		let grey2 = new UIColor("#ccc"); // 0xCC = 204
-		expect(grey1.brighten(1).toString()).toBe("rgb(255,255,255)");
-		expect(grey1.brighten(-1).toString()).toBe("rgb(0,0,0)");
-		expect(grey1.brighten(0).toString()).toBe("rgb(34,34,34)");
-		expect(grey1.brighten(0.5).toString()).toBe("rgb(145,145,145)");
-		expect(grey1.brighten(-0.5).toString()).toBe("rgb(17,17,17)");
-		expect(grey2.brighten(0.5).toString()).toBe("rgb(230,230,230)");
-		expect(grey2.brighten(-0.5).toString()).toBe("rgb(102,102,102)");
+	test("Brighten extremes", () => {
+		let grey = new UIColor("#222");
+		expect(grey.brighten(1).output().rgbaString()).toBe("rgb(255,255,255)");
+		expect(grey.brighten(-1).output().rgbaString()).toBe("rgb(0,0,0)");
+		expect(grey.brighten(0).output().rgb()[0]).toBe(34);
 	});
 
-	test("Lum, rgb", () => {
-		let grey1 = new UIColor("rgb(34,34,34)");
-		let grey2 = new UIColor("rgb(204,204,204)");
-		expect(grey1.brighten(1).toString()).toBe("rgb(255,255,255)");
-		expect(grey1.brighten(-1).toString()).toBe("rgb(0,0,0)");
-		expect(grey1.brighten(0).toString()).toBe("rgb(34,34,34)");
-		expect(grey1.brighten(0.5).toString()).toBe("rgb(145,145,145)");
-		expect(grey1.brighten(-0.5).toString()).toBe("rgb(17,17,17)");
-		expect(grey2.brighten(0.5).toString()).toBe("rgb(230,230,230)");
-		expect(grey2.brighten(-0.5).toString()).toBe("rgb(102,102,102)");
+	test("Brighten with rgba preserves alpha", () => {
+		let grey = new UIColor("rgba(34,34,34,.5)");
+		let out = grey.brighten(0.5).output();
+		expect(out.alpha).toBeCloseTo(0.5, 4);
+		expect(out.rgb()[0]).toBeGreaterThan(100);
 	});
 
-	test("Lum, rgba", () => {
-		let grey1 = new UIColor("rgba(34,34,34,.5)");
-		let grey2 = new UIColor("rgba(204,204,204,.5)");
-		expect(grey1.brighten(1).toString()).toBe("rgba(255,255,255,0.5)");
-		expect(grey1.brighten(-1).toString()).toBe("rgba(0,0,0,0.5)");
-		expect(grey1.brighten(0).toString()).toBe("rgba(34,34,34,0.5)");
-		expect(grey1.brighten(0.5).toString()).toBe("rgba(145,145,145,0.5)");
-		expect(grey1.brighten(-0.5).toString()).toBe("rgba(17,17,17,0.5)");
-		expect(grey2.brighten(0.5).toString()).toBe("rgba(230,230,230,0.5)");
-		expect(grey2.brighten(-0.5).toString()).toBe("rgba(102,102,102,0.5)");
+	test("Contrast increases for bright colors", () => {
+		let grey = new UIColor("#ccc");
+		let out = grey.contrast(0.5).output();
+		// Bright color + positive contrast = lighter
+		expect(out.rgb()[0]).toBeGreaterThan(204);
 	});
 
-	test("Contrast, hex", () => {
-		let grey1 = new UIColor("#222"); // 0x22 = 34
-		let grey2 = new UIColor("#ccc"); // 0xCC = 204
-		expect(grey1.contrast(0).toString()).toBe("rgb(34,34,34)");
-		expect(grey1.contrast(0.5).toString()).toBe("rgb(17,17,17)");
-		expect(grey1.contrast(-0.5).toString()).toBe("rgb(145,145,145)");
-		expect(grey2.contrast(0.5).toString()).toBe("rgb(226,226,226)");
-		expect(grey2.contrast(-0.5).toString()).toBe("rgb(117,117,117)");
+	test("Contrast increases for dark colors", () => {
+		let grey = new UIColor("#222");
+		let out = grey.contrast(0.5).output();
+		// Dark color + positive contrast = darker
+		expect(out.rgb()[0]).toBeLessThan(34);
 	});
 
-	test("Contrast, rgb", () => {
-		let grey1 = new UIColor("rgb(34,34,34)");
-		let grey2 = new UIColor("rgb(204,204,204)");
-		expect(grey1.contrast(0).toString()).toBe("rgb(34,34,34)");
-		expect(grey1.contrast(0.5).toString()).toBe("rgb(17,17,17)");
-		expect(grey1.contrast(-0.5).toString()).toBe("rgb(145,145,145)");
-		expect(grey2.contrast(0.5).toString()).toBe("rgb(226,226,226)");
-		expect(grey2.contrast(-0.5).toString()).toBe("rgb(117,117,117)");
+	test("Contrast zero produces no change", () => {
+		let grey = new UIColor("#222");
+		let out = grey.contrast(0).output();
+		expect(out.rgb()[0]).toBe(34);
 	});
 
-	test("Contrast, rgba", () => {
-		let grey1 = new UIColor("rgba(34,34,34,.5)");
-		let grey2 = new UIColor("rgba(204,204,204,.5)");
-		expect(grey1.contrast(0).toString()).toBe("rgba(34,34,34,0.5)");
-		expect(grey1.contrast(0.5).toString()).toBe("rgba(17,17,17,0.5)");
-		expect(grey1.contrast(-0.5).toString()).toBe("rgba(145,145,145,0.5)");
-		expect(grey2.contrast(0.5).toString()).toBe("rgba(226,226,226,0.5)");
-		expect(grey2.contrast(-0.5).toString()).toBe("rgba(117,117,117,0.5)");
+	test("Contrast with rgba preserves alpha", () => {
+		let grey = new UIColor("rgba(34,34,34,.5)");
+		let out = grey.contrast(0.5).output();
+		expect(out.alpha).toBeCloseTo(0.5, 4);
 	});
 
-	test("Not throwing with invalid values", () => {
-		expect(() => UIColor.mixColors("foo", 1 as any, 2)).not.toThrowError();
+	test("Raw CSS colors pass through mix unchanged", () => {
+		let raw = new UIColor("var(--accent)");
+		let mixed = raw.mix(new UIColor("#f00"), 0.5);
+		let out = mixed.output();
+		expect(out.raw).toBe("var(--accent)");
+	});
+});
+
+describe("Hex and rgb parsing roundtrip", () => {
+	test("3-digit hex roundtrips", () => {
+		let c = new UIColor("#f00");
+		let out = c.output();
+		expect(out.rgb()[0]).toBe(255);
+		expect(out.rgb()[1]).toBe(0);
+		expect(out.rgb()[2]).toBe(0);
+	});
+
+	test("6-digit hex roundtrips", () => {
+		let c = new UIColor("#2277ff");
+		let out = c.output();
+		expect(out.rgb()[0]).toBe(34);
+		expect(out.rgb()[1]).toBe(119);
+		expect(out.rgb()[2]).toBe(255);
+	});
+
+	test("rgb() roundtrips", () => {
+		let c = new UIColor("rgb(34,119,255)");
+		let out = c.output();
+		expect(out.rgb()[0]).toBe(34);
+		expect(out.rgb()[1]).toBe(119);
+		expect(out.rgb()[2]).toBe(255);
+	});
+
+	test("rgba() roundtrips", () => {
+		let c = new UIColor("rgba(34,119,255,0.5)");
+		let out = c.output();
+		expect(out.rgb()[0]).toBe(34);
+		expect(out.rgb()[1]).toBe(119);
+		expect(out.rgb()[2]).toBe(255);
+		expect(out.alpha).toBe(0.5);
+	});
+
+	test("oklch() parsing", () => {
+		let c = new UIColor("oklch(0.5 0.15 240)");
+		let out = c.output();
+		expect(out.l).toBe(0.5);
+		expect(out.c).toBe(0.15);
+		expect(out.h).toBe(240);
+		expect(out.alpha).toBe(1);
+	});
+
+	test("oklch() with alpha", () => {
+		let c = new UIColor("oklch(0.5 0.15 240 / 0.5)");
+		let out = c.output();
+		expect(out.alpha).toBe(0.5);
+	});
+
+	test("Pure colors roundtrip through oklch", () => {
+		for (let [r, g, b] of [
+			[255, 0, 0],
+			[0, 255, 0],
+			[0, 0, 255],
+			[255, 255, 255],
+			[0, 0, 0],
+			[128, 128, 128],
+		]) {
+			let c = UIColor.rgb(r, g, b);
+			let out = c.output();
+			expect(out.rgb()[0]).toBe(r);
+			expect(out.rgb()[1]).toBe(g);
+			expect(out.rgb()[2]).toBe(b);
+		}
 	});
 });

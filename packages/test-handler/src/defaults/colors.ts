@@ -2,7 +2,7 @@ import { UI, UIColor } from "@talla-ui/core";
 
 /** @internal Default set of colors */
 export default {
-	transparent: new UIColor("transparent"),
+	transparent: new UIColor("#00000000"),
 	black: new UIColor("#000000"),
 	darkerGray: new UIColor("#333333"),
 	darkGray: new UIColor("#777777"),
@@ -23,7 +23,10 @@ export default {
 	purple: new UIColor("#aa4488"),
 	magenta: new UIColor("#dd2299"),
 	divider: UI.colors.background.text().alpha(0.15),
-	accent: UI.colors.background.fg("#222222", "#777777"),
+	accent: UI.colors.background.fg(
+		new UIColor("#222222"),
+		new UIColor("#777777"),
+	),
 	background: UI.colors.white,
 	shade: UI.colors.background.contrast(-0.05),
 	text: UI.colors.background.text(),

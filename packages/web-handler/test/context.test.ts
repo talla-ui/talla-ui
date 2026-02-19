@@ -35,7 +35,10 @@ describe("useWebContext", () => {
 			setWebTheme(new WebTheme().colors({ accent: "#ff0000" }));
 		});
 		// The accent color should be red
-		expect(String(UI.colors.accent)).toBe("#ff0000");
+		let out = UI.colors.accent.output();
+		expect(out.rgb()[0]).toBe(255);
+		expect(out.rgb()[1]).toBe(0);
+		expect(out.rgb()[2]).toBe(0);
 	});
 
 	test("Creates CSS stylesheets", async () => {

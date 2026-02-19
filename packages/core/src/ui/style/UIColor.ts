@@ -1,27 +1,43 @@
-// Use string constants for some common values
-const STR_BLACK = "#000";
-const STR_WHITE = "#fff";
-const STR_NOCOLOR = "transparent";
+import {
+	mixOklch,
+	oklchToSrgb,
+	parseHex,
+	parseOklch,
+	parseRgb,
+	srgbToOklch,
+} from "./color-util.js";
 
 let _cacheUpdate = 0;
 
-// Module-level storage for colors
+// Module-level storage for colors (initialized at bottom, and by platform handlers)
 let _colors: Record<string, UIColor> = {};
 let _colorRefs: Record<string, UIColor> = {};
+
+const ZERO_OUT: UIColor.Output = {
+	l: 0,
+	c: 0,
+	h: 0,
+	alpha: 0,
+	raw: undefined,
+	rgb: () => [0, 0, 0],
+	rgbaString: () => "rgba(0,0,0,0)",
+	oklchString: () => "oklch(0 0 0 / 0)",
+};
 
 /**
  * A class that represents a single color value.
  * - Use the constructor with a CSS color string, or reference a preset using {@link UIColor.getColor}.
  * - Use instance methods like {@link alpha()}, {@link brighten()}, and {@link mix()} to create derived colors.
- * - The {@link toString()} method returns a CSS-compatible color string.
+ * - The {@link output()} method returns a {@link UIColor.Output} with structured color values.
  *
  * Instances can be used with style properties and UI element color properties. Named colors are
- * available through {@link UI.colors} and can be customized using {@link setColors()}.
+ * available through {@link UI.colors} and can be customized using {@link setColors()} or the global theme (e.g. {@link WebTheme}).
  *
  * @example
  * // Create colors directly
  * new UIColor("#000")
  * new UIColor("rgba(0,0,0,0.5)")
+ * UIColor.oklch(0.5, 0.15, 240)
  *
  * // Use preset colors
  * UI.colors.black
@@ -57,7 +73,7 @@ export class UIColor {
 	static getColor(name: string): UIColor {
 		if (!_colorRefs[name]) {
 			let result = new UIColor();
-			result._f = () => String(_colors[name] || STR_NOCOLOR);
+			result._f = () => (_colors[name] ? _colors[name]!.output() : ZERO_OUT);
 			_colorRefs[name] = result;
 		}
 		return _colorRefs[name]!;
@@ -71,106 +87,96 @@ export class UIColor {
 	 */
 	static resolve(f: () => UIColor | undefined): UIColor {
 		let result = new UIColor();
-		result._f = () => String(f() || STR_NOCOLOR);
+		result._f = () => {
+			let src = f();
+			return src ? src.output() : ZERO_OUT;
+		};
 		return result;
 	}
 
 	/**
-	 * Determines whether a color has high perceived brightness.
-	 * - Used by {@link UIColor.text()} to select a contrasting text color.
-	 * @param color A color value in hex or rgb(a) format.
-	 * @param threshold The brightness threshold, from 0 to 1; defaults to 0.65.
-	 * @returns True if the color's perceived brightness exceeds the threshold.
+	 * Creates a UIColor from OKLCH values directly.
+	 * @param l Lightness, 0-1.
+	 * @param c Chroma, 0-~0.4.
+	 * @param h Hue, 0-360.
+	 * @param alpha Alpha, 0-1 (default 1).
 	 */
-	static isBrightColor(color: UIColor | string, threshold?: number) {
-		let c = String(color);
-		let w = threshold ? threshold * 255 : 165;
-		if (c[0] === "#") {
-			if (c.length === 4) {
-				c = "#" + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
-			}
-			let r = parseInt(c.slice(1, 3), 16);
-			let g = parseInt(c.slice(3, 5), 16);
-			let b = parseInt(c.slice(5, 7), 16);
-			return 0.3 * r + 0.6 * g + 0.1 * b > w;
-		} else if (c.slice(0, 4) === "rgb(" || c.slice(0, 5) === "rgba(") {
-			let v = c.slice(c.indexOf("(") + 1).split(",");
-			let r = parseFloat(v[0]!);
-			let g = parseFloat(v[1]!);
-			let b = parseFloat(v[2]!);
-			return 0.3 * r + 0.6 * g + 0.1 * b > w;
-		} else return true;
+	static oklch(l: number, c: number, h: number, alpha?: number): UIColor {
+		let color = new UIColor();
+		color._result = _oklchOutput(l, c, h, alpha ?? 1);
+		return color;
 	}
 
 	/**
-	 * Mixes two colors together at the specified ratio.
-	 * - Prefer instance methods like {@link UIColor.mix()} when working with {@link UIColor} objects.
-	 *
-	 * @summary
-	 * Blends the RGB channels of two colors. A ratio of 0 returns the first color,
-	 * 1 returns the second color, and 0.5 returns an equal mix.
-	 *
-	 * @param color1 The first color, in hex or rgb(a) format.
-	 * @param color2 The second color, in hex or rgb(a) format.
-	 * @param ratio The contribution of the second color, from 0 to 1.
-	 * @param ignoreAlpha True to preserve the first color's alpha value.
-	 * @returns A color string in rgb(a) format.
+	 * Creates a UIColor from sRGB values, converting to OKLCH internally.
+	 * @param r Red, 0-255.
+	 * @param g Green, 0-255.
+	 * @param b Blue, 0-255.
+	 * @param alpha Alpha, 0-1 (default 1).
 	 */
-	static mixColors(
-		color1: UIColor | string,
-		color2: UIColor | string,
-		ratio: number,
-		ignoreAlpha?: boolean,
-	) {
-		function parse(color: string) {
-			if (color[0] === "#") {
-				if (color.length === 4)
-					return color
-						.slice(1)
-						.split("")
-						.map((s) => parseInt(s + s, 16));
-				else
-					return [color.slice(1, 3), color.slice(3, 5), color.slice(5, 7)].map(
-						(s) => parseInt(s, 16),
-					);
-			} else if (color.slice(0, 5) === "rgba(") {
-				return color
-					.slice(5)
-					.split(",")
-					.map((s) => parseFloat(s));
-			} else if (color.slice(0, 4) === "rgb(") {
-				return color
-					.slice(4)
-					.split(",")
-					.map((s) => parseFloat(s));
-			} else if (color === STR_NOCOLOR) {
-				return [0, 0, 0, 0];
-			}
-			return [0, 0, 0];
-		}
-		let q = 1 - ratio;
-		function mix(n1?: number, n2?: number) {
-			let r = n1 === n2 ? n1 : Math.round(q * n1! + ratio * n2!);
-			return isNaN(r!) ? n1 || 0 : r;
-		}
-		let c1 = parse(String(color1));
-		let c2 = parse(String(color2));
-		let rgbStr =
-			mix(c1[0], c2[0]) + "," + mix(c1[1], c2[1]) + "," + mix(c1[2], c2[2]);
-		let alpha = ignoreAlpha
-			? (c1[3] ?? 1)
-			: q * (c1[3] ?? 1) + ratio * (c2[3] ?? 1);
-		return alpha >= 1
-			? "rgb(" + rgbStr + ")"
-			: "rgba(" + rgbStr + "," + +alpha.toFixed(4) + ")";
+	static rgb(r: number, g: number, b: number, alpha?: number): UIColor {
+		let [l, c, h] = srgbToOklch(r / 255, g / 255, b / 255);
+		return UIColor.oklch(l, c, h, alpha);
+	}
+
+	/**
+	 * Determines whether a color has high perceived brightness.
+	 * @param color A UIColor instance.
+	 * @param threshold The brightness threshold, from 0 to 1; defaults to 0.65.
+	 * @returns True if the color's perceived brightness exceeds the threshold.
+	 */
+	static isBrightColor(color: UIColor, threshold?: number): boolean {
+		let out = color.output();
+		if (out.raw || out.alpha === 0) return true;
+		return out.l > (threshold ?? 0.65);
 	}
 
 	/**
 	 * Creates a new UIColor instance.
-	 * @param color A CSS color string in hex or rgb(a) format.
+	 * @param color A CSS color string in hex, rgb(a), or oklch() format. Unrecognized strings are stored as raw CSS.
 	 */
 	constructor(color?: string) {
-		if (color) this._f = () => String(color);
+		if (color !== null) {
+			if (!color || color === "transparent") {
+				this._result = ZERO_OUT;
+				return;
+			}
+
+			// try to parse as hex/rgb/oklch
+			let hex = parseHex(color);
+			if (hex) {
+				let [l, c, h] = srgbToOklch(hex[0] / 255, hex[1] / 255, hex[2] / 255);
+				this._result = _oklchOutput(l, c, h, 1);
+				return;
+			}
+			let rgb = parseRgb(color);
+			if (rgb) {
+				let [l, c, h] = srgbToOklch(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
+				this._result = _oklchOutput(l, c, h, rgb[3]);
+				return;
+			}
+			let oklch = parseOklch(color);
+			if (oklch) {
+				this._result = _oklchOutput(oklch[0], oklch[1], oklch[2], oklch[3]);
+				return;
+			}
+
+			// just store raw string
+			this._result = _rawOutput(color);
+		}
+	}
+
+	/**
+	 * Returns a {@link UIColor.Output} with structured color values.
+	 * - Results are cached and invalidated when the color registry changes.
+	 */
+	output(): UIColor.Output {
+		if (this._result && (!this._f || this._up === _cacheUpdate)) {
+			return this._result;
+		}
+		this._result = this._f ? this._f() : ZERO_OUT;
+		this._up = _cacheUpdate;
+		return this._result;
 	}
 
 	/**
@@ -179,7 +185,14 @@ export class UIColor {
 	 * @returns A new {@link UIColor} instance.
 	 */
 	alpha(alpha: number) {
-		return this.mix("rgba(,,,0)", 1 - alpha);
+		let derived = new UIColor();
+		let self = this;
+		derived._f = () => {
+			let out = self.output();
+			if (out.raw) return _rawOutput(out.raw);
+			return _oklchOutput(out.l, out.c, out.h, out.alpha * alpha);
+		};
+		return derived;
 	}
 
 	/**
@@ -188,7 +201,21 @@ export class UIColor {
 	 * @returns A new {@link UIColor} instance.
 	 */
 	brighten(d: number) {
-		return this.mix(d > 0 ? STR_WHITE : STR_BLACK, Math.abs(d), true);
+		let derived = new UIColor();
+		let self = this;
+		derived._f = () => {
+			let out = self.output();
+			if (out.raw) return _rawOutput(out.raw);
+			let t = Math.abs(d);
+			let targetL = d > 0 ? 1 : 0;
+			return _oklchOutput(
+				out.l + (targetL - out.l) * t,
+				out.c * (1 - t),
+				out.h,
+				out.alpha,
+			);
+		};
+		return derived;
 	}
 
 	/**
@@ -200,25 +227,26 @@ export class UIColor {
 	 * @returns A new {@link UIColor} instance.
 	 */
 	contrast(d: number, threshold?: number) {
-		let result = new UIColor();
-		result._f = () => {
-			let c = String(this);
-			let bright = UIColor.isBrightColor(c, threshold);
-			if (d > 0.5) d = 0.5;
-			if (d < -0.5) d = -0.5;
-
-			// logic: inverse for dark colors,
-			// scale factor down for light colors
-			// (since eyes are more sensitive to light)
-			let v = bright ? d * 0.85 : -d;
-			return UIColor.mixColors(
-				c,
-				v > 0 ? STR_WHITE : STR_BLACK,
-				Math.abs(v),
-				true,
+		let derived = new UIColor();
+		let self = this;
+		derived._f = () => {
+			let out = self.output();
+			if (out.raw) return _rawOutput(out.raw);
+			let bright = out.l > (threshold ?? 0.65);
+			let dd = d;
+			if (dd > 0.5) dd = 0.5;
+			if (dd < -0.5) dd = -0.5;
+			let v = bright ? dd * 0.85 : -dd;
+			let t = Math.abs(v);
+			let targetL = v > 0 ? 1 : 0;
+			return _oklchOutput(
+				out.l + (targetL - out.l) * t,
+				out.c * (1 - t),
+				out.h,
+				out.alpha,
 			);
 		};
-		return result;
+		return derived;
 	}
 
 	/**
@@ -234,12 +262,17 @@ export class UIColor {
 		colorOnDark: UIColor | string,
 		threshold?: number,
 	) {
-		let result = new UIColor();
-		result._f = () =>
-			UIColor.isBrightColor(this, threshold)
-				? String(colorOnLight)
-				: String(colorOnDark);
-		return result;
+		let light =
+			colorOnLight instanceof UIColor
+				? colorOnLight
+				: new UIColor(colorOnLight);
+		let dark =
+			colorOnDark instanceof UIColor ? colorOnDark : new UIColor(colorOnDark);
+		let derived = new UIColor();
+		let self = this;
+		derived._f = () =>
+			(UIColor.isBrightColor(self, threshold) ? light : dark).output();
+		return derived;
 	}
 
 	/**
@@ -253,36 +286,62 @@ export class UIColor {
 
 	/**
 	 * Returns a new {@link UIColor} mixed with the specified color.
+	 * - Mixing is performed in oklab space for perceptually correct blending.
 	 * @param color The color to mix in.
 	 * @param amount The mix ratio, from 0 (no change) to 1 (fully the other color).
 	 * @param ignoreAlpha True to preserve the current color's alpha value.
 	 * @returns A new {@link UIColor} instance.
 	 */
 	mix(color: UIColor | string, amount: number, ignoreAlpha?: boolean) {
-		let result = new UIColor();
-		result._f = () => UIColor.mixColors(this, color, amount, ignoreAlpha);
-		return result;
+		let other = color instanceof UIColor ? color : new UIColor(color);
+		let derived = new UIColor();
+		let self = this;
+		derived._f = () => {
+			let out1 = self.output();
+			let out2 = other.output();
+			if (out1.raw) return _rawOutput(out1.raw);
+			if (out2.raw) return _rawOutput(out2.raw);
+			return _oklchOutput(
+				...mixOklch(out1.l, out1.c, out1.h, out2.l, out2.c, out2.h, amount),
+				ignoreAlpha
+					? out1.alpha
+					: out1.alpha + (out2.alpha - out1.alpha) * amount,
+			);
+		};
+		return derived;
 	}
 
-	/** Returns a CSS-compatible string representation of the current color. */
-	toString() {
-		// return cached value if presets are still the same
-		if (this._s && this._up === _cacheUpdate) {
-			return this._s;
-		}
-
-		// otherwise, compute value and cache it now
-		let s = (this._s = this._f ? this._f() : STR_NOCOLOR);
-		this._up = _cacheUpdate;
-		return s;
-	}
-
-	private _f?: () => string;
-	private _s?: string;
+	private _f?: () => UIColor.Output;
+	private _result?: UIColor.Output;
 	private _up?: number;
 }
 
 export namespace UIColor {
+	/**
+	 * An interface that represents the output of a resolved UIColor.
+	 * - OKLCH values (l, c, h, alpha) are always available directly.
+	 * - RGB and CSS strings are computed lazily via methods, and cached after first call.
+	 * - For raw CSS colors, `raw` is the original string; `l/c/h` are 0.
+	 */
+	export interface Output {
+		/** OKLCH lightness, 0-1 (0 for raw). */
+		readonly l: number;
+		/** OKLCH chroma, 0-~0.4 (0 for raw). */
+		readonly c: number;
+		/** OKLCH hue, 0-360 (0 for raw). */
+		readonly h: number;
+		/** Alpha, 0-1 (1 for raw). */
+		readonly alpha: number;
+		/** Raw CSS string for unparsed colors, or undefined. */
+		readonly raw: string | undefined;
+		/** Returns sRGB [r, g, b] (each 0-255). Lazy, cached after first call. */
+		rgb(): [number, number, number];
+		/** Returns a CSS rgba() or rgb() string. Lazy, cached after first call. */
+		rgbaString(): string;
+		/** Returns a CSS oklch() string. Lazy, cached after first call. */
+		oklchString(): string;
+	}
+
 	const _names = [
 		"transparent",
 		"black",
@@ -339,9 +398,63 @@ export namespace UIColor {
 	export const darkTextColor = UIColor.getColor("darkText");
 }
 
-// Initialize default colors in _colors
-UIColor.setColors({
-	transparent: STR_NOCOLOR,
-	darkText: STR_BLACK,
-	lightText: STR_WHITE,
-});
+/** Helper function to create an output object for an OKLCH color value */
+function _oklchOutput(
+	l: number,
+	c: number,
+	h: number,
+	alpha: number,
+): UIColor.Output {
+	let _rgb: [number, number, number] | undefined;
+	let _rgba: string | undefined;
+	let _oklch: string | undefined;
+	return {
+		l,
+		c,
+		h,
+		alpha,
+		raw: undefined,
+		rgb() {
+			return (_rgb ??= oklchToSrgb(l, c, h));
+		},
+		rgbaString() {
+			if (_rgba !== undefined) return _rgba;
+			let [r, g, b] = this.rgb();
+			return (_rgba =
+				alpha >= 1
+					? "rgb(" + r + "," + g + "," + b + ")"
+					: "rgba(" + r + "," + g + "," + b + "," + +alpha.toFixed(4) + ")");
+		},
+		oklchString() {
+			return (_oklch ??=
+				"oklch(" +
+				+l.toFixed(5) +
+				" " +
+				+c.toFixed(5) +
+				" " +
+				+h.toFixed(2) +
+				(alpha < 1 ? " / " + +alpha.toFixed(4) : "") +
+				")");
+		},
+	};
+}
+
+/** Helper function to create an output object for a raw color value */
+function _rawOutput(raw: string): UIColor.Output {
+	return {
+		l: 0,
+		c: 0,
+		h: 0,
+		alpha: 1,
+		raw,
+		rgb: () => [0, 0, 0],
+		rgbaString: () => raw,
+		oklchString: () => raw,
+	};
+}
+
+// Set basic colors upfront
+
+_colors["transparent"] = UIColor.oklch(0, 0, 0, 0);
+_colors["darkText"] = UIColor.oklch(0, 0, 0);
+_colors["lightText"] = UIColor.oklch(1, 0, 0);
