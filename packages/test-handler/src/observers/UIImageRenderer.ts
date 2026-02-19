@@ -6,14 +6,13 @@ import { applyElementStyle, TestBaseObserver } from "./TestBaseObserver.js";
 export class UIImageRenderer extends TestBaseObserver<UIImage> {
 	constructor(observed: UIImage) {
 		super(observed);
-		this.observeProperties("source");
+		this.observeProperties("source", "fit");
 	}
 
 	protected override propertyChange(property: string, value: any) {
 		if (!this.element) return;
-		switch (property) {
-			case "source":
-				return this.scheduleUpdate(this.element);
+		if (property === "source") {
+			return this.scheduleUpdate(this.element);
 		}
 		super.propertyChange(property, value);
 	}

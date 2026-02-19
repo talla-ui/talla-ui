@@ -106,7 +106,6 @@ export function makeBaseCSS(): Record<string, {}> {
 			display: "block",
 			width: "100%",
 			height: "100%",
-			objectFit: "cover",
 		},
 
 		// CSS for alignment of elements within buttons/text elements

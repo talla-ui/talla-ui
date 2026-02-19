@@ -22,6 +22,16 @@ export class UIImage extends UIElement {
 	source?: StringConvertible;
 
 	/**
+	 * The image fit mode, determining how the image is resized within its container.
+	 * - `contain` — fits within the container, maintaining aspect ratio; may letterbox (default).
+	 * - `cover` — fills the container, maintaining aspect ratio, cropping if necessary.
+	 * - `fill` — stretches to fill the container; may distort the image.
+	 * - `scale-down` — like `contain`, but never scales up beyond natural size.
+	 * - `none` — displayed at natural size, no scaling applied.
+	 */
+	fit: "cover" | "contain" | "fill" | "scale-down" | "none" = "contain";
+
+	/**
 	 * True if this image may receive input focus.
 	 * - This property is not observed and cannot be changed after rendering.
 	 */
@@ -65,6 +75,15 @@ export namespace UIImage {
 			source?: BindingOrValue<StringConvertible | UIIconResource | undefined>,
 		) {
 			return this.setProperty("source", source);
+		}
+
+		/**
+		 * Sets the image fit mode.
+		 * @param fit The fit mode, or a binding; defaults to `contain`.
+		 * @returns The builder instance for chaining.
+		 */
+		fit(fit: BindingOrValue<UIImage["fit"]>) {
+			return this.setProperty("fit", fit);
 		}
 
 		/**

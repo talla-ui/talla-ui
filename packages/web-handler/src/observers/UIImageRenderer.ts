@@ -62,15 +62,13 @@ export function getIconElt(icon?: StringConvertible, style?: UIText.IconStyle) {
 export class UIImageRenderer extends BaseObserver<UIImage> {
 	constructor(observed: UIImage) {
 		super(observed);
-		this.observeProperties("source");
+		this.observeProperties("source", "fit");
 	}
 
 	protected override propertyChange(property: string, value: any) {
 		if (!this.element) return;
-		switch (property) {
-			case "source":
-				this.scheduleUpdate(this.element);
-				return;
+		if (property === "source") {
+			return this.scheduleUpdate(this.element);
 		}
 		super.propertyChange(property, value);
 	}
@@ -107,6 +105,12 @@ export class UIImageRenderer extends BaseObserver<UIImage> {
 			false,
 			image.position,
 		);
+
+		// apply fit mode: need to target inner img element
+		let inner = element.firstChild;
+		if (inner instanceof HTMLImageElement) {
+			inner.style.objectFit = image.fit;
+		}
 	}
 
 	updateContent(element: HTMLElement) {
