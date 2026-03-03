@@ -20,7 +20,7 @@ const BodyView = () =>
 			.hideWhen(
 				new Binding("docked"), // from MainOverlayView
 			)
-			.stretch()
+			.flex()
 			.center(),
 		UI.Column(
 			UI.Image(icons.selectElement).size(32).fg(UI.colors.blue),
@@ -30,10 +30,10 @@ const BodyView = () =>
 		UI.Column()
 			.hideWhen(new Binding("docked"))
 			.effect("drag-modal", true)
-			.stretch()
+			.flex()
 			.center(),
 	)
-		.stretch()
+		.flex()
 		.center();
 
 export class ViewPickerPanelView extends Widget {

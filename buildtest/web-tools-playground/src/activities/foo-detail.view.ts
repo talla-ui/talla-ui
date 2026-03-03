@@ -5,7 +5,7 @@ import { MainLayout } from "./layout";
 function StatsLine(label: string, value: any) {
 	return UI.Row()
 		.padding({ x: 16, y: 8 })
-		.with(UI.Text(label).grow(), UI.Text(value));
+		.with(UI.Text(label).flex(), UI.Text(value));
 }
 
 export const FooDetailView = (v: Binding<{ item: FooItem }>) =>

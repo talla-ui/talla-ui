@@ -444,14 +444,13 @@ function addDimensionsCSS(
 	if (maxWidth !== undefined) result.maxWidth = getCSSLength(maxWidth, "");
 	let maxHeight = dimensions.maxHeight;
 	if (maxHeight !== undefined) result.maxHeight = getCSSLength(maxHeight, "");
-	let grow = dimensions.grow;
-	if (grow !== undefined) {
-		result.flexGrow = grow === true ? 1 : grow === false ? 0 : (grow as any);
-	}
-	let shrink = dimensions.shrink;
-	if (shrink !== undefined) {
-		result.flexShrink =
-			shrink === true ? 1 : shrink === false ? 0 : (shrink as any);
+	let flexGrow = dimensions.flexGrow;
+	if (flexGrow !== undefined) {
+		result.flexGrow = String(flexGrow);
+		result.flexShrink = String(dimensions.flexShrink ?? 1);
+		result.flexBasis = flexGrow > 0 ? "0" : "auto";
+	} else if (dimensions.flexShrink !== undefined) {
+		result.flexShrink = String(dimensions.flexShrink);
 	}
 	return result;
 }

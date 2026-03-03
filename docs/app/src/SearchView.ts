@@ -5,8 +5,7 @@ export function SearchView(v: Binding<SearchActivity>) {
 	return UI.Column()
 		.padding({ start: 16, end: 8 })
 		.width("100%")
-		.grow(false)
-		.shrink(true)
+		.flex(0, 1)
 		.onKey("Escape", "Close")
 		.with(
 			UI.Row()
@@ -46,7 +45,7 @@ export function SearchView(v: Binding<SearchActivity>) {
 				.with(UI.Text("Loading...")),
 			UI.List(v.bind("results"))
 				.bounds(0, 50)
-				.outer(UI.Column().grow(false).allowKeyboardFocus().scroll())
+				.outer(UI.Column().allowKeyboardFocus().scroll())
 				.with((item) =>
 					UI.Column()
 						.allowFocus()
@@ -82,7 +81,6 @@ export function SearchView(v: Binding<SearchActivity>) {
 								UI.Row(
 									UI.Text(item.bind("title")).style({
 										fontWeight: "var(--bold-weight)",
-										shrink: 0,
 									}),
 									UI.Text(item.bind("showId")).dim().fontSize(14),
 								),

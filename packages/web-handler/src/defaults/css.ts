@@ -86,6 +86,8 @@ export function makeBaseCSS(): Record<string, {}> {
 			alignSelf: "stretch",
 			flexShrink: "1",
 			flexGrow: "1",
+			flexBasis: "0",
+			minHeight: "0",
 		},
 
 		// set sensible placeholder style

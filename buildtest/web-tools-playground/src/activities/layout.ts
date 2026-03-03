@@ -47,7 +47,7 @@ export function MainLayout(...content: ViewBuilder[]) {
 	return UI.Row()
 		.background("shade")
 		.position("cover")
-		.shrink()
+		.flex(0, 1)
 		.with(
 			// Left nav for wide screens
 			UI.Column()
@@ -65,7 +65,7 @@ export function MainLayout(...content: ViewBuilder[]) {
 
 			// Main content column
 			UI.Column()
-				.grow()
+				.flex()
 				.background("background")
 				.borderRadius(8)
 				.with(...content)

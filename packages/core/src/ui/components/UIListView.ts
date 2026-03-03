@@ -352,7 +352,7 @@ export class UIListView<
 			let spacer = this._lastSpacer;
 			if (!spacer || spacer.isUnlinked()) {
 				this._lastSpacer = spacer = new UISpacer();
-				spacer.style = { minHeight: 0, minWidth: 0, grow: true };
+				spacer.style = { minHeight: 0, minWidth: 0, flexGrow: 1 };
 			}
 			views.push(spacer);
 		}

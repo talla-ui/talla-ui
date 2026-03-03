@@ -17,14 +17,12 @@ const MAX_ITEMS = 500;
 const BodyView = (v: Binding<InspectPanelView>) =>
 	UI.Column()
 		.name("PropertyList")
-		.shrink()
 		.layout({ distribution: "start", gravity: "stretch" })
-		.stretch()
+		.flex()
 		.with(
 			UI.List(v.bind("history"), (item) =>
 				UI.Column()
 					.height(32)
-					.grow(false)
 					.padding({ x: 8, y: 4 })
 					.background(
 						Binding.equal(item.bind("value"), v.bind("object")).then(
@@ -44,10 +42,10 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 									UI.icons.chevronDown,
 									UI.icons.chevronNext,
 								),
-							).shrink(0),
+							),
 							UI.Text(item.bind("key").string(".{}"))
 								.hideWhen(item.bind.not("key"))
-								.shrink(0)
+								.flex(0, 0)
 								.fontSize(12),
 							UI.Spacer(),
 							UI.Text(item.bind("display"))
@@ -60,15 +58,13 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 				UI.Column()
 					.align("stretch")
 					.scroll()
+					.flex(0)
 					.maxHeight(152)
-					.shrink(0)
-					.grow(0)
 					.onRendered("HistoryScrollRendered"),
 			),
 			UI.List(v.bind("properties"), (item) =>
 				UI.Column()
 					.height(32)
-					.grow(false)
 					.padding({ x: 8 })
 					.align("stretch", "center")
 					.cursor("pointer")
@@ -90,7 +86,7 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 								.position({ gravity: "overlay", top: 2, end: 0 }),
 							UI.Text(item.bind("key"))
 								.hideWhen(item.bind("listItem"))
-								.shrink(0)
+								.flex(0, 0)
 								.width(120)
 								.padding({ end: 8 })
 								.fontSize(12)
@@ -107,14 +103,12 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 				.addSpacer()
 				.outer(
 					UI.Column()
-						.align("stretch")
 						.divider()
 						.scroll()
-						.grow(false)
-						.onRendered("PropertyScrollRendered"),
+						.onRendered("PropertyScrollRendered")
+						.hideWhen(v.bind("properties.length").not()),
 				),
 			UI.Column()
-				.position("stretch")
 				.hideWhen(v.bind("displayValue").equals(undefined))
 				.layout({ clip: true, gravity: "start", distribution: "start" })
 				.padding(8)
@@ -133,9 +127,15 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 						.hideWhen(v.bind.not("setExpr"))
 						.onClick("SetExpr"),
 				),
-			UI.Column().effect("drag-modal", true).stretch().hideWhen(
-				new Binding("docked"), // from MainOverlayView
-			),
+			UI.Column()
+				.effect("drag-modal", true)
+				.flex()
+				.hideWhen(
+					Binding.any(
+						v.bind("displayValue").equals(undefined),
+						new Binding("docked"), // from MainOverlayView
+					),
+				),
 		);
 
 export class InspectPanelView extends Widget {

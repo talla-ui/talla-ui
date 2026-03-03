@@ -228,7 +228,7 @@ export namespace UIElement {
 		 *
 		 * @example
 		 * function limitColumnWidth(b: UIColumn.ColumnBuilder) {
-		 *   return b.width(200, 100).shrink();
+		 *   return b.width(200, 100).flex(0, 1);
 		 * }
 		 * let myColumn = UI.Column("Hello").apply(limitColumnWidth);
 		 */
@@ -458,21 +458,18 @@ export namespace UIElement {
 		}
 
 		/**
-		 * Sets the flex-grow factor of the element.
-		 * @param grow A number, or `true` for a grow factor of 1; defaults to `true`.
+		 * Enables flex-grow on the element, allowing it to take up as much space as possible (or flex-shrink to allow it to shrink).
+		 * - This method sets the {@link StyleOverrides.flexGrow flexGrow} and {@link StyleOverrides.flexShrink flexShrink} factors of the element.
+		 * - If a flex-shrink factor is provided, the flex-grow factor _must_ also be defined.
+		 * - In the web-handler implementation, flex-basis is set automatically: when grow is greater than 0, the element's flex-basis is set to 0 for equal spacing among flex siblings; otherwise, it's set to auto.
+		 * @param grow The flex-grow factor; defaults to 1.
+		 * @param shrink The flex-shrink factor; defaults to 1.
 		 * @returns The builder instance for chaining.
 		 */
-		grow(grow: BindingOrValue<number | boolean> = true) {
-			return this.setStyleOverride("grow", grow);
-		}
-
-		/**
-		 * Sets the flex-shrink factor of the element.
-		 * @param shrink A number, or `true` for a shrink factor of 1; defaults to `true`.
-		 * @returns The builder instance for chaining.
-		 */
-		shrink(shrink: BindingOrValue<number | boolean> = true) {
-			return this.setStyleOverride("shrink", shrink);
+		flex(grow: number = 1, shrink: number = 1) {
+			this.setStyleOverride("flexGrow", grow);
+			this.setStyleOverride("flexShrink", shrink);
+			return this;
 		}
 
 		/**

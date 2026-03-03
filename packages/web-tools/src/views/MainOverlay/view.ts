@@ -82,7 +82,6 @@ export const MainOverlayViewBody = (v: Binding<MainOverlayView>) =>
 		.effect("click-foreground")
 		.position(v.bind("overlayPosition"))
 		.style(v.bind("docked").then(dockedStyle, undockedStyle))
-		.center()
 		.with(
 			// Minimized: button
 			UI.Column()
@@ -121,27 +120,27 @@ export const MainOverlayViewBody = (v: Binding<MainOverlayView>) =>
 
 			// Content
 			UI.Column()
-				.stretch()
+				.flex()
 				.style(
 					Binding.any(
-						v.bind("docked").then({}),
+						v.bind("docked").then({
+							minHeight: 0,
+						}),
 						v
 							.bind("mode")
 							.equals("minimized")
 							.then(
 								{
 									width: 0,
-									height: 0,
+									minHeight: 0,
 									css: {
-										overflow: "hidden",
 										transition: "all 0.1s ease-in-out",
 									},
 								},
 								{
 									width: 320,
-									height: "min(500px, calc(100vh - 160px))",
+									minHeight: "min(500px, calc(100vh - 160px))",
 									css: {
-										overflow: "hidden",
 										transition: "all 0.1s ease-in-out",
 									},
 								},

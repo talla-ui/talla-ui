@@ -41,7 +41,6 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 				background: UI.colors.background.brighten(0.1),
 				padding: { y: 4 },
 				borderRadius: 8,
-				grow: 0,
 				dropShadow: 4,
 			})
 			.layout({ clip: true })
@@ -62,7 +61,7 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 	}
 
 	static ItemHint() {
-		return UI.Text().opacity(0.5).fontSize(12).shrink(0);
+		return UI.Text().dim().style({ fontSize: 12, flexShrink: 0 });
 	}
 
 	static TitleText() {

@@ -137,39 +137,42 @@ describe("Container hover tracking", () => {
 	});
 });
 
-describe("Container .stretch() method", () => {
-	test("stretch() applies flex-fill behavior", () => {
-		let column = UI.Column().stretch().build();
-		expect(column.style?.grow).toBe(1);
-		expect(column.style?.minHeight).toBe(0);
-		expect(column.layout?.clip).toBe(true);
-		expect(column.position?.gravity).toBe("stretch");
-		expect(column.position?.zIndex).toBe(0);
+describe("Container .flex() method", () => {
+	test("flex() sets grow and shrink defaults", () => {
+		let column = UI.Column().flex().build();
+		expect(column.style?.flexGrow).toBe(1);
+		expect(column.style?.flexShrink).toBe(1);
 	});
 
-	test("stretch() works on both Row and Column", () => {
-		let column = UI.Column().stretch().build();
-		let row = UI.Row().stretch().build();
-		expect(column.style?.grow).toBe(1);
-		expect(row.style?.grow).toBe(1);
-		expect(column.position?.zIndex).toBe(0);
-		expect(row.position?.zIndex).toBe(0);
+	test("flex() works on both Row and Column", () => {
+		let column = UI.Column().flex().build();
+		let row = UI.Row().flex().build();
+		expect(column.style?.flexGrow).toBe(1);
+		expect(row.style?.flexGrow).toBe(1);
 	});
 
-	test("stretch() renders correctly", async () => {
-		let column = UI.Column(UI.Text("Content")).stretch().build();
+	test("flex() accepts custom grow and shrink values", () => {
+		let column = UI.Column().flex(2, 0).build();
+		expect(column.style?.flexGrow).toBe(2);
+		expect(column.style?.flexShrink).toBe(0);
+	});
+
+	test("flex(0, 1) sets shrink-only behavior", () => {
+		let column = UI.Column().flex(0, 1).build();
+		expect(column.style?.flexGrow).toBe(0);
+		expect(column.style?.flexShrink).toBe(1);
+	});
+
+	test("flex() renders correctly", async () => {
+		let column = UI.Column(UI.Text("Content")).flex().build();
 		renderTestView(column);
 		let out = await expectOutputAsync({ type: "column" });
-		expect(out.getSingle().style?.grow).toBe(1);
+		expect(out.getSingle().style?.flexGrow).toBe(1);
 	});
 
-	test("stretch() can be combined with focus and hover", () => {
-		let column = UI.Column()
-			.stretch()
-			.allowKeyboardFocus()
-			.trackHover()
-			.build();
-		expect(column.style?.grow).toBe(1);
+	test("flex() can be combined with focus and hover", () => {
+		let column = UI.Column().flex().allowKeyboardFocus().trackHover().build();
+		expect(column.style?.flexGrow).toBe(1);
 		expect(column.allowKeyboardFocus).toBe(true);
 		expect(column.trackHover).toBe(true);
 	});
@@ -199,9 +202,9 @@ describe("Container .center() method", () => {
 		out.containing({ type: "text", text: "Centered" }).toBeRendered();
 	});
 
-	test("stretch() and center() can be combined", () => {
-		let column = UI.Column().stretch().center().build();
-		expect(column.style?.grow).toBe(1);
+	test("flex() and center() can be combined", () => {
+		let column = UI.Column().flex().center().build();
+		expect(column.style?.flexGrow).toBe(1);
 		expect(column.layout?.gravity).toBe("center");
 		expect(column.layout?.distribution).toBe("center");
 	});
@@ -256,19 +259,17 @@ describe("Position zIndex property", () => {
 describe("Combined container features", () => {
 	test("Container with all interactive features", () => {
 		let column = UI.Column(UI.Text("Content"))
-			.stretch()
+			.flex()
 			.center()
 			.allowKeyboardFocus()
 			.trackHover()
 			.build();
 
-		// stretch() properties
-		expect(column.style?.grow).toBe(1);
-		expect(column.style?.minHeight).toBe(0);
-		expect(column.layout?.clip).toBe(true);
-		expect(column.position?.zIndex).toBe(0);
+		// flex() properties
+		expect(column.style?.flexGrow).toBe(1);
+		expect(column.style?.flexShrink).toBe(1);
 
-		// center() overrides stretch's gravity
+		// center() layout
 		expect(column.layout?.gravity).toBe("center");
 		expect(column.layout?.distribution).toBe("center");
 
@@ -280,7 +281,7 @@ describe("Combined container features", () => {
 	test("Interactive container renders and responds to events", async () => {
 		let mouseEntered = false;
 		let column = UI.Column()
-			.stretch()
+			.flex()
 			.allowKeyboardFocus()
 			.onMouseEnter(() => {
 				mouseEntered = true;
@@ -291,7 +292,7 @@ describe("Combined container features", () => {
 		let out = await expectOutputAsync({ type: "column" });
 
 		expect(out.getSingle().focusable).toBe(true);
-		expect(out.getSingle().style?.grow).toBe(1);
+		expect(out.getSingle().style?.flexGrow).toBe(1);
 
 		out.getSingle().sendPlatformEvent("mouseenter");
 		expect(mouseEntered).toBe(true);

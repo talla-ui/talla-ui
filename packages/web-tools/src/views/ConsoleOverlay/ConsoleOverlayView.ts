@@ -42,7 +42,7 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 				.height(40)
 				.padding({ start: 8, end: 4 })
 				.with(
-					UI.Text("Console").bold().shrink(0),
+					UI.Text("Console").bold().flex(0, 0),
 					UI.Spacer(8),
 					UI.Row(
 						UI.Button("all")
@@ -87,13 +87,12 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 							if ("value" in tf && tf.value) return;
 							row.setStyle({ width: 80 });
 						})
-						.shrink(),
+						.flex(0, 1),
 					UI.Button().icon(UI.icons.close, 16).style("icon").onClick("Close"),
 				),
 			UI.Divider().margin(0),
 			UI.List(v.bind("list"), (item) =>
 				UI.Column()
-					.grow(false)
 					.padding({ x: 8, top: 16, bottom: 2 })
 					.border({ top: 1 }, "divider")
 					.cursor("pointer")
@@ -104,8 +103,7 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 					.onKey("ArrowDown", "FocusNext")
 					.onKey("ArrowUp", "FocusPrevious")
 					.allowFocus()
-					.stretch()
-					.center()
+					.flex()
 					.with(
 						UI.Text()
 							.fmt("{} {1:?/= {1}}", item.bind("time"), item.bind("var"))
@@ -113,7 +111,7 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 							.dim()
 							.position({ gravity: "overlay", top: 2, start: 8 }),
 						UI.Text(item.bind("loc"))
-							.grow()
+							.flex()
 							.fontSize(10)
 							.dim()
 							.textAlign("end")
@@ -158,8 +156,7 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 					.accessibleRole("list")
 					.allowKeyboardFocus()
 					.onFocusIn("SetListFocus")
-					.scroll()
-					.stretch(),
+					.scroll(),
 			),
 			UI.Divider().margin(0),
 			UI.Row()

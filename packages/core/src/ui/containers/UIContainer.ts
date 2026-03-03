@@ -230,17 +230,5 @@ export namespace UIContainer {
 			});
 			return this;
 		}
-
-		/**
-		 * Applies flex-fill behavior with stacking context.
-		 * - Sets grow to 1, minHeight to 0, clips overflow, stretches to fill parent, and creates a stacking context (zIndex: 0).
-		 * @returns The builder instance for chaining.
-		 */
-		stretch() {
-			return this.grow(1)
-				.minHeight(0)
-				.clip(true)
-				.position({ gravity: "stretch", zIndex: 0 });
-		}
 	}
 }

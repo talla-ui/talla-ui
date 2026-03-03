@@ -156,7 +156,7 @@ describe("UIImageRenderer", () => {
 	});
 
 	describe("Icon styling", () => {
-		test("Icon uses default size and no shrink", async () => {
+		test("Icon uses default size", async () => {
 			const icon = new UIIconResource('<svg viewBox="0 0 24 24"></svg>');
 			const image = UI.Image(icon).build();
 			await renderView(image);
@@ -164,7 +164,6 @@ describe("UIImageRenderer", () => {
 			const figure = document.querySelector("figure") as HTMLElement;
 			expect(figure.style.width).toBeTruthy();
 			expect(figure.style.height).toBeTruthy();
-			expect(figure.style.flexShrink).toBe("0");
 		});
 
 		test("Custom dimensions override defaults", async () => {

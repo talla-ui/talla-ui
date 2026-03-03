@@ -25,7 +25,7 @@ export function makeDefaultStyles() {
 		textAlign: "center",
 		lineBreakMode: "nowrap",
 		minWidth: "6.5rem",
-		shrink: 1,
+		flexShrink: 1,
 		"+disabled": {
 			opacity: 0.5,
 			cursor: "default",
@@ -202,7 +202,7 @@ export function makeDefaultStyles() {
 	// --- text style
 
 	const baseTextStyle: WebNamedStyleDefinition = {
-		shrink: 1,
+		flexShrink: 1,
 		maxWidth: "100%",
 		lineBreakMode: "ellipsis",
 		cursor: "inherit",
@@ -268,7 +268,7 @@ export function makeDefaultStyles() {
 		borderStyle: "solid",
 		borderRadius: "0.375rem",
 		minWidth: "6rem",
-		shrink: 1,
+		flexShrink: 1,
 		height: "2.125rem",
 		padding: "0.25rem 0.625rem",
 		lineBreakMode: "pre-wrap",
@@ -310,7 +310,7 @@ export function makeDefaultStyles() {
 
 	const baseToggleStyle: WebNamedStyleDefinition = {
 		padding: "0.25rem 0",
-		shrink: 1,
+		flexShrink: 1,
 		"+disabled": {
 			opacity: 0.5,
 			cursor: "default",

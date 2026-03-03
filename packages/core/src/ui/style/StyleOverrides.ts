@@ -19,10 +19,10 @@ export type StyleOverrides = {
 	minHeight?: string | number;
 	/** The maximum height of the element, in pixels or as a string with unit. */
 	maxHeight?: string | number;
-	/** The flex growth factor; 0 or false for no growth, true equals 1. */
-	grow?: number | boolean;
-	/** The flex shrink factor; 0 or false to never shrink, true equals 1. */
-	shrink?: number | boolean;
+	/** The flex growth factor. */
+	flexGrow?: number;
+	/** The flex shrink factor. */
+	flexShrink?: number;
 	/** The padding within the element, in pixels, CSS string, or separate offset values. */
 	padding?: StyleOverrides.Offsets;
 	/** The margin around the element, in pixels, CSS string, or separate offset values. */

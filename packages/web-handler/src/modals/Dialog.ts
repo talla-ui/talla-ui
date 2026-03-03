@@ -28,7 +28,6 @@ export class Dialog extends Widget implements ModalFactory.DialogController {
 				width: "auto",
 				minWidth: 320,
 				maxWidth: "100vw",
-				grow: 0,
 				borderRadius: 12,
 				dropShadow: 32,
 			});

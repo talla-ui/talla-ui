@@ -89,7 +89,7 @@ export class UIImageRenderer extends BaseObserver<UIImage> {
 		let style: StyleOverrides | undefined = image.style;
 		if (isIcon) {
 			style = {
-				shrink: 0,
+				flexShrink: 0,
 				width: UITextRenderer.defaultIconStyle.size,
 				height: UITextRenderer.defaultIconStyle.size,
 				...style,
