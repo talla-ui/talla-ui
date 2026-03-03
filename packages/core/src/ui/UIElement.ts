@@ -10,12 +10,8 @@ import {
 import { err, ERROR } from "../errors.js";
 import { BindingOrValue, isBinding, ObservableEvent } from "../object/index.js";
 import { RenderEffect } from "./RenderEffect.js";
-import {
-	StyleOverrides,
-	UIColor,
-	UIIconResource,
-} from "./style/index.js";
 import type { UIGradient } from "./style/index.js";
+import { StyleOverrides, UIColor, UIIconResource } from "./style/index.js";
 
 /** @internal Empty array, used for findViewContent. */
 const _emptyViewContent: any[] = Object.freeze([]) as any;

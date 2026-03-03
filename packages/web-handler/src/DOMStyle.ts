@@ -102,7 +102,8 @@ export function backgroundToCSS(
 	background: UIColor | UIGradient | string,
 ): string {
 	if (background instanceof UIColor) return colorToCSS(background);
-	if ((background as any).isUIGradient) return gradientToCSS(background as UIGradient);
+	if ((background as any).isUIGradient)
+		return gradientToCSS(background as UIGradient);
 	return String(background);
 }
 

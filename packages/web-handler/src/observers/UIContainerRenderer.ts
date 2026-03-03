@@ -304,7 +304,9 @@ export class ContentUpdater {
 					? "0 " + margin
 					: margin + " 0"
 				: "";
-			sep.style.borderColor = colorToCSS(options.lineColor || UI.colors.divider);
+			sep.style.borderColor = colorToCSS(
+				options.lineColor || UI.colors.divider,
+			);
 			this.element.style.columnGap = "";
 			this.element.style.rowGap = "";
 		} else if (options?.space) {

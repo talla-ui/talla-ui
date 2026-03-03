@@ -166,8 +166,12 @@ describe("Color registration and lookup", () => {
 			customRed: "#ff0000",
 			customBlue: new UIColor("#0000ff"),
 		});
-		expect(UIColor.getColor("customRed").output().rgbaString()).toBe("rgb(255,0,0)");
-		expect(UIColor.getColor("customBlue").output().rgbaString()).toBe("rgb(0,0,255)");
+		expect(UIColor.getColor("customRed").output().rgbaString()).toBe(
+			"rgb(255,0,0)",
+		);
+		expect(UIColor.getColor("customBlue").output().rgbaString()).toBe(
+			"rgb(0,0,255)",
+		);
 	});
 
 	test("UIColor.setColors updates existing colors", () => {
@@ -270,7 +274,10 @@ describe("Brightness and text color", () => {
 		let blackTextRgba = UI.colors.white.text().output().rgbaString();
 		let whiteTextRgba = UI.colors.black.text().output().rgbaString();
 		let textOnDark = new UIColor("rgb(30,30,30)").text().output().rgbaString();
-		let textOnLight = new UIColor("rgb(200,200,200)").text().output().rgbaString();
+		let textOnLight = new UIColor("rgb(200,200,200)")
+			.text()
+			.output()
+			.rgbaString();
 		expect(textOnDark).toBe(whiteTextRgba);
 		expect(textOnLight).toBe(blackTextRgba);
 	});
@@ -278,8 +285,14 @@ describe("Brightness and text color", () => {
 	test("rgba color text selection", () => {
 		let blackTextRgba = UI.colors.white.text().output().rgbaString();
 		let whiteTextRgba = UI.colors.black.text().output().rgbaString();
-		let textOnDark = new UIColor("rgba(30,30,30,128)").text().output().rgbaString();
-		let textOnLight = new UIColor("rgba(200,200,200,128)").text().output().rgbaString();
+		let textOnDark = new UIColor("rgba(30,30,30,128)")
+			.text()
+			.output()
+			.rgbaString();
+		let textOnLight = new UIColor("rgba(200,200,200,128)")
+			.text()
+			.output()
+			.rgbaString();
 		expect(textOnDark).toBe(whiteTextRgba);
 		expect(textOnLight).toBe(blackTextRgba);
 	});
@@ -287,8 +300,12 @@ describe("Brightness and text color", () => {
 	test("Foreground selection", () => {
 		let lightFg = UI.colors.white.fg(UI.colors.red, UI.colors.green);
 		let darkFg = UI.colors.black.fg(UI.colors.red, UI.colors.green);
-		expect(lightFg.output().rgbaString()).toBe(UI.colors.red.output().rgbaString());
-		expect(darkFg.output().rgbaString()).toBe(UI.colors.green.output().rgbaString());
+		expect(lightFg.output().rgbaString()).toBe(
+			UI.colors.red.output().rgbaString(),
+		);
+		expect(darkFg.output().rgbaString()).toBe(
+			UI.colors.green.output().rgbaString(),
+		);
 	});
 
 	test("isBrightColor uses oklch L value", () => {

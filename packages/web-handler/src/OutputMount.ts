@@ -1,6 +1,5 @@
 import type { UIGradient } from "@talla-ui/core";
 import { app, RenderContext, UI, UIColor, View } from "@talla-ui/core";
-import { backgroundToCSS, colorToCSS } from "./DOMStyle.js";
 import { awaitRemove, isMarkedForRemoval } from "./awaitRemove.js";
 import {
 	CLASS_OVERLAY_SHADER,
@@ -8,6 +7,7 @@ import {
 	CLASS_PAGE_ROOT,
 	CLASS_PAGE_WRAPPER,
 } from "./defaults/css.js";
+import { backgroundToCSS, colorToCSS } from "./DOMStyle.js";
 import { registerHandlers } from "./observers/events.js";
 import type { WebRenderer } from "./WebRenderer.js";
 

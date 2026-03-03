@@ -1,3 +1,4 @@
+import type { UIGradient } from "@talla-ui/core";
 import {
 	Activity,
 	ModalFactory,
@@ -8,7 +9,6 @@ import {
 	View,
 	app,
 } from "@talla-ui/core";
-import type { UIGradient } from "@talla-ui/core";
 import type { StringConvertible } from "@talla-ui/util";
 import { makeObserver } from "./observers/index.js";
 import { OutputMount } from "./OutputMount.js";

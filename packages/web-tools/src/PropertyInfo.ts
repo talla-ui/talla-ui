@@ -186,8 +186,14 @@ export class PropertyInfo extends ObservableObject {
 			}
 			if (value instanceof UIColor) {
 				return new Map([
-					["output().rgbaString()", (it) => it.setValue(value.output().rgbaString(), true)],
-					["output().oklchString()", (it) => it.setValue(value.output().oklchString(), true)],
+					[
+						"output().rgbaString()",
+						(it) => it.setValue(value.output().rgbaString(), true),
+					],
+					[
+						"output().oklchString()",
+						(it) => it.setValue(value.output().oklchString(), true),
+					],
 				]);
 			}
 			if (value instanceof DeferredString) {
