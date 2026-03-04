@@ -290,7 +290,7 @@ export namespace UIElement {
 		 * @param value The element name, or a binding to a string value.
 		 * @returns The builder instance for chaining.
 		 */
-		name(value?: BindingOrValue<string | undefined>) {
+		name(value: BindingOrValue<string | undefined>) {
 			return this.setProperty("name", value);
 		}
 
@@ -300,7 +300,7 @@ export namespace UIElement {
 		 * @returns The builder instance for chaining.
 		 * @see {@link UIElement.accessibleRole}
 		 */
-		accessibleRole(value?: BindingOrValue<string | undefined>) {
+		accessibleRole(value: BindingOrValue<string | undefined>) {
 			return this.setProperty("accessibleRole", value);
 		}
 
@@ -310,7 +310,7 @@ export namespace UIElement {
 		 * @returns The builder instance for chaining.
 		 * @see {@link UIElement.accessibleLabel}
 		 */
-		accessibleLabel(value?: BindingOrValue<string | undefined>) {
+		accessibleLabel(value: BindingOrValue<string | undefined>) {
 			return this.setProperty("accessibleLabel", value);
 		}
 
@@ -341,10 +341,10 @@ export namespace UIElement {
 		 * @param bottom The bottom offset (used if `position` is a gravity string).
 		 * @param start The start offset (used if `position` is a gravity string).
 		 * @returns The builder instance for chaining.
-		 * @see {@link UIElement.position}
+		 * @see {@link UIElement.Position}
 		 */
 		position(
-			position?: BindingOrValue<
+			position: BindingOrValue<
 				UIElement.Position | UIElement.Position["gravity"] | undefined
 			>,
 			top?: string | number,
@@ -377,7 +377,7 @@ export namespace UIElement {
 		 * @returns The builder instance for chaining.
 		 */
 		size(
-			width?: BindingOrValue<string | number | undefined>,
+			width: BindingOrValue<string | number | undefined>,
 			height: BindingOrValue<string | number | undefined> = width,
 		) {
 			if (width != null) this.width(width, width, width);
@@ -393,7 +393,7 @@ export namespace UIElement {
 		 * @returns The builder instance for chaining.
 		 */
 		width(
-			width?: BindingOrValue<string | number | undefined>,
+			width: BindingOrValue<string | number | undefined>,
 			minWidth?: BindingOrValue<string | number | undefined>,
 			maxWidth?: BindingOrValue<string | number | undefined>,
 		) {
@@ -408,7 +408,7 @@ export namespace UIElement {
 		 * @param minWidth The minimum width, in pixels or string with unit.
 		 * @returns The builder instance for chaining.
 		 */
-		minWidth(minWidth?: BindingOrValue<string | number | undefined>) {
+		minWidth(minWidth: BindingOrValue<string | number | undefined>) {
 			return this.setStyleOverride("minWidth", minWidth);
 		}
 
@@ -417,7 +417,7 @@ export namespace UIElement {
 		 * @param maxWidth The maximum width, in pixels or string with unit.
 		 * @returns The builder instance for chaining.
 		 */
-		maxWidth(maxWidth?: BindingOrValue<string | number | undefined>) {
+		maxWidth(maxWidth: BindingOrValue<string | number | undefined>) {
 			return this.setStyleOverride("maxWidth", maxWidth);
 		}
 
@@ -429,7 +429,7 @@ export namespace UIElement {
 		 * @returns The builder instance for chaining.
 		 */
 		height(
-			height?: BindingOrValue<string | number | undefined>,
+			height: BindingOrValue<string | number | undefined>,
 			minHeight?: BindingOrValue<string | number | undefined>,
 			maxHeight?: BindingOrValue<string | number | undefined>,
 		) {
@@ -444,7 +444,7 @@ export namespace UIElement {
 		 * @param minHeight The minimum height, in pixels or string with unit.
 		 * @returns The builder instance for chaining.
 		 */
-		minHeight(minHeight?: BindingOrValue<string | number | undefined>) {
+		minHeight(minHeight: BindingOrValue<string | number | undefined>) {
 			return this.setStyleOverride("minHeight", minHeight);
 		}
 
@@ -453,7 +453,7 @@ export namespace UIElement {
 		 * @param maxHeight The maximum height, in pixels or string with unit.
 		 * @returns The builder instance for chaining.
 		 */
-		maxHeight(maxHeight?: BindingOrValue<string | number | undefined>) {
+		maxHeight(maxHeight: BindingOrValue<string | number | undefined>) {
 			return this.setStyleOverride("maxHeight", maxHeight);
 		}
 
@@ -474,21 +474,19 @@ export namespace UIElement {
 
 		/**
 		 * Sets the padding around the element.
-		 * @param padding An object with offsets (`top`, `bottom`, `x`, etc.), a single number, or "gap" for the current default gap size; defaults to "gap".
+		 * @param padding An object with offsets (`top`, `bottom`, `x`, etc.), or a single number.
 		 * @returns The builder instance for chaining.
 		 */
-		padding(
-			padding: BindingOrValue<StyleOverrides.Offsets | undefined> = "gap",
-		) {
+		padding(padding: BindingOrValue<StyleOverrides.Offsets | undefined>) {
 			return this.setStyleOverride("padding", padding);
 		}
 
 		/**
 		 * Sets the margin around the element.
-		 * @param margin An object with offsets (`top`, `bottom`, `x`, etc.), a single number, or "gap" for the current default gap size; defaults to "gap".
+		 * @param margin An object with offsets (`top`, `bottom`, `x`, etc.), or a single number.
 		 * @returns The builder instance for chaining.
 		 */
-		margin(margin: BindingOrValue<StyleOverrides.Offsets | undefined> = "gap") {
+		margin(margin: BindingOrValue<StyleOverrides.Offsets | undefined>) {
 			return this.setStyleOverride("margin", margin);
 		}
 
@@ -535,14 +533,14 @@ export namespace UIElement {
 		 * Configures the border with optional width, color, style, and corner radius.
 		 * If only width is provided, the color defaults to the divider color.
 		 *
-		 * @param borderWidth The width of the border (all sides, or separate offsets), in pixels or string with unit; defaults to 1.
+		 * @param borderWidth The width of the border (all sides, or separate offsets), in pixels or string with unit.
 		 * @param borderColor The color of the border; defaults to the divider color.
 		 * @param borderStyle The style of the border (e.g. "solid", "dashed").
 		 * @param borderRadius The radius of the border corners, in pixels or string with unit.
 		 * @returns The builder instance for chaining.
 		 */
 		border(
-			borderWidth: BindingOrValue<StyleOverrides.Offsets | undefined> = 1,
+			borderWidth: BindingOrValue<StyleOverrides.Offsets | undefined>,
 			borderColor?: BindingOrValue<UIColor | UIColor.ColorName | undefined>,
 			borderStyle?: BindingOrValue<string | undefined>,
 			borderRadius?: BindingOrValue<StyleOverrides["borderRadius"] | undefined>,
@@ -560,23 +558,21 @@ export namespace UIElement {
 
 		/**
 		 * Sets the radius of the border corners.
-		 * @param radius A number, or "gap" for the current default gap size; defaults to "gap".
+		 * @param radius The border radius, in pixels or string with unit.
 		 * @returns The builder instance for chaining.
 		 */
 		borderRadius(
-			radius: BindingOrValue<
-				StyleOverrides["borderRadius"] | undefined
-			> = "gap",
+			radius: BindingOrValue<StyleOverrides["borderRadius"] | undefined>,
 		) {
 			return this.setStyleOverride("borderRadius", radius);
 		}
 
 		/**
 		 * Adds a drop shadow effect.
-		 * @param dropShadow The drop shadow height in pixels (approximate blur distance); negative values for inset shadows; defaults to 8.
+		 * @param dropShadow The drop shadow height in pixels (approximate blur distance); negative values for inset shadows.
 		 * @returns The builder instance for chaining.
 		 */
-		dropShadow(dropShadow: BindingOrValue<number | undefined> = 8) {
+		dropShadow(dropShadow: BindingOrValue<number | undefined>) {
 			return this.setStyleOverride("dropShadow", dropShadow);
 		}
 
@@ -585,7 +581,7 @@ export namespace UIElement {
 		 * @param opacity A value between 0 (transparent) and 1 (opaque).
 		 * @returns The builder instance for chaining.
 		 */
-		opacity(opacity?: BindingOrValue<number | undefined>) {
+		opacity(opacity: BindingOrValue<number | undefined>) {
 			return this.setStyleOverride("opacity", opacity);
 		}
 
@@ -603,10 +599,10 @@ export namespace UIElement {
 
 		/**
 		 * Sets the mouse cursor style when hovering over the element.
-		 * @param cursor A CSS cursor name (e.g. "pointer", "default"); defaults to "default".
+		 * @param cursor A CSS cursor name (e.g. "pointer", "default").
 		 * @returns The builder instance for chaining.
 		 */
-		cursor(cursor: BindingOrValue<string | undefined> = "default") {
+		cursor(cursor: BindingOrValue<string | undefined>) {
 			return this.setStyleOverride("cursor", cursor);
 		}
 
@@ -615,7 +611,7 @@ export namespace UIElement {
 		 * @param family The font family name (e.g. "sans-serif").
 		 * @returns The builder instance for chaining.
 		 */
-		fontFamily(family?: BindingOrValue<string | undefined>) {
+		fontFamily(family: BindingOrValue<string | undefined>) {
 			return this.setStyleOverride("fontFamily", family);
 		}
 
@@ -624,7 +620,7 @@ export namespace UIElement {
 		 * @param size The font size, in pixels or string with unit.
 		 * @returns The builder instance for chaining.
 		 */
-		fontSize(size?: BindingOrValue<string | number | undefined>) {
+		fontSize(size: BindingOrValue<string | number | undefined>) {
 			return this.setStyleOverride("fontSize", size);
 		}
 
@@ -633,7 +629,7 @@ export namespace UIElement {
 		 * @param weight The font weight (e.g. 400, "bold").
 		 * @returns The builder instance for chaining.
 		 */
-		fontWeight(weight?: BindingOrValue<string | number | undefined>) {
+		fontWeight(weight: BindingOrValue<string | number | undefined>) {
 			return this.setStyleOverride("fontWeight", weight);
 		}
 
@@ -669,7 +665,7 @@ export namespace UIElement {
 		 * @param lineHeight The line height, as a multiplier of the font size.
 		 * @returns The builder instance for chaining.
 		 */
-		lineHeight(lineHeight?: BindingOrValue<string | number | undefined>) {
+		lineHeight(lineHeight: BindingOrValue<string | number | undefined>) {
 			return this.setStyleOverride("lineHeight", lineHeight);
 		}
 
@@ -678,18 +674,8 @@ export namespace UIElement {
 		 * @param align The text alignment (CSS value).
 		 * @returns The builder instance for chaining.
 		 */
-		textAlign(align?: BindingOrValue<StyleOverrides["textAlign"] | undefined>) {
+		textAlign(align: BindingOrValue<StyleOverrides["textAlign"] | undefined>) {
 			return this.setStyleOverride("textAlign", align);
-		}
-
-		/**
-		 * Alias for {@link textAlign}.
-		 * - This method is overridden on column and row builders to set alignment of content within the container instead.
-		 * @param align The text alignment (CSS value).
-		 * @returns The builder instance for chaining.
-		 */
-		align(align?: BindingOrValue<StyleOverrides["textAlign"] | undefined>) {
-			return this.textAlign(align);
 		}
 
 		/**
@@ -700,7 +686,7 @@ export namespace UIElement {
 		 * @returns The builder instance for chaining.
 		 */
 		style(
-			value?: BindingOrValue<
+			value: BindingOrValue<
 				TStyleName | (string & {}) | StyleOverrides | undefined
 			>,
 		) {
@@ -736,7 +722,7 @@ export namespace UIElement {
 		 * UI.Column(content).effect("fade")  // Fades in on render, fades out on removal
 		 * UI.Column(content).effect("fadeIn").effect("scaleOut")  // Different enter/exit effects
 		 */
-		effect(name?: RenderEffect.EffectName, optional?: boolean) {
+		effect(name: RenderEffect.EffectName | undefined, optional?: boolean) {
 			if (!name) return this;
 			return this.apply(RenderEffect.create(name, optional));
 		}

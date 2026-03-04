@@ -56,7 +56,6 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 					),
 			).outer(
 				UI.Column()
-					.align("stretch")
 					.scroll()
 					.flex(0)
 					.maxHeight(152)
@@ -66,7 +65,7 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 				UI.Column()
 					.height(32)
 					.padding({ x: 8 })
-					.align("stretch", "center")
+					.distribute("center")
 					.cursor("pointer")
 					.background(item.bind("listItem").then(UI.colors.text.alpha(0.05)))
 					.onClick("PropertyClick")
@@ -100,7 +99,7 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 						).gap(0),
 					),
 			)
-				.addSpacer()
+				.appendSpacer()
 				.outer(
 					UI.Column()
 						.divider()

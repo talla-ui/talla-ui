@@ -83,7 +83,7 @@ export function SearchView(v: Binding<SearchActivity>) {
 										fontWeight: "var(--bold-weight)",
 									}),
 									UI.Text(item.bind("showId")).dim().fontSize(14),
-								),
+								).gap(8),
 								UI.Text().html(item.bind("abstract")).padding(0).fontSize(14),
 							),
 						),

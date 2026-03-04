@@ -124,7 +124,7 @@ export namespace UIText {
 		 * @param text The text to display, or a binding to a string value.
 		 * @returns The builder instance for chaining.
 		 */
-		text(text?: BindingOrValue<StringConvertible>) {
+		text(text: BindingOrValue<StringConvertible | undefined>) {
 			return this.setProperty("text", text);
 		}
 
@@ -184,7 +184,7 @@ export namespace UIText {
 		 * @param level The heading level (1-6).
 		 * @returns The builder instance for chaining.
 		 */
-		headingLevel(level?: BindingOrValue<1 | 2 | 3 | 4 | 5 | 6>) {
+		headingLevel(level: BindingOrValue<1 | 2 | 3 | 4 | 5 | 6 | undefined>) {
 			return this.setProperty("headingLevel", level);
 		}
 
@@ -194,7 +194,7 @@ export namespace UIText {
 		 * @param text The HTML content to display, or a binding to a string value.
 		 * @returns The builder instance for chaining.
 		 */
-		html(text?: BindingOrValue<StringConvertible>) {
+		html(text: BindingOrValue<StringConvertible | undefined>) {
 			this.initializer.set("htmlFormat", true);
 			return this.setProperty("text", text);
 		}

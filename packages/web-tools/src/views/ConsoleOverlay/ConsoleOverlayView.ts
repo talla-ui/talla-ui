@@ -41,6 +41,7 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 				.effect("drag-modal", true)
 				.height(40)
 				.padding({ start: 8, end: 4 })
+				.gap(8)
 				.with(
 					UI.Text("Console").bold().flex(0, 0),
 					UI.Spacer(8),
@@ -90,7 +91,7 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 						.flex(0, 1),
 					UI.Button().icon(UI.icons.close, 16).style("icon").onClick("Close"),
 				),
-			UI.Divider().margin(0),
+			UI.Divider(),
 			UI.List(v.bind("list"), (item) =>
 				UI.Column()
 					.padding({ x: 8, top: 16, bottom: 2 })
@@ -103,7 +104,6 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 					.onKey("ArrowDown", "FocusNext")
 					.onKey("ArrowUp", "FocusPrevious")
 					.allowFocus()
-					.flex()
 					.with(
 						UI.Text()
 							.fmt("{} {1:?/= {1}}", item.bind("time"), item.bind("var"))
@@ -156,9 +156,10 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 					.accessibleRole("list")
 					.allowKeyboardFocus()
 					.onFocusIn("SetListFocus")
+					.flex()
 					.scroll(),
 			),
-			UI.Divider().margin(0),
+			UI.Divider(),
 			UI.Row()
 				.margin({ x: 2 })
 				.padding(2)

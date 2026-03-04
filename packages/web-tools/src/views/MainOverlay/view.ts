@@ -93,7 +93,7 @@ export const MainOverlayViewBody = (v: Binding<MainOverlayView>) =>
 					v.bind("log.numErrors").then("dashed", "dotted"),
 					8,
 				)
-				.center()
+				.centerContent()
 				.with(
 					UI.Button()
 						.icon(icons.information)
@@ -148,7 +148,7 @@ export const MainOverlayViewBody = (v: Binding<MainOverlayView>) =>
 					),
 				)
 				.with(
-					UI.Divider().margin(0),
+					UI.Divider(),
 					UI.Show(
 						Binding.all(v.bind("mode").equals("index"), "indexView").else(
 							undefined,

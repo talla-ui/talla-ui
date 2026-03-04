@@ -29,7 +29,7 @@ const BodyView = (title: string, inspectView: InspectPanelView) =>
 				.effect("drag-modal", true)
 				.gap(4)
 				.padding({ start: 8, end: 4, top: 1, bottom: 4 }),
-			UI.Divider().margin(0),
+			UI.Divider(),
 			UI.Column(UI.Show(Binding.from(inspectView)))
 				.flex()
 				.scroll(),

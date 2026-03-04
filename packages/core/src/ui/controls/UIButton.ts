@@ -141,7 +141,7 @@ export namespace UIButton {
 		 * @param text The text to display, or a binding to a string value.
 		 * @returns The builder instance for chaining.
 		 */
-		text(text?: BindingOrValue<StringConvertible>) {
+		text(text: BindingOrValue<StringConvertible | undefined>) {
 			return this.setProperty("text", text);
 		}
 
@@ -173,12 +173,12 @@ export namespace UIButton {
 
 		/**
 		 * Adds a chevron icon to the button.
-		 * @param chevron The direction of the chevron; defaults to `down`.
+		 * @param chevron The direction of the chevron.
 		 * @param chevronStyle Styling options for the chevron, or only the icon size in pixels.
 		 * @returns The builder instance for chaining.
 		 */
 		chevron(
-			chevron: BindingOrValue<"up" | "down" | "next" | "back"> = "down",
+			chevron: BindingOrValue<"up" | "down" | "next" | "back">,
 			chevronStyle?: BindingOrValue<UIText.IconStyle> | number,
 		) {
 			if (chevronStyle != null) {

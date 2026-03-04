@@ -34,6 +34,15 @@ export abstract class UIContainer extends UIElement {
 	 */
 	trackHover?: boolean;
 
+	/** True if content should be displayed in reverse order */
+	reverse = false;
+
+	/**
+	 * Gap between UI elements, in pixels or CSS length with unit
+	 * - If this property is set, it overrides {@link UIContainer.Layout layout.separator}.
+	 */
+	gap?: string | number = undefined;
+
 	/**
 	 * Returns true if this container is currently hovered by the mouse.
 	 * - Only works when {@link trackHover} is enabled.
@@ -135,7 +144,7 @@ export namespace UIContainer {
 		 * @param layout A {@link UIContainer.Layout} object or a binding.
 		 * @returns The builder instance for chaining.
 		 */
-		layout(layout?: BindingOrValue<UIContainer.Layout | undefined>) {
+		layout(layout: BindingOrValue<UIContainer.Layout | undefined>) {
 			return this.setProperty("layout", layout);
 		}
 
@@ -200,8 +209,7 @@ export namespace UIContainer {
 		 * @see {@link UIElement.ElementBuilder.on}
 		 */
 		onMouseEnter(handle: string | ViewBuilderEventHandler<T>) {
-			this.trackHover(true);
-			return this.on("MouseEnter", handle);
+			return this.trackHover().on("MouseEnter", handle);
 		}
 
 		/**
@@ -211,16 +219,62 @@ export namespace UIContainer {
 		 * @see {@link UIElement.ElementBuilder.on}
 		 */
 		onMouseLeave(handle: string | ViewBuilderEventHandler<T>) {
-			this.trackHover(true);
-			return this.on("MouseLeave", handle);
+			return this.trackHover().on("MouseLeave", handle);
+		}
+
+		/**
+		 * Sets the distribution of content along the main axis.
+		 * - This method updates the {@link UIContainer.layout layout} property.
+		 * @param distribution The distribution mode (`start`, `center`, `end`, `space-between`, `space-around`).
+		 * @returns The builder instance for chaining.
+		 */
+		distribute(
+			distribution: BindingOrValue<UIContainer.Layout["distribution"]>,
+		) {
+			this.initializer.update(distribution, function (value) {
+				this.layout = { ...this.layout, distribution: value };
+			});
+			return this;
+		}
+
+		/**
+		 * Sets the content gravity mode.
+		 * - Gravity refers to the alignment of content items along the cross-axis: vertical for rows, horizontal for columns.
+		 * - This method updates the {@link UIContainer.layout layout} property.
+		 * @param gravity The gravity mode (`start`, `center`, `end`, `stretch`, `baseline`).
+		 * @returns The builder instance for chaining.
+		 */
+		gravity(gravity: BindingOrValue<UIContainer.Layout["gravity"]>) {
+			this.initializer.update(gravity, function (value) {
+				this.layout = { ...this.layout, gravity: value };
+			});
+			return this;
+		}
+
+		/**
+		 * Sets the gap between elements in the container, using {@link UIContainer.gap}.
+		 * @param gap The gap size in pixels, or a string with unit.
+		 * @returns The builder instance for chaining.
+		 */
+		gap(gap: BindingOrValue<string | number | undefined>) {
+			return this.setProperty("gap", gap);
+		}
+
+		/**
+		 * Reverses the order of elements in the container, using {@link UIContainer.reverse}.
+		 * @param reverse If `true`, the order is reversed. Defaults to `true`.
+		 * @returns The builder instance for chaining.
+		 */
+		reverse(reverse: BindingOrValue<boolean> = true) {
+			return this.setProperty("reverse", reverse);
 		}
 
 		/**
 		 * Centers content both horizontally and vertically.
-		 * - Shorthand for `.align("center", "center")`.
+		 * - This method applies additional layout options for the container, using {@link UIContainer.layout}
 		 * @returns The builder instance for chaining.
 		 */
-		center() {
+		centerContent() {
 			this.initializer.update(undefined, function () {
 				this.layout = {
 					...this.layout,

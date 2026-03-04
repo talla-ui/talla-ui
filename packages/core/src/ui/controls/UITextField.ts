@@ -143,7 +143,7 @@ export namespace UITextField {
 		 * @param placeholder The placeholder text, or a binding.
 		 * @returns The builder instance for chaining.
 		 */
-		placeholder(placeholder?: BindingOrValue<StringConvertible>) {
+		placeholder(placeholder: BindingOrValue<StringConvertible | undefined>) {
 			return this.setProperty("placeholder", placeholder);
 		}
 

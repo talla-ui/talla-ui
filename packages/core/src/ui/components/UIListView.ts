@@ -144,7 +144,7 @@ export class UIListView<
 	 * - If set, and the list is not empty, a spacer view is added at the end of the list. This can be used to add a divider after the last list item, e.g. in a scroll view.
 	 * - The spacer always has a minimum height and width of 0 pixels.
 	 */
-	addSpacer?: boolean;
+	appendSpacer?: boolean;
 
 	/** The index of the last focused list item view, if any */
 	lastFocusedIndex = 0;
@@ -348,7 +348,7 @@ export class UIListView<
 			}
 			n++;
 		}
-		if (n && this.addSpacer) {
+		if (n && this.appendSpacer) {
 			let spacer = this._lastSpacer;
 			if (!spacer || spacer.isUnlinked()) {
 				this._lastSpacer = spacer = new UISpacer();
@@ -567,7 +567,7 @@ export namespace UIListView {
 		 * @param content A view builder that defines the template for each list item.
 		 * @returns The builder instance for chaining.
 		 */
-		with(content?: ViewBuilder | ((item: Binding) => ViewBuilder)) {
+		with(content: ViewBuilder | ((item: Binding) => ViewBuilder) | undefined) {
 			if (typeof content === "function") {
 				this._buildItem = content;
 			} else {
@@ -583,7 +583,7 @@ export namespace UIListView {
 		 * @param container A view builder for the outer container (e.g., `UI.Column()`, `UI.Row()`).
 		 * @returns The builder instance for chaining.
 		 */
-		outer(container?: ViewBuilder) {
+		outer(container: ViewBuilder | undefined) {
 			this._container = container;
 			return this;
 		}
@@ -593,18 +593,18 @@ export namespace UIListView {
 		 * @param emptyState A view builder for the view to show when the list is empty.
 		 * @returns The builder instance for chaining.
 		 */
-		emptyState(emptyState?: ViewBuilder) {
+		emptyState(emptyState: ViewBuilder | undefined) {
 			this._emptyState = emptyState;
 			return this;
 		}
 
 		/**
 		 * Sets whether a spacer (and a divider, if any) should be added after the last list item view.
-		 * @param addSpacer True if a spacer should be added after the last list item view, defaults to true.
+		 * @param appendSpacer True if a spacer should be added after the last list item view, defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
-		addSpacer(addSpacer: boolean = true) {
-			this.initializer.set("addSpacer", addSpacer);
+		appendSpacer(appendSpacer: boolean = true) {
+			this.initializer.set("appendSpacer", appendSpacer);
 			return this;
 		}
 
@@ -628,7 +628,7 @@ export namespace UIListView {
 		 * @param options An object with options for asynchronous rendering and delay.
 		 * @returns The builder instance for chaining.
 		 */
-		renderOptions(options?: UIListView.RenderOptions) {
+		renderOptions(options: UIListView.RenderOptions | undefined) {
 			this.initializer.set("renderOptions", options);
 			return this;
 		}
@@ -650,8 +650,8 @@ export namespace UIListView {
 		 * @param name The name of the effect to apply.
 		 * @returns The builder instance for chaining.
 		 */
-		effect(name: RenderEffect.EffectName) {
-			this._effects.push(name);
+		effect(name: RenderEffect.EffectName | undefined) {
+			if (name) this._effects.push(name);
 			return this;
 		}
 

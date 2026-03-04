@@ -178,32 +178,15 @@ describe("Container .flex() method", () => {
 	});
 });
 
-describe("Container .center() method", () => {
-	test("center() sets both gravity and distribution to center", () => {
-		let column = UI.Column().center().build();
+describe("Container .centerContent() method", () => {
+	test("centerContent() sets both gravity and distribution to center", () => {
+		let column = UI.Column().centerContent().build();
 		expect(column.layout?.gravity).toBe("center");
 		expect(column.layout?.distribution).toBe("center");
 	});
 
-	test("center() works on both Row and Column", () => {
-		let column = UI.Column().center().build();
-		let row = UI.Row().center().build();
-		expect(column.layout?.gravity).toBe("center");
-		expect(row.layout?.gravity).toBe("center");
-	});
-
-	test("center() renders correctly", async () => {
-		let column = UI.Column(UI.Text("Centered")).center().build();
-		renderTestView(column);
-		let out = await expectOutputAsync({
-			type: "column",
-			layout: { gravity: "center", distribution: "center" },
-		});
-		out.containing({ type: "text", text: "Centered" }).toBeRendered();
-	});
-
-	test("flex() and center() can be combined", () => {
-		let column = UI.Column().flex().center().build();
+	test("flex() and centerContent() can be combined", () => {
+		let column = UI.Column().flex().centerContent().build();
 		expect(column.style?.flexGrow).toBe(1);
 		expect(column.layout?.gravity).toBe("center");
 		expect(column.layout?.distribution).toBe("center");
@@ -260,7 +243,7 @@ describe("Combined container features", () => {
 	test("Container with all interactive features", () => {
 		let column = UI.Column(UI.Text("Content"))
 			.flex()
-			.center()
+			.centerContent()
 			.allowKeyboardFocus()
 			.trackHover()
 			.build();
@@ -269,7 +252,7 @@ describe("Combined container features", () => {
 		expect(column.style?.flexGrow).toBe(1);
 		expect(column.style?.flexShrink).toBe(1);
 
-		// center() layout
+		// centerContent() layout
 		expect(column.layout?.gravity).toBe("center");
 		expect(column.layout?.distribution).toBe("center");
 

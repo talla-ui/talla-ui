@@ -39,7 +39,7 @@ function FoldView(title: StringConvertible, folded?: boolean) {
 				.cursor("pointer")
 				.padding({ x: 6, y: 8 })
 				.onClick("ToggleFold"),
-			UI.Divider().lineColor(UI.colors.text.alpha(0.3)).margin(0),
+			UI.Divider().lineColor(UI.colors.text.alpha(0.3)),
 			UI.ShowUnless(v.bind("folded"), UI.Column(...content).flex()),
 		),
 	).extend(
@@ -90,7 +90,7 @@ function InfoDetailRow(label: StringConvertible, chevron?: boolean) {
 
 const ViewBody = (v: Binding<IndexPanelView>) =>
 	UI.Column(
-		UI.Row(UI.Text("Inspector").fontSize(16).bold().padding()),
+		UI.Row(UI.Text("Inspector").fontSize(16).bold().padding(8)),
 
 		FoldView("Log").with(
 			UI.Row(
@@ -103,6 +103,7 @@ const ViewBody = (v: Binding<IndexPanelView>) =>
 					)
 					.fontSize(12),
 			)
+				.gap(4)
 				.padding(4)
 				.cursor("pointer")
 				.onClick("ShowConsole"),

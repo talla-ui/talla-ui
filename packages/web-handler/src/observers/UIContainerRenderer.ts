@@ -34,23 +34,9 @@ export class UIContainerRenderer<
 			"allowFocus",
 			"allowKeyboardFocus",
 			"trackHover",
+			"reverse",
+			"gap",
 		);
-		if (observed instanceof UIRow) {
-			(this as UIContainerRenderer<any>).observeProperties(
-				"reverse",
-				"gap",
-				"align",
-				"gravity",
-			);
-		}
-		if (observed instanceof UIColumn) {
-			(this as UIContainerRenderer<any>).observeProperties(
-				"reverse",
-				"gap",
-				"align",
-				"distribute",
-			);
-		}
 
 		// observe content changes
 		observed.content.listen((e) => {
@@ -147,11 +133,7 @@ export class UIContainerRenderer<
 			this.contentUpdater = new ContentUpdater(container, element);
 			this.updateSeparator();
 		}
-		let reverse = false;
-		if (container instanceof UIRow || container instanceof UIColumn) {
-			reverse = container.reverse;
-		}
-		this.contentUpdater.update(container.content, reverse);
+		this.contentUpdater.update(container.content, container.reverse);
 
 		// reset tabindex if previously focused element is no longer in content
 		if (
@@ -173,26 +155,8 @@ export class UIContainerRenderer<
 		let layout = container.layout;
 		if (container instanceof UIRow) {
 			systemClass = CLASS_ROW;
-			if (container.align || container.gravity) {
-				layout = Object.assign(
-					{},
-					layout,
-					container.align ? { distribution: container.align } : undefined,
-					container.gravity ? { gravity: container.gravity } : undefined,
-				);
-			}
 		} else if (container instanceof UIColumn) {
 			systemClass = CLASS_COLUMN;
-			if (container.align || container.distribute) {
-				layout = Object.assign(
-					{},
-					layout,
-					container.align ? { gravity: container.align } : undefined,
-					container.distribute
-						? { distribution: container.distribute }
-						: undefined,
-				);
-			}
 		} else if (container instanceof UIScrollView) {
 			systemClass = CLASS_SCROLL;
 		}
@@ -225,9 +189,8 @@ export class UIContainerRenderer<
 						? false
 						: this.observed instanceof UIRow;
 			let options = layout?.separator;
-			if (!options && "gap" in (this.observed as unknown as UIRow)) {
-				let gap = (this.observed as unknown as UIRow).gap ?? "gap";
-				options = { space: gap, vertical: horzAxis };
+			if (!options && this.observed.gap) {
+				options = { space: this.observed.gap, vertical: horzAxis };
 			}
 			this.contentUpdater.setSeparator(options, horzAxis);
 		}

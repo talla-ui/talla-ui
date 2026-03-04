@@ -81,7 +81,7 @@ export namespace UIToggle {
 		 * @param text The text to display, or a binding.
 		 * @returns The builder instance for chaining.
 		 */
-		text(text?: StringConvertible) {
+		text(text: BindingOrValue<StringConvertible | undefined>) {
 			return this.setProperty("text", text);
 		}
 

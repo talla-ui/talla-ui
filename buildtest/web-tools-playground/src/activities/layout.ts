@@ -66,6 +66,7 @@ export function MainLayout(...content: ViewBuilder[]) {
 			// Main content column
 			UI.Column()
 				.flex()
+				.gravity("center")
 				.background("background")
 				.borderRadius(8)
 				.with(...content)
@@ -76,11 +77,12 @@ export function MainLayout(...content: ViewBuilder[]) {
 				.hideWhen(UI.viewport.cols.gt(2))
 				.background("background")
 				.position("overlay", "auto", 0, 0, 0)
-				.center()
+				.centerContent()
 				.with(
-					UI.Divider().margin(0),
+					UI.Divider(),
 					UI.Row()
-						.align("center")
+						.distribute("center")
+						.gap(8)
 						.padding(8)
 						.with(
 							MobileNavButton("foo", "Foo", new UIIconResource("🐘")),

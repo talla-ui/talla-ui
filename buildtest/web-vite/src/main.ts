@@ -30,7 +30,7 @@ export function CardLayout(title: StringConvertible) {
 		.dropShadow()
 		.border(1)
 		.padding(16)
-		.gap()
+		.gap(8)
 		.maxWidth("100%")
 		.borderRadius(16)
 		.extend(
@@ -167,7 +167,7 @@ function ButtonSwitch(options: ButtonSwitchOption[]) {
 
 	let Button = SwitchButton;
 	return ButtonSwitchWidget.builder((v) =>
-		UI.Row().with(
+		UI.Row().gap(8).with(
 			...options.map((option) =>
 				Button()
 					.text(option.text)
@@ -201,7 +201,7 @@ function ButtonSwitch(options: ButtonSwitchOption[]) {
 
 function MainView(v: Binding<MainActivity>) {
 	return UI.Column()
-		.align("center")
+		.gravity("center")
 		.with(
 			UI.Spacer(32),
 			Collapsible("Effects demo", EffectsDemo()).width(500),
@@ -273,7 +273,7 @@ function MainView(v: Binding<MainActivity>) {
 						.onMenuItemSelect((event) => {
 							console.log("Dropdown", event.data.value);
 						}),
-				),
+				).gap(8),
 			),
 
 			UI.Text().fmt("Current: {:L}", v.bind("currentDate")).padding(),
@@ -288,12 +288,12 @@ function MainView(v: Binding<MainActivity>) {
 				UI.Button("Sub").navigateTo("./sub").chevron("next"),
 				UI.Button("Remount").onClick("Remount").style("accent"),
 				UI.Button("Change").onClick("ChangeEvent"),
-			),
+			).gap(8),
 			UI.Spacer(32),
 
 			UI.Row(
 				UI.Button("Select (form)")
-					.align("start")
+					.textAlign("start")
 					.chevron("down")
 					.dropdownPicker([
 						{ value: "one", text: "1" },
@@ -304,7 +304,7 @@ function MainView(v: Binding<MainActivity>) {
 				UI.Text(v.bind("tabform.values.tab").string("Selected: {}")),
 				UI.Spacer(),
 				UI.Button("Select")
-					.align("start")
+					.textAlign("start")
 					.chevron("down")
 					.dropdownPicker([
 						{ value: "one", text: "1" },
@@ -313,7 +313,7 @@ function MainView(v: Binding<MainActivity>) {
 					])
 					.value(v.bind("tab"))
 					.onMenuItemSelect("SelectTab"),
-			),
+			).gap(8),
 
 			UI.Row(
 				UI.Button("1")
@@ -328,7 +328,7 @@ function MainView(v: Binding<MainActivity>) {
 					.value("three")
 					.style(v.bind("tab").equals("three").then("accent"))
 					.onClick("SelectTab"),
-			),
+			).gap(8),
 			ButtonSwitch([
 				{ text: "One", value: "one" },
 				{ text: "Two", value: "two" },
@@ -351,7 +351,7 @@ function MainView(v: Binding<MainActivity>) {
 						UI.Text("Bdg").style("badge"),
 						UI.Text("OK").style("successBadge"),
 						UI.Text("No").style("dangerBadge"),
-					),
+					).gap(8),
 
 					// Test: line height
 					UI.Row(
@@ -360,11 +360,11 @@ function MainView(v: Binding<MainActivity>) {
 						UI.Button("Text button").style("text"),
 						UI.Button("Ghost button").style("ghost"),
 						UI.Button("Button with icon").style("text").icon("search"),
-					),
+					).gap(8),
 					UI.Row(
 						UI.Text("Text with icon").icon(new UIIconResource("💬")),
 						UI.Text("Regular text"),
-					),
+					).gap(8),
 					UI.Row(
 						UI.Text("Text with small icon").icon(new UIIconResource("💬"), 12),
 						UI.Text("Text with large icon").icon(new UIIconResource("💬"), 24),
@@ -374,13 +374,13 @@ function MainView(v: Binding<MainActivity>) {
 						UI.Button("Large icon button")
 							.style("text")
 							.icon(new UIIconResource("💬"), 24),
-					),
+					).gap(8),
 					UI.Row(
 						UI.Text("Text with small icon").icon("search", 12),
 						UI.Text("Text with large icon").icon("search", 24),
 						UI.Button("Small icon button").style("text").icon("search", 12),
 						UI.Button("Large icon button").style("text").icon("search", 24),
-					),
+					).gap(8),
 
 					// Test: button styles
 					UI.Row(
@@ -399,7 +399,7 @@ function MainView(v: Binding<MainActivity>) {
 						UI.Button("Text").style("text"),
 						UI.Button("Link").style("link"),
 						UI.Button("Small").style("small"),
-					).wrapContent(),
+					).gap(8).wrapContent(),
 					UI.Row(
 						UI.Button().icon("plus").style("icon"),
 						UI.Button().icon("plus").style("accentIcon"),
@@ -412,7 +412,7 @@ function MainView(v: Binding<MainActivity>) {
 						UI.Button().icon("search").minWidth(0),
 						UI.Button("Both").icon("plus"),
 						UI.Button("Both").icon("plus", { margin: 16 }),
-					).wrapContent(),
+					).gap(8).wrapContent(),
 					UI.Row(
 						UI.Button().icon("plus", 12).style("icon"),
 						UI.Button().icon("plus", 12).style("accentIcon"),
@@ -425,8 +425,8 @@ function MainView(v: Binding<MainActivity>) {
 						UI.Button().icon("search", 12).minWidth(0),
 						UI.Button("Both").icon("plus", 12),
 						UI.Button("Both").icon("plus", { size: 12, margin: 16 }),
-					).wrapContent(),
-					UI.Row()
+					).gap(8).wrapContent(),
+					UI.Row().gap(8)
 						.padding(8)
 						.background("shade")
 						.wrapContent()
@@ -440,7 +440,7 @@ function MainView(v: Binding<MainActivity>) {
 							UI.Button("Link").style("link"),
 							UI.Button("Small").style("small"),
 						),
-					UI.Row().padding(8).background("shade").with(
+					UI.Row().gap(8).padding(8).background("shade").with(
 						UI.Text("Testing"),
 						UI.TextField("Testing"),
 						UI.TextField("Testing").style("ghost"), //.readOnly(),
@@ -451,13 +451,16 @@ function MainView(v: Binding<MainActivity>) {
 
 			// Test: table
 			UI.Column(
-				UI.Row(UI.Text("Numbers").align("end").width(100), UI.Text("Factors")),
+				UI.Row(
+					UI.Text("Numbers").textAlign("end").width(100),
+					UI.Text("Factors"),
+				).gap(8),
 				UI.List(v.bind("numbers"), (item) =>
 					UI.List(item.bind("factors"), (factor) =>
 						UI.Row(
-							UI.Text(item.bind("id")).align("end").width(100),
+							UI.Text(item.bind("id")).textAlign("end").width(100),
 							UI.Text(factor),
-						),
+						).gap(8),
 					).outer(UI.Column().border({ top: 1 })),
 				),
 			),
@@ -527,7 +530,7 @@ export class RouterActivity extends Activity {
 
 function SubView(v: Binding<SubActivity>) {
 	return UI.Column()
-		.align("center")
+		.gravity("center")
 		.with(
 			UI.Spacer(32),
 			UI.Text().fmt("Sub activity created {}", v.bind("created")),
@@ -547,11 +550,11 @@ function SubView(v: Binding<SubActivity>) {
 			UI.Row(
 				UI.TextField().value(v.bind("count")).onInput("SetCount").trim(),
 				UI.Button("Reset").onClick("ResetCount"),
-			).padding(8),
+			).gap(8).padding(8),
 			UI.Row(
 				UI.Button("Back").icon("chevronBack").onClick("NavigateBack"),
 				UI.Row(UI.Button("Other").navigateTo("/other").icon("chevronNext")),
-			).layout(UI.viewport.cols.lt(2).then({ axis: "vertical" })),
+			).gap(8).layout(UI.viewport.cols.lt(2).then({ axis: "vertical" })),
 		);
 }
 
@@ -612,7 +615,7 @@ class TextFieldGroupWidget extends Widget {
 	) {
 		return TextFieldGroupWidget.builder((v) =>
 			UI.Column()
-				.gap()
+				.gap(8)
 				.with(
 					UI.Text(text).dim(),
 					UI.TextField().trim().value(v.bind("text")).type(type),
@@ -638,14 +641,14 @@ const TextFieldGroup = TextFieldGroupWidget.TextFieldGroup;
 
 function OtherView(v: Binding<OtherActivity>) {
 	return UI.Column()
-		.align("center")
+		.gravity("center")
 		.with(
 			UI.Spacer(32),
 			UI.Text().fmt("Other activity created {}", v.bind("created")),
 
 			UI.Divider(),
 			UI.Column()
-				.gap()
+				.gap(8)
 				.with(
 					TextFieldGroup("User name").bindFormState(v.bind("form"), "userName"),
 					TextFieldGroup("Password", "password").bindFormState(
@@ -747,7 +750,7 @@ function DialogView() {
 					)
 					.onMenuItemSelect("Dropdown"),
 			),
-		UI.Row()
+		UI.Row().gap(8)
 			.background("shade")
 			.padding(16)
 			.with(

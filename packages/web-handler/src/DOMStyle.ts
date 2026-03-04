@@ -79,9 +79,6 @@ let _currentLogicalPxScale = 1;
 /** Current logical pixel scaling in narrow viewport */
 let _currentLogicalPxScaleNarrow = 1;
 
-/** Current gap size in pixels */
-let _currentGap = 8;
-
 /** Cached oklch CSS support detection */
 let _oklchSupported: boolean | undefined;
 function _supportsOklch(): boolean {
@@ -169,7 +166,6 @@ export function initializeCSS(
 	let logicalPxScaleNarrow = options.logicalPxScaleNarrow ?? 16 / 14;
 	_currentLogicalPxScale = logicalPxScale;
 	_currentLogicalPxScaleNarrow = logicalPxScaleNarrow;
-	_currentGap = options.gap ?? 8;
 
 	allCss.html = { fontSize: logicalPxScale * LOGICAL_PX_PER_REM + "px" };
 	allCss["@media (max-width: 600px)"] = {
@@ -238,7 +234,6 @@ export function getCSSLength(
 	length?: StyleOverrides.Offsets,
 	defaultValue: any = "auto",
 ): string {
-	if (length === "gap") length = _currentGap;
 	if (typeof length === "string") return length;
 	if (typeof length === "number") return length / LOGICAL_PX_PER_REM + "rem";
 	if (typeof length === "object") {

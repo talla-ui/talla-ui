@@ -1,7 +1,7 @@
 import type { StringConvertible } from "@talla-ui/util";
 import { ViewBuilder, ViewBuilderEventHandler } from "../../app/index.js";
 import { BindingOrValue } from "../../object/Binding.js";
-import { StyleOverrides, UIIconResource } from "../style/index.js";
+import { UIIconResource } from "../style/index.js";
 import { UIElement } from "../UIElement.js";
 
 /**
@@ -72,7 +72,7 @@ export namespace UIImage {
 		 * @returns The builder instance for chaining.
 		 */
 		source(
-			source?: BindingOrValue<StringConvertible | UIIconResource | undefined>,
+			source: BindingOrValue<StringConvertible | UIIconResource | undefined>,
 		) {
 			return this.setProperty("source", source);
 		}
@@ -84,15 +84,6 @@ export namespace UIImage {
 		 */
 		fit(fit: BindingOrValue<UIImage["fit"]>) {
 			return this.setProperty("fit", fit);
-		}
-
-		/**
-		 * Applies a style to the image.
-		 * @param style The style name, a style overrides object, or a binding.
-		 * @returns The builder instance for chaining.
-		 */
-		imageStyle(style?: BindingOrValue<string | StyleOverrides | undefined>) {
-			return this.style(style);
 		}
 
 		/**

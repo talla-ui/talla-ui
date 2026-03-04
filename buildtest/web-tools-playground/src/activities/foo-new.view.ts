@@ -52,10 +52,11 @@ export const FooNewView = (v: Binding<FooNewViewModel>) =>
 						.textColor("danger"),
 				),
 
-			UI.ShowWhen(v.bind("showAsPage"), UI.Spacer(32), UI.Divider().margin(24)),
+			UI.ShowWhen(v.bind("showAsPage"), UI.Spacer(32), UI.Divider().margin({ y: 24 })),
 
 			UI.Row()
-				.align("end")
+				.distribute("end")
+				.gap(8)
 				.hideWhen(v.bind("showAsPage"))
 				.with(
 					UI.Button("Save").style("accent").onClick("Save"),

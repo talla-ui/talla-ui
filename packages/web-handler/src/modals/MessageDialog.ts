@@ -28,13 +28,14 @@ export class MessageDialog
 		return UI.Column()
 			.padding({ top: 32, bottom: 24, x: 16 })
 			.gap(8)
-			.align("center")
+			.gravity("center")
 			.effect("drag-modal", true);
 	}
 
 	static ButtonContainer(): UIContainer.ContainerBuilder {
 		return UI.Row()
 			.padding(24)
+			.gap(8)
 			.reverse(UI.viewport.cols.gt(1))
 			.layout(
 				UI.viewport.cols

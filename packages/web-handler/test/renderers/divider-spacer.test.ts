@@ -42,34 +42,6 @@ describe("UIDividerRenderer", () => {
 		});
 	});
 
-	describe("Line margin", () => {
-		test("Numeric margin for horizontal divider", async () => {
-			const divider = UI.Divider(undefined, undefined, 16).build();
-			await renderView(divider);
-
-			const el = document.querySelector("hr") as HTMLElement;
-			expect(el.style.margin).toContain("1rem");
-			expect(el.style.margin).toContain("0");
-		});
-
-		test("Numeric margin for vertical divider", async () => {
-			const divider = UI.Divider(undefined, undefined, 16).vertical().build();
-			await renderView(divider);
-
-			const el = document.querySelector("hr") as HTMLElement;
-			expect(el.style.margin).toContain("0");
-			expect(el.style.margin).toContain("1rem");
-		});
-
-		test("String margin applies", async () => {
-			const divider = UI.Divider().lineMargin("8px").build();
-			await renderView(divider);
-
-			const el = document.querySelector("hr") as HTMLElement;
-			expect(el.style.margin).toContain("8px");
-		});
-	});
-
 	describe("Dynamic updates", () => {
 		test("Property changes update styles", async () => {
 			const divider = UI.Divider().build();
@@ -80,10 +52,6 @@ describe("UIDividerRenderer", () => {
 			divider.lineWidth = 4;
 			await waitForRender();
 			expect(el.style.borderWidth).toBe("0.25rem"); // 4/16
-
-			divider.lineMargin = 24;
-			await waitForRender();
-			expect(el.style.margin).toContain("1.5rem"); // 24/16
 		});
 	});
 });

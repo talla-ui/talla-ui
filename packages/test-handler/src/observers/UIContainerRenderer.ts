@@ -20,23 +20,9 @@ export class UIContainerRenderer<
 			"allowFocus",
 			"allowKeyboardFocus",
 			"trackHover",
+			"reverse",
+			"gap",
 		);
-		if (observed instanceof UIRow) {
-			(this as UIContainerRenderer<any>).observeProperties(
-				"reverse",
-				"gap",
-				"align",
-				"gravity",
-			);
-		}
-		if (observed instanceof UIColumn) {
-			(this as UIContainerRenderer<any>).observeProperties(
-				"reverse",
-				"gap",
-				"align",
-				"distribute",
-			);
-		}
 
 		// observe content changes
 		observed.content.listen((e) => {
@@ -116,11 +102,7 @@ export class UIContainerRenderer<
 		}
 
 		// NOTE: gap/separators are ignored here because they can't be tested;
-		let reverse = false;
-		if (container instanceof UIRow || container instanceof UIColumn) {
-			reverse = container.reverse;
-		}
-		this.contentUpdater.update(container.content, reverse);
+		this.contentUpdater.update(container.content, container.reverse);
 
 		// update focusable state
 		if (container.allowFocus || container.allowKeyboardFocus) {
@@ -133,27 +115,6 @@ export class UIContainerRenderer<
 	override updateStyle(element: TestOutputElement) {
 		let container = this.observed;
 		let layout = container.layout;
-		if (container instanceof UIRow) {
-			if (container.align || container.gravity) {
-				layout = Object.assign(
-					{},
-					layout,
-					container.align ? { distribution: container.align } : undefined,
-					container.gravity ? { gravity: container.gravity } : undefined,
-				);
-			}
-		} else if (container instanceof UIColumn) {
-			if (container.align || container.distribute) {
-				layout = Object.assign(
-					{},
-					layout,
-					container.align ? { gravity: container.align } : undefined,
-					container.distribute
-						? { distribution: container.distribute }
-						: undefined,
-				);
-			}
-		}
 
 		applyElementStyle(
 			element,

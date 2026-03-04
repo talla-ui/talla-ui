@@ -10,7 +10,6 @@ export function FooView(v: Binding<FooViewModel>) {
 		UI.Column()
 			.padding(16)
 			.width("100%", 0, 600)
-			.position("center")
 			.with(
 				UI.Spacer(0, 40).hideWhen(UI.viewport.cols.gt(2)),
 

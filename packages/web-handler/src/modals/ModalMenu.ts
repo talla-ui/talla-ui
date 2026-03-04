@@ -19,7 +19,7 @@ import {
 const DEFAULT_WIDTH = 260;
 
 /** The default icon style that's used if none is specified */
-const DEFAULT_ICON_STYLE: UIText.IconStyle = { margin: "gap" };
+const DEFAULT_ICON_STYLE: UIText.IconStyle = { margin: 8 };
 
 /** @internal Default modal menu view; shown asynchronously and resolves a promise */
 export class ModalMenu extends Widget implements ModalFactory.MenuController {
@@ -74,7 +74,7 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 	}
 
 	static Divider() {
-		return UI.Divider().lineMargin(6);
+		return UI.Divider().margin({ y: 6 });
 	}
 
 	constructor(public options: ModalMenuOptions) {

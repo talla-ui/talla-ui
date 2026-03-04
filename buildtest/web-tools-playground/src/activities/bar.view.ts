@@ -37,20 +37,20 @@ export function BarView(v: Binding<{ count: number }>) {
 							.height(200)
 							.background("shade")
 							.clip()
-							.center()
+							.centerContent()
 							.with(UI.Image("https://picsum.photos/800/600")),
 						UI.Row()
 							.gap(0)
 							.with(
 								UI.Column()
 									.flex()
-									.center()
+									.centerContent()
 									.with(
 										UI.Text(v.bind("count"))
 											.fontSize(64)
 											.style(countNumberStyle),
 									),
-								UI.Divider().vertical().margin(0),
+								UI.Divider().vertical(),
 								UI.Column()
 									.position("stretch")
 									.with(

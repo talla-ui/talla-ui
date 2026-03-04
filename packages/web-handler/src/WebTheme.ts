@@ -13,7 +13,6 @@ export type WebThemeOptions = {
 	modalShadeBackground: UIColor | UIGradient | string;
 	logicalPxScale?: number;
 	logicalPxScaleNarrow?: number;
-	gap?: number;
 	iconSize: number;
 	iconMargin: number;
 	menuOffset: number;
@@ -243,16 +242,6 @@ export class WebTheme {
 		if (narrowScale !== undefined) {
 			this._options.logicalPxScaleNarrow = narrowScale;
 		}
-		return this;
-	}
-
-	/**
-	 * Sets the default gap size between elements.
-	 * @param gap The gap size in pixels.
-	 * @returns The theme itself, for method chaining.
-	 */
-	defaultGap(gap: number): this {
-		this._options.gap = gap;
 		return this;
 	}
 
