@@ -19,7 +19,7 @@ export abstract class BaseObserver<TUIViewElement extends UIElement> {
 			undefined,
 			true,
 		);
-		this.observeProperties("hidden", "position", "style", "styleName");
+		this.observeProperties("hidden", "position", "style");
 		observed.listen((e) => {
 			let handler = (this as any)["on" + e.name];
 			if (typeof handler === "function") handler.call(this, e);

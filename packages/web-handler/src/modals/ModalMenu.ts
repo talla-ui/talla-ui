@@ -53,7 +53,14 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 	}
 
 	static ItemRow(): UIColumn.ColumnBuilder {
-		return UI.Column().style("ModalMenu-item");
+		return UI.Column()
+			.name("ModalMenu-item")
+			.style({
+				margin: { x: 4 },
+				padding: { x: 12, y: 6 },
+				borderRadius: 6,
+				cursor: "pointer",
+			});
 	}
 
 	static ItemText() {

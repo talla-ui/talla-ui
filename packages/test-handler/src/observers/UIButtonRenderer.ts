@@ -6,7 +6,14 @@ import { applyElementStyle, TestBaseObserver } from "./TestBaseObserver.js";
 export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 	constructor(observed: UIButton) {
 		super(observed);
-		this.observeProperties("text", "icon", "chevron", "disabled", "pressed");
+		this.observeProperties(
+			"text",
+			"icon",
+			"chevron",
+			"disabled",
+			"pressed",
+			"buttonVariant",
+		);
 	}
 
 	protected override propertyChange(property: string, value: any) {
@@ -53,7 +60,8 @@ export class UIButtonRenderer extends TestBaseObserver<UIButton> {
 		element.pressed = !!button.pressed;
 
 		// set style
-		applyElementStyle(element, button.styleName, button.style, button.position);
+		element.variant = { ...button.buttonVariant };
+		applyElementStyle(element, button.style, button.position);
 	}
 
 	updateContent(element: TestOutputElement) {

@@ -67,7 +67,7 @@ export class MessageDialog
 	}
 
 	static ConfirmButton() {
-		return UI.Button().style("accent");
+		return UI.Button().accent();
 	}
 
 	static Button() {

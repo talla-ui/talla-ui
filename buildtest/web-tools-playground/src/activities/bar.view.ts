@@ -56,12 +56,12 @@ export function BarView(v: Binding<{ count: number }>) {
 									.with(
 										UI.Button()
 											.icon(UI.icons.chevronUp)
-											.style("ghost")
+											.ghost()
 											.style(countButtonStyle)
 											.onClick("IncrementCount"),
 										UI.Button()
 											.icon(UI.icons.chevronDown)
-											.style("ghost")
+											.ghost()
 											.style(countButtonStyle)
 											.onClick("DecrementCount"),
 									),

@@ -71,20 +71,10 @@ export namespace UIText {
 
 		/** The icon color. */
 		color?: UIColor;
-	};
 
-	/** Default style names for text/label elements. */
-	export type StyleName =
-		| "default"
-		| "body"
-		| "large"
-		| "title"
-		| "headline"
-		| "caption"
-		| "badge"
-		| "dangerBadge"
-		| "successBadge"
-		| "toggleText";
+		/** The position of the icon relative to the text; defaults to "start". */
+		position?: "top" | "start" | "end" | "bottom";
+	};
 
 	/**
 	 * Creates a view builder for a text element.
@@ -112,10 +102,7 @@ export namespace UIText {
 	 * A builder class for creating {@link UIText} instances.
 	 * - Returned by the {@link UI.Text()} function.
 	 */
-	export class TextBuilder extends UIElement.ElementBuilder<
-		UIText,
-		UIText.StyleName
-	> {
+	export class TextBuilder extends UIElement.ElementBuilder<UIText> {
 		/** The initializer used to create each text element instance. */
 		readonly initializer = new ViewBuilder.Initializer(UIText);
 
@@ -160,6 +147,22 @@ export namespace UIText {
 		 */
 		center() {
 			return this.textAlign("center");
+		}
+
+		/**
+		 * Applies a larger font size (as determined by the renderer or theme).
+		 * @returns The builder instance for chaining.
+		 */
+		larger() {
+			return this.fontSize("larger");
+		}
+
+		/**
+		 * Applies a smaller font size (as determined by the renderer or theme).
+		 * @returns The builder instance for chaining.
+		 */
+		smaller() {
+			return this.fontSize("smaller");
 		}
 
 		/**
@@ -226,5 +229,47 @@ export namespace UIText {
 			if (allow) this.allowFocus(true);
 			return this.setProperty("allowKeyboardFocus", allow);
 		}
+	}
+
+	/**
+	 * Creates a view builder for a badge element (small pill-shaped label).
+	 * @param text The badge text, or a binding.
+	 * @param background The background color, or a binding; defaults to 'shade' color.
+	 * @param textColor The text color, or a binding.
+	 * @param padding The padding within the badge; defaults to 8 px horizontally.
+	 * @param borderRadius The border radius of the badge; defaults to 1 em.
+	 * @returns A builder object for configuring the badge.
+	 */
+	export function badgeBuilder(
+		text?: BindingOrValue<StringConvertible>,
+		background: UIColor | UIColor.ColorName = "shade",
+		textColor?: UIColor | UIColor.ColorName,
+		padding: StyleOverrides.Offsets = { x: 8 },
+		borderRadius: string | number = "1em",
+	) {
+		let builder = new TextBuilder()
+			.text(text)
+			.smaller()
+			.padding(padding)
+			.borderRadius(borderRadius);
+		if (typeof background === "string") {
+			background = UIColor.getColor(background);
+		}
+		builder.background(background);
+		builder.textColor(textColor ?? background.text());
+		return builder;
+	}
+
+	/**
+	 * Creates a view builder for a standalone icon element (no text).
+	 * @param icon An icon resource, an icon name, or a binding.
+	 * @param iconStyle Styling options for the icon, or only the icon size in pixels.
+	 * @returns A builder object for configuring the icon element.
+	 */
+	export function iconBuilder(
+		icon: BindingOrValue<UIIconResource | UIIconResource.IconName | undefined>,
+		iconStyle?: BindingOrValue<UIText.IconStyle> | number,
+	) {
+		return new TextBuilder().icon(icon, iconStyle);
 	}
 }

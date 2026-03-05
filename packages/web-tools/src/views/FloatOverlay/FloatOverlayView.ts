@@ -22,8 +22,8 @@ const BodyView = (title: string, inspectView: InspectPanelView) =>
 			UI.Row(
 				UI.Text(title).bold(),
 				UI.Spacer(),
-				UI.Button().icon(icons.copy).style("icon").onClick("Clone"),
-				UI.Button().icon(UI.icons.close, 16).style("icon").onClick("Close"),
+				UI.IconButton(icons.copy).bare().onClick("Clone"),
+				UI.IconButton(UI.icons.close, 16).bare().onClick("Close"),
 			)
 				.background("background")
 				.effect("drag-modal", true)

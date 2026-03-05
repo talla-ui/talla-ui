@@ -6,6 +6,7 @@ import {
 } from "@talla-ui/core";
 import { StringConvertible } from "@talla-ui/util";
 import { applyStyles } from "../DOMStyle.js";
+import { CLASS_THEMED } from "../defaults/css.js";
 import { BaseObserver } from "./BaseObserver.js";
 import { setTextOrHtmlContent } from "./UITextRenderer.js";
 
@@ -25,6 +26,7 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 			"chevronStyle",
 			"disabled",
 			"pressed",
+			"buttonVariant",
 		);
 	}
 
@@ -102,11 +104,19 @@ export class UIButtonRenderer extends BaseObserver<UIButton> {
 			element.setAttribute("aria-pressed", "false");
 		else element.removeAttribute("aria-pressed");
 
+		// build theme classes from variant record
+		let variant = button.buttonVariant;
+		let themeClasses =
+			(variant.bare ? "" : CLASS_THEMED + "button--default ") +
+			Object.keys(variant)
+				.filter((v) => variant[v])
+				.map((v) => CLASS_THEMED + "button--" + v)
+				.join(" ");
+
 		// set CSS style
 		applyStyles(
 			element,
-			"button",
-			button.styleName,
+			themeClasses,
 			button.style,
 			undefined,
 			true,

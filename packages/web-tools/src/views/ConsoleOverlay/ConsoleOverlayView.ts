@@ -41,24 +41,26 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 				.effect("drag-modal", true)
 				.height(40)
 				.padding({ start: 8, end: 4 })
-				.gap(8)
+				.gap(4)
 				.with(
-					UI.Text("Console").bold().flex(0, 0),
+					UI.Text("Console").bold().lineHeight(1).flex(0, 0),
 					UI.Spacer(8),
 					UI.Row(
 						UI.Button("all")
-							.style("small")
+							.small()
 							.background("transparent")
 							.minWidth(0)
 							.borderRadius(4)
 							.pressed(v.bind.not("errorFilter"))
+							.textColor(v.bind.not("errorFilter").then("blue"))
 							.onClick("FilterAll"),
 						UI.Button("errors")
-							.style("small")
+							.small()
 							.background("transparent")
 							.minWidth(0)
 							.borderRadius(4)
 							.pressed(v.bind("errorFilter"))
+							.textColor(v.bind("errorFilter").then("red"))
 							.onClick("FilterError"),
 					).gap(4),
 					UI.Spacer(),
@@ -71,25 +73,29 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 						UI.Spacer(),
 						UI.TextField("Search")
 							.type("search")
-							.style("ghost")
+							.bare()
 							.fontSize(12)
 							.height(32)
 							.padding({ start: 32, end: 4, y: 4 })
+							.minWidth(0)
 							.position("cover")
 							.onKey("Escape", "Ignore")
 							.onInput("FilterSearch"),
 					)
-						.style({ width: 80, css: { transition: "width 0.3s ease-in-out" } })
+						.style({
+							width: 100,
+							css: { transition: "width 0.3s ease-in-out" },
+						})
 						.onFocusIn((_, row) => {
 							row.setStyle({ width: 240 });
 						})
 						.onFocusOut((e, row) => {
 							let tf = e.source;
 							if ("value" in tf && tf.value) return;
-							row.setStyle({ width: 80 });
+							row.setStyle({ width: 100 });
 						})
 						.flex(0, 1),
-					UI.Button().icon(UI.icons.close, 16).style("icon").onClick("Close"),
+					UI.IconButton(UI.icons.close, 16).bare().onClick("Close"),
 				),
 			UI.Divider(),
 			UI.List(v.bind("list"), (item) =>
@@ -171,7 +177,7 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 					UI.TextField()
 						.position("cover")
 						.hideWhen(v.bind("errorFilter"))
-						.style("ghost")
+						.ghost()
 						.size("100%", 28)
 						.padding({ start: 22, y: 4 })
 						.fontFamily("monospace")

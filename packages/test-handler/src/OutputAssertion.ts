@@ -35,14 +35,25 @@ export interface OutputSelectFilter {
 	accessibleRole?: string;
 	/** A matching element's accessible label */
 	accessibleLabel?: string;
+	/** Variant style flags to match; each specified key must match the element's variant value */
+	variant?: Record<string, boolean>;
 	/** A set of style overrides that must be applied to a matching element (values for e.g. `bold`, `textColor`, and `background`) */
 	style?: Record<string, any>;
 	/** Position options that must match (e.g. `gravity`, `top`, `bottom`) */
 	position?: Partial<UIElement.Position>;
 	/** Layout options that must match for containers (e.g. `axis`, `distribution`, `gravity`) */
 	layout?: Partial<UIContainer.Layout>;
-	/** The style name applied to the element (e.g. "default", "accent") */
-	styleName?: string;
+}
+
+/** Returns true if all specified variant flags match the element's variant record */
+function _matchVariant(
+	filter: Record<string, boolean>,
+	variant?: Record<string, boolean | undefined>,
+) {
+	for (let key in filter) {
+		if (!!variant?.[key] !== filter[key]) return false;
+	}
+	return true;
 }
 
 /** Returns true if given element matches given selection criteria */
@@ -73,10 +84,10 @@ function _matchElement(select: OutputSelectFilter, elt: TestOutputElement) {
 			elt.accessibleRole !== select.accessibleRole) ||
 		(select.accessibleLabel !== undefined &&
 			elt.accessibleLabel !== select.accessibleLabel) ||
+		(select.variant && !_matchVariant(select.variant, elt.variant)) ||
 		(select.style && !elt.matchStyleValues(select.style)) ||
 		(select.position && !elt.matchPositionValues(select.position)) ||
-		(select.layout && !elt.matchLayoutValues(select.layout)) ||
-		(select.styleName !== undefined && elt.styleName !== select.styleName)
+		(select.layout && !elt.matchLayoutValues(select.layout))
 	);
 }
 

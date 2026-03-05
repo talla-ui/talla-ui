@@ -116,13 +116,7 @@ export class UIContainerRenderer<
 		let container = this.observed;
 		let layout = container.layout;
 
-		applyElementStyle(
-			element,
-			container.styleName,
-			container.style,
-			container.position,
-			layout,
-		);
+		applyElementStyle(element, container.style, container.position, layout);
 	}
 }
 

@@ -28,7 +28,7 @@ export class UIImageRenderer extends TestBaseObserver<UIImage> {
 
 	override updateStyle(element: TestOutputElement) {
 		let image = this.observed;
-		applyElementStyle(element, image.styleName, image.style, image.position);
+		applyElementStyle(element, image.style, image.position);
 	}
 
 	updateContent(element: TestOutputElement) {

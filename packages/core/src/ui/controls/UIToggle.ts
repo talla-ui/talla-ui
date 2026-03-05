@@ -40,9 +40,6 @@ export class UIToggle extends UIElement {
 }
 
 export namespace UIToggle {
-	/** Default style names for toggle elements. */
-	export type StyleName = "default" | "danger" | "success";
-
 	/**
 	 * Creates a view builder for a toggle (checkbox/switch) element.
 	 * @param text The text to display next to the toggle, or a binding.
@@ -69,10 +66,7 @@ export namespace UIToggle {
 	 * A builder class for creating {@link UIToggle} instances.
 	 * - Returned by the {@link UI.Toggle()} function.
 	 */
-	export class ToggleBuilder extends UIElement.ElementBuilder<
-		UIToggle,
-		UIToggle.StyleName
-	> {
+	export class ToggleBuilder extends UIElement.ElementBuilder<UIToggle> {
 		/** The initializer used to create each toggle instance. */
 		readonly initializer = new ViewBuilder.Initializer(UIToggle);
 
@@ -147,7 +141,6 @@ export namespace UIToggle {
 
 		/**
 		 * Applies styling to the toggle's text.
-		 * - These overrides are applied on top of the `toggleText` named text style.
 		 * @param textStyle A style overrides object for the text.
 		 * @returns The builder instance for chaining.
 		 */

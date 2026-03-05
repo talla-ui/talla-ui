@@ -10,7 +10,7 @@ import { BaseObserver } from "./BaseObserver.js";
 export class UIDividerRenderer extends BaseObserver<UIDivider> {
 	constructor(observed: UIDivider) {
 		super(observed);
-		this.observeProperties("lineColor", "lineWidth", "vertical");
+		this.observeProperties("lineColor", "lineWidth", "lineStyle", "vertical");
 	}
 
 	getOutput() {
@@ -29,11 +29,11 @@ export class UIDividerRenderer extends BaseObserver<UIDivider> {
 			...sep.style,
 			borderColor: sep.lineColor || UI.colors.divider,
 			borderWidth: sep.lineWidth,
+			borderStyle: sep.lineStyle,
 		};
 		applyStyles(
 			element,
-			"divider",
-			sep.styleName,
+			undefined,
 			style,
 			systemClass,
 			false,

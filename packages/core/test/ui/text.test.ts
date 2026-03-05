@@ -51,27 +51,18 @@ test("View builder using text and style", () => {
 	expect(text.style?.bold).toBe(true);
 });
 
-test("Text with style name", async () => {
-	let myText = UI.Text("styled text").style("title");
+test("Text with style overrides via style method", async () => {
+	let myText = UI.Text("styled text").style({
+		fontSize: "1.25rem",
+		bold: true,
+	});
 	let text = myText.build();
-	expect(text.styleName).toBe("title");
+	expect(text.style?.bold).toBe(true);
 
 	renderTestView(text);
 	await expectOutputAsync({
 		text: "styled text",
-		styleName: "title",
-	});
-});
-
-test("Text default styleName", async () => {
-	let text = UI.Text("default text").build();
-	// Element styleName is undefined, renderer substitutes "default"
-	expect(text.styleName).toBeUndefined();
-
-	renderTestView(text);
-	await expectOutputAsync({
-		text: "default text",
-		styleName: "default",
+		style: { bold: true },
 	});
 });
 
@@ -128,34 +119,10 @@ test("Text with style overrides object", async () => {
 	});
 });
 
-test("Text with style name and additional overrides", async () => {
-	let myText = UI.Text("Both").style("title").italic().textColor("accent");
+test("Text with style overrides and additional methods", async () => {
+	let myText = UI.Text("Both").larger().italic().textColor("accent");
 	let text = myText.build();
-	expect(text.styleName).toBe("title");
+	expect(text.style?.fontSize).toBe("larger");
 	expect(text.style?.italic).toBe(true);
 	expect(text.style?.textColor).toBe(UI.colors.accent);
-});
-
-test("Text with dynamic style binding", async () => {
-	class MyTextWidget extends Widget {
-		textStyle = "default";
-	}
-	function MyText() {
-		return MyTextWidget.builder((v) =>
-			UI.Text("Dynamic").style(v.bind("textStyle")),
-		);
-	}
-	let myText = MyText().build();
-	renderTestView(myText);
-
-	await expectOutputAsync({
-		text: "Dynamic",
-		styleName: "default",
-	});
-
-	myText.textStyle = "title";
-	await expectOutputAsync({
-		text: "Dynamic",
-		styleName: "title",
-	});
 });

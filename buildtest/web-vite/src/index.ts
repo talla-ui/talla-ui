@@ -22,8 +22,9 @@ setWebTheme(
 			background: new UIColor("#111"),
 			accent: UI.colors.yellow,
 		})
-		// Custom button style for toggle/switch buttons (extends default)
-		.customStyle("button", "default", "toggleButton", {
+		.textFieldStyle("default", { borderWidth: { bottom: 2 }, borderRadius: 0 })
+		// Custom button variant for toggle/switch buttons
+		.buttonStyle("toggleButton", {
 			borderRadius: 4,
 			minWidth: "0",
 			"+pressed": {

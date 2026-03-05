@@ -163,8 +163,7 @@ export class UIContainerRenderer<
 
 		applyStyles(
 			element,
-			"container",
-			container.styleName,
+			undefined,
 			container.style,
 			systemClass,
 			false,

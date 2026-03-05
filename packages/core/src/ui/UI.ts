@@ -28,6 +28,9 @@ export namespace UI {
 	/** Alias for {@link UIButton.buttonBuilder}. */
 	export const Button = UIButton.buttonBuilder;
 
+	/** Alias for {@link UIButton.iconButtonBuilder}. */
+	export const IconButton = UIButton.iconButtonBuilder;
+
 	/** Alias for {@link UIDivider.dividerBuilder}. */
 	export const Divider = UIDivider.dividerBuilder;
 
@@ -37,11 +40,23 @@ export namespace UI {
 	/** Alias for {@link UIText.textBuilder}. */
 	export const Text = UIText.textBuilder;
 
+	/** Alias for {@link UIText.badgeBuilder}. */
+	export const Badge = UIText.badgeBuilder;
+
+	/** Alias for {@link UIText.iconBuilder}. */
+	export const Icon = UIText.iconBuilder;
+
+	/** Alias for {@link UIButton.linkButtonBuilder}. */
+	export const Link = UIButton.linkButtonBuilder;
+
 	/** Alias for {@link UISpacer.spacerBuilder}. */
 	export const Spacer = UISpacer.spacerBuilder;
 
 	/** Alias for {@link UITextField.textFieldBuilder}. */
 	export const TextField = UITextField.textFieldBuilder;
+
+	/** Alias for {@link UITextField.textAreaBuilder}. */
+	export const TextArea = UITextField.textAreaBuilder;
 
 	/** Alias for {@link UIToggle.toggleBuilder}. */
 	export const Toggle = UIToggle.toggleBuilder;

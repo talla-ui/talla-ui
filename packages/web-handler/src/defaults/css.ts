@@ -1,7 +1,7 @@
 /** @internal UI element class name */
 export const CLASS_UI = "WebHandler__UI";
-/** @internal Named style class prefix */
-export const CLASS_NAMED = "WebHandler-";
+/** @internal Themed CSS class prefix */
+export const CLASS_THEMED = "WebHandler-";
 /** @internal Page root element class name */
 export const CLASS_PAGE_ROOT = "WebHandler__Pg";
 /** @internal Page wrapper element class name (for page mode scrolling) */
@@ -243,6 +243,11 @@ export function makeBaseCSS(): Record<string, {}> {
 			width: "1px", // actual size set inline
 			height: "1px",
 			alignSelf: "center",
+		},
+
+		// add modal menu item hover style
+		[`.${CLASS_UI}[data-name="ModalMenu-item"]:hover`]: {
+			background: "rgba(128,128,128,.1)",
 		},
 
 		// add custom toggle style

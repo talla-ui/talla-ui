@@ -55,8 +55,7 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 		// set element (wrapper) style
 		applyStyles(
 			element,
-			"toggle",
-			toggle.styleName,
+			undefined,
 			toggle.style,
 			CLASS_TOGGLE + " " + CLASS_TOGGLE_TYPE[toggle.type],
 			false,
@@ -64,17 +63,9 @@ export class UIToggleRenderer extends BaseObserver<UIToggle> {
 			toggle.position,
 		);
 
-		// set text style
+		// set text style on label
 		let label = element.lastChild as HTMLLabelElement;
-		applyStyles(
-			label,
-			"text",
-			"toggleText",
-			toggle.textStyle,
-			undefined,
-			true,
-			false,
-		);
+		applyStyles(label, undefined, toggle.textStyle, undefined, true, false);
 
 		// set disabled state
 		let checkbox = element.firstChild as HTMLInputElement;

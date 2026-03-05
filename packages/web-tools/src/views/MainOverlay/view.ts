@@ -42,24 +42,21 @@ const ToolbarRow = (v: Binding<MainOverlayView>) =>
 		.padding(4)
 		.gap(2)
 		.with(
-			UI.Button()
-				.icon(icons.information)
+			UI.IconButton(icons.information)
+				.ghost()
 				.onClick("ShowIndex")
-				.style("icon")
 				.borderRadius(4)
 				.fg(v.bind("mode").equals("index").then("blue", "text"))
 				.pressed(v.bind("mode").equals("index")),
-			UI.Button()
-				.icon(icons.treeStructure)
+			UI.IconButton(icons.treeStructure)
+				.ghost()
 				.onClick("ShowInspector")
-				.style("icon")
 				.borderRadius(4)
 				.fg(v.bind("mode").equals("inspect").then("blue", "text"))
 				.pressed(v.bind("mode").equals("inspect")),
-			UI.Button()
-				.icon(icons.selectElement)
+			UI.IconButton(icons.selectElement)
+				.ghost()
 				.onClick("ShowPicker")
-				.style("icon")
 				.borderRadius(4)
 				.fg(v.bind("mode").equals("picker").then("blue", "text"))
 				.pressed(v.bind("mode").equals("picker")),
@@ -68,10 +65,9 @@ const ToolbarRow = (v: Binding<MainOverlayView>) =>
 				.hideWhen(v.bind.not("log.numErrors"))
 				.onClick("ShowErrors"),
 			UI.Spacer(),
-			UI.Button().icon(UI.icons.more, 16).style("icon").onClick("MoreMenu"),
-			UI.Button()
-				.icon(UI.icons.chevronDown)
-				.style("icon")
+			UI.IconButton(UI.icons.more, 16).ghost().onClick("MoreMenu"),
+			UI.IconButton(UI.icons.chevronDown)
+				.ghost()
 				.onClick("ToggleMinimized")
 				.hideWhen(v.bind("docked")),
 		);
@@ -97,7 +93,7 @@ export const MainOverlayViewBody = (v: Binding<MainOverlayView>) =>
 				.with(
 					UI.Button()
 						.icon(icons.information)
-						.style("ghost")
+						.ghost()
 						.borderRadius(0)
 						.padding(0)
 						.size(32)

@@ -8,10 +8,10 @@ export const CLASS_FX_PREFIX = "WebHandler-fx-";
 export const CLASS_FX_EXITING = `WebHandler-fx--exiting`;
 
 // Easing curves
-const CURVE_IN = "cubic-bezier(0.33, 1, 0.68, 1)";
-const CURVE_OUT = "cubic-bezier(0.32, 0, 0.67, 0)";
+const CURVE_IN = "cubic-bezier(0.3, 1, 0.7, 1)";
+const CURVE_OUT = "cubic-bezier(0.3, 0, 0.7, 0)";
 const CURVE_SLOW = "cubic-bezier(0.4, 0, 0.6, 1)";
-const CURVE_POP = "cubic-bezier(0.34, 1.56, 0.64, 1)";
+const CURVE_POP = "cubic-bezier(0.3, 2.2, 0.6, 1)";
 
 /** @internal Returns CSS rules for render effects. */
 export function makeEffectCSS() {

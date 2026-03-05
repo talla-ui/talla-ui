@@ -19,33 +19,42 @@ export class UIDivider extends UIElement {
 
 	/**
 	 * The divider line color.
-	 * - Defaults to the preset divider color if not set.
+	 * - Defaults to the named 'divider' color if not set.
 	 */
 	lineColor?: UIColor = undefined;
+
+	/**
+	 * The divider line style.
+	 * - Defaults to "solid".
+	 */
+	lineStyle: UIDivider.LineStyle = "solid";
 
 	/** True if the divider should be drawn as a vertical line instead of horizontal. */
 	vertical?: boolean;
 }
 
 export namespace UIDivider {
-	/** Default style names for divider elements. */
-	export type StyleName = "default" | "dashed" | "dotted";
+	/** The line style for divider elements. */
+	export type LineStyle = "solid" | "dashed" | "dotted";
 
 	/**
 	 * Creates a view builder for a divider line element.
 	 * @param lineWidth The width of the line, in pixels or a string with unit.
 	 * @param lineColor The color of the line, as a color name or a {@link UIColor} instance.
+	 * @param lineStyle The style of the line, as a {@link UIDivider.LineStyle} value.
 	 * @returns A builder object for configuring the divider.
 	 * @see {@link UIDivider}
 	 */
 	export function dividerBuilder(
 		lineWidth?: BindingOrValue<string | number>,
 		lineColor?: BindingOrValue<UIColor | UIColor.ColorName | undefined>,
+		lineStyle?: BindingOrValue<UIDivider.LineStyle>,
 	) {
 		let result = new DividerBuilder();
 		if (lineWidth != null) result.lineWidth(lineWidth);
 		if (typeof lineColor === "string") lineColor = UIColor.getColor(lineColor);
 		if (lineColor) result.lineColor(lineColor);
+		if (lineStyle != null) result.lineStyle(lineStyle);
 		return result;
 	}
 
@@ -53,10 +62,7 @@ export namespace UIDivider {
 	 * A builder class for creating {@link UIDivider} instances.
 	 * - Returned by the {@link UI.Divider()} function.
 	 */
-	export class DividerBuilder extends UIElement.ElementBuilder<
-		UIDivider,
-		UIDivider.StyleName
-	> {
+	export class DividerBuilder extends UIElement.ElementBuilder<UIDivider> {
 		/** The initializer used to create each divider instance. */
 		readonly initializer = new ViewBuilder.Initializer(UIDivider);
 
@@ -97,6 +103,15 @@ export namespace UIDivider {
 						? UIColor.getColor(color)
 						: color,
 			);
+		}
+
+		/**
+		 * Sets the line style of the divider.
+		 * @param style The line style ("solid", "dashed", or "dotted").
+		 * @returns The builder instance for chaining.
+		 */
+		lineStyle(style: BindingOrValue<UIDivider.LineStyle>) {
+			return this.setProperty("lineStyle", style);
 		}
 
 		/**

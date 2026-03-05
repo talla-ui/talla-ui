@@ -156,18 +156,6 @@ describe("UIColumn", () => {
 		expect(out2.getSingle().uid).toBe(uid);
 	});
 
-	test("Column with style name", async () => {
-		let myColumn = UI.Column().style("card");
-		let column = myColumn.build();
-		expect(column.styleName).toBe("card");
-
-		renderTestView(column);
-		await expectOutputAsync({
-			type: "column",
-			styleName: "card",
-		});
-	});
-
 	test("Column with style overrides object", async () => {
 		let myColumn = UI.Column().style({
 			background: UI.colors.background,
@@ -184,15 +172,13 @@ describe("UIColumn", () => {
 		});
 	});
 
-	test("Column with style name and additional overrides", async () => {
+	test("Column with multiple style overrides", async () => {
 		let myColumn = UI.Column()
-			.style("card")
 			.background("accent")
 			.borderRadius(8)
 			.dropShadow(4);
 
 		let column = myColumn.build();
-		expect(column.styleName).toBe("card");
 		expect(column.style?.background).toBe(UI.colors.accent);
 		expect(column.style?.borderRadius).toBe(8);
 		expect(column.style?.dropShadow).toBe(4);

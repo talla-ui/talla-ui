@@ -9,47 +9,42 @@ import {
 import { makeEffectCSS } from "./defaults/animations.js";
 import {
 	CLASS_CONTAINER,
-	CLASS_NAMED,
 	CLASS_TEXTCONTROL,
+	CLASS_THEMED,
 	CLASS_TOGGLE,
 	CLASS_UI,
 	makeBaseCSS,
 } from "./defaults/css.js";
+import { WebStyleDefinition } from "./WebTheme.js";
 
-/** @internal Element type identifiers for style class names */
-export type StyleElementType =
-	| "button"
-	| "text"
-	| "textfield"
-	| "toggle"
-	| "divider"
-	| "container";
+/** Default number of logical pixels in a REM unit */
+const LOGICAL_PX_PER_REM = 16;
 
-/**
- * @internal Style definition for named styles
- * - Uses StyleOverrides from core for base properties (supports UIColor)
- * - Adds state keys: `+hover`, `+focus`, `+pressed`, `+disabled`, `+readonly`
- * - Adds CSS selector keys (`:` or `[` prefix, e.g. `:first-child`, `[data-foo]`)
- */
-export type WebNamedStyleDefinition = StyleOverrides & {
-	"+hover"?: StyleOverrides;
-	"+focus"?: StyleOverrides;
-	"+pressed"?: StyleOverrides;
-	"+disabled"?: StyleOverrides;
-	"+readonly"?: StyleOverrides;
-	[selector: `:${string}` | `[${string}`]: StyleOverrides | undefined;
-};
+/** Default logical pixel scale */
+const DEFAULT_LOGICAL_PIXEL_SCALE = 1;
 
-/** @internal Default number of logical pixels in a REM unit */
-export const LOGICAL_PX_PER_REM = 16;
+/** Default logical pixel scale for narrow screens */
+const DEFAULT_LOGICAL_PIXEL_SCALE_NARROW = 16 / 14;
 
-/** @internal Default control text CSS styles */
-export const defaultControlTextStyle: StyleOverrides = {
+/** Default control text size, overridden by settings, applied using CSS */
+const defaultControlTextStyle: StyleOverrides = {
 	fontFamily:
 		'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, "Helvetica Neue", Arial, sans-serif',
 	fontSize: 14,
 	lineHeight: 1.5,
 };
+
+/** Default "smaller" font size */
+const DEFAULT_SMALLER_FONT_SIZE = 12;
+
+/** Default "larger" font size */
+const DEFAULT_LARGER_FONT_SIZE = 16;
+
+/** Current "smaller" font size, as a string in rem units */
+let _smallerFontSize = "0.75rem"; // = 12 / 16
+
+/** Current "larger" font size, as a string in rem units */
+let _largerFontSize = "1rem"; // = 16 / 16
 
 /** Flexbox justify/alignment options */
 const _flexOptions: Record<string, string | undefined> = {
@@ -148,24 +143,36 @@ export type InitializeCSSOptions = {
 	pageBackground?: UIColor | UIGradient | string;
 	logicalPxScale?: number;
 	logicalPxScaleNarrow?: number;
-	gap?: number;
 	focusDecoration?: StyleOverrides;
 	controlTextStyle?: StyleOverrides;
+	smallerFontSize?: number;
+	largerFontSize?: number;
 };
 
 /** @internal Helper method to reset all CSS and apply specified options */
 export function initializeCSS(
 	options: InitializeCSSOptions,
-	namedStyles?: Record<string, Record<string, WebNamedStyleDefinition>>,
-	importCSS?: string[],
+	themeStyles: {
+		buttonStyles: Record<string, WebStyleDefinition>;
+		textFieldStyles: Record<string, WebStyleDefinition>;
+	},
+	importCSS: string[],
 ) {
 	let allCss = makeBaseCSS();
 	Object.assign(allCss, makeEffectCSS());
 
-	let logicalPxScale = options.logicalPxScale ?? 1;
-	let logicalPxScaleNarrow = options.logicalPxScaleNarrow ?? 16 / 14;
+	let logicalPxScale = options.logicalPxScale ?? DEFAULT_LOGICAL_PIXEL_SCALE;
+	let logicalPxScaleNarrow =
+		options.logicalPxScaleNarrow ?? DEFAULT_LOGICAL_PIXEL_SCALE_NARROW;
 	_currentLogicalPxScale = logicalPxScale;
 	_currentLogicalPxScaleNarrow = logicalPxScaleNarrow;
+	_smallerFontSize =
+		(options.smallerFontSize ?? DEFAULT_SMALLER_FONT_SIZE) /
+			LOGICAL_PX_PER_REM +
+		"rem";
+	_largerFontSize =
+		(options.largerFontSize ?? DEFAULT_LARGER_FONT_SIZE) / LOGICAL_PX_PER_REM +
+		"rem";
 
 	allCss.html = { fontSize: logicalPxScale * LOGICAL_PX_PER_REM + "px" };
 	allCss["@media (max-width: 600px)"] = {
@@ -196,15 +203,14 @@ export function initializeCSS(
 		};
 	}
 
-	// add named styles, if any
-	if (namedStyles) {
-		for (let elementType in namedStyles) {
-			for (let styleName in namedStyles[elementType]) {
-				let style = namedStyles[elementType][styleName]!;
-				let fullName = elementType + "-" + styleName;
-				Object.assign(allCss, _generateNamedStyleCSS(fullName, style));
-			}
-		}
+	// add themed CSS classes for buttons and text fields
+	for (let variant in themeStyles.buttonStyles) {
+		let style = themeStyles.buttonStyles[variant]!;
+		Object.assign(allCss, _generateThemedCSS("button--" + variant, style));
+	}
+	for (let variant in themeStyles.textFieldStyles) {
+		let style = themeStyles.textFieldStyles[variant]!;
+		Object.assign(allCss, _generateThemedCSS("textfield--" + variant, style));
 	}
 
 	// update or create style sheets with new CSS
@@ -257,8 +263,7 @@ export function getCSSLength(
 /** @internal Helper function to apply CSS classes and styles to an element */
 export function applyStyles(
 	element: HTMLElement,
-	elementType: StyleElementType | undefined,
-	styleName: string | undefined,
+	themeClasses: string | undefined,
 	style: StyleOverrides | undefined,
 	systemClass?: string,
 	isTextControl?: boolean,
@@ -279,10 +284,7 @@ export function applyStyles(
 	if (isTextControl) className += " " + CLASS_TEXTCONTROL;
 	if (isContainer) className += " " + CLASS_CONTAINER;
 	if (systemClass) className += " " + systemClass;
-	if (elementType) {
-		// undefined styleName means "use default style"
-		className += ` ${CLASS_NAMED}${elementType}-${styleName || "default"}`;
-	}
+	if (themeClasses) className += " " + themeClasses;
 	element.className = className;
 
 	// apply overrides inline
@@ -303,13 +305,10 @@ export function applyStyles(
 	}
 }
 
-/** Generate CSS rules for a named style */
-function _generateNamedStyleCSS(
-	className: string,
-	definition: WebNamedStyleDefinition,
-) {
+/** Generate CSS rules for a themed class definition. */
+function _generateThemedCSS(className: string, definition: WebStyleDefinition) {
 	const result: { [selector: string]: any } = {};
-	const baseSel = `*.${CLASS_NAMED}${className}`;
+	const baseSel = `*.${CLASS_THEMED}${className}`;
 
 	// Helper for combining style properties
 	const _makeStyle = (def: StyleOverrides): Partial<CSSStyleDeclaration> =>
@@ -462,7 +461,9 @@ function addTextStyleCSS(
 	let fontFamily = textStyle.fontFamily;
 	if (fontFamily !== undefined) result.fontFamily = fontFamily;
 	let fontSize = textStyle.fontSize;
-	if (fontSize !== undefined)
+	if (fontSize === "smaller") result.fontSize = _smallerFontSize;
+	else if (fontSize === "larger") result.fontSize = _largerFontSize;
+	else if (fontSize !== undefined)
 		result.fontSize = getCSSLength(fontSize, "inherit");
 	let fontWeight = textStyle.fontWeight;
 	if (fontWeight !== undefined) result.fontWeight = String(fontWeight);

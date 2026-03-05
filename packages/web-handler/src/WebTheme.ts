@@ -1,10 +1,30 @@
-import type { UIGradient } from "@talla-ui/core";
-import { StyleOverrides, UI, UIColor, UIIconResource } from "@talla-ui/core";
+import {
+	StyleOverrides,
+	UI,
+	UIColor,
+	UIGradient,
+	UIIconResource,
+} from "@talla-ui/core";
 import { makeDefaultColors } from "./defaults/colors.js";
 import { makeDefaultIcons } from "./defaults/icons.js";
-import { makeDefaultStyles } from "./defaults/styles.js";
+import { makeButtonStyles, makeTextFieldStyles } from "./defaults/styles.js";
 import { ModalMenu } from "./modals/ModalMenu.js";
 import { UITextRenderer } from "./observers/UITextRenderer.js";
+
+/**
+ * A type that represents a style definition for themed CSS classes.
+ * - Uses StyleOverrides from core for base properties (supports UIColor).
+ * - Adds state keys: `+hover`, `+focus`, `+pressed`, `+disabled`, `+readonly`.
+ * - Adds CSS selector keys (`:` or `[` prefix, e.g. `:first-child`, `[data-foo]`).
+ */
+export type WebStyleDefinition = StyleOverrides & {
+	"+hover"?: StyleOverrides;
+	"+focus"?: StyleOverrides;
+	"+pressed"?: StyleOverrides;
+	"+disabled"?: StyleOverrides;
+	"+readonly"?: StyleOverrides;
+	[selector: `:${string}` | `[${string}`]: StyleOverrides | undefined;
+};
 
 /** @internal Theme options type for scalar configuration values. */
 export type WebThemeOptions = {
@@ -17,6 +37,8 @@ export type WebThemeOptions = {
 	iconMargin: number;
 	menuOffset: number;
 	controlTextStyle?: StyleOverrides;
+	smallerFontSize?: number;
+	largerFontSize?: number;
 	focusDecoration?: StyleOverrides;
 };
 
@@ -24,7 +46,8 @@ export type WebThemeOptions = {
 export type WebThemeData = {
 	colors: Record<string, UIColor>;
 	icons: Record<string, UIIconResource>;
-	styles: Record<string, Record<string, WebTheme.StyleDefinition>>;
+	buttonStyles: Record<string, WebTheme.StyleDefinition>;
+	textFieldStyles: Record<string, WebTheme.StyleDefinition>;
 	imports: string[];
 	options: WebThemeOptions;
 };
@@ -55,7 +78,8 @@ export class WebTheme {
 		this._darkColors = {};
 		this._icons = makeDefaultIcons();
 		this._darkIcons = {};
-		this._styles = makeDefaultStyles();
+		this._buttonStyles = makeButtonStyles();
+		this._textFieldStyles = makeTextFieldStyles();
 
 		// Initialize options with defaults
 		this._options = {
@@ -148,39 +172,32 @@ export class WebTheme {
 	}
 
 	/**
-	 * Defines or overrides a named style.
-	 * - The base style's properties are copied and merged with overrides.
-	 * - Use the same name for baseStyle and name to override an existing style.
-	 * - Use a different name to create a new style based on an existing one.
-	 * @param type The element type (button, text, textfield, toggle, divider, container).
-	 * @param baseStyle The name of the style to inherit from (e.g., "default", "accent").
-	 * @param name The name for this style; can be same as baseStyle to override.
+	 * Defines or overrides a button variant style.
+	 * - Deep-merges overrides with the existing variant definition.
+	 * @param variant The variant name (e.g., "default", "accent", "ghost").
 	 * @param overrides Style properties to set or override.
 	 * @returns The theme itself, for method chaining.
 	 *
 	 * @example
-	 * // Override the default button style
-	 * theme.customStyle("button", "default", "default", { borderRadius: 20 });
-	 *
-	 * // Create a new "brand" button style based on "accent"
-	 * theme.customStyle("button", "accent", "brand", { background: "#FF5722" });
+	 * theme.buttonStyle("default", { borderRadius: 20 });
 	 */
-	customStyle(
-		type: WebTheme.ElementType,
-		baseStyle: string,
-		name: string,
-		overrides: WebTheme.StyleDefinition,
-	): this {
-		let typeStyles = (this._styles[type] ||= {});
+	buttonStyle(variant: string, overrides: WebTheme.StyleDefinition): this {
+		_applyVariant(this._buttonStyles, variant, overrides);
+		return this;
+	}
 
-		// Get base style (must exist)
-		const base = typeStyles[baseStyle];
-		if (!base) {
-			throw new Error(`Undefined: ${baseStyle}`);
-		}
-
-		// Merge base with overrides
-		typeStyles[name] = _deepMergeStyle(base, overrides);
+	/**
+	 * Defines or overrides a text field variant style.
+	 * - Deep-merges overrides with the existing variant definition.
+	 * @param variant The variant name: "default" or "ghost".
+	 * @param overrides Style properties to set or override.
+	 * @returns The theme itself, for method chaining.
+	 *
+	 * @example
+	 * theme.textFieldStyle("default", { borderRadius: 8 });
+	 */
+	textFieldStyle(variant: string, overrides: WebTheme.StyleDefinition): this {
+		_applyVariant(this._textFieldStyles, variant, overrides);
 		return this;
 	}
 
@@ -195,6 +212,23 @@ export class WebTheme {
 			...this._options.controlTextStyle,
 			...style,
 		};
+		return this;
+	}
+
+	/**
+	 * Sets the font size for all controls.
+	 * - The `smaller` and `larger` properties determine the font size used for text elements that have {@link UIText.TextBuilder.smaller() smaller()} or {@link UIText.TextBuilder.larger()} applied to them, respectively.
+	 * - Font sizes are always converted to `rem` units, respecting the values of {@link logicalPxScale()}.
+	 * @param sizes Font sizes in pixels, for body (regular), smaller, and larger text.
+	 * @returns The theme itself, for method chaining.
+	 */
+	fontSize(sizes: { body: number; smaller: number; larger: number }): this {
+		this._options.controlTextStyle = {
+			...this._options.controlTextStyle,
+			fontSize: sizes.body,
+		};
+		this._options.smallerFontSize = sizes.smaller;
+		this._options.largerFontSize = sizes.larger;
 		return this;
 	}
 
@@ -300,7 +334,8 @@ export class WebTheme {
 	 */
 	cloneTheme(): WebTheme {
 		const copy = Object.create(WebTheme.prototype) as WebTheme;
-		copy._styles = _deepClone(this._styles);
+		copy._buttonStyles = _deepClone(this._buttonStyles);
+		copy._textFieldStyles = _deepClone(this._textFieldStyles);
 		copy._colors = { ...this._colors };
 		copy._darkColors = { ...this._darkColors };
 		copy._icons = { ...this._icons };
@@ -321,7 +356,8 @@ export class WebTheme {
 		return {
 			colors: dark ? { ...this._colors, ...this._darkColors } : this._colors,
 			icons: dark ? { ...this._icons, ...this._darkIcons } : this._icons,
-			styles: this._styles,
+			buttonStyles: this._buttonStyles,
+			textFieldStyles: this._textFieldStyles,
 			imports: [...(this._imports || [])],
 			options: { ...this._options },
 		};
@@ -339,10 +375,11 @@ export class WebTheme {
 	/** Dark mode icon overrides */
 	private _darkIcons: Record<string, UIIconResource>;
 
-	/** Style definitions by element type and name */
-	private _styles: Partial<
-		Record<WebTheme.ElementType, Record<string, WebTheme.StyleDefinition>>
-	>;
+	/** Button style definitions by variant name */
+	private _buttonStyles: Record<string, WebTheme.StyleDefinition>;
+
+	/** Text field style definitions by variant name */
+	private _textFieldStyles: Record<string, WebTheme.StyleDefinition>;
 
 	/** CSS imports by URL */
 	private _imports?: string[];
@@ -353,35 +390,58 @@ export class WebTheme {
 
 export namespace WebTheme {
 	/**
-	 * The element types that can have named styles.
-	 */
-	export type ElementType =
-		| "button"
-		| "text"
-		| "textfield"
-		| "toggle"
-		| "divider"
-		| "container";
-
-	/**
-	 * A type that represents a style definition for named styles.
+	 * A type that represents a style definition for themed CSS classes.
 	 * - Uses {@link StyleOverrides} from core for base properties.
 	 * - Adds state keys: `+hover`, `+focus`, `+pressed`, `+disabled`, `+readonly`.
 	 * - Adds CSS selector keys (`:` or `[` prefix).
 	 */
-	export type StyleDefinition = StyleOverrides & {
-		"+hover"?: StyleOverrides;
-		"+focus"?: StyleOverrides;
-		"+pressed"?: StyleOverrides;
-		"+disabled"?: StyleOverrides;
-		"+readonly"?: StyleOverrides;
-		[selector: `:${string}` | `[${string}`]: StyleOverrides | undefined;
-	};
+	export type StyleDefinition = WebStyleDefinition;
 }
 
-/** @internal Deep clone a value recursively. */
+/**
+ * @internal Apply a variant style to a set of variant style definitions, deep cloning its overrides object.
+ */
+function _applyVariant(
+	styles: Record<string, WebTheme.StyleDefinition>,
+	variant: string,
+	overrides: WebTheme.StyleDefinition,
+) {
+	styles[variant] = styles[variant]
+		? _deepMergeStyle(styles[variant], overrides)
+		: _deepClone(overrides);
+
+	// helper function: deep merge a style definition
+	function _deepMergeStyle(
+		base: WebTheme.StyleDefinition,
+		override: WebTheme.StyleDefinition,
+	): WebTheme.StyleDefinition {
+		const result: WebTheme.StyleDefinition = _deepClone(base);
+		for (const key in override) {
+			const baseValue = (result as any)[key];
+			const overrideValue = (override as any)[key];
+			if (
+				(key.startsWith("+") || key.startsWith(":") || key.startsWith("[")) &&
+				typeof baseValue === "object" &&
+				typeof overrideValue === "object"
+			) {
+				// Merge nested state/selector properties
+				(result as any)[key] = { ...baseValue, ...overrideValue };
+			} else {
+				(result as any)[key] = overrideValue;
+			}
+		}
+		return result;
+	}
+}
+
+/** @internal Deep clone an object recursively, except for builtin objects */
 function _deepClone<T extends unknown>(value: T): T {
-	if (value === null || typeof value !== "object" || value instanceof UIColor) {
+	if (
+		value === null ||
+		typeof value !== "object" ||
+		value instanceof UIColor ||
+		value instanceof UIGradient
+	) {
 		return value;
 	}
 
@@ -396,27 +456,4 @@ function _deepClone<T extends unknown>(value: T): T {
 		result[key] = _deepClone((value as Record<string, unknown>)[key]);
 	}
 	return result as T;
-}
-
-/** @internal Deep merge two style definitions. */
-function _deepMergeStyle(
-	base: WebTheme.StyleDefinition,
-	override: WebTheme.StyleDefinition,
-): WebTheme.StyleDefinition {
-	const result: WebTheme.StyleDefinition = _deepClone(base);
-	for (const key in override) {
-		const baseValue = (result as any)[key];
-		const overrideValue = (override as any)[key];
-		if (
-			(key.startsWith("+") || key.startsWith(":") || key.startsWith("[")) &&
-			typeof baseValue === "object" &&
-			typeof overrideValue === "object"
-		) {
-			// Merge nested state/selector properties
-			(result as any)[key] = { ...baseValue, ...overrideValue };
-		} else {
-			(result as any)[key] = overrideValue;
-		}
-	}
-	return result;
 }

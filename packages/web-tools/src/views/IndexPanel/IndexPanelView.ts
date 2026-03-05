@@ -94,7 +94,7 @@ const ViewBody = (v: Binding<IndexPanelView>) =>
 
 		FoldView("Log").with(
 			UI.Row(
-				UI.Button().icon(icons.console).style("icon"),
+				UI.IconButton(icons.console).ghost(),
 				UI.Text()
 					.fmt(
 						"{} message{0:+//s}, {} error{1:+//s}",

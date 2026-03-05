@@ -19,7 +19,7 @@ export function NavButton(
 				(path) => String(path).replace(/\/.*/, "") === page,
 			),
 		)
-		.style("ghost")
+		.ghost()
 		.padding({ y: 8, x: 16 })
 		.cursor("pointer")
 		.textAlign("start");
@@ -32,13 +32,12 @@ export function MobileNavButton(
 ) {
 	return UI.Button(title)
 		.navigateTo(page)
-		.icon(icon)
+		.icon(icon, { position: "top" })
 		.pressed(
 			new Binding("appContext.navigation.path").map(
 				(path) => String(path).replace(/\/.*/, "") === page,
 			),
 		)
-		.style("iconTop")
 		.background("transparent")
 		.minWidth(80);
 }

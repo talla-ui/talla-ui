@@ -98,7 +98,6 @@ export class UIImageRenderer extends BaseObserver<UIImage> {
 		applyStyles(
 			element,
 			undefined,
-			undefined,
 			style,
 			undefined,
 			false,

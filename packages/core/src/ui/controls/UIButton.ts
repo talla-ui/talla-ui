@@ -75,6 +75,13 @@ export class UIButton extends UIElement {
 	disabled = false;
 
 	/**
+	 * A set of flags that determine the button's visual style.
+	 * - The variant can be set using `UI.Button()` builder methods, e.g. {@link UIButton.ButtonBuilder.ghost ghost()}.
+	 * - When updating the variant at runtime, always set this property to a new object rather than mutating the existing object.
+	 */
+	buttonVariant: Record<string, boolean | undefined> = {};
+
+	/**
 	 * Returns the navigation target for this button.
 	 * - Returns the value of the {@link navigateTo} property.
 	 * - Called automatically by {@link Activity.onNavigate()}.
@@ -85,24 +92,6 @@ export class UIButton extends UIElement {
 }
 
 export namespace UIButton {
-	/** Default style names for button elements. */
-	export type StyleName =
-		| "default"
-		| "accent"
-		| "success"
-		| "danger"
-		| "ghost"
-		| "text"
-		| "link"
-		| "small"
-		| "icon"
-		| "accentIcon"
-		| "successIcon"
-		| "dangerIcon"
-		| "iconTop"
-		| "iconTopStart"
-		| "iconTopEnd";
-
 	/**
 	 * Creates a view builder for a button element.
 	 * @param text The text for the button, or a binding to a string value.
@@ -129,10 +118,7 @@ export namespace UIButton {
 	 * A builder class for creating {@link UIButton} instances.
 	 * - Returned by the {@link UI.Button()} function.
 	 */
-	export class ButtonBuilder extends UIElement.ElementBuilder<
-		UIButton,
-		UIButton.StyleName
-	> {
+	export class ButtonBuilder extends UIElement.ElementBuilder<UIButton> {
 		/** The initializer used to create each button instance. */
 		readonly initializer = new ViewBuilder.Initializer(UIButton);
 
@@ -188,6 +174,71 @@ export namespace UIButton {
 				});
 			}
 			return this.setProperty("chevron", chevron);
+		}
+
+		/**
+		 * Enables (or disables) the specified button style variant.
+		 * - Standard button style variants can be enabled using specific builder methods, e.g. {@link ghost()}.
+		 * @param variant The variant name.
+		 * @param enabled True to enable, or a binding; defaults to true.
+		 * @returns The builder instance for chaining.
+		 */
+		buttonVariant(
+			variant: string,
+			enabled: BindingOrValue<boolean | undefined> = true,
+		) {
+			this.initializer.update(enabled, function (value) {
+				this.buttonVariant = {
+					...this.buttonVariant,
+					[variant]: !!value || undefined,
+				};
+			});
+			return this;
+		}
+
+		/**
+		 * Enables the accent button style variant (for a primary/accent-colored button).
+		 * @param enabled True to enable, or a binding; defaults to true.
+		 * @returns The builder instance for chaining.
+		 */
+		accent(enabled: BindingOrValue<boolean | undefined> = true) {
+			return this.buttonVariant("accent", enabled);
+		}
+
+		/**
+		 * Enables the link button style variant (link color, underlined).
+		 * @param enabled True to enable, or a binding; defaults to true.
+		 * @returns The builder instance for chaining.
+		 */
+		link(enabled: BindingOrValue<boolean | undefined> = true) {
+			return this.buttonVariant("link", enabled);
+		}
+
+		/**
+		 * Enables the small button style variant (reduced font size and padding).
+		 * @param enabled True to enable, or a binding; defaults to true.
+		 * @returns The builder instance for chaining.
+		 */
+		small(enabled: BindingOrValue<boolean | undefined> = true) {
+			return this.buttonVariant("small", enabled);
+		}
+
+		/**
+		 * Enables the ghost button style variant (transparent background, subtle hover).
+		 * @param enabled True to enable, or a binding; defaults to true.
+		 * @returns The builder instance for chaining.
+		 */
+		ghost(enabled: BindingOrValue<boolean | undefined> = true) {
+			return this.buttonVariant("ghost", enabled);
+		}
+
+		/**
+		 * Enables the bare button style variant (no background, border, or interaction highlight).
+		 * @param enabled True to enable, or a binding; defaults to true.
+		 * @returns The builder instance for chaining.
+		 */
+		bare(enabled: BindingOrValue<boolean | undefined> = true) {
+			return this.buttonVariant("bare", enabled);
 		}
 
 		/**
@@ -356,5 +407,29 @@ export namespace UIButton {
 		}
 
 		private _showMenu: ((button: UIButton) => Promise<unknown>) | undefined;
+	}
+
+	/**
+	 * Creates a view builder for an icon-only button element.
+	 * @param icon An icon resource, an icon name, or a binding.
+	 * @param iconStyle Styling options for the icon, or only the icon size in pixels.
+	 * @returns A builder object for configuring the icon button.
+	 */
+	export function iconButtonBuilder(
+		icon: BindingOrValue<UIIconResource | UIIconResource.IconName | undefined>,
+		iconStyle?: BindingOrValue<UIText.IconStyle> | number,
+	) {
+		let builder = new ButtonBuilder().icon(icon, iconStyle);
+		builder.initializer.set("buttonVariant", { icon: true });
+		return builder;
+	}
+
+	/**
+	 * Creates a view builder for a link-styled button.
+	 * @param text The text for the link button, or a binding to a string value.
+	 * @returns A builder object for configuring the link button.
+	 */
+	export function linkButtonBuilder(text?: BindingOrValue<StringConvertible>) {
+		return new ButtonBuilder().text(text).link();
 	}
 }

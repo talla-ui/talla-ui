@@ -89,11 +89,8 @@ export class TestOutputElement {
 		return this === lastFocusedElement;
 	}
 
-	/**
-	 * The name of the style applied to this element
-	 * - This is the styleName from the UI element, e.g., "default", "accent".
-	 */
-	styleName?: string;
+	/** Variant style flags, if any (for button and text field elements) */
+	variant?: Record<string, boolean | undefined>;
 
 	/**
 	 * Style overrides applied to this element
@@ -307,6 +304,7 @@ export class TestOutputElement {
 		if (this.readOnly) result.readOnly = true;
 		if (this.pressed) result.pressed = true;
 		if (this.checked) result.checked = true;
+		if (this.variant) result.variant = { ...this.variant };
 		if (this.type === "textfield") result.value = this.value;
 		if (this.accessibleRole) result.accessibleRole = this.accessibleRole;
 		if (this.accessibleLabel) result.accessibleLabel = this.accessibleLabel;

@@ -54,13 +54,7 @@ export abstract class UIElement extends View {
 	hidden = false;
 
 	/**
-	 * The name of the style to apply to this element.
-	 * - This should be a style name defined by the platform handler (e.g. "default", "accent").
-	 */
-	styleName?: string = undefined;
-
-	/**
-	 * The style overrides to apply to this element on top of the named style.
+	 * The style overrides to apply to this element.
 	 * - These overrides are applied directly as inline styles.
 	 */
 	style?: StyleOverrides = undefined;
@@ -207,7 +201,6 @@ export namespace UIElement {
 	 */
 	export abstract class ElementBuilder<
 		TView extends UIElement,
-		TStyleName extends string = string,
 	> implements ViewBuilder<TView> {
 		/** The initializer instance that handles the actual view configuration. */
 		abstract readonly initializer: ViewBuilder.Initializer<TView>;
@@ -679,29 +672,17 @@ export namespace UIElement {
 		}
 
 		/**
-		 * Applies a named style or set of style overrides.
-		 * - If a string is provided (or bound), it updates the style name (e.g. "default", "accent").
-		 * - If an object is provided (or bound), style overrides are applied directly.
-		 * @param value The style name or style overrides object, or a binding.
+		 * Applies a set of style overrides.
+		 * @param value A style overrides object, or a binding.
 		 * @returns The builder instance for chaining.
 		 */
-		style(
-			value: BindingOrValue<
-				TStyleName | (string & {}) | StyleOverrides | undefined
-			>,
-		) {
+		style(value: BindingOrValue<StyleOverrides | undefined>) {
 			if (isBinding(value)) {
 				this.initializer.finalize((view) => {
 					view.observe(value, function (v) {
-						if (typeof v === "string" || v === undefined) {
-							view.styleName = v;
-						} else if (v) {
-							view.setStyle(v);
-						}
+						if (v) view.setStyle(v);
 					});
 				});
-			} else if (typeof value === "string" || value === undefined) {
-				this.setProperty("styleName", value);
 			} else if (value) {
 				let overrides = this._getStyleOverrides();
 				Object.assign(overrides, value);

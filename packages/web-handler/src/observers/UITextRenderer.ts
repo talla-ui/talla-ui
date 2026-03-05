@@ -70,8 +70,7 @@ export class UITextRenderer extends BaseObserver<UIText> {
 		}
 		applyStyles(
 			element,
-			"text",
-			text.styleName,
+			undefined,
 			style,
 			undefined,
 			true,
@@ -99,30 +98,57 @@ export function setTextOrHtmlContent(
 	}
 	element.innerHTML = "";
 
-	// add icon element
+	let iconPosition = content.iconStyle?.position;
+	let isVertical = iconPosition === "top" || iconPosition === "bottom";
+	let isAfter = iconPosition === "end" || iconPosition === "bottom";
+
+	// create icon element, if any
+	let iconNode: HTMLElement | undefined;
 	if (content.icon) {
-		let icon = getIconElt(content.icon, content.iconStyle);
-		element.appendChild(icon);
+		let iconElt = getIconElt(content.icon, content.iconStyle);
+		if (isVertical) {
+			// wrap icon in a block-level span so it forces a new line,
+			// while the icon inside remains inline (respects text-align)
+			let wrapper = document.createElement("span");
+			wrapper.style.display = "block";
+			iconElt.style.top = "0";
+			iconElt.style.height = "";
+			wrapper.appendChild(iconElt);
+			iconNode = wrapper;
+		} else {
+			iconNode = iconElt;
+		}
+		if (text) {
+			let dir: keyof CSSStyleDeclaration = isVertical
+				? isAfter
+					? "marginTop"
+					: "marginBottom"
+				: isAfter
+					? "marginInlineStart"
+					: "marginInlineEnd";
+			iconNode.style[dir] = getCSSLength(
+				content.iconStyle?.margin ?? UITextRenderer.defaultIconStyle.margin,
+				0,
+			);
+		}
 	}
 
-	// add margin element
-	if (content.icon && content.text) {
-		let margin = getCSSLength(
-			content.iconStyle?.margin ?? UITextRenderer.defaultIconStyle.margin,
-			0,
-		);
-		let marginWrapper = document.createElement("span");
-		marginWrapper.style.display = "inline-block";
-		marginWrapper.style.width = margin;
-		element.appendChild(marginWrapper);
-	}
-
-	// add text element
+	// create text element (if there's an icon, wrap in span)
+	let textElt: HTMLElement | undefined;
 	if (text) {
 		let textWrapper = document.createElement("span");
 		if (content.htmlFormat) textWrapper.innerHTML = text;
 		else textWrapper.textContent = text;
-		element.appendChild(textWrapper);
+		textElt = textWrapper;
+	}
+
+	// append icon and text in correct order
+	if (isAfter) {
+		if (textElt) element.appendChild(textElt);
+		if (iconNode) element.appendChild(iconNode);
+	} else {
+		if (iconNode) element.appendChild(iconNode);
+		if (textElt) element.appendChild(textElt);
 	}
 
 	// add chevron, if any
@@ -132,6 +158,9 @@ export function setTextOrHtmlContent(
 			chevronStyle?.size || UITextRenderer.defaultIconStyle.size,
 			"1rem",
 		);
+		if (iconNode && isVertical) {
+			iconNode.style.paddingInlineEnd = width;
+		}
 		let chevronSpacer = document.createElement("span");
 		chevronSpacer.style.display = "inline-block";
 		chevronSpacer.style.width = width;

@@ -119,9 +119,8 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 						.selectable()
 						.wrap("pre-wrap")
 						.style({ css: { wordBreak: "break-all" } }),
-					UI.Button()
-						.style("icon")
-						.icon(icons.console)
+					UI.IconButton(icons.console)
+						.ghost()
 						.position("overlay", 4, 4)
 						.hideWhen(v.bind.not("setExpr"))
 						.onClick("SetExpr"),

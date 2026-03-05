@@ -62,6 +62,13 @@ export class UITextField extends UIElement {
 
 	/** True if the text field should appear read-only. */
 	readOnly = false;
+
+	/**
+	 * A set of flags that determine the text field's visual style.
+	 * - The variant can be set using `UI.TextField()` builder methods, e.g. {@link UITextField.TextFieldBuilder.ghost ghost()}.
+	 * - When updating the variant at runtime, always set this property to a new object rather than mutating the existing object.
+	 */
+	textFieldVariant: Record<string, boolean | undefined> = {};
 }
 
 export namespace UITextField {
@@ -77,11 +84,6 @@ export namespace UITextField {
 		| "previous"
 		| "search"
 		| "send";
-}
-
-export namespace UITextField {
-	/** Default style names for text field elements. */
-	export type StyleName = "default" | "ghost";
 
 	/**
 	 * Creates a view builder for a text input field element.
@@ -99,10 +101,7 @@ export namespace UITextField {
 	 * A builder class for creating {@link UITextField} instances.
 	 * - Returned by the {@link UI.TextField()} function.
 	 */
-	export class TextFieldBuilder extends UIElement.ElementBuilder<
-		UITextField,
-		UITextField.StyleName
-	> {
+	export class TextFieldBuilder extends UIElement.ElementBuilder<UITextField> {
 		/** The initializer used to create each text field instance. */
 		readonly initializer = new ViewBuilder.Initializer(UITextField);
 
@@ -221,5 +220,64 @@ export namespace UITextField {
 		readOnly(readOnly: BindingOrValue<boolean> = true) {
 			return this.setProperty("readOnly", readOnly);
 		}
+
+		/**
+		 * Enables (or disables) the specified text field style variant.
+		 * - Standard text field style variants can be enabled using specific builder methods, e.g. {@link ghost()}.
+		 * @param variant The variant name.
+		 * @param enabled True to enable, or a binding; defaults to true.
+		 * @returns The builder instance for chaining.
+		 */
+		textFieldVariant(
+			variant: string,
+			enabled: BindingOrValue<boolean | undefined> = true,
+		) {
+			this.initializer.update(enabled, function (value) {
+				this.textFieldVariant = {
+					...this.textFieldVariant,
+					[variant]: !!value || undefined,
+				};
+			});
+			return this;
+		}
+
+		/**
+		 * Enables the ghost style variant (borderless/transparent).
+		 * @param enabled True to enable, or a binding; defaults to true.
+		 * @returns The builder instance for chaining.
+		 */
+		ghost(enabled: BindingOrValue<boolean | undefined> = true) {
+			return this.textFieldVariant("ghost", enabled);
+		}
+
+		/**
+		 * Enables the ghost style variant (borderless/transparent, no interaction highlight).
+		 * @param enabled True to enable, or a binding; defaults to true.
+		 * @returns The builder instance for chaining.
+		 */
+		bare(enabled: BindingOrValue<boolean | undefined> = true) {
+			return this.textFieldVariant("bare", enabled);
+		}
+
+		/**
+		 * Enables the invalid style variant ('danger' border color).
+		 * @param enabled True to enable, or a binding; defaults to true.
+		 * @returns The builder instance for chaining.
+		 */
+		invalid(enabled: BindingOrValue<boolean | undefined> = true) {
+			return this.textFieldVariant("invalid", enabled);
+		}
+	}
+
+	/**
+	 * Creates a view builder for a multi-line text area element.
+	 * @param placeholder The placeholder text to display when the field is empty, or a binding.
+	 * @returns A builder object for configuring the text area.
+	 * @see {@link UITextField}
+	 */
+	export function textAreaBuilder(
+		placeholder?: BindingOrValue<StringConvertible>,
+	) {
+		return new TextFieldBuilder().placeholder(placeholder).multiline();
 	}
 }

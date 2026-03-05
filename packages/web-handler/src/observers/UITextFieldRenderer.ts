@@ -1,12 +1,19 @@
 import { RenderContext, UITextField } from "@talla-ui/core";
 import { applyStyles } from "../DOMStyle.js";
+import { CLASS_THEMED } from "../defaults/css.js";
 import { BaseObserver } from "./BaseObserver.js";
 
 /** @internal */
 export class UITextFieldRenderer extends BaseObserver<UITextField> {
 	constructor(observed: UITextField) {
 		super(observed);
-		this.observeProperties("placeholder", "value", "disabled", "readOnly");
+		this.observeProperties(
+			"placeholder",
+			"value",
+			"disabled",
+			"readOnly",
+			"textFieldVariant",
+		);
 	}
 
 	protected override propertyChange(property: string, value: any) {
@@ -55,11 +62,19 @@ export class UITextFieldRenderer extends BaseObserver<UITextField> {
 		element.disabled = !!textField.disabled;
 		element.readOnly = !!textField.readOnly;
 
+		// build theme classes from variant record
+		let variant = textField.textFieldVariant;
+		let themeClasses =
+			(variant.bare ? "" : CLASS_THEMED + "textfield--default ") +
+			Object.keys(variant)
+				.filter((v) => variant[v])
+				.map((v) => CLASS_THEMED + "textfield--" + v)
+				.join(" ");
+
 		// apply other CSS styles
 		applyStyles(
 			element,
-			"textfield",
-			textField.styleName,
+			themeClasses,
 			textField.style,
 			undefined,
 			true,

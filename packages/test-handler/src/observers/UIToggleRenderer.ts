@@ -50,7 +50,7 @@ export class UIToggleRenderer extends TestBaseObserver<UIToggle> {
 		element.disabled = toggle.disabled;
 
 		// set style
-		applyElementStyle(element, toggle.styleName, toggle.style, toggle.position);
+		applyElementStyle(element, toggle.style, toggle.position);
 	}
 
 	updateContent(element: TestOutputElement) {

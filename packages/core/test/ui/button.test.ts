@@ -295,15 +295,14 @@ test("Request button focus", async () => {
 	});
 });
 
-test("Button with style name", async () => {
-	let myButton = UI.Button("Styled").style("accent");
+test("Button with accent variant", async () => {
+	let myButton = UI.Button("Styled").accent();
 	let button = myButton.build();
-	expect(button.styleName).toBe("accent");
+	expect(button.buttonVariant.accent).toBe(true);
 
 	renderTestView(button);
 	await expectOutputAsync({
 		text: "Styled",
-		styleName: "accent",
 	});
 });
 
@@ -319,56 +318,27 @@ test("Button with style overrides object", async () => {
 	});
 });
 
-test("Button with style name and additional overrides", async () => {
-	let myButton = UI.Button("Both").style("danger").bold().fontSize(20);
+test("Button with variant and additional overrides", async () => {
+	let myButton = UI.Button("Both").accent().bold().fontSize(20);
 	let button = myButton.build();
-	expect(button.styleName).toBe("danger");
+	expect(button.buttonVariant.accent).toBe(true);
 	expect(button.style?.bold).toBe(true);
 	expect(button.style?.fontSize).toBe(20);
 
 	renderTestView(button);
 	await expectOutputAsync({
 		text: "Both",
-		styleName: "danger",
 		style: { bold: true, fontSize: 20 },
 	});
 });
 
-test("Button default styleName", async () => {
+test("Button default variant", async () => {
 	let button = UI.Button("Default").build();
-	// Element styleName is undefined, renderer substitutes "default"
-	expect(button.styleName).toBeUndefined();
+	expect(button.buttonVariant).toEqual({});
 
 	renderTestView(button);
 	await expectOutputAsync({
 		text: "Default",
-		styleName: "default",
-	});
-});
-
-test("Button style with binding (styleName)", async () => {
-	class MyButtonWidget extends Widget {
-		buttonStyle = "default";
-	}
-	function MyButton() {
-		return MyButtonWidget.builder((v) =>
-			UI.Button("Dynamic style").style(v.bind("buttonStyle")),
-		);
-	}
-	let myButton = MyButton().build();
-	renderTestView(myButton);
-
-	// Initial style
-	await expectOutputAsync({
-		text: "Dynamic style",
-		styleName: "default",
-	});
-
-	// Change style
-	myButton.buttonStyle = "accent";
-	await expectOutputAsync({
-		text: "Dynamic style",
-		styleName: "accent",
 	});
 });
 
@@ -473,7 +443,7 @@ test("Button with opacity and dim", async () => {
 
 test("Button with multiple chained style methods", async () => {
 	let myButton = UI.Button("Styled")
-		.style("accent")
+		.small()
 		.bold()
 		.italic()
 		.underline()
@@ -484,7 +454,7 @@ test("Button with multiple chained style methods", async () => {
 		.borderRadius(8);
 
 	let button = myButton.build();
-	expect(button.styleName).toBe("accent");
+	expect(button.buttonVariant.small).toBe(true);
 	expect(button.style?.bold).toBe(true);
 	expect(button.style?.italic).toBe(true);
 	expect(button.style?.underline).toBe(true);
@@ -497,7 +467,6 @@ test("Button with multiple chained style methods", async () => {
 	renderTestView(button);
 	await expectOutputAsync({
 		text: "Styled",
-		styleName: "accent",
 		style: {
 			bold: true,
 			italic: true,

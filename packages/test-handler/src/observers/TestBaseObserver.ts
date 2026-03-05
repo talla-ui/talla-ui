@@ -29,19 +29,16 @@ const _eventNames: { [p in TestOutputElement.PlatformEvent]?: string } = {
 /**
  * @internal Helper function to apply style, position, and layout to a test output element
  * @param element The test output element to apply styles to
- * @param styleName Optional style name from the UI element
  * @param style Optional style overrides from the UI element
  * @param position Optional position from the UI element
  * @param layout Optional layout from the UI container element
  */
 export function applyElementStyle(
 	element: TestOutputElement,
-	styleName?: string,
 	style?: StyleOverrides,
 	position?: UIElement.Position,
 	layout?: UIContainer.Layout,
 ) {
-	element.styleName = styleName || "default";
 	element.style = style ? { ...style } : {};
 	element.position = position;
 	element.layout = layout;
@@ -57,7 +54,7 @@ export abstract class TestBaseObserver<TUIViewElement extends UIElement> {
 			undefined,
 			true,
 		);
-		this.observeProperties("hidden", "position", "style", "styleName");
+		this.observeProperties("hidden", "position", "style");
 		observed.listen((e) => {
 			let handler = (this as any)["on" + e.name];
 			if (typeof handler === "function") handler.call(this, e);

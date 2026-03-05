@@ -27,7 +27,7 @@ export function CardLayout(title: StringConvertible) {
 	let titleModifier: ViewBuilderFunction<UIText.TextBuilder> | undefined;
 	let content: ViewBuilder[] = [];
 	return UI.Column()
-		.dropShadow()
+		.dropShadow(8)
 		.border(1)
 		.padding(16)
 		.gap(8)
@@ -50,7 +50,7 @@ export function CardLayout(title: StringConvertible) {
 			},
 			(_, base) => {
 				base.with(
-					UI.Text(title).style("title").apply(titleModifier),
+					UI.Text(title).larger().bold().apply(titleModifier),
 					...content,
 				);
 			},
@@ -80,7 +80,7 @@ function CollapsibleView(
 				.cursor("pointer")
 				.background("text")
 				.fg("background")
-				.padding()
+				.padding(8)
 				.onClick("Toggle"),
 			UI.ShowWhen(v.bind("expanded"), UI.Column(...content).effect("fade-top")),
 		);
@@ -107,7 +107,8 @@ function Collapsible(text: StringConvertible, ...content: ViewBuilder[]) {
 // Using extend() with defer for stateless deferred views
 function MyTitle(text?: StringConvertible) {
 	return UI.Text(text)
-		.style("title")
+		.larger()
+		.bold()
 		.padding({ bottom: 8 })
 		.allowKeyboardFocus()
 		.onClick("Select")
@@ -151,7 +152,7 @@ type ButtonSwitchOption = {
 	disabled?: boolean;
 };
 
-const SwitchButton = () => UI.Button().style("toggleButton");
+const SwitchButton = () => UI.Button().buttonVariant("toggleButton");
 
 // The widget class can also be moved into the closure, at a slight perf hit
 function ButtonSwitch(options: ButtonSwitchOption[]) {
@@ -167,18 +168,20 @@ function ButtonSwitch(options: ButtonSwitchOption[]) {
 
 	let Button = SwitchButton;
 	return ButtonSwitchWidget.builder((v) =>
-		UI.Row().gap(8).with(
-			...options.map((option) =>
-				Button()
-					.text(option.text)
-					.icon(option.icon)
-					.value(option.value)
-					.pressed(v.bind("value").equals(option.value))
-					.disabled(option.disabled ?? false)
-					.onClick("SetValue")
-					.onPress("SetValue"),
+		UI.Row()
+			.gap(8)
+			.with(
+				...options.map((option) =>
+					Button()
+						.text(option.text)
+						.icon(option.icon)
+						.value(option.value)
+						.pressed(v.bind("value").equals(option.value))
+						.disabled(option.disabled ?? false)
+						.onClick("SetValue")
+						.onPress("SetValue"),
+				),
 			),
-		),
 	).extend({
 		value(value: BindingOrValue<unknown>) {
 			this.initializer.set("value", value);
@@ -212,18 +215,18 @@ function MainView(v: Binding<MainActivity>) {
 					"Rendered",
 					UI.Column()
 						.divider()
-						.border()
+						.border(1)
 						.with(
-							UI.Text(fmt("Built: {}", new Date().toLocaleString())).padding(),
+							UI.Text(fmt("Built: {}", new Date().toLocaleString())).padding(8),
 							UI.Text(
 								Binding.fmt("View defined: {}", v.bind("viewDefined")),
-							).padding(),
+							).padding(8),
 							UI.Text(
 								Binding.fmt("Current: {}", v.bind("currentDate")),
-							).padding(),
+							).padding(8),
 							UI.Text(
 								Binding.fmt("Count: {}", v.bind("countService.count")),
-							).padding(),
+							).padding(8),
 						),
 				)
 					.expand()
@@ -234,7 +237,7 @@ function MainView(v: Binding<MainActivity>) {
 						button.text = button.pressed ? "On" : "Off";
 					}),
 					UI.Button()
-						.chevron()
+						.chevron("down")
 						.minWidth(180)
 						.textAlign("start")
 						.dropdownPicker(
@@ -248,9 +251,7 @@ function MainView(v: Binding<MainActivity>) {
 						)
 						.value(v.bind("countService.count")),
 					UI.Spacer(),
-					UI.Button()
-						.icon("more")
-						.style("icon")
+					UI.IconButton("more")
 						.dropdownMenu(
 							new ModalMenuOptions([
 								{ divider: true, title: "Options" },
@@ -276,7 +277,7 @@ function MainView(v: Binding<MainActivity>) {
 				).gap(8),
 			),
 
-			UI.Text().fmt("Current: {:L}", v.bind("currentDate")).padding(),
+			UI.Text().fmt("Current: {:L}", v.bind("currentDate")).padding(8),
 			UI.Spacer(8),
 			UI.Text()
 				.fmt("Count: {}", v.bind("countService.count"))
@@ -286,7 +287,7 @@ function MainView(v: Binding<MainActivity>) {
 			UI.Spacer(8),
 			UI.Row(
 				UI.Button("Sub").navigateTo("./sub").chevron("next"),
-				UI.Button("Remount").onClick("Remount").style("accent"),
+				UI.Button("Remount").onClick("Remount").accent(),
 				UI.Button("Change").onClick("ChangeEvent"),
 			).gap(8),
 			UI.Spacer(32),
@@ -318,15 +319,15 @@ function MainView(v: Binding<MainActivity>) {
 			UI.Row(
 				UI.Button("1")
 					.value("one")
-					.style(v.bind("tab").equals("one").then("accent"))
+					.accent(v.bind("tab").equals("one"))
 					.onClick("SelectTab"),
 				UI.Button("2")
 					.value("two")
-					.style(v.bind("tab").equals("two").then("accent"))
+					.accent(v.bind("tab").equals("two"))
 					.onClick("SelectTab"),
 				UI.Button("3")
 					.value("three")
-					.style(v.bind("tab").equals("three").then("accent"))
+					.accent(v.bind("tab").equals("three"))
 					.onClick("SelectTab"),
 			).gap(8),
 			ButtonSwitch([
@@ -343,23 +344,25 @@ function MainView(v: Binding<MainActivity>) {
 				.with(
 					// Test: text styles
 					UI.Row(
-						UI.Text("Large").style("large"),
-						UI.Text("Title").style("title"),
-						UI.Text("Headline").style("headline"),
-						UI.Text("Body").style("body"),
-						UI.Text("Caption").style("caption"),
-						UI.Text("Bdg").style("badge"),
-						UI.Text("OK").style("successBadge"),
-						UI.Text("No").style("dangerBadge"),
+						UI.Text("Larger").larger(),
+						UI.Text("Body"),
+						UI.Text("Smaller").smaller(),
+						UI.Badge("Bdg"),
+						UI.Badge("OK", UI.colors.success),
+						UI.Badge("No", UI.colors.danger),
+						UI.Badge("AI", UI.colors.purple, UI.colors.yellow).icon(
+							new UIIconResource("✨"),
+							12,
+						),
 					).gap(8),
 
 					// Test: line height
 					UI.Row(
 						UI.Text("Text with icon").icon("search"),
 						UI.Text("Actual text"),
-						UI.Button("Text button").style("text"),
-						UI.Button("Ghost button").style("ghost"),
-						UI.Button("Button with icon").style("text").icon("search"),
+						UI.Button("Bare button").bare(),
+						UI.Button("Ghost button").ghost(),
+						UI.Button("Button with icon").bare().icon("search"),
 					).gap(8),
 					UI.Row(
 						UI.Text("Text with icon").icon(new UIIconResource("💬")),
@@ -369,84 +372,126 @@ function MainView(v: Binding<MainActivity>) {
 						UI.Text("Text with small icon").icon(new UIIconResource("💬"), 12),
 						UI.Text("Text with large icon").icon(new UIIconResource("💬"), 24),
 						UI.Button("Small icon button")
-							.style("text")
-							.icon(new UIIconResource("💬"), 12),
+							.icon(new UIIconResource("💬"), 12)
+							.ghost(),
 						UI.Button("Large icon button")
-							.style("text")
-							.icon(new UIIconResource("💬"), 24),
+							.icon(new UIIconResource("💬"), 24)
+							.ghost(),
 					).gap(8),
 					UI.Row(
 						UI.Text("Text with small icon").icon("search", 12),
 						UI.Text("Text with large icon").icon("search", 24),
-						UI.Button("Small icon button").style("text").icon("search", 12),
-						UI.Button("Large icon button").style("text").icon("search", 24),
+						UI.Button("Small icon button").icon("search", 12).bare(),
+						UI.Button("Large icon button").icon("search", 24).bare(),
 					).gap(8),
 
 					// Test: button styles
 					UI.Row(
-						UI.Button("Default")
-							.style("default")
-							.onClick(() => {
-								app.showConfirmDialogAsync([
-									"Button pressed",
-									"Are you sure you want to continue?",
-								]);
-							}),
-						UI.Button("Accent").style("accent"),
-						UI.Button("Success").style("success"),
-						UI.Button("Danger").style("danger"),
-						UI.Button("Ghost").style("ghost"),
-						UI.Button("Text").style("text"),
-						UI.Button("Link").style("link"),
-						UI.Button("Small").style("small"),
-					).gap(8).wrapContent(),
+						UI.Button("Default").onClick(() => {
+							app.showConfirmDialogAsync([
+								"Button pressed",
+								"Are you sure you want to continue?",
+							]);
+						}),
+						UI.Button("Accent").accent(),
+						UI.Button("Ghost").ghost(),
+						UI.Button("Bare").bare(),
+						UI.Link("Link"),
+						UI.Button("Small").small(),
+					)
+						.gap(8)
+						.wrapContent(),
 					UI.Row(
-						UI.Button().icon("plus").style("icon"),
-						UI.Button().icon("plus").style("accentIcon"),
-						UI.Button().icon("plus").style("successIcon"),
-						UI.Button().icon("plus").style("dangerIcon"),
-						UI.Button("Icon Top").icon("plus").style("iconTop"),
-						UI.Button("Top Start").icon("plus").style("iconTopStart"),
-						UI.Button("Top End").icon("plus").style("iconTopEnd"),
+						UI.IconButton("plus"),
+						UI.IconButton("plus").accent(),
 						UI.Button().icon("plus").minWidth(0),
 						UI.Button().icon("search").minWidth(0),
 						UI.Button("Both").icon("plus"),
 						UI.Button("Both").icon("plus", { margin: 16 }),
-					).gap(8).wrapContent(),
+					)
+						.gap(8)
+						.wrapContent(),
 					UI.Row(
-						UI.Button().icon("plus", 12).style("icon"),
-						UI.Button().icon("plus", 12).style("accentIcon"),
-						UI.Button().icon("plus", 12).style("successIcon"),
-						UI.Button().icon("plus", 12).style("dangerIcon"),
-						UI.Button("Icon Top").icon("plus", 12).style("iconTop"),
-						UI.Button("Top Start").icon("plus", 12).style("iconTopStart"),
-						UI.Button("Top End").icon("plus", 12).style("iconTopEnd"),
+						UI.IconButton("plus", 12),
+						UI.IconButton("plus", 12).accent(),
+						UI.IconButton("plus", 12).ghost(),
+						UI.IconButton("plus", 12).fg(UI.colors.green),
+						UI.IconButton("plus", 12)
+							.bg(UI.colors.danger)
+							.fg(UI.colors.danger.text()),
 						UI.Button().icon("plus", 12).minWidth(0),
 						UI.Button().icon("search", 12).minWidth(0),
 						UI.Button("Both").icon("plus", 12),
 						UI.Button("Both").icon("plus", { size: 12, margin: 16 }),
-					).gap(8).wrapContent(),
-					UI.Row().gap(8)
+					)
+						.gap(8)
+						.wrapContent(),
+					UI.Row(
+						UI.Text("Default").icon("plus"),
+						UI.Text("Start").icon("plus", { position: "start" }),
+						UI.Text("End").icon("plus", { position: "end" }),
+						UI.Text("Top").icon("plus", { position: "top" }).center(),
+						UI.Text("Bottom").icon("plus", { position: "bottom" }).center(),
+						UI.Text("Top start")
+							.icon("plus", { position: "top" })
+							.textAlign("start"),
+						UI.Text("Top end")
+							.icon("plus", { position: "top" })
+							.textAlign("end"),
+					)
+						.gap(8)
+						.wrapContent(),
+					UI.Row(
+						UI.Button("Default").icon("plus"),
+						UI.Button("Start").icon("plus", { position: "start" }),
+						UI.Button("End").icon("plus", { position: "end" }),
+						UI.Button("Chevron+End")
+							.icon("plus", { position: "end" })
+							.chevron("down"),
+						UI.Button("Top").icon("plus", { position: "top" }),
+						UI.Button("Bottom").icon("plus", { position: "bottom" }),
+						UI.Button("Top start")
+							.icon("plus", { position: "top" })
+							.textAlign("start"),
+						UI.Button("Top end")
+							.icon("plus", { position: "top" })
+							.textAlign("end"),
+						UI.Button("Chev+TopEnd")
+							.icon("plus", { position: "top" })
+							.chevron("down")
+							.textAlign("end"),
+					)
+						.gap(8)
+						.wrapContent(),
+					UI.Row()
+						.gap(8)
 						.padding(8)
 						.background("shade")
 						.wrapContent()
 						.with(
-							UI.Button("Default").style("default"),
-							UI.Button("Accent").style("accent"),
-							UI.Button("Success").style("success"),
-							UI.Button("Danger").style("danger"),
-							UI.Button("Ghost").style("ghost"),
-							UI.Button("Text").style("text"),
-							UI.Button("Link").style("link"),
-							UI.Button("Small").style("small"),
+							UI.Button("Default"),
+							UI.Button("Accent").accent(),
+							UI.Button("Success").style({ textColor: UI.colors.green }),
+							UI.Button("Danger").style({ textColor: UI.colors.danger }),
+							UI.Button("Ghost").ghost(),
+							UI.Button("Bare").bare(),
+							UI.Button("Link").link(),
+							UI.Button("Small").small(),
+							UI.Button("Accent small").small().accent(),
+							UI.Button("Ghost small").small().ghost(),
+							UI.Button("Link small").small().link(),
 						),
-					UI.Row().gap(8).padding(8).background("shade").with(
-						UI.Text("Testing"),
-						UI.TextField("Testing"),
-						UI.TextField("Testing").style("ghost"), //.readOnly(),
-						UI.Button("Button"),
-						UI.Button().icon("search").style("icon"),
-					),
+					UI.Row()
+						.gap(8)
+						.padding(8)
+						.background("shade")
+						.with(
+							UI.Text("Testing"),
+							UI.TextField("Testing"),
+							UI.TextField("Testing").ghost(),
+							UI.Button("Button"),
+							UI.IconButton("search"),
+						),
 				),
 
 			// Test: table
@@ -550,11 +595,19 @@ function SubView(v: Binding<SubActivity>) {
 			UI.Row(
 				UI.TextField().value(v.bind("count")).onInput("SetCount").trim(),
 				UI.Button("Reset").onClick("ResetCount"),
-			).gap(8).padding(8),
+			)
+				.gap(8)
+				.padding(8),
 			UI.Row(
 				UI.Button("Back").icon("chevronBack").onClick("NavigateBack"),
-				UI.Row(UI.Button("Other").navigateTo("/other").icon("chevronNext")),
-			).gap(8).layout(UI.viewport.cols.lt(2).then({ axis: "vertical" })),
+				UI.Row(
+					UI.Button("Other")
+						.navigateTo("/other")
+						.icon("chevronNext", { position: "end" }),
+				),
+			)
+				.gap(8)
+				.layout(UI.viewport.cols.lt(2).then({ axis: "vertical" })),
 		);
 }
 
@@ -618,7 +671,11 @@ class TextFieldGroupWidget extends Widget {
 				.gap(8)
 				.with(
 					UI.Text(text).dim(),
-					UI.TextField().trim().value(v.bind("text")).type(type),
+					UI.TextField()
+						.trim()
+						.value(v.bind("text"))
+						.type(type)
+						.invalid(v.bind("error")),
 					UI.Text.fmt("Error: {}", v.bind("error"))
 						.hideWhen(v.bind("error").not())
 						.fg("danger"),
@@ -659,7 +716,7 @@ function OtherView(v: Binding<OtherActivity>) {
 						UI.Text("Remember"),
 						UI.Spacer(),
 						UI.Button()
-							.style("ghost")
+							.ghost()
 							.chevron("down")
 							.formStateValue(v.bind("form"), "rememberMe")
 							.value(false)
@@ -700,7 +757,7 @@ export class OtherActivity extends Activity {
 		f.object({
 			userName: f.string().required("User name is required"),
 			password: f.string().required("Password is required"),
-			rememberMe: f.coerce.boolean().literal(true),
+			rememberMe: f.literal(true),
 		}),
 	).immediateValidation();
 
@@ -725,11 +782,10 @@ function DialogView() {
 			.gap(8)
 			.padding(16)
 			.with(
-				UI.Text("Dialog").style("headline"),
-				UI.Button()
-					.icon("close")
+				UI.Text("Dialog").style({ bold: true }),
+				UI.IconButton("close", 16)
 					.position("overlay", 8, 8)
-					.style("icon")
+					.bare()
 					.onClick("Close"),
 				UI.Text(
 					"This is a dialog. It contains a title, a body, and a row of buttons. " +
@@ -750,13 +806,14 @@ function DialogView() {
 					)
 					.onMenuItemSelect("Dropdown"),
 			),
-		UI.Row().gap(8)
+		UI.Row()
+			.gap(8)
 			.background("shade")
 			.padding(16)
 			.with(
 				UI.Spacer(),
 				UI.Button("Cancel").onClick("Close"),
-				UI.Button("Confirm").style("accent").onClick("Close"),
+				UI.Button("Confirm").accent().onClick("Close"),
 			),
 	);
 }

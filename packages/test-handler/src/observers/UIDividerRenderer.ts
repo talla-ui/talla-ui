@@ -23,7 +23,6 @@ export class UIDividerRenderer extends TestBaseObserver<UIDivider> {
 		// NOTE: margin is ignored in test renderer
 		applyElementStyle(
 			element,
-			sep.styleName,
 			{
 				...sep.style,
 				borderColor: sep.lineColor || UI.colors.divider,

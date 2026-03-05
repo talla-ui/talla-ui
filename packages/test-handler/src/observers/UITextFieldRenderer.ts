@@ -6,7 +6,13 @@ import { TestBaseObserver, applyElementStyle } from "./TestBaseObserver.js";
 export class UITextFieldRenderer extends TestBaseObserver<UITextField> {
 	constructor(observed: UITextField) {
 		super(observed);
-		this.observeProperties("placeholder", "value", "disabled", "readOnly");
+		this.observeProperties(
+			"placeholder",
+			"value",
+			"disabled",
+			"readOnly",
+			"textFieldVariant",
+		);
 	}
 
 	protected override propertyChange(property: string, value: any) {
@@ -52,12 +58,8 @@ export class UITextFieldRenderer extends TestBaseObserver<UITextField> {
 		element.readOnly = textField.readOnly;
 
 		// set style
-		applyElementStyle(
-			element,
-			textField.styleName,
-			textField.style,
-			textField.position,
-		);
+		element.variant = { ...textField.textFieldVariant };
+		applyElementStyle(element, textField.style, textField.position);
 	}
 
 	updateContent(element: TestOutputElement) {

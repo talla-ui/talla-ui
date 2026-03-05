@@ -30,7 +30,7 @@ export class UITextRenderer extends TestBaseObserver<UIText> {
 
 	override updateStyle(element: TestOutputElement) {
 		let text = this.observed;
-		applyElementStyle(element, text.styleName, text.style, text.position);
+		applyElementStyle(element, text.style, text.position);
 	}
 
 	updateContent(element: TestOutputElement) {

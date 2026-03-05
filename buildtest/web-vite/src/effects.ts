@@ -203,11 +203,11 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 	return UI.Column()
 		.gap(16)
 		.padding(16)
-		.border()
+		.border(1)
 		.borderRadius(12)
 		.maxWidth(900)
 		.with(
-			UI.Text("Animation Effects Demo").style("headline"),
+			UI.Text("Animation Effects Demo").style({ bold: true }),
 
 			// =====================================================================
 			// Symmetric effects section
@@ -220,9 +220,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					...SYMMETRIC_EFFECTS.map((name) =>
 						UI.Button(name)
 							.value(name)
-							.style(
-								v.bind("symmetricVisible").bind(name).then("accent", "default"),
-							)
+							.accent(v.bind("symmetricVisible").bind(name))
 							.onClick("ToggleSymmetric"),
 					),
 				),
@@ -260,7 +258,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					...NEW_EFFECTS.map((name) =>
 						UI.Button(name)
 							.value(name)
-							.style(v.bind("newVisible").bind(name).then("accent", "default"))
+							.accent(v.bind("newVisible").bind(name))
 							.onClick("ToggleNew"),
 					),
 				),
@@ -298,7 +296,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					...SLOW_EFFECTS.map((name) =>
 						UI.Button(name)
 							.value(name)
-							.style(v.bind("slowVisible").bind(name).then("accent", "default"))
+							.accent(v.bind("slowVisible").bind(name))
 							.onClick("ToggleSlow"),
 					),
 				),
@@ -336,12 +334,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					...ASYMMETRIC_COMBOS.map((combo, i) =>
 						UI.Button(combo.label)
 							.value(String(i))
-							.style(
-								v
-									.bind("asymmetricVisible")
-									.bind(String(i))
-									.then("accent", "default"),
-							)
+							.accent(v.bind("asymmetricVisible").bind(String(i)))
 							.onClick("ToggleAsymmetric"),
 					),
 				),
@@ -381,7 +374,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 				.with(
 					UI.Button("Add item").onClick("AddStaggerItem"),
 					UI.Button("Add 5").onClick("Add5StaggerItems"),
-					UI.Button("Clear").onClick("ClearStaggerItems").style("ghost"),
+					UI.Button("Clear").onClick("ClearStaggerItems").ghost(),
 				),
 			UI.List(v.bind("staggerItems"), (item: Binding<ListItem>) =>
 				UI.Column()
@@ -401,7 +394,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 				.with(
 					UI.Button("Add item").onClick("AddStaggerSlowItem"),
 					UI.Button("Add 5").onClick("Add5StaggerSlowItems"),
-					UI.Button("Clear").onClick("ClearStaggerSlowItems").style("ghost"),
+					UI.Button("Clear").onClick("ClearStaggerSlowItems").ghost(),
 				),
 			UI.List(v.bind("staggerSlowItems"), (item: Binding<ListItem>) =>
 				UI.Column()
@@ -420,7 +413,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 				.gap(8)
 				.with(
 					UI.Button("Shuffle").onClick("ShuffleFlipItems"),
-					UI.Button("Reverse").onClick("ReverseFlipItems").style("ghost"),
+					UI.Button("Reverse").onClick("ReverseFlipItems").ghost(),
 				),
 			UI.List(v.bind("flipItems"), (item: Binding<ListItem>) =>
 				UI.Column()
@@ -430,7 +423,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					.background("success")
 					.fg("background")
 					.minWidth(50)
-					.with(UI.Text(item.bind("label")).style("title")),
+					.with(UI.Text(item.bind("label")).larger().bold()),
 			)
 				.outer(UI.Row().gap(8).minHeight(60))
 				.effect("animate-content"),
@@ -442,7 +435,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					.background("success")
 					.fg("background")
 					.minWidth(50)
-					.with(UI.Text(item.bind("label")).style("title")),
+					.with(UI.Text(item.bind("label")).larger().bold()),
 			)
 				.outer(UI.Row().gap(8).minHeight(60))
 				.effect("animate-content-slow"),
@@ -460,7 +453,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					...SYMMETRIC_EFFECTS.map((name) =>
 						UI.Button(`Dialog: ${name}`)
 							.value(name)
-							.style("ghost")
+							.ghost()
 							.onClick("ShowDialog"),
 					),
 				),
@@ -473,7 +466,7 @@ function EffectsDemoView(v: Binding<EffectsDemoWidget>) {
 					...SYMMETRIC_EFFECTS.map((name) =>
 						UI.Button(`Menu: ${name}`)
 							.value(name)
-							.style("ghost")
+							.ghost()
 							.chevron("down")
 							.onClick("ShowMenu"),
 					),

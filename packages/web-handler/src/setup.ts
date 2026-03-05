@@ -45,8 +45,15 @@ export function setWebTheme(theme: WebTheme): void {
 	};
 	ModalMenu.menuOffset = data.options.menuOffset;
 
-	// apply global CSS, with defaults, named styles, and URL imports
-	initializeCSS(data.options, data.styles, data.imports);
+	// apply global CSS, with themed classes and URL imports
+	initializeCSS(
+		data.options,
+		{
+			buttonStyles: data.buttonStyles,
+			textFieldStyles: data.textFieldStyles,
+		},
+		data.imports,
+	);
 	renderer.setBackgrounds(
 		data.options.pageBackground,
 		data.options.modalShadeBackground,

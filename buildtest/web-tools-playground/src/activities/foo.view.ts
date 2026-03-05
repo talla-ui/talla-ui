@@ -18,7 +18,7 @@ export function FooView(v: Binding<FooViewModel>) {
 					.with(
 						UI.Text("Foo").bold().fontSize(20),
 						UI.Spacer(),
-						UI.Button().icon(UI.icons.plus).style("icon").onClick("NewItem"),
+						UI.IconButton(UI.icons.plus).ghost().onClick("NewItem"),
 					),
 				UI.Divider(),
 				UI.Spacer(0, 8),

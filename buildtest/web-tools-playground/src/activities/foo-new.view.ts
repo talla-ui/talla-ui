@@ -20,9 +20,9 @@ export const FooNewView = (v: Binding<FooNewViewModel>) =>
 				.effect("drag-modal")
 				.height(48)
 				.with(
-					UI.Text("New item").style("title"),
+					UI.Text("New item").larger().bold(),
 					UI.Spacer(),
-					UI.Button().icon(UI.icons.close).style("icon").onClick("Cancel"),
+					UI.IconButton(UI.icons.close).bare().onClick("Cancel"),
 				),
 			UI.Spacer(16),
 
@@ -30,7 +30,10 @@ export const FooNewView = (v: Binding<FooNewViewModel>) =>
 				.gap(4)
 				.with(
 					UI.Text("Name").dim().onPress("RequestFocusNext"),
-					UI.TextField().formStateValue(v.bind("form"), "title").requestFocus(),
+					UI.TextField()
+						.formStateValue(v.bind("form"), "title")
+						.invalid(v.bind("form.errors.title").then(true))
+						.requestFocus(),
 					UI.Text()
 						.hideWhen(v.bind.not("form.errors.title"))
 						.text(v.bind("form.errors.title"))
@@ -52,14 +55,18 @@ export const FooNewView = (v: Binding<FooNewViewModel>) =>
 						.textColor("danger"),
 				),
 
-			UI.ShowWhen(v.bind("showAsPage"), UI.Spacer(32), UI.Divider().margin({ y: 24 })),
+			UI.ShowWhen(
+				v.bind("showAsPage"),
+				UI.Spacer(32),
+				UI.Divider().margin({ y: 24 }),
+			),
 
 			UI.Row()
 				.distribute("end")
 				.gap(8)
 				.hideWhen(v.bind("showAsPage"))
 				.with(
-					UI.Button("Save").style("accent").onClick("Save"),
+					UI.Button("Save").accent().onClick("Save"),
 					UI.Button("Cancel").onClick("Cancel"),
 				),
 
@@ -67,7 +74,7 @@ export const FooNewView = (v: Binding<FooNewViewModel>) =>
 				.gap(8)
 				.hideWhen(v.bind("showAsPage").not())
 				.with(
-					UI.Button("Save").style("accent").onClick("Save"),
+					UI.Button("Save").accent().onClick("Save"),
 					UI.Button("Cancel").onClick("Cancel"),
 				),
 		);

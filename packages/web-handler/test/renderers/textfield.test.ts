@@ -20,7 +20,7 @@ describe("UITextFieldRenderer", () => {
 			expect(input).not.toBeNull();
 			expect(input.tabIndex).toBe(0);
 			expect(input.type).toBe("text");
-			expect(input.className).toContain("-textfield-default");
+			expect(input.className).toContain("-textfield");
 		});
 
 		test("Multiline renders textarea element", async () => {
@@ -277,14 +277,6 @@ describe("UITextFieldRenderer", () => {
 	});
 
 	describe("Style", () => {
-		test("Custom style name applies CSS class", async () => {
-			const field = UI.TextField().style("custom").build();
-			await renderView(field);
-			expect(document.querySelector("input")?.className).toContain(
-				"-textfield-custom",
-			);
-		});
-
 		test("Width and padding styles apply", async () => {
 			const field = UI.TextField().width(200).padding(8).build();
 			await renderView(field);

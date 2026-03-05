@@ -65,18 +65,13 @@ describe("UITextRenderer", () => {
 			expect(iconEl.style.width).toBe("2rem"); // 32/16
 		});
 
-		test("Margin element between icon and text", async () => {
+		test("Margin on icon element between icon and text", async () => {
 			const icon = new UIIconResource('<svg viewBox="0 0 24 24"></svg>');
 			const text = UI.Text("With Margin").icon(icon, { margin: 16 }).build();
 			await renderView(text);
 
-			const el = document.querySelector("span");
-			const marginSpan = Array.from(el?.children || []).find(
-				(child) =>
-					child.tagName === "SPAN" &&
-					(child as HTMLElement).style.display === "inline-block",
-			) as HTMLElement;
-			expect(marginSpan?.style.width).toBe("1rem"); // 16/16
+			const iconEl = document.querySelector("icon") as HTMLElement;
+			expect(iconEl.style.marginInlineEnd).toBe("1rem"); // 16/16
 		});
 	});
 
@@ -206,20 +201,6 @@ describe("UITextRenderer", () => {
 	});
 
 	describe("Style", () => {
-		test("Default text style class applied", async () => {
-			const text = UI.Text("Styled").build();
-			await renderView(text);
-			expect(document.querySelector("span")?.className).toContain("-text");
-		});
-
-		test("Custom style name applied", async () => {
-			const text = UI.Text("Custom").style("headline").build();
-			await renderView(text);
-			expect(document.querySelector("span")?.className).toContain(
-				"-text-headline",
-			);
-		});
-
 		test("Style properties apply inline styles", async () => {
 			const text = UI.Text("Styled")
 				.bold()
