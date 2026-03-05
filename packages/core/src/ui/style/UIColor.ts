@@ -107,13 +107,13 @@ export class UIColor {
 	/**
 	 * Determines whether a color has high perceived brightness.
 	 * @param color A UIColor instance.
-	 * @param threshold The brightness threshold, from 0 to 1; defaults to 0.65.
+	 * @param threshold The brightness threshold, from 0 to 1; defaults to 0.72.
 	 * @returns True if the color's perceived brightness exceeds the threshold.
 	 */
 	static isBrightColor(color: UIColor, threshold?: number): boolean {
 		let out = color.output();
 		if (out.raw || out.alpha === 0) return true;
-		return out.l > (threshold ?? 0.65);
+		return out.l > (threshold ?? 0.72);
 	}
 
 	/**
