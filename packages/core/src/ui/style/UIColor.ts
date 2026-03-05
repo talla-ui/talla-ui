@@ -80,21 +80,6 @@ export class UIColor {
 	}
 
 	/**
-	 * Creates a {@link UIColor} instance that dynamically resolves using a factory function.
-	 * @param f A function that returns the color to resolve to, or undefined.
-	 * @returns A new {@link UIColor} instance.
-	 * @see {@link UIColor.getColor}
-	 */
-	static resolve(f: () => UIColor | undefined): UIColor {
-		let result = new UIColor();
-		result._f = () => {
-			let src = f();
-			return src ? src.output() : ZERO_OUT;
-		};
-		return result;
-	}
-
-	/**
 	 * Creates a UIColor from OKLCH values directly.
 	 * @param l Lightness, 0-1.
 	 * @param c Chroma, 0-~0.4.

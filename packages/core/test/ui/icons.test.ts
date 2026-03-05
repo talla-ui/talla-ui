@@ -89,17 +89,6 @@ describe("Icon registration and lookup", () => {
 		let ref2 = UIIconResource.getIcon("check");
 		expect(ref1).toBe(ref2);
 	});
-
-	test("UIIconResource.resolve creates dynamic icon reference", () => {
-		let baseIcon = new UIIconResource("<svg>base</svg>");
-		let resolved = UIIconResource.resolve(() => baseIcon);
-		expect(resolved.toString()).toBe("<svg>base</svg>");
-	});
-
-	test("UIIconResource.resolve returns empty string when factory returns undefined", () => {
-		let resolved = UIIconResource.resolve(() => undefined);
-		expect(resolved.toString()).toBe("");
-	});
 });
 
 describe("Icon RTL mirroring", () => {
@@ -123,16 +112,5 @@ describe("Icon RTL mirroring", () => {
 		UIIconResource.setIcons({ mirroredRef: mirroredIcon });
 		let iconRef = UIIconResource.getIcon("mirroredRef");
 		expect(iconRef.isMirrorRTL()).toBe(true);
-	});
-
-	test("UIIconResource.resolve preserves RTL flag", () => {
-		let mirroredIcon = new UIIconResource("<svg>mirrored</svg>").setMirrorRTL();
-		let resolved = UIIconResource.resolve(() => mirroredIcon);
-		expect(resolved.isMirrorRTL()).toBe(true);
-	});
-
-	test("UIIconResource.resolve returns false for RTL when factory returns undefined", () => {
-		let resolved = UIIconResource.resolve(() => undefined);
-		expect(resolved.isMirrorRTL()).toBe(false);
 	});
 });

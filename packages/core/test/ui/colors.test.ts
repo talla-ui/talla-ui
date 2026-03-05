@@ -215,21 +215,6 @@ describe("Color registration and lookup", () => {
 		expect(ref1).toBe(ref2);
 	});
 
-	test("UIColor.resolve creates dynamic color reference", () => {
-		let baseColor = new UIColor("#123456");
-		let resolved = UIColor.resolve(() => baseColor);
-		let out = resolved.output();
-		expect(out.raw).toBeUndefined();
-		expect(out.rgb()[0]).toBe(18);
-		expect(out.rgb()[1]).toBe(52);
-		expect(out.rgb()[2]).toBe(86);
-	});
-
-	test("UIColor.resolve returns transparent when factory returns undefined", () => {
-		let resolved = UIColor.resolve(() => undefined);
-		expect(resolved.output().alpha).toBe(0);
-	});
-
 	test("Derived colors update when base color changes", () => {
 		_customTestColors.push("derivedBase");
 		UIColor.setColors({ derivedBase: "#000000" });

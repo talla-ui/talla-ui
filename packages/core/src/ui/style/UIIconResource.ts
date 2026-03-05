@@ -46,19 +46,6 @@ export class UIIconResource {
 	}
 
 	/**
-	 * Creates a {@link UIIconResource} instance that dynamically resolves using a factory function.
-	 * @param f A function that returns the icon to resolve to, or undefined.
-	 * @returns A new {@link UIIconResource} instance.
-	 * @see {@link UIIconResource.getIcon}
-	 */
-	static resolve(f: () => UIIconResource | undefined): UIIconResource {
-		return Object.assign(new UIIconResource(), {
-			toString: () => f()?.toString() || "",
-			isMirrorRTL: () => !!f()?.isMirrorRTL(),
-		});
-	}
-
-	/**
 	 * Creates a new icon instance.
 	 * @param content The icon content as SVG, HTML, or plain text.
 	 */
