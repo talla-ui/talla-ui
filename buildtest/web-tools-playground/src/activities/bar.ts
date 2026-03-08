@@ -5,8 +5,6 @@ export class BarActivity extends Activity {
 	static View = BarView;
 
 	title = "Bar";
-	navigationPath = "bar";
-
 	count = 0;
 
 	protected onIncrementCount() {

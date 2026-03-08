@@ -9,6 +9,7 @@ import { setWebToolsToggleKey, showWebTools } from "@talla-ui/web-tools";
 import { UI, UIColor } from "talla-ui";
 import { BarActivity } from "./activities/bar";
 import { FooActivity } from "./activities/foo";
+import { FooDetailActivity } from "./activities/foo-detail";
 
 const app = useWebContext((options) => {
 	setWebTheme(
@@ -26,17 +27,26 @@ setWebToolsToggleKey("C", { ctrl: true, shift: true }, "select");
 setWebToolsToggleKey("J", { ctrl: true, shift: true }, "console");
 showWebTools(undefined);
 
-app.log.debug("App started", app.navigation?.path);
-if (app.navigation?.path === "") {
-	app.log.debug("Navigating from / to foo");
-	setTimeout(() => app.navigate("foo"));
-}
-app.navigation?.listen((e) => {
-	if (e.name === "PageNotFound") {
-		app.log.error("Page not found", app.navigation?.path);
+let barActivity = new BarActivity();
+let fooActivity = new FooActivity();
+app.addRoutes({
+	bar: barActivity,
+	foo: fooActivity,
+	"foo/:fooId"({ fooId }) {
+		let item = fooActivity.items.find((i) => i.title === fooId);
+		if (item) return new FooDetailActivity(item);
 		app.navigate("foo", { replace: true });
-	}
+	},
+	""() {
+		// Redirect to foo
+		app.log.debug("Redirecting to foo");
+		app.navigate("foo", { replace: true });
+	},
+	"*"({ path }) {
+		// 404
+		app.log.error("Page not found", path);
+		app.navigate("foo", { replace: true });
+	},
 });
 
-app.addActivity(new FooActivity());
-app.addActivity(new BarActivity());
+app.log.debug("App started", app.navigation?.path);

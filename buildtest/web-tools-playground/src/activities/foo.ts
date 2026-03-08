@@ -1,12 +1,10 @@
 import {
 	Activity,
-	ActivityRouter,
 	app,
 	ObservableList,
 	ObservableObject,
 	UIListViewEvent,
 } from "talla-ui";
-import { FooDetailActivity } from "./foo-detail";
 import { NewFooActivity } from "./foo-new";
 import { FooView, FooViewModel } from "./foo.view";
 
@@ -44,7 +42,6 @@ export class FooActivity extends Activity implements FooViewModel {
 	}
 
 	title = "Foo";
-	navigationPath = "foo";
 
 	items = new ObservableList<FooItem>();
 
@@ -55,28 +52,10 @@ export class FooActivity extends Activity implements FooViewModel {
 	}
 
 	protected async onNewItem() {
-		let dialog = new NewFooActivity();
-		this._router.add(dialog, true);
-		for await (let _ of dialog.listenAsync()) {
-			// Wait for dialog to unlink
+		let dialog = await this.showDialogAsync(new NewFooActivity());
+		if (dialog.item) {
+			app.log.debug("Adding new item");
+			this.items.insert(dialog.item, this.items.first());
 		}
-		app.log.debug("Adding new item");
-		if (dialog.item) this.items.insert(dialog.item, this.items.first());
 	}
-
-	matchNavigationPath(path: string) {
-		if (
-			path !== this.navigationPath &&
-			!path.startsWith(this.navigationPath + "/")
-		)
-			return false;
-		let remainder = path.slice(this.navigationPath.length + 1);
-		let item = this.items.find((i) => i.title === remainder);
-		return () => {
-			if (item) this._router.replace(new FooDetailActivity(item), true);
-			else this._router.clear();
-		};
-	}
-
-	private _router = this.attach(new ActivityRouter());
 }

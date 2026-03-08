@@ -41,7 +41,7 @@ describe("Activation and deactivation, standalone", () => {
 
 	test("Activate base class", () => {
 		let a = addActivity(new Activity());
-		expect(app.activities.toArray().includes(a)).toBeTruthy();
+		expect(ObservableObject.whence.call(AppContext as any, a)).toBe(app);
 		expect(a.isActive()).toBeFalsy();
 		a.activate();
 		expect(a.isActive()).toBeTruthy();
@@ -314,7 +314,7 @@ describe("Global context and parents", () => {
 	test("Add activity", () => {
 		let activity = new Activity();
 		app.addActivity(activity);
-		expect(app.activities.toArray().includes(activity)).toBeTruthy();
+		expect(ObservableObject.whence.call(AppContext as any, activity)).toBe(app);
 	});
 
 	test("Global context is parent", () => {

@@ -256,13 +256,16 @@ test("Button navigation with navigateTo", async () => {
 
 test("Button navigation with navigateTo, relative path", async () => {
 	class MyActivity extends Activity {
-		override navigationPath = "foo";
 		static override View() {
 			return UI.Button("bar").navigateTo("./bar");
 		}
 	}
-	app.addActivity(new MyActivity());
+	let activity = new MyActivity();
+	app.addRoutes({ foo: activity });
 	app.navigation?.set("foo");
+	await expect
+		.poll(() => activity.isActive(), { interval: 5, timeout: 100 })
+		.toBe(true);
 	await clickOutputAsync({ text: "bar" });
 	await expectNavAsync({ path: "foo/bar" });
 });

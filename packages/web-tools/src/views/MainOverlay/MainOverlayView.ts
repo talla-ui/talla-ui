@@ -1,10 +1,10 @@
 import {
 	Activity,
+	ActivityRouter,
 	app,
 	Binding,
 	ModalMenuOptions,
 	ObservableEvent,
-	ObservableList,
 	UIButton,
 	UIElement,
 	View,
@@ -167,13 +167,11 @@ export class MainOverlayView extends Widget {
 				this.inspectView.findHistory(View);
 			}
 			this.inspectView.findHistory(Activity);
-			this.inspectView.findHistory(ObservableList);
+			this.inspectView.findHistory(ActivityRouter);
 		} else if (this.inspectView.object === undefined) {
-			this.inspectView.setObject(
-				app.activities.toArray().find((a) => a.isActive()),
-			);
+			this.inspectView.setObject(app.activities.active.first());
 			this.inspectView.findHistory(Activity);
-			this.inspectView.findHistory(ObservableList);
+			this.inspectView.findHistory(ActivityRouter);
 		}
 	}
 

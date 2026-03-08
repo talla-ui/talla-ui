@@ -23,7 +23,6 @@ import {
 } from "../dist/index.js";
 
 class CountActivity extends Activity {
-	override navigationPath = "count";
 	static override View(v: Binding<CountActivity>) {
 		return UI.Column(
 			UI.TextField()
@@ -50,7 +49,7 @@ beforeEach(() => {
 		options.navigationPath = "count";
 	});
 	activity = new CountActivity();
-	app.addActivity(activity);
+	app.addRoutes({ count: activity });
 });
 
 test("Single control is rendered", async () => {

@@ -6,7 +6,9 @@ import {
 	ObservableList,
 	ObservableObject,
 	UI,
+	UIColumn,
 	UIListViewEvent,
+	UIShowView,
 	ViewBuilder,
 	Widget,
 } from "@talla-ui/core";
@@ -124,9 +126,11 @@ const ViewBody = (v: Binding<IndexPanelView>) =>
 		),
 		FoldView("Navigation", true).with(
 			UI.Column(
-				InfoDetailRow("Path")
-					.value(v.bind("navigation.path"))
-					.onClick("ShowNavigation"),
+				InfoDetailRow("Path").value(v.bind("navigation.path")),
+				InfoDetailRow("Matched Route").value(v.bind("router.matchedRoute")),
+				InfoDetailRow("Params", true)
+					.value(v.bind("router.params").map((r) => JSON.stringify(r)))
+					.onClick("InspectParams"),
 			),
 		),
 		FoldView("Viewport", true).with(
@@ -162,6 +166,7 @@ export class IndexPanelView extends Widget {
 
 	navigation = app.navigation;
 	viewport = app.viewport;
+	router = app.activities;
 	activities = new ObservableList<InspectableObjectItem>();
 	views = new ObservableList<InspectableObjectItem>();
 
@@ -180,10 +185,6 @@ export class IndexPanelView extends Widget {
 		}, 10);
 	}
 
-	protected onShowNavigation() {
-		this.emit("InspectObject", { object: this.navigation });
-	}
-
 	protected onInspectView(e: UIListViewEvent<InspectableObjectItem>) {
 		let item = e.data.listViewItem;
 		this.emit("InspectObject", { object: item?.object });
@@ -194,15 +195,14 @@ export class IndexPanelView extends Widget {
 		this.emit("InspectObject", { object: item?.object });
 	}
 
+	protected onInspectParams() {
+		this.emit("InspectObject", { object: app.activities.params });
+	}
+
 	private _updateActivities() {
 		let active: InspectableObjectItem[] = [];
-		let inactive: InspectableObjectItem[] = [];
-		for (let activity of app.activities.toArray()) {
+		for (let activity of app.activities.active) {
 			let label = `<${activity.constructor.name}>`;
-			if (activity.isActive()) label += " (Active)";
-			if (activity.navigationPath) {
-				label += ` /${activity.navigationPath}`;
-			}
 			if (activity.title) {
 				label += " " + JSON.stringify(activity.title);
 			}
@@ -213,10 +213,9 @@ export class IndexPanelView extends Widget {
 					object: activity,
 				});
 			item.label = label;
-			if (activity.isActive()) active.push(item);
-			else inactive.push(item);
+			active.push(item);
 		}
-		this.activities.replaceAll([...active, ...inactive]);
+		this.activities.replaceAll(active);
 	}
 
 	private _updateViews() {
@@ -234,6 +233,16 @@ export class IndexPanelView extends Widget {
 					if ("name" in view && view.name) {
 						if (/WebTools/.test(view.name as string)) continue;
 						label += " " + view.name;
+					}
+					if (
+						view instanceof UIColumn &&
+						view.accessibleRole === "dialog" &&
+						view.content.length === 1
+					) {
+						let showView = view.content.first();
+						if (showView instanceof UIShowView && showView.body) {
+							view = showView.body;
+						}
 					}
 					let parentObject = ObservableObject.whence(view);
 					if (parentObject) {

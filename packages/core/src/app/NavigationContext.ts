@@ -1,33 +1,20 @@
 import { StringConvertible } from "@talla-ui/util";
-import { invalidArgErr, safeCall } from "../errors.js";
+import { invalidArgErr } from "../errors.js";
 import { ObservableObject } from "../object/index.js";
-import type { Activity } from "./Activity.js";
 import { AppContext } from "./AppContext.js";
 
 /**
  * An abstract class that encapsulates the current location within the application navigation stack, part of the global application context
  * - An instance of this class is available as {@link AppContext.navigation app.navigation}, set by the platform-specific renderer package.
  * - This object contains the current location, represented as a path string.
- * - The path is matched against the activities contained by the root activity router, i.e. {@link AppContext.activities app.activities}. If a match is found, the activity is activated, and a `Match` event is emitted. If no match is found after a path change, the `NotFound` event is emitted. Both events contain a `path` property as part of the event data.
  * - When a new path is set, a `Set` change event is emitted.
  * @docgen {hideconstructor}
  */
 export abstract class NavigationContext extends ObservableObject {
-	/** Creates a new instance; do not use directly */
-	constructor() {
-		super();
-
-		// wait for activities to be added in this tick, then update
-		AppContext.getInstance().schedule(() => this._matchActivityAsync());
-	}
-
 	/** The current navigation path, read-only */
 	get path() {
 		return this._path;
 	}
-
-	/** The path that was last matched by the activity router, if any */
-	matchedPath?: string;
 
 	/**
 	 * Navigates to the specified path
@@ -42,7 +29,7 @@ export abstract class NavigationContext extends ObservableObject {
 	): Promise<void>;
 
 	/**
-	 * Sets the current navigation path, and activates any matching activities from {@link AppContext.activities app.activities}
+	 * Sets the current navigation path
 	 * - This method doesn't affect the navigation history or platform-specific navigation. To navigate to a new path, use {@link navigateAsync()} instead.
 	 * @error This method throws an error if the path is invalid (i.e. starts or ends with a dot or a slash).
 	 */
@@ -53,10 +40,34 @@ export abstract class NavigationContext extends ObservableObject {
 		// set internal value and emit change first
 		this._path = path;
 		this.emitChange("Set");
-
-		// find matching activity from all root activities, async
-		safeCall(this._matchActivityAsync, this);
 		return this;
+	}
+
+	/**
+	 * Resolves a relative path against the current navigation path
+	 * - Paths starting with `./` are resolved relative to the current path.
+	 * - Paths starting with `../` navigate up one segment.
+	 * - Absolute paths (not starting with `.`) are returned as-is after normalization.
+	 * @param target The path to resolve
+	 * @returns The resolved absolute path
+	 */
+	resolve(target: string): string {
+		let path = String(target);
+		if (path.startsWith(".")) {
+			path = this._path + "/" + path + "/";
+		}
+
+		// remove redundant slashes and dots
+		path = path.replace(/\/+/g, "/").replace(/^\.\/|\/\.\//g, "/");
+
+		// resolve ../ segments iteratively (each pass resolves one level)
+		let prev: string;
+		do {
+			prev = path;
+			path = path.replace(/[^\/]*[^\/\.]\/\.\.\//g, "/").replace(/\/+/g, "/");
+		} while (path !== prev);
+
+		return path.replace(/\/+/g, "/").replace(/^\/+|\/+$/g, "");
 	}
 
 	/** Resets the current path silently without activating or deactivating any activities */
@@ -65,38 +76,7 @@ export abstract class NavigationContext extends ObservableObject {
 		return this;
 	}
 
-	/** Finds a matching root activity to activate, emits an event */
-	private async _matchActivityAsync() {
-		if (this.isUnlinked()) return;
-		let path = this._path;
-		if (path === this._last && !this._notFound) return;
-		this._last = path;
-		this._notFound = false;
-
-		// use the root activity router to activate
-		let router = AppContext.getInstance().activities;
-		let matched: Activity | undefined;
-		try {
-			matched = await router.routeAsync(path);
-		} catch {
-			// navigation was cancelled by canDeactivateAsync returning false
-			return;
-		}
-
-		// if path changed during routing, don't emit stale events
-		if (this._path !== path) return;
-		if (matched) {
-			this.matchedPath = path;
-			this.emit("Match", { path });
-		} else {
-			this._notFound = true;
-			this.emit("NotFound", { path });
-		}
-	}
-
 	private _path = "";
-	private _last?: string;
-	private _notFound?: boolean;
 }
 
 export namespace NavigationContext {

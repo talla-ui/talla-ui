@@ -86,7 +86,7 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 							UI.Text(item.bind("key"))
 								.hideWhen(item.bind("listItem"))
 								.flex(0, 0)
-								.width(120)
+								.width(120, 0, 120)
 								.padding({ end: 8 })
 								.fontSize(12)
 								.dim(item.bind("private"))

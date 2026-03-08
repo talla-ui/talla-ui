@@ -3,7 +3,6 @@ import { ERROR, err, safeCall } from "../errors.js";
 import { Binding, ObservableEvent, ObservableObject } from "../object/index.js";
 import { $_origin } from "../object/object_util.js";
 import { AppContext } from "./AppContext.js";
-import type { NavigationContext } from "./NavigationContext.js";
 import type { RenderContext } from "./RenderContext.js";
 import { View } from "./View.js";
 import type { ViewBuilder } from "./ViewBuilder.js";
@@ -42,13 +41,13 @@ const $_activity = Symbol("activity");
  * @description
  * The activity is one of the main architectural components of an application. It represents a potential 'place' in the application, which can be activated and deactivated as the user navigates around.
  *
- * This class provides infrastructure for path-based routing, based on the application's navigation path (such as the browser's current URL), together with {@link NavigationContext} and {@link ActivityRouter}. However, activities can also be activated and deactivated manually.
+ * Path-based routing is managed by {@link ActivityRouter}, {@link NavigationContext}, and {@link AppContext.addRoutes()}. Alternatively, activities can be activated and deactivated manually.
  *
- * Activities emit `Active` and `Inactive` change events when state transitions occur. Override {@link afterActive} for initialization (receiving an AbortSignal for cancellation), and {@link afterInactive} for cleanup. Use {@link canDeactivateAsync} as a navigation guard to prevent deactivation when there are unsaved changes.
+ * Activities emit `Active` and `Inactive` change events when state transitions occur. Override {@link afterActive} for initialization (receiving an AbortSignal for cancellation), and {@link afterInactive} for cleanup.
  *
  * The static {@link Activity.View} property must be set to a function that returns a view builder, which is used to create the view object when the activity becomes active. This function is called only once for each activity, as well as when the activity is reloaded using Hot Module Replacement (HMR).
  *
- * As soon as the activity is activated and a view is created, the view is rendered. The view is unlinked when the activity is deactivated, and the {@link View} property is set to undefined. To change rendering options or disable automatic rendering, use the {@link setRenderMode()} method.
+ * As soon as the activity is activated and a view is created, the view is rendered. The view is unlinked when the activity is deactivated, and the `view` property is set to undefined. To change rendering options or disable automatic rendering, use the {@link setRenderMode()} method.
  *
  * @example
  * // Create an activity and activate it:
@@ -85,14 +84,6 @@ export class Activity extends ObservableObject {
 	get activeSignal(): AbortSignal {
 		return this._abortController.signal;
 	}
-
-	/**
-	 * The path associated with this activity, to match the navigation path
-	 * - This property is used by the default implementation of {@link matchNavigationPath()}, which returns true only if the current path matches exactly. This behavior can be changed (e.g. to match sub paths) by overriding that method.
-	 * - This property is also used for navigating to relative paths starting with `./`, in {@link onNavigate()} when responding to `Navigate` events from buttons that have a {@link UIButton.navigateTo} property set.
-	 * - Do not include a leading or trailing slash in the path. To match the root path (`/`), set this property to an empty string.
-	 */
-	navigationPath?: string = undefined;
 
 	/**
 	 * A user-facing name for this activity, if any
@@ -196,7 +187,7 @@ export class Activity extends ObservableObject {
 
 	/**
 	 * Called after activation, for initialization (may be async).
-	 * - The view has been created before this method is called (if a View function is defined).
+	 * - The view has been created before this method is called (if a View function is defined), but hasn't been rendered yet.
 	 * - Use the signal parameter to cancel fetch requests, timers, etc. when the activity deactivates or is unlinked.
 	 * - This method is not called if the activity is deactivated before the scheduler runs; check {@link activeSignal}.aborted if needed.
 	 * @param signal Aborted when activity deactivates or is unlinked
@@ -211,15 +202,6 @@ export class Activity extends ObservableObject {
 	protected afterInactive(): void | Promise<void> {}
 
 	/**
-	 * A method that's called as a navigation guard, should return false if the activity should not be deactivated.
-	 * - Override this method to prevent navigation when there are unsaved changes. Return (a promise that resolves to) false to prevent navigation, or true to allow it.
-	 * @returns A promise that resolves to true if the activity can be deactivated
-	 */
-	async canDeactivateAsync(): Promise<boolean> {
-		return true;
-	}
-
-	/**
 	 * Called immediately before the activity is unlinked.
 	 * - Override this method to perform cleanup when the activity is destroyed.
 	 * - The {@link activeSignal} is aborted automatically to cancel any pending async operations.
@@ -228,6 +210,36 @@ export class Activity extends ObservableObject {
 	protected override beforeUnlink() {
 		this._abortController.abort();
 		this._active = false;
+	}
+
+	/**
+	 * Shows a dialog activity, and returns a promise that resolves when the dialog is closed
+	 *
+	 * This method activates the provided activity as a dialog, and resolves the returned promise when the dialog activity is unlinked (either by itself, e.g. when the user confirms or cancels, or when the parent activity is deactivated).
+	 *
+	 * - The dialog activity's render mode is set to `dialog` before activation. The dialog can override this in its {@link afterActive} method (e.g. to show as a page on smaller viewports).
+	 * - The dialog activity is attached to this activity, and is automatically unlinked when this activity is deactivated or unlinked.
+	 * - The returned promise resolves with the (now unlinked) dialog activity, so that results can be read from its properties.
+	 *
+	 * @param dialog The dialog activity to show
+	 * @returns A promise that resolves with the dialog activity after it has been unlinked
+	 *
+	 * @example
+	 * // Show a dialog and handle the result
+	 * let dialog = await this.showDialogAsync(new MyDialogActivity());
+	 * if (dialog.confirmed) {
+	 *   // ... handle confirmation
+	 * }
+	 */
+	async showDialogAsync<T extends Activity>(dialog: T): Promise<T> {
+		dialog.setRenderMode("dialog");
+		this.attach(dialog);
+		this.activeSignal.addEventListener("abort", () => {
+			if (!dialog.isUnlinked()) dialog.unlink();
+		});
+		dialog.activate();
+		for await (let _ of dialog.listenAsync());
+		return dialog;
 	}
 
 	/**
@@ -240,7 +252,7 @@ export class Activity extends ObservableObject {
 	 * @see {@link RenderContext.PlacementOptions}
 	 * @see {@link RenderContext.modalFactory}
 	 */
-	setRenderMode(
+	protected setRenderMode(
 		mode: RenderContext.PlacementMode | "dialog",
 		options?: Partial<RenderContext.PlacementOptions>,
 	) {
@@ -320,20 +332,6 @@ export class Activity extends ObservableObject {
 	}
 
 	/**
-	 * Checks if the provided path should activate this activity
-	 * - By default, this method only checks for exact matches with the {@link navigationPath} property.
-	 * - To implement other types of routing, override this method to consider further conditions based on the specified path.
-	 * - When overriding this method, you can return a callback function that will be called after the activity itself is activated. This may be an async function, and is typically used to activate nested 'sub activities', adding them to an attached {@link ActivityRouter} instance.
-	 * @param path The (remainder of the) path to check
-	 * @returns True if the path should activate this activity, false if not; or a function to activate this activity and call the provided function afterwards
-	 * @see {@link ActivityRouter}
-	 * @see {@link NavigationContext}
-	 */
-	matchNavigationPath(path: string): void | boolean | (() => void) {
-		return path === this.navigationPath;
-	}
-
-	/**
 	 * Handles navigation to a provided path, from the current activity
 	 * - This method is called automatically by the {@link onNavigate} event handler when a view object emits the `Navigate` event while this activity is active.
 	 * - The default implementation directly calls {@link NavigationContext.navigateAsync()}. Override this method to handle navigation differently, e.g. to _replace_ the current path for detail view activities.
@@ -346,7 +344,7 @@ export class Activity extends ObservableObject {
 	 * Handles a `Navigate` event emitted by the current view
 	 * - This method is called when a view object emits the `Navigate` event. Such events are emitted from views that include a `getNavigationTarget` method, such as {@link UIButton}.
 	 * - This method calls {@link navigateAsync()} in turn. Override that method rather than this one to handle navigation differently.
-	 * - If the target is a relative path (starting with a dot), it's combined with this activity's own {@link navigationPath}. If this activity has no navigation path, the event is propagated to the parent activity.
+	 * - Relative paths (starting with `.`) are resolved against the current navigation path using {@link NavigationContext.resolve()}.
 	 */
 	protected onNavigate(
 		e: ObservableEvent<
@@ -357,19 +355,13 @@ export class Activity extends ObservableObject {
 		let target = e.source.getNavigationTarget();
 		if (target == null) return false;
 
-		// normalize target path
+		// resolve relative paths using navigation context
 		let path = String(target);
-		if (path.startsWith(".")) {
-			if (this.navigationPath == null) return false;
-			path = this.navigationPath + "/" + path + "/";
+		let navigation = AppContext.getInstance().navigation;
+		if (path.startsWith(".") && navigation) {
+			path = navigation.resolve(path);
 		}
-		path = path
-			.replace(/\/+/g, "/") // remove multiple slashes
-			.replace(/^\.\/|\/\.\//g, "/") // change foo/./bar => foo/bar
-			.replace(/[^\/]*[^\/\.]\/\.\.\//g, "/") // change foo/bar/../baz => foo/baz
-			.replace(/^\/+|\/+$/, ""); // remove leading/trailing slash
 
-		// navigate to normalized path using own method
 		return this.navigateAsync(path);
 	}
 

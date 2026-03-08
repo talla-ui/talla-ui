@@ -68,6 +68,22 @@ export class AppContext extends ObservableObject {
 		// Set default error handler to use LogWriter
 		setErrorHandler((err) => this.log.error(err));
 		DeferredString.setErrorHandler((err) => this.log.error(err));
+
+		// Observe navigation changes and route root activities asynchronously
+		this.observe("navigation", (navigation) => {
+			this._stopNavigationListener?.();
+			this._stopNavigationListener = undefined;
+			if (!navigation) return;
+			navigation.listen({
+				init: (_, stop) => {
+					this._stopNavigationListener = stop;
+				},
+				handler: (_, e) => {
+					if (e.name === "Set") this._scheduleRoute();
+				},
+			});
+			this._scheduleRoute();
+		});
 	}
 
 	/** @internal A reference to the application context itself */
@@ -75,7 +91,8 @@ export class AppContext extends ObservableObject {
 
 	/**
 	 * The root activity router
-	 * - Activities that are added to this router can be activated automatically based on the result of their {@link Activity.matchNavigationPath()} method, which is invoked by the root {@link ActivityRouter}, i.e. {@link activities}. By default, the implementation of this method returns true if the path matches {@link Activity.navigationPath} exactly.
+	 * - Activities can be added manually using {@link addActivity()}, or registered with route patterns using {@link addRoutes()}.
+	 * - Route-registered activities are activated and deactivated automatically based on the current navigation path.
 	 */
 	readonly activities = this.attach(new ActivityRouter());
 
@@ -115,7 +132,7 @@ export class AppContext extends ObservableObject {
 
 	/**
 	 * The current navigation context, an instance of {@link NavigationContext}
-	 * - This object encapsulates the current location path, and coordinates automatic activation of activities based on their navigation path.
+	 * - This object encapsulates the current location path.
 	 * - This property is set by the platform-specific renderer package.
 	 * @note To navigate around the application, use the {@link AppContext.navigate app.navigate()} and {@link AppContext.goBack app.goBack()} methods, rather than calling the methods of the navigation context directly.
 	 */
@@ -131,6 +148,7 @@ export class AppContext extends ObservableObject {
 	 * 5. The i18n context is cleared, and the current locale is reset;
 	 */
 	clear() {
+		this._routeIdx++;
 		this.activities.clear();
 		this.navigation?.clear();
 		this.renderer?.clear();
@@ -154,7 +172,7 @@ export class AppContext extends ObservableObject {
 	 * Adds an activity to the application
 	 *
 	 * @summary
-	 * This method adds an {@link Activity} instance to the root activity router, i.e. {@link activities}. If the activity is added before the navigation context is initialized (asynchronously), the activity may be activated automatically based on the initial navigation path.
+	 * This method adds an {@link Activity} instance to the root activity router, i.e. {@link activities}. The activity is not automatically managed by route changes; use {@link addRoutes()} for route-based activation.
 	 *
 	 * @param activity The activity to be added
 	 * @param activate True if the activity should be activated immediately
@@ -165,8 +183,54 @@ export class AppContext extends ObservableObject {
 	}
 
 	/**
+	 * Registers route patterns with activities or factory functions
+	 *
+	 * This method registers routes on the application activity router. Each key in the table is a route pattern, and each value is an activity, factory function, or array of these. When the navigation path matches a pattern, the associated activities are activated. When the path no longer matches, they are deactivated. Activities that were (only) returned from a factory function are also unlinked after deactivation.
+	 *
+	 * Dynamic route factory functions may also return undefined (void), in which case the route is treated as if nothing matched. This can be used to handle certain routes differently, e.g. by 'redirecting' to a different path using {@link navigate()}.
+	 *
+	 * - Pattern segments starting with `:` are parameters (e.g. `users/:userId`).
+	 * - A `*` at the end matches any remaining path (e.g. `files/*`, or just `*` for a catch-all). The remaining path is captured as the `path` parameter; for root matches on a bare `*`, this value is an empty string.
+	 * - Routes are matched in registration order (first match wins).
+	 * - Routes are matched to the _current_ navigation path asynchronously, as well as any time the navigation context or path changes.
+	 *
+	 * @param routes One ore more route tables, mapping patterns to activities (or factory functions).
+	 *
+	 * @example
+	 * app.addRoutes({
+	 *   "users": new UsersListActivity(),
+	 *   "users/:userId": [usersList, ({ userId }) => new UserDetailActivity(userId)],
+	 *   "users/:userId/edit": ({ userId }) => canEdit(userId) ? new EditUserActivity(userId) : undefined,
+	 *   "*": new NotFoundActivity(),
+	 * });
+	 */
+	addRoutes<
+		T extends {
+			[P in keyof T & string]:
+				| ActivityRouter.RouteArg<P>
+				| ActivityRouter.RouteArg<P>[];
+		},
+	>(...routes: T[]) {
+		for (let table of routes) {
+			for (let pattern of Object.keys(table) as (keyof T & string)[]) {
+				let args = table[pattern];
+				if (Array.isArray(args)) {
+					this.activities.route(pattern, ...args);
+				} else {
+					this.activities.route(
+						pattern,
+						args as ActivityRouter.RouteArg<typeof pattern>,
+					);
+				}
+			}
+		}
+		this._scheduleRoute();
+		return this;
+	}
+
+	/**
 	 * Navigates to the specified path asynchronously
-	 * - The behavior of this method is platform dependent. It uses {@link NavigationContext.navigateAsync()} to navigate to the specified path, which may in turn activate or deactivate activities using the {@link Activity.navigationPath} property.
+	 * - The behavior of this method is platform dependent. It uses {@link NavigationContext.navigateAsync()} to navigate to the specified path, which may in turn activate or deactivate activities based on registered route patterns.
 	 * @param target The target location
 	 * @param mode The navigation mode, refer to {@link NavigationContext.navigateAsync()}
 	 *
@@ -303,4 +367,21 @@ export class AppContext extends ObservableObject {
 		this.renderer?.remount();
 		return this;
 	}
+
+	/**
+	 * @internal Schedules an asynchronous route update, to synchronize the current navigation path with root activities
+	 */
+	private _scheduleRoute() {
+		let version = ++this._routeIdx;
+		this.schedule(() => {
+			if (version !== this._routeIdx) return;
+			let navigation = this.navigation;
+			if (!navigation || navigation.isUnlinked()) return;
+			if (this.activities.isEmpty()) return;
+			this.activities.routeAsync(navigation.path);
+		});
+	}
+
+	private _stopNavigationListener?: () => void;
+	private _routeIdx = 0;
 }
