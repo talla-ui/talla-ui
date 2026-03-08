@@ -114,17 +114,17 @@
 		"@talla-ui/core": "file:packages/core",
 		"@talla-ui/hmr": "file:packages/hmr",
 		"@talla-ui/util": "file:packages/util",
-		"@types/node": "20",
-		"@vitest/coverage-v8": "3",
+		"@types/node": "25",
+		"@vitest/coverage-v8": "4",
 		"concurrently": "latest",
-		"esbuild": "^0.23.1",
+		"esbuild": "^0.27.3",
 		"http-server": "latest",
-		"jsdom": "^27.4.0",
-		"prettier": "^3.3.3",
+		"jsdom": "^28.1.0",
+		"prettier": "^3.8.1",
 		"prettier-plugin-organize-imports": "^4",
 		"rimraf": "latest",
-		"tslib": "^2.7.0",
-		"typescript": "5.6",
-		"vitest": "3"
+		"tslib": "^2.8.1",
+		"typescript": "5.9",
+		"vitest": "4"
 	}
 }

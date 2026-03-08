@@ -10,7 +10,7 @@
 		"moduleResolution": "NodeNext",
 		"declaration": true,
 		"target": "ES2020",
-		"types": ["@types/node"],
+		"types": ["node"],
 		"outDir": "dist"
 	},
 	"include": ["src/*"]

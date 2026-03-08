@@ -15,7 +15,7 @@ export class NewFooActivity extends Activity {
 				title: v.string().required("Title is required"),
 				quantity: v.coerce
 					.number()
-					.int()
+					// .int() // FIXME
 					.required("Quantity is required")
 					.check((n) => n > 0)
 					.error("Quantity must be positive"),

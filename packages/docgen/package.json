@@ -44,12 +44,9 @@
 		"terser": "^5.31.6"
 	},
 	"devDependencies": {
-		"@types/node": "latest",
 		"@types/js-yaml": "^4.0.9",
 		"@types/marked": "^5.0.1",
 		"@types/html-minifier-terser": "^7.0.2",
-		"@types/clean-css": "^4.2.11",
-		"rimraf": "^6.0.1",
-		"typescript": "latest"
+		"@types/clean-css": "^4.2.11"
 	}
 }

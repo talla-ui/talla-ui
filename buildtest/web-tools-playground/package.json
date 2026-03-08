@@ -4,7 +4,9 @@
 	"description": "A playground for testing web-tools",
 	"type": "module",
 	"scripts": {
-		"start": "vite --host"
+		"start": "vite --host",
+		"check": "tsc -p .",
+		"build": "vite build"
 	},
 	"devDependencies": {
 		"talla-ui": "../../",

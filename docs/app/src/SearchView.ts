@@ -37,7 +37,7 @@ export function SearchView(v: Binding<SearchActivity>) {
 						.onInput("SearchInput")
 						.onKey("ArrowDown", "ArrowDownOnInput")
 						.onKey("Enter", "GoToFirstResult"),
-					UI.Button().icon(UI.icons.close).plain().onClick("Close"),
+					UI.Button().icon(UI.icons.close).bare().onClick("Close"),
 				),
 			UI.Column()
 				.hideWhen(Binding.all(v.bind("hasInput"), "loading").not())

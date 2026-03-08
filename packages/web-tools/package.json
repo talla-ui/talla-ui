@@ -47,11 +47,6 @@
 	"devDependencies": {
 		"@talla-ui/core": "file:../core",
 		"@talla-ui/util": "file:../util",
-		"@talla-ui/web-handler": "file:../web-handler",
-		"@types/node": "20",
-		"prettier": "^3.4.2",
-		"prettier-plugin-organize-imports": "^4.1.0",
-		"rimraf": "^6.0.1",
-		"typescript": "^5.6.3"
+		"@talla-ui/web-handler": "file:../web-handler"
 	}
 }

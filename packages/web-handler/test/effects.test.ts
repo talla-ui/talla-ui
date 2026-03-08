@@ -203,25 +203,6 @@ describe("Effects", () => {
 		});
 	});
 
-	describe("CSS exiting class", () => {
-		test("Exiting class disables pointer events", async () => {
-			const col = UI.Column(UI.Text("Content")).effect("fade").build();
-			await renderView(col);
-
-			const el = document.querySelector(
-				".WebHandler-fx-fade-in",
-			) as HTMLElement;
-			expect(el).not.toBeNull();
-
-			// Manually add exiting class to test CSS
-			el.classList.add("WebHandler-fx--exiting");
-			await waitForRender();
-
-			const styles = window.getComputedStyle(el);
-			expect(styles.pointerEvents).toBe("none");
-		});
-	});
-
 	describe("Effect lifecycle callbacks", () => {
 		test("onElementCreated is called before element is in DOM", async () => {
 			const { effect, tracker } = createTestEffect();

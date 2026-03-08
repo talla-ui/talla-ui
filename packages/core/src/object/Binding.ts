@@ -58,7 +58,9 @@ export class Binding<T = any> {
 	 * @returns A new {@link Binding} object
 	 */
 	static from<T>(value: BindingOrValue<T>): Binding<T> {
-		return isBinding(value) ? value.clone() : new Binding(undefined, value);
+		return isBinding(value)
+			? value.clone()
+			: new Binding<T>(undefined, value as any);
 	}
 
 	/**
