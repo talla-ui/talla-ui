@@ -473,11 +473,10 @@ function addTextStyleCSS(
 	let lineHeight = textStyle.lineHeight;
 	if (lineHeight !== undefined) result.lineHeight = String(lineHeight);
 	let lineBreakMode = textStyle.lineBreakMode;
-	if (lineBreakMode === "clip")
-		((result.overflow = "hidden"), (result.textOverflow = "clip"));
-	else if (lineBreakMode === "ellipsis")
-		((result.overflow = "hidden"), (result.textOverflow = "ellipsis"));
-	else if (lineBreakMode !== undefined) result.whiteSpace = lineBreakMode;
+	if (lineBreakMode === "clip") result.textOverflow = "clip";
+	else if (lineBreakMode === "ellipsis") {
+		// ellipsis is the default, no-op
+	} else if (lineBreakMode !== undefined) result.whiteSpace = lineBreakMode;
 	let italic = textStyle.italic;
 	if (italic !== undefined) result.fontStyle = italic ? "italic" : "normal";
 	if (textStyle.bold) result.fontWeight = "bold"; // or explicit fontWeight above

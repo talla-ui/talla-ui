@@ -1,6 +1,7 @@
 import { RenderContext, UI, UIText } from "@talla-ui/core";
 import type { StringConvertible } from "@talla-ui/util";
 import { applyStyles, getCSSLength } from "../DOMStyle.js";
+import { CLASS_TEXT } from "../defaults/css.js";
 import { BaseObserver } from "./BaseObserver.js";
 import { getIconElt } from "./UIImageRenderer.js";
 
@@ -59,6 +60,11 @@ export class UITextRenderer extends BaseObserver<UIText> {
 		// make (keyboard) focusable if needed
 		if (this.observed.allowKeyboardFocus) elt.tabIndex = 0;
 		else if (this.observed.allowFocus) elt.tabIndex = -1;
+
+		// show tooltip when text is truncated
+		elt.onmouseenter = () => {
+			elt.title = (elt.scrollWidth > elt.clientWidth && elt.textContent) || "";
+		};
 		return output;
 	}
 
@@ -72,7 +78,7 @@ export class UITextRenderer extends BaseObserver<UIText> {
 			element,
 			undefined,
 			style,
-			undefined,
+			CLASS_TEXT,
 			true,
 			false,
 			text.position,

@@ -24,6 +24,8 @@ export const CLASS_CONTAINER = "__C";
 export const CLASS_COLUMN = "__CC";
 /** @internal Additional row class name */
 export const CLASS_ROW = "__CR";
+/** @internal Additional text element class name (not buttons or text fields) */
+export const CLASS_TEXT = "__Txt";
 /** @internal Additional scroll container class name */
 export const CLASS_SCROLL = "__CS";
 /** @internal Additional toggle wrapper class name */
@@ -114,6 +116,10 @@ export function makeBaseCSS(): Record<string, {}> {
 		[`button.${CLASS_UI},a.${CLASS_UI}`]: {
 			position: "relative",
 			overflow: "hidden",
+		},
+		[`.${CLASS_UI}.${CLASS_TEXT}`]: {
+			overflow: "hidden",
+			flexShrink: "1",
 		},
 
 		// State layer pseudo-element for button hover/focus/pressed feedback
