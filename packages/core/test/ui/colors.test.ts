@@ -504,7 +504,7 @@ describe("Hex and rgb parsing roundtrip", () => {
 			[255, 255, 255],
 			[0, 0, 0],
 			[128, 128, 128],
-		]) {
+		] as const) {
 			let c = UIColor.rgb(r, g, b);
 			let out = c.output();
 			expect(out.rgb()[0]).toBe(r);

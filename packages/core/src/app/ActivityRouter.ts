@@ -303,7 +303,7 @@ export class ActivityRouter extends ObservableObject {
 }
 
 export namespace ActivityRouter {
-	/** @internal Extracts parameter names from a route pattern string */
+	/** Extracts parameter names from a route pattern string. */
 	type ParamNames<T extends string> =
 		T extends `${string}:${infer P}/${infer Rest}`
 			? P | ParamNames<Rest>
@@ -311,25 +311,29 @@ export namespace ActivityRouter {
 				? P
 				: never;
 
-	/** @internal True if the pattern ends with a wildcard */
+	/** True if the pattern ends with a wildcard. */
 	type HasWildcard<T extends string> = T extends `${string}/*`
 		? true
 		: T extends "*"
 			? true
 			: false;
 
-	/** @internal Flattens an intersection type into a single object type for readability */
-	type Merge<T> = { [K in keyof T]: T[K] } & {};
-
 	/**
 	 * The parameter types extracted from a route pattern
 	 * - This type is used to extract parameter names from `:param` segments and adds a `path` property for wildcard patterns.
 	 * @see {@link ActivityRouter.route}
 	 */
-	export type RouteParams<T extends string> = Merge<
-		([ParamNames<T>] extends [never] ? {} : { [K in ParamNames<T>]: string }) &
-			(HasWildcard<T> extends true ? { path: string } : {})
-	>;
+	export type RouteParams<T extends string> = {
+		[K in keyof (([ParamNames<T>] extends [never]
+			? {}
+			: { [K in ParamNames<T>]: string }) &
+			(HasWildcard<T> extends true ? { path: string } : {}))]: (([
+			ParamNames<T>,
+		] extends [never]
+			? {}
+			: { [K in ParamNames<T>]: string }) &
+			(HasWildcard<T> extends true ? { path: string } : {}))[K];
+	} & {};
 
 	/**
 	 * A route argument: either an Activity instance (by reference) or a factory function

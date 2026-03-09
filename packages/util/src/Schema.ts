@@ -241,6 +241,16 @@ export namespace Schema {
 		 * @returns This builder, for chaining.
 		 */
 		toUpperCase(): this;
+
+		/**
+		 * Validates that the string is not empty.
+		 * @param error Custom error message.
+		 * @returns This builder, for chaining.
+		 */
+		nonempty(error?: StringConvertible): this;
+
+		/** Adds a required check; returns this builder for further chaining. */
+		required(error?: StringConvertible): this;
 	}
 
 	/**
@@ -345,6 +355,16 @@ export namespace Schema {
 		 * @returns This builder, for chaining.
 		 */
 		safe(error?: StringConvertible): this;
+
+		/**
+		 * Validates that the number is an integer.
+		 * @param error Custom error message.
+		 * @returns This builder, for chaining.
+		 */
+		int(error?: StringConvertible): this;
+
+		/** Adds a required check; returns this builder for further chaining. */
+		required(error?: StringConvertible): this;
 	}
 
 	/**
@@ -382,19 +402,28 @@ export namespace Schema {
 		 * @returns This builder, for chaining.
 		 */
 		nonempty(error?: StringConvertible): this;
+
+		/** Adds a required check; returns this builder for further chaining. */
+		required(error?: StringConvertible): this;
 	}
 
 	/**
 	 * A validation builder for boolean values.
 	 * - Returned by {@link Schema.build.boolean()}.
 	 */
-	export interface BooleanBuilder extends Builder<boolean> {}
+	export interface BooleanBuilder extends Builder<boolean> {
+		/** Adds a required check; returns this builder for further chaining. */
+		required(error?: StringConvertible): this;
+	}
 
 	/**
 	 * A validation builder for Date values.
 	 * - Returned by {@link Schema.build.date()} and {@link Schema.build.coerce.date()}.
 	 */
-	export interface DateBuilder extends Builder<Date> {}
+	export interface DateBuilder extends Builder<Date> {
+		/** Adds a required check; returns this builder for further chaining. */
+		required(error?: StringConvertible): this;
+	}
 
 	/**
 	 * A validation builder for object values.
@@ -403,6 +432,11 @@ export namespace Schema {
 	export interface ObjectBuilder<T> extends Builder<T> {
 		/** The schema for each property of the validated object. */
 		shape: Record<string, Builder | Schema<any>>;
+
+		/** Adds a required check; returns this builder for further chaining. */
+		required(
+			error?: StringConvertible,
+		): ObjectBuilder<Exclude<T, undefined | null>>;
 	}
 
 	/**
@@ -412,6 +446,11 @@ export namespace Schema {
 	export interface LiteralBuilder<T> extends Builder<T> {
 		/** The set of accepted literal values. */
 		values: T[];
+
+		/** Adds a required check; returns this builder for further chaining. */
+		required(
+			error?: StringConvertible,
+		): LiteralBuilder<Exclude<T, undefined | null>>;
 	}
 
 	/**
@@ -530,12 +569,12 @@ export namespace Schema {
 		},
 	});
 
-	/** @internal Standard Schema v1 result type. */
+	/** Standard Schema v1 result type. */
 	export type StandardResult<T> =
 		| { value: T; issues?: undefined }
 		| { issues: ReadonlyArray<{ message: string; path?: PropertyKey[] }> };
 
-	/** @internal Standard Schema v1 interface (inlined to avoid dependency). */
+	/** Standard Schema v1 interface (inlined to avoid dependency). */
 	export interface StandardSchemaV1<Input = unknown, Output = Input> {
 		readonly "~standard": {
 			readonly version: 1;

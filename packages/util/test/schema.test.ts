@@ -1460,7 +1460,7 @@ describe("Schema", () => {
 			if ("issues" in result) {
 				expect(result.issues).toBeDefined();
 				expect(result.issues!.length).toBeGreaterThan(0);
-				expect(result.issues![0].message).toBe("Invalid email");
+				expect(result.issues!.at(0)!.message).toBe("Invalid email");
 			}
 		});
 
@@ -1477,7 +1477,8 @@ describe("Schema", () => {
 				expect(result.issues).toBeDefined();
 				// Should have path for nested error
 				const issue = result.issues!.find(
-					(i) => i.path?.join(".") === "user.name",
+					(i: { message: string; path?: PropertyKey[] }) =>
+						i.path?.join(".") === "user.name",
 				);
 				expect(issue).toBeDefined();
 			}
@@ -1493,7 +1494,7 @@ describe("Schema", () => {
 			if ("issues" in result) {
 				expect(result.issues).toBeDefined();
 				expect(result.issues!.length).toBeGreaterThan(0);
-				expect(result.issues![0].message).toContain("Must be number");
+				expect(result.issues!.at(0)!.message).toContain("Must be number");
 			}
 		});
 
@@ -1506,18 +1507,18 @@ describe("Schema", () => {
 			expect("issues" in result).toBe(true);
 			if ("issues" in result) {
 				expect(result.issues).toBeDefined();
-				expect(result.issues![0].message).toBe("Must be a or b");
+				expect(result.issues!.at(0)!.message).toBe("Must be a or b");
 			}
 		});
 	});
 
 	describe("Preprocess method", () => {
-		test("Preprocess directly", () => {
+		test("Preprocess transforms value before validation", () => {
 			const schema = new Schema((f) =>
 				f
 					.any()
 					.preprocess((v) => String(v).toUpperCase())
-					.string(),
+					.check((v) => typeof v === "string"),
 			);
 			expect(schema.safeParse("hello")).toEqual({
 				success: true,
@@ -2174,6 +2175,133 @@ describe("Schema", () => {
 			const schema = new Schema((f) => f.number().finite());
 			const result = schema.safeParse(NaN);
 			expect(result.success).toBe(false);
+		});
+	});
+
+	describe("Method chaining preserves types", () => {
+		test("number().int() chains correctly", () => {
+			const schema = new Schema((f) => f.number().int());
+			expect(schema.safeParse(5).success).toBe(true);
+			expect(schema.safeParse(5.5).success).toBe(false);
+		});
+
+		test("number().int().positive() chains correctly", () => {
+			const schema = new Schema((f) => f.number().int().positive());
+			expect(schema.safeParse(5).success).toBe(true);
+			expect(schema.safeParse(-3).success).toBe(false);
+			expect(schema.safeParse(2.5).success).toBe(false);
+		});
+
+		test("number().required().positive() chains correctly", () => {
+			const schema = new Schema((f) => f.number().required().positive());
+			expect(schema.safeParse(5).success).toBe(true);
+			expect(schema.safeParse(-1).success).toBe(false);
+			expect(schema.safeParse(undefined).success).toBe(false);
+		});
+
+		test("number().required().int().min(0).max(100) chains correctly", () => {
+			const schema = new Schema((f) =>
+				f.number().required().int().min(0).max(100),
+			);
+			expect(schema.safeParse(50).success).toBe(true);
+			expect(schema.safeParse(5.5).success).toBe(false);
+			expect(schema.safeParse(-1).success).toBe(false);
+			expect(schema.safeParse(101).success).toBe(false);
+			expect(schema.safeParse(undefined).success).toBe(false);
+		});
+
+		test("string().required().min(3).max(10) chains correctly", () => {
+			const schema = new Schema((f) => f.string().required().min(3).max(10));
+			expect(schema.safeParse("hello").success).toBe(true);
+			expect(schema.safeParse("ab").success).toBe(false);
+			expect(schema.safeParse("this is too long").success).toBe(false);
+			expect(schema.safeParse("").success).toBe(false);
+		});
+
+		test("string().required().email() chains correctly", () => {
+			const schema = new Schema((f) => f.string().required().email());
+			expect(schema.safeParse("user@example.com").success).toBe(true);
+			expect(schema.safeParse("").success).toBe(false);
+			expect(schema.safeParse("not-email").success).toBe(false);
+		});
+
+		test("string().nonempty() chains correctly", () => {
+			const schema = new Schema((f) => f.string().nonempty());
+			expect(schema.safeParse("hello").success).toBe(true);
+			expect(schema.safeParse("").success).toBe(false);
+		});
+
+		test("string().required().nonempty().trim() chains correctly", () => {
+			const schema = new Schema((f) => f.string().required().nonempty().trim());
+			expect(schema.safeParse("hello").success).toBe(true);
+			expect(schema.safeParse("").success).toBe(false);
+		});
+
+		test("coerce.number().int().required() chains correctly", () => {
+			const schema = new Schema((f) => f.coerce.number().int().required());
+			expect(schema.safeParse("5").success).toBe(true);
+			expect(schema.safeParse("5.5").success).toBe(false);
+			expect(schema.safeParse(undefined).success).toBe(false);
+		});
+
+		test("array().required().nonempty() chains correctly", () => {
+			const schema = new Schema((f) =>
+				f.array(f.number()).required().nonempty(),
+			);
+			expect(schema.safeParse([1, 2]).success).toBe(true);
+			expect(schema.safeParse([]).success).toBe(false);
+			expect(schema.safeParse(undefined).success).toBe(false);
+		});
+
+		test("array().required().min(2).max(5) chains correctly", () => {
+			const schema = new Schema((f) =>
+				f.array(f.string()).required().min(2).max(5),
+			);
+			expect(schema.safeParse(["a", "b"]).success).toBe(true);
+			expect(schema.safeParse(["a"]).success).toBe(false);
+			expect(schema.safeParse(["a", "b", "c", "d", "e", "f"]).success).toBe(
+				false,
+			);
+		});
+
+		test("boolean().required() chains correctly", () => {
+			const schema = new Schema((f) => f.boolean().required());
+			expect(schema.safeParse(true).success).toBe(true);
+			expect(schema.safeParse(undefined).success).toBe(false);
+		});
+
+		test("date().required() chains correctly", () => {
+			const schema = new Schema((f) => f.date().required());
+			expect(schema.safeParse(new Date()).success).toBe(true);
+			expect(schema.safeParse(undefined).success).toBe(false);
+		});
+
+		test("object with required().positive() in fields", () => {
+			const schema = new Schema((f) =>
+				f.object({
+					name: f.string().required().min(1),
+					age: f.number().required().positive().int(),
+					email: f.string().required().email(),
+				}),
+			);
+			expect(
+				schema.safeParse({
+					name: "Alice",
+					age: 30,
+					email: "alice@example.com",
+				}).success,
+			).toBe(true);
+			expect(
+				schema.safeParse({ name: "", age: 30, email: "alice@example.com" })
+					.success,
+			).toBe(false);
+			expect(
+				schema.safeParse({
+					name: "Alice",
+					age: -1,
+					email: "alice@example.com",
+				}).success,
+			).toBe(false);
 		});
 	});
 });
