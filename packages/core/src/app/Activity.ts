@@ -335,16 +335,23 @@ export class Activity extends ObservableObject {
 	 * Handles navigation to a provided path, from the current activity
 	 * - This method is called automatically by the {@link onNavigate} event handler when a view object emits the `Navigate` event while this activity is active.
 	 * - The default implementation directly calls {@link NavigationContext.navigateAsync()}. Override this method to handle navigation differently, e.g. to _replace_ the current path for detail view activities.
+	 * - Relative paths (starting with `.`) are resolved against the current navigation path using {@link NavigationContext.resolve()}.
 	 */
 	protected async navigateAsync(target: StringConvertible) {
-		await AppContext.getInstance().navigation?.navigateAsync(target);
+		let navigation = AppContext.getInstance().navigation;
+		if (navigation) {
+			let path = String(target);
+			if (path.startsWith(".")) {
+				target = navigation.resolve(path);
+			}
+			await navigation.navigateAsync(target);
+		}
 	}
 
 	/**
 	 * Handles a `Navigate` event emitted by the current view
 	 * - This method is called when a view object emits the `Navigate` event. Such events are emitted from views that include a `getNavigationTarget` method, such as {@link UIButton}.
 	 * - This method calls {@link navigateAsync()} in turn. Override that method rather than this one to handle navigation differently.
-	 * - Relative paths (starting with `.`) are resolved against the current navigation path using {@link NavigationContext.resolve()}.
 	 */
 	protected onNavigate(
 		e: ObservableEvent<
@@ -354,15 +361,7 @@ export class Activity extends ObservableObject {
 		if (typeof e.source.getNavigationTarget !== "function") return false;
 		let target = e.source.getNavigationTarget();
 		if (target == null) return false;
-
-		// resolve relative paths using navigation context
-		let path = String(target);
-		let navigation = AppContext.getInstance().navigation;
-		if (path.startsWith(".") && navigation) {
-			path = navigation.resolve(path);
-		}
-
-		return this.navigateAsync(path);
+		return this.navigateAsync(target);
 	}
 
 	/**
