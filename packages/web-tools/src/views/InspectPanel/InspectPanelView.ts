@@ -44,7 +44,7 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 								),
 							),
 							UI.Text(item.bind("key").string(".{}"))
-								.hideWhen(item.bind.not("key"))
+								.hideUnless(item.bind("key"))
 								.flex(0, 0)
 								.fontSize(12),
 							UI.Spacer(),
@@ -74,12 +74,12 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 					.with(
 						UI.Row(
 							UI.Image(UI.icons.chevronDown)
-								.hideWhen(item.bind.not("isList"))
+								.hideUnless(item.bind("isList"))
 								.size(16)
 								.fg(UI.colors.blue.alpha(0.8))
 								.position({ gravity: "overlay", top: 2, end: 0 }),
 							UI.Image(icons.selectElement)
-								.hideWhen(item.bind.not("view"))
+								.hideUnless(item.bind("view"))
 								.size(16)
 								.fg(UI.colors.blue.alpha(0.8))
 								.position({ gravity: "overlay", top: 2, end: 0 }),
@@ -105,7 +105,7 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 						.divider()
 						.scroll()
 						.onRendered("PropertyScrollRendered")
-						.hideWhen(v.bind("properties.length").not()),
+						.hideUnless(v.bind("properties.length")),
 				),
 			UI.Column()
 				.hideWhen(v.bind("displayValue").equals(undefined))
@@ -122,7 +122,7 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 					UI.IconButton(icons.console)
 						.ghost()
 						.position("overlay", 4, 4)
-						.hideWhen(v.bind.not("setExpr"))
+						.hideUnless(v.bind("setExpr"))
 						.onClick("SetExpr"),
 				),
 			UI.Column()

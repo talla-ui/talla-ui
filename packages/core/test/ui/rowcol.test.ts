@@ -192,6 +192,16 @@ describe("View builder patterns", () => {
 		expect(column.hidden).toBe(true);
 	});
 
+	test("View builder with hideUnless", () => {
+		let myColumn = UI.Column().hideUnless(true);
+		let column = myColumn.build();
+		expect(column.hidden).toBe(false);
+
+		myColumn = UI.Column().hideUnless(false);
+		column = myColumn.build();
+		expect(column.hidden).toBe(true);
+	});
+
 	test("View builder with apply call, undefined", () => {
 		let myColumn = UI.Column().apply(undefined).bg("red");
 		let column = myColumn.build();

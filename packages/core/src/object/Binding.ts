@@ -249,10 +249,6 @@ export class Binding<T = any> {
 		source?: string | symbol | Binding | Binding.Options,
 		defaultValue?: T,
 	) {
-		// set and bind (to `this`) the bind and bind.not 'methods'
-		this.bind = ((s: any) => this._bindProperty(s)) as any;
-		this.bind.not = (s) => this._bindProperty(s).not();
-
 		// shortcut if cloning existing binding
 		if (isBinding(source)) {
 			this._path = source._path;
@@ -305,7 +301,62 @@ export class Binding<T = any> {
 	}
 
 	/** Creates a new binding to observe the specified property from any (currently bound) object */
-	declare readonly bind: Binding.BindProperty<T>;
+	get bind(): Binding.BindProperty<T> {
+		let bind = ((s: any) => this._bindProperty(s)) as Binding.BindProperty<T>;
+		Object.defineProperty(this, "bind", {
+			value: bind,
+			configurable: true,
+		});
+		return bind;
+	}
+
+	/**
+	 * Creates a new binding to observe the specified properties, combining them using AND semantics
+	 * - This method creates bindings that observe the current bound value's properties or nested properties.
+	 * @param sourcePaths The source property paths, as strings (undefined filtered out)
+	 * @returns A new binding
+	 */
+	bindAll<K extends Binding.BoundPath<NonNullable<T>>>(
+		...sourcePaths: (K | undefined)[]
+	): Binding<
+		{
+			[P in K]: Binding.BoundPathValue<T, P>;
+		}[K]
+	> {
+		let bindings = sourcePaths.map((s) => s && this.bind(s));
+		return Binding.all(...bindings);
+	}
+
+	/**
+	 * Creates a new binding to observe the specified properties, combining them using OR semantics
+	 * - This method creates bindings that observe the current bound value's properties or nested properties.
+	 * @param sourcePaths The source property paths, as strings (undefined filtered out)
+	 * @returns A new binding
+	 */
+	bindAny<K extends Binding.BoundPath<NonNullable<T>>>(
+		...sourcePaths: (K | undefined)[]
+	): Binding<
+		{
+			[P in K]: Binding.BoundPathValue<T, P>;
+		}[K]
+	> {
+		let bindings = sourcePaths.map((s) => s && this.bind(s));
+		return Binding.any(...bindings);
+	}
+
+	/**
+	 * Creates a new binding to observe the specified properties, returning true if none are truthy
+	 * - This method creates bindings that observe the current bound value's properties or nested properties.
+	 * - With a single source path, this replaces the old negated property binding helper.
+	 * @param sourcePaths The source property paths, as strings (undefined filtered out)
+	 * @returns A new binding, typed as a boolean value
+	 */
+	bindNone<K extends Binding.BoundPath<NonNullable<T>>>(
+		...sourcePaths: (K | undefined)[]
+	): Binding<boolean> {
+		let bindings = sourcePaths.map((s) => s && this.bind(s));
+		return Binding.none(...bindings);
+	}
 
 	/**
 	 * Transforms the bound value to a string, optionally using the specified format
@@ -394,9 +445,23 @@ export class Binding<T = any> {
 		return this.map((v) => values.includes(v));
 	}
 
-	/** @internal Typo/hallucination alias */
+	/**
+	 * Transforms to a boolean, true if the bound value doesn't equal any of the specified values exactly
+	 * @param values The literal value(s) to compare with
+	 * @returns A new binding, typed as a boolean
+	 */
+	notEquals(...values: T[]): Binding<boolean> {
+		return this.equals(...values).not();
+	}
+
+	/** @internal Typo/hallucination alias, undocumented */
 	eq(...values: any[]) {
 		return this.equals(...values);
+	}
+
+	/** @internal Typo/hallucination alias, undocumented */
+	ne(...values: any[]) {
+		return this.notEquals(...values);
 	}
 
 	/**
@@ -502,7 +567,7 @@ Binding.prototype.isBinding = _isBinding;
 
 export namespace Binding {
 	/**
-	 * Creates a new binding to observe the specified property from any (currently bound) object
+	 * Creates a new binding to observe the specified property
 	 * - This method creates a binding that observes both the original value, and (if the value is an object) a property or nested property. If the value is undefined or not an object, the bound value becomes undefined.
 	 * @param sourcePath The source property path, as a string
 	 * @returns A new binding, typed as the new value or undefined
@@ -511,16 +576,6 @@ export namespace Binding {
 		<K extends Binding.BoundPath<NonNullable<T>>>(
 			sourcePath: K,
 		): Binding<Binding.BoundPathValue<T, K>>;
-
-		/**
-		 * Creates a new binding to observe and negate the specified property from any (currently bound) object
-		 * - This method creates a binding that observes both the original value, and (if the value is an object) a property or nested property. The bound value is negated and becomes false or true depending on the property value.
-		 * @param sourcePath The source property path, as a string
-		 * @returns A new binding, typed as a boolean value
-		 */
-		not<K extends Binding.BoundPath<NonNullable<T>>>(
-			sourcePath: K,
-		): Binding<boolean>;
 	}
 
 	/** Options that can be passed to the {@link Binding} constructor */

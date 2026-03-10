@@ -35,7 +35,7 @@ export const FooNewView = (v: Binding<FooNewViewModel>) =>
 						.invalid(v.bind("form.errors.title").then(true))
 						.requestFocus(),
 					UI.Text()
-						.hideWhen(v.bind.not("form.errors.title"))
+						.hideUnless(v.bind("form.errors.title"))
 						.text(v.bind("form.errors.title"))
 						.textColor("danger"),
 				),
@@ -50,7 +50,7 @@ export const FooNewView = (v: Binding<FooNewViewModel>) =>
 						.type("numeric")
 						.textAlign("end"),
 					UI.Text()
-						.hideWhen(v.bind.not("form.errors.quantity"))
+						.hideUnless(v.bind("form.errors.quantity"))
 						.text(v.bind("form.errors.quantity"))
 						.textColor("danger"),
 				),

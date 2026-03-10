@@ -919,13 +919,47 @@ describe("Mapped/boolean bindings", () => {
 		parent.child.expectValue().toBe(1);
 	});
 
-	test("Property binding, plain object 1 step, negated", () => {
+	test("Property binding, plain object 1 step, bindNone", () => {
 		let { parent } = setup();
-		parent.child.bindValue(new Binding("object").bind.not("foo"));
+		parent.child.bindValue(new Binding("object").bindNone("foo"));
 		parent.child.expectValue().toBe(true);
 		parent.object = { foo: 1 };
 		parent.child.expectValue().toBe(false);
 		parent.object = { foo: 0 };
+		parent.child.expectValue().toBe(true);
+	});
+
+	test("Property binding, plain object 1 step, bindAll", () => {
+		let { parent } = setup();
+		parent.child.bindValue(new Binding("object").bindAll("foo", "bar"));
+		parent.child.expectValue().toBe(undefined);
+		parent.object = { foo: 1, bar: 2 };
+		parent.child.expectValue().toBe(2);
+		parent.object = { foo: 0, bar: 2 };
+		parent.child.expectValue().toBe(0);
+		parent.object = { foo: 1, bar: 0 };
+		parent.child.expectValue().toBe(0);
+	});
+
+	test("Property binding, plain object 1 step, bindAny", () => {
+		let { parent } = setup();
+		parent.child.bindValue(new Binding("object").bindAny("foo", "bar"));
+		parent.child.expectValue().toBe(undefined);
+		parent.object = { foo: 0, bar: 2 };
+		parent.child.expectValue().toBe(2);
+		parent.object = { foo: 1, bar: 2 };
+		parent.child.expectValue().toBe(1);
+		parent.object = { foo: 0, bar: 0 };
+		parent.child.expectValue().toBe(0);
+	});
+
+	test("Property binding, plain object 2 steps, bindNone", () => {
+		let { parent } = setup();
+		parent.child.bindValue(new Binding("object").bindNone("foo.bar"));
+		parent.child.expectValue().toBe(true);
+		parent.object = { foo: { bar: 1 } };
+		parent.child.expectValue().toBe(false);
+		parent.object = { foo: { bar: 0 } };
 		parent.child.expectValue().toBe(true);
 	});
 

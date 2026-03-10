@@ -51,8 +51,8 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 							.background("transparent")
 							.minWidth(0)
 							.borderRadius(4)
-							.pressed(v.bind.not("errorFilter"))
-							.textColor(v.bind.not("errorFilter").then("blue"))
+							.pressed(v.bind("errorFilter").not())
+							.textColor(v.bind("errorFilter").not().then("blue"))
 							.onClick("FilterAll"),
 						UI.Button("errors")
 							.small()
@@ -123,12 +123,12 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 							.textAlign("end")
 							.position({ gravity: "overlay", top: 2, end: 4 }),
 						UI.Text(item.bind("expr"))
-							.hideWhen(item.bind.not("expr"))
+							.hideUnless(item.bind("expr"))
 							.width("100%")
 							.fontSize(12)
 							.fontFamily("monospace"),
 						UI.Text(item.bind("text"))
-							.hideWhen(item.bind.not("text"))
+							.hideUnless(item.bind("text"))
 							.width("100%")
 							.style(
 								item
@@ -149,7 +149,7 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 									),
 							),
 						UI.Text(item.bind("dataDisplay"))
-							.hideWhen(item.bind.not("dataDisplay"))
+							.hideUnless(item.bind("dataDisplay"))
 							.width("100%")
 							.padding({ start: 16 })
 							.fontFamily("monospace")

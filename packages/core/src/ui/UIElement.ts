@@ -322,6 +322,20 @@ export namespace UIElement {
 		}
 
 		/**
+		 * Hides the element unless a specified condition is true.
+		 * - Elements are still rendered even when they are hidden; use {@link UIShowView} to render views conditionally.
+		 * @param condition A value or binding; if the value is falsy, the element will be hidden.
+		 * @returns The builder instance for chaining.
+		 * @see {@link UIElement.hidden}
+		 */
+		hideUnless(condition: BindingOrValue<any>) {
+			this.initializer.update(condition, function (value) {
+				this.hidden = !value;
+			});
+			return this;
+		}
+
+		/**
 		 * Sets the position of the element within its parent.
 		 *
 		 * @summary

@@ -62,7 +62,7 @@ const ToolbarRow = (v: Binding<MainOverlayView>) =>
 				.pressed(v.bind("mode").equals("picker")),
 			UI.Spacer(4),
 			BadgeButton(v.bind("log.numErrors"))
-				.hideWhen(v.bind.not("log.numErrors"))
+				.hideUnless(v.bind("log.numErrors"))
 				.onClick("ShowErrors"),
 			UI.Spacer(),
 			UI.IconButton(UI.icons.more, 16).ghost().onClick("MoreMenu"),
@@ -82,7 +82,7 @@ export const MainOverlayViewBody = (v: Binding<MainOverlayView>) =>
 			// Minimized: button
 			UI.Column()
 				.effect("drag-modal", true)
-				.hideWhen(v.bind("mode").equals("minimized").not())
+				.hideUnless(v.bind("mode").equals("minimized"))
 				.border(
 					2,
 					v.bind("log.numErrors").then("danger", "success"),
@@ -110,9 +110,7 @@ export const MainOverlayViewBody = (v: Binding<MainOverlayView>) =>
 				.bg("background"),
 
 			// Not minimized, docked: plain toolbar
-			UI.Column(ToolbarRow(v))
-				.hideWhen(v.bind.not("docked"))
-				.position("stretch"),
+			UI.Column(ToolbarRow(v)).hideUnless(v.bind("docked")).position("stretch"),
 
 			// Content
 			UI.Column()
