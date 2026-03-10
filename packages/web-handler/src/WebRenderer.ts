@@ -54,7 +54,11 @@ export class WebRenderer extends RenderContext {
 						prevFocus = document.activeElement as any;
 					}
 				}
-				if (mount) mount.update(output as any);
+				if (mount) {
+					mount.update(output as any);
+					let title = this._getTitle(output.source);
+					if (title) document.title = title;
+				}
 				if (afterRender) afterRender(output);
 			});
 			return callback;
@@ -140,7 +144,6 @@ export class WebRenderer extends RenderContext {
 				mount.createPageElement(
 					place.background || this._pageBackground,
 					scroll,
-					this._getTitle(output.source),
 				);
 				break;
 			case "modal":

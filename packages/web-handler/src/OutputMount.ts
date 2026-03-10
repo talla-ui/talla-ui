@@ -25,12 +25,10 @@ export class OutputMount {
 	createPageElement(
 		background: UIColor | UIGradient | string,
 		scroll?: boolean,
-		title?: string,
 	) {
 		let elt = (this._outer = document.createElement("web-handler-page-root"));
 		elt.ariaAtomic = "true";
 		elt.className = CLASS_PAGE_ROOT;
-		elt.dataset.title = title || "";
 		elt.dataset.mode = scroll ? "page" : "screen";
 		if (scroll) elt.style.overflow = "auto";
 
@@ -62,7 +60,6 @@ export class OutputMount {
 		} else {
 			document.body.appendChild(elt);
 		}
-		this._updateTitle();
 	}
 
 	/** Creates an overlay or modal root element */
@@ -300,7 +297,6 @@ export class OutputMount {
 		return new Promise((resolve) => {
 			app.schedule(() => {
 				this._outer!.remove();
-				this._updateTitle();
 				resolve();
 			}, remainingWait);
 		});
@@ -328,18 +324,6 @@ export class OutputMount {
 		this._outer.style.right = override?.right ? override.right + "px" : "";
 		this._outer.style.height = override?.height ? override.height + "px" : "";
 		this._outer.style.width = override?.width ? override.width + "px" : "";
-	}
-
-	/** Updates the document title according to the title of the last mount in the DOM */
-	private _updateTitle() {
-		let pageRoots = document.querySelectorAll("web-handler-page-root");
-		for (let i = pageRoots.length - 1; i >= 0; i--) {
-			let title = (pageRoots[i] as HTMLElement).dataset.title;
-			if (title) {
-				document.title = title;
-				break;
-			}
-		}
 	}
 
 	_outer?: HTMLElement;
