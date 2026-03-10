@@ -2,6 +2,14 @@ import { Schema, StringConvertible } from "@talla-ui/util";
 import { ObservableObject } from "../object/index.js";
 
 /**
+ * A type that determines how form field validation is triggered
+ * - `demand` — Fields are only validated when {@link FormState.validate()} is called explicitly. The {@link FormState.set()} method never triggers validation.
+ * - `auto` — Fields are validated automatically by {@link FormState.set()} after {@link FormState.validate()} has been called at least once. Before that, set() does not validate. This is the default mode.
+ * - `immediate` — Fields are validated immediately by {@link FormState.set()} on every change, except when setting an undefined field to an empty string.
+ */
+export type FormValidationMode = "demand" | "auto" | "immediate";
+
+/**
  * An object that contains form field data, with validation rules
  *
  * @description
@@ -10,6 +18,8 @@ import { ObservableObject } from "../object/index.js";
  * The form state object provides methods to get, set, and clear field values, as well as a way to validate current values according to a schema or custom validation functions. Form values and validation errors can be bound to any other view properties to be displayed in the UI.
  *
  * Validation is performed using a {@link Schema} instance. Errors must be added as strings or {@link StringConvertible} values (e.g. the result of {@link fmt()}) using the `required()` or `error()` methods of each field in the schema.
+ *
+ * The validation mode determines when fields are validated — see {@link FormValidationMode} and {@link FormState.setValidation()}.
  *
  * To use a FormState object with {@link UITextField} or {@link UIToggle} input elements, use their `.formStateValue()` builder method.
  *
@@ -54,6 +64,16 @@ export class FormState<
 	}
 
 	/**
+	 * The current validation mode
+	 * - Use the {@link setValidation()} method to change this value.
+	 * @see {@link FormValidationMode}
+	 * @readonly
+	 */
+	get validationMode(): FormValidationMode {
+		return this._mode;
+	}
+
+	/**
 	 * An object that contains current form field values
 	 * - Do not set field values here. Instead, use the {@link FormState.set()} method to update field values.
 	 * - These values are not (necessarily) valid, and are typed as `unknown`. To validate form fields and get the result, use the {@link validate()} method.
@@ -67,7 +87,7 @@ export class FormState<
 
 	/**
 	 * An object that contains validation error messages, if any
-	 * - Errors are set by the {@link validate()} method. They are also set by the {@link set()} method, but only after {@link validate()} has been called at least once.
+	 * - This property is updated according to the current validation mode — see {@link FormValidationMode}.
 	 * - Errors (and values) can be cleared using the {@link clear()} method.
 	 * @readonly
 	 */
@@ -78,8 +98,8 @@ export class FormState<
 		Object.create(null);
 
 	/**
-	 * True if there are currently no recorded errors.
-	 * - This field is updated by the {@link validate()} method. It is also updated by the {@link set()} method, but only after {@link validate()} has been called at least once. Before then, this field is always `true`.
+	 * True if there are currently no recorded errors
+	 * - This property is updated according to the current validation mode — see {@link FormValidationMode}.
 	 * - This field is set back to `true` by the {@link clear()} method.
 	 * @readonly
 	 */
@@ -90,7 +110,7 @@ export class FormState<
 
 	/**
 	 * Sets the value of the specified form field
-	 * @summary This method sets a form field to the provided value. If the {@link validate()} method has been called at least once (and {@link clear()} hasn't been called after that), the new field value is also checked against the validation schema, updating the {@link errors} and {@link valid} properties. If the new value is different from the current value, a change event will also be emitted on the form state itself, updating all bindings for values and errors.
+	 * @summary This method sets a form field to the provided value. The field may also be validated depending on the current validation mode — see {@link FormValidationMode}. If the new value is different from the current value, a change event is emitted on the form state itself, updating all bindings for values and errors.
 	 * @param name The name of the field to set
 	 * @param value The new field value
 	 */
@@ -103,7 +123,7 @@ export class FormState<
 		this._values[name] = value;
 		if (
 			this._validated ||
-			(this._immediate && (oldValue !== undefined || value !== ""))
+			(this._mode === "immediate" && (oldValue !== undefined || value !== ""))
 		) {
 			this.validateField(name);
 		}
@@ -127,14 +147,17 @@ export class FormState<
 	/**
 	 * Validates the current form values according to the validation schema
 	 * - This method returns the validated fields as a plain object, and also updates the {@link errors} and {@link valid} properties.
-	 * - After this method has been called at least once, fields are checked automatically whenever a field is updated, maintaining the validation status in the {@link errors} and {@link valid} properties. To stop automatic validation until this method is called again, use the {@link clear()} method.
+	 * - In `auto` mode (default), after this method has been called at least once, fields are also validated automatically whenever a field is updated using {@link set()}. To stop automatic validation until this method is called again, use the {@link clear()} method.
+	 * - In `demand` mode, this method does not enable automatic validation.
+	 * - In `immediate` mode, fields are always validated automatically, regardless of whether this method has been called.
+	 * @see {@link FormValidationMode}
 	 */
 	validate(): TSchema | undefined {
 		let validator = this._validator;
 		if (!validator) return;
 		let wasValid = this._valid;
 		let result = validator.safeParse(this._values);
-		this._validated = true;
+		if (this._mode === "auto") this._validated = true;
 		if (result.success) {
 			this._errors = Object.create(null);
 			this._valid = true;
@@ -171,20 +194,17 @@ export class FormState<
 	}
 
 	/**
-	 * Enables field validation immediately upon setting a value
-	 * - Call this method after creating the form state object to enable validation on a per-field basis, rather than waiting for the entire form to be validated using {@link validate()}.
-	 * - If enabled, fields are validated immediately when they're set, except when setting an undefined field to an empty string value.
-	 * @param enable True (default) to enable immediate validation, false to disable it
+	 * Sets the validation mode for this form state
+	 * @param mode The validation mode to use
 	 * @returns The form state object itself, for chaining
-	 * @see {@link set()}
-	 * @see {@link validate()}
+	 * @see {@link FormValidationMode}
 	 */
-	immediateValidation(enable = true) {
-		this._immediate = enable;
+	setValidation(mode: FormValidationMode) {
+		this._mode = mode;
 		return this;
 	}
 
 	private _validator?: Schema<Schema.Builder<TSchema>>;
 	private _validated = false;
-	private _immediate?: boolean;
+	private _mode: FormValidationMode = "auto";
 }

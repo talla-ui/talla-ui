@@ -9,6 +9,7 @@ import {
 	Binding,
 	BindingOrValue,
 	FormState,
+	FormValidationMode,
 	ObservableEvent,
 	UI,
 	UIRow,
@@ -110,6 +111,82 @@ test("Validation", () => {
 	expect(ctx.valid).toBe(true);
 	expect(ctx.validate()).toBeDefined();
 	expect(counter.changes, "Change counter").toBe(6);
+});
+
+test("Validation mode defaults to auto", () => {
+	let ctx = new FormState();
+	expect(ctx.validationMode).toBe("auto");
+	let mode: FormValidationMode = ctx.validationMode;
+	expect(mode).toBe("auto");
+});
+
+test("Validation mode: setValidation is chainable", () => {
+	let ctx = new FormState().setValidation("immediate");
+	expect(ctx.validationMode).toBe("immediate");
+});
+
+test("Validation mode: demand", () => {
+	let ctx = new FormState(
+		(b) =>
+			b.object({
+				foo: b
+					.string()
+					.required("Foo is required")
+					.check((s) => s.length >= 3)
+					.error("Too short"),
+			}),
+	).setValidation("demand");
+
+	// validate() should work but NOT enable auto-validation on set()
+	expect(ctx.validate()).toBeUndefined();
+	expect(ctx.valid).toBe(false);
+	expect(ctx.errors).toHaveProperty("foo");
+
+	// set after validate() should NOT trigger field validation in demand mode
+	ctx.set("foo", "abc");
+	expect(ctx.errors).toHaveProperty("foo"); // error stays from previous validate()
+	expect(ctx.valid).toBe(false);
+
+	// only explicit validate() updates state
+	expect(ctx.validate()).toBeDefined();
+	expect(ctx.valid).toBe(true);
+	expect(ctx.errors).not.toHaveProperty("foo");
+});
+
+test("Validation mode: immediate", () => {
+	let ctx = new FormState(
+		(b) =>
+			b.object({
+				foo: b
+					.string()
+					.required("Foo is required")
+					.check((s) => s.length >= 3)
+					.error("Too short"),
+			}),
+	).setValidation("immediate");
+
+	// set should validate immediately (no need to call validate() first)
+	ctx.set("foo", "b");
+	expect(ctx.errors).toHaveProperty("foo");
+	expect(ctx.valid).toBe(false);
+
+	ctx.set("foo", "abc");
+	expect(ctx.errors).not.toHaveProperty("foo");
+	expect(ctx.valid).toBe(true);
+});
+
+test("Validation mode: immediate skips undefined to empty string", () => {
+	let ctx = new FormState(
+		(b) =>
+			b.object({
+				foo: b.string().required("Foo is required"),
+			}),
+	).setValidation("immediate");
+
+	// setting undefined field to empty string should NOT validate
+	ctx.set("foo", "");
+	expect(ctx.errors).not.toHaveProperty("foo");
+	expect(ctx.valid).toBe(true);
 });
 
 test("Validation using existing Schema", () => {
