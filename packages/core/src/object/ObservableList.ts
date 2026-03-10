@@ -226,7 +226,7 @@ export class ObservableList<
 	 * @param insert The objects to insert into the list
 	 * @returns An array containing the objects that were removed
 	 */
-	splice(item?: T, removeCount?: number, ...insert: T[]) {
+	replaceAt(item?: T, removeCount?: number, ...insert: T[]) {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 		if (item != null && !(item instanceof ObservableObject))
 			throw invalidArgErr("item");
@@ -251,7 +251,7 @@ export class ObservableList<
 	 * @param replacement The object to replace the item with
 	 * @error This method throws an error if the item isn't in the list, or if the replacement object is already in the list.
 	 */
-	replaceObject(item: T, replacement: T) {
+	replace(item: T, replacement: T) {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 		if (!replacement || replacement.isUnlinked())
 			throw invalidArgErr("replace");

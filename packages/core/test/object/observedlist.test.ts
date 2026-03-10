@@ -107,119 +107,119 @@ describe("Basic adding and removing", () => {
 		expect(list.takeLast(10)).toEqual([a, c]);
 	});
 
-	test("Splice: empty result", () => {
+	test("ReplaceAt: empty result", () => {
 		let list = new ObservableList(a, b, c);
-		expect(list.splice()).toEqual([]);
-		expect(list.splice(undefined, 0)).toEqual([]);
-		expect(list.splice(undefined, 3)).toEqual([]);
-		expect(list.splice(a, 0)).toEqual([]);
+		expect(list.replaceAt()).toEqual([]);
+		expect(list.replaceAt(undefined, 0)).toEqual([]);
+		expect(list.replaceAt(undefined, 3)).toEqual([]);
+		expect(list.replaceAt(a, 0)).toEqual([]);
 
 		// doesn't throw if target is not in the list
-		expect(list.splice(new NamedObject("d"))).toEqual([]);
+		expect(list.replaceAt(new NamedObject("d"))).toEqual([]);
 
 		// throws when target is invalid
-		expect(() => list.splice({} as any)).toThrowError();
+		expect(() => list.replaceAt({} as any)).toThrowError();
 	});
 
-	test("Splice: complete result, empty list (undefined)", () => {
+	test("ReplaceAt: complete result, empty list (undefined)", () => {
 		let list = new ObservableList(a, b, c);
-		expect(list.splice(a)).toEqual([a, b, c]);
+		expect(list.replaceAt(a)).toEqual([a, b, c]);
 		expect(list.length).toBe(0);
 		expect(list.first() || list.last()).toBeUndefined();
 	});
 
-	test("Splice: complete result, empty list (number)", () => {
+	test("ReplaceAt: complete result, empty list (number)", () => {
 		let list = new ObservableList(a, b, c);
-		expect(list.splice(a, 3)).toEqual([a, b, c]);
+		expect(list.replaceAt(a, 3)).toEqual([a, b, c]);
 		expect(list.length).toBe(0);
 		expect(list.first() || list.last()).toBeUndefined();
 	});
 
-	test("Splice: partial result, partial list", () => {
+	test("ReplaceAt: partial result, partial list", () => {
 		// take from end
 		let list = new ObservableList(a, b, c);
-		expect(list.splice(b, 2)).toEqual([b, c]);
+		expect(list.replaceAt(b, 2)).toEqual([b, c]);
 		expect(list.length).toBe(1);
 		expect(list.first()).toBe(a);
 		expect(list.last()).toBe(a);
 
 		// take from start
 		list = new ObservableList(a, b, c);
-		expect(list.splice(a, 2)).toEqual([a, b]);
+		expect(list.replaceAt(a, 2)).toEqual([a, b]);
 		expect(list.length).toBe(1);
 		expect(list.first()).toBe(c);
 		expect(list.last()).toBe(c);
 
 		// take from middle
 		list = new ObservableList(a, b, c);
-		expect(list.splice(b, 1)).toEqual([b]);
+		expect(list.replaceAt(b, 1)).toEqual([b]);
 		expect(list.length).toBe(2);
 		expect(list.toArray()).toEqual([a, c]);
 		expect(list.last()).toBe(c);
 	});
 
-	test("Splice: insert without removing", () => {
+	test("ReplaceAt: insert without removing", () => {
 		// insert at end
 		let list = new ObservableList(a, b);
-		expect(list.splice(undefined, 0, c)).toEqual([]);
+		expect(list.replaceAt(undefined, 0, c)).toEqual([]);
 		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, b, c]);
 		expect(list.last()).toBe(c);
 
 		// insert at start
 		list = new ObservableList(b, c);
-		expect(list.splice(b, 0, a)).toEqual([]);
+		expect(list.replaceAt(b, 0, a)).toEqual([]);
 		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, b, c]);
 		expect(list.first()).toBe(a);
 
 		// insert in middle
 		list = new ObservableList(a, c);
-		expect(list.splice(c, 0, b)).toEqual([]);
+		expect(list.replaceAt(c, 0, b)).toEqual([]);
 		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, b, c]);
 	});
 
-	test("Splice: remove and insert", () => {
+	test("ReplaceAt: remove and insert", () => {
 		let d = new NamedObject("d");
 
 		// remove end (undefined)
 		let list = new ObservableList(a, b, c);
-		expect(list.splice(c, undefined, d)).toEqual([c]);
+		expect(list.replaceAt(c, undefined, d)).toEqual([c]);
 		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, b, d]);
 		expect(list.last()).toBe(d);
 
 		// remove end (specific)
 		list = new ObservableList(a, b, c);
-		expect(list.splice(c, 1, d)).toEqual([c]);
+		expect(list.replaceAt(c, 1, d)).toEqual([c]);
 		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, b, d]);
 		expect(list.last()).toBe(d);
 
 		// remove start
 		list = new ObservableList(a, b, c);
-		expect(list.splice(a, 1, d)).toEqual([a]);
+		expect(list.replaceAt(a, 1, d)).toEqual([a]);
 		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([d, b, c]);
 		expect(list.first()).toBe(d);
 
 		// remove middle
 		list = new ObservableList(a, b, c);
-		expect(list.splice(b, 1, d)).toEqual([b]);
+		expect(list.replaceAt(b, 1, d)).toEqual([b]);
 		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, d, c]);
 
 		// remove and put back
 		list = new ObservableList(a, b, c);
-		expect(list.splice(b, 1, d, b)).toEqual([b]);
+		expect(list.replaceAt(b, 1, d, b)).toEqual([b]);
 		expect(list.length).toBe(4);
 		expect(list.toArray()).toEqual([a, d, b, c]);
 	});
 
-	test("Splice: string value as number", () => {
+	test("ReplaceAt: string value as number", () => {
 		let list = new ObservableList(a, b, c);
-		expect(list.splice(a, "2" as any)).toEqual([a, b]);
+		expect(list.replaceAt(a, "2" as any)).toEqual([a, b]);
 		expect(list.length).toBe(1);
 		expect(list.first()).toBe(c);
 		expect(list.last()).toBe(c);
@@ -229,10 +229,10 @@ describe("Basic adding and removing", () => {
 		let list = new ObservableList(a, b, c);
 		let d = new NamedObject("d");
 		let e = new NamedObject("e");
-		list.replaceObject(b, d);
+		list.replace(b, d);
 		expect(list.length).toBe(3);
 		expect(list.toArray()).toEqual([a, d, c]);
-		list.replaceObject(d, e);
+		list.replace(d, e);
 		expect(list.toArray()).toEqual([a, e, c]);
 	});
 
@@ -298,7 +298,7 @@ describe("Basic adding and removing", () => {
 		expect(() => list.clear()).not.toThrowError();
 		expect(() => list.remove(a)).not.toThrowError();
 		expect(() => list.add(a)).toThrowError();
-		expect(() => list.splice(a)).toThrowError();
+		expect(() => list.replaceAt(a)).toThrowError();
 		expect(() => list.replaceAll([])).toThrowError();
 		expect(() => list.reverse()).toThrowError();
 		expect(list.get(0)).toBeUndefined();
