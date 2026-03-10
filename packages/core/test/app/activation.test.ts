@@ -440,13 +440,13 @@ describe("AppContext.activities", () => {
 			.toBe(true);
 	});
 
-	test("First matching route wins", async () => {
+	test("Most specific route wins regardless of registration order", async () => {
 		let specificActivity = new Activity();
 		let paramActivity = new Activity();
-		// register specific route first
+		// register param route FIRST, then specific — specific should still win
 		app.addRoutes({
-			"users/admin": specificActivity,
 			"users/:userId": paramActivity,
+			"users/admin": specificActivity,
 		});
 
 		app.navigation?.set("users/admin");
@@ -455,7 +455,7 @@ describe("AppContext.activities", () => {
 			.toBe(true);
 		expect(paramActivity.isActive()).toBe(false);
 
-		// non-admin path should match second route
+		// non-admin path should match param route
 		app.navigation?.set("users/123");
 		await expect
 			.poll(() => paramActivity.isActive(), { interval: 5, timeout: 100 })
@@ -705,7 +705,7 @@ describe("AppContext.activities", () => {
 		expect(activity.isActive()).toBe(true);
 	});
 
-	test("First param route wins when multiple param routes match", async () => {
+	test("Registration order breaks ties for equal-specificity routes", async () => {
 		let route1 = new Activity();
 		let route2 = new Activity();
 		app.addRoutes({
@@ -717,6 +717,44 @@ describe("AppContext.activities", () => {
 			.poll(() => route1.isActive(), { interval: 5, timeout: 100 })
 			.toBe(true);
 		expect(route2.isActive()).toBe(false);
+	});
+
+	test("Specificity: non-wildcard beats wildcard for same path", async () => {
+		let paramActivity = new Activity();
+		let wildcardActivity = new Activity();
+		// register wildcard first, but param should still win
+		app.addRoutes({
+			"files/*": wildcardActivity,
+			"files/:name": paramActivity,
+		});
+
+		app.navigation?.set("files/readme");
+		await expect
+			.poll(() => paramActivity.isActive(), { interval: 5, timeout: 100 })
+			.toBe(true);
+		expect(wildcardActivity.isActive()).toBe(false);
+
+		// deeper path only matches wildcard
+		app.navigation?.set("files/docs/readme");
+		await expect
+			.poll(() => wildcardActivity.isActive(), { interval: 5, timeout: 100 })
+			.toBe(true);
+		expect(paramActivity.isActive()).toBe(false);
+	});
+
+	test("Specificity: longer wildcard prefix beats shorter", async () => {
+		let shortWild = new Activity();
+		let longWild = new Activity();
+		app.addRoutes({
+			"*": shortWild,
+			"repo/:owner/*": longWild,
+		});
+
+		app.navigation?.set("repo/acme/src/main.ts");
+		await expect
+			.poll(() => longWild.isActive(), { interval: 5, timeout: 100 })
+			.toBe(true);
+		expect(shortWild.isActive()).toBe(false);
 	});
 
 	test("Params object is replaced, not mutated (no stale refs)", async () => {

@@ -7,6 +7,7 @@ interface RouteEntry {
 	pattern: string;
 	segments: string[];
 	wildcard?: boolean;
+	order: number;
 	args: ActivityRouter.RouteArg<any>[];
 }
 
@@ -100,7 +101,7 @@ export class ActivityRouter extends ObservableObject {
 	 * - Pattern segments starting with `:` are treated as parameters (e.g. `users/:userId`).
 	 * - A `*` segment at the end matches any remaining path segments; the matched portion is available as the `path` parameter. A bare `*` matches any path including the root, with `path` set to an empty string when no segments remain.
 	 * - Factory functions receive the extracted parameters as an argument and may return an Activity instance, or undefined. Returning no activity skips activation for that route arg. If a factory throws, the error propagates to the global error handler.
-	 * - Routes are matched in registration order (first match wins). Register more specific patterns before general ones.
+	 * - Routes are matched by specificity (most specific match wins). Static segments take priority over parameterized segments, longer patterns take priority over shorter ones, and non-wildcard routes take priority over wildcard routes. Registration order is used as a tiebreaker when routes have equal specificity.
 	 * @param pattern The route pattern to match (e.g. `"users/:userId"`)
 	 * @param args One or more Activity instances or factory functions
 	 * @error Throws if the pattern is invalid (leading/trailing slashes, empty segments, dots, bare `:`, or `*` not at end)
@@ -112,8 +113,10 @@ export class ActivityRouter extends ObservableObject {
 			pattern,
 			segments: parsed.segments,
 			wildcard: parsed.wildcard,
+			order: this._routeOrder++,
 			args: args as any,
 		});
+		this._sortRoutes();
 
 		// attach all activities passed by reference
 		for (let arg of args) {
@@ -138,7 +141,7 @@ export class ActivityRouter extends ObservableObject {
 
 	/**
 	 * Routes to matching activities for the given path
-	 * - This method matches the path against registered route patterns (first match wins). It computes the diff between the current and new active sets, deactivating removed activities and activating new ones.
+	 * - This method matches the path against registered route patterns (most specific match wins). It computes the diff between the current and new active sets, deactivating removed activities and activating new ones.
 	 * - Activities that appear in both the old and new active sets are not deactivated or reactivated.
 	 * - Concurrent calls are safe, only the most recent route takes effect.
 	 * @param path The path for which to activate matching activities.
@@ -149,7 +152,7 @@ export class ActivityRouter extends ObservableObject {
 		// claim the current navigation attempt before publishing route state
 		let navIdx = ++this._navIdx;
 
-		// find the first matching route, then publish its state only if still current
+		// find the most specific matching route, then publish its state only if still current
 		let match = this._findRouteMatch(path);
 		if (navIdx !== this._navIdx || this.isUnlinked()) return;
 		this.params = match?.params || {};
@@ -177,7 +180,20 @@ export class ActivityRouter extends ObservableObject {
 		return first || resolved.newActive.values().next().value;
 	}
 
-	/** Finds the first route that matches the given path */
+	/** Sorts routes by specificity: static (3) > param (2) > wildcard (1) > root (0), registration order as tiebreaker */
+	private _sortRoutes() {
+		let score = (route: RouteEntry) => {
+			let s = route.segments.length || route.wildcard ? 0 : 3;
+			if (route.wildcard) s++;
+			return route.segments.reduce(
+				(s, seg) => s + (seg.startsWith(":") ? 2 : 3),
+				s,
+			);
+		};
+		this._routes.sort((a, b) => score(b) - score(a) || a.order - b.order);
+	}
+
+	/** Finds the most specific route that matches the given path */
 	private _findRouteMatch(path: string): RouteMatch | undefined {
 		let pathSegments = path ? path.split("/") : [];
 		for (let route of this._routes) {
@@ -297,6 +313,7 @@ export class ActivityRouter extends ObservableObject {
 	}
 
 	private _navIdx = 0;
+	private _routeOrder = 0;
 	private _activities: ObservableList<Activity>;
 	private _routes: RouteEntry[] = [];
 	private _factoryCreated = new Set<Activity>();
