@@ -266,6 +266,12 @@ export function makeBaseCSS(): Record<string, {}> {
 			mozAppearance: "none",
 			appearance: "none",
 		},
+		[`.${CLASS_UI}.${CLASS_TOGGLE}>input[disabled]`]: {
+			opacity: 0.4,
+		},
+		[`.${CLASS_UI}.${CLASS_TOGGLE}>label[disabled]`]: {
+			opacity: 0.5,
+		},
 		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.none}>input`]: {
 			display: "none",
 		},
@@ -281,7 +287,7 @@ export function makeBaseCSS(): Record<string, {}> {
 			color: "inherit",
 			borderStyle: "solid",
 			borderWidth: "1px",
-			borderColor: "inherit",
+			borderColor: "currentColor",
 			borderRadius: "2px",
 			background: "#fff",
 			width: "1rem",
