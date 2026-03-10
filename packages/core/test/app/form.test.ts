@@ -126,15 +126,14 @@ test("Validation mode: setValidation is chainable", () => {
 });
 
 test("Validation mode: demand", () => {
-	let ctx = new FormState(
-		(b) =>
-			b.object({
-				foo: b
-					.string()
-					.required("Foo is required")
-					.check((s) => s.length >= 3)
-					.error("Too short"),
-			}),
+	let ctx = new FormState((b) =>
+		b.object({
+			foo: b
+				.string()
+				.required("Foo is required")
+				.check((s) => s.length >= 3)
+				.error("Too short"),
+		}),
 	).setValidation("demand");
 
 	// validate() should work but NOT enable auto-validation on set()
@@ -154,15 +153,14 @@ test("Validation mode: demand", () => {
 });
 
 test("Validation mode: immediate", () => {
-	let ctx = new FormState(
-		(b) =>
-			b.object({
-				foo: b
-					.string()
-					.required("Foo is required")
-					.check((s) => s.length >= 3)
-					.error("Too short"),
-			}),
+	let ctx = new FormState((b) =>
+		b.object({
+			foo: b
+				.string()
+				.required("Foo is required")
+				.check((s) => s.length >= 3)
+				.error("Too short"),
+		}),
 	).setValidation("immediate");
 
 	// set should validate immediately (no need to call validate() first)
@@ -176,11 +174,10 @@ test("Validation mode: immediate", () => {
 });
 
 test("Validation mode: immediate skips undefined to empty string", () => {
-	let ctx = new FormState(
-		(b) =>
-			b.object({
-				foo: b.string().required("Foo is required"),
-			}),
+	let ctx = new FormState((b) =>
+		b.object({
+			foo: b.string().required("Foo is required"),
+		}),
 	).setValidation("immediate");
 
 	// setting undefined field to empty string should NOT validate
