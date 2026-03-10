@@ -64,8 +64,8 @@ export class UITextField extends UIElement {
 	readOnly = false;
 
 	/**
-	 * A set of flags that determine the text field's visual style.
-	 * - The variant can be set using `UI.TextField()` builder methods, e.g. {@link UITextField.TextFieldBuilder.ghost ghost()}.
+	 * A set of flags that determine the text field's (internal) visual style.
+	 * - The variant can be set using `UI.TextField()` builder methods, e.g. {@link UITextField.TextFieldBuilder.ghost ghost()}. Setting custom variants directly using {@link UITextField.TextFieldBuilder.textFieldVariant textFieldVariant()} is possible, but not encouraged.
 	 * - When updating the variant at runtime, always set this property to a new object rather than mutating the existing object.
 	 */
 	textFieldVariant: Record<string, boolean | undefined> = {};
@@ -223,7 +223,7 @@ export namespace UITextField {
 
 		/**
 		 * Enables (or disables) the specified text field style variant.
-		 * - Standard text field style variants can be enabled using specific builder methods, e.g. {@link ghost()}.
+		 * - Standard text field style variants can be enabled using specific builder methods, e.g. {@link ghost()}. Using this method to set custom variants is possible, but not encouraged for regular use.
 		 * @param variant The variant name.
 		 * @param enabled True to enable, or a binding; defaults to true.
 		 * @returns The builder instance for chaining.

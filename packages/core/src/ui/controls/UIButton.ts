@@ -75,8 +75,8 @@ export class UIButton extends UIElement {
 	disabled = false;
 
 	/**
-	 * A set of flags that determine the button's visual style.
-	 * - The variant can be set using `UI.Button()` builder methods, e.g. {@link UIButton.ButtonBuilder.ghost ghost()}.
+	 * A set of flags that determine the button's (internal) visual style.
+	 * - The variant can be set using `UI.Button()` builder methods, e.g. {@link UIButton.ButtonBuilder.ghost ghost()}. Setting custom variants directly using {@link UIButton.ButtonBuilder.buttonVariant buttonVariant()} is possible, but not encouraged.
 	 * - When updating the variant at runtime, always set this property to a new object rather than mutating the existing object.
 	 */
 	buttonVariant: Record<string, boolean | undefined> = {};
@@ -178,7 +178,7 @@ export namespace UIButton {
 
 		/**
 		 * Enables (or disables) the specified button style variant.
-		 * - Standard button style variants can be enabled using specific builder methods, e.g. {@link ghost()}.
+		 * - Standard button style variants can be enabled using specific builder methods, e.g. {@link ghost()}. Using this method to set custom variants is possible, but not encouraged for regular use.
 		 * @param variant The variant name.
 		 * @param enabled True to enable, or a binding; defaults to true.
 		 * @returns The builder instance for chaining.

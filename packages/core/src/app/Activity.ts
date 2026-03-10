@@ -219,7 +219,7 @@ export class Activity extends ObservableObject {
 	 *
 	 * - The dialog activity's render mode is set to `dialog` before activation. The dialog can override this in its {@link afterActive} method (e.g. to show as a page on smaller viewports).
 	 * - The dialog activity is attached to this activity, and is automatically unlinked when this activity is deactivated or unlinked.
-	 * - The returned promise resolves with the (now unlinked) dialog activity, so that results can be read from its properties.
+	 * - The returned promise resolves with the (now unlinked) dialog activity, so that results can be read from its properties, e.g. a `result` property that's only set when confirmed.
 	 *
 	 * @param dialog The dialog activity to show
 	 * @returns A promise that resolves with the dialog activity after it has been unlinked
@@ -227,8 +227,8 @@ export class Activity extends ObservableObject {
 	 * @example
 	 * // Show a dialog and handle the result
 	 * let dialog = await this.showDialogAsync(new MyDialogActivity());
-	 * if (dialog.confirmed) {
-	 *   // ... handle confirmation
+	 * if (dialog.result) {
+	 *   // ... handle result
 	 * }
 	 */
 	async showDialogAsync<T extends Activity>(dialog: T): Promise<T> {
