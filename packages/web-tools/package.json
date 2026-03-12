@@ -1,6 +1,6 @@
 {
 	"name": "@talla-ui/web-tools",
-	"version": "4.0.0-dev.106",
+	"version": "4.0.0",
 	"publishConfig": {
 		"tag": "next",
 		"access": "public"
@@ -41,7 +41,7 @@
 		"dist"
 	],
 	"peerDependencies": {
-		"@talla-ui/core": "4.0.0-dev.106",
+		"@talla-ui/core": "4.0.0",
 		"@talla-ui/web-handler": "4.0.0-dev.105"
 	},
 	"devDependencies": {

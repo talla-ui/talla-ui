@@ -1,6 +1,6 @@
 {
 	"name": "@talla-ui/hmr",
-	"version": "4.0.0-dev.106",
+	"version": "4.0.0",
 	"publishConfig": {
 		"tag": "next",
 		"access": "public"
@@ -43,7 +43,7 @@
 		"dist"
 	],
 	"peerDependencies": {
-		"@talla-ui/core": "4.0.0-dev.106",
+		"@talla-ui/core": "4.0.0",
 		"vite": "^5.0.0 || ^6.0.0"
 	},
 	"peerDependenciesMeta": {
