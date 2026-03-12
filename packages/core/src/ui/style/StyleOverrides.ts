@@ -1,5 +1,4 @@
 import type { UIColor } from "./UIColor.js";
-import type { UIGradient } from "./UIGradient.js";
 
 /**
  * A type that defines style properties for UI elements.
@@ -69,8 +68,8 @@ export type StyleOverrides = {
 	strikeThrough?: boolean;
 	/** True if text can be selected by the user. */
 	userTextSelect?: boolean;
-	/** The background style or color, or a gradient. */
-	background?: UIColor | UIGradient | string;
+	/** The background color or gradient. */
+	background?: UIColor.BackgroundType;
 	/** The text color. */
 	textColor?: UIColor;
 	/** The border color, or an object with separate colors per side. */

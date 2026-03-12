@@ -10,7 +10,6 @@ import {
 import { err, ERROR } from "../errors.js";
 import { BindingOrValue, isBinding, ObservableEvent } from "../object/index.js";
 import { RenderEffect } from "./RenderEffect.js";
-import type { UIGradient } from "./style/index.js";
 import { StyleOverrides, UIColor, UIIconResource } from "./style/index.js";
 
 /** @internal Empty array, used for findViewContent. */
@@ -512,25 +511,17 @@ export namespace UIElement {
 		}
 
 		/**
-		 * Sets the background color.
-		 * @param color A {@link UIColor} instance, or a color name (e.g. "background", "accent").
+		 * Sets the background color or gradient.
+		 * @param background A {@link UIColor}, {@link UIColor.Gradient}, {@link UIColor.MappedValue}, or color name string.
 		 * @returns The builder instance for chaining.
 		 */
-		background(
-			color: BindingOrValue<
-				UIColor | UIColor.ColorName | UIGradient | undefined
-			>,
-		) {
-			return this.setStyleOverride("background", color, true);
+		background(background: BindingOrValue<UIColor.BackgroundType | undefined>) {
+			return this.setStyleOverride("background", background, true);
 		}
 
-		/** Alias for {@link background}; sets the background color. */
-		bg(
-			color?: BindingOrValue<
-				UIColor | UIColor.ColorName | UIGradient | undefined
-			>,
-		) {
-			return this.background(color);
+		/** Alias for {@link background}; sets the background color or gradient. */
+		bg(background?: BindingOrValue<UIColor.BackgroundType | undefined>) {
+			return this.background(background);
 		}
 
 		/**

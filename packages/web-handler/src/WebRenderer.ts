@@ -1,4 +1,3 @@
-import type { UIGradient } from "@talla-ui/core";
 import {
 	Activity,
 	ModalFactory,
@@ -108,8 +107,8 @@ export class WebRenderer extends RenderContext {
 	 * @param modalBackground Background color for modal shade (defaults to pageBackground)
 	 */
 	setBackgrounds(
-		pageBackground: UIColor | UIGradient | string = "background",
-		modalBackground: UIColor | UIGradient | string = pageBackground,
+		pageBackground: UIColor.BackgroundType = "background",
+		modalBackground: UIColor.BackgroundType = pageBackground,
 	) {
 		this._pageBackground = pageBackground;
 		this._modalBackground = modalBackground;
@@ -211,8 +210,8 @@ export class WebRenderer extends RenderContext {
 
 	private _mounts: Map<number, OutputMount>;
 	private _delay: number;
-	private _pageBackground: UIColor | UIGradient | string = "background";
-	private _modalBackground: UIColor | UIGradient | string = "transparent";
+	private _pageBackground: UIColor.BackgroundType = "background";
+	private _modalBackground: UIColor.BackgroundType = "transparent";
 	private _raf?: any;
 	private _viewportLocation?: WebRenderer.ViewportLocation;
 }

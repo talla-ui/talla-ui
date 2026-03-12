@@ -1,4 +1,3 @@
-import type { UIGradient } from "@talla-ui/core";
 import { app, RenderContext, UI, UIColor, View } from "@talla-ui/core";
 import { awaitRemove, isMarkedForRemoval } from "./awaitRemove.js";
 import {
@@ -22,10 +21,7 @@ export class OutputMount {
 	readonly id = _nextId++;
 
 	/** Creates a fixed full-page root element, i.e. for placement modes "screen" and "page" */
-	createPageElement(
-		background: UIColor | UIGradient | string,
-		scroll?: boolean,
-	) {
+	createPageElement(background: UIColor.BackgroundType, scroll?: boolean) {
 		let elt = (this._outer = document.createElement("web-handler-page-root"));
 		elt.ariaAtomic = "true";
 		elt.className = CLASS_PAGE_ROOT;
@@ -66,7 +62,7 @@ export class OutputMount {
 	createOverlayElement(
 		refElt?: HTMLElement,
 		refOffset?: number | [number, number],
-		shadeBackground?: UIColor | UIGradient | string,
+		shadeBackground?: UIColor.BackgroundType,
 		isModal?: boolean,
 	) {
 		let shader =

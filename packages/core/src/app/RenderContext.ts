@@ -1,7 +1,7 @@
 import type { StringConvertible } from "@talla-ui/util";
 import { invalidArgErr, safeCall } from "../errors.js";
 import { ObservableObject } from "../object/index.js";
-import type { UIColor, UIGradient } from "../ui/index.js";
+import type { UIColor } from "../ui/index.js";
 import { AppContext } from "./AppContext.js";
 import { ModalFactory } from "./ModalFactory.js";
 import { View } from "./View.js";
@@ -77,7 +77,7 @@ export namespace RenderContext {
 		ref?: Output;
 		refOffset?: number | [number, number];
 		shade?: boolean;
-		background?: UIColor | UIGradient;
+		background?: UIColor.BackgroundType;
 	}>;
 
 	/**

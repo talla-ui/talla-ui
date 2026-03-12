@@ -24,9 +24,10 @@ export function makeDefaultColors(): Record<UIColor.ColorName, UIColor> {
 		purple: new UIColor("#aa4488"),
 		magenta: new UIColor("#dd2299"),
 		divider: UI.colors.background.text().alpha(0.15),
-		accent: UI.colors.background.fg(
-			new UIColor("#333333"),
-			new UIColor("#555555"),
+		accent: UI.colors.background.map((bg) =>
+			UIColor.isBrightColor(bg)
+				? new UIColor("#333333")
+				: new UIColor("#555555"),
 		),
 		background: UI.colors.white,
 		shade: UI.colors.background.contrast(-0.05),

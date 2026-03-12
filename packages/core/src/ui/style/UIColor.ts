@@ -43,6 +43,17 @@ const ZERO_OUT: UIColor.Output = {
  * UI.colors.black
  * UI.colors.green.alpha(0.5)
  * UI.colors.accent.text()
+ *
+ * // Create gradients
+ * UIColor.linearGradient(180, UI.colors.blue, UI.colors.green)
+ * UIColor.radialGradient(UI.colors.white, UI.colors.black)
+ *
+ * // Create mapped background values
+ * UIColor.mappedValue("background", bg =>
+ *     UIColor.isBrightColor(bg as UIColor)
+ *         ? UI.colors.white
+ *         : UIColor.linearGradient(180, darkGray, black)
+ * )
  */
 export class UIColor {
 	/** @internal Invalidates the cache of calculated color values. */
@@ -114,6 +125,52 @@ export class UIColor {
 		let out = color.output();
 		if (out.raw || out.alpha === 0) return true;
 		return out.l > (threshold ?? 0.72);
+	}
+
+	/**
+	 * Creates a linear gradient.
+	 * @param angle The angle in degrees (e.g. 180 for top-to-bottom, 90 for left-to-right).
+	 * @param stops Color stops ({@link UIColor} instance or `[UIColor, position 0-1]`).
+	 * @returns A {@link UIColor.Gradient} instance.
+	 */
+	static linearGradient(angle: number, ...stops: UIColor.Gradient.Stop[]) {
+		return UIColor.Gradient._create("linear", angle, stops);
+	}
+
+	/**
+	 * Creates a radial gradient (center outward).
+	 * @param stops Color stops ({@link UIColor} instance or `[UIColor, position 0-1]`).
+	 * @returns A {@link UIColor.Gradient} instance.
+	 */
+	static radialGradient(...stops: UIColor.Gradient.Stop[]) {
+		return UIColor.Gradient._create("radial", 0, stops);
+	}
+
+	/**
+	 * Creates a conic gradient (sweep around center).
+	 * @param angle The starting angle in degrees (e.g. 0 for from top).
+	 * @param stops Color stops ({@link UIColor} instance or `[UIColor, position 0-1]`).
+	 * @returns A {@link UIColor.Gradient} instance.
+	 */
+	static conicGradient(angle: number, ...stops: UIColor.Gradient.Stop[]) {
+		return UIColor.Gradient._create("conic", angle, stops);
+	}
+
+	/**
+	 * Creates a lazily-evaluated mapped color or gradient value.
+	 * - Use this to derive a value that may resolve to either a {@link UIColor} or {@link UIColor.Gradient}.
+	 * @param source A color, gradient, or color name string to use as the source.
+	 * @param fn Optional transform function; if provided, equivalent to calling `.map(fn)` on the result.
+	 * @returns A {@link UIColor.MappedValue} instance.
+	 */
+	static mappedValue(
+		source: UIColor | UIColor.Gradient | UIColor.ColorName,
+		fn?: (
+			source: UIColor | UIColor.Gradient | UIColor.MappedValue,
+		) => UIColor | UIColor.Gradient | UIColor.MappedValue,
+	) {
+		let mv = new UIColor.MappedValue(source);
+		return fn ? mv.map(fn) : mv;
 	}
 
 	/**
@@ -235,28 +292,15 @@ export class UIColor {
 	}
 
 	/**
-	 * Returns a new {@link UIColor} for a suitable foreground color.
-	 * - Chooses between two colors based on whether the current color is bright or dark.
-	 * @param colorOnLight The color to use if the current color is bright.
-	 * @param colorOnDark The color to use if the current color is dark.
-	 * @param threshold The brightness threshold; defaults to 0.65.
-	 * @returns A new {@link UIColor} instance.
+	 * Returns a new {@link UIColor} derived from this color.
+	 * - The specified function is called lazily when {@link output()} is called, and cached until invalidated (e.g. after changing the theme).
+	 * @param fn A function that receives this UIColor and returns a new UIColor.
+	 * @returns A new {@link UIColor} instance with lazy evaluation.
 	 */
-	fg(
-		colorOnLight: UIColor | string,
-		colorOnDark: UIColor | string,
-		threshold?: number,
-	) {
-		let light =
-			colorOnLight instanceof UIColor
-				? colorOnLight
-				: new UIColor(colorOnLight);
-		let dark =
-			colorOnDark instanceof UIColor ? colorOnDark : new UIColor(colorOnDark);
+	map(fn: (source: UIColor) => UIColor) {
 		let derived = new UIColor();
 		let self = this;
-		derived._f = () =>
-			(UIColor.isBrightColor(self, threshold) ? light : dark).output();
+		derived._f = () => fn(self).output();
 		return derived;
 	}
 
@@ -266,7 +310,11 @@ export class UIColor {
 	 * @returns A new {@link UIColor} instance, either dark or light.
 	 */
 	text() {
-		return this.fg(UIColor.darkTextColor, UIColor.lightTextColor);
+		return this.map((source) =>
+			UIColor.isBrightColor(source)
+				? UIColor.darkTextColor
+				: UIColor.lightTextColor,
+		);
 	}
 
 	/**
@@ -373,14 +421,188 @@ export namespace UIColor {
 		),
 	) as _DefaultColors;
 
-	/** A type that represents color names, supporting both standard names and custom strings. */
-	export type ColorName = keyof typeof defaults | (string & {});
-
 	/** The light text color reference, typically white. */
 	export const lightTextColor = UIColor.getColor("lightText");
 
 	/** The dark text color reference, typically black. */
 	export const darkTextColor = UIColor.getColor("darkText");
+
+	/** A type that represents color names, supporting both standard names and custom strings. */
+	export type ColorName = keyof typeof defaults | (string & {});
+
+	/** A type that represents any valid background value: a {@link UIColor}, {@link UIColor.Gradient}, {@link UIColor.MappedValue}, or a color name string. */
+	export type BackgroundType =
+		| UIColor
+		| UIColor.Gradient
+		| UIColor.MappedValue
+		| UIColor.ColorName;
+
+	/**
+	 * A class that represents a color gradient.
+	 *
+	 * Use the static factory methods on {@link UIColor} to create gradients:
+	 * - {@link UIColor.linearGradient()}
+	 * - {@link UIColor.radialGradient()}
+	 * - {@link UIColor.conicGradient()}
+	 *
+	 * @example
+	 * UIColor.linearGradient(180, UI.colors.blue, UI.colors.green)
+	 * UIColor.linearGradient(90, UI.colors.red, [UI.colors.yellow, 0.5], UI.colors.blue)
+	 * UIColor.radialGradient(UI.colors.white, UI.colors.black)
+	 * UIColor.conicGradient(0, UI.colors.red, UI.colors.yellow, UI.colors.green, UI.colors.blue)
+	 */
+	export class Gradient {
+		/** @internal Creates a Gradient instance; used by UIColor.linearGradient etc. */
+		static _create(
+			type: "linear" | "radial" | "conic",
+			angle: number,
+			stops: Gradient.Stop[],
+		) {
+			let g = new Gradient(type, angle);
+			g._normalizeStops(stops);
+			return g;
+		}
+
+		/** Creates a new gradient (do not use directly). */
+		private constructor(type: "linear" | "radial" | "conic", angle: number) {
+			this._type = type;
+			this._angle = angle;
+			this._stops = [];
+		}
+
+		/** The type of gradient. */
+		get type(): "linear" | "radial" | "conic" {
+			return this._type;
+		}
+
+		/** The normalized color stops with positions between 0 and 1. */
+		get stops(): ReadonlyArray<{ color: UIColor; pos: number }> {
+			return this._stops as ReadonlyArray<{ color: UIColor; pos: number }>;
+		}
+
+		/** The angle of the gradient in degrees (for linear and conic gradients). */
+		get angle(): number {
+			return this._angle;
+		}
+
+		/**
+		 * Normalizes stop inputs to {color, pos} with auto-distribution per CSS spec.
+		 * 1. First stop without explicit pos → 0.
+		 * 2. Last stop without explicit pos → 1.
+		 * 3. Interior stops without pos → evenly spaced between nearest positioned neighbors.
+		 */
+		private _normalizeStops(inputs: Gradient.Stop[]) {
+			let stops = (this._stops = inputs.map(
+				(s): { color: UIColor; pos: number | undefined } => {
+					if (Array.isArray(s)) return { color: s[0], pos: s[1] };
+					return { color: s, pos: undefined };
+				},
+			));
+			if (!stops.length) return this;
+
+			// First and last default to 0 and 1
+			if (stops[0]!.pos === undefined) stops[0]!.pos = 0;
+			if (stops[stops.length - 1]!.pos === undefined)
+				stops[stops.length - 1]!.pos = 1;
+
+			// Fill in interior stops: evenly space between positioned neighbors
+			let i = 0;
+			while (i < stops.length) {
+				if (stops[i]!.pos === undefined) {
+					// Find the next positioned stop
+					let start = i - 1;
+					let end = i + 1;
+					while (end < stops.length && stops[end]!.pos === undefined) end++;
+					let startPos = stops[start]!.pos!;
+					let endPos = stops[end]!.pos!;
+					let count = end - start;
+					for (let j = start + 1; j < end; j++) {
+						stops[j]!.pos =
+							startPos + ((endPos - startPos) * (j - start)) / count;
+					}
+					i = end;
+				} else {
+					i++;
+				}
+			}
+
+			return this;
+		}
+
+		private _type: "linear" | "radial" | "conic";
+		private _stops: { color: UIColor; pos: number | undefined }[];
+		private _angle: number;
+	}
+
+	export namespace Gradient {
+		/**
+		 * Type definition for a gradient color stop.
+		 * - A color stop refers to either a {@link UIColor} object (auto-positioned) or `[UIColor, position 0-1]`.
+		 */
+		export type Stop = UIColor | [UIColor, number];
+	}
+
+	/**
+	 * A class that represents a derived color or gradient value.
+	 * - Use {@link UIColor.mappedValue()} to create instances of this class.
+	 * - Use {@link map()} to derive a new instance from the resolved value.
+	 * - Results are cached and invalidated when the color registry changes (e.g. along with the theme).
+	 *
+	 * @example
+	 * UIColor.mappedValue("background", bg =>
+	 *     UIColor.isBrightColor(bg as UIColor)
+	 *         ? UI.colors.white
+	 *         : UIColor.linearGradient(180, darkGray, black)
+	 * )
+	 */
+	export class MappedValue {
+		/**
+		 * Creates a new MappedValue instance.
+		 * @param source A color, gradient, or color name string to use as the source value.
+		 */
+		constructor(source: UIColor | Gradient | UIColor.ColorName) {
+			this._source =
+				typeof source === "string" ? UIColor.getColor(source) : source;
+		}
+
+		/**
+		 * Returns the resolved background value.
+		 * - Results are cached and invalidated when the color registry changes (e.g. along with the theme).
+		 */
+		resolve(): UIColor | Gradient | MappedValue {
+			let cacheVersion = _cacheUpdate;
+			if (this._result !== undefined && this._up === cacheVersion) {
+				return this._result;
+			}
+			this._result = this._f ? this._f(this._source) : this._source;
+			this._up = cacheVersion;
+			return this._result;
+		}
+
+		/**
+		 * Returns a new {@link MappedValue} that transforms the resolved source value.
+		 * @param fn A function that receives the resolved source and returns a new color or gradient.
+		 * @returns A new {@link MappedValue} instance with lazy evaluation.
+		 */
+		map(
+			fn: (
+				source: UIColor | Gradient | MappedValue,
+			) => UIColor | Gradient | MappedValue,
+		) {
+			let derived = new MappedValue(this._source);
+			let self = this;
+			// For chaining: resolve this MappedValue first, then apply fn
+			derived._f = this._f ? () => fn(self.resolve()) : fn;
+			return derived;
+		}
+
+		private _source: UIColor | Gradient;
+		private _f?: (
+			source: UIColor | Gradient | MappedValue,
+		) => UIColor | Gradient | MappedValue;
+		private _result?: UIColor | Gradient | MappedValue;
+		private _up?: number;
+	}
 }
 
 /** Helper function to create an output object for an OKLCH color value */

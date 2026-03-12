@@ -1,10 +1,4 @@
-import {
-	StyleOverrides,
-	UI,
-	UIColor,
-	UIGradient,
-	UIIconResource,
-} from "@talla-ui/core";
+import { StyleOverrides, UI, UIColor, UIIconResource } from "@talla-ui/core";
 import { makeDefaultColors } from "./defaults/colors.js";
 import { makeDefaultIcons } from "./defaults/icons.js";
 import { makeButtonStyles, makeTextFieldStyles } from "./defaults/styles.js";
@@ -29,8 +23,8 @@ export type WebStyleDefinition = StyleOverrides & {
 /** @internal Theme options type for scalar configuration values. */
 export type WebThemeOptions = {
 	updateBodyStyle: boolean;
-	pageBackground: UIColor | UIGradient | string;
-	modalShadeBackground: UIColor | UIGradient | string;
+	pageBackground: UIColor.BackgroundType;
+	modalShadeBackground: UIColor.BackgroundType;
 	logicalPxScale?: number;
 	logicalPxScaleNarrow?: number;
 	iconSize: number;
@@ -250,7 +244,7 @@ export class WebTheme {
 	 * @param color The background color value.
 	 * @returns The theme itself, for method chaining.
 	 */
-	pageBackground(color: UIColor | UIGradient | string): this {
+	pageBackground(color: UIColor.BackgroundType): this {
 		this._options.pageBackground = color;
 		return this;
 	}
@@ -260,7 +254,7 @@ export class WebTheme {
 	 * @param color The background color value.
 	 * @returns The theme itself, for method chaining.
 	 */
-	modalShadeBackground(color: UIColor | UIGradient | string): this {
+	modalShadeBackground(color: UIColor.BackgroundType): this {
 		this._options.modalShadeBackground = color;
 		return this;
 	}
@@ -440,7 +434,7 @@ function _deepClone<T extends unknown>(value: T): T {
 		value === null ||
 		typeof value !== "object" ||
 		value instanceof UIColor ||
-		value instanceof UIGradient
+		value instanceof UIColor.Gradient
 	) {
 		return value;
 	}

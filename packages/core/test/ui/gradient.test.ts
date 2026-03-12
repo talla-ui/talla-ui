@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { UIColor, UIGradient } from "../../dist/index.js";
+import { UIColor } from "../../dist/index.js";
 
-describe("UIGradient construction", () => {
+describe("UIColor.Gradient construction", () => {
 	test("Linear gradient with default angle", () => {
-		let g = UIGradient.linear(
+		let g = UIColor.linearGradient(
 			180,
 			UIColor.oklch(0, 0, 0),
 			UIColor.oklch(1, 0, 0),
@@ -16,7 +16,7 @@ describe("UIGradient construction", () => {
 	});
 
 	test("Linear gradient with explicit angle", () => {
-		let g = UIGradient.linear(
+		let g = UIColor.linearGradient(
 			90,
 			UIColor.oklch(0, 0, 0),
 			UIColor.oklch(1, 0, 0),
@@ -26,7 +26,7 @@ describe("UIGradient construction", () => {
 	});
 
 	test("Linear gradient with explicit positions", () => {
-		let g = UIGradient.linear(
+		let g = UIColor.linearGradient(
 			180,
 			[UIColor.oklch(0, 0, 0), 0.2],
 			[UIColor.oklch(1, 0, 0), 0.8],
@@ -36,7 +36,7 @@ describe("UIGradient construction", () => {
 	});
 
 	test("Auto-distribution of intermediate stops", () => {
-		let g = UIGradient.linear(
+		let g = UIColor.linearGradient(
 			180,
 			UIColor.oklch(0, 0, 0),
 			UIColor.oklch(0.33, 0, 0),
@@ -50,7 +50,7 @@ describe("UIGradient construction", () => {
 	});
 
 	test("Mixed positioned and auto stops", () => {
-		let g = UIGradient.linear(
+		let g = UIColor.linearGradient(
 			180,
 			UIColor.oklch(0, 0, 0),
 			UIColor.oklch(0.5, 0, 0),
@@ -64,7 +64,10 @@ describe("UIGradient construction", () => {
 	});
 
 	test("Radial gradient with colors only", () => {
-		let g = UIGradient.radial(UIColor.oklch(1, 0, 0), UIColor.oklch(0, 0, 0));
+		let g = UIColor.radialGradient(
+			UIColor.oklch(1, 0, 0),
+			UIColor.oklch(0, 0, 0),
+		);
 		expect(g.type).toBe("radial");
 		expect(g.angle).toBe(0);
 		expect(g.stops.length).toBe(2);
@@ -73,7 +76,7 @@ describe("UIGradient construction", () => {
 	});
 
 	test("Radial gradient with explicit positions", () => {
-		let g = UIGradient.radial(
+		let g = UIColor.radialGradient(
 			UIColor.oklch(1, 0, 0),
 			[UIColor.oklch(0.5, 0, 0), 0.3],
 			UIColor.oklch(0, 0, 0),
@@ -84,7 +87,7 @@ describe("UIGradient construction", () => {
 	});
 
 	test("Conic gradient with colors", () => {
-		let g = UIGradient.conic(
+		let g = UIColor.conicGradient(
 			0,
 			UIColor.oklch(0, 0, 0),
 			UIColor.oklch(0.5, 0.15, 30),
@@ -99,27 +102,12 @@ describe("UIGradient construction", () => {
 	});
 
 	test("Conic gradient with explicit angle", () => {
-		let g = UIGradient.conic(
+		let g = UIColor.conicGradient(
 			90,
 			UIColor.oklch(0, 0, 0),
 			UIColor.oklch(1, 0, 0),
 		);
 		expect(g.angle).toBe(90);
 		expect(g.stops.length).toBe(2);
-	});
-});
-
-describe("UIGradient duck-type property", () => {
-	test("UIGradient has isUIGradient property", () => {
-		let g = UIGradient.linear(
-			180,
-			UIColor.oklch(0, 0, 0),
-			UIColor.oklch(1, 0, 0),
-		);
-		expect(g.isUIGradient).toBeTypeOf("function");
-	});
-
-	test("UIColor does not have isUIGradient property", () => {
-		expect((new UIColor("#f00") as any).isUIGradient).toBeUndefined();
 	});
 });

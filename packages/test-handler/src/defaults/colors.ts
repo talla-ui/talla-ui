@@ -23,9 +23,8 @@ export default {
 	purple: new UIColor("#aa4488"),
 	magenta: new UIColor("#dd2299"),
 	divider: UI.colors.background.text().alpha(0.15),
-	accent: UI.colors.background.fg(
-		new UIColor("#222222"),
-		new UIColor("#777777"),
+	accent: UI.colors.background.map((bg) =>
+		UIColor.isBrightColor(bg) ? new UIColor("#222222") : new UIColor("#777777"),
 	),
 	background: UI.colors.white,
 	shade: UI.colors.background.contrast(-0.05),

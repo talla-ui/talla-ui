@@ -282,14 +282,30 @@ describe("Brightness and text color", () => {
 		expect(textOnLight).toBe(blackTextRgba);
 	});
 
-	test("Foreground selection", () => {
-		let lightFg = UI.colors.white.fg(UI.colors.red, UI.colors.green);
-		let darkFg = UI.colors.black.fg(UI.colors.red, UI.colors.green);
-		expect(lightFg.output().rgbaString()).toBe(
-			UI.colors.red.output().rgbaString(),
+	test("UIColor.map derives a color lazily", () => {
+		let source = UI.colors.white;
+		let mapped = source.map((bg) =>
+			UIColor.isBrightColor(bg) ? UI.colors.black : UI.colors.white,
 		);
-		expect(darkFg.output().rgbaString()).toBe(
-			UI.colors.green.output().rgbaString(),
+		// white is bright, so mapped should resolve to black
+		expect(mapped.output().rgbaString()).toBe(
+			UI.colors.black.output().rgbaString(),
+		);
+	});
+
+	test("UIColor.map re-evaluates on cache invalidation", () => {
+		UIColor.setColors({ background: UI.colors.white });
+		_customTestColors.push("background");
+		let mapped = UI.colors.background.map((bg) =>
+			UIColor.isBrightColor(bg) ? UI.colors.black : UI.colors.white,
+		);
+		expect(mapped.output().rgbaString()).toBe(
+			UI.colors.black.output().rgbaString(),
+		);
+		// switch to dark background
+		UIColor.setColors({ background: UI.colors.black });
+		expect(mapped.output().rgbaString()).toBe(
+			UI.colors.white.output().rgbaString(),
 		);
 	});
 

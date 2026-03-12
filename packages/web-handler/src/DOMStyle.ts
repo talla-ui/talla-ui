@@ -1,4 +1,3 @@
-import type { UIGradient } from "@talla-ui/core";
 import {
 	app,
 	StyleOverrides,
@@ -89,18 +88,18 @@ export function colorToCSS(color: UIColor): string {
 	return _supportsOklch() ? out.oklchString() : out.rgbaString();
 }
 
-/** @internal Convert a UIColor, UIGradient, or string to a CSS background string. */
-export function backgroundToCSS(
-	background: UIColor | UIGradient | string,
-): string {
+/** @internal Convert a background value or string to a CSS background string. */
+export function backgroundToCSS(background: UIColor.BackgroundType): string {
+	if (typeof background === "string") return background;
+	while (background instanceof UIColor.MappedValue)
+		background = background.resolve();
 	if (background instanceof UIColor) return colorToCSS(background);
-	if ((background as any).isUIGradient)
-		return gradientToCSS(background as UIGradient);
-	return String(background);
+	if (background instanceof UIColor.Gradient) return gradientToCSS(background);
+	return "none";
 }
 
-/** @internal Convert a UIGradient to a CSS gradient string. */
-function gradientToCSS(gradient: UIGradient): string {
+/** @internal Convert a UIColor.Gradient to a CSS gradient string. */
+function gradientToCSS(gradient: UIColor.Gradient): string {
 	let useOklch = _supportsOklch();
 	let stops = gradient.stops
 		.map((s) => {
@@ -140,7 +139,7 @@ function gradientToCSS(gradient: UIGradient): string {
 /** @internal Settings passed to initializeCSS from WebTheme */
 export type InitializeCSSOptions = {
 	updateBodyStyle?: boolean;
-	pageBackground?: UIColor | UIGradient | string;
+	pageBackground?: UIColor.BackgroundType;
 	logicalPxScale?: number;
 	logicalPxScaleNarrow?: number;
 	focusDecoration?: StyleOverrides;
