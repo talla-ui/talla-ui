@@ -20,13 +20,11 @@ import { Activity, UI } from "talla-ui";
 // An Activity defines application state and logic,
 // along with a view that's rendered when active.
 class MainActivity extends Activity {
-  static override View() {
-    // Views are composed declaratively using builder functions.
-    // No JSX, no templates — just TypeScript.
-    return UI.Column(
-      UI.Text("Hello, world!").center(),
-    ).flex().centerContent();
-  }
+	static override View() {
+		// Views are composed declaratively using builder functions.
+		// No JSX, no templates — just TypeScript.
+		return UI.Column(UI.Text("Hello, world!").center()).flex().centerContent();
+	}
 }
 
 // The web handler connects the framework to the browser.

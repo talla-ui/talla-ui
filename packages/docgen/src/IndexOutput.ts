@@ -6,8 +6,9 @@ import { Output } from "./Output.js";
 function plainAbstract(s?: string) {
 	if (!s) return s;
 	return s
-		.replace(/\{@link\s+([^}\s|]+)(?:\s+([^}|]+)|\s*\|([^}]*))?\}/g, (_, id, text, piped) =>
-			(piped || text || id).trim(),
+		.replace(
+			/\{@link\s+([^}\s|]+)(?:\s+([^}|]+)|\s*\|([^}]*))?\}/g,
+			(_, id, text, piped) => (piped || text || id).trim(),
 		) // {@link Foo}, {@link Foo bar}, {@link Foo | bar}
 		.replace(/\*\*([^*]+)\*\*/g, "$1") // **bold**
 		.replace(/\*([^*]+)\*/g, "$1") // *italic*

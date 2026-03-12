@@ -5,7 +5,6 @@ import { makeButtonStyles, makeTextFieldStyles } from "./defaults/styles.js";
 import { ModalMenu } from "./modals/ModalMenu.js";
 import { UITextRenderer } from "./observers/UITextRenderer.js";
 
-
 /** @internal Theme options type for scalar configuration values. */
 export type WebThemeOptions = {
 	updateBodyStyle: boolean;

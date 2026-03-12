@@ -91,7 +91,10 @@ export function makeButtonStyles(): Record<string, WebTheme.StyleDefinition> {
 /**
  * @internal Returns default text field variant style definitions keyed by variant name.
  */
-export function makeTextFieldStyles(): Record<string, WebTheme.StyleDefinition> {
+export function makeTextFieldStyles(): Record<
+	string,
+	WebTheme.StyleDefinition
+> {
 	const colors = UI.colors;
 	const baseStyles: WebTheme.StyleDefinition = {
 		textColor: colors.text,

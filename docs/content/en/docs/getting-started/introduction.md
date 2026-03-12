@@ -22,11 +22,9 @@ import { Activity, UI } from "talla-ui";
 import { useWebContext } from "@talla-ui/web-handler";
 
 class MainActivity extends Activity {
-  static override View() {
-    return UI.Column(
-      UI.Text("Hello, world!").center(),
-    ).flex().centerContent();
-  }
+	static override View() {
+		return UI.Column(UI.Text("Hello, world!").center()).flex().centerContent();
+	}
 }
 
 const app = useWebContext();

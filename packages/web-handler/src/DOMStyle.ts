@@ -305,7 +305,10 @@ export function applyStyles(
 }
 
 /** Generate CSS rules for a themed class definition. */
-function _generateThemedCSS(className: string, definition: WebTheme.StyleDefinition) {
+function _generateThemedCSS(
+	className: string,
+	definition: WebTheme.StyleDefinition,
+) {
 	const result: { [selector: string]: any } = {};
 	const baseSel = `*.${CLASS_THEMED}${className}`;
 
