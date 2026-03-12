@@ -6,7 +6,7 @@ initializeSwap();
 
 const app = useWebContext(() => {
 	setWebTheme(
-		new WebTheme().focusDecoration({}).controlTextStyle({
+		new WebTheme().updateBodyStyle(false).focusDecoration({}).controlTextStyle({
 			fontFamily: "inherit",
 			fontSize: 16,
 			fontWeight: "normal",

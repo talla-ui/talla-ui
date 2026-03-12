@@ -2,6 +2,24 @@ import { DocsIndex, safeId } from "./DocsIndex.js";
 import { log } from "./Log.js";
 import { Output } from "./Output.js";
 
+/** Strips JSDoc tags and basic markdown from an abstract for plain-text display */
+function plainAbstract(s?: string) {
+	if (!s) return s;
+	return s
+		.replace(/\{@link\s+([^}\s|]+)(?:\s+([^}|]+)|\s*\|([^}]*))?\}/g, (_, id, text, piped) =>
+			(piped || text || id).trim(),
+		) // {@link Foo}, {@link Foo bar}, {@link Foo | bar}
+		.replace(/\*\*([^*]+)\*\*/g, "$1") // **bold**
+		.replace(/\*([^*]+)\*/g, "$1") // *italic*
+		.replace(/`([^`]+)`/g, "$1") // `code`
+		.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // [text](url)
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/<[^>]+>/g, "") // strip any remaining HTML tags
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
 /** Encapsulation of the search index output formatter */
 export class IndexOutput extends Output {
 	/** Initializes search index output using the provided docs index */
@@ -30,7 +48,7 @@ export class IndexOutput extends Output {
 				doc.id,
 				this.urlPrefix + safeId(doc.id, "", doc.folder),
 				doc.title,
-				doc.abstract,
+				plainAbstract(doc.abstract),
 			]),
 		);
 		this.writeFileAsync(".", this.fileName, text);

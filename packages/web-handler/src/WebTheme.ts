@@ -5,20 +5,6 @@ import { makeButtonStyles, makeTextFieldStyles } from "./defaults/styles.js";
 import { ModalMenu } from "./modals/ModalMenu.js";
 import { UITextRenderer } from "./observers/UITextRenderer.js";
 
-/**
- * A type that represents a style definition for themed CSS classes.
- * - Uses StyleOverrides from core for base properties (supports UIColor).
- * - Adds state keys: `+hover`, `+focus`, `+pressed`, `+disabled`, `+readonly`.
- * - Adds CSS selector keys (`:` or `[` prefix, e.g. `:first-child`, `[data-foo]`).
- */
-export type WebStyleDefinition = StyleOverrides & {
-	"+hover"?: StyleOverrides;
-	"+focus"?: StyleOverrides;
-	"+pressed"?: StyleOverrides;
-	"+disabled"?: StyleOverrides;
-	"+readonly"?: StyleOverrides;
-	[selector: `:${string}` | `[${string}`]: StyleOverrides | undefined;
-};
 
 /** @internal Theme options type for scalar configuration values. */
 export type WebThemeOptions = {
@@ -385,11 +371,18 @@ export class WebTheme {
 export namespace WebTheme {
 	/**
 	 * A type that represents a style definition for themed CSS classes.
-	 * - Uses {@link StyleOverrides} from core for base properties.
+	 * - Uses {@link StyleOverrides} from core for base properties (supports UIColor).
 	 * - Adds state keys: `+hover`, `+focus`, `+pressed`, `+disabled`, `+readonly`.
-	 * - Adds CSS selector keys (`:` or `[` prefix).
+	 * - Adds CSS selector keys (`:` or `[` prefix, e.g. `:first-child`, `[data-foo]`).
 	 */
-	export type StyleDefinition = WebStyleDefinition;
+	export type StyleDefinition = StyleOverrides & {
+		"+hover"?: StyleOverrides;
+		"+focus"?: StyleOverrides;
+		"+pressed"?: StyleOverrides;
+		"+disabled"?: StyleOverrides;
+		"+readonly"?: StyleOverrides;
+		[selector: `:${string}` | `[${string}`]: StyleOverrides | undefined;
+	};
 }
 
 /**

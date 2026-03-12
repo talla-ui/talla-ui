@@ -14,7 +14,7 @@ import {
 	CLASS_UI,
 	makeBaseCSS,
 } from "./defaults/css.js";
-import { WebStyleDefinition } from "./WebTheme.js";
+import { WebTheme } from "./WebTheme.js";
 
 /** Default number of logical pixels in a REM unit */
 const LOGICAL_PX_PER_REM = 16;
@@ -152,8 +152,8 @@ export type InitializeCSSOptions = {
 export function initializeCSS(
 	options: InitializeCSSOptions,
 	themeStyles: {
-		buttonStyles: Record<string, WebStyleDefinition>;
-		textFieldStyles: Record<string, WebStyleDefinition>;
+		buttonStyles: Record<string, WebTheme.StyleDefinition>;
+		textFieldStyles: Record<string, WebTheme.StyleDefinition>;
 	},
 	importCSS: string[],
 ) {
@@ -305,7 +305,7 @@ export function applyStyles(
 }
 
 /** Generate CSS rules for a themed class definition. */
-function _generateThemedCSS(className: string, definition: WebStyleDefinition) {
+function _generateThemedCSS(className: string, definition: WebTheme.StyleDefinition) {
 	const result: { [selector: string]: any } = {};
 	const baseSel = `*.${CLASS_THEMED}${className}`;
 

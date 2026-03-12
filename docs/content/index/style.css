@@ -7,7 +7,7 @@
 
 :root {
 	font-size: 16px;
-	--font-family-text: system-ui, sans-serif;
+	--font-family-text: "Inter", system-ui, sans-serif;
 	--font-family-code: Consolas, Menlo, Monaco, mono;
 	--text-weight: 400;
 	--bold-weight: 600;
@@ -26,7 +26,7 @@
 	--block-bg-color: #ddd;
 	--menu-icon-color: #888;
 	--menu-hover-background: rgba(0, 0, 0, 0.1);
-	--menu-heading-text: #603;
+	--menu-heading-text: #29b;
 	--menu-current-background: rgba(187, 68, 85, 0.2);
 	--menu-current-text: #b45;
 	--refblock-hover: rgba(187, 68, 85, 0.05);
@@ -64,7 +64,7 @@
 		--iconbutton-hover: #333;
 		--block-bg-color: #444;
 		--menu-hover-background: #333;
-		--menu-heading-text: #ccc;
+		--menu-heading-text: #3ac;
 		--menu-current-background: rgba(221, 102, 119, 0.2);
 		--menu-current-text: #fff;
 		--refblock-hover: #222;
@@ -85,6 +85,7 @@
 
 html {
 	height: 100%;
+	background: var(--background-color);
 }
 
 body {
@@ -97,8 +98,8 @@ body {
 }
 
 h1 {
-	font-family: "IBM Plex Serif", Times, "Times New Roman", serif;
-	font-weight: var(--bold-weight);
+	font-family: "Inter", system-ui, sans-serif;
+	font-weight: 700;
 	letter-spacing: -0.03em;
 	font-size: 3rem;
 	line-height: 1.2em;
@@ -107,8 +108,8 @@ h1 {
 }
 
 h2 {
-	font-family: "IBM Plex Serif", Times, "Times New Roman", serif;
-	font-weight: var(--text-weight);
+	font-family: "Inter", system-ui, sans-serif;
+	font-weight: 600;
 	font-size: 1.75rem;
 	letter-spacing: -0.02em;
 	line-height: 1.2em;

@@ -2,20 +2,470 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<title>Tälla UI framework</title>
-		<link rel="stylesheet" href="/style.css" />
+		<title>Tälla UI — A TypeScript UI framework for maintainable front-end applications</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="description" content="TODO" />
-		<meta name="keywords" content="TODO" />
+		<meta
+			name="description"
+			content="Tälla UI is a TypeScript framework for maintainable front-end applications, with strict separation between application logic, UI definition, and platform rendering."
+		/>
+		<meta
+			name="keywords"
+			content="talla-ui, typescript, ui framework, front-end, client-side, declarative ui, observable, testing"
+		/>
 		<meta name="robots" content="index, follow" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_forward,code,layers,package_2,science,terminal&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="icon" href="/favicon.ico" sizes="any" />
+		<link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<link rel="stylesheet" href="/style.css" />
+		<style>
+			:root {
+				--card-bg: rgba(0, 0, 0, 0.03);
+				--card-border: rgba(0, 0, 0, 0.08);
+				--icon-color: #b45;
+			}
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--card-bg: rgba(255, 255, 255, 0.04);
+					--card-border: rgba(255, 255, 255, 0.08);
+					--icon-color: #d67;
+				}
+			}
+
+			body {
+				display: flex;
+				flex-direction: column;
+				min-height: 100vh;
+				font-family: "Inter", system-ui, sans-serif;
+			}
+
+			/* Main */
+			main {
+				flex: 1;
+				max-width: 60rem;
+				width: 100%;
+				margin: 0 auto;
+				padding: 3rem 2rem 4rem;
+			}
+
+			/* Hero */
+			.hero {
+				padding: 1rem 0 4.5rem;
+			}
+			.hero img {
+				height: 2.5rem;
+				margin-bottom: 1.5rem;
+			}
+			@media (prefers-color-scheme: dark) {
+				.hero img.logo-light { display: none; }
+			}
+			@media (prefers-color-scheme: light),
+				(prefers-color-scheme: no-preference) {
+				.hero img.logo-dark { display: none; }
+			}
+			.hero h1 {
+				font-family: "Inter", system-ui, sans-serif;
+				font-weight: 700;
+				font-size: 2.75rem;
+				line-height: 1.15;
+				letter-spacing: -0.025em;
+				margin: 0 0 1rem;
+				max-width: 38rem;
+			}
+			.hero p {
+				font-family: "Inter", system-ui, sans-serif;
+				font-size: 1.2rem;
+				line-height: 1.6;
+				color: var(--text-color-fade1);
+				max-width: 36rem;
+				margin-bottom: 2rem;
+			}
+			.hero-cta {
+				display: flex;
+				gap: 0.75rem;
+				flex-wrap: wrap;
+			}
+			.hero-cta a {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.4rem;
+				padding: 0.65rem 1.4rem;
+				border-radius: 0.5rem;
+				font-family: "Inter", system-ui, sans-serif;
+				font-weight: 600;
+				font-size: 0.9rem;
+				transition: background 0.15s, color 0.15s;
+			}
+			.hero-cta a.primary {
+				background: var(--link-color);
+				color: #fff;
+				border: 1px solid var(--link-color);
+			}
+			.hero-cta a.primary:hover {
+				text-decoration: none;
+				filter: brightness(1.1);
+			}
+			.hero-cta a.secondary {
+				border: 1px solid var(--border-color);
+				color: var(--text-color);
+			}
+			.hero-cta a.secondary:hover {
+				text-decoration: none;
+				background: var(--card-bg);
+			}
+
+			/* Section headings */
+			section {
+				margin-bottom: 4.5rem;
+			}
+			section > h2 {
+				font-family: "Inter", system-ui, sans-serif;
+				font-weight: 600;
+				font-size: 1.5rem;
+				letter-spacing: -0.015em;
+				border: none;
+				padding-top: 0;
+				margin: 0 0 1.25rem;
+			}
+
+			/* Feature grid */
+			.features {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+				gap: 1rem;
+			}
+			.feature {
+				background: var(--card-bg);
+				border: 1px solid var(--card-border);
+				border-radius: 0.75rem;
+				padding: 1.25rem 1.5rem;
+			}
+			.feature-header {
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+				margin-bottom: 0.5rem;
+			}
+			.feature-header .material-symbols-outlined {
+				font-size: 1.25rem;
+				color: var(--icon-color);
+			}
+			.feature-header strong {
+				font-family: "Inter", system-ui, sans-serif;
+				font-size: 0.95rem;
+				font-weight: 600;
+			}
+			.feature p {
+				font-family: "Inter", system-ui, sans-serif;
+				font-size: 0.9rem;
+				line-height: 1.6;
+				color: var(--text-color-fade1);
+				margin: 0;
+			}
+
+			/* Example */
+			.example pre {
+				position: relative;
+				padding: 1.25rem 1.5rem;
+				background: var(--card-bg);
+				border: 1px solid var(--card-border);
+				border-radius: 0.75rem;
+				overflow: auto;
+				line-height: 1.5em;
+				font-size: 0.9rem;
+			}
+			.example pre,
+			.example code {
+				font-family: "SF Mono", Consolas, Menlo, Monaco, monospace;
+			}
+
+			/* How it works */
+			.how-it-works ul {
+				list-style: none !important;
+				padding: 0;
+				margin: 0;
+			}
+			.how-it-works ul > li {
+				list-style: none !important;
+				font-family: "Inter", system-ui, sans-serif;
+				font-size: 0.95rem;
+				line-height: 1.6;
+				margin: 0 0 0.75rem 0;
+				padding-left: 1.25rem;
+				position: relative;
+			}
+			.how-it-works li::before {
+				content: "";
+				position: absolute;
+				left: 0;
+				top: 0.55rem;
+				width: 0.4rem;
+				height: 0.4rem;
+				border-radius: 50%;
+				background: var(--icon-color);
+			}
+
+			/* Concepts grid */
+			.concepts {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+				gap: 0.75rem;
+			}
+			.concept {
+				display: flex;
+				align-items: center;
+				gap: 0.75rem;
+				padding: 1rem 1.25rem;
+				background: var(--card-bg);
+				border: 1px solid var(--card-border);
+				border-radius: 0.75rem;
+				text-decoration: none;
+				color: var(--text-color);
+				transition: background 0.15s, border-color 0.15s;
+			}
+			.concept:hover {
+				text-decoration: none;
+				background: var(--card-border);
+				border-color: var(--link-color);
+			}
+			.concept-text {
+				flex: 1;
+				min-width: 0;
+			}
+			.concept-text strong {
+				font-family: "Inter", system-ui, sans-serif;
+				display: block;
+				font-size: 0.95rem;
+				font-weight: 600;
+				margin-bottom: 0.15rem;
+			}
+			.concept-text span {
+				font-family: "Inter", system-ui, sans-serif;
+				display: block;
+				font-size: 0.8rem;
+				color: var(--text-color-fade1);
+				line-height: 1.4;
+			}
+			.concept .material-symbols-outlined {
+				font-size: 1rem;
+				color: var(--text-color-fade1);
+				flex-shrink: 0;
+			}
+
+			/* Footer */
+			footer {
+				padding: 2rem;
+				font-family: "Inter", system-ui, sans-serif;
+				font-size: 0.8rem;
+				color: var(--text-color-fade1);
+				border-top: 1px solid var(--border-color);
+				text-align: center;
+			}
+
+			/* Responsive */
+			@media screen and (max-width: 640px) {
+				.hero h1 {
+					font-size: 2rem;
+				}
+				.hero p {
+					font-size: 1.05rem;
+				}
+				.features,
+				.concepts {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
 	</head>
 	<body>
-		<div class="homepage_top">
-			<span>
-				<a href="/docs/en/introduction.html">About</a>
-				<span style="opacity: 0.5">&nbsp; | &nbsp;</span>
-				<a href="/docs/en/">Docs</a>
-			</span>
-		</div>
+		<main>
+			<div class="hero">
+				<img
+					class="logo-light"
+					src="/talla-logo.png"
+					srcset="/talla-logo.png 1x, /talla-logo@2x.png 2x"
+					alt="Tälla UI"
+				/>
+				<img
+					class="logo-dark"
+					src="/talla-logo-dark.png"
+					srcset="/talla-logo-dark.png 1x, /talla-logo-dark@2x.png 2x"
+					alt="Tälla UI"
+				/>
+				<h1>A TypeScript UI framework for maintainable front-end applications</h1>
+				<p>
+					Strict separation between application logic, UI
+					definition, and platform rendering.
+				</p>
+				<div class="hero-cta">
+					<a class="primary" href="/docs/en/">Get started</a>
+					<a class="secondary" href="https://github.com/talla-ui/talla-ui">GitHub</a>
+				</div>
+			</div>
+
+			<section>
+				<h2>Key properties</h2>
+				<div class="features">
+					<div class="feature">
+						<div class="feature-header">
+							<span class="material-symbols-outlined">layers</span>
+							<strong>Layered architecture</strong>
+						</div>
+						<p>
+							Application logic, UI structure, and rendering
+							are separated at the package level. The core
+							framework has no knowledge of the browser or
+							any specific platform.
+						</p>
+					</div>
+					<div class="feature">
+						<div class="feature-header">
+							<span class="material-symbols-outlined">science</span>
+							<strong>In-memory testability</strong>
+						</div>
+						<p>
+							The test handler renders your full component tree
+							without a browser. Write unit tests against the
+							same code that runs in production.
+						</p>
+					</div>
+					<div class="feature">
+						<div class="feature-header">
+							<span class="material-symbols-outlined">package_2</span>
+							<strong>No runtime dependencies</strong>
+						</div>
+						<p>
+							The framework is entirely self-contained. State
+							management, routing, rendering, and form
+							validation are all built in.
+						</p>
+					</div>
+					<div class="feature">
+						<div class="feature-header">
+							<span class="material-symbols-outlined">code</span>
+							<strong>Declarative, typed UI</strong>
+						</div>
+						<p>
+							Views are composed through a TypeScript builder
+							API. No JSX, no templates, no build step beyond
+							TypeScript compilation.
+						</p>
+					</div>
+					<div class="feature">
+						<div class="feature-header">
+							<span class="material-symbols-outlined">terminal</span>
+							<strong>Client-side only</strong>
+						</div>
+						<p>
+							No server-side rendering, no hydration, no
+							virtual DOM. These are deliberate constraints
+							that keep the programming model simple.
+						</p>
+					</div>
+				</div>
+			</section>
+
+			<section class="example">
+				<h2>Example</h2>
+				<pre><code><span class="hljs-keyword">import</span> { <span class="hljs-title">Activity</span>, <span class="hljs-title">UI</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"talla-ui"</span>;
+
+<span class="hljs-comment">// An Activity defines application state and logic,</span>
+<span class="hljs-comment">// along with a view that's rendered when active.</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title">MainActivity</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Activity</span> {
+  <span class="hljs-keyword">static</span> <span class="hljs-keyword">override</span> <span class="hljs-title">View</span>() {
+    <span class="hljs-comment">// Views are composed declaratively using builder functions.</span>
+    <span class="hljs-comment">// No JSX, no templates — just TypeScript.</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-title">UI</span>.<span class="hljs-title">Column</span>(
+      <span class="hljs-title">UI</span>.<span class="hljs-title">Text</span>(<span class="hljs-string">"Hello, world!"</span>).center(),
+    ).flex().centerContent();
+  }
+}
+
+<span class="hljs-comment">// The web handler connects the framework to the browser.</span>
+<span class="hljs-comment">// Swap in useTestContext() to run the same app in memory for testing.</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title">useWebContext</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"@talla-ui/web-handler"</span>;
+<span class="hljs-keyword">const</span> app = <span class="hljs-title">useWebContext</span>();
+app.addActivity(<span class="hljs-keyword">new</span> <span class="hljs-title">MainActivity</span>(), <span class="hljs-literal">true</span>);</code></pre>
+			</section>
+
+			<section class="how-it-works">
+				<h2>How it works</h2>
+				<ul>
+					<li><strong>UI elements</strong> describe what should
+					appear &mdash; without application logic or rendering
+					concerns</li>
+					<li><strong>Activities</strong> manage state,
+					lifecycle, and navigation</li>
+					<li><strong>Handlers</strong> render to a specific
+					platform &mdash; currently the web, though the core
+					is not browser-dependent</li>
+					<li><strong>Test handler</strong> renders the full UI
+					tree in memory, so you test the same code that runs
+					in production</li>
+					<li>No virtual DOM &mdash; the renderer observes UI
+					elements and updates the DOM directly</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Core concepts</h2>
+				<div class="concepts">
+					<a class="concept" href="/docs/en/ref/Activity.html">
+						<div class="concept-text">
+							<strong>Activity</strong>
+							<span>Application state, lifecycle, and navigation</span>
+						</div>
+						<span class="material-symbols-outlined">arrow_forward</span>
+					</a>
+					<a class="concept" href="/docs/en/ref/UI.html">
+						<div class="concept-text">
+							<strong>UI</strong>
+							<span>Declarative builder functions for views</span>
+						</div>
+						<span class="material-symbols-outlined">arrow_forward</span>
+					</a>
+					<a class="concept" href="/docs/en/ref/Binding.html">
+						<div class="concept-text">
+							<strong>Binding</strong>
+							<span>One-way reactive data binding</span>
+						</div>
+						<span class="material-symbols-outlined">arrow_forward</span>
+					</a>
+					<a class="concept" href="/docs/en/ref/ObservableObject.html">
+						<div class="concept-text">
+							<strong>ObservableObject</strong>
+							<span>Reactive state with events and tree structure</span>
+						</div>
+						<span class="material-symbols-outlined">arrow_forward</span>
+					</a>
+					<a class="concept" href="/docs/en/ref/useWebContext.html">
+						<div class="concept-text">
+							<strong>useWebContext</strong>
+							<span>Initialize a web application</span>
+						</div>
+						<span class="material-symbols-outlined">arrow_forward</span>
+					</a>
+					<a class="concept" href="/docs/en/ref/useTestContext.html">
+						<div class="concept-text">
+							<strong>useTestContext</strong>
+							<span>In-memory rendering for unit tests</span>
+						</div>
+						<span class="material-symbols-outlined">arrow_forward</span>
+					</a>
+				</div>
+			</section>
+		</main>
+		<footer>
+			&copy; 2026 Jelmer Cormont &middot; MIT License
+		</footer>
 	</body>
 </html>

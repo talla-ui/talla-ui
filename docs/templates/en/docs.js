@@ -72,7 +72,10 @@ export default async (html, data) => `
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+		<link rel="icon" href="/favicon.ico" sizes="any" />
+		<link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<link rel="stylesheet" href="/style.css?t=${TIME}" />
 		<link rel="stylesheet" href="/docpage.css?t=${TIME}" />
 		<link rel="stylesheet" href="/menu.css?t=${TIME}" />
@@ -89,9 +92,9 @@ export default async (html, data) => `
 				<div class="docpage_navbar_header">
 					<a href="/" class="docpage_navbar_logo">
 						<picture>
-							<source srcset="/talla-logo-graphic.png" media="(max-width: 900px)" height="38">
-							<source srcset="/talla-logo-dark.png" media="(prefers-color-scheme: dark)" height="38">
-							<img src="/talla-logo.png" alt="Tälla UI framework logo" height="38">
+							<source srcset="/talla-logo-graphic.png 1x, /talla-logo-graphic@2x.png 2x" media="(max-width: 900px)" height="38">
+							<source srcset="/talla-logo-dark.png 1x, /talla-logo-dark@2x.png 2x" media="(prefers-color-scheme: dark)" height="38">
+							<img src="/talla-logo.png" srcset="/talla-logo.png 1x, /talla-logo@2x.png 2x" alt="Tälla UI framework logo" height="38">
 						</picture>
 					</a>
 					<button id="navbar-searchbutton" class="navbar_searchbutton iconbutton" aria-label="search"></button>
@@ -109,7 +112,7 @@ export default async (html, data) => `
 					<button id="breadcrumb-menubutton" class="docpage_breadcrumb_menubutton iconbutton" aria-label="menu"></button>
 					<span>${breadcrumb(data)}</span>
 					<a href="/" class="docpage_breadcrumb_logo">
-						<img src="/talla-logo-graphic.png" alt="Tälla UI framework logo" height="38">
+						<img src="/talla-logo-graphic.png" srcset="/talla-logo-graphic.png 1x, /talla-logo-graphic@2x.png 2x" alt="Tälla UI framework logo" height="38">
 					</a>
 				</div>
 				${replaceTags(html)}

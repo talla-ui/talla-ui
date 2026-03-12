@@ -91,6 +91,7 @@ body.docpage.show_search .docpage_searchbar {
 .docpage_content {
 	padding: 0 2rem 0 21rem;
 	text-align: center;
+	background: var(--background-color);
 }
 
 .docpage_content > article {
@@ -138,8 +139,10 @@ body.docpage.show_search .docpage_searchbar {
 
 .docpage h1 + blockquote > p {
 	margin: 0;
-	font-size: 1.35rem;
+	font-size: 1.2rem;
+	font-weight: 300;
 	line-height: 1.5;
+	color: var(--text-color-fade1);
 }
 
 @media screen and (max-width: 900px) {
@@ -183,11 +186,8 @@ body.docpage.show_search .docpage_searchbar {
 		top: 0;
 		z-index: 100;
 		opacity: 1;
-		background: linear-gradient(
-			to bottom,
-			var(--background-color) 40%,
-			transparent 100%
-		);
+		background: linear-gradient(to bottom, var(--background-color) 60%, color-mix(in srgb, var(--background-color), transparent) 100%);
+		padding-bottom: 0.5rem;
 	}
 
 	.docpage_breadcrumb > span {

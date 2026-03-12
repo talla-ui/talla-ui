@@ -4,8 +4,6 @@ The documentation for the Tälla UI framework is located at https://talla-ui.dev
 
 This file is about _writing and building documentation_. For general help, refer to the website or see [`README.md`](./README.md).
 
-For general contribution guidelines, also see [`CONTRIBUTING.md`](./CONTRIBUTING.md).
-
 ## Building and previewing docs
 
 The content for the website is generated from this repository.

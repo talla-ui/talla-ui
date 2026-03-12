@@ -9,7 +9,6 @@ import {
 	Binding,
 	BindingOrValue,
 	FormState,
-	FormValidationMode,
 	ObservableEvent,
 	UI,
 	UIRow,
@@ -116,7 +115,7 @@ test("Validation", () => {
 test("Validation mode defaults to auto", () => {
 	let ctx = new FormState();
 	expect(ctx.validationMode).toBe("auto");
-	let mode: FormValidationMode = ctx.validationMode;
+	let mode: FormState.ValidationMode = ctx.validationMode;
 	expect(mode).toBe("auto");
 });
 

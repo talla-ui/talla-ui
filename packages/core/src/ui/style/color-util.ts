@@ -1,6 +1,6 @@
 // --- mix OKLCH colors (through OKLAB) ---
 
-/** Mix two OKLCH colors via linear interpolation in oklab space. Returns [l, c, h]. */
+/** @internal Mix two OKLCH colors via linear interpolation in oklab space. Returns [l, c, h]. */
 export function mixOklch(
 	l1: number,
 	c1: number,
@@ -42,7 +42,7 @@ function oklchToOklab(
 
 // --- Conversion (also through OKLAB) ---
 
-/** Convert sRGB (0-1 floats) to OKLCH. Returns [l, c, h]. */
+/** @internal Convert sRGB (0-1 floats) to OKLCH. Returns [l, c, h]. */
 export function srgbToOklch(
 	r: number,
 	g: number,
@@ -52,7 +52,7 @@ export function srgbToOklch(
 	return oklabToOklch(L, a, B);
 }
 
-/** Convert OKLCH to sRGB (0-255 integers, clamped). Returns [r, g, b]. */
+/** @internal Convert OKLCH to sRGB (0-255 integers, clamped). Returns [r, g, b]. */
 export function oklchToSrgb(
 	l: number,
 	c: number,
@@ -130,7 +130,7 @@ function oklabToSrgb(
 
 // --- Parsing ---
 
-/** Parse 3 or 6 digit hex color. Returns [r, g, b] (0-255) or undefined. */
+/** @internal Parse 3 or 6 digit hex color. Returns [r, g, b] (0-255) or undefined. */
 export function parseHex(hex: string): [number, number, number] | undefined {
 	let m = /^#([0-9a-f]{3,6})$/i.exec(hex);
 	if (!m) return;
@@ -151,7 +151,7 @@ export function parseHex(hex: string): [number, number, number] | undefined {
 	}
 }
 
-/** Parse rgb() or rgba() string. Returns [r, g, b, alpha] or undefined. */
+/** @internal Parse rgb() or rgba() string. Returns [r, g, b, alpha] or undefined. */
 export function parseRgb(
 	str: string,
 ): [number, number, number, number] | undefined {
@@ -163,7 +163,7 @@ export function parseRgb(
 	return [+m[1]!, +m[2]!, +m[3]!, m[4] !== undefined ? +m[4]! : 1];
 }
 
-/** Parse oklch() string. Returns [l, c, h, alpha] or undefined. */
+/** @internal Parse oklch() string. Returns [l, c, h, alpha] or undefined. */
 export function parseOklch(
 	str: string,
 ): [number, number, number, number] | undefined {

@@ -1,14 +1,14 @@
 import { UI } from "@talla-ui/core";
-import type { WebStyleDefinition } from "../WebTheme";
+import type { WebTheme } from "../WebTheme";
 
 /**
  * @internal Returns default button variant style definitions keyed by variant name.
  * - Called by WebTheme constructor to get initial button styles.
  * - Styles use `UI.colors` which resolves at call time.
  */
-export function makeButtonStyles(): Record<string, WebStyleDefinition> {
+export function makeButtonStyles(): Record<string, WebTheme.StyleDefinition> {
 	const colors = UI.colors;
-	const baseStyles: WebStyleDefinition = {
+	const baseStyles: WebTheme.StyleDefinition = {
 		background: colors.text.alpha(0.05),
 		textColor: colors.text,
 		padding: "0.375rem 1rem",
@@ -91,9 +91,9 @@ export function makeButtonStyles(): Record<string, WebStyleDefinition> {
 /**
  * @internal Returns default text field variant style definitions keyed by variant name.
  */
-export function makeTextFieldStyles(): Record<string, WebStyleDefinition> {
+export function makeTextFieldStyles(): Record<string, WebTheme.StyleDefinition> {
 	const colors = UI.colors;
-	const baseStyles: WebStyleDefinition = {
+	const baseStyles: WebTheme.StyleDefinition = {
 		textColor: colors.text,
 		borderColor: colors.text.alpha(0.2),
 		borderWidth: 1,
