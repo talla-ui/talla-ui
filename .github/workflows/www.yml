@@ -11,8 +11,8 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       - uses: actions/configure-pages@v5
@@ -21,5 +21,5 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with:
           path: "docs/_site"
-      - uses: actions/deploy-pages@v5
+      - uses: actions/deploy-pages@v4
         id: deployment
