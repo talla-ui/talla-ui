@@ -2,7 +2,7 @@
 	"name": "@talla-ui/web-tools",
 	"version": "4.0.0",
 	"publishConfig": {
-		"tag": "next",
+		"tag": "latest",
 		"access": "public"
 	},
 	"description": "Talla UI framework: web developer tools",

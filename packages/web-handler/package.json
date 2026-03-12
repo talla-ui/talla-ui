@@ -2,7 +2,7 @@
 	"name": "@talla-ui/web-handler",
 	"version": "4.0.0",
 	"publishConfig": {
-		"tag": "next",
+		"tag": "latest",
 		"access": "public"
 	},
 	"description": "Tälla UI framework: web handler",

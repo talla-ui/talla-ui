@@ -2,7 +2,7 @@
 	"name": "@talla-ui/docgen",
 	"version": "4.0.0",
 	"publishConfig": {
-		"tag": "next",
+		"tag": "latest",
 		"access": "public"
 	},
 	"description": "Documentation generator for Tälla UI framework source packages",
