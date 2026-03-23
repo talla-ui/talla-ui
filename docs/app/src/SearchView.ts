@@ -3,9 +3,8 @@ import { SearchActivity } from "./SearchActivity";
 
 export function SearchView(v: Binding<SearchActivity>) {
 	return UI.Column()
-		.padding({ start: 16, end: 8 })
+		.padding({ start: 16 })
 		.width("100%")
-		.flex(0, 1)
 		.onKey("Escape", "Close")
 		.with(
 			UI.Row()
@@ -20,8 +19,8 @@ export function SearchView(v: Binding<SearchActivity>) {
 							borderColor: UI.colors.divider,
 							borderWidth: { bottom: 1 },
 							borderRadius: 0,
-							width: "100%",
 						})
+						.grow()
 						.onFocusIn((_, tf) =>
 							tf.setStyle({
 								borderColor: new UIColor("var(--accent-boldest)"),
@@ -37,7 +36,10 @@ export function SearchView(v: Binding<SearchActivity>) {
 						.onInput("SearchInput")
 						.onKey("ArrowDown", "ArrowDownOnInput")
 						.onKey("Enter", "GoToFirstResult"),
-					UI.Button().icon(UI.icons.close).bare().onClick("Close"),
+					UI.Button()
+						.icon(UI.icons.close, { color: new UIColor("var(--text-color)") })
+						.bare()
+						.onClick("Close"),
 				),
 			UI.Column()
 				.hideWhen(Binding.all(v.bind("hasInput"), "loading").not())
@@ -45,7 +47,7 @@ export function SearchView(v: Binding<SearchActivity>) {
 				.with(UI.Text("Loading...")),
 			UI.List(v.bind("results"))
 				.bounds(0, 50)
-				.outer(UI.Column().allowKeyboardFocus().scroll())
+				.outer(UI.Column().allowKeyboardFocus().scroll().grow())
 				.with((item) =>
 					UI.Column()
 						.allowFocus()

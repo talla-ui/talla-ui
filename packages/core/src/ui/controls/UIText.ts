@@ -166,7 +166,15 @@ export namespace UIText {
 		}
 
 		/**
-		 * Enables or disables text wrapping.
+		 * Sets the text wrapping and line break handling mode.
+		 * - `true` or `"pre-wrap"` — wraps text, preserves whitespace (default when called without arguments).
+		 * - `"normal"` — wraps text, collapses whitespace.
+		 * - `"pre-line"` — wraps text, collapses whitespace but preserves line breaks.
+		 * - `"nowrap"` — single line, no truncation, no shrinking.
+		 * - `"pre"` — preserves whitespace, no wrapping, no truncation, no shrinking.
+		 * - `"ellipsis"` — single line, truncated with ellipsis (default if `.wrap()` is never called).
+		 * - `"clip"` — single line, hard clip without ellipsis.
+		 * - `false` or `""` — resets to inherited behavior.
 		 * @param mode The line break mode, or true to use `pre-wrap`; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */

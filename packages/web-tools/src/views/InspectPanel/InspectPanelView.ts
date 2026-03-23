@@ -17,8 +17,8 @@ const MAX_ITEMS = 500;
 const BodyView = (v: Binding<InspectPanelView>) =>
 	UI.Column()
 		.name("PropertyList")
+		.grow()
 		.layout({ distribution: "start", gravity: "stretch" })
-		.flex()
 		.with(
 			UI.List(v.bind("history"), (item) =>
 				UI.Column()
@@ -45,7 +45,7 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 							),
 							UI.Text(item.bind("key").string(".{}"))
 								.hideUnless(item.bind("key"))
-								.flex(0, 0)
+								.wrap("nowrap")
 								.fontSize(12),
 							UI.Spacer(),
 							UI.Text(item.bind("display"))
@@ -57,7 +57,6 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 			).outer(
 				UI.Column()
 					.scroll()
-					.flex(0)
 					.maxHeight(152)
 					.onRendered("HistoryScrollRendered"),
 			),
@@ -85,8 +84,7 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 								.position({ gravity: "overlay", top: 2, end: 0 }),
 							UI.Text(item.bind("key"))
 								.hideWhen(item.bind("listItem"))
-								.flex(0, 0)
-								.width(120, 0, 120)
+								.width(120, 120, 120)
 								.padding({ end: 8 })
 								.fontSize(12)
 								.dim(item.bind("private"))
@@ -104,6 +102,7 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 					UI.Column()
 						.divider()
 						.scroll()
+						.grow()
 						.onRendered("PropertyScrollRendered")
 						.hideUnless(v.bind("properties.length")),
 				),
@@ -127,7 +126,7 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 				),
 			UI.Column()
 				.effect("drag-modal", true)
-				.flex()
+				.grow()
 				.hideWhen(
 					Binding.any(
 						v.bind("displayValue").equals(undefined),

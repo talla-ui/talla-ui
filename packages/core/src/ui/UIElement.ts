@@ -220,7 +220,7 @@ export namespace UIElement {
 		 *
 		 * @example
 		 * function limitColumnWidth(b: UIColumn.ColumnBuilder) {
-		 *   return b.width(200, 100).flex(0, 1);
+		 *   return b.width(200, 100, 200).grow();
 		 * }
 		 * let myColumn = UI.Column("Hello").apply(limitColumnWidth);
 		 */
@@ -464,17 +464,14 @@ export namespace UIElement {
 		}
 
 		/**
-		 * Enables flex-grow on the element, allowing it to take up as much space as possible (or flex-shrink to allow it to shrink).
-		 * - This method sets the {@link StyleOverrides.flexGrow flexGrow} and {@link StyleOverrides.flexShrink flexShrink} factors of the element.
-		 * - If a flex-shrink factor is provided, the flex-grow factor _must_ also be defined.
-		 * - In the web-handler implementation, flex-basis is set automatically: when grow is greater than 0, the element's flex-basis is set to 0 for equal spacing among flex siblings; otherwise, it's set to auto.
-		 * @param grow The flex-grow factor; defaults to 1.
-		 * @param shrink The flex-shrink factor; defaults to 1.
+		 * Enables the element to grow within its parent container, filling allocated space.
+		 * - By default, the element fills exactly the space its parent allocates, ignoring its own content size.
+		 * - Use `"content"` to grow from the element's content size instead, taking additional space if available.
+		 * @param grow The growth factor, or `"content"` for content-based sizing; defaults to 1.
 		 * @returns The builder instance for chaining.
 		 */
-		flex(grow: number = 1, shrink: number = 1) {
-			this.setStyleOverride("flexGrow", grow);
-			this.setStyleOverride("flexShrink", shrink);
+		grow(grow: number | "content" = 1) {
+			this.setStyleOverride("grow", grow);
 			return this;
 		}
 

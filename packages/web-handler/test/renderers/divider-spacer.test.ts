@@ -108,21 +108,22 @@ describe("UISpacerRenderer", () => {
 	});
 
 	describe("Flex properties", () => {
-		test("flex with custom grow applies", async () => {
-			const spacer = UI.Spacer(50).flex(2).build();
+		test("grow with custom factor applies and sets basis to 0", async () => {
+			const spacer = UI.Spacer(50).grow(2).build();
 			await renderView(spacer);
 
 			const el = document.querySelector("spacer") as HTMLElement;
 			expect(el.style.flexGrow).toBe("2");
+			expect(el.style.flexBasis).toBe("0px");
 		});
 
-		test("flex with shrink applies", async () => {
-			const spacer = UI.Spacer().flex(0, 1).build();
+		test('grow("content") does not set flexBasis', async () => {
+			const spacer = UI.Spacer().grow("content").build();
 			await renderView(spacer);
 
 			const el = document.querySelector("spacer") as HTMLElement;
-			expect(el.style.flexGrow).toBe("0");
-			expect(el.style.flexShrink).toBe("1");
+			expect(el.style.flexGrow).toBe("1");
+			expect(el.style.flexBasis).toBe("");
 		});
 	});
 

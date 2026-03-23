@@ -87,8 +87,6 @@ export function makeBaseCSS(): Record<string, {}> {
 		[`.${CLASS_UI}.${CLASS_SCROLL}`]: {
 			alignSelf: "stretch",
 			flexShrink: "1",
-			flexGrow: "1",
-			flexBasis: "0",
 			minHeight: "0",
 		},
 

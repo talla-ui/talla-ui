@@ -68,7 +68,7 @@ export class ModalMenu extends Widget implements ModalFactory.MenuController {
 	}
 
 	static ItemHint() {
-		return UI.Text().dim().style({ fontSize: 12, flexShrink: 0 });
+		return UI.Text().dim().smaller().wrap("nowrap");
 	}
 
 	static TitleText() {

@@ -440,13 +440,17 @@ function addDimensionsCSS(
 	if (maxWidth !== undefined) result.maxWidth = getCSSLength(maxWidth, "");
 	let maxHeight = dimensions.maxHeight;
 	if (maxHeight !== undefined) result.maxHeight = getCSSLength(maxHeight, "");
-	let flexGrow = dimensions.flexGrow;
-	if (flexGrow !== undefined) {
-		result.flexGrow = String(flexGrow);
-		result.flexShrink = String(dimensions.flexShrink ?? 1);
-		result.flexBasis = flexGrow > 0 ? "0" : "auto";
-	} else if (dimensions.flexShrink !== undefined) {
-		result.flexShrink = String(dimensions.flexShrink);
+	let grow = dimensions.grow;
+	if (grow !== undefined) {
+		if (grow === "content") {
+			result.flexGrow = "1";
+		} else {
+			result.flexGrow = String(grow);
+			result.flexBasis = "0";
+		}
+	}
+	if (dimensions.shrink !== undefined) {
+		result.flexShrink = String(dimensions.shrink);
 	}
 	return result;
 }
@@ -478,7 +482,13 @@ function addTextStyleCSS(
 	if (lineBreakMode === "clip") result.textOverflow = "clip";
 	else if (lineBreakMode === "ellipsis") {
 		// ellipsis is the default, no-op
-	} else if (lineBreakMode !== undefined) result.whiteSpace = lineBreakMode;
+	} else if (lineBreakMode !== undefined) {
+		result.whiteSpace = lineBreakMode;
+		if (lineBreakMode === "nowrap" || lineBreakMode === "pre") {
+			result.textOverflow = "clip";
+			result.flexShrink = "0";
+		}
+	}
 	let italic = textStyle.italic;
 	if (italic !== undefined) result.fontStyle = italic ? "italic" : "normal";
 	if (textStyle.bold) result.fontWeight = "bold"; // or explicit fontWeight above

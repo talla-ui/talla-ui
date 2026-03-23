@@ -31,7 +31,7 @@ export function FooView(v: Binding<FooViewModel>) {
 						.height(40)
 						.padding({ start: 12, end: 8 })
 						.with(
-							UI.Text(item.bind("title")).flex(),
+							UI.Text(item.bind("title")).grow(),
 							UI.Image(UI.icons.chevronNext),
 						),
 				).outer(

@@ -16,7 +16,7 @@ export class UISpacer extends UIElement {
 export namespace UISpacer {
 	/**
 	 * Creates a view builder for a spacer element
-	 * @note The view builder automatically calls {@link UIElement.ElementBuilder.flex flex()} if no dimensions are specified, so the spacer will grow to fill the available space.
+	 * @note The view builder automatically calls {@link UIElement.ElementBuilder.grow grow()} if no dimensions are specified, so the spacer will grow to fill the available space.
 	 * @param minWidth The minimum width of the spacer, in pixels or a string with unit.
 	 * @param minHeight The minimum height of the spacer, in pixels or a string with unit; defaults to `minWidth` if not specified.
 	 * @returns A builder object for configuring the spacer.
@@ -29,7 +29,7 @@ export namespace UISpacer {
 		let result = new SpacerBuilder();
 		if (minWidth) result.minWidth(minWidth);
 		if (minHeight) result.minHeight(minHeight);
-		if (minWidth == null && minHeight == null) result.flex();
+		if (minWidth == null && minHeight == null) result.grow();
 		return result;
 	}
 

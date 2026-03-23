@@ -6,7 +6,7 @@ export class MainActivity extends Activity {
 		return UI.Column(
 			UI.Text("Hello, world!").icon(new UIIconResource(globeSvg)).center(),
 		)
-			.flex()
+			.grow()
 			.centerContent();
 	}
 }

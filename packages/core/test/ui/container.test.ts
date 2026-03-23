@@ -137,42 +137,39 @@ describe("Container hover tracking", () => {
 	});
 });
 
-describe("Container .flex() method", () => {
-	test("flex() sets grow and shrink defaults", () => {
-		let column = UI.Column().flex().build();
-		expect(column.style?.flexGrow).toBe(1);
-		expect(column.style?.flexShrink).toBe(1);
+describe("Container .grow() method", () => {
+	test("grow() sets grow default", () => {
+		let column = UI.Column().grow().build();
+		expect(column.style?.grow).toBe(1);
 	});
 
-	test("flex() works on both Row and Column", () => {
-		let column = UI.Column().flex().build();
-		let row = UI.Row().flex().build();
-		expect(column.style?.flexGrow).toBe(1);
-		expect(row.style?.flexGrow).toBe(1);
+	test("grow() works on both Row and Column", () => {
+		let column = UI.Column().grow().build();
+		let row = UI.Row().grow().build();
+		expect(column.style?.grow).toBe(1);
+		expect(row.style?.grow).toBe(1);
 	});
 
-	test("flex() accepts custom grow and shrink values", () => {
-		let column = UI.Column().flex(2, 0).build();
-		expect(column.style?.flexGrow).toBe(2);
-		expect(column.style?.flexShrink).toBe(0);
+	test("grow() accepts custom grow value", () => {
+		let column = UI.Column().grow(2).build();
+		expect(column.style?.grow).toBe(2);
 	});
 
-	test("flex(0, 1) sets shrink-only behavior", () => {
-		let column = UI.Column().flex(0, 1).build();
-		expect(column.style?.flexGrow).toBe(0);
-		expect(column.style?.flexShrink).toBe(1);
+	test('grow("content") sets content-based sizing', () => {
+		let column = UI.Column().grow("content").build();
+		expect(column.style?.grow).toBe("content");
 	});
 
-	test("flex() renders correctly", async () => {
-		let column = UI.Column(UI.Text("Content")).flex().build();
+	test("grow() renders correctly", async () => {
+		let column = UI.Column(UI.Text("Content")).grow().build();
 		renderTestView(column);
 		let out = await expectOutputAsync({ type: "column" });
-		expect(out.getSingle().style?.flexGrow).toBe(1);
+		expect(out.getSingle().style?.grow).toBe(1);
 	});
 
-	test("flex() can be combined with focus and hover", () => {
-		let column = UI.Column().flex().allowKeyboardFocus().trackHover().build();
-		expect(column.style?.flexGrow).toBe(1);
+	test("grow() can be combined with focus and hover", () => {
+		let column = UI.Column().grow().allowKeyboardFocus().trackHover().build();
+		expect(column.style?.grow).toBe(1);
 		expect(column.allowKeyboardFocus).toBe(true);
 		expect(column.trackHover).toBe(true);
 	});
@@ -185,9 +182,9 @@ describe("Container .centerContent() method", () => {
 		expect(column.layout?.distribution).toBe("center");
 	});
 
-	test("flex() and centerContent() can be combined", () => {
-		let column = UI.Column().flex().centerContent().build();
-		expect(column.style?.flexGrow).toBe(1);
+	test("grow() and centerContent() can be combined", () => {
+		let column = UI.Column().grow().centerContent().build();
+		expect(column.style?.grow).toBe(1);
 		expect(column.layout?.gravity).toBe("center");
 		expect(column.layout?.distribution).toBe("center");
 	});
@@ -242,15 +239,14 @@ describe("Position zIndex property", () => {
 describe("Combined container features", () => {
 	test("Container with all interactive features", () => {
 		let column = UI.Column(UI.Text("Content"))
-			.flex()
+			.grow()
 			.centerContent()
 			.allowKeyboardFocus()
 			.trackHover()
 			.build();
 
-		// flex() properties
-		expect(column.style?.flexGrow).toBe(1);
-		expect(column.style?.flexShrink).toBe(1);
+		// grow() properties
+		expect(column.style?.grow).toBe(1);
 
 		// centerContent() layout
 		expect(column.layout?.gravity).toBe("center");
@@ -264,7 +260,7 @@ describe("Combined container features", () => {
 	test("Interactive container renders and responds to events", async () => {
 		let mouseEntered = false;
 		let column = UI.Column()
-			.flex()
+			.grow()
 			.allowKeyboardFocus()
 			.onMouseEnter(() => {
 				mouseEntered = true;
@@ -275,7 +271,7 @@ describe("Combined container features", () => {
 		let out = await expectOutputAsync({ type: "column" });
 
 		expect(out.getSingle().focusable).toBe(true);
-		expect(out.getSingle().style?.flexGrow).toBe(1);
+		expect(out.getSingle().style?.grow).toBe(1);
 
 		out.getSingle().sendPlatformEvent("mouseenter");
 		expect(mouseEntered).toBe(true);

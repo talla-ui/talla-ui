@@ -9,7 +9,7 @@ const countNumberStyle = {
 };
 
 const countButtonStyle = {
-	flexGrow: 1,
+	grow: 1,
 	width: 100,
 	borderRadius: 0,
 };
@@ -43,7 +43,7 @@ export function BarView(v: Binding<{ count: number }>) {
 							.gap(0)
 							.with(
 								UI.Column()
-									.flex()
+									.grow()
 									.centerContent()
 									.with(
 										UI.Text(v.bind("count"))

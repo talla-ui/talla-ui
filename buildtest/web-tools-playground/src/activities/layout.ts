@@ -46,7 +46,6 @@ export function MainLayout(...content: ViewBuilder[]) {
 	return UI.Row()
 		.background("shade")
 		.position("cover")
-		.flex(0, 1)
 		.with(
 			// Left nav for wide screens
 			UI.Column()
@@ -64,12 +63,13 @@ export function MainLayout(...content: ViewBuilder[]) {
 
 			// Main content column
 			UI.Column()
-				.flex()
+				.grow()
 				.gravity("center")
 				.background("background")
 				.borderRadius(8)
 				.with(...content)
-				.scroll(),
+				.scroll()
+				.grow(),
 
 			// Bottom nav for narrow screens
 			UI.Column()

@@ -42,7 +42,7 @@ function FoldView(title: StringConvertible, folded?: boolean) {
 				.padding({ x: 6, y: 8 })
 				.onClick("ToggleFold"),
 			UI.Divider().lineColor(UI.colors.text.alpha(0.3)),
-			UI.ShowUnless(v.bind("folded"), UI.Column(...content).flex()),
+			UI.ShowUnless(v.bind("folded"), UI.Column(...content)),
 		),
 	).extend(
 		{
@@ -71,7 +71,7 @@ function InfoDetailRow(label: StringConvertible, chevron?: boolean) {
 			.border({ bottom: 1 }, "divider")
 			.with(
 				UI.Text(label).hideWhen(!label).width(120).fontSize(12),
-				UI.Text(v.bind("value")).fontSize(12).flex(),
+				UI.Text(v.bind("value")).fontSize(12).grow(),
 				UI.Image(UI.icons.chevronNext).size(20).hideWhen(!chevron),
 			),
 	).extend({
@@ -153,11 +153,12 @@ const ViewBody = (v: Binding<IndexPanelView>) =>
 			.hideWhen(
 				new Binding("docked"), // from MainOverlayView
 			)
-			.flex(),
+			.grow(),
 	)
 		.gap(8)
-		.flex()
-		.scroll();
+		.grow()
+		.scroll()
+		.grow();
 
 export class IndexPanelView extends Widget {
 	protected override get body() {
