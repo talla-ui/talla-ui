@@ -322,6 +322,19 @@ describe("Brightness and text color", () => {
 		expect(UIColor.isBrightColor(mid, 0.4)).toBe(true);
 		expect(UIColor.isBrightColor(mid, 0.6)).toBe(false);
 	});
+
+	test("isBrightColor supports duck-typed output path", () => {
+		expect(
+			UIColor.isBrightColor({
+				output: () => UI.colors.white.output(),
+			} as UIColor),
+		).toBe(true);
+		expect(
+			UIColor.isBrightColor({
+				output: () => UI.colors.black.output(),
+			} as UIColor),
+		).toBe(false);
+	});
 });
 
 describe("Color mixing (oklab space)", () => {

@@ -82,8 +82,10 @@ function _supportsOklch(): boolean {
 }
 
 /** @internal Convert a UIColor to a CSS color string, using oklch when supported. */
-export function colorToCSS(color: UIColor): string {
-	let out = color.output();
+export function colorToCSS(color: UIColor | string): string {
+	if (typeof color === "string") color = new UIColor(color);
+	let out = color?.output?.();
+	if (!out) return "";
 	if (out.raw !== undefined) return out.raw;
 	return _supportsOklch() ? out.oklchString() : out.rgbaString();
 }
