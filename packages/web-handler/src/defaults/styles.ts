@@ -31,11 +31,11 @@ export function makeButtonStyles(): Record<string, WebTheme.StyleDefinition> {
 			minWidth: "none",
 			padding: "0.375rem 0.5rem",
 			textAlign: "start",
-			css: { "--button-state-opacity": "0" } as {},
+			css: { "--WebHandler-button-state-opacity": "0" } as {},
 		},
 		default: {
 			...baseStyles,
-			css: { "--button-state-opacity": "0.05" } as {},
+			css: { "--WebHandler-button-state-opacity": "0.05" } as {},
 		},
 		accent: {
 			background: colors.accent,
@@ -49,7 +49,7 @@ export function makeButtonStyles(): Record<string, WebTheme.StyleDefinition> {
 			minWidth: 0,
 			borderColor: colors.transparent,
 			background: "transparent",
-			css: { "--button-state-opacity": "0.05" } as {},
+			css: { "--WebHandler-button-state-opacity": "0.05" } as {},
 			"+disabled": {
 				opacity: 0.5,
 				cursor: "default",

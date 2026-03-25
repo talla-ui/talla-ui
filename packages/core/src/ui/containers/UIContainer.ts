@@ -108,7 +108,7 @@ export namespace UIContainer {
 		space?: string | number;
 		/** Separator line width (CSS length or pixels) */
 		lineWidth?: string | number;
-		/** Line separator color, defaults to `separator` */
+		/** Line separator color, defaults to `divider` */
 		lineColor?: UIColor;
 		/** Line separator margin (CSS length or pixels) */
 		lineMargin?: string | number;

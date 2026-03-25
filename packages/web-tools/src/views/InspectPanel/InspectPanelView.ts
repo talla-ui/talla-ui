@@ -55,10 +55,7 @@ const BodyView = (v: Binding<InspectPanelView>) =>
 						),
 					),
 			).outer(
-				UI.Column()
-					.scroll()
-					.maxHeight(152)
-					.onRendered("HistoryScrollRendered"),
+				UI.Column().scroll().maxHeight(152).onRendered("HistoryScrollRendered"),
 			),
 			UI.List(v.bind("properties"), (item) =>
 				UI.Column()

@@ -202,6 +202,15 @@ export function initializeCSS(
 		};
 	}
 
+	// set tint color CSS variable
+	let tintColor = UIColor.getColor("tint");
+	if (tintColor) {
+		allCss[":root"] = {
+			...((allCss[":root"] as any) || {}),
+			"--WebHandler-tint": colorToCSS(tintColor),
+		};
+	}
+
 	// add themed CSS classes for buttons and text fields
 	for (let variant in themeStyles.buttonStyles) {
 		let style = themeStyles.buttonStyles[variant]!;
@@ -649,7 +658,7 @@ function getCSSText(style: any) {
 	let result = "";
 	for (let p in style) {
 		if (style[p] === "" || style[p] == undefined) continue;
-		let key = camelToCssCase(p);
+		let key = p[0] === "-" ? p : camelToCssCase(p);
 		let value = String(style[p]);
 		if (value.indexOf("|") >= 0) {
 			for (let str of value.split("||").reverse()) {
