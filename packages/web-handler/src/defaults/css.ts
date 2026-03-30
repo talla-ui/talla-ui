@@ -180,6 +180,9 @@ export function makeBaseCSS(): Record<string, {}> {
 			flexDirection: "column",
 			cursor: "default",
 		},
+		[`.${CLASS_PAGE_ROOT}[data-mode=screen]>.${CLASS_UI}`]: {
+			flexGrow: "1",
+		},
 		["web-handler-page-root[data-mode=page]:only-of-type:not([data-viewport-override])"]:
 			{
 				position: "relative",
