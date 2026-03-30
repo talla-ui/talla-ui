@@ -599,6 +599,27 @@ describe("Mapped/boolean bindings", () => {
 		parent.child.expectValue().toBe(true);
 	});
 
+	test("Mapped: unbound binding skips callback", () => {
+		let { parent } = setup();
+		let called = false;
+		parent.child.bindValue(
+			new Binding<number>().map((v) => {
+				called = true;
+				return v * 2;
+			}),
+		);
+		expect(called).toBe(false);
+		expect(parent.child.value).toBeUndefined();
+	});
+
+	test("Mapped: unbound binding with default invokes callback", () => {
+		let { parent } = setup();
+		parent.child.bindValue(
+			new Binding<number>(undefined, 42).map((v) => v * 2),
+		);
+		parent.child.expectValue().toBe(84);
+	});
+
 	test("Convert: not", () => {
 		let { parent } = setup();
 		parent.child.bindValue(new Binding("value1").not());

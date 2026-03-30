@@ -139,9 +139,7 @@ test("Badge with background binding", async () => {
 		bg: UIColor.BackgroundType = UI.colors.red;
 	}
 	function MyView() {
-		return MyWidget.builder((v) =>
-			UI.Badge("Status", v.bind("bg")),
-		);
+		return MyWidget.builder((v) => UI.Badge("Status", v.bind("bg")));
 	}
 	let widget = MyView().build();
 	renderTestView(widget);

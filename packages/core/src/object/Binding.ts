@@ -397,6 +397,8 @@ export class Binding<T = any> {
 
 	/**
 	 * Transforms the bound value, using the provided function
+	 * - If the source binding is unbound and has no default value, the callback is not invoked and the mapped binding remains undefined.
+	 * - To map unbound values, use {@link Binding.combine()} with `allowPartial`.
 	 * @param f A function that maps the bound value to a new value
 	 * @returns A new binding, typed as the new value
 	 */
@@ -404,7 +406,9 @@ export class Binding<T = any> {
 		let result: Binding<U> = this.clone();
 		let _apply = this[$_bind_apply];
 		result[$_bind_apply] = function (target, update) {
-			_apply.call(this, target, (value, bound) => update(f(value), bound));
+			_apply.call(this, target, (value, bound) => {
+				if (bound || value !== undefined) update(f(value), bound);
+			});
 		};
 		return result;
 	}
