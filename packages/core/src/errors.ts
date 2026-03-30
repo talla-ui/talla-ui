@@ -39,9 +39,10 @@ export function invalidArgErr(name: string) {
 export const enum ERROR {
 	Object_Unlinked,
 	Object_NoAttach,
-	Object_NoObserve,
 	Object_NoBind,
 	Object_EventAborted,
+	Object_Invalid,
+	Object_PropNoObserve,
 	List_AttachState,
 	List_Restriction,
 	List_Duplicate,
@@ -59,9 +60,10 @@ export const enum ERROR {
 const messages = [
 	"Object already unlinked",
 	"Object cannot be attached",
-	"Property not observable",
 	"Bindings not enabled",
 	"Event listener aborted",
+	"Object not observable",
+	"Property not observable",
 	"Cannot change attached state",
 	"Unmatched object restriction",
 	"Duplicate object",

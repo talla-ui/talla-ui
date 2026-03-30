@@ -7,7 +7,7 @@ import {
 	ViewBuilderEventHandler,
 	ViewBuilderFunction,
 } from "../app/index.js";
-import { err, ERROR } from "../errors.js";
+import { err, ERROR, invalidArgErr } from "../errors.js";
 import { BindingOrValue, isBinding, ObservableEvent } from "../object/index.js";
 import { RenderEffect } from "./RenderEffect.js";
 import { StyleOverrides, UIColor, UIIconResource } from "./style/index.js";
@@ -687,7 +687,11 @@ export namespace UIElement {
 				});
 			} else if (value) {
 				let overrides = this._getStyleOverrides();
-				Object.assign(overrides, value);
+				for (let k in value) {
+					let v = (value as any)[k];
+					if (isBinding(v)) throw invalidArgErr("style property (binding)");
+					(overrides as any)[k] = v;
+				}
 			}
 			return this;
 		}

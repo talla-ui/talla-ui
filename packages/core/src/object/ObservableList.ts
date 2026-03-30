@@ -1,7 +1,7 @@
 import { err, ERROR, invalidArgErr } from "../errors.js";
 import { $_origin, unlinkObject } from "./object_util.js";
 import { ObservableEvent } from "./ObservableEvent.js";
-import { ObservableObject } from "./ObservableObject.js";
+import { isObservableObject, ObservableObject } from "./ObservableObject.js";
 
 /** Private structure that's used to maintain a doubly-linked list */
 type LinkedList<TObject extends ObservableObject> = {
@@ -148,8 +148,10 @@ export class ObservableList<
 	 */
 	insert(item: T, before?: T) {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
-		if (!item || item.isUnlinked()) throw invalidArgErr("item");
-		if (!(item instanceof (this._restriction || ObservableObject)))
+		if (!item) throw invalidArgErr("item");
+		if (!isObservableObject(item)) throw err(ERROR.Object_Invalid, "item");
+		if (item.isUnlinked()) throw err(ERROR.Object_Unlinked, "item");
+		if (this._restriction && !(item instanceof this._restriction))
 			throw err(ERROR.List_Restriction);
 		const refs = this[$_list];
 		if (before && !refs.map.has(before)) throw invalidArgErr("before");
@@ -253,9 +255,12 @@ export class ObservableList<
 	 */
 	replace(item: T, replacement: T) {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
-		if (!replacement || replacement.isUnlinked())
-			throw invalidArgErr("replace");
-		if (!(replacement instanceof (this._restriction || ObservableObject)))
+		if (!replacement) throw invalidArgErr("replacement");
+		if (!isObservableObject(replacement))
+			throw err(ERROR.Object_Invalid, "replacement");
+		if (replacement.isUnlinked())
+			throw err(ERROR.Object_Unlinked, "replacement");
+		if (this._restriction && !(replacement instanceof this._restriction))
 			throw err(ERROR.List_Restriction);
 		let map = this[$_list].map;
 		if (map.has(replacement)) throw err(ERROR.List_Duplicate);

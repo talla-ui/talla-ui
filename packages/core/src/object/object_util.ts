@@ -147,7 +147,7 @@ export function addTrap<TObject extends ObservableObject>(
 	if (!target[$_unlinked]) list = getTrapList(target, p);
 	if (!list) {
 		throw err(
-			ERROR.Object_NoObserve,
+			ERROR.Object_PropNoObserve,
 			typeof p === "symbol" ? p.description : p,
 		);
 	}
@@ -553,7 +553,7 @@ class Bound {
 			errorHandler(
 				firstProp == null
 					? err(ERROR.Object_NoBind, this.p.map(String).join("."))
-					: err(ERROR.Object_NoObserve, firstProp),
+					: err(ERROR.Object_PropNoObserve, firstProp),
 			);
 			return true;
 		}

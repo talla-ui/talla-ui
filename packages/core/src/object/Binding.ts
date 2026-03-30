@@ -1,6 +1,6 @@
 import { DeferredString, fmt, StringConvertible } from "@talla-ui/util";
-import { invalidArgErr } from "../errors.js";
-import { ObservableObject } from "./ObservableObject.js";
+import { err, ERROR, invalidArgErr } from "../errors.js";
+import { isObservableObject, ObservableObject } from "./ObservableObject.js";
 import {
 	$_bind_apply,
 	BoundResult,
@@ -191,6 +191,8 @@ export class Binding<T = any> {
 		object: TObject,
 		propertyName: K,
 	): Binding<TObject[K]> {
+		if (!object) throw invalidArgErr("object");
+		if (!isObservableObject(object)) throw err(ERROR.Object_Invalid);
 		if (!(propertyName in object)) (object as any)[propertyName] = undefined;
 		return new Binding({ path: [propertyName], origin: object });
 	}
