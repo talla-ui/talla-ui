@@ -31,8 +31,8 @@ const BodyView = (title: string, inspectView: InspectPanelView) =>
 				.padding({ start: 8, end: 4, top: 1, bottom: 4 }),
 			UI.Divider(),
 			UI.Column(UI.Show(Binding.from(inspectView)))
-				.flex()
-				.scroll(),
+				.scroll()
+				.grow(),
 		);
 
 export class FloatOverlayView extends Widget {

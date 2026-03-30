@@ -43,7 +43,7 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 				.padding({ start: 8, end: 4 })
 				.gap(4)
 				.with(
-					UI.Text("Console").bold().lineHeight(1).flex(0, 0),
+					UI.Text("Console").bold().lineHeight(1),
 					UI.Spacer(8),
 					UI.Row(
 						UI.Button("all")
@@ -93,8 +93,7 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 							let tf = e.source;
 							if ("value" in tf && tf.value) return;
 							row.setStyle({ width: 100 });
-						})
-						.flex(0, 1),
+						}),
 					UI.IconButton(UI.icons.close, 16).bare().onClick("Close"),
 				),
 			UI.Divider(),
@@ -117,7 +116,7 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 							.dim()
 							.position({ gravity: "overlay", top: 2, start: 8 }),
 						UI.Text(item.bind("loc"))
-							.flex()
+							.grow()
 							.fontSize(10)
 							.dim()
 							.textAlign("end")
@@ -157,13 +156,14 @@ const BodyView = (v: Binding<ConsoleOverlayView>) =>
 					),
 			).outer(
 				UI.Column()
-					.layout({ distribution: "end" })
 					.name("WebToolsConsoleList")
 					.accessibleRole("list")
 					.allowKeyboardFocus()
 					.onFocusIn("SetListFocus")
-					.flex()
-					.scroll(),
+					.layout({ distribution: "end" })
+					.grow()
+					.scroll()
+					.grow(),
 			),
 			UI.Divider(),
 			UI.Row()

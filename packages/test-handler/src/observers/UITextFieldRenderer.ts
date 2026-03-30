@@ -42,8 +42,9 @@ export class UITextFieldRenderer extends TestBaseObserver<UITextField> {
 	}
 
 	getOutput() {
-		// NOTE: ignoring multiline flag here
-		let elt = new TestOutputElement("textfield");
+		let elt = new TestOutputElement(
+			this.observed.multiline ? "textarea" : "textfield",
+		);
 		let output = new RenderContext.Output(this.observed, elt);
 		elt.output = output;
 		elt.focusable = true;

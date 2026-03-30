@@ -18,10 +18,10 @@ export type StyleOverrides = {
 	minHeight?: string | number;
 	/** The maximum height of the element, in pixels or as a string with unit. */
 	maxHeight?: string | number;
-	/** The flex growth factor. */
-	flexGrow?: number;
-	/** The flex shrink factor. */
-	flexShrink?: number;
+	/** The growth factor, or `"content"` for content-based sizing (flex-basis auto). */
+	grow?: number | "content";
+	/** The shrink factor; set to 1 to allow an element to shrink below its content size when space is limited. */
+	shrink?: number;
 	/** The padding within the element, in pixels, CSS string, or separate offset values. */
 	padding?: StyleOverrides.Offsets;
 	/** The margin around the element, in pixels, CSS string, or separate offset values. */
@@ -44,7 +44,17 @@ export type StyleOverrides = {
 	tabularNums?: boolean;
 	/** The line height relative to font size (CSS value, not in pixels). */
 	lineHeight?: string | number;
-	/** The line break handling mode (CSS white-space value). */
+	/**
+	 * The line break handling mode.
+	 * - `"ellipsis"` — single line, truncated with ellipsis (default).
+	 * - `"clip"` — single line, hard clip without ellipsis.
+	 * - `"nowrap"` — single line, no truncation, no shrinking.
+	 * - `"pre"` — preserves whitespace, no wrapping, no truncation, no shrinking.
+	 * - `"normal"` — wraps text, collapses whitespace.
+	 * - `"pre-wrap"` — wraps text, preserves whitespace.
+	 * - `"pre-line"` — wraps text, collapses whitespace but preserves line breaks.
+	 * - `""` — resets to inherited behavior.
+	 */
 	lineBreakMode?:
 		| "normal"
 		| "nowrap"

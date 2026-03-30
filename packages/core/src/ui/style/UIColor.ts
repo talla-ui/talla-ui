@@ -121,8 +121,8 @@ export class UIColor {
 	 * @param threshold The brightness threshold, from 0 to 1; defaults to 0.72.
 	 * @returns True if the color's perceived brightness exceeds the threshold.
 	 */
-	static isBrightColor(color: UIColor, threshold?: number): boolean {
-		let out = color.output();
+	static isBrightColor(color?: UIColor, threshold?: number): boolean {
+		let out = color?.output?.() ?? ZERO_OUT;
 		if (out.raw || out.alpha === 0) return true;
 		return out.l > (threshold ?? 0.72);
 	}
@@ -406,11 +406,32 @@ export namespace UIColor {
 		"link",
 		"danger",
 		"success",
+		"tint",
 	] as const;
 
 	type _DefaultColors = { readonly [K in (typeof _names)[number]]: UIColor };
 
-	/** An object containing all standard color references. */
+	/**
+	 * An object containing all standard color references.
+	 *
+	 * **Named colors** — Fixed base colors:
+	 * `transparent`, `black`, `darkerGray`, `darkGray`, `gray`, `lightGray`, `white`,
+	 * `slate`, `lightSlate`, `red`, `orange`, `yellow`, `lime`, `green`,
+	 * `turquoise`, `cyan`, `blue`, `violet`, `purple`, `magenta`
+	 *
+	 * **Semantic colors** — Theme-dependent, derived from other colors:
+	 * - `background` — Main surface color for pages, modals, and panels
+	 * - `shade` — Slightly offset background for visual hierarchy
+	 * - `text` — Primary text color, auto-contrasts with background
+	 * - `darkText` — Dark text reference (typically black), used in contrast calculations
+	 * - `lightText` — Light text reference (typically white), used in contrast calculations
+	 * - `divider` — Separator and border color (low-opacity text)
+	 * - `accent` — Emphasis color for highlighted containers and accent buttons
+	 * - `tint` — Interactive/selection indicator for checkboxes, toggles, and switches
+	 * - `link` — Hyperlink and link-style button color
+	 * - `danger` — Error states, invalid input borders, and destructive actions
+	 * - `success` — Positive/confirmation state indicator
+	 */
 	export const defaults: _DefaultColors = Object.freeze(
 		_names.reduce(
 			(obj, name) => {

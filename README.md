@@ -23,7 +23,7 @@ class MainActivity extends Activity {
 	static override View() {
 		// Views are composed declaratively using builder functions.
 		// No JSX, no templates — just TypeScript.
-		return UI.Column(UI.Text("Hello, world!").center()).flex().centerContent();
+		return UI.Column(UI.Text("Hello, world!").center()).grow().centerContent();
 	}
 }
 

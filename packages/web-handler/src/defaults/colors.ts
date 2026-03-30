@@ -37,5 +37,6 @@ export function makeDefaultColors(): Record<UIColor.ColorName, UIColor> {
 		danger: UI.colors.red,
 		success: UI.colors.green,
 		link: UI.colors.blue,
+		tint: UI.colors.blue,
 	};
 }

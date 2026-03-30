@@ -45,7 +45,7 @@ test("Multiline text field with height", async () => {
 	expect(tf.multiline).toBe(true);
 	renderTestView(tf);
 	await expectOutputAsync({
-		type: "textfield",
+		type: "textarea",
 		text: "Enter long text",
 		style: { height: 100 },
 	});

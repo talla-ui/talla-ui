@@ -166,7 +166,15 @@ export namespace UIText {
 		}
 
 		/**
-		 * Enables or disables text wrapping.
+		 * Sets the text wrapping and line break handling mode.
+		 * - `true` or `"pre-wrap"` — wraps text, preserves whitespace (default when called without arguments).
+		 * - `"normal"` — wraps text, collapses whitespace.
+		 * - `"pre-line"` — wraps text, collapses whitespace but preserves line breaks.
+		 * - `"nowrap"` — single line, no truncation, no shrinking.
+		 * - `"pre"` — preserves whitespace, no wrapping, no truncation, no shrinking.
+		 * - `"ellipsis"` — single line, truncated with ellipsis (default if `.wrap()` is never called).
+		 * - `"clip"` — single line, hard clip without ellipsis.
+		 * - `false` or `""` — resets to inherited behavior.
 		 * @param mode The line break mode, or true to use `pre-wrap`; defaults to true.
 		 * @returns The builder instance for chaining.
 		 */
@@ -242,21 +250,28 @@ export namespace UIText {
 	 */
 	export function badgeBuilder(
 		text?: BindingOrValue<StringConvertible>,
-		background: UIColor | UIColor.ColorName = "shade",
-		textColor?: UIColor | UIColor.ColorName,
-		padding: StyleOverrides.Offsets = { x: 8 },
-		borderRadius: string | number = "1em",
+		background: BindingOrValue<UIColor.BackgroundType | undefined> = "shade",
+		textColor?: BindingOrValue<UIColor | UIColor.ColorName | undefined>,
+		padding: BindingOrValue<StyleOverrides.Offsets | undefined> = { x: 8 },
+		borderRadius: BindingOrValue<StyleOverrides["borderRadius"]> = "1em",
 	) {
+		function getTextColor(bg?: UIColor.BackgroundType) {
+			if (typeof bg === "string") bg = UIColor.getColor(bg);
+			if (bg instanceof UIColor) return bg.text();
+			return "text";
+		}
 		let builder = new TextBuilder()
 			.text(text)
 			.smaller()
 			.padding(padding)
-			.borderRadius(borderRadius);
-		if (typeof background === "string") {
-			background = UIColor.getColor(background);
-		}
-		builder.background(background);
-		builder.textColor(textColor ?? background.text());
+			.borderRadius(borderRadius)
+			.background(background)
+			.textColor(
+				textColor ??
+					(background instanceof Binding
+						? background.map(getTextColor)
+						: getTextColor(background as UIColor.BackgroundType)),
+			);
 		return builder;
 	}
 

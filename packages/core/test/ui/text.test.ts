@@ -4,7 +4,7 @@ import {
 	useTestContext,
 } from "@talla-ui/test-handler";
 import { beforeEach, expect, test } from "vitest";
-import { UI, UIColumn, UIText, Widget } from "../../dist/index.js";
+import { UI, UIColor, UIColumn, UIText, Widget } from "../../dist/index.js";
 
 beforeEach(() => {
 	useTestContext();
@@ -117,6 +117,42 @@ test("Text with style overrides object", async () => {
 		text: "Styled",
 		style: { bold: true, fontSize: 20 },
 	});
+});
+
+test("Badge with default background", () => {
+	let badge = UI.Badge("Info").build();
+	expect(badge.text?.toString()).toBe("Info");
+	expect(badge.style?.borderRadius).toBe("1em");
+	expect(badge.style?.padding).toEqual({ x: 8 });
+});
+
+test("Badge with color background", () => {
+	let badge = UI.Badge("Alert", UI.colors.red).build();
+	expect(badge.text?.toString()).toBe("Alert");
+	expect(badge.style?.background).toBe(UI.colors.red);
+	// text color should be auto-derived from background
+	expect(badge.style?.textColor).toBeInstanceOf(UIColor);
+});
+
+test("Badge with background binding", async () => {
+	class MyWidget extends Widget {
+		bg: UIColor.BackgroundType = UI.colors.red;
+	}
+	function MyView() {
+		return MyWidget.builder((v) => UI.Badge("Status", v.bind("bg")));
+	}
+	let widget = MyView().build();
+	renderTestView(widget);
+	let out = await expectOutputAsync({ text: "Status" });
+	let bgBefore = out.getSingle().style.background;
+
+	// change the bound background color
+	widget.bg = UI.colors.blue;
+	out = await expectOutputAsync({ text: "Status" });
+	let bgAfter = out.getSingle().style.background;
+
+	// background should have changed
+	expect(bgBefore).not.toBe(bgAfter);
 });
 
 test("Text with style overrides and additional methods", async () => {

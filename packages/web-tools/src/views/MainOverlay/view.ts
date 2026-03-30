@@ -114,7 +114,7 @@ export const MainOverlayViewBody = (v: Binding<MainOverlayView>) =>
 
 			// Content
 			UI.Column()
-				.flex()
+				.grow()
 				.style(
 					Binding.any(
 						v.bind("docked").then({

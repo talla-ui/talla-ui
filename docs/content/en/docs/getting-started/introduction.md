@@ -23,7 +23,7 @@ import { useWebContext } from "@talla-ui/web-handler";
 
 class MainActivity extends Activity {
 	static override View() {
-		return UI.Column(UI.Text("Hello, world!").center()).flex().centerContent();
+		return UI.Column(UI.Text("Hello, world!").center()).grow().centerContent();
 	}
 }
 

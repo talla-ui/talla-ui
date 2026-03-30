@@ -22,6 +22,6 @@ test("Rendered, flexible", async () => {
 	renderTestView(UI.Spacer().build());
 	await expectOutputAsync({
 		type: "spacer",
-		style: { flexGrow: 1 },
+		style: { grow: 1 },
 	});
 });

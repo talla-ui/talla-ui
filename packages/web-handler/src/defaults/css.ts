@@ -87,8 +87,6 @@ export function makeBaseCSS(): Record<string, {}> {
 		[`.${CLASS_UI}.${CLASS_SCROLL}`]: {
 			alignSelf: "stretch",
 			flexShrink: "1",
-			flexGrow: "1",
-			flexBasis: "0",
 			minHeight: "0",
 		},
 
@@ -128,22 +126,22 @@ export function makeBaseCSS(): Record<string, {}> {
 			position: "absolute",
 			inset: "0",
 			borderRadius: "inherit",
-			background: "var(--button-state-color,currentColor)",
+			background: "var(--WebHandler-button-state-color,currentColor)",
 			opacity: "0",
 			pointerEvents: "none",
 			transition: "opacity 0.1s ease-in-out",
 		},
 		[`button.${CLASS_UI}:hover:not([disabled])::after,a.${CLASS_UI}:hover:not([disabled])::after`]:
 			{
-				opacity: "var(--button-state-opacity,0.1)",
+				opacity: "var(--WebHandler-button-state-opacity,0.1)",
 			},
 		[`button.${CLASS_UI}:focus:not([disabled])::after,a.${CLASS_UI}:focus:not([disabled])::after`]:
 			{
-				opacity: "var(--button-state-opacity,0.1)",
+				opacity: "var(--WebHandler-button-state-opacity,0.1)",
 			},
 		[`button.${CLASS_UI}:active:not([disabled])::after,a.${CLASS_UI}:active:not([disabled])::after,button.${CLASS_UI}[aria-pressed=true]:not([disabled])::after,a.${CLASS_UI}[aria-pressed=true]:not([disabled])::after`]:
 			{
-				opacity: "calc(var(--button-state-opacity,0.1) * 1.5)",
+				opacity: "calc(var(--WebHandler-button-state-opacity,0.1) * 1.5)",
 			},
 		[`.${CLASS_UI} icon`]: {
 			display: "inline-flex",
@@ -298,7 +296,7 @@ export function makeBaseCSS(): Record<string, {}> {
 		},
 		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.checkbox}>input:checked`]:
 			{
-				background: "currentColor",
+				background: "var(--WebHandler-tint)",
 				borderColor: "transparent",
 			},
 		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.checkbox}>input:checked::after`]:
@@ -338,7 +336,7 @@ export function makeBaseCSS(): Record<string, {}> {
 		},
 		[`.${CLASS_UI}.${CLASS_TOGGLE}.${CLASS_TOGGLE_TYPE.switch}>input:checked`]:
 			{
-				background: "currentColor",
+				background: "var(--WebHandler-tint)",
 				borderColor: "transparent",
 				opacity: "1",
 				boxShadow: "none",

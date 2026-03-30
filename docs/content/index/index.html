@@ -2,7 +2,10 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<title>Tälla UI — A TypeScript UI framework for maintainable front-end applications</title>
+		<title>
+			Tälla UI — A TypeScript UI framework for maintainable front-end
+			applications
+		</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta
 			name="description"
@@ -66,11 +69,15 @@
 				margin-bottom: 1.5rem;
 			}
 			@media (prefers-color-scheme: dark) {
-				.hero img.logo-light { display: none; }
+				.hero img.logo-light {
+					display: none;
+				}
 			}
 			@media (prefers-color-scheme: light),
 				(prefers-color-scheme: no-preference) {
-				.hero img.logo-dark { display: none; }
+				.hero img.logo-dark {
+					display: none;
+				}
 			}
 			.hero h1 {
 				font-family: "Inter", system-ui, sans-serif;
@@ -103,7 +110,9 @@
 				font-family: "Inter", system-ui, sans-serif;
 				font-weight: 600;
 				font-size: 0.9rem;
-				transition: background 0.15s, color 0.15s;
+				transition:
+					background 0.15s,
+					color 0.15s;
 			}
 			.hero-cta a.primary {
 				background: var(--link-color);
@@ -230,7 +239,9 @@
 				border-radius: 0.75rem;
 				text-decoration: none;
 				color: var(--text-color);
-				transition: background 0.15s, border-color 0.15s;
+				transition:
+					background 0.15s,
+					border-color 0.15s;
 			}
 			.concept:hover {
 				text-decoration: none;
@@ -301,14 +312,18 @@
 					srcset="/talla-logo-dark.png 1x, /talla-logo-dark@2x.png 2x"
 					alt="Tälla UI"
 				/>
-				<h1>A TypeScript UI framework for maintainable front-end applications</h1>
+				<h1>
+					A TypeScript UI framework for maintainable front-end applications
+				</h1>
 				<p>
-					Strict separation between application logic, UI
-					definition, and platform rendering.
+					Strict separation between application logic, UI definition, and
+					platform rendering.
 				</p>
 				<div class="hero-cta">
 					<a class="primary" href="/docs/en/">Get started</a>
-					<a class="secondary" href="https://github.com/talla-ui/talla-ui">GitHub</a>
+					<a class="secondary" href="https://github.com/talla-ui/talla-ui"
+						>GitHub</a
+					>
 				</div>
 			</div>
 
@@ -321,10 +336,9 @@
 							<strong>Layered architecture</strong>
 						</div>
 						<p>
-							Application logic, UI structure, and rendering
-							are separated at the package level. The core
-							framework has no knowledge of the browser or
-							any specific platform.
+							Application logic, UI structure, and rendering are separated at
+							the package level. The core framework has no knowledge of the
+							browser or any specific platform.
 						</p>
 					</div>
 					<div class="feature">
@@ -333,9 +347,9 @@
 							<strong>In-memory testability</strong>
 						</div>
 						<p>
-							The test handler renders your full component tree
-							without a browser. Write unit tests against the
-							same code that runs in production.
+							The test handler renders your full component tree without a
+							browser. Write unit tests against the same code that runs in
+							production.
 						</p>
 					</div>
 					<div class="feature">
@@ -344,9 +358,8 @@
 							<strong>No runtime dependencies</strong>
 						</div>
 						<p>
-							The framework is entirely self-contained. State
-							management, routing, rendering, and form
-							validation are all built in.
+							The framework is entirely self-contained. State management,
+							routing, rendering, and form validation are all built in.
 						</p>
 					</div>
 					<div class="feature">
@@ -355,9 +368,8 @@
 							<strong>Declarative, typed UI</strong>
 						</div>
 						<p>
-							Views are composed through a TypeScript builder
-							API. No JSX, no templates, no build step beyond
-							TypeScript compilation.
+							Views are composed through a TypeScript builder API. No JSX, no
+							templates, no build step beyond TypeScript compilation.
 						</p>
 					</div>
 					<div class="feature">
@@ -366,9 +378,8 @@
 							<strong>Client-side only</strong>
 						</div>
 						<p>
-							No server-side rendering, no hydration, no
-							virtual DOM. These are deliberate constraints
-							that keep the programming model simple.
+							No server-side rendering, no hydration, no virtual DOM. These are
+							deliberate constraints that keep the programming model simple.
 						</p>
 					</div>
 				</div>
@@ -386,7 +397,7 @@
     <span class="hljs-comment">// No JSX, no templates — just TypeScript.</span>
     <span class="hljs-keyword">return</span> <span class="hljs-title">UI</span>.<span class="hljs-title">Column</span>(
       <span class="hljs-title">UI</span>.<span class="hljs-title">Text</span>(<span class="hljs-string">"Hello, world!"</span>).center(),
-    ).flex().centerContent();
+    ).grow().centerContent();
   }
 }
 
@@ -400,19 +411,25 @@ app.addActivity(<span class="hljs-keyword">new</span> <span class="hljs-title">M
 			<section class="how-it-works">
 				<h2>How it works</h2>
 				<ul>
-					<li><strong>UI elements</strong> describe what should
-					appear &mdash; without application logic or rendering
-					concerns</li>
-					<li><strong>Activities</strong> manage state,
-					lifecycle, and navigation</li>
-					<li><strong>Handlers</strong> render to a specific
-					platform &mdash; currently the web, though the core
-					is not browser-dependent</li>
-					<li><strong>Test handler</strong> renders the full UI
-					tree in memory, so you test the same code that runs
-					in production</li>
-					<li>No virtual DOM &mdash; the renderer observes UI
-					elements and updates the DOM directly</li>
+					<li>
+						<strong>UI elements</strong> describe what should appear &mdash;
+						without application logic or rendering concerns
+					</li>
+					<li>
+						<strong>Activities</strong> manage state, lifecycle, and navigation
+					</li>
+					<li>
+						<strong>Handlers</strong> render to a specific platform &mdash;
+						currently the web, though the core is not browser-dependent
+					</li>
+					<li>
+						<strong>Test handler</strong> renders the full UI tree in memory, so
+						you test the same code that runs in production
+					</li>
+					<li>
+						No virtual DOM &mdash; the renderer observes UI elements and updates
+						the DOM directly
+					</li>
 				</ul>
 			</section>
 
@@ -464,8 +481,6 @@ app.addActivity(<span class="hljs-keyword">new</span> <span class="hljs-title">M
 				</div>
 			</section>
 		</main>
-		<footer>
-			&copy; 2026 Jelmer Cormont &middot; MIT License
-		</footer>
+		<footer>&copy; 2026 Jelmer Cormont &middot; MIT License</footer>
 	</body>
 </html>

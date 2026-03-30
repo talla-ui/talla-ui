@@ -82,8 +82,10 @@ function _supportsOklch(): boolean {
 }
 
 /** @internal Convert a UIColor to a CSS color string, using oklch when supported. */
-export function colorToCSS(color: UIColor): string {
-	let out = color.output();
+export function colorToCSS(color: UIColor | string): string {
+	if (typeof color === "string") color = new UIColor(color);
+	let out = color?.output?.();
+	if (!out) return "";
 	if (out.raw !== undefined) return out.raw;
 	return _supportsOklch() ? out.oklchString() : out.rgbaString();
 }
@@ -199,6 +201,15 @@ export function initializeCSS(
 			background: options.pageBackground
 				? backgroundToCSS(options.pageBackground)
 				: undefined,
+		};
+	}
+
+	// set tint color CSS variable
+	let tintColor = UIColor.getColor("tint");
+	if (tintColor) {
+		allCss[":root"] = {
+			...((allCss[":root"] as any) || {}),
+			"--WebHandler-tint": colorToCSS(tintColor),
 		};
 	}
 
@@ -440,13 +451,17 @@ function addDimensionsCSS(
 	if (maxWidth !== undefined) result.maxWidth = getCSSLength(maxWidth, "");
 	let maxHeight = dimensions.maxHeight;
 	if (maxHeight !== undefined) result.maxHeight = getCSSLength(maxHeight, "");
-	let flexGrow = dimensions.flexGrow;
-	if (flexGrow !== undefined) {
-		result.flexGrow = String(flexGrow);
-		result.flexShrink = String(dimensions.flexShrink ?? 1);
-		result.flexBasis = flexGrow > 0 ? "0" : "auto";
-	} else if (dimensions.flexShrink !== undefined) {
-		result.flexShrink = String(dimensions.flexShrink);
+	let grow = dimensions.grow;
+	if (grow !== undefined) {
+		if (grow === "content") {
+			result.flexGrow = "1";
+		} else {
+			result.flexGrow = String(grow);
+			result.flexBasis = "0";
+		}
+	}
+	if (dimensions.shrink !== undefined) {
+		result.flexShrink = String(dimensions.shrink);
 	}
 	return result;
 }
@@ -478,7 +493,13 @@ function addTextStyleCSS(
 	if (lineBreakMode === "clip") result.textOverflow = "clip";
 	else if (lineBreakMode === "ellipsis") {
 		// ellipsis is the default, no-op
-	} else if (lineBreakMode !== undefined) result.whiteSpace = lineBreakMode;
+	} else if (lineBreakMode !== undefined) {
+		result.whiteSpace = lineBreakMode;
+		if (lineBreakMode === "nowrap" || lineBreakMode === "pre") {
+			result.textOverflow = "clip";
+			result.flexShrink = "0";
+		}
+	}
 	let italic = textStyle.italic;
 	if (italic !== undefined) result.fontStyle = italic ? "italic" : "normal";
 	if (textStyle.bold) result.fontWeight = "bold"; // or explicit fontWeight above
@@ -639,7 +660,7 @@ function getCSSText(style: any) {
 	let result = "";
 	for (let p in style) {
 		if (style[p] === "" || style[p] == undefined) continue;
-		let key = camelToCssCase(p);
+		let key = p[0] === "-" ? p : camelToCssCase(p);
 		let value = String(style[p]);
 		if (value.indexOf("|") >= 0) {
 			for (let str of value.split("||").reverse()) {
