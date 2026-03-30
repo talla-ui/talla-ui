@@ -42,7 +42,8 @@ Visit [talla-ui.dev](https://talla-ui.dev) to learn more and get started.
 
 Source code for all packages is in the [`packages`](./packages/) folder. Run the following from the repository root:
 
-- `npm ci` — install all dependencies (including subpackages)
+- `npm ci` — install root dependencies
+- `npm run setup` — install subpackage dependencies
 - `npm run build` — build all packages
 - `npm test` — run tests (uses [Vitest](https://vitest.dev/))
 - `npm run www-build` — build the documentation site (requires a prior build)
