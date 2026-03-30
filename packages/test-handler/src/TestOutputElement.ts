@@ -169,7 +169,7 @@ export class TestOutputElement {
 	 * @param text The new text value
 	 */
 	setValue(text: string) {
-		if (this.type !== "textfield") return this;
+		if (this.type !== "textfield" && this.type !== "textarea") return this;
 		this.focus();
 		this.value = String(text);
 		this.sendPlatformEvent("input");
@@ -305,7 +305,8 @@ export class TestOutputElement {
 		if (this.pressed) result.pressed = true;
 		if (this.checked) result.checked = true;
 		if (this.variant) result.variant = { ...this.variant };
-		if (this.type === "textfield") result.value = this.value;
+		if (this.type === "textfield" || this.type === "textarea")
+			result.value = this.value;
 		if (this.accessibleRole) result.accessibleRole = this.accessibleRole;
 		if (this.accessibleLabel) result.accessibleLabel = this.accessibleLabel;
 		if (Object.keys(this.style).length) result.style = this.style;
@@ -333,6 +334,7 @@ export namespace TestOutputElement {
 		| "divider"
 		| "spacer"
 		| "textfield"
+		| "textarea"
 		| "toggle";
 
 	/**
