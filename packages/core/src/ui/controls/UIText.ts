@@ -250,21 +250,28 @@ export namespace UIText {
 	 */
 	export function badgeBuilder(
 		text?: BindingOrValue<StringConvertible>,
-		background: UIColor | UIColor.ColorName = "shade",
-		textColor?: UIColor | UIColor.ColorName,
-		padding: StyleOverrides.Offsets = { x: 8 },
-		borderRadius: string | number = "1em",
+		background: BindingOrValue<UIColor.BackgroundType | undefined> = "shade",
+		textColor?: BindingOrValue<UIColor | UIColor.ColorName | undefined>,
+		padding: BindingOrValue<StyleOverrides.Offsets | undefined> = { x: 8 },
+		borderRadius: BindingOrValue<StyleOverrides["borderRadius"]> = "1em",
 	) {
+		function getTextColor(bg?: UIColor.BackgroundType) {
+			if (typeof bg === "string") bg = UIColor.getColor(bg);
+			if (bg instanceof UIColor) return bg.text();
+			return "text";
+		}
 		let builder = new TextBuilder()
 			.text(text)
 			.smaller()
 			.padding(padding)
-			.borderRadius(borderRadius);
-		if (typeof background === "string") {
-			background = UIColor.getColor(background);
-		}
-		builder.background(background);
-		builder.textColor(textColor ?? background.text());
+			.borderRadius(borderRadius)
+			.background(background)
+			.textColor(
+				textColor ??
+					(background instanceof Binding
+						? background.map(getTextColor)
+						: getTextColor(background as UIColor.BackgroundType)),
+			);
 		return builder;
 	}
 
