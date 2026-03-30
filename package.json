@@ -22,7 +22,7 @@
 		"index.d.ts"
 	],
 	"scripts": {
-		"postinstall": "concurrently npm:setup:*",
+		"setup": "concurrently npm:setup:*",
 		"setup:util": "cd packages/util && npm ci",
 		"setup:core": "cd packages/core && npm ci",
 		"setup:test": "cd packages/test-handler && npm ci",
