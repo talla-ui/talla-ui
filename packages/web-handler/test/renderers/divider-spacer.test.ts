@@ -22,7 +22,7 @@ describe("UIDividerRenderer", () => {
 			await renderView(divider);
 
 			const el = document.querySelector("hr") as HTMLElement;
-			expect(el.style.borderWidth).toBe("0.0625rem"); // 1/16
+			expect(el.style.borderWidth).toBe("0.0625rem 0px 0px"); // 1/16, top only
 		});
 
 		test("Numeric width applies", async () => {
@@ -30,7 +30,7 @@ describe("UIDividerRenderer", () => {
 			await renderView(divider);
 
 			const el = document.querySelector("hr") as HTMLElement;
-			expect(el.style.borderWidth).toBe("0.1875rem"); // 3/16
+			expect(el.style.borderWidth).toBe("0.1875rem 0px 0px"); // 3/16, top only
 		});
 
 		test("String width applies", async () => {
@@ -38,7 +38,7 @@ describe("UIDividerRenderer", () => {
 			await renderView(divider);
 
 			const el = document.querySelector("hr") as HTMLElement;
-			expect(el.style.borderWidth).toBe("2px");
+			expect(el.style.borderWidth).toBe("2px 0px 0px");
 		});
 	});
 
@@ -51,7 +51,7 @@ describe("UIDividerRenderer", () => {
 
 			divider.lineWidth = 4;
 			await waitForRender();
-			expect(el.style.borderWidth).toBe("0.25rem"); // 4/16
+			expect(el.style.borderWidth).toBe("0.25rem 0px 0px"); // 4/16, top only
 		});
 	});
 });

@@ -28,7 +28,9 @@ export class UIDividerRenderer extends BaseObserver<UIDivider> {
 		let style: StyleOverrides = {
 			...sep.style,
 			borderColor: sep.lineColor || UI.colors.divider,
-			borderWidth: sep.lineWidth,
+			borderWidth: sep.vertical
+				? { left: sep.lineWidth }
+				: { top: sep.lineWidth },
 			borderStyle: sep.lineStyle,
 		};
 		applyStyles(

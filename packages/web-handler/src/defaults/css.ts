@@ -236,14 +236,15 @@ export function makeBaseCSS(): Record<string, {}> {
 			margin: "0",
 			padding: "0",
 			border: "0",
+			borderTopWidth: "1px",
 			borderTopStyle: "solid",
-			borderWidth: "1px",
 			alignSelf: "stretch",
 		},
 		[`.${CLASS_SEPARATOR_LINE_VERT}`]: {
+			borderTopWidth: "0",
 			borderTopStyle: "none",
+			borderLeftWidth: "1px",
 			borderLeftStyle: "solid",
-			borderWidth: "1px",
 		},
 		[`.${CLASS_SEPARATOR_SPACER}`]: {
 			flex: "0 0 auto",
