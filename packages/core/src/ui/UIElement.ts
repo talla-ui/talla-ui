@@ -470,7 +470,7 @@ export namespace UIElement {
 		 * @param grow The growth factor, or `"content"` for content-based sizing; defaults to 1.
 		 * @returns The builder instance for chaining.
 		 */
-		grow(grow: number | "content" = 1) {
+		grow(grow: BindingOrValue<number | "content" | undefined> = 1) {
 			this.setStyleOverride("grow", grow);
 			return this;
 		}
