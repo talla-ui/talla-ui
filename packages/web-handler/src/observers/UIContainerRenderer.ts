@@ -3,7 +3,6 @@ import {
 	ObservableEvent,
 	RenderContext,
 	UI,
-	UIColumn,
 	UIContainer,
 	UIElement,
 	UIRow,
@@ -13,12 +12,12 @@ import {
 } from "@talla-ui/core";
 import { isMarkedForRemoval } from "../awaitRemove.js";
 import {
-	CLASS_COLUMN,
-	CLASS_ROW,
+	CLASS_HORZ,
 	CLASS_SCROLL,
 	CLASS_SEPARATOR_LINE,
 	CLASS_SEPARATOR_LINE_VERT,
 	CLASS_SEPARATOR_SPACER,
+	CLASS_VERT,
 } from "../defaults/css.js";
 import { applyStyles, colorToCSS, getCSSLength } from "../DOMStyle.js";
 import { BaseObserver } from "./BaseObserver.js";
@@ -153,12 +152,13 @@ export class UIContainerRenderer<
 		let container = this.observed;
 		let systemClass: string | undefined;
 		let layout = container.layout;
-		if (container instanceof UIRow) {
-			systemClass = CLASS_ROW;
-		} else if (container instanceof UIColumn) {
-			systemClass = CLASS_COLUMN;
-		} else if (container instanceof UIScrollView) {
+		if (container instanceof UIScrollView) {
 			systemClass = CLASS_SCROLL;
+		} else {
+			let isHorz =
+				layout?.axis === "horizontal" ||
+				(container instanceof UIRow && layout?.axis !== "vertical");
+			systemClass = isHorz ? CLASS_HORZ : CLASS_VERT;
 		}
 
 		applyStyles(

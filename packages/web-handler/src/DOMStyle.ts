@@ -8,6 +8,7 @@ import {
 import { makeEffectCSS } from "./defaults/animations.js";
 import {
 	CLASS_CONTAINER,
+	CLASS_GROW,
 	CLASS_TEXTCONTROL,
 	CLASS_THEMED,
 	CLASS_TOGGLE,
@@ -294,6 +295,8 @@ export function applyStyles(
 	if (isTextControl) className += " " + CLASS_TEXTCONTROL;
 	if (isContainer) className += " " + CLASS_CONTAINER;
 	if (systemClass) className += " " + systemClass;
+	let grow = style?.grow;
+	if (grow !== undefined && grow !== "content") className += " " + CLASS_GROW;
 	if (themeClasses) className += " " + themeClasses;
 	element.className = className;
 
@@ -607,9 +610,6 @@ function addContainerLayoutCSS(
 	result: Partial<CSSStyleDeclaration>,
 	layout: UIContainer.Layout,
 ) {
-	let axis = layout.axis;
-	if (axis !== undefined)
-		result.flexDirection = axis === "horizontal" ? "row" : "column";
 	let distribution = layout.distribution;
 	if (distribution !== undefined)
 		result.justifyContent = _flexOptions[distribution] || distribution;

@@ -20,10 +20,12 @@ export const CLASS_SEPARATOR_SPACER = "WebHandler__Sp";
 export const CLASS_TEXTCONTROL = "WebHandler__T";
 /** @internal Additional container class name */
 export const CLASS_CONTAINER = "__C";
-/** @internal Additional column class name */
-export const CLASS_COLUMN = "__CC";
-/** @internal Additional row class name */
-export const CLASS_ROW = "__CR";
+/** @internal Horizontal axis container class name */
+export const CLASS_HORZ = "__CR";
+/** @internal Vertical axis container class name (default) */
+export const CLASS_VERT = "__CC";
+/** @internal Flex-grow element class name */
+export const CLASS_GROW = "__Gr";
 /** @internal Additional text element class name (not buttons or text fields) */
 export const CLASS_TEXT = "__Txt";
 /** @internal Additional scroll container class name */
@@ -72,17 +74,23 @@ export function makeBaseCSS(): Record<string, {}> {
 			justifyContent: "flex-start",
 			alignItems: "stretch",
 		},
-		[`.${CLASS_UI}.${CLASS_ROW}`]: {
+		[`.${CLASS_UI}.${CLASS_HORZ}`]: {
 			alignItems: "center",
 			flexDirection: "row",
 			// make sure row is full width for gravity=overlay:
 			left: "0",
 			right: "0",
 		},
-		[`.${CLASS_UI}.${CLASS_COLUMN}`]: {
+		[`.${CLASS_UI}.${CLASS_VERT}`]: {
 			// make sure column is full height for gravity=overlay:
 			top: "0",
 			bottom: "0",
+		},
+		[`.${CLASS_UI}.${CLASS_HORZ}>.${CLASS_UI}.${CLASS_GROW}`]: {
+			minWidth: "0",
+		},
+		[`.${CLASS_UI}.${CLASS_VERT}>.${CLASS_UI}.${CLASS_GROW}`]: {
+			minHeight: "0",
 		},
 		[`.${CLASS_UI}.${CLASS_SCROLL}`]: {
 			alignSelf: "stretch",
