@@ -12,6 +12,7 @@ import { safeCall } from "../errors.js";
  */
 export class AppQueue {
 	private _tasks: (() => void)[] = [];
+	private _cursor = 0;
 	private _waiters: (() => void)[] = [];
 	private _timer?: ReturnType<typeof setTimeout>;
 	private _delayedTimers = new Set<ReturnType<typeof setTimeout>>();
@@ -20,7 +21,7 @@ export class AppQueue {
 
 	/** The number of pending tasks in the queue */
 	get length() {
-		return this._tasks.length;
+		return this._tasks.length - this._cursor;
 	}
 
 	/**
@@ -37,7 +38,7 @@ export class AppQueue {
 			this._delayedTimers.add(timer);
 			return;
 		}
-		let wasEmpty = this._tasks.length === 0;
+		let wasEmpty = this._tasks.length === this._cursor;
 		this._tasks.push(f);
 		if (this._timer == null) {
 			this._scheduleTimer();
@@ -61,11 +62,17 @@ export class AppQueue {
 		}
 
 		let deadline = performance.now() + maxSyncTime;
-		while (this._tasks.length && performance.now() < deadline) {
-			safeCall(this._tasks.shift()!);
+		while (this._cursor < this._tasks.length && performance.now() < deadline) {
+			safeCall(this._tasks[this._cursor++]!);
 		}
 
-		if (this._tasks.length > 0) {
+		// compact when fully drained
+		if (this._cursor >= this._tasks.length) {
+			this._tasks.length = 0;
+			this._cursor = 0;
+		}
+
+		if (this._cursor < this._tasks.length) {
 			this._scheduleTimer();
 		} else {
 			// Resolve all waiters when queue is empty
@@ -80,7 +87,7 @@ export class AppQueue {
 	 * @param timeout Optional timeout in milliseconds; resolves early if timeout expires
 	 */
 	waitAsync(timeout?: number): Promise<void> {
-		if (this._tasks.length === 0) {
+		if (this._tasks.length === this._cursor) {
 			return Promise.resolve();
 		}
 		return new Promise((resolve) => {
@@ -107,6 +114,7 @@ export class AppQueue {
 		this._delayedTimers.clear();
 		this._timer = undefined;
 		this._tasks = [];
+		this._cursor = 0;
 		this._waiters = [];
 		this._delay = 0;
 		this._onSchedule = undefined;

@@ -50,11 +50,11 @@ const NOP = function () {
 /** Cached Object.prototype.hasOwnProperty function */
 const _hOP = Object.prototype.hasOwnProperty;
 
-/** @internal Helper function to handle exceptions from given function */
+/** @internal Helper function to handle exceptions from given function; ONLY supports functions with up to 2 arguments, use safeCall otherwise. */
 export function guard<F extends Function>(f: F): F {
-	let g = function (this: any) {
+	let g = function (this: any, a?: any, b?: any) {
 		try {
-			return f.apply(this, arguments);
+			return f.call(this, a, b);
 		} catch (err) {
 			errorHandler(err);
 		}
@@ -188,7 +188,9 @@ export function invokeTrap(
 ) {
 	let list = _traps.get(observedObject);
 	if (list && list[p]) {
-		for (let t of list[p]!.slice()) {
+		let traps = list[p]!;
+		for (let i = 0, n = traps.length; i < n; i++) {
+			let t = traps[i];
 			if (t && !observedObject[$_unlinked]) {
 				t.t(observedObject, value);
 			}
@@ -196,7 +198,9 @@ export function invokeTrap(
 	}
 	// Run delegate traps after regular event traps
 	if (p === $_traps_event && list && list[$_traps_delegate]) {
-		for (let t of list[$_traps_delegate]!.slice()) {
+		let traps = list[$_traps_delegate]!;
+		for (let i = 0, n = traps.length; i < n; i++) {
+			let t = traps[i];
 			if (t && !observedObject[$_unlinked]) {
 				t.t(observedObject, value);
 			}
@@ -250,10 +254,14 @@ function setTrapDescriptor(
 ) {
 	if (desc.set) {
 		// override property with new setter that calls old one
+		let origSet = desc.set;
+		let origGet = desc.get;
 		Object.defineProperty(target, p, {
-			...desc,
+			configurable: desc.configurable,
+			enumerable: desc.enumerable,
+			get: origGet,
 			set(v) {
-				desc.set!.call(this, v);
+				origSet.call(this, v);
 				invokeTrap(target, p, (target as any)[p]);
 			},
 		});

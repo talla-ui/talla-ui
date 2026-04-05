@@ -295,57 +295,36 @@ export class ObservableList<
 	replaceAll(items: Iterable<T | undefined>) {
 		if (this.isUnlinked()) throw err(ERROR.Object_Unlinked);
 
-		// keep track of objects that were seen, to delete others
-		let seen = new Map<T, true>();
-
-		// keep track of moves/inserts that should happen later,
-		// based on object and reference ('before') object
-		type Place = [T, T | undefined, RefLink<T> | undefined];
-		let moves: Place[] = [];
-		let inserts: Place[] = [];
-
-		// go through new object list to check if moving or adding
-		let insertFixPos = 0;
-		let refs = this[$_list];
+		// build set of new items (deduplicates, preserves order)
+		let newSet = new Set<T>();
 		for (let item of items) {
-			if (item == null) continue;
-			seen.set(item, true);
-			let link = refs.map.get(item);
-			if (!link) {
-				// ... new object, add before next existing object
-				inserts.push([item, undefined, undefined]);
-			} else {
-				// ... existing object, fix last move and inserts first
-				if (moves.length) moves[0]![1] = item;
-				while (insertFixPos < inserts.length) {
-					inserts[insertFixPos++]![1] = item;
-				}
+			if (item != null) newSet.add(item);
+		}
 
-				// now add move (in reverse order, back to front)
-				moves.unshift([item, undefined, link]);
+		// remove items not in the new set
+		let refs = this[$_list];
+		for (let object of refs.map.keys()) {
+			if (!newSet.has(object)) this.remove(object);
+		}
+
+		// reorder existing items, insert new ones
+		let cur = refs.h;
+		let doEmitChange = false;
+		for (let item of newSet) {
+			if (refs.map.has(item)) {
+				// existing item: check if already at cursor
+				if (cur && cur.o === item) {
+					cur = cur.n;
+				} else {
+					if (this._moveBefore(item, cur?.o)) doEmitChange = true;
+				}
+			} else {
+				// new item: insert before cursor
+				this.insert(item, cur?.o);
 			}
 		}
 
-		// delete any current objects that were *not* seen
-		// (in random order, doesn't matter)
-		for (let object of refs.map.keys()) {
-			if (!seen.has(object)) this.remove(object);
-		}
-
-		// now, move existing objects, then insert new ones
-		let doEmitChange = false;
-		for (let op of moves) {
-			if (op[1] === null && !op[2]!.n) continue;
-			if (op[2]!.n && op[2]!.n.o === op[1]) continue;
-			if (this._moveBefore(op[0], op[1])) doEmitChange = true;
-		}
-		for (let op of inserts) {
-			this.insert(op[0], op[1]);
-		}
-
-		// emit event for moves, if needed
 		if (doEmitChange) this.emitChange();
-
 		return this;
 	}
 
