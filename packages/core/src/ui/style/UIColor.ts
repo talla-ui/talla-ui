@@ -164,9 +164,7 @@ export class UIColor {
 	 * @param layers Gradients or colors to stack.
 	 * @returns A {@link UIColor.Gradient} instance with type "stacked".
 	 */
-	static stackedGradient(
-		...layers: (UIColor.Gradient | UIColor)[]
-	) {
+	static stackedGradient(...layers: (UIColor.Gradient | UIColor)[]) {
 		return UIColor.Gradient._createStacked(layers);
 	}
 

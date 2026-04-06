@@ -114,8 +114,15 @@ describe("UIColor.Gradient construction", () => {
 
 describe("UIColor.stackedGradient", () => {
 	test("Stacked gradient with two layers", () => {
-		let g1 = UIColor.linearGradient(180, UIColor.oklch(0, 0, 0), UIColor.oklch(1, 0, 0));
-		let g2 = UIColor.radialGradient(UIColor.oklch(0.5, 0.1, 30), UIColor.oklch(0, 0, 0));
+		let g1 = UIColor.linearGradient(
+			180,
+			UIColor.oklch(0, 0, 0),
+			UIColor.oklch(1, 0, 0),
+		);
+		let g2 = UIColor.radialGradient(
+			UIColor.oklch(0.5, 0.1, 30),
+			UIColor.oklch(0, 0, 0),
+		);
 		let stacked = UIColor.stackedGradient(g1, g2);
 		expect(stacked.type).toBe("stacked");
 		expect(stacked.layers.length).toBe(2);
@@ -125,7 +132,11 @@ describe("UIColor.stackedGradient", () => {
 
 	test("Auto-converts UIColor to solid gradient", () => {
 		let color = UIColor.oklch(0.5, 0.1, 200);
-		let g = UIColor.linearGradient(90, UIColor.oklch(0, 0, 0), UIColor.oklch(1, 0, 0));
+		let g = UIColor.linearGradient(
+			90,
+			UIColor.oklch(0, 0, 0),
+			UIColor.oklch(1, 0, 0),
+		);
 		let stacked = UIColor.stackedGradient(g, color);
 		expect(stacked.layers.length).toBe(2);
 		expect(stacked.layers[1]!.type).toBe("linear");
@@ -135,9 +146,20 @@ describe("UIColor.stackedGradient", () => {
 	});
 
 	test("Flattens nested stacked gradients", () => {
-		let g1 = UIColor.linearGradient(0, UIColor.oklch(0, 0, 0), UIColor.oklch(1, 0, 0));
-		let g2 = UIColor.radialGradient(UIColor.oklch(1, 0, 0), UIColor.oklch(0, 0, 0));
-		let g3 = UIColor.conicGradient(0, UIColor.oklch(0, 0, 0), UIColor.oklch(1, 0, 0));
+		let g1 = UIColor.linearGradient(
+			0,
+			UIColor.oklch(0, 0, 0),
+			UIColor.oklch(1, 0, 0),
+		);
+		let g2 = UIColor.radialGradient(
+			UIColor.oklch(1, 0, 0),
+			UIColor.oklch(0, 0, 0),
+		);
+		let g3 = UIColor.conicGradient(
+			0,
+			UIColor.oklch(0, 0, 0),
+			UIColor.oklch(1, 0, 0),
+		);
 		let inner = UIColor.stackedGradient(g1, g2);
 		let outer = UIColor.stackedGradient(inner, g3);
 		expect(outer.type).toBe("stacked");
@@ -148,7 +170,11 @@ describe("UIColor.stackedGradient", () => {
 	});
 
 	test("Mixed gradients and colors with flattening", () => {
-		let g1 = UIColor.linearGradient(45, UIColor.oklch(0, 0, 0), UIColor.oklch(1, 0, 0));
+		let g1 = UIColor.linearGradient(
+			45,
+			UIColor.oklch(0, 0, 0),
+			UIColor.oklch(1, 0, 0),
+		);
 		let inner = UIColor.stackedGradient(g1, UIColor.oklch(0.8, 0, 0));
 		let outer = UIColor.stackedGradient(
 			UIColor.radialGradient(UIColor.oklch(1, 0, 0), UIColor.oklch(0, 0, 0)),
