@@ -157,6 +157,20 @@ export class UIColor {
 	}
 
 	/**
+	 * Creates a stacked gradient (multiple gradients layered on top of each other).
+	 * - Layers are composited front-to-back (first argument = topmost).
+	 * - {@link UIColor} values are auto-converted to solid-color gradients.
+	 * - Nested stacked gradients are flattened.
+	 * @param layers Gradients or colors to stack.
+	 * @returns A {@link UIColor.Gradient} instance with type "stacked".
+	 */
+	static stackedGradient(
+		...layers: (UIColor.Gradient | UIColor)[]
+	) {
+		return UIColor.Gradient._createStacked(layers);
+	}
+
+	/**
 	 * Creates a lazily-evaluated mapped color or gradient value.
 	 * - Use this to derive a value that may resolve to either a {@link UIColor} or {@link UIColor.Gradient}.
 	 * @param source A color, gradient, or color name string to use as the source.
@@ -484,15 +498,36 @@ export namespace UIColor {
 			return g;
 		}
 
+		/** @internal Creates a stacked gradient; used by UIColor.stackedGradient. */
+		static _createStacked(layers: (Gradient | UIColor)[]) {
+			let g = new Gradient("stacked", 0);
+			let flat: Gradient[] = [];
+			for (let layer of layers) {
+				if (layer instanceof Gradient && layer._type === "stacked") {
+					flat.push(...layer._layers);
+				} else if (layer instanceof UIColor) {
+					flat.push(Gradient._create("linear", 0, [layer, layer]));
+				} else {
+					flat.push(layer);
+				}
+			}
+			g._layers = flat;
+			return g;
+		}
+
 		/** Creates a new gradient (do not use directly). */
-		private constructor(type: "linear" | "radial" | "conic", angle: number) {
+		private constructor(
+			type: "linear" | "radial" | "conic" | "stacked",
+			angle: number,
+		) {
 			this._type = type;
 			this._angle = angle;
 			this._stops = [];
+			this._layers = [];
 		}
 
 		/** The type of gradient. */
-		get type(): "linear" | "radial" | "conic" {
+		get type(): "linear" | "radial" | "conic" | "stacked" {
 			return this._type;
 		}
 
@@ -504,6 +539,11 @@ export namespace UIColor {
 		/** The angle of the gradient in degrees (for linear and conic gradients). */
 		get angle(): number {
 			return this._angle;
+		}
+
+		/** The gradient layers (for stacked gradients only). */
+		get layers(): ReadonlyArray<Gradient> {
+			return this._layers;
 		}
 
 		/**
@@ -550,9 +590,10 @@ export namespace UIColor {
 			return this;
 		}
 
-		private _type: "linear" | "radial" | "conic";
+		private _type: "linear" | "radial" | "conic" | "stacked";
 		private _stops: { color: UIColor; pos: number | undefined }[];
 		private _angle: number;
+		private _layers: Gradient[];
 	}
 
 	export namespace Gradient {

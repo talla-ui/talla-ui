@@ -103,6 +103,9 @@ export function backgroundToCSS(background: UIColor.BackgroundType): string {
 
 /** @internal Convert a UIColor.Gradient to a CSS gradient string. */
 function gradientToCSS(gradient: UIColor.Gradient): string {
+	if (gradient.type === "stacked") {
+		return gradient.layers.map((g) => gradientToCSS(g)).join(", ");
+	}
 	let useOklch = _supportsOklch();
 	let stops = gradient.stops
 		.map((s) => {
