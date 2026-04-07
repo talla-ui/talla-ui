@@ -238,14 +238,14 @@ export function initializeCSS(
 /** @internal Measures window width in logical pixel units */
 export function getWindowInnerWidth() {
 	let w = window.innerWidth;
-	let scale = w < 600 ? _currentLogicalPxScaleNarrow : _currentLogicalPxScale;
+	let scale = w <= 600 ? _currentLogicalPxScaleNarrow : _currentLogicalPxScale;
 	return w / scale;
 }
 
 /** @internal Measures window height in logical pixel units */
 export function getWindowInnerHeight() {
 	let h = window.innerHeight;
-	let scale = h < 600 ? _currentLogicalPxScaleNarrow : _currentLogicalPxScale;
+	let scale = h <= 600 ? _currentLogicalPxScaleNarrow : _currentLogicalPxScale;
 	return h / scale;
 }
 
