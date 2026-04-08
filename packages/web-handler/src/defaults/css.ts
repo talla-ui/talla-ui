@@ -246,7 +246,6 @@ export function makeBaseCSS(): Record<string, {}> {
 			border: "0",
 			borderTopWidth: "1px",
 			borderTopStyle: "solid",
-			alignSelf: "stretch",
 		},
 		[`.${CLASS_SEPARATOR_LINE_VERT}`]: {
 			borderTopWidth: "0",
