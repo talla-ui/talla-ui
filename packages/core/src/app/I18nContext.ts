@@ -101,6 +101,7 @@ export class I18nContext
 	 * Returns current (user) culture preferences and/or locale defaults, as reported by the configured i18n provider
 	 * - This method returns an object with culture-specific options, as used by e.g. localizable widgets. The exact properties of this object are intentionally application and platform specific. They may be initialized from defaults for the selected language and region, and extended with user preferences (to allow for e.g. `en-US` language with non-US date formatting).
 	 * - The framework renderer itself may use at least the `textDirection` property, if present, to determine whether the current locale uses right-to-left script.
+	 * - The `,` {@link fmt} flag (e.g. `{:,.2f}`) may use this object for locale-aware number formatting: it reads `decimalSeparator` (defaults to "."), `groupSeparator` (defaults to ","), and `groupSize` (either a number or array of numbers, defaults to 3, use [3, 2] for Indian lakhs).
 	 * @see {@link DeferredString.I18nProvider}
 	 */
 	getCulture() {

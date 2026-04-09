@@ -324,6 +324,159 @@ describe("StringConvertible and additional edge cases", () => {
 	});
 });
 
+describe("Grouping (comma flag)", () => {
+	test("Grouping with :,d (default separators)", () => {
+		expect(String(fmt("{:,d}", 1000))).toBe("1,000");
+		expect(String(fmt("{:,d}", 1000000))).toBe("1,000,000");
+		expect(String(fmt("{:,d}", 123))).toBe("123");
+		expect(String(fmt("{:,d}", 0))).toBe("0");
+		expect(String(fmt("{:,d}", 1234567.89))).toBe("1,234,567.89");
+	});
+
+	test("Grouping with :,.Nf (fixed-point)", () => {
+		expect(String(fmt("{:,.2f}", 24000))).toBe("24,000.00");
+		expect(String(fmt("{:,.2f}", 1234567.891))).toBe("1,234,567.89");
+		expect(String(fmt("{:,.0f}", 24000))).toBe("24,000");
+		expect(String(fmt("{:,.4f}", 1000))).toBe("1,000.0000");
+		expect(String(fmt("{:,.2f}", 0))).toBe("0.00");
+		expect(String(fmt("{:,.2f}", 999.99))).toBe("999.99");
+	});
+
+	test("Grouping with :,i (integer)", () => {
+		expect(String(fmt("{:,i}", 24000))).toBe("24,000");
+		expect(String(fmt("{:,i}", 1234567.89))).toBe("1,234,568");
+		expect(String(fmt("{:,i}", 0))).toBe("0");
+		expect(String(fmt("{:,i}", 999))).toBe("999");
+	});
+
+	test("Grouping with negative numbers", () => {
+		expect(String(fmt("{:,d}", -1000))).toBe("-1,000");
+		expect(String(fmt("{:,.2f}", -24000))).toBe("-24,000.00");
+		expect(String(fmt("{:,i}", -1234567))).toBe("-1,234,567");
+		expect(String(fmt("{:,d}", -999))).toBe("-999");
+	});
+
+	test("Grouping with locale culture (German)", () => {
+		DeferredString.setI18nInterface({
+			getCulture: () => ({
+				decimalSeparator: ",",
+				groupSeparator: ".",
+				groupSize: 3,
+			}),
+			getText: (s) => s,
+			getPlural: (n, forms) => forms[n == 1 ? 0 : 1] || "",
+			format: () => "",
+		});
+		expect(String(fmt("{:,.2f}", 24000))).toBe("24.000,00");
+		expect(String(fmt("{:,d}", 1234567.89))).toBe("1.234.567,89");
+		expect(String(fmt("{:,i}", 1000000))).toBe("1.000.000");
+	});
+
+	test("Grouping with locale culture (Swiss)", () => {
+		DeferredString.setI18nInterface({
+			getCulture: () => ({
+				decimalSeparator: ".",
+				groupSeparator: "'",
+				groupSize: 3,
+			}),
+			getText: (s) => s,
+			getPlural: (n, forms) => forms[n == 1 ? 0 : 1] || "",
+			format: () => "",
+		});
+		expect(String(fmt("{:,.2f}", 24000))).toBe("24'000.00");
+		expect(String(fmt("{:,d}", 1234567))).toBe("1'234'567");
+	});
+
+	test("Grouping with custom group size", () => {
+		DeferredString.setI18nInterface({
+			getCulture: () => ({
+				decimalSeparator: ".",
+				groupSeparator: ",",
+				groupSize: 4,
+			}),
+			getText: (s) => s,
+			getPlural: (n, forms) => forms[n == 1 ? 0 : 1] || "",
+			format: () => "",
+		});
+		expect(String(fmt("{:,d}", 12345678))).toBe("1234,5678");
+		expect(String(fmt("{:,.2f}", 100000))).toBe("10,0000.00");
+	});
+
+	test("Grouping with array group sizes (Indian lakhs)", () => {
+		DeferredString.setI18nInterface({
+			getCulture: () => ({
+				decimalSeparator: ".",
+				groupSeparator: ",",
+				groupSize: [3, 2],
+			}),
+			getText: (s) => s,
+			getPlural: (n, forms) => forms[n == 1 ? 0 : 1] || "",
+			format: () => "",
+		});
+		expect(String(fmt("{:,d}", 1234567))).toBe("12,34,567");
+		expect(String(fmt("{:,d}", 123456789))).toBe("12,34,56,789");
+		expect(String(fmt("{:,.2f}", 100000))).toBe("1,00,000.00");
+		expect(String(fmt("{:,d}", 1000))).toBe("1,000");
+		expect(String(fmt("{:,d}", 999))).toBe("999");
+	});
+
+	test("Grouping with zero group size does not loop", () => {
+		DeferredString.setI18nInterface({
+			getCulture: () => ({
+				decimalSeparator: ".",
+				groupSeparator: ",",
+				groupSize: 0,
+			}),
+			getText: (s) => s,
+			getPlural: (n, forms) => forms[n == 1 ? 0 : 1] || "",
+			format: () => "",
+		});
+		expect(String(fmt("{:,d}", 1234567))).toBe("1234567");
+		expect(String(fmt("{:,.2f}", 24000))).toBe("24000.00");
+	});
+
+	test("Without comma flag, formatting is unchanged", () => {
+		DeferredString.setI18nInterface({
+			getCulture: () => ({
+				decimalSeparator: ",",
+				groupSeparator: ".",
+				groupSize: 3,
+			}),
+			getText: (s) => s,
+			getPlural: (n, forms) => forms[n == 1 ? 0 : 1] || "",
+			format: () => "",
+		});
+		// No comma flag: should NOT apply grouping or swap decimal
+		expect(String(fmt("{:.2f}", 24000))).toBe("24000.00");
+		expect(String(fmt("{:d}", 1234567))).toBe("1234567");
+		expect(String(fmt("{:i}", 1000))).toBe("1000");
+	});
+
+	test("Grouping does not affect hex formatting", () => {
+		expect(String(fmt("{:x}", 65535))).toBe("ffff");
+		expect(String(fmt("{:X}", 65535))).toBe("FFFF");
+	});
+
+	test("Grouping with large numbers", () => {
+		expect(String(fmt("{:,d}", 1e12))).toBe("1,000,000,000,000");
+		expect(String(fmt("{:,.2f}", 1e9))).toBe("1,000,000,000.00");
+	});
+
+	test("Grouping with very small numbers", () => {
+		// 0.0000001 is "1e-7" as a string, but toFixed avoids that
+		expect(String(fmt("{:,.2f}", 0.0000001))).toBe("0.00");
+		expect(String(fmt("{:,d}", 0.0000001))).toBe("0");
+		expect(String(fmt("{:,.6f}", 0.0000001))).toBe("0.000000");
+		expect(String(fmt("{:,.2f}", 0.001))).toBe("0.00");
+		expect(String(fmt("{:,.2f}", 0.999))).toBe("1.00");
+	});
+
+	test("Grouping with nested precision placeholder", () => {
+		expect(String(fmt("{0:,.{1}f}", 24000, 2))).toBe("24,000.00");
+		expect(String(fmt("{0:,.{1}f}", 1234567.891, 3))).toBe("1,234,567.891");
+	});
+});
+
 describe("Caching", () => {
 	test("Cache invalidation", () => {
 		let s = "Hello";

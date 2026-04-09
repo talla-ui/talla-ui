@@ -78,6 +78,7 @@ const DATE_TO_STRING = Date.prototype.toString;
  * - `:L...`: inserts the value as a localized string, using the current i18n provider and the type immediately following the `L` (e.g. `L`, `Ldate`, `Ltime`). The format string is split on `/` characters, with each part passed as a separate argument (e.g. `Ldate/short`).
  * - `:?/foo/bar`: inserts `foo` or `bar` if the value is equal to boolean true or false, respectively.
  * - `:+/foo/bar`: inserts one of the options, depending on the value and the current i18n pluralization rules; defaults to `foo` only if the value is 1, if no i18n provider is available.
+ * - `:,d`, `:,i`, `:,.2f`: inserts a number with grouping separators (e.g. `24,000.00`). Formatting is locale-aware, using the current i18n provider's culture settings, i.e. {@link DeferredString.I18nProvider}.
  *
  * Within all format specifiers, additional placeholders such as `{0}` or `{p}` can be used to insert the value of another value from the argument list, or a property of the first argument as an object — e.g. for number of decimal places, or replacements passed to the `?` placeholder. Such nested placeholders cannot contain format specifiers themselves.
  *
@@ -241,6 +242,7 @@ export namespace DeferredString {
 		 * Returns the current (user) culture preferences and/or locale defaults
 		 * - This method should return an object with culture-specific options, as used by e.g. localizable widgets. The exact properties of this object are intentionally application and platform specific. They may be initialized from defaults for the selected language and region, and extended with user preferences (to allow for e.g. `en-US` language with non-US date formatting).
 		 * - The framework renderer itself may use at least the `textDirection` property, if present, to determine whether the current locale uses right-to-left script.
+		 * - The `,` {@link fmt} flag (e.g. `{:,.2f}`) may use this object for locale-aware number formatting: it reads `decimalSeparator` (defaults to "."), `groupSeparator` (defaults to ","), and `groupSize` (either a number or array of numbers, defaults to 3, use [3, 2] for Indian lakhs).
 		 */
 		getCulture(): Record<string, any>;
 	}
@@ -274,7 +276,10 @@ export namespace DeferredString {
 	function _formatValue(value: unknown, f: string, opts: string[]) {
 		if (!f) return _stringify(value);
 		let precision = -1;
-		f = String(f).replace(/^\.(\d+)/, (_, p) => ((precision = +p), ""));
+		let grouping = false;
+		f = String(f)
+			.replace(/^,/, () => ((grouping = true), ""))
+			.replace(/^\.(\d+)/, (_, p) => ((precision = +p), ""));
 		if (f[0] === "#") return "";
 		if (f[0] === "L") {
 			// localized value, or use default string value for `L` only
@@ -287,11 +292,14 @@ export namespace DeferredString {
 		switch (f) {
 			case "i":
 				// integer value
-				return String(Math.round(Number(value)) || 0);
+				return _applyGrouping(String(Math.round(Number(value)) || 0), grouping);
 			case "f":
 				// fixed-point number
-				return (Number(value) || 0).toFixed(
-					precision >= 0 ? precision : DEFAULT_PREC,
+				return _applyGrouping(
+					(Number(value) || 0).toFixed(
+						precision >= 0 ? precision : DEFAULT_PREC,
+					),
+					grouping,
 				);
 			case "x":
 				// hexadecimal number
@@ -318,8 +326,28 @@ export namespace DeferredString {
 				// case "s":
 				// case "d":
 				// any other format, just stringify
-				return _stringify(value, precision);
+				return _applyGrouping(_stringify(value, precision), grouping);
 		}
+	}
+
+	/** Applies locale-aware grouping separators and decimal separator to a numeric string */
+	function _applyGrouping(s: string, grouping: boolean): string {
+		if (!grouping) return s;
+		let culture = _i18n?.getCulture(),
+			dec: string = culture?.decimalSeparator ?? ".",
+			grp: string = culture?.groupSeparator ?? ",",
+			size: number | number[] = culture?.groupSize ?? 3,
+			sizes = typeof size === "number" ? [size] : size,
+			[int, frac] = s.split(".") as [string, string?],
+			start = int[0] === "-" ? 1 : 0,
+			pos = int.length,
+			si = 0,
+			sn = sizes.length - 1;
+		while (sizes[si] && (pos -= sizes[si]!) > start) {
+			int = int.slice(0, pos) + grp + int.slice(pos);
+			if (si < sn) si++;
+		}
+		return frac ? int + dec + frac : int;
 	}
 
 	/** Better toString method */
