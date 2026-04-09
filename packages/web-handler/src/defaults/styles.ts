@@ -28,6 +28,7 @@ export function makeButtonStyles(): Record<string, WebTheme.StyleDefinition> {
 		bare: {
 			...baseStyles,
 			background: colors.transparent,
+			fontWeight: undefined,
 			minWidth: "none",
 			padding: "0.375rem 0.5rem",
 			textAlign: "start",
