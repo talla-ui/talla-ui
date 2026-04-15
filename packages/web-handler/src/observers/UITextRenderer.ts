@@ -139,6 +139,15 @@ export function setTextOrHtmlContent(
 		}
 	}
 
+	// for icon-only elements, set line-height to icon size
+	// so the outer span grows to fit (prevents overflow clipping)
+	if (content.icon && !text) {
+		element.style.lineHeight = getCSSLength(
+			content.iconStyle?.size ?? UITextRenderer.defaultIconStyle.size,
+			"1rem",
+		);
+	}
+
 	// create text element (if there's an icon, wrap in span)
 	let textElt: HTMLElement | undefined;
 	if (text) {
